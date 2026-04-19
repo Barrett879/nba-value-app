@@ -943,10 +943,10 @@ with tab_rankings:
                             "Score Rank", "Salary", "Proj. Salary", "Δ Market",
                             "Salary Rank", "Rank Diff", "D-LEBRON", "TS%", "Next $"]
             sfmt.insert(0, "#", range(1, len(sfmt) + 1))
-            s_style = sfmt.style.applymap(color_value_diff, subset=["Δ Market"]) \
-                                .applymap(color_rank_diff, subset=["Rank Diff"]) \
-                                .applymap(color_next_contract, subset=["Next $"]) \
-                                .applymap(color_rookie_salary, subset=["Salary"]) \
+            s_style = sfmt.style.map(color_value_diff, subset=["Δ Market"]) \
+                                .map(color_rank_diff, subset=["Rank Diff"]) \
+                                .map(color_next_contract, subset=["Next $"]) \
+                                .map(color_rookie_salary, subset=["Salary"]) \
                                 .apply(highlight_tot_row, axis=1)
             s_col_config = {
                 "Next $":        st.column_config.TextColumn("Next $",
@@ -972,9 +972,9 @@ with tab_rankings:
             sfmt["value_diff"]       = sfmt["value_diff"] / 1_000_000
             sfmt.columns = ["Player", "Team", "Barrett Score", "Salary", "Proj. Salary", "Δ Market", "Next $"]
             sfmt.insert(0, "#", range(1, len(sfmt) + 1))
-            s_style = sfmt.style.applymap(color_value_diff, subset=["Δ Market"]) \
-                                .applymap(color_next_contract, subset=["Next $"]) \
-                                .applymap(color_rookie_salary, subset=["Salary"]) \
+            s_style = sfmt.style.map(color_value_diff, subset=["Δ Market"]) \
+                                .map(color_next_contract, subset=["Next $"]) \
+                                .map(color_rookie_salary, subset=["Salary"]) \
                                 .apply(highlight_tot_row, axis=1)
             s_col_config = {
                 "Next $":        st.column_config.TextColumn("Next $",
@@ -1037,13 +1037,13 @@ with tab_rankings:
 
         style = display_fmt.style
         if "Rank Diff" in display_fmt.columns:
-            style = style.applymap(color_rank_diff, subset=["Rank Diff"])
+            style = style.map(color_rank_diff, subset=["Rank Diff"])
         if "Δ Market" in display_fmt.columns:
-            style = style.applymap(color_value_diff, subset=["Δ Market"])
+            style = style.map(color_value_diff, subset=["Δ Market"])
         if "Next $" in display_fmt.columns:
-            style = style.applymap(color_next_contract, subset=["Next $"])
+            style = style.map(color_next_contract, subset=["Next $"])
         if "Salary" in display_fmt.columns:
-            style = style.applymap(color_rookie_salary, subset=["Salary"])
+            style = style.map(color_rookie_salary, subset=["Salary"])
 
         col_config = {
             "Next $":        st.column_config.TextColumn("Next $",
@@ -1312,7 +1312,7 @@ with tab_projector:
         return ""
 
     st.dataframe(
-        tbl.style.applymap(color_delta, subset=["Δ $M"]),
+        tbl.style.map(color_delta, subset=["Δ $M"]),
         column_config={
             "Proj. $M":  st.column_config.NumberColumn(format="$%.2fM"),
             "Actual $M": st.column_config.NumberColumn(format="$%.2fM"),
@@ -1404,7 +1404,7 @@ with tab_teams:
         return ""
 
     st.dataframe(
-        team_tbl.style.applymap(color_net, subset=["Net Δ $M"]),
+        team_tbl.style.map(color_net, subset=["Net Δ $M"]),
         column_config={
             "Actual $M":  st.column_config.NumberColumn(format="$%.1fM",
                 help="Sum of all qualifying players' actual salaries."),
@@ -1442,7 +1442,7 @@ with tab_teams:
                                   "Salary $M", "Proj. $M", "Δ $M"]
         team_players.insert(0, "#", range(1, len(team_players) + 1))
         st.dataframe(
-            team_players.style.applymap(color_net, subset=["Δ $M"]),
+            team_players.style.map(color_net, subset=["Δ $M"]),
             column_config={
                 "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
                 "Salary $M":     st.column_config.NumberColumn(format="$%.2fM"),
@@ -1547,10 +1547,10 @@ with tab_fa:
 
     fa_style = (
         fa_fmt.style
-        .applymap(color_fa_status,    subset=["Status"])
-        .applymap(color_next_contract, subset=["Next $"])
-        .applymap(color_rookie_salary, subset=["Salary"])
-        .applymap(color_value_diff,    subset=["Δ Market"])
+        .map(color_fa_status,    subset=["Status"])
+        .map(color_next_contract, subset=["Next $"])
+        .map(color_rookie_salary, subset=["Salary"])
+        .map(color_value_diff,    subset=["Δ Market"])
     )
 
     st.dataframe(
