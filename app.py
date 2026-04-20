@@ -3,6 +3,7 @@ import time
 import io
 import pickle
 import threading
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import unicodedata
 from pathlib import Path
 import requests
@@ -217,35 +218,42 @@ def _player_season_splits_raw(player_id: int, season: str,
     })
 
 
-@st.cache_data(ttl=3600, show_spinner="Building splits table (30 API calls — loads once per session)…")
+@st.cache_data(ttl=3600, show_spinner="Building splits table — loading once, fast for everyone after…")
 def build_splits_data_live(season: str, salary_lookup: tuple) -> pd.DataFrame:
     # salary_lookup: ((normalized_name, salary), ...) — hashable for cache key
     sal_dict = dict(salary_lookup)
 
     TOTALS_COLS = ["GP", "MIN", "PTS", "AST", "OREB", "DREB", "BLK", "STL", "TOV", "PF"]
 
-    all_rows = []
-    for team in nba_teams_static.get_teams():
-        time.sleep(0.3)
-        ep = None
+    def _fetch_team(team: dict):
+        """Fetch one team's player stats — retries with backoff on failure."""
         delay = 1
-        while ep is None:
+        while True:
             try:
                 ep = leaguedashplayerstats.LeagueDashPlayerStats(
                     season=season,
                     per_mode_detailed="Totals",
                     team_id_nullable=team["id"],
                 )
+                df = ep.get_data_frames()[0]
+                if df.empty:
+                    return None
+                df = df.copy()
+                df["TEAM_ABBREVIATION"] = team["abbreviation"]
+                return df
             except Exception:
                 time.sleep(delay)
                 delay = min(delay * 2, 30)
-        df = ep.get_data_frames()[0]
-        if df.empty:
-            continue
-        df = df.copy()
-        # Tag with the team we actually queried (API returns current-team abbreviation)
-        df["TEAM_ABBREVIATION"] = team["abbreviation"]
-        all_rows.append(df)
+
+    teams = nba_teams_static.get_teams()
+    all_rows = []
+    # 6 workers → ~5× faster than sequential; stays within NBA API rate limits
+    with ThreadPoolExecutor(max_workers=6) as pool:
+        futures = {pool.submit(_fetch_team, t): t for t in teams}
+        for future in as_completed(futures):
+            result = future.result()
+            if result is not None:
+                all_rows.append(result)
 
     if not all_rows:
         return pd.DataFrame()
