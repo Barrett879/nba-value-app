@@ -619,9 +619,9 @@ def _fmt_next_contract(player_name: str) -> str:
         return "—"
     sal_m = info["salary"] / 1_000_000
     if info["type"] == "team_option":
-        return f"${sal_m:.1f}M (TO)"
+        return f"${sal_m:.1f}M TO"
     if info["type"] == "player_option":
-        return f"${sal_m:.1f}M (PO)"
+        return f"${sal_m:.1f}M PO"
     return f"${sal_m:.1f}M"
 
 df["next_contract"] = df["Player"].apply(_fmt_next_contract)
@@ -676,9 +676,9 @@ def color_next_contract(val):
     s = str(val)
     if s == "—":
         return "color: #555555"          # gray  — no deal / UFA
-    if "(TO)" in s:
+    if " TO" in s:
         return "color: #f39c12; font-weight: bold"   # orange — team option
-    if "(PO)" in s:
+    if " PO" in s:
         return "color: #3498db; font-weight: bold"   # blue   — player option
     return ""                            # white — fully guaranteed
 
@@ -950,22 +950,23 @@ with tab_rankings:
                                 .apply(highlight_tot_row, axis=1)
             s_col_config = {
                 "#":             st.column_config.NumberColumn(width="small"),
+                "Team":          st.column_config.TextColumn(width="small"),
                 "Next $":        st.column_config.TextColumn("Next $",
                     help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = UFA.",
-                    width="medium"),
+                    width="small"),
                 "GP":            st.column_config.NumberColumn(width="small"),
                 "MPG":           st.column_config.NumberColumn(format="%.2f", width="small"),
-                "Base Score":    st.column_config.NumberColumn(format="%.2f"),
-                "Avail ×":       st.column_config.NumberColumn(format="%.3f", width="small"),
-                "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-                "Score Rank":    st.column_config.NumberColumn(width="small"),
+                "Base Score":    st.column_config.NumberColumn("Base", format="%.2f", width="small"),
+                "Avail ×":       st.column_config.NumberColumn("Avail", format="%.3f", width="small"),
+                "Barrett Score": st.column_config.NumberColumn("Score", format="%.2f"),
+                "Score Rank":    st.column_config.NumberColumn("S.Rank", width="small"),
                 "Salary":        st.column_config.TextColumn(
                     help="Player's actual salary. 'R' = rookie scale contract (first-round pick, years 1–4)."),
-                "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
-                "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
-                "Salary Rank":   st.column_config.NumberColumn(width="small"),
-                "Rank Diff":     st.column_config.NumberColumn(width="small"),
-                "D-LEBRON":      st.column_config.NumberColumn(format="%.2f", width="small"),
+                "Proj. Salary":  st.column_config.NumberColumn("Proj.$", format="$%.2fM"),
+                "Δ Market":      st.column_config.NumberColumn("Δ $", format="$%.2fM"),
+                "Salary Rank":   st.column_config.NumberColumn("$.Rank", width="small"),
+                "Rank Diff":     st.column_config.NumberColumn("Diff", width="small"),
+                "D-LEBRON":      st.column_config.NumberColumn("D-LEB", format="%.2f", width="small"),
                 "TS%":           st.column_config.NumberColumn(format="%.1f%%", width="small"),
             }
         else:
@@ -1052,31 +1053,32 @@ with tab_rankings:
 
         col_config = {
             "#":             st.column_config.NumberColumn(width="small"),
+            "Team":          st.column_config.TextColumn(width="small"),
             "Next $":        st.column_config.TextColumn("Next $",
                 help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = unrestricted free agent.",
-                width="medium"),
-            "Barrett Score": st.column_config.NumberColumn(format="%.2f",
-                help="Base Score × Availability Multiplier."),
-            "Salary":        st.column_config.TextColumn(
+                width="small"),
+            "Barrett Score": st.column_config.NumberColumn("Score", format="%.2f",
+                help="Barrett Score = Base Score × Availability Multiplier."),
+            "Salary":        st.column_config.TextColumn("Salary",
                 help="Player's actual salary this season. 'R' = rookie scale contract (first-round pick, years 1–4)."),
-            "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM",
+            "Proj. Salary":  st.column_config.NumberColumn("Proj.$", format="$%.2fM",
                 help="Salary earned by whoever holds the same rank by pay."),
-            "Δ Market":      st.column_config.NumberColumn(format="$%.2fM",
+            "Δ Market":      st.column_config.NumberColumn("Δ $", format="$%.2fM",
                 help="Actual − Projected. Positive (red) = overpaid. Negative (green) = underpaid."),
         }
         if advanced:
             col_config.update({
                 "GP":         st.column_config.NumberColumn(width="small", help="Games played this season."),
                 "MPG":        st.column_config.NumberColumn(format="%.2f", width="small", help="Minutes per game."),
-                "Base Score": st.column_config.NumberColumn(format="%.2f",
+                "Base Score": st.column_config.NumberColumn("Base", format="%.2f", width="small",
                     help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON + Eff. Adj."),
-                "Avail ×":    st.column_config.NumberColumn(format="%.3f", width="small",
-                    help="0.75 + 0.25 × √((GP/82) × min(Total MIN/2500, 1))."),
-                "Score Rank": st.column_config.NumberColumn(width="small", help="Rank by Barrett Score."),
-                "Salary Rank":st.column_config.NumberColumn(width="small", help="Rank by actual salary."),
-                "Rank Diff":  st.column_config.NumberColumn(width="small", help="Salary Rank − Score Rank. Positive = underpaid."),
-                "D-LEBRON":   st.column_config.NumberColumn(format="%.2f", width="small",
-                    help="Points prevented per game vs average. From bball-index.com."),
+                "Avail ×":    st.column_config.NumberColumn("Avail", format="%.3f", width="small",
+                    help="Availability multiplier. 0.75 + 0.25 × √((GP/82) × min(Total MIN/2500, 1))."),
+                "Score Rank": st.column_config.NumberColumn("S.Rank", width="small", help="Rank by Barrett Score."),
+                "Salary Rank":st.column_config.NumberColumn("$.Rank", width="small", help="Rank by actual salary."),
+                "Rank Diff":  st.column_config.NumberColumn("Diff", width="small", help="Salary Rank − Score Rank. Positive = underpaid."),
+                "D-LEBRON":   st.column_config.NumberColumn("D-LEB", format="%.2f", width="small",
+                    help="D-LEBRON: points prevented per game vs average. From bball-index.com."),
                 "TS%":        st.column_config.NumberColumn(format="%.1f%%", width="small",
                     help="True Shooting %. League avg ~57%."),
             })
@@ -1475,9 +1477,9 @@ with tab_fa:
     def _fa_status(nc: str) -> str | None:
         if nc == "—":
             return "UFA"
-        if "(PO)" in nc:
+        if " PO" in nc:
             return "Player Option"
-        if "(TO)" in nc:
+        if " TO" in nc:
             return "Team Option"
         return None   # guaranteed deal — not a free agent
 
