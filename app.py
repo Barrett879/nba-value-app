@@ -24,11 +24,15 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 st.title("Barrett Score — NBA Contract Value Rankings")
-st.caption(
-    "Base Score = PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON + Eff. Adj  (per game)  "
-    "· Eff. Adj = clamp(0.15 × (TS% − Lg Avg TS%) × 100, −2, +2)  "
-    "· Barrett Score = Base Score × (0.75 + 0.25 × √((GP/82) × min(MIN/2500, 1)))"
-)
+st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
+
+with st.expander("How is this calculated?"):
+    st.markdown(
+        "**Base Score** = PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON + Eff. Adj  *(per game)*\n\n"
+        "**Eff. Adj** = clamp(0.15 × (TS% − Lg Avg TS%) × 100, −2, +2)\n\n"
+        "**Barrett Score** = Base Score × (0.75 + 0.25 × √((GP/82) × min(MIN/2500, 1)))\n\n"
+        "*The availability multiplier scales down players who have missed significant time, rewarding durability.*"
+    )
 
 SEASONS = ["2025-26", "2024-25", "2023-24", "2022-23", "2021-22", "2020-21", "2019-20",
            "2018-19", "2017-18", "2016-17", "2015-16", "2014-15", "2013-14", "2012-13",
