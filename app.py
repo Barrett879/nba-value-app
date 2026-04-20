@@ -614,11 +614,8 @@ _next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v
 _rookie_scale   = fetch_rookie_scale_players(season)
 
 def _fmt_salary(player_name: str, salary_dollars: float) -> str:
-    """Format salary as '$X.XXM' with optional ' R' suffix for rookie-scale players."""
-    s = f"${salary_dollars / 1_000_000:.2f}M"
-    if normalize(player_name) in _rookie_scale:
-        return s + " R"
-    return s
+    """Format salary as '$X.XXM'. Rookie-scale players are colored purple via style, no text marker."""
+    return f"${salary_dollars / 1_000_000:.2f}M"
 
 def _fmt_next_contract(player_name: str) -> str:
     info = _next_contracts.get(normalize(player_name))
@@ -673,10 +670,13 @@ def color_rank_diff(val):
     return ""
 
 
-def color_rookie_salary(val):
-    if str(val).endswith(" R"):
-        return "color: #a855f7; font-weight: bold"
-    return ""
+def style_rookie_salary(row):
+    """Color the Salary cell purple for rookie-scale players (row-wise so we can check Player name)."""
+    result = pd.Series('', index=row.index)
+    if 'Player' in row.index and normalize(str(row['Player'])) in _rookie_scale:
+        if 'Salary' in row.index:
+            result['Salary'] = 'color: #a855f7; font-weight: bold'
+    return result
 
 
 def color_next_contract(val):
@@ -953,7 +953,7 @@ with tab_rankings:
             s_style = sfmt.style.map(color_value_diff, subset=["Δ Market"]) \
                                 .map(color_rank_diff, subset=["Rank Diff"]) \
                                 .map(color_next_contract, subset=["Next $"]) \
-                                .map(color_rookie_salary, subset=["Salary"]) \
+                                .apply(style_rookie_salary, axis=1) \
                                 .apply(highlight_tot_row, axis=1)
             s_col_config = {
                 "Next $":        st.column_config.TextColumn("Next $",
@@ -981,7 +981,7 @@ with tab_rankings:
             sfmt.insert(0, "#", range(1, len(sfmt) + 1))
             s_style = sfmt.style.map(color_value_diff, subset=["Δ Market"]) \
                                 .map(color_next_contract, subset=["Next $"]) \
-                                .map(color_rookie_salary, subset=["Salary"]) \
+                                .apply(style_rookie_salary, axis=1) \
                                 .apply(highlight_tot_row, axis=1)
             s_col_config = {
                 "Next $":        st.column_config.TextColumn("Next $",
@@ -1010,7 +1010,7 @@ with tab_rankings:
                 f"{len(sdisplay)} rows shown. **TOT** = full season combined. "
                 "Players who switched teams mid-season appear as separate stints. "
                 "**Δ Market** = Actual − Projected. "
-                "**Salary R** = rookie scale. "
+                "Purple salary = rookie scale. "
                 "**Next $**: white = guaranteed · orange (TO) = team option · blue (PO) = player option · gray = UFA."
             )
     else:
@@ -1049,8 +1049,7 @@ with tab_rankings:
             style = style.map(color_value_diff, subset=["Δ Market"])
         if "Next $" in display_fmt.columns:
             style = style.map(color_next_contract, subset=["Next $"])
-        if "Salary" in display_fmt.columns:
-            style = style.map(color_rookie_salary, subset=["Salary"])
+        style = style.apply(style_rookie_salary, axis=1)
 
         col_config = {
             "Next $":        st.column_config.TextColumn("Next $",
@@ -1097,11 +1096,11 @@ with tab_rankings:
         with cap_col_r:
             if advanced:
                 st.caption("**Rank Diff** = Salary Rank − Score Rank. **Δ Market** = Actual − Projected (red = overpaid, green = underpaid). "
-                           "**Salary R** = rookie scale contract (1st-round pick, yrs 1–4). "
+                           "Purple salary = rookie scale contract (1st-round pick, yrs 1–4). "
                            "**Next $**: white = guaranteed · orange (TO) = team option · blue (PO) = player option · gray = UFA.")
             else:
                 st.caption("**Proj. Salary** = what this player would earn paid by Barrett Score rank. **Δ Market** = Actual − Projected. "
-                           "**Salary R** = rookie scale contract (1st-round pick, yrs 1–4). "
+                           "Purple salary = rookie scale contract (1st-round pick, yrs 1–4). "
                            "**Next $**: white = guaranteed · orange (TO) = team option · blue (PO) = player option · gray = UFA.")
 
     # ── Fill panel placeholder (above multiselect) ────────────────────────────
@@ -1556,7 +1555,7 @@ with tab_fa:
         fa_fmt.style
         .map(color_fa_status,    subset=["Status"])
         .map(color_next_contract, subset=["Next $"])
-        .map(color_rookie_salary, subset=["Salary"])
+        .apply(style_rookie_salary, axis=1)
         .map(color_value_diff,    subset=["Δ Market"])
     )
 
@@ -1566,7 +1565,7 @@ with tab_fa:
             "Barrett Score": st.column_config.NumberColumn(format="%.2f",
                 help="Base Score × Availability Multiplier. Higher = more valuable."),
             "Salary":        st.column_config.TextColumn(width="medium",
-                help="Current season salary. Purple R = rookie scale contract."),
+                help="Current season salary. Purple = rookie scale contract (1st-round pick, yrs 1–4)."),
             "Proj. Value":   st.column_config.NumberColumn(format="$%.2fM",
                 help="What this player would earn if paid by their Barrett Score rank. "
                      "Useful baseline for contract negotiations."),
