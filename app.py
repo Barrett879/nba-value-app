@@ -609,12 +609,11 @@ df = apply_rankings(raw)
 df = apply_projections(df)
 df = df[df["total_min"] >= min_threshold]
 
-# Build splits data — cached after first load
+# salary_lookup is needed by the splits tab — computed once here (cheap)
 salary_lookup = tuple(
     (normalize(row["Player"]), row["salary"])
     for _, row in raw.iterrows()
 )
-splits_df = build_splits_data(season, salary_lookup)
 
 # Positions from ESPN (PG/SG → Guard, SF/PF → Forward, C → Center)
 # Much more reliable than the NBA API's PlayerIndex which mislabels wing players.
@@ -630,19 +629,15 @@ _rookie_scale   = fetch_rookie_scale_players(season)
 # After the current season loads, silently pre-warm the 3 most recent other
 # seasons so switching seasons is instant for all users.
 def _warm_season(s: str) -> None:
-    """Pre-populate @st.cache_data for a given season in a background thread."""
+    """Pre-populate @st.cache_data for rankings data for a given season.
+    Splits are intentionally excluded — they're slow (30 API calls) and load
+    lazily only when the user opens the Splits toggle."""
     try:
         espn_year = season_to_espn_year(s)
-        _raw = build_raw(s)
+        build_raw(s)
         fetch_bref_positions(espn_year, cache_v=3)
         fetch_next_year_contracts(espn_year, cache_v=7)
         fetch_rookie_scale_players(s)
-        # Also warm splits using the salary lookup from the pre-warmed raw data
-        _sal_lookup = tuple(
-            (normalize(row["Player"]), row["salary"])
-            for _, row in _raw.iterrows()
-        )
-        build_splits_data(s, _sal_lookup)
     except Exception:
         pass  # Never crash the main app from a background thread
 
@@ -667,23 +662,10 @@ def _fmt_next_contract(player_name: str) -> str:
 
 df["next_contract"] = df["Player"].apply(_fmt_next_contract)
 
-# Build a season-level MPG lookup from splits_df using actual Totals-endpoint minutes.
-# For traded players use the TOT row; for others use their single row.
-# This is the authoritative MPG used in both rankings and splits views.
-if splits_df is not None and not splits_df.empty:
-    season_games = int(splits_df[splits_df["Team"] != "TOT"]["GP"].max())
-else:
-    season_games = int(raw["GP"].max())
-
-if splits_df is not None:
-    _tot = splits_df[splits_df["Team"] == "TOT"].set_index("Player")[["total_min", "GP"]]
-    _non = (splits_df[splits_df["Team"] != "TOT"]
-            .drop_duplicates("Player", keep="first")
-            .set_index("Player")[["total_min", "GP"]])
-    _mpg_src = pd.concat([_tot, _non[~_non.index.isin(_tot.index)]])
-    splits_mpg_lookup = (_mpg_src["total_min"] / _mpg_src["GP"]).round(2)
-else:
-    splits_mpg_lookup = pd.Series(dtype=float)
+# MPG and season_games come directly from the PerGame stats in df (fast, no splits needed).
+# The splits tab loads its own data lazily when the user opens it.
+season_games = int(raw["GP"].max())
+splits_mpg_lookup = df.set_index("Player")["MPG"]
 
 st.caption(
     f"**{len(df)}** players ranked · "
@@ -891,6 +873,9 @@ with tab_rankings:
         if n < -20:  return "color: #2ecc71; font-weight: bold"
         if n < -5:   return "color: #a8e6a8"
         return ""
+
+    if show_splits:
+        splits_df = build_splits_data(season, salary_lookup)
 
     if show_splits and splits_df is not None:
         # ── Splits table ──────────────────────────────────────────────────────
