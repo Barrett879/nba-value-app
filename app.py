@@ -30,8 +30,8 @@ st.caption("A stat-driven ranking of every NBA player's contract value — who's
 
 with st.expander("How is this calculated?"):
     st.markdown(
-        "**Base Score** = PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj  *(per game)*\n\n"
-        "**Eff. Adj** = clamp(0.15 × (TS% − Lg Avg TS%) × 100, −2, +2)\n\n"
+        "**Base Score** = PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj×2  *(per game)*\n\n"
+        "**Eff. Adj** = clamp(0.15 × (TS% − Lg Avg TS%) × 100, −4, +4)\n\n"
         "**Barrett Score** = Base Score × (0.75 + 0.25 × √((GP/82) × min(MIN/2500, 1)))\n\n"
         "*The availability multiplier scales down players who have missed significant time, rewarding durability.*"
     )
@@ -158,11 +158,11 @@ def fetch_career_trend(player_id: int, num_seasons: int = 5) -> pd.DataFrame:
     cdf["ts_pct"] = cdf["PTS"] / (2 * (cdf["FGA"] + 0.44 * cdf["FTA"])).replace(0, float("nan"))
     cdf["league_avg_ts"] = cdf["SEASON_ID"].map(fetch_league_avg_ts)
     cdf["efficiency_adj"] = cdf.apply(
-        lambda r: float(min(max(0.15 * (r["ts_pct"] - r["league_avg_ts"]) * 100, -2), 2))
+        lambda r: float(min(max(0.15 * (r["ts_pct"] - r["league_avg_ts"]) * 100, -4), 4))
         if r.get("FGA", 0) >= 2.0 and not pd.isna(r["ts_pct"]) else 0.0, axis=1
     )
     cdf["total_min"] = (cdf["MIN"] * cdf["GP"]).round(0).astype(int)
-    cdf["base_score"] = cdf.apply(base_score, axis=1) + cdf["efficiency_adj"]
+    cdf["base_score"] = cdf.apply(base_score, axis=1) + cdf["efficiency_adj"] * 2
     cdf["sg"] = cdf["SEASON_ID"].map(lambda s: SEASON_GAMES_LOOKUP.get(s, 82))
     cdf["avail_mult"] = cdf.apply(
         lambda r: availability_multiplier(r["GP"], r["total_min"], int(r["sg"])), axis=1
@@ -198,12 +198,12 @@ def _player_season_splits_raw(player_id: int, season: str,
     rows["d_lebron"] = d_lebron_val
     rows["ts_pct"] = rows["PTS"] / (2 * (rows["FGA"] + 0.44 * rows["FTA"])).replace(0, float("nan"))
     rows["efficiency_adj"] = rows.apply(
-        lambda r: float(min(max(0.15 * (r["ts_pct"] - league_avg_ts) * 100, -2), 2))
+        lambda r: float(min(max(0.15 * (r["ts_pct"] - league_avg_ts) * 100, -4), 4))
         if r["FGA"] >= 2.0 and not pd.isna(r["ts_pct"]) else 0.0, axis=1
     )
 
     rows["total_min"] = (rows["MIN"] * rows["GP"]).round(0).astype(int)
-    rows["base_score"] = rows.apply(base_score, axis=1) + rows["efficiency_adj"]
+    rows["base_score"] = rows.apply(base_score, axis=1) + rows["efficiency_adj"] * 2
     rows["avail_mult"] = rows.apply(
         lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
     )
@@ -547,14 +547,14 @@ def build_raw(season: str) -> pd.DataFrame:
     def eff_adj(row):
         if row["FGA"] < MIN_FGA or pd.isna(row["ts_pct"]):
             return 0.0
-        return float(min(max(K_EFF * (row["ts_pct"] - league_avg_ts) * 100, -2), 2))
+        return float(min(max(K_EFF * (row["ts_pct"] - league_avg_ts) * 100, -4), 4))
     stats["efficiency_adj"] = stats.apply(eff_adj, axis=1)
 
     # Use actual games played this season as denominator — handles lockout/COVID seasons.
     season_games = int(stats["GP"].max())
 
     stats["total_min"] = (stats["MIN"] * stats["GP"]).round(0).astype(int)
-    stats["base_score"] = stats.apply(base_score, axis=1) + stats["efficiency_adj"]
+    stats["base_score"] = stats.apply(base_score, axis=1) + stats["efficiency_adj"] * 2
     stats["avail_mult"] = stats.apply(
         lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
     )
@@ -766,7 +766,7 @@ with tab_rankings:
                 "TOV": f"{-(r['TOV'] / 1.5):.2f}",
                 "PF": f"{-(r['PF'] / 3):.2f}",
                 "D-LEBRON": f"{r['d_lebron'] * 2:.2f}", "TS%": "-",
-                "Eff. Adj": f"{r['efficiency_adj']:.2f}",
+                "Eff. Adj": f"{r['efficiency_adj'] * 2:.2f}",
                 "Base Score": f"{r['base_score']:.2f}",
                 "Avail ×": f"{r['avail_mult']:.3f}",
                 "Barrett Score": f"{r['barrett_score']:.2f}",
@@ -801,7 +801,7 @@ with tab_rankings:
                 "PF":           st.column_config.NumberColumn(help="Personal fouls per game."),
                 "D-LEBRON":     st.column_config.NumberColumn(help="Defensive LEBRON — estimated points prevented per game vs average. Full-season metric, same across all stints."),
                 "TS%":          st.column_config.TextColumn(help="True Shooting % — scoring efficiency across 2s, 3s, and free throws. PTS / (2 × (FGA + 0.44 × FTA)). League avg ~57%."),
-                "Eff. Adj":     st.column_config.NumberColumn(help="Efficiency adjustment added to Base Score. clamp(0.15 × (TS% − League Avg TS%) × 100, −2, +2). Rewards efficient scorers, penalises inefficient ones."),
+                "Eff. Adj":     st.column_config.NumberColumn(help="Efficiency adjustment added to Base Score. clamp(0.15 × (TS% − League Avg TS%) × 100, −4, +4). Rewards efficient scorers, penalises inefficient ones."),
                 "Base Score":   st.column_config.NumberColumn(help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj. Raw per-game value before the availability multiplier."),
                 "Avail ×":      st.column_config.NumberColumn(help="Availability multiplier (0.75–1.00). Rewards health and heavy minutes. 0.75 + 0.25 × √((GP/team games) × min(Total MIN/2500, 1))."),
                 "Barrett Score":st.column_config.NumberColumn(help="Base Score × Availability Multiplier. The final contract value rating."),
