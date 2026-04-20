@@ -30,7 +30,7 @@ st.caption("A stat-driven ranking of every NBA player's contract value — who's
 
 with st.expander("How is this calculated?"):
     st.markdown(
-        "**Base Score** = PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON + Eff. Adj  *(per game)*\n\n"
+        "**Base Score** = PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×1.5 + Eff. Adj  *(per game)*\n\n"
         "**Eff. Adj** = clamp(0.15 × (TS% − Lg Avg TS%) × 100, −2, +2)\n\n"
         "**Barrett Score** = Base Score × (0.75 + 0.25 × √((GP/82) × min(MIN/2500, 1)))\n\n"
         "*The availability multiplier scales down players who have missed significant time, rewarding durability.*"
@@ -478,7 +478,7 @@ def base_score(row) -> float:
         + row["STL"] / 1.5
         - row["TOV"] / 1.5
         - row["PF"] / 3
-        + d_lebron
+        + d_lebron * 1.5
     )
 
 
@@ -802,7 +802,7 @@ with tab_rankings:
                 "D-LEBRON":     st.column_config.NumberColumn(help="Defensive LEBRON — estimated points prevented per game vs average. Full-season metric, same across all stints."),
                 "TS%":          st.column_config.TextColumn(help="True Shooting % — scoring efficiency across 2s, 3s, and free throws. PTS / (2 × (FGA + 0.44 × FTA)). League avg ~57%."),
                 "Eff. Adj":     st.column_config.NumberColumn(help="Efficiency adjustment added to Base Score. clamp(0.15 × (TS% − League Avg TS%) × 100, −2, +2). Rewards efficient scorers, penalises inefficient ones."),
-                "Base Score":   st.column_config.NumberColumn(help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON + Eff. Adj. Raw per-game value before the availability multiplier."),
+                "Base Score":   st.column_config.NumberColumn(help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×1.5 + Eff. Adj. Raw per-game value before the availability multiplier."),
                 "Avail ×":      st.column_config.NumberColumn(help="Availability multiplier (0.75–1.00). Rewards health and heavy minutes. 0.75 + 0.25 × √((GP/team games) × min(Total MIN/2500, 1))."),
                 "Barrett Score":st.column_config.NumberColumn(help="Base Score × Availability Multiplier. The final contract value rating."),
             },
@@ -1091,7 +1091,7 @@ with tab_rankings:
                 "GP":         st.column_config.NumberColumn(help="Games played this season."),
                 "MPG":        st.column_config.NumberColumn(format="%.2f", help="Minutes per game."),
                 "Base Score": st.column_config.NumberColumn(format="%.2f",
-                    help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON + Eff. Adj."),
+                    help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×1.5 + Eff. Adj."),
                 "Avail ×":    st.column_config.NumberColumn(format="%.3f",
                     help="0.75 + 0.25 × √((GP/82) × min(Total MIN/2500, 1))."),
                 "Score Rank": st.column_config.NumberColumn(help="Rank by Barrett Score."),
