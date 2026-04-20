@@ -595,27 +595,33 @@ with ctrl_r:
         help="Hides players below this threshold. Ranks are always computed on the full pool.",
     )
 
-raw = build_raw(season)
-df = apply_rankings(raw)
-df = apply_projections(df)
-df = df[df["total_min"] >= min_threshold]
+with st.status("Loading NBA data…", expanded=True) as _status:
+    st.write("Fetching player stats & salaries…")
+    raw = build_raw(season)
 
-# Build splits data — cached after first load
-salary_lookup = tuple(
-    (normalize(row["Player"]), row["salary"])
-    for _, row in raw.iterrows()
-)
-splits_df = build_splits_data(season, salary_lookup)
+    st.write("Building rankings…")
+    df = apply_rankings(raw)
+    df = apply_projections(df)
+    df = df[df["total_min"] >= min_threshold]
 
-# Positions from ESPN (PG/SG → Guard, SF/PF → Forward, C → Center)
-# Much more reliable than the NBA API's PlayerIndex which mislabels wing players.
-_bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
-df["position"] = df["Player"].map(
-    lambda n: _bref_positions.get(normalize(n), "")
-)
+    st.write("Building per-game splits…")
+    salary_lookup = tuple(
+        (normalize(row["Player"]), row["salary"])
+        for _, row in raw.iterrows()
+    )
+    splits_df = build_splits_data(season, salary_lookup)
 
-_next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v=7)
-_rookie_scale   = fetch_rookie_scale_players(season)
+    st.write("Fetching roster positions…")
+    _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
+    df["position"] = df["Player"].map(
+        lambda n: _bref_positions.get(normalize(n), "")
+    )
+
+    st.write("Fetching contract data…")
+    _next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v=7)
+    _rookie_scale   = fetch_rookie_scale_players(season)
+
+    _status.update(label="Ready!", state="complete", expanded=False)
 
 def _fmt_salary(player_name: str, salary_dollars: float) -> str:
     """Format salary as '$X.XXM'. Rookie-scale players are colored purple via style, no text marker."""
