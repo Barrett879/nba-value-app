@@ -964,7 +964,7 @@ with tab_rankings:
                 "Avail ×":       st.column_config.NumberColumn(format="%.3f"),
                 "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
                 "Salary":        st.column_config.TextColumn(
-                    help="Player's actual salary. 'R' = rookie scale contract (first-round pick, years 1–4)."),
+                    help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
                 "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
                 "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
                 "D-LEBRON":      st.column_config.NumberColumn(format="%.2f"),
@@ -989,7 +989,7 @@ with tab_rankings:
                     width="medium"),
                 "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
                 "Salary":        st.column_config.TextColumn(width="medium",
-                    help="Player's actual salary. 'R' = rookie scale contract (first-round pick, years 1–4)."),
+                    help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
                 "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
                 "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
             }
@@ -1058,7 +1058,7 @@ with tab_rankings:
             "Barrett Score": st.column_config.NumberColumn(format="%.2f",
                 help="Base Score × Availability Multiplier."),
             "Salary":        st.column_config.TextColumn(
-                help="Player's actual salary this season. 'R' = rookie scale contract (first-round pick, years 1–4)."),
+                help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
             "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM",
                 help="Salary earned by whoever holds the same rank by pay."),
             "Δ Market":      st.column_config.NumberColumn(format="$%.2fM",
