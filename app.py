@@ -23,10 +23,15 @@ st.markdown("""
 <style>
     .main .block-container { padding-left: 0.5rem; padding-right: 0.5rem; max-width: 100%; }
     #MainMenu { visibility: hidden; }
+    header { visibility: hidden; }
     footer { visibility: hidden; }
     [data-testid="stToolbar"] { display: none !important; }
     [data-testid="stDecoration"] { display: none !important; }
     [data-testid="stStatusWidget"] { display: none !important; }
+    [data-testid="stAppViewerBadge"] { display: none !important; }
+    [data-testid="stBottom"] { display: none !important; }
+    .viewerBadge_container__r5tak { display: none !important; }
+    .styles_viewerBadge__CvC9N { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
 
