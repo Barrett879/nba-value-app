@@ -9,6 +9,7 @@ from pathlib import Path
 import requests
 import pandas as pd
 import streamlit as st
+import streamlit.components.v1 as components
 import plotly.express as px
 from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import leaguedashplayerstats, playercareerstats, playerindex
@@ -34,6 +35,29 @@ st.markdown("""
     .styles_viewerBadge__CvC9N { display: none !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# JS badge remover — CSS alone can't catch elements injected after page load.
+# components.html runs in a same-origin iframe on Streamlit Cloud, so
+# window.parent.document is accessible and we can remove the viewer badge.
+components.html("""
+<script>
+    function hideBadge() {
+        try {
+            const doc = window.parent.document;
+            [
+                '[data-testid="stAppViewerBadge"]',
+                '[data-testid="stBottom"]',
+                '[data-testid="stToolbar"]',
+                '[data-testid="stStatusWidget"]',
+                '[class*="viewerBadge"]',
+                '[class*="ViewerBadge"]',
+            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
+        } catch(e) {}
+    }
+    hideBadge();
+    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
+</script>
+""", height=0)
 
 st.title("Barrett Score — NBA Contract Value Rankings")
 st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
