@@ -669,8 +669,8 @@ splits_mpg_lookup = df.set_index("Player")["MPG"]
 
 st.caption(
     f"**{len(df)}** players ranked · "
-    f"**{(df['rank_diff'] > 10).sum()}** underpaid (rank diff > +10) · "
-    f"**{(df['rank_diff'] < -10).sum()}** overpaid (rank diff < −10)"
+    f"**{(df['value_diff'] < -5_000_000).sum()}** underpaid (earning $5M+ below projection) · "
+    f"**{(df['value_diff'] > 5_000_000).sum()}** overpaid (earning $5M+ above projection)"
 )
 st.divider()
 
