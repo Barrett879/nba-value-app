@@ -951,12 +951,12 @@ with tab_rankings:
             s_col_config = {
                 "Next $":        st.column_config.TextColumn("Next $",
                     help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = UFA.",
-                    width="small"),
+                    width="medium"),
                 "MPG":           st.column_config.NumberColumn(format="%.2f"),
                 "Base Score":    st.column_config.NumberColumn(format="%.2f"),
                 "Avail ×":       st.column_config.NumberColumn(format="%.3f"),
                 "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-                "Salary":        st.column_config.TextColumn(
+                "Salary":        st.column_config.TextColumn(width="medium",
                     help="Player's actual salary. 'R' = rookie scale contract (first-round pick, years 1–4)."),
                 "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
                 "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
@@ -979,9 +979,9 @@ with tab_rankings:
             s_col_config = {
                 "Next $":        st.column_config.TextColumn("Next $",
                     help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = UFA.",
-                    width="small"),
+                    width="medium"),
                 "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-                "Salary":        st.column_config.TextColumn(
+                "Salary":        st.column_config.TextColumn(width="medium",
                     help="Player's actual salary. 'R' = rookie scale contract (first-round pick, years 1–4)."),
                 "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
                 "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
@@ -1048,10 +1048,10 @@ with tab_rankings:
         col_config = {
             "Next $":        st.column_config.TextColumn("Next $",
                 help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = unrestricted free agent.",
-                width="small"),
+                width="medium"),
             "Barrett Score": st.column_config.NumberColumn(format="%.2f",
                 help="Base Score × Availability Multiplier."),
-            "Salary":        st.column_config.TextColumn(
+            "Salary":        st.column_config.TextColumn(width="medium",
                 help="Player's actual salary this season. 'R' = rookie scale contract (first-round pick, years 1–4)."),
             "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM",
                 help="Salary earned by whoever holds the same rank by pay."),
@@ -1558,7 +1558,7 @@ with tab_fa:
         column_config={
             "Barrett Score": st.column_config.NumberColumn(format="%.2f",
                 help="Base Score × Availability Multiplier. Higher = more valuable."),
-            "Salary":        st.column_config.TextColumn(
+            "Salary":        st.column_config.TextColumn(width="medium",
                 help="Current season salary. Purple R = rookie scale contract."),
             "Proj. Value":   st.column_config.NumberColumn(format="$%.2fM",
                 help="What this player would earn if paid by their Barrett Score rank. "
@@ -1568,7 +1568,7 @@ with tab_fa:
                      "expect them to command a raise. Positive (red) = overpaid relative to production."),
             "Next $":        st.column_config.TextColumn("Next $",
                 help="Option value or — for UFAs. Blue (PO) = player option. Orange (TO) = team option.",
-                width="small"),
+                width="medium"),
             "Status":        st.column_config.TextColumn(
                 help="UFA = unrestricted free agent. Player Option = player controls opt-out. "
                      "Team Option = team controls whether to keep player."),
