@@ -2,6 +2,7 @@ import math
 import time
 import io
 import pickle
+import threading
 import unicodedata
 from pathlib import Path
 import requests
@@ -595,33 +596,51 @@ with ctrl_r:
         help="Hides players below this threshold. Ranks are always computed on the full pool.",
     )
 
-with st.status("Loading NBA data…", expanded=True) as _status:
-    st.write("Fetching player stats & salaries…")
-    raw = build_raw(season)
+raw = build_raw(season)
+df = apply_rankings(raw)
+df = apply_projections(df)
+df = df[df["total_min"] >= min_threshold]
 
-    st.write("Building rankings…")
-    df = apply_rankings(raw)
-    df = apply_projections(df)
-    df = df[df["total_min"] >= min_threshold]
+# Build splits data — cached after first load
+salary_lookup = tuple(
+    (normalize(row["Player"]), row["salary"])
+    for _, row in raw.iterrows()
+)
+splits_df = build_splits_data(season, salary_lookup)
 
-    st.write("Building per-game splits…")
-    salary_lookup = tuple(
-        (normalize(row["Player"]), row["salary"])
-        for _, row in raw.iterrows()
-    )
-    splits_df = build_splits_data(season, salary_lookup)
+# Positions from ESPN (PG/SG → Guard, SF/PF → Forward, C → Center)
+# Much more reliable than the NBA API's PlayerIndex which mislabels wing players.
+_bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
+df["position"] = df["Player"].map(
+    lambda n: _bref_positions.get(normalize(n), "")
+)
 
-    st.write("Fetching roster positions…")
-    _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
-    df["position"] = df["Player"].map(
-        lambda n: _bref_positions.get(normalize(n), "")
-    )
+_next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v=7)
+_rookie_scale   = fetch_rookie_scale_players(season)
 
-    st.write("Fetching contract data…")
-    _next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v=7)
-    _rookie_scale   = fetch_rookie_scale_players(season)
+# ── Background cache warming ───────────────────────────────────────────────────
+# After the current season loads, silently pre-warm the 3 most recent other
+# seasons so switching seasons is instant for all users.
+def _warm_season(s: str) -> None:
+    """Pre-populate @st.cache_data for a given season in a background thread."""
+    try:
+        espn_year = season_to_espn_year(s)
+        _raw = build_raw(s)
+        fetch_bref_positions(espn_year, cache_v=3)
+        fetch_next_year_contracts(espn_year, cache_v=7)
+        fetch_rookie_scale_players(s)
+        # Also warm splits using the salary lookup from the pre-warmed raw data
+        _sal_lookup = tuple(
+            (normalize(row["Player"]), row["salary"])
+            for _, row in _raw.iterrows()
+        )
+        build_splits_data(s, _sal_lookup)
+    except Exception:
+        pass  # Never crash the main app from a background thread
 
-    _status.update(label="Ready!", state="complete", expanded=False)
+_seasons_to_warm = [s for s in SEASONS if s != season][:3]
+for _ws in _seasons_to_warm:
+    threading.Thread(target=_warm_season, args=(_ws,), daemon=True).start()
 
 def _fmt_salary(player_name: str, salary_dollars: float) -> str:
     """Format salary as '$X.XXM'. Rookie-scale players are colored purple via style, no text marker."""
