@@ -561,13 +561,16 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
                 if type_col is not None:
                     for _, row in tdf.iterrows():
                         norm = normalize(str(row[name_col]))
-                        if norm not in contracts:
-                            continue
                         t = str(row[type_col]).upper().strip()
                         if t.startswith("PLAYER"):
-                            contracts[norm]["type"] = "player_option"
-                        elif t.startswith("CLUB"):   # Spotrac labels team options as "CLUB / $X"
-                            contracts[norm]["type"] = "team_option"
+                            if norm in contracts:
+                                contracts[norm]["type"] = "player_option"
+                        elif t.startswith("CLUB") or t.startswith("TEAM"):
+                            if norm in contracts:
+                                contracts[norm]["type"] = "team_option"
+                        elif t.startswith("RFA"):
+                            # Restricted FA — typically no guaranteed next-year salary yet
+                            contracts.setdefault(norm, {"salary": 0.0, "type": "rfa"})
     except Exception:
         pass
 
@@ -780,6 +783,8 @@ def _fmt_next_contract(player_name: str) -> str:
     info = _next_contracts.get(normalize(player_name))
     if info is None:
         return "—"
+    if info["type"] == "rfa":
+        return "RFA"
     sal_m = info["salary"] / 1_000_000
     if info["type"] == "team_option":
         return f"${sal_m:.1f}M TO"
@@ -1616,13 +1621,22 @@ with tab_teams:
 with tab_fa:
     st.caption(
         "Every player whose contract situation makes them available this offseason — "
-        "UFAs, player options (they may opt out), and team options (team may decline). "
-        "Ranked by Barrett Score — a GM's draft board."
+        "UFAs, RFAs (team holds right of first refusal), player options (they may opt out), "
+        "and team options (team may decline). Ranked by Barrett Score — a GM's draft board."
     )
 
     # ── Classify each player's FA status from next_contract string ────────────
-    def _fa_status(nc: str) -> str | None:
+    # RFA detection: Spotrac "RFA" label (via _fmt_next_contract → "RFA") OR
+    # rookie-scale player with no next-year deal (1st-round pick in year 4 of
+    # rookie contract → team has right of first refusal on any offer sheet).
+    def _fa_status(row) -> str | None:
+        nc   = row["next_contract"]
+        name = row["Player"]
+        if nc == "RFA":
+            return "RFA"
         if nc == "—":
+            if normalize(name) in _rookie_scale:
+                return "RFA"
             return "UFA"
         if " PO" in nc:
             return "Player Option"
@@ -1631,19 +1645,21 @@ with tab_fa:
         return None   # guaranteed deal — not a free agent
 
     fa_df = df.copy()
-    fa_df["Status"] = fa_df["next_contract"].apply(_fa_status)
+    fa_df["Status"] = fa_df.apply(_fa_status, axis=1)
     fa_df = fa_df[fa_df["Status"].notna()].copy()
 
     # ── Summary metrics ───────────────────────────────────────────────────────
     n_ufa = (fa_df["Status"] == "UFA").sum()
+    n_rfa = (fa_df["Status"] == "RFA").sum()
     n_po  = (fa_df["Status"] == "Player Option").sum()
     n_to  = (fa_df["Status"] == "Team Option").sum()
 
-    m1, m2, m3, m4 = st.columns(4)
+    m1, m2, m3, m4, m5 = st.columns(5)
     m1.metric("Total Free Agents", len(fa_df))
     m2.metric("Unrestricted (UFA)", n_ufa)
-    m3.metric("Player Options", n_po, help="Player can opt out and hit the market")
-    m4.metric("Team Options", n_to,  help="Team may decline, making player available")
+    m3.metric("Restricted (RFA)",   n_rfa, help="Team holds right of first refusal on any offer sheet")
+    m4.metric("Player Options",     n_po,  help="Player can opt out and hit the market")
+    m5.metric("Team Options",       n_to,  help="Team may decline, making player available")
 
     st.divider()
 
@@ -1653,7 +1669,7 @@ with tab_fa:
         fa_search = st.text_input("Filter by name", "", key="fa_search")
     with fa_col_b:
         fa_status_filter = st.selectbox(
-            "Status", ["All", "UFA", "Player Option", "Team Option"], key="fa_status"
+            "Status", ["All", "UFA", "RFA", "Player Option", "Team Option"], key="fa_status"
         )
     with fa_col_c:
         fa_pos_filter = st.selectbox(
@@ -1694,6 +1710,8 @@ with tab_fa:
     def color_fa_status(val):
         if val == "UFA":
             return "color: #aaaaaa"
+        if val == "RFA":
+            return "color: #2ecc71; font-weight: bold"
         if val == "Player Option":
             return "color: #3498db; font-weight: bold"
         if val == "Team Option":
@@ -1725,8 +1743,8 @@ with tab_fa:
                 help="Option value or — for UFAs. Blue (PO) = player option. Orange (TO) = team option.",
                 width="medium"),
             "Status":        st.column_config.TextColumn(
-                help="UFA = unrestricted free agent. Player Option = player controls opt-out. "
-                     "Team Option = team controls whether to keep player."),
+                help="UFA = unrestricted free agent. RFA = restricted (team has right of first refusal on offer sheets). "
+                     "Player Option = player controls opt-out. Team Option = team controls whether to keep player."),
             "Pos":           st.column_config.TextColumn("Pos", width="small"),
         },
         use_container_width=True,
