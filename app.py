@@ -137,6 +137,34 @@ def fetch_salaries(espn_year: int) -> pd.DataFrame:
     return combined[["name", "salary"]]
 
 
+@st.cache_data(ttl=86400, show_spinner=False)
+def fetch_hoopshype_salaries(season: str) -> dict:
+    """Fallback salary source from HoopsHype. Returns {normalized_name: salary}."""
+    start_year = season.split("-")[0]
+    end_year = str(int(start_year) + 1)
+    url = f"https://hoopshype.com/salaries/players/{start_year}-{end_year}/"
+    try:
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+        soup = BeautifulSoup(r.text, "html.parser")
+        table = soup.find("table", {"class": lambda c: c and "hh-salaries" in c})
+        if not table:
+            return {}
+        result = {}
+        for row in table.find_all("tr")[1:]:
+            cols = row.find_all("td")
+            if len(cols) < 2:
+                continue
+            name = cols[1].get_text(strip=True)
+            sal_text = cols[2].get_text(strip=True).replace("$", "").replace(",", "")
+            try:
+                result[normalize(name)] = float(sal_text)
+            except ValueError:
+                continue
+        return result
+    except Exception:
+        return {}
+
+
 @st.cache_data(ttl=3600, show_spinner="Fetching player splits...")
 def fetch_player_season_splits(player_id: int, season: str,
                                 d_lebron_val: float = 0.0,
@@ -568,6 +596,16 @@ def build_raw(season: str) -> pd.DataFrame:
 
     sal_lookup = {normalize(n): s for n, s in zip(salaries["name"], salaries["salary"])}
     stats["salary"] = stats["PLAYER_NAME"].apply(lambda n: sal_lookup.get(normalize(n)))
+
+    # Fallback: for players missing from ESPN, try HoopsHype
+    missing_mask = stats["salary"].isna()
+    if missing_mask.any():
+        hh_lookup = fetch_hoopshype_salaries(season)
+        if hh_lookup:
+            stats.loc[missing_mask, "salary"] = stats.loc[missing_mask, "PLAYER_NAME"].apply(
+                lambda n: hh_lookup.get(normalize(n))
+            )
+
     stats = stats.dropna(subset=["salary"])
 
     dlebron = fetch_dlebron(season)
