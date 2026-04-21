@@ -85,6 +85,23 @@ def season_to_espn_year(season: str) -> int:
     return int(season.split("-")[0]) + 1
 
 
+# ── Salary supplement ──────────────────────────────────────────────────────────
+# ESPN's historical salary rankings omit players who exercised player options
+# (they're listed as "cap holds" rather than active salaries in some years).
+# This supplement covers confirmed gaps so those players still appear in rankings.
+SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
+    "2017-18": {
+        # Both had exercised player options; ESPN year=2018 omits them entirely
+        "lebron james": 33_285_709,
+        "kevin durant": 25_000_000,
+    },
+    "2015-16": {
+        # LeBron was on a 2-year deal with player option (year 2)
+        "lebron james": 22_970_500,
+    },
+}
+
+
 # ── Data fetching ──────────────────────────────────────────────────────────────
 
 @st.cache_data(ttl=3600, show_spinner="Fetching league stats...")
@@ -142,27 +159,57 @@ def fetch_hoopshype_salaries(season: str) -> dict:
     """Fallback salary source from HoopsHype. Returns {normalized_name: salary}."""
     start_year = season.split("-")[0]
     end_year = str(int(start_year) + 1)
-    url = f"https://hoopshype.com/salaries/players/{start_year}-{end_year}/"
-    try:
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
-        soup = BeautifulSoup(r.text, "html.parser")
-        table = soup.find("table", {"class": lambda c: c and "hh-salaries" in c})
-        if not table:
-            return {}
-        result = {}
-        for row in table.find_all("tr")[1:]:
-            cols = row.find_all("td")
-            if len(cols) < 2:
+    # Try multiple URL formats HoopsHype has used over the years
+    urls_to_try = [
+        f"https://hoopshype.com/salaries/players/{start_year}-{end_year}/",
+        f"https://hoopshype.com/salaries/players/{start_year}-{end_year[-2:]}/",
+    ]
+    headers = {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/120.0.0.0 Safari/537.36"
+        ),
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+    }
+    for url in urls_to_try:
+        try:
+            r = requests.get(url, headers=headers, timeout=10)
+            if r.status_code != 200:
                 continue
-            name = cols[1].get_text(strip=True)
-            sal_text = cols[2].get_text(strip=True).replace("$", "").replace(",", "")
-            try:
-                result[normalize(name)] = float(sal_text)
-            except ValueError:
+            soup = BeautifulSoup(r.text, "html.parser")
+            # Try multiple table selectors
+            table = (
+                soup.find("table", {"class": lambda c: c and "hh-salaries" in c})
+                or soup.find("table", class_="hh-salaries-table")
+                or soup.find("table")
+            )
+            if not table:
                 continue
-        return result
-    except Exception:
-        return {}
+            result = {}
+            for row in table.find_all("tr")[1:]:
+                cols = row.find_all("td")
+                if len(cols) < 2:
+                    continue
+                # Name is typically in cols[1], salary in cols[2]
+                name = cols[1].get_text(strip=True)
+                if not name:
+                    continue
+                for col_idx in (2, 3):
+                    if col_idx >= len(cols):
+                        break
+                    sal_text = cols[col_idx].get_text(strip=True).replace("$", "").replace(",", "")
+                    try:
+                        result[normalize(name)] = float(sal_text)
+                        break
+                    except ValueError:
+                        continue
+            if result:
+                return result
+        except Exception:
+            continue
+    return {}
 
 
 @st.cache_data(ttl=3600, show_spinner="Fetching player splits...")
@@ -597,7 +644,15 @@ def build_raw(season: str) -> pd.DataFrame:
     sal_lookup = {normalize(n): s for n, s in zip(salaries["name"], salaries["salary"])}
     stats["salary"] = stats["PLAYER_NAME"].apply(lambda n: sal_lookup.get(normalize(n)))
 
-    # Fallback: for players missing from ESPN, try HoopsHype
+    # Fallback 1: hardcoded supplement for known ESPN player-option gaps
+    supplement = SALARY_SUPPLEMENT.get(season, {})
+    if supplement:
+        missing_mask = stats["salary"].isna()
+        stats.loc[missing_mask, "salary"] = stats.loc[missing_mask, "PLAYER_NAME"].apply(
+            lambda n: supplement.get(normalize(n))
+        )
+
+    # Fallback 2: HoopsHype scrape for any remaining missing players
     missing_mask = stats["salary"].isna()
     if missing_mask.any():
         hh_lookup = fetch_hoopshype_salaries(season)
