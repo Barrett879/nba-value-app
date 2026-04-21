@@ -652,7 +652,7 @@ def build_raw(season: str) -> pd.DataFrame:
     if supplement:
         missing_mask = stats["salary"].isna()
         stats.loc[missing_mask, "salary"] = stats.loc[missing_mask, "PLAYER_NAME"].apply(
-            lambda n: supplement.get(normalize(n))
+            lambda n: supplement.get(normalize(n), float("nan"))
         )
 
     # Fallback 2: HoopsHype scrape for any remaining missing players
@@ -661,7 +661,7 @@ def build_raw(season: str) -> pd.DataFrame:
         hh_lookup = fetch_hoopshype_salaries(season)
         if hh_lookup:
             stats.loc[missing_mask, "salary"] = stats.loc[missing_mask, "PLAYER_NAME"].apply(
-                lambda n: hh_lookup.get(normalize(n))
+                lambda n: hh_lookup.get(normalize(n), float("nan"))
             )
 
     stats = stats.dropna(subset=["salary"])
