@@ -79,7 +79,7 @@ with col1:
 
 with col2:
     st.markdown("""
-    <a class="nav-card" href="/Rankings">
+    <a class="nav-card" href="/Salary_Projector">
         <div class="nav-icon">💰</div>
         <div class="nav-title">Salary Projector</div>
         <div class="nav-desc">See what every player should earn based on their Barrett Score rank versus their actual contract.</div>
@@ -89,7 +89,7 @@ with col2:
 
 with col3:
     st.markdown("""
-    <a class="nav-card" href="/Rankings">
+    <a class="nav-card" href="/Team_Analysis">
         <div class="nav-icon">📊</div>
         <div class="nav-title">Team Analysis</div>
         <div class="nav-desc">Aggregate Barrett Scores by team to find the best and worst roster construction in the league.</div>
@@ -99,7 +99,7 @@ with col3:
 
 with col4:
     st.markdown("""
-    <a class="nav-card" href="/Rankings">
+    <a class="nav-card" href="/Free_Agent_Class">
         <div class="nav-icon">🆓</div>
         <div class="nav-title">Free Agent Class</div>
         <div class="nav-desc">UFAs, player options, and team options ranked by Barrett Score — a GM's offseason draft board.</div>
