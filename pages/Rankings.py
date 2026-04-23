@@ -155,19 +155,14 @@ def render_splits_panel(player_name, season):
     for i, (_, r) in enumerate(splits.iterrows()):
         is_tot = r["Team"] == "TOT"
 
-        # Use authoritative df stats for: single-team players (only row) or TOT row
+        # For single-team players or the TOT row, override derived scores with
+        # the authoritative values from df (LeagueDashPlayerStats PerGame) so the
+        # panel matches the rankings table exactly. df doesn't carry raw per-game
+        # stats (PTS/AST/etc.) so those still come from the splits endpoint.
         use_main = (not is_traded) or is_tot
         if use_main and not df_row.empty:
             main = df_row.iloc[0]
             r = r.copy()
-            r["PTS"]            = main["PTS"]
-            r["AST"]            = main["AST"]
-            r["OREB"]           = main["OREB"]
-            r["DREB"]           = main["DREB"]
-            r["BLK"]            = main["BLK"]
-            r["STL"]            = main["STL"]
-            r["TOV"]            = main["TOV"]
-            r["PF"]             = main["PF"]
             r["ts_pct"]         = main["ts_pct"]
             r["efficiency_adj"] = main["efficiency_adj"]
             r["base_score"]     = main["base_score"]
