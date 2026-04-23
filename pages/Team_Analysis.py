@@ -10,7 +10,7 @@ from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
     normalize, season_to_espn_year,
     build_raw, apply_rankings, apply_projections,
-    fetch_bref_positions,
+    fetch_bref_positions, render_nav,
 )
 
 st.set_page_config(page_title="Barrett Score — Team Analysis", layout="wide", page_icon="🏀")
@@ -37,8 +37,7 @@ components.html("""
 </script>
 """, height=0)
 
-if st.button("← Home"):
-    st.switch_page("app.py")
+render_nav("📊 Team Analysis")
 
 st.title("Barrett Score — Team Analysis")
 

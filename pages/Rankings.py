@@ -16,6 +16,7 @@ from utils import (
     build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
+    render_nav,
 )
 import threading
 
@@ -43,8 +44,7 @@ components.html("""
 </script>
 """, height=0)
 
-if st.button("← Home"):
-    st.switch_page("app.py")
+render_nav("🏆 Rankings")
 
 st.title("Barrett Score — NBA Contract Value Rankings")
 st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
