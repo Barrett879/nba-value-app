@@ -235,29 +235,18 @@ if not _trend_df.empty:
     import plotly.graph_objects as go
 
     # Drop seasons where a player didn't meet the minimum minutes threshold
-    # (e.g. rookie year with 200 min — irrelevant and distorts the rankings)
     _trend_df = _trend_df[_trend_df["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
-
     _all_seasons = sorted(_trend_df["Season"].unique().tolist())
-
-    # ── Build rank per season (1 = best Barrett Score that season) ────────────
-    # Rank is among only the top-10 players who qualified that season,
-    # so seasons with fewer active players simply have a shorter range.
-    _trend_df["rank"] = (
-        _trend_df.groupby("Season")["barrett_score"]
-        .rank(ascending=False, method="min")
-        .astype(int)
-    )
 
     # Distinct color palette — one per player, consistent order
     _PALETTE = [
         "#e63946","#4cc9f0","#f4d03f","#2ecc71","#a855f7",
         "#ff6b35","#00b4d8","#f72585","#b5e48c","#ffd166",
     ]
-    _players_ordered = _top10["Player"].tolist()  # already sorted by score_rank
+    _players_ordered = _top10["Player"].tolist()  # sorted by score_rank
     _color_map = {p: _PALETTE[i % len(_PALETTE)] for i, p in enumerate(_players_ordered)}
 
-    _fig_bump = go.Figure()
+    _fig = go.Figure()
 
     for player in _players_ordered:
         pdf = _trend_df[_trend_df["Player"] == player].sort_values("Season")
@@ -265,51 +254,49 @@ if not _trend_df.empty:
             continue
         col = _color_map[player]
 
-        # Main line
-        _fig_bump.add_trace(go.Scatter(
-            x=pdf["Season"], y=pdf["rank"],
+        # Main line — slightly transparent so overlaps are readable
+        _fig.add_trace(go.Scatter(
+            x=pdf["Season"], y=pdf["barrett_score"],
             mode="lines+markers",
             name=player,
             line=dict(color=col, width=2.5),
-            marker=dict(size=8, color=col, line=dict(width=1.5, color="rgba(0,0,0,0.4)")),
-            customdata=pdf[["barrett_score"]].values,
+            marker=dict(size=7, color=col, line=dict(width=1, color="rgba(0,0,0,0.35)")),
+            opacity=0.85,
             hovertemplate=(
                 f"<b>{player}</b><br>"
                 "Season: %{x}<br>"
-                "Rank: #%{y}<br>"
-                "Barrett Score: %{customdata[0]:.1f}"
+                "Barrett Score: %{y:.1f}"
                 "<extra></extra>"
             ),
         ))
 
-        # Star on current season
+        # Star on the current season point
         cur_row = pdf[pdf["Season"] == season]
         if not cur_row.empty:
-            _fig_bump.add_trace(go.Scatter(
-                x=cur_row["Season"], y=cur_row["rank"],
+            _fig.add_trace(go.Scatter(
+                x=cur_row["Season"], y=cur_row["barrett_score"],
                 mode="markers",
                 marker=dict(size=16, symbol="star", color=col,
                             line=dict(width=1.5, color="white")),
                 showlegend=False, hoverinfo="skip",
             ))
 
-        # End-of-line label (rightmost season)
+        # Last-name label at the rightmost data point
         last = pdf.iloc[-1]
-        _fig_bump.add_annotation(
-            x=last["Season"], y=last["rank"],
-            text=f"  {player.split()[-1]}",   # last name only to save space
+        _fig.add_annotation(
+            x=last["Season"], y=last["barrett_score"],
+            text=f"  {player.split()[-1]}",
             xanchor="left", yanchor="middle",
             font=dict(color=col, size=11, family="Arial"),
             showarrow=False,
         )
 
-    _n_ranks = int(_trend_df["rank"].max())
-    _fig_bump.update_layout(
+    _fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0.15)",
         font_color="white",
         height=420,
-        margin=dict(l=40, r=130, t=20, b=60),
+        margin=dict(l=50, r=130, t=20, b=60),
         showlegend=False,
         xaxis=dict(
             gridcolor="rgba(255,255,255,0.08)",
@@ -320,16 +307,13 @@ if not _trend_df.empty:
         ),
         yaxis=dict(
             gridcolor="rgba(255,255,255,0.08)",
-            title="Rank",
-            autorange="reversed",        # #1 at the top
-            tickmode="linear", dtick=1,
-            range=[0.5, _n_ranks + 0.5],
-            tickprefix="#",
+            title="Barrett Score",
+            rangemode="tozero",
         ),
-        hovermode="closest",
+        hovermode="x unified",
     )
-    st.plotly_chart(_fig_bump, use_container_width=True, config={"displayModeBar": False})
-    st.caption("★ = current season · Rank is relative to other top-10 players that season")
+    st.plotly_chart(_fig, use_container_width=True, config={"displayModeBar": False})
+    st.caption("★ = current season · Click a player name in the chart to isolate their line")
 
 st.divider()
 
