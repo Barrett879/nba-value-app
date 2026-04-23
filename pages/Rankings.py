@@ -142,10 +142,39 @@ def render_splits_panel(player_name, season):
     if splits.empty:
         st.info("No per-team split data available.")
         return
+
+    # For each row, override derived scores with the authoritative values from df
+    # (df uses LeagueDashPlayerStats PerGame; splits use PlayerCareerStats totals/GP
+    # which can differ slightly). For non-traded players this makes the panel match
+    # the rankings table exactly. For traded players the TOT row gets the df values.
+    df_row = df[df["Player"] == player_name]
+    is_traded = len(splits) > 1  # multiple team stints
+
     rows_out = []
     row_styles = []
     for i, (_, r) in enumerate(splits.iterrows()):
         is_tot = r["Team"] == "TOT"
+
+        # Use authoritative df stats for: single-team players (only row) or TOT row
+        use_main = (not is_traded) or is_tot
+        if use_main and not df_row.empty:
+            main = df_row.iloc[0]
+            r = r.copy()
+            r["PTS"]            = main["PTS"]
+            r["AST"]            = main["AST"]
+            r["OREB"]           = main["OREB"]
+            r["DREB"]           = main["DREB"]
+            r["BLK"]            = main["BLK"]
+            r["STL"]            = main["STL"]
+            r["TOV"]            = main["TOV"]
+            r["PF"]             = main["PF"]
+            r["ts_pct"]         = main["ts_pct"]
+            r["efficiency_adj"] = main["efficiency_adj"]
+            r["base_score"]     = main["base_score"]
+            r["avail_mult"]     = main["avail_mult"]
+            r["barrett_score"]  = main["barrett_score"]
+            r["MPG"]            = main["MPG"]
+
         ts_str = f"{r['ts_pct']*100:.1f}%" if not pd.isna(r["ts_pct"]) else "—"
         rows_out.append({
             "#": i + 1, "Team": r["Team"],
