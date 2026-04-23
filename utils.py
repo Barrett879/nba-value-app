@@ -225,8 +225,35 @@ def style_rookie_salary(row, rookie_scale: set):
 
 # ── Data fetching ──────────────────────────────────────────────────────────────
 
+# ── Generic disk-cache helpers (pickle for dicts/sets, parquet for DataFrames) ─
+def _dc_path(name: str) -> Path:
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    return CACHE_DIR / name
+
+def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> bool:
+    if not path.exists():
+        return False
+    effective_ttl = ttl if ttl is not None else (3600 if season == SEASONS[0] else 86400)
+    return (time.time() - path.stat().st_mtime) < effective_ttl
+
+def _pkl_load(path: Path):
+    return pickle.loads(path.read_bytes())
+
+def _pkl_save(path: Path, obj) -> None:
+    try:
+        path.write_bytes(pickle.dumps(obj))
+    except Exception:
+        pass
+
+
 @st.cache_data(ttl=3600, show_spinner="Fetching league stats...")
 def fetch_league_stats(season: str) -> pd.DataFrame:
+    path = _dc_path(f"league_stats_{season.replace('-','_')}.parquet")
+    if _dc_fresh(path, season=season):
+        try:
+            return pd.read_parquet(path)
+        except Exception:
+            pass
     time.sleep(0.5)
     result = None
     delay = 1
@@ -239,7 +266,12 @@ def fetch_league_stats(season: str) -> pd.DataFrame:
         except Exception:
             time.sleep(delay)
             delay = min(delay * 2, 30)
-    return result.get_data_frames()[0]
+    df = result.get_data_frames()[0]
+    try:
+        df.to_parquet(path, index=False)
+    except Exception:
+        pass
+    return df
 
 
 @st.cache_data(ttl=86400)
@@ -682,6 +714,12 @@ def get_player_id_map() -> dict:
 @st.cache_data(ttl=86400, show_spinner=False)
 def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
     """Returns {normalized_name: "Guard"|"Forward"|"Center"} from ESPN salary pages."""
+    path = _dc_path(f"bref_positions_{espn_year}_v{cache_v}.pkl")
+    if _dc_fresh(path, ttl=86400):
+        try:
+            return _pkl_load(path)
+        except Exception:
+            pass
     _pos_map = {"G": "Guard", "F": "Forward", "C": "Center"}
     result: dict = {}
     try:
@@ -707,6 +745,7 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
                     result[normalize(name.strip())] = mapped
     except Exception:
         pass
+    _pkl_save(path, result)
     return result
 
 
@@ -741,6 +780,12 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
     Returns {normalized_name: {"salary": float, "type": str}} for next season.
     type is one of: "guaranteed", "team_option", "player_option", "rfa".
     """
+    path = _dc_path(f"next_contracts_{espn_year}_v{cache_v}.pkl")
+    if _dc_fresh(path, ttl=86400):
+        try:
+            return _pkl_load(path)
+        except Exception:
+            pass
     next_year = espn_year + 1
     contracts: dict = {}
     _hdrs = {
@@ -786,12 +831,19 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
     except Exception:
         pass
 
+    _pkl_save(path, contracts)
     return contracts
 
 
 @st.cache_data(ttl=3600, show_spinner="Fetching D-LEBRON defensive ratings...")
 def fetch_dlebron_all() -> pd.DataFrame:
     """Fetches all D-LEBRON data in one call — every player, every season back to 2009-10."""
+    path = _dc_path("dlebron_all.parquet")
+    if _dc_fresh(path, ttl=3600):
+        try:
+            return pd.read_parquet(path)
+        except Exception:
+            pass
     try:
         r = requests.post(
             "https://fanspo.com/bbi-role-explorer/api/lebron_dashboard_data",
@@ -804,7 +856,12 @@ def fetch_dlebron_all() -> pd.DataFrame:
             timeout=15,
         )
         df = pd.DataFrame(r.json()["players"])
-        return df[["nba_id", "Season", "D-LEBRON"]].dropna()
+        df = df[["nba_id", "Season", "D-LEBRON"]].dropna()
+        try:
+            df.to_parquet(path, index=False)
+        except Exception:
+            pass
+        return df
     except Exception:
         return pd.DataFrame(columns=["nba_id", "Season", "D-LEBRON"])
 
