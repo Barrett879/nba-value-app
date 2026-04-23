@@ -51,10 +51,10 @@ st.caption("A stat-driven ranking of every NBA player's contract value — who's
 
 with st.expander("How is this calculated?"):
     st.markdown(
-        "**Base Score** = PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj×2  *(per game)*\n\n"
-        "**Eff. Adj** = clamp(0.15 × (TS% − Lg Avg TS%) × 100, −4, +4)\n\n"
-        "**Barrett Score** = Base Score × (0.75 + 0.25 × √((GP/82) × min(MIN/2500, 1)))\n\n"
-        "*The availability multiplier scales down players who have missed significant time, rewarding durability.*"
+        "The Barrett Score measures a player's **production per dollar** — combining scoring, playmaking, rebounding, "
+        "defense, and efficiency into a single number, then adjusting for how often they're actually on the floor. "
+        "A player who produces at an elite level but sits out half the season scores lower than one who does it every night. "
+        "Salaries are then ranked against scores to find who's overpaid, underpaid, or worth exactly what they're making."
     )
 
 # ── Season selector ────────────────────────────────────────────────────────────
