@@ -112,6 +112,7 @@ _NAV_PAGES = [
     ("💰 Salary Projector", "/Salary_Projector"),
     ("📊 Team Analysis",    "/Team_Analysis"),
     ("🆓 Free Agent Class", "/Free_Agent_Class"),
+    ("🏛️ Legacy",          "/Legacy"),
 ]
 
 def render_nav(current: str) -> None:
@@ -993,6 +994,15 @@ def warm_all_seasons() -> None:
     def _run_pool() -> None:
         with ThreadPoolExecutor(max_workers=5) as pool:
             pool.map(_warm, SEASONS)
+        # After all individual seasons are warm, pre-build the combined legacy dataset
+        try:
+            build_all_seasons_combined()
+        except Exception:
+            pass
+        try:
+            fetch_draft_classes()
+        except Exception:
+            pass
 
     threading.Thread(target=_run_pool, daemon=True).start()
 
@@ -1004,6 +1014,73 @@ def _bootstrap_warm() -> None:
     begins the moment Streamlit boots, before any user arrives.
     """
     warm_all_seasons()
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD) -> pd.DataFrame:
+    """Load every season, apply per-season rankings + projections, and concatenate.
+
+    Rankings/projections are applied *within* each season so score_rank and
+    value_diff are always comparable within a year.  The Season column is added
+    so cross-season analysis can group/filter by year.
+    """
+    path = _dc_path(f"all_seasons_{min_threshold}.parquet")
+    if _dc_fresh(path, ttl=3600):
+        try:
+            return pd.read_parquet(path)
+        except Exception:
+            pass
+
+    frames: list[pd.DataFrame] = []
+    for season in SEASONS:
+        try:
+            raw      = build_raw(season)
+            ranked   = apply_rankings(raw)
+            projected = apply_projections(ranked)
+            filt     = projected[projected["total_min"] >= min_threshold].copy()
+            filt["Season"] = season
+            frames.append(filt)
+        except Exception:
+            pass
+
+    if not frames:
+        return pd.DataFrame()
+
+    combined = pd.concat(frames, ignore_index=True)
+    try:
+        combined.to_parquet(path, index=False)
+    except Exception:
+        pass
+    return combined
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def fetch_draft_classes() -> pd.DataFrame:
+    """Draft history from the NBA: Player, draft_year (int), round, pick."""
+    path = _dc_path("draft_history.parquet")
+    if _dc_fresh(path, ttl=86400):
+        try:
+            return pd.read_parquet(path)
+        except Exception:
+            pass
+    try:
+        from nba_api.stats.endpoints import drafthistory
+        time.sleep(0.6)
+        df = drafthistory.DraftHistory().get_data_frames()[0]
+        keep = [c for c in ["PLAYER_NAME", "SEASON", "ROUND_NUMBER", "ROUND_PICK", "OVERALL_PICK"] if c in df.columns]
+        df = df[keep].copy().rename(columns={"PLAYER_NAME": "Player", "SEASON": "draft_year"})
+        df["draft_year"] = pd.to_numeric(df["draft_year"], errors="coerce")
+        df = df.dropna(subset=["draft_year"])
+        df["draft_year"] = df["draft_year"].astype(int)
+        df["player_norm"] = df["Player"].apply(normalize)
+        try:
+            df.to_parquet(path, index=False)
+        except Exception:
+            pass
+        return df
+    except Exception:
+        return pd.DataFrame(columns=["Player", "draft_year", "player_norm",
+                                     "ROUND_NUMBER", "ROUND_PICK", "OVERALL_PICK"])
 
 
 def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:

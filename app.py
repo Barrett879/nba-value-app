@@ -74,7 +74,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # ── Nav cards (entire card is the link) ───────────────────────────────────────
-col1, col2, col3, col4 = st.columns(4, gap="medium")
+col1, col2, col3, col4, col5 = st.columns(5, gap="medium")
 
 with col1:
     st.markdown("""
@@ -113,6 +113,16 @@ with col4:
         <div class="nav-title">Free Agent Class</div>
         <div class="nav-desc">UFAs, player options, and team options ranked by Barrett Score — a GM's offseason draft board.</div>
         <span class="nav-cta">Open Free Agents →</span>
+    </a>
+    """, unsafe_allow_html=True)
+
+with col5:
+    st.markdown("""
+    <a class="nav-card" href="/Legacy" target="_top">
+        <div class="nav-icon">🏛️</div>
+        <div class="nav-title">Legacy</div>
+        <div class="nav-desc">The historical record — all-time rankings, career arcs, era leaderboards, team Mount Rushmores, and more.</div>
+        <span class="nav-cta">Open Legacy →</span>
     </a>
     """, unsafe_allow_html=True)
 
