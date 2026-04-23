@@ -318,7 +318,7 @@ if not _trend_df.empty:
         yaxis=dict(
             gridcolor="rgba(255,255,255,0.08)",
             title="Barrett Score",
-            rangemode="tozero",
+            range=[35, 55],
         ),
         hovermode="x unified",
     )
