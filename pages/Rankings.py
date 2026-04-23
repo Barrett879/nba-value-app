@@ -535,8 +535,7 @@ if show_splits and splits_df is not None:
                           "base_score", "avail_mult", "barrett_score",
                           "score_rank", "salary", "projected_salary", "value_diff",
                           "salary_rank", "rank_diff", "d_lebron", "ts_pct", "Next $"]].copy()
-        _sfmt_sal_raw            = sfmt["salary"].values
-        sfmt["salary"]           = [_fmt_salary(p, s) for p, s in zip(sfmt["Player"].values, _sfmt_sal_raw)]
+        sfmt["salary"]           = sfmt["salary"] / 1_000_000
         sfmt["projected_salary"] = sfmt["projected_salary"] / 1_000_000
         sfmt["value_diff"]       = sfmt["value_diff"] / 1_000_000
         sfmt["ts_pct"]           = sfmt["ts_pct"] * 100
@@ -558,7 +557,7 @@ if show_splits and splits_df is not None:
             "Base Score":    st.column_config.NumberColumn(format="%.2f"),
             "Avail ×":       st.column_config.NumberColumn(format="%.3f"),
             "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-            "Salary":        st.column_config.TextColumn(
+            "Salary":        st.column_config.NumberColumn(format="$%.2fM",
                 help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
             "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
             "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
@@ -568,8 +567,7 @@ if show_splits and splits_df is not None:
     else:
         sfmt = sdisplay[["Player", "Team", "barrett_score", "salary",
                           "projected_salary", "value_diff", "Next $"]].copy()
-        _sfmt_sal_raw            = sfmt["salary"].values
-        sfmt["salary"]           = [_fmt_salary(p, s) for p, s in zip(sfmt["Player"].values, _sfmt_sal_raw)]
+        sfmt["salary"]           = sfmt["salary"] / 1_000_000
         sfmt["projected_salary"] = sfmt["projected_salary"] / 1_000_000
         sfmt["value_diff"]       = sfmt["value_diff"] / 1_000_000
         sfmt.columns = ["Player", "Team", "Barrett Score", "Salary", "Proj. Salary", "Δ Market", "Next $"]
@@ -583,7 +581,7 @@ if show_splits and splits_df is not None:
                 help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = UFA.",
                 width="medium"),
             "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-            "Salary":        st.column_config.TextColumn(width="medium",
+            "Salary":        st.column_config.NumberColumn(format="$%.2fM",
                 help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
             "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
             "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
@@ -621,8 +619,7 @@ else:
                                "base_score", "avail_mult", "barrett_score",
                                "score_rank", "salary", "projected_salary", "value_diff",
                                "salary_rank", "rank_diff", "d_lebron", "ts_pct"]]
-    _sal_raw                        = display_fmt["salary"].values
-    display_fmt["salary"]           = [_fmt_salary(p, s) for p, s in zip(display_fmt["Player"].values, _sal_raw)]
+    display_fmt["salary"]           = display_fmt["salary"] / 1_000_000
     display_fmt["projected_salary"] = display_fmt["projected_salary"] / 1_000_000
     display_fmt["value_diff"]       = display_fmt["value_diff"] / 1_000_000
     display_fmt["ts_pct"]           = display_fmt["ts_pct"] * 100
@@ -652,7 +649,7 @@ else:
             width="medium"),
         "Barrett Score": st.column_config.NumberColumn(format="%.2f",
             help="Base Score × Availability Multiplier."),
-        "Salary":        st.column_config.TextColumn(
+        "Salary":        st.column_config.NumberColumn(format="$%.2fM",
             help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
         "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM",
             help="Salary earned by whoever holds the same rank by pay."),
