@@ -377,10 +377,14 @@ def fetch_monthly_scores(player_id: int, season: str,
     pdf["MIN"] = pd.to_numeric(pdf["MIN"], errors="coerce").fillna(0.0)
 
     # ── Team game log (to know how many games the team has played each month) ─
-    team_id = int(pdf["Team_ID"].iloc[0]) if "Team_ID" in pdf.columns else None
+    # PlayerGameLog has no Team_ID column — derive team from MATCHUP field
+    # e.g. "LAL vs. GSW" or "LAL @ GSW" — the player's team is always first.
     team_dates = pd.Series(dtype="datetime64[ns]")
-    if team_id:
-        try:
+    try:
+        team_abbr = pdf["MATCHUP"].iloc[0].split()[0]
+        _teams    = {t["abbreviation"]: t["id"] for t in nba_teams_static.get_teams()}
+        team_id   = _teams.get(team_abbr)
+        if team_id:
             tgl = None
             delay = 1
             while tgl is None:
@@ -392,8 +396,8 @@ def fetch_monthly_scores(player_id: int, season: str,
             tdf = tgl.get_data_frames()[0]
             tdf["GAME_DATE"] = pd.to_datetime(tdf["GAME_DATE"])
             team_dates = tdf["GAME_DATE"].sort_values().reset_index(drop=True)
-        except Exception:
-            pass
+    except Exception:
+        pass
 
     months = sorted(pdf["GAME_DATE"].dt.to_period("M").unique())
     rows = []
