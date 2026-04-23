@@ -47,40 +47,60 @@ SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
 
 COMMON_CSS = """
 <style>
-    .main .block-container { padding-left: 0.5rem; padding-right: 0.5rem; max-width: 100%; }
+    /* Push page content below the fixed nav bar */
+    .main .block-container {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+        padding-top: 3.8rem !important;
+        max-width: 100%;
+    }
     #MainMenu { visibility: hidden; }
     header { visibility: hidden; }
     footer { visibility: hidden; }
-    [data-testid="stToolbar"] { display: none !important; }
-    [data-testid="stDecoration"] { display: none !important; }
-    [data-testid="stStatusWidget"] { display: none !important; }
+    [data-testid="stToolbar"]        { display: none !important; }
+    [data-testid="stDecoration"]     { display: none !important; }
+    [data-testid="stStatusWidget"]   { display: none !important; }
     [data-testid="stAppViewerBadge"] { display: none !important; }
-    [data-testid="stBottom"] { display: none !important; }
-    [data-testid="stSidebarNav"] { display: none !important; }
+    [data-testid="stBottom"]         { display: none !important; }
+    [data-testid="stSidebarNav"]     { display: none !important; }
 
-    /* Top nav bar */
-    .top-nav { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    /* Fixed top nav bar */
+    .top-nav {
+        position: fixed;
+        top: 0; left: 0; right: 0;
+        z-index: 9999;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        padding: 0 1.5rem;
+        height: 3rem;
+        background: #0a0a0a;
+        border-bottom: 1px solid #222;
+        flex-wrap: nowrap;
+    }
     .top-nav a {
         text-decoration: none;
-        padding: 0.35rem 0.9rem;
+        padding: 0.3rem 0.85rem;
         border-radius: 20px;
-        font-size: 0.85rem;
+        font-size: 0.82rem;
         font-weight: 600;
-        color: #ccc;
-        border: 1px solid #333;
+        color: #aaa;
+        border: 1px solid transparent;
         transition: all 0.15s;
+        white-space: nowrap;
     }
     .top-nav a:hover { border-color: #e63946; color: #fff; text-decoration: none; }
     .top-nav a.active { background: #e63946; border-color: #e63946; color: #fff; }
     .top-nav .home-link {
-        color: #888;
-        font-size: 0.85rem;
-        font-weight: 400;
-        padding: 0.35rem 0.6rem;
+        color: #666;
+        font-size: 0.82rem;
+        font-weight: 500;
+        padding: 0.3rem 0.7rem;
+        margin-right: 0.25rem;
         border: none;
     }
     .top-nav .home-link:hover { color: #fff; border: none; }
-    .top-nav .divider { color: #444; font-size: 0.8rem; }
+    .top-nav .divider { color: #333; font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 </style>
 """
 
