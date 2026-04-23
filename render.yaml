@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: barrett-score
+    runtime: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    plan: starter          # $7/mo — always-on, no spin-down
+    disk:
+      name: barrett-cache
+      mountPath: /data     # CACHE_DIR in utils.py checks for /data/cache here
+      sizeGB: 1            # ~$1.50/mo — holds all season parquet files easily

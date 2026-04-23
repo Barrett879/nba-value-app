@@ -16,8 +16,11 @@ from nba_api.stats.endpoints import leaguedashplayerstats, playercareerstats, pl
 from nba_api.stats.static import players as nba_players_static
 from nba_api.stats.static import teams as nba_teams_static
 
-# CACHE_DIR is relative to utils.py which lives at the repo root
-CACHE_DIR = Path(__file__).parent / "cache"
+# CACHE_DIR — use Render's persistent disk if mounted, otherwise local fallback.
+# On Render: attach a disk, set mount path to /data, size 1 GB.
+# Locally or on ephemeral deploys: falls back to repo-root /cache (wiped on restart).
+_RENDER_DISK = Path("/data/cache")
+CACHE_DIR = _RENDER_DISK if _RENDER_DISK.parent.exists() else Path(__file__).parent / "cache"
 
 SEASONS = [
     "2025-26", "2024-25", "2023-24", "2022-23", "2021-22", "2020-21", "2019-20",
