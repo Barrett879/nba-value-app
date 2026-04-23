@@ -116,10 +116,10 @@ _NAV_PAGES = [
 
 def render_nav(current: str) -> None:
     """Render the top nav bar. Pass the current page title to highlight it."""
-    links = '<a class="home-link" href="/">⌂ Home</a><span class="divider">|</span>'
+    links = '<a class="home-link" href="/" target="_top">⌂ Home</a><span class="divider">|</span>'
     for label, url in _NAV_PAGES:
         css_class = "active" if label == current else ""
-        links += f'<a class="{css_class}" href="{url}">{label}</a>'
+        links += f'<a class="{css_class}" href="{url}" target="_top">{label}</a>'
     st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
 
 
