@@ -350,24 +350,6 @@ def render_splits_panel(player_name, season):
             "Barrett Score": f"{r['barrett_score']:.2f}",
         })
         row_styles.append("tot_stat" if is_tot else "stat")
-        rows_out.append({
-            "#": "", "Team": "↳ Value",
-            "GP": "-", "MPG": "-", "Total MIN": "-",
-            "PTS": f"{r['PTS']:.2f}",
-            "AST": f"{r['AST'] * 2:.2f}",
-            "OREB": f"{r['OREB'] / 2:.2f}",
-            "DREB": f"{r['DREB'] / 3:.2f}",
-            "BLK": f"{r['BLK'] / 2:.2f}",
-            "STL": f"{r['STL'] / 1.5:.2f}",
-            "TOV": f"{-(r['TOV'] / 1.5):.2f}",
-            "PF": f"{-(r['PF'] / 3):.2f}",
-            "D-LEBRON": f"{r['d_lebron'] * 2:.2f}", "TS%": "-",
-            "Eff. Adj": f"{r['efficiency_adj'] * 2:.2f}",
-            "Base Score": f"{r['base_score']:.2f}",
-            "Avail ×": f"{r['avail_mult']:.3f}",
-            "Barrett Score": f"{r['barrett_score']:.2f}",
-        })
-        row_styles.append("tot_contrib" if is_tot else "contrib")
 
     fmt = pd.DataFrame(rows_out)
 
@@ -375,10 +357,6 @@ def render_splits_panel(player_name, season):
         s = row_styles[row.name]
         if s == "tot_stat":
             return ["font-weight: bold; background-color: #2a2a2a"] * len(row)
-        if s == "tot_contrib":
-            return ["font-weight: bold; background-color: #222; color: #999; font-style: italic"] * len(row)
-        if s == "contrib":
-            return ["color: #888; font-style: italic; background-color: #1c1c1c"] * len(row)
         return [""] * len(row)
 
     st.dataframe(
