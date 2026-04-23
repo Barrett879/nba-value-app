@@ -128,6 +128,7 @@ _season_idx   = SEASONS.index(season)
 _prev_season  = SEASONS[_season_idx + 1] if _season_idx + 1 < len(SEASONS) else None
 _improved_row = None
 _improved_delta = None
+_prev_df = None
 if _prev_season:
     try:
         _prev_raw = build_raw(_prev_season)
@@ -201,129 +202,95 @@ with h4:
 st.divider()
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Top 10 career trend chart
+# Top 10 — current season bar chart
 # ══════════════════════════════════════════════════════════════════════════════
-st.subheader("Top 10 Players — Career Trend")
-st.caption("Barrett Score over the last 10 seasons for this year's top 10 ranked players.")
+st.subheader("Top 10 Players — Barrett Score")
+st.caption(f"Current {season} Barrett Score with change vs prior season.")
 
-_top10 = df.nsmallest(10, "score_rank")[["Player", "PLAYER_ID", "barrett_score"]].reset_index(drop=True)
+import plotly.graph_objects as go
 
-@st.cache_data(ttl=3600, show_spinner=False)
-def _fetch_top10_trends(player_ids: tuple, season: str) -> pd.DataFrame:
-    from concurrent.futures import ThreadPoolExecutor, as_completed
-    from utils import fetch_career_trend
-    rows = []
-    with ThreadPoolExecutor(max_workers=5) as pool:
-        futures = {pool.submit(fetch_career_trend, pid, 10): (pid, name)
-                   for pid, name in player_ids}
-        for future in as_completed(futures):
-            pid, name = futures[future]
-            try:
-                t = future.result()
-                if not t.empty:
-                    t = t.copy()
-                    t["Player"] = name
-                    rows.append(t)
-            except Exception:
-                pass
-    return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
+_top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score"]].reset_index(drop=True)
 
-_pid_name_tuple = tuple(zip(_top10["PLAYER_ID"].tolist(), _top10["Player"].tolist()))
-_trend_df = _fetch_top10_trends(_pid_name_tuple, season)
-
-if not _trend_df.empty:
-    import plotly.graph_objects as go
-
-    # Drop seasons where a player didn't meet the minimum minutes threshold
-    _trend_df = _trend_df[_trend_df["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
-
-    # Override current-season scores with the authoritative values from df
-    # (fetch_career_trend uses PlayerCareerStats totals/GP which can differ
-    # slightly from LeagueDashPlayerStats PerGame used in the main rankings)
-    _authoritative = df.set_index("Player")["barrett_score"]
-    mask = _trend_df["Season"] == season
-    _trend_df.loc[mask, "barrett_score"] = (
-        _trend_df.loc[mask, "Player"].map(_authoritative)
+# Attach prior-season delta if available (reuse _prev_df from Most Improved calc)
+if _prev_df is not None:
+    _top10 = _top10.merge(
+        _prev_df[["Player", "barrett_score"]].rename(columns={"barrett_score": "prev_score"}),
+        on="Player", how="left",
     )
+    _top10["delta"] = _top10["barrett_score"] - _top10["prev_score"]
+else:
+    _top10["delta"] = float("nan")
 
-    _all_seasons = sorted(_trend_df["Season"].unique().tolist())
+# Sort descending so the best player is at the top of the horizontal chart
+_top10 = _top10.sort_values("barrett_score", ascending=True)  # ascending=True → top at top in h-bar
 
-    # Distinct color palette — one per player, consistent order
-    _PALETTE = [
-        "#e63946","#4cc9f0","#f4d03f","#2ecc71","#a855f7",
-        "#ff6b35","#00b4d8","#f72585","#b5e48c","#ffd166",
-    ]
-    _players_ordered = _top10["Player"].tolist()  # sorted by score_rank
-    _color_map = {p: _PALETTE[i % len(_PALETTE)] for i, p in enumerate(_players_ordered)}
+def _delta_label(row):
+    if pd.isna(row["delta"]):
+        return f"{row['barrett_score']:.1f}"
+    sign = "▲" if row["delta"] >= 0 else "▼"
+    color = "#2ecc71" if row["delta"] >= 0 else "#e74c3c"
+    return f"{row['barrett_score']:.1f}  <span style='color:{color};font-size:0.8em'>{sign} {abs(row['delta']):.1f}</span>"
 
-    _fig = go.Figure()
+# Bar colors: red for #1, fading to muted for #10
+_bar_colors = [
+    f"rgba(230,57,70,{0.5 + 0.05*i})" for i in range(len(_top10))
+]
 
-    for player in _players_ordered:
-        pdf = _trend_df[_trend_df["Player"] == player].sort_values("Season")
-        if pdf.empty:
-            continue
-        col = _color_map[player]
+_fig_bar = go.Figure()
+_fig_bar.add_trace(go.Bar(
+    x=_top10["barrett_score"],
+    y=_top10["Player"],
+    orientation="h",
+    marker=dict(
+        color=_bar_colors,
+        line=dict(width=0),
+    ),
+    text=[
+        (f"▲ +{d:.1f}" if d >= 0 else f"▼ {d:.1f}") if not pd.isna(d) else ""
+        for d in _top10["delta"]
+    ],
+    textposition="outside",
+    textfont=dict(
+        size=11,
+        color=[
+            ("#2ecc71" if (not pd.isna(d) and d >= 0) else "#e74c3c") if not pd.isna(d) else "#888"
+            for d in _top10["delta"]
+        ],
+    ),
+    customdata=_top10[["delta"]].values,
+    hovertemplate=(
+        "<b>%{y}</b><br>"
+        "Barrett Score: %{x:.1f}<br>"
+        "vs last season: %{customdata[0]:+.1f}"
+        "<extra></extra>"
+    ),
+))
 
-        # Main line — slightly transparent so overlaps are readable
-        _fig.add_trace(go.Scatter(
-            x=pdf["Season"], y=pdf["barrett_score"],
-            mode="lines+markers",
-            name=player,
-            line=dict(color=col, width=2.5),
-            marker=dict(size=7, color=col, line=dict(width=1, color="rgba(0,0,0,0.35)")),
-            opacity=0.85,
-            hovertemplate=(
-                f"<b>{player}</b><br>"
-                "Season: %{x}<br>"
-                "Barrett Score: %{y:.1f}"
-                "<extra></extra>"
-            ),
-        ))
+_score_max = _top10["barrett_score"].max()
+_fig_bar.update_layout(
+    paper_bgcolor="rgba(0,0,0,0)",
+    plot_bgcolor="rgba(0,0,0,0)",
+    font_color="white",
+    height=360,
+    margin=dict(l=10, r=80, t=10, b=30),
+    showlegend=False,
+    xaxis=dict(
+        range=[0, _score_max * 1.18],
+        gridcolor="rgba(255,255,255,0.06)",
+        showticklabels=True,
+        title="",
+    ),
+    yaxis=dict(
+        gridcolor="rgba(0,0,0,0)",
+        title="",
+        tickfont=dict(size=12),
+    ),
+    hovermode="closest",
+    bargap=0.25,
+)
 
-        # Star on the current season point
-        cur_row = pdf[pdf["Season"] == season]
-        if not cur_row.empty:
-            _fig.add_trace(go.Scatter(
-                x=cur_row["Season"], y=cur_row["barrett_score"],
-                mode="markers",
-                marker=dict(size=16, symbol="star", color=col,
-                            line=dict(width=1.5, color="white")),
-                showlegend=False, hoverinfo="skip",
-            ))
-
-        # Last-name label at the rightmost data point
-        last = pdf.iloc[-1]
-        _fig.add_annotation(
-            x=last["Season"], y=last["barrett_score"],
-            text=f"  {player.split()[-1]}",
-            xanchor="left", yanchor="middle",
-            font=dict(color=col, size=11, family="Arial"),
-            showarrow=False,
-        )
-
-    _fig.update_layout(
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0.15)",
-        font_color="white",
-        height=420,
-        margin=dict(l=50, r=130, t=20, b=60),
-        showlegend=False,
-        xaxis=dict(
-            gridcolor="rgba(255,255,255,0.08)",
-            type="category",
-            categoryorder="array",
-            categoryarray=_all_seasons,
-            title="",
-        ),
-        yaxis=dict(
-            gridcolor="rgba(255,255,255,0.08)",
-            title="Barrett Score",
-            range=[35, 55],
-        ),
-        hovermode="x unified",
-    )
-    st.plotly_chart(_fig, use_container_width=True, config={"displayModeBar": False})
-    st.caption("★ = current season · Click a player name in the chart to isolate their line")
+st.plotly_chart(_fig_bar, use_container_width=True, config={"displayModeBar": False})
+st.caption("▲ / ▼ = change in Barrett Score vs prior season")
 
 st.divider()
 
