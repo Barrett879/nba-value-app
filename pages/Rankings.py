@@ -123,6 +123,25 @@ _best_row      = df.loc[df["barrett_score"].idxmax()]
 _steal_row     = df.loc[df["value_diff"].idxmin()]   # most underpaid
 _overpaid_row  = df.loc[df["value_diff"].idxmax()]   # most overpaid
 
+# Most Improved: compare current season to the previous one
+_season_idx   = SEASONS.index(season)
+_prev_season  = SEASONS[_season_idx + 1] if _season_idx + 1 < len(SEASONS) else None
+_improved_row = None
+_improved_delta = None
+if _prev_season:
+    try:
+        _prev_raw = build_raw(_prev_season)
+        _prev_df  = apply_rankings(apply_projections(_prev_raw, _prev_season), _prev_season)
+        _merged   = df[["Player", "Team", "barrett_score"]].merge(
+            _prev_df[["Player", "barrett_score"]].rename(columns={"barrett_score": "prev_score"}),
+            on="Player", how="inner",
+        )
+        _merged["delta"] = _merged["barrett_score"] - _merged["prev_score"]
+        _improved_row   = _merged.loc[_merged["delta"].idxmax()]
+        _improved_delta = float(_improved_row["delta"])
+    except Exception:
+        pass
+
 st.markdown("""
 <style>
 .hero-card {
@@ -137,7 +156,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-h1, h2, h3 = st.columns(3, gap="medium")
+h1, h2, h3, h4 = st.columns(4, gap="medium")
 with h1:
     st.markdown(f"""
     <div class="hero-card" style="background:#1a2e1a; border:1px solid #2ecc71;">
@@ -161,6 +180,22 @@ with h3:
         <div class="hero-name">{_overpaid_row['Player']}</div>
         <div class="hero-sub">{_overpaid_row['Team']} · ${over_diff:.1f}M above market value</div>
     </div>""", unsafe_allow_html=True)
+with h4:
+    if _improved_row is not None:
+        _sign = "+" if _improved_delta >= 0 else ""
+        st.markdown(f"""
+        <div class="hero-card" style="background:#1a1a2e; border:1px solid #4cc9f0;">
+            <div class="hero-label">Most Improved</div>
+            <div class="hero-name">{_improved_row['Player']}</div>
+            <div class="hero-sub">{_improved_row['Team']} · {_sign}{_improved_delta:.1f} pts vs last season</div>
+        </div>""", unsafe_allow_html=True)
+    else:
+        st.markdown("""
+        <div class="hero-card" style="background:#1a1a2e; border:1px solid #4cc9f0;">
+            <div class="hero-label">Most Improved</div>
+            <div class="hero-name">—</div>
+            <div class="hero-sub">No prior season to compare</div>
+        </div>""", unsafe_allow_html=True)
 
 st.divider()
 
