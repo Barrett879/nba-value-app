@@ -16,7 +16,7 @@ from utils import (
     build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
-    render_nav,
+    render_nav, warm_all_seasons,
 )
 import threading
 
@@ -86,20 +86,8 @@ df["position"] = df["Player"].map(
 _next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v=7)
 _rookie_scale   = fetch_rookie_scale_players(season)
 
-# ── Background cache warming ───────────────────────────────────────────────────
-def _warm_season(s: str) -> None:
-    try:
-        espn_year = season_to_espn_year(s)
-        build_raw(s)
-        fetch_bref_positions(espn_year, cache_v=3)
-        fetch_next_year_contracts(espn_year, cache_v=7)
-        fetch_rookie_scale_players(s)
-    except Exception:
-        pass
-
-_seasons_to_warm = [s for s in SEASONS if s != season][:3]
-for _ws in _seasons_to_warm:
-    threading.Thread(target=_warm_season, args=(_ws,), daemon=True).start()
+# ── Background cache warming (all seasons, bounded thread pool) ───────────────
+warm_all_seasons()
 
 def _fmt_next_contract_local(player_name: str) -> str:
     return fmt_next_contract(player_name, _next_contracts)

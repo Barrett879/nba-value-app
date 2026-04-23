@@ -11,7 +11,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_raw, apply_rankings, apply_projections,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    color_value_diff, render_nav,
+    color_value_diff, render_nav, warm_all_seasons,
 )
 
 st.set_page_config(page_title="Barrett Score — Salary Projector", layout="wide", page_icon="🏀")
@@ -38,6 +38,7 @@ components.html("""
 </script>
 """, height=0)
 
+warm_all_seasons()
 render_nav("💰 Salary Projector")
 
 st.title("Barrett Score — Salary Projector")

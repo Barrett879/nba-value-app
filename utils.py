@@ -690,8 +690,28 @@ def fetch_dlebron(season: str) -> dict:
 
 # ── Build raw data ─────────────────────────────────────────────────────────────
 
+def _raw_disk_path(season: str) -> Path:
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    return CACHE_DIR / f"raw_{season.replace('-', '_')}.parquet"
+
+def _raw_disk_fresh(season: str) -> bool:
+    """True if the on-disk parquet is still within its TTL."""
+    p = _raw_disk_path(season)
+    if not p.exists():
+        return False
+    # Current season refreshes every hour; historical seasons every 24 hours
+    ttl = 3600 if season == SEASONS[0] else 86_400
+    return (time.time() - p.stat().st_mtime) < ttl
+
 @st.cache_data(ttl=3600, show_spinner="Building rankings...")
 def build_raw(season: str) -> pd.DataFrame:
+    # ── Disk cache hit: load parquet instead of hitting the APIs ──────────────
+    if _raw_disk_fresh(season):
+        try:
+            return pd.read_parquet(_raw_disk_path(season))
+        except Exception:
+            pass  # corrupted file — fall through to live fetch
+
     stats = fetch_league_stats(season).copy()
     salaries = fetch_salaries(season_to_espn_year(season))
 
@@ -739,7 +759,7 @@ def build_raw(season: str) -> pd.DataFrame:
     )
     stats["barrett_score"] = stats["base_score"] * stats["avail_mult"]
 
-    return stats[[
+    result = stats[[
         "PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "GP", "MIN", "total_min",
         "base_score", "avail_mult", "barrett_score", "salary",
         "d_lebron", "ts_pct", "efficiency_adj",
@@ -748,6 +768,35 @@ def build_raw(season: str) -> pd.DataFrame:
         "TEAM_ABBREVIATION": "Team",
         "MIN": "MPG",
     })
+
+    # ── Persist to disk so future cold-starts skip the API entirely ───────────
+    try:
+        result.to_parquet(_raw_disk_path(season), index=False)
+    except Exception:
+        pass
+
+    return result
+
+
+def warm_all_seasons() -> None:
+    """Background-warm every season's build_raw + supporting data.
+    Safe to call from a daemon thread — uses a bounded pool so the
+    NBA API isn't hammered. Already-cached seasons return instantly.
+    """
+    def _warm(s: str) -> None:
+        try:
+            build_raw(s)
+            fetch_bref_positions(season_to_espn_year(s), cache_v=3)
+            fetch_next_year_contracts(season_to_espn_year(s), cache_v=7)
+            fetch_rookie_scale_players(s)
+        except Exception:
+            pass
+
+    def _run_pool() -> None:
+        with ThreadPoolExecutor(max_workers=3) as pool:
+            pool.map(_warm, SEASONS)
+
+    threading.Thread(target=_run_pool, daemon=True).start()
 
 
 def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:
