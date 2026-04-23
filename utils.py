@@ -57,8 +57,47 @@ COMMON_CSS = """
     [data-testid="stAppViewerBadge"] { display: none !important; }
     [data-testid="stBottom"] { display: none !important; }
     [data-testid="stSidebarNav"] { display: none !important; }
+
+    /* Top nav bar */
+    .top-nav { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 1rem; flex-wrap: wrap; }
+    .top-nav a {
+        text-decoration: none;
+        padding: 0.35rem 0.9rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: #ccc;
+        border: 1px solid #333;
+        transition: all 0.15s;
+    }
+    .top-nav a:hover { border-color: #e63946; color: #fff; text-decoration: none; }
+    .top-nav a.active { background: #e63946; border-color: #e63946; color: #fff; }
+    .top-nav .home-link {
+        color: #888;
+        font-size: 0.85rem;
+        font-weight: 400;
+        padding: 0.35rem 0.6rem;
+        border: none;
+    }
+    .top-nav .home-link:hover { color: #fff; border: none; }
+    .top-nav .divider { color: #444; font-size: 0.8rem; }
 </style>
 """
+
+_NAV_PAGES = [
+    ("🏆 Rankings",        "/Rankings"),
+    ("💰 Salary Projector", "/Salary_Projector"),
+    ("📊 Team Analysis",    "/Team_Analysis"),
+    ("🆓 Free Agent Class", "/Free_Agent_Class"),
+]
+
+def render_nav(current: str) -> None:
+    """Render the top nav bar. Pass the current page title to highlight it."""
+    links = '<a class="home-link" href="/">⌂ Home</a><span class="divider">|</span>'
+    for label, url in _NAV_PAGES:
+        css_class = "active" if label == current else ""
+        links += f'<a class="{css_class}" href="{url}">{label}</a>'
+    st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
 
 
 # ── Name matching ──────────────────────────────────────────────────────────────
