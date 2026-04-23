@@ -233,10 +233,15 @@ _trend_df = _fetch_top10_trends(_pid_name_tuple, season)
 if not _trend_df.empty:
     import plotly.graph_objects as go
 
+    # Drop seasons where a player didn't meet the minimum minutes threshold
+    # (e.g. rookie year with 200 min — irrelevant and distorts the rankings)
+    _trend_df = _trend_df[_trend_df["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
+
     _all_seasons = sorted(_trend_df["Season"].unique().tolist())
 
     # ── Build rank per season (1 = best Barrett Score that season) ────────────
-    _trend_df = _trend_df.copy()
+    # Rank is among only the top-10 players who qualified that season,
+    # so seasons with fewer active players simply have a shorter range.
     _trend_df["rank"] = (
         _trend_df.groupby("Season")["barrett_score"]
         .rank(ascending=False, method="min")
