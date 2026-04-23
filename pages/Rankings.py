@@ -236,6 +236,16 @@ if not _trend_df.empty:
 
     # Drop seasons where a player didn't meet the minimum minutes threshold
     _trend_df = _trend_df[_trend_df["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
+
+    # Override current-season scores with the authoritative values from df
+    # (fetch_career_trend uses PlayerCareerStats totals/GP which can differ
+    # slightly from LeagueDashPlayerStats PerGame used in the main rankings)
+    _authoritative = df.set_index("Player")["barrett_score"]
+    mask = _trend_df["Season"] == season
+    _trend_df.loc[mask, "barrett_score"] = (
+        _trend_df.loc[mask, "Player"].map(_authoritative)
+    )
+
     _all_seasons = sorted(_trend_df["Season"].unique().tolist())
 
     # Distinct color palette — one per player, consistent order
