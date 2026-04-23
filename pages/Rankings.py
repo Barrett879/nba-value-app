@@ -116,6 +116,122 @@ st.caption(
 )
 st.divider()
 
+# ══════════════════════════════════════════════════════════════════════════════
+# Hero callout cards
+# ══════════════════════════════════════════════════════════════════════════════
+_best_row      = df.loc[df["barrett_score"].idxmax()]
+_steal_row     = df.loc[df["value_diff"].idxmin()]   # most underpaid
+_overpaid_row  = df.loc[df["value_diff"].idxmax()]   # most overpaid
+
+st.markdown("""
+<style>
+.hero-card {
+    border-radius: 12px;
+    padding: 1.1rem 1.3rem;
+    text-align: center;
+    height: 100%;
+}
+.hero-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .08em; opacity: .65; margin-bottom: .25rem; }
+.hero-name  { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
+.hero-sub   { font-size: 0.82rem; margin-top: .35rem; opacity: .75; }
+</style>
+""", unsafe_allow_html=True)
+
+h1, h2, h3 = st.columns(3, gap="medium")
+with h1:
+    st.markdown(f"""
+    <div class="hero-card" style="background:#1a2e1a; border:1px solid #2ecc71;">
+        <div class="hero-label">🏆 Best Player Right Now</div>
+        <div class="hero-name">{_best_row['Player']}</div>
+        <div class="hero-sub">{_best_row['Team']} · Score {_best_row['barrett_score']:.1f}</div>
+    </div>""", unsafe_allow_html=True)
+with h2:
+    steal_diff = abs(_steal_row['value_diff'] / 1e6)
+    st.markdown(f"""
+    <div class="hero-card" style="background:#1a2a1a; border:1px solid #27ae60;">
+        <div class="hero-label">💰 Biggest Steal</div>
+        <div class="hero-name">{_steal_row['Player']}</div>
+        <div class="hero-sub">{_steal_row['Team']} · ${steal_diff:.1f}M below market value</div>
+    </div>""", unsafe_allow_html=True)
+with h3:
+    over_diff = _overpaid_row['value_diff'] / 1e6
+    st.markdown(f"""
+    <div class="hero-card" style="background:#2e1a1a; border:1px solid #e74c3c;">
+        <div class="hero-label">🚨 Most Overpaid</div>
+        <div class="hero-name">{_overpaid_row['Player']}</div>
+        <div class="hero-sub">{_overpaid_row['Team']} · ${over_diff:.1f}M above market value</div>
+    </div>""", unsafe_allow_html=True)
+
+st.divider()
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Top 10 career trend chart
+# ══════════════════════════════════════════════════════════════════════════════
+st.subheader("Top 10 Players — Career Trend")
+st.caption("Barrett Score over the last 10 seasons for this year's top 10 ranked players.")
+
+_top10 = df.nsmallest(10, "score_rank")[["Player", "PLAYER_ID", "barrett_score"]].reset_index(drop=True)
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _fetch_top10_trends(player_ids: tuple, season: str) -> pd.DataFrame:
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from utils import fetch_career_trend
+    rows = []
+    with ThreadPoolExecutor(max_workers=5) as pool:
+        futures = {pool.submit(fetch_career_trend, pid, 10): (pid, name)
+                   for pid, name in player_ids}
+        for future in as_completed(futures):
+            pid, name = futures[future]
+            try:
+                t = future.result()
+                if not t.empty:
+                    t = t.copy()
+                    t["Player"] = name
+                    rows.append(t)
+            except Exception:
+                pass
+    return pd.concat(rows, ignore_index=True) if rows else pd.DataFrame()
+
+_pid_name_tuple = tuple(zip(_top10["PLAYER_ID"].tolist(), _top10["Player"].tolist()))
+_trend_df = _fetch_top10_trends(_pid_name_tuple, season)
+
+if not _trend_df.empty:
+    _all_seasons = sorted(_trend_df["Season"].unique().tolist())
+    _fig_top10 = px.line(
+        _trend_df, x="Season", y="barrett_score",
+        color="Player", markers=True,
+        labels={"barrett_score": "Barrett Score", "Season": ""},
+        height=380,
+        category_orders={"Season": _all_seasons},
+    )
+    # Star the current season
+    _cur = _trend_df[_trend_df["Season"] == season]
+    if not _cur.empty:
+        _fig_top10.add_scatter(
+            x=_cur["Season"], y=_cur["barrett_score"],
+            mode="markers",
+            marker=dict(size=14, symbol="star", color="white",
+                        line=dict(width=1, color="black")),
+            showlegend=False, hoverinfo="skip",
+        )
+    _fig_top10.update_traces(line=dict(width=2), marker=dict(size=7),
+                              selector=dict(mode="lines+markers"))
+    _fig_top10.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0.15)",
+        font_color="white",
+        margin=dict(l=50, r=50, t=20, b=80),
+        xaxis=dict(gridcolor="rgba(255,255,255,0.08)", type="category",
+                   categoryorder="array", categoryarray=_all_seasons),
+        yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score"),
+        legend=dict(orientation="h", x=0.5, xanchor="center",
+                    y=-0.22, yanchor="top", title=""),
+    )
+    st.plotly_chart(_fig_top10, use_container_width=True, config={"displayModeBar": False})
+    st.caption("★ = current season")
+
+st.divider()
+
 # ── Rookie-scale style helper (closes over _rookie_scale) ──────────────────────
 def _style_rookie_salary(row):
     return style_rookie_salary(row, _rookie_scale)
