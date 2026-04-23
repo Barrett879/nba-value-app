@@ -335,6 +335,129 @@ def fetch_player_season_splits(player_id: int, season: str,
     return _player_season_splits_raw(player_id, season, d_lebron_val, league_avg_ts, season_games)
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_monthly_scores(player_id: int, season: str,
+                          d_lebron_val: float = 0.0,
+                          league_avg_ts_val: float = 0.57) -> pd.DataFrame:
+    """Cumulative season-to-date Barrett Score at the end of each calendar month.
+
+    Each row represents all games played from opening night through the last
+    game of that month — so January's score includes Oct + Nov + Dec + Jan.
+    Availability multiplier uses team games played through that month (not 82)
+    so a player who misses no games in the first 30 gets full credit.
+    """
+    from nba_api.stats.endpoints import playergamelog, teamgamelog
+
+    # ── Player game log ───────────────────────────────────────────────────────
+    gl = None
+    delay = 1
+    while gl is None:
+        try:
+            gl = playergamelog.PlayerGameLog(player_id=player_id, season=season)
+        except Exception:
+            time.sleep(delay)
+            delay = min(delay * 2, 30)
+
+    pdf = gl.get_data_frames()[0]
+    if pdf.empty:
+        return pd.DataFrame()
+
+    pdf["GAME_DATE"] = pd.to_datetime(pdf["GAME_DATE"])
+    pdf = pdf.sort_values("GAME_DATE").reset_index(drop=True)
+
+    # MIN arrives as "36:24" strings in some seasons — convert to decimal
+    if pdf["MIN"].dtype == object:
+        def _parse_min(m):
+            try:
+                parts = str(m).split(":")
+                return float(parts[0]) + (float(parts[1]) / 60 if len(parts) > 1 else 0)
+            except Exception:
+                return 0.0
+        pdf["MIN"] = pdf["MIN"].apply(_parse_min)
+    pdf["MIN"] = pd.to_numeric(pdf["MIN"], errors="coerce").fillna(0.0)
+
+    # ── Team game log (to know how many games the team has played each month) ─
+    team_id = int(pdf["Team_ID"].iloc[0]) if "Team_ID" in pdf.columns else None
+    team_dates = pd.Series(dtype="datetime64[ns]")
+    if team_id:
+        try:
+            tgl = None
+            delay = 1
+            while tgl is None:
+                try:
+                    tgl = teamgamelog.TeamGameLog(team_id=team_id, season=season)
+                except Exception:
+                    time.sleep(delay)
+                    delay = min(delay * 2, 30)
+            tdf = tgl.get_data_frames()[0]
+            tdf["GAME_DATE"] = pd.to_datetime(tdf["GAME_DATE"])
+            team_dates = tdf["GAME_DATE"].sort_values().reset_index(drop=True)
+        except Exception:
+            pass
+
+    months = sorted(pdf["GAME_DATE"].dt.to_period("M").unique())
+    rows = []
+
+    for month in months:
+        cutoff = month.to_timestamp(how="end")
+
+        # Player's cumulative games through month end
+        sub = pdf[pdf["GAME_DATE"] <= cutoff]
+        gp = len(sub)
+        if gp < 3:
+            continue
+
+        # Team games played through month end (for accurate avail multiplier)
+        if not team_dates.empty:
+            team_gp = int((team_dates <= cutoff).sum())
+        else:
+            team_gp = SEASON_GAMES_LOOKUP.get(season, 82)  # fallback to season max
+
+        total_min = float(sub["MIN"].sum())
+
+        # Cumulative per-game averages
+        pts  = sub["PTS"].sum()  / gp
+        ast  = sub["AST"].sum()  / gp
+        oreb = sub["OREB"].sum() / gp
+        dreb = sub["DREB"].sum() / gp
+        blk  = sub["BLK"].sum()  / gp
+        stl  = sub["STL"].sum()  / gp
+        tov  = sub["TOV"].sum()  / gp
+        pf   = sub["PF"].sum()   / gp
+
+        total_fga = sub["FGA"].sum()
+        total_fta = sub["FTA"].sum()
+        denom = 2 * (total_fga + 0.44 * total_fta)
+        ts_pct = sub["PTS"].sum() / denom if denom > 0 else float("nan")
+
+        eff_adj = 0.0
+        if (total_fga / gp) >= 2.0 and not pd.isna(ts_pct):
+            eff_adj = float(min(max(0.15 * (ts_pct - league_avg_ts_val) * 100, -4), 4))
+
+        bs = (pts + ast * 2 + oreb / 2 + dreb / 3 + blk / 2 + stl / 1.5
+              - tov / 1.5 - pf / 3 + d_lebron_val * 2 + eff_adj * 2)
+
+        # avail_mult uses team_gp as the season-games denominator so that
+        # appearing in 30/30 team games = full availability, not 30/82
+        min_cap = team_gp * (2500 / 82)
+        avail = 0.75 + 0.25 * math.sqrt(
+            (gp / team_gp) * min(total_min / min_cap, 1)
+        )
+        barrett = bs * avail
+
+        rows.append({
+            "Month":         month.strftime("%b '%y"),
+            "month_order":   str(month),
+            "GP":            gp,
+            "team_GP":       team_gp,
+            "base_score":    round(bs, 2),
+            "avail_mult":    round(avail, 3),
+            "barrett_score": round(barrett, 2),
+        })
+
+    return pd.DataFrame(rows)
+
+
 @st.cache_data(ttl=3600, show_spinner="Fetching career trend...")
 def fetch_career_trend(player_id: int, num_seasons: int = 5) -> pd.DataFrame:
     """Barrett Score for each of the player's last N seasons, with real D-LEBRON."""

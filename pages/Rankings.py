@@ -13,7 +13,7 @@ from utils import (
     build_raw, apply_rankings, apply_projections,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     fetch_dlebron, fetch_career_trend, fetch_player_season_splits,
-    build_splits_data,
+    fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
     render_nav, warm_all_seasons,
@@ -775,6 +775,84 @@ if new_selected:
                 caption += (f"  ·  ⚠️ D-LEBRON unavailable for "
                             f"{', '.join(no_dlebron)} — defensive ratings set to 0 those seasons")
             st.caption(caption)
+
+        # ── Monthly cumulative trend (single-player only) ─────────────────────
+        if len(new_selected) == 1:
+            _solo = new_selected[0]
+            if _solo in player_id_map_full:
+                _solo_pid    = player_id_map_full[_solo]
+                _solo_dleb   = float(dlebron_lookup.get(_solo_pid, 0.0))
+                _monthly     = fetch_monthly_scores(_solo_pid, season, _solo_dleb, league_avg_ts)
+                if not _monthly.empty:
+                    st.markdown(f"#### {_solo} — {season} Monthly Cumulative Score")
+                    st.caption("Each point is the cumulative season-to-date Barrett Score through end of that month.")
+
+                    _season_score = float(df.loc[df["Player"] == _solo, "barrett_score"].iloc[0]) \
+                        if _solo in df["Player"].values else None
+
+                    _mfig = go.Figure()
+
+                    # Shaded area under the line
+                    _mfig.add_trace(go.Scatter(
+                        x=_monthly["Month"], y=_monthly["barrett_score"],
+                        mode="lines",
+                        line=dict(color="rgba(230,57,70,0)"),
+                        fill="tozeroy",
+                        fillcolor="rgba(230,57,70,0.08)",
+                        showlegend=False, hoverinfo="skip",
+                    ))
+
+                    # Main line
+                    _mfig.add_trace(go.Scatter(
+                        x=_monthly["Month"], y=_monthly["barrett_score"],
+                        mode="lines+markers",
+                        line=dict(color="#e63946", width=2.5),
+                        marker=dict(size=8, color="#e63946",
+                                    line=dict(width=1.5, color="white")),
+                        customdata=_monthly[["GP", "team_GP", "avail_mult", "base_score"]].values,
+                        hovertemplate=(
+                            "<b>%{x}</b><br>"
+                            "Barrett Score: <b>%{y:.1f}</b><br>"
+                            "GP: %{customdata[0]} / %{customdata[1]} team games<br>"
+                            "Avail ×: %{customdata[2]:.3f}<br>"
+                            "Base Score: %{customdata[3]:.2f}"
+                            "<extra></extra>"
+                        ),
+                        name="Barrett Score",
+                        showlegend=False,
+                    ))
+
+                    # Dashed reference line for full-season score
+                    if _season_score is not None:
+                        _mfig.add_hline(
+                            y=_season_score,
+                            line=dict(color="rgba(255,255,255,0.3)", width=1.5, dash="dot"),
+                            annotation_text=f"Season avg {_season_score:.1f}",
+                            annotation_position="top right",
+                            annotation_font=dict(color="rgba(255,255,255,0.5)", size=11),
+                        )
+
+                    _mfig.update_layout(
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(0,0,0,0.12)",
+                        font_color="white",
+                        height=300,
+                        margin=dict(l=50, r=30, t=20, b=40),
+                        xaxis=dict(
+                            gridcolor="rgba(255,255,255,0.06)",
+                            type="category",
+                            categoryorder="array",
+                            categoryarray=_monthly["Month"].tolist(),
+                            title="",
+                        ),
+                        yaxis=dict(
+                            gridcolor="rgba(255,255,255,0.06)",
+                            title="Barrett Score",
+                        ),
+                        hovermode="x unified",
+                    )
+                    st.plotly_chart(_mfig, use_container_width=True,
+                                    config={"displayModeBar": False})
 
         for name in new_selected:
             title_col, btn_col = st.columns([20, 1])
