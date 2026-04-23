@@ -131,7 +131,8 @@ _improved_delta = None
 if _prev_season:
     try:
         _prev_raw = build_raw(_prev_season)
-        _prev_df  = apply_rankings(apply_projections(_prev_raw, _prev_season), _prev_season)
+        _prev_df  = apply_projections(apply_rankings(_prev_raw))
+        _prev_df  = _prev_df[_prev_df["total_min"] >= DEFAULT_MIN_THRESHOLD]
         _merged   = df[["Player", "Team", "barrett_score"]].merge(
             _prev_df[["Player", "barrett_score"]].rename(columns={"barrett_score": "prev_score"}),
             on="Player", how="inner",
