@@ -141,7 +141,7 @@ h1, h2, h3 = st.columns(3, gap="medium")
 with h1:
     st.markdown(f"""
     <div class="hero-card" style="background:#1a2e1a; border:1px solid #2ecc71;">
-        <div class="hero-label">🏆 Best Player Right Now</div>
+        <div class="hero-label">Best Player Right Now</div>
         <div class="hero-name">{_best_row['Player']}</div>
         <div class="hero-sub">{_best_row['Team']} · Score {_best_row['barrett_score']:.1f}</div>
     </div>""", unsafe_allow_html=True)
@@ -149,7 +149,7 @@ with h2:
     steal_diff = abs(_steal_row['value_diff'] / 1e6)
     st.markdown(f"""
     <div class="hero-card" style="background:#1a2a1a; border:1px solid #27ae60;">
-        <div class="hero-label">💰 Biggest Steal</div>
+        <div class="hero-label">Biggest Steal</div>
         <div class="hero-name">{_steal_row['Player']}</div>
         <div class="hero-sub">{_steal_row['Team']} · ${steal_diff:.1f}M below market value</div>
     </div>""", unsafe_allow_html=True)
@@ -157,7 +157,7 @@ with h3:
     over_diff = _overpaid_row['value_diff'] / 1e6
     st.markdown(f"""
     <div class="hero-card" style="background:#2e1a1a; border:1px solid #e74c3c;">
-        <div class="hero-label">🚨 Most Overpaid</div>
+        <div class="hero-label">Most Overpaid</div>
         <div class="hero-name">{_overpaid_row['Player']}</div>
         <div class="hero-sub">{_overpaid_row['Team']} · ${over_diff:.1f}M above market value</div>
     </div>""", unsafe_allow_html=True)
