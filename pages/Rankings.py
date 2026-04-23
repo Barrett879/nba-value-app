@@ -196,39 +196,99 @@ _pid_name_tuple = tuple(zip(_top10["PLAYER_ID"].tolist(), _top10["Player"].tolis
 _trend_df = _fetch_top10_trends(_pid_name_tuple, season)
 
 if not _trend_df.empty:
+    import plotly.graph_objects as go
+
     _all_seasons = sorted(_trend_df["Season"].unique().tolist())
-    _fig_top10 = px.line(
-        _trend_df, x="Season", y="barrett_score",
-        color="Player", markers=True,
-        labels={"barrett_score": "Barrett Score", "Season": ""},
-        height=380,
-        category_orders={"Season": _all_seasons},
+
+    # ── Build rank per season (1 = best Barrett Score that season) ────────────
+    _trend_df = _trend_df.copy()
+    _trend_df["rank"] = (
+        _trend_df.groupby("Season")["barrett_score"]
+        .rank(ascending=False, method="min")
+        .astype(int)
     )
-    # Star the current season
-    _cur = _trend_df[_trend_df["Season"] == season]
-    if not _cur.empty:
-        _fig_top10.add_scatter(
-            x=_cur["Season"], y=_cur["barrett_score"],
-            mode="markers",
-            marker=dict(size=14, symbol="star", color="white",
-                        line=dict(width=1, color="black")),
-            showlegend=False, hoverinfo="skip",
+
+    # Distinct color palette — one per player, consistent order
+    _PALETTE = [
+        "#e63946","#4cc9f0","#f4d03f","#2ecc71","#a855f7",
+        "#ff6b35","#00b4d8","#f72585","#b5e48c","#ffd166",
+    ]
+    _players_ordered = _top10["Player"].tolist()  # already sorted by score_rank
+    _color_map = {p: _PALETTE[i % len(_PALETTE)] for i, p in enumerate(_players_ordered)}
+
+    _fig_bump = go.Figure()
+
+    for player in _players_ordered:
+        pdf = _trend_df[_trend_df["Player"] == player].sort_values("Season")
+        if pdf.empty:
+            continue
+        col = _color_map[player]
+
+        # Main line
+        _fig_bump.add_trace(go.Scatter(
+            x=pdf["Season"], y=pdf["rank"],
+            mode="lines+markers",
+            name=player,
+            line=dict(color=col, width=2.5),
+            marker=dict(size=8, color=col, line=dict(width=1.5, color="rgba(0,0,0,0.4)")),
+            customdata=pdf[["barrett_score"]].values,
+            hovertemplate=(
+                f"<b>{player}</b><br>"
+                "Season: %{x}<br>"
+                "Rank: #%{y}<br>"
+                "Barrett Score: %{customdata[0]:.1f}"
+                "<extra></extra>"
+            ),
+        ))
+
+        # Star on current season
+        cur_row = pdf[pdf["Season"] == season]
+        if not cur_row.empty:
+            _fig_bump.add_trace(go.Scatter(
+                x=cur_row["Season"], y=cur_row["rank"],
+                mode="markers",
+                marker=dict(size=16, symbol="star", color=col,
+                            line=dict(width=1.5, color="white")),
+                showlegend=False, hoverinfo="skip",
+            ))
+
+        # End-of-line label (rightmost season)
+        last = pdf.iloc[-1]
+        _fig_bump.add_annotation(
+            x=last["Season"], y=last["rank"],
+            text=f"  {player.split()[-1]}",   # last name only to save space
+            xanchor="left", yanchor="middle",
+            font=dict(color=col, size=11, family="Arial"),
+            showarrow=False,
         )
-    _fig_top10.update_traces(line=dict(width=2), marker=dict(size=7),
-                              selector=dict(mode="lines+markers"))
-    _fig_top10.update_layout(
+
+    _n_ranks = int(_trend_df["rank"].max())
+    _fig_bump.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0.15)",
         font_color="white",
-        margin=dict(l=50, r=50, t=20, b=80),
-        xaxis=dict(gridcolor="rgba(255,255,255,0.08)", type="category",
-                   categoryorder="array", categoryarray=_all_seasons),
-        yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score"),
-        legend=dict(orientation="h", x=0.5, xanchor="center",
-                    y=-0.22, yanchor="top", title=""),
+        height=420,
+        margin=dict(l=40, r=130, t=20, b=60),
+        showlegend=False,
+        xaxis=dict(
+            gridcolor="rgba(255,255,255,0.08)",
+            type="category",
+            categoryorder="array",
+            categoryarray=_all_seasons,
+            title="",
+        ),
+        yaxis=dict(
+            gridcolor="rgba(255,255,255,0.08)",
+            title="Rank",
+            autorange="reversed",        # #1 at the top
+            tickmode="linear", dtick=1,
+            range=[0.5, _n_ranks + 0.5],
+            tickprefix="#",
+        ),
+        hovermode="closest",
     )
-    st.plotly_chart(_fig_top10, use_container_width=True, config={"displayModeBar": False})
-    st.caption("★ = current season")
+    st.plotly_chart(_fig_bump, use_container_width=True, config={"displayModeBar": False})
+    st.caption("★ = current season · Rank is relative to other top-10 players that season")
 
 st.divider()
 
