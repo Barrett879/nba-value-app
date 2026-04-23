@@ -752,6 +752,12 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
 @st.cache_data(ttl=86400, show_spinner=False)
 def fetch_rookie_scale_players(season: str) -> set:
     """Returns a set of normalized names for players on rookie scale contracts."""
+    path = _dc_path(f"rookie_scale_{season.replace('-','_')}.pkl")
+    if _dc_fresh(path, ttl=86400):
+        try:
+            return _pkl_load(path)
+        except Exception:
+            pass
     try:
         end_year = int(season.split("-")[0]) + 1
         rookie_draft_years = set(range(end_year - 3, end_year + 1))
@@ -769,6 +775,7 @@ def fetch_rookie_scale_players(season: str) -> set:
             if draft_year in rookie_draft_years and draft_round == 1:
                 full_name = f"{row['PLAYER_FIRST_NAME']} {row['PLAYER_LAST_NAME']}".strip()
                 rookies.add(normalize(full_name))
+        _pkl_save(path, rookies)
         return rookies
     except Exception:
         return set()
@@ -899,8 +906,12 @@ def build_raw(season: str) -> pd.DataFrame:
         except Exception:
             pass  # corrupted file — fall through to live fetch
 
-    stats = fetch_league_stats(season).copy()
-    salaries = fetch_salaries(season_to_espn_year(season))
+    # Fetch stats + salaries in parallel — saves ~5s on cold cache misses
+    with ThreadPoolExecutor(max_workers=2) as _pool:
+        _stats_f = _pool.submit(fetch_league_stats, season)
+        _sal_f   = _pool.submit(fetch_salaries, season_to_espn_year(season))
+        stats    = _stats_f.result().copy()
+        salaries = _sal_f.result()
 
     sal_lookup = {normalize(n): s for n, s in zip(salaries["name"], salaries["salary"])}
     stats["salary"] = stats["PLAYER_NAME"].apply(lambda n: sal_lookup.get(normalize(n)))
@@ -980,10 +991,19 @@ def warm_all_seasons() -> None:
             pass
 
     def _run_pool() -> None:
-        with ThreadPoolExecutor(max_workers=3) as pool:
+        with ThreadPoolExecutor(max_workers=5) as pool:
             pool.map(_warm, SEASONS)
 
     threading.Thread(target=_run_pool, daemon=True).start()
+
+
+@st.cache_resource
+def _bootstrap_warm() -> None:
+    """Fires warm_all_seasons exactly once per server process — not once per
+    user or per rerun. Called at module import time from app.py so warming
+    begins the moment Streamlit boots, before any user arrives.
+    """
+    warm_all_seasons()
 
 
 def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:

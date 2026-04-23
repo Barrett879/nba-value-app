@@ -12,7 +12,7 @@ from utils import (
     build_raw, apply_rankings, apply_projections,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract,
-    color_next_contract, style_rookie_salary, color_value_diff, render_nav, warm_all_seasons,
+    color_next_contract, style_rookie_salary, color_value_diff, render_nav, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Barrett Score — Free Agent Class", layout="wide", page_icon="🏀")
@@ -39,7 +39,7 @@ components.html("""
 </script>
 """, height=0)
 
-warm_all_seasons()
+_bootstrap_warm()
 render_nav("🆓 Free Agent Class")
 
 st.title("Barrett Score — Free Agent Class")

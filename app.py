@@ -1,4 +1,13 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent))
+
 import streamlit as st
+from utils import _bootstrap_warm
+
+# Start warming all season caches the moment the server boots —
+# before any user arrives, so the first visitor doesn't pay the cost.
+_bootstrap_warm()
 
 st.set_page_config(page_title="Barrett Score", layout="wide", page_icon="🏀")
 

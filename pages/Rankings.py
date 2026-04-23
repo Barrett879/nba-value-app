@@ -16,7 +16,7 @@ from utils import (
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
-    render_nav, warm_all_seasons,
+    render_nav, _bootstrap_warm,
 )
 import threading
 
@@ -87,7 +87,7 @@ _next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v
 _rookie_scale   = fetch_rookie_scale_players(season)
 
 # ── Background cache warming (all seasons, bounded thread pool) ───────────────
-warm_all_seasons()
+_bootstrap_warm()
 
 def _fmt_next_contract_local(player_name: str) -> str:
     return fmt_next_contract(player_name, _next_contracts)
