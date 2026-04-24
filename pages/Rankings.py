@@ -10,7 +10,7 @@ import plotly.express as px
 from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD, SEASON_GAMES_LOOKUP,
     normalize, season_to_espn_year,
-    build_ranked_projected,
+    build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     fetch_dlebron, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
@@ -386,8 +386,16 @@ def render_splits_panel(player_name, season):
 
 
 # ── Compare players (multiselect) ─────────────────────────────────────────
+_all_seasons = build_all_seasons_combined()
+_career_avg_rnk = (
+    _all_seasons.groupby("Player")["barrett_score"].mean()
+    .reset_index()
+    .rename(columns={"barrett_score": "avg_score"})
+    .sort_values("avg_score", ascending=False)
+)
+_current_players = set(df["Player"].unique())
 all_player_names = (
-    df.sort_values("barrett_score", ascending=False)["Player"].unique().tolist()
+    _career_avg_rnk[_career_avg_rnk["Player"].isin(_current_players)]["Player"].tolist()
 )
 compare_selected = st.multiselect(
     "Compare players",
