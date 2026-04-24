@@ -251,9 +251,9 @@ with tab_arc:
         else:
             # Sort matches by avg career Barrett Score descending
             arc_matches_sorted = (
-                _career_avg.loc[_career_avg.index.isin(arc_matches)]
-                .sort_values("avg_score", ascending=False)
-                .index.tolist()
+                _career_avg[_career_avg["Player"].isin(arc_matches)]
+                .sort_values("avg_score", ascending=False)["Player"]
+                .tolist()
             )
             # If multiple matches, let user pick
             if len(arc_matches_sorted) > 1:
