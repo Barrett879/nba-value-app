@@ -66,6 +66,8 @@ COMMON_CSS = """
     [data-testid="stAppViewerBadge"] { display: none !important; }
     [data-testid="stBottom"]         { display: none !important; }
     [data-testid="stSidebarNav"]     { display: none !important; }
+    [data-testid="stSidebar"]        { display: none !important; }
+    section[data-testid="stSidebar"] { display: none !important; }
 
     /* Fixed top nav bar */
     .top-nav {

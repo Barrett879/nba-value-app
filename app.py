@@ -24,6 +24,8 @@ st.markdown("""
     [data-testid="stAppViewerBadge"] { display: none !important; }
     [data-testid="stBottom"]         { display: none !important; }
     [data-testid="stSidebarNav"]     { display: none !important; }
+    [data-testid="stSidebar"]        { display: none !important; }
+    section[data-testid="stSidebar"] { display: none !important; }
     .viewerBadge_container__r5tak    { display: none !important; }
     .styles_viewerBadge__CvC9N       { display: none !important; }
 
