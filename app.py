@@ -82,7 +82,6 @@ col1, col2, col3 = st.columns(3, gap="medium")
 with col1:
     st.markdown("""
     <a class="nav-card" href="/Rankings" target="_top">
-
         <div class="nav-title">Rankings</div>
         <div class="nav-desc">Every NBA player ranked by Barrett Score. Filter by team, position, and season going back to 2006.</div>
         <span class="nav-cta">Open Rankings →</span>
@@ -91,7 +90,6 @@ with col1:
 with col2:
     st.markdown("""
     <a class="nav-card" href="/Salary_Projector" target="_top">
-
         <div class="nav-title">Salary Projector</div>
         <div class="nav-desc">See what every player should earn based on their Barrett Score rank versus their actual contract.</div>
         <span class="nav-cta">Open Projector →</span>
@@ -100,7 +98,6 @@ with col2:
 with col3:
     st.markdown("""
     <a class="nav-card" href="/Team_Analysis" target="_top">
-
         <div class="nav-title">Team Analysis</div>
         <div class="nav-desc">Aggregate Barrett Scores by team to find the best and worst roster construction in the league.</div>
         <span class="nav-cta">Open Teams →</span>
@@ -114,7 +111,6 @@ _, col4, col5, _ = st.columns([0.5, 1, 1, 0.5], gap="medium")
 with col4:
     st.markdown("""
     <a class="nav-card" href="/Free_Agent_Class" target="_top">
-
         <div class="nav-title">Free Agent Class</div>
         <div class="nav-desc">UFAs, player options, and team options ranked by Barrett Score — a GM's offseason draft board.</div>
         <span class="nav-cta">Open Free Agents →</span>
@@ -123,7 +119,6 @@ with col4:
 with col5:
     st.markdown("""
     <a class="nav-card" href="/Legacy" target="_top">
-
         <div class="nav-title">Legacy</div>
         <div class="nav-desc">The historical record — all-time rankings, career arcs, era leaderboards, team Mount Rushmores, and more.</div>
         <span class="nav-cta">Open Legacy →</span>
