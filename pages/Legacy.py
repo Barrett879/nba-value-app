@@ -238,32 +238,21 @@ with tab_arc:
         "Every season they appear in the data is shown, including injury years."
     )
 
-    arc_search = st.text_input(
-        "Search player", "", key="arc_search",
-        placeholder="e.g. LeBron James, Steph Curry, Nikola Jokic…"
+    _arc_options = (
+        _career_avg.sort_values("avg_score", ascending=False)["Player"].tolist()
+    )
+    arc_player = st.selectbox(
+        "Select player",
+        options=_arc_options,
+        index=None,
+        placeholder="Search by name — sorted by career avg Barrett Score…",
+        key="arc_player_select",
     )
 
-    if arc_search:
-        # Search against the full combined pool first just to get a name match
-        arc_matches = all_df[all_df["Player"].str.contains(arc_search, case=False)]["Player"].unique()
-        if len(arc_matches) == 0:
-            st.info("No player found. Try a different spelling.")
-        else:
-            # Sort matches by avg career Barrett Score descending
-            arc_matches_sorted = (
-                _career_avg[_career_avg["Player"].isin(arc_matches)]
-                .sort_values("avg_score", ascending=False)["Player"]
-                .tolist()
-            )
-            # If multiple matches, let user pick
-            if len(arc_matches_sorted) > 1:
-                arc_player = st.selectbox("Select player", arc_matches_sorted, key="arc_player_pick")
-            else:
-                arc_player = arc_matches_sorted[0] if arc_matches_sorted else arc_matches[0]
-
-            # Load every season this player appeared in — no minutes threshold
-            with st.spinner(f"Loading full career for {arc_player}…"):
-                _career_raw = fetch_player_career_all_seasons(arc_player)
+    if arc_player:
+        # Load every season this player appeared in — no minutes threshold
+        with st.spinner(f"Loading full career for {arc_player}…"):
+            _career_raw = fetch_player_career_all_seasons(arc_player)
 
             if _career_raw.empty:
                 arc_df = pd.DataFrame()
