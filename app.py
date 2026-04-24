@@ -27,7 +27,7 @@ st.markdown("""
     .viewerBadge_container__r5tak    { display: none !important; }
     .styles_viewerBadge__CvC9N       { display: none !important; }
 
-    /* Clickable nav card — flex column so CTA always pins to bottom */
+    /* Clickable nav card */
     a.nav-card {
         display: flex;
         flex-direction: column;
@@ -40,7 +40,7 @@ st.markdown("""
         text-decoration: none;
         transition: border-color 0.2s, transform 0.15s;
         cursor: pointer;
-        height: 100%;
+        min-height: 260px;
         box-sizing: border-box;
     }
     a.nav-card:hover {
@@ -63,17 +63,6 @@ st.markdown("""
         flex-shrink: 0;
     }
     a.nav-card:hover .nav-cta { background: #c1121f; }
-    /* Card grid: 3-up top row, 2-up centered bottom row */
-    .nav-grid {
-        display: grid;
-        grid-template-columns: repeat(6, 1fr);
-        gap: 1.25rem;
-        max-width: 1100px;
-        margin: 0 auto 2rem auto;
-    }
-    .nav-grid .card-top  { grid-column: span 2; }
-    .nav-grid .card-bot1 { grid-column: 2 / span 2; }
-    .nav-grid .card-bot2 { grid-column: 4 / span 2; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -89,57 +78,58 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Nav cards — 3 top, 2 centered bottom ──────────────────────────────────────
-st.markdown("""
-<div class="nav-grid">
+# ── Nav cards — row 1: 3 cards ────────────────────────────────────────────────
+col1, col2, col3 = st.columns(3, gap="medium")
+with col1:
+    st.markdown("""
+    <a class="nav-card" href="/Rankings" target="_top">
+        <div class="nav-icon">🏆</div>
+        <div class="nav-title">Rankings</div>
+        <div class="nav-desc">Every NBA player ranked by Barrett Score. Filter by team, position, and season going back to 2006.</div>
+        <span class="nav-cta">Open Rankings →</span>
+    </a>
+    """, unsafe_allow_html=True)
+with col2:
+    st.markdown("""
+    <a class="nav-card" href="/Salary_Projector" target="_top">
+        <div class="nav-icon">💰</div>
+        <div class="nav-title">Salary Projector</div>
+        <div class="nav-desc">See what every player should earn based on their Barrett Score rank versus their actual contract.</div>
+        <span class="nav-cta">Open Projector →</span>
+    </a>
+    """, unsafe_allow_html=True)
+with col3:
+    st.markdown("""
+    <a class="nav-card" href="/Team_Analysis" target="_top">
+        <div class="nav-icon">📊</div>
+        <div class="nav-title">Team Analysis</div>
+        <div class="nav-desc">Aggregate Barrett Scores by team to find the best and worst roster construction in the league.</div>
+        <span class="nav-cta">Open Teams →</span>
+    </a>
+    """, unsafe_allow_html=True)
 
-    <div class="card-top">
-        <a class="nav-card" href="/Rankings" target="_top">
-            <div class="nav-icon">🏆</div>
-            <div class="nav-title">Rankings</div>
-            <div class="nav-desc">Every NBA player ranked by Barrett Score. Filter by team, position, and season going back to 2006.</div>
-            <span class="nav-cta">Open Rankings →</span>
-        </a>
-    </div>
+st.markdown("<div style='margin-top:0.75rem'></div>", unsafe_allow_html=True)
 
-    <div class="card-top">
-        <a class="nav-card" href="/Salary_Projector" target="_top">
-            <div class="nav-icon">💰</div>
-            <div class="nav-title">Salary Projector</div>
-            <div class="nav-desc">See what every player should earn based on their Barrett Score rank versus their actual contract.</div>
-            <span class="nav-cta">Open Projector →</span>
-        </a>
-    </div>
-
-    <div class="card-top">
-        <a class="nav-card" href="/Team_Analysis" target="_top">
-            <div class="nav-icon">📊</div>
-            <div class="nav-title">Team Analysis</div>
-            <div class="nav-desc">Aggregate Barrett Scores by team to find the best and worst roster construction in the league.</div>
-            <span class="nav-cta">Open Teams →</span>
-        </a>
-    </div>
-
-    <div class="card-bot1">
-        <a class="nav-card" href="/Free_Agent_Class" target="_top">
-            <div class="nav-icon">🆓</div>
-            <div class="nav-title">Free Agent Class</div>
-            <div class="nav-desc">UFAs, player options, and team options ranked by Barrett Score — a GM's offseason draft board.</div>
-            <span class="nav-cta">Open Free Agents →</span>
-        </a>
-    </div>
-
-    <div class="card-bot2">
-        <a class="nav-card" href="/Legacy" target="_top">
-            <div class="nav-icon">🏛️</div>
-            <div class="nav-title">Legacy</div>
-            <div class="nav-desc">The historical record — all-time rankings, career arcs, era leaderboards, team Mount Rushmores, and more.</div>
-            <span class="nav-cta">Open Legacy →</span>
-        </a>
-    </div>
-
-</div>
-""", unsafe_allow_html=True)
+# ── Nav cards — row 2: 2 cards centered ───────────────────────────────────────
+_, col4, col5, _ = st.columns([0.5, 1, 1, 0.5], gap="medium")
+with col4:
+    st.markdown("""
+    <a class="nav-card" href="/Free_Agent_Class" target="_top">
+        <div class="nav-icon">🆓</div>
+        <div class="nav-title">Free Agent Class</div>
+        <div class="nav-desc">UFAs, player options, and team options ranked by Barrett Score — a GM's offseason draft board.</div>
+        <span class="nav-cta">Open Free Agents →</span>
+    </a>
+    """, unsafe_allow_html=True)
+with col5:
+    st.markdown("""
+    <a class="nav-card" href="/Legacy" target="_top">
+        <div class="nav-icon">🏛️</div>
+        <div class="nav-title">Legacy</div>
+        <div class="nav-desc">The historical record — all-time rankings, career arcs, era leaderboards, team Mount Rushmores, and more.</div>
+        <span class="nav-cta">Open Legacy →</span>
+    </a>
+    """, unsafe_allow_html=True)
 
 # ── Footer ─────────────────────────────────────────────────────────────────────
 st.markdown("""
