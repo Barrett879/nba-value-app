@@ -82,7 +82,7 @@ _, col1, col2, _ = st.columns([0.5, 1, 1, 0.5], gap="medium")
 with col1:
     st.markdown("""
     <a class="nav-card" href="/Rankings" target="_top">
-        <div class="nav-title">Rankings</div>
+        <div class="nav-title">Current Rankings</div>
         <div class="nav-desc">Every NBA player ranked by Barrett Score. Filter by team, position, and season going back to 2006.</div>
         <span class="nav-cta">Open Rankings →</span>
     </a>
@@ -103,9 +103,9 @@ col3, col4, col5 = st.columns(3, gap="medium")
 with col3:
     st.markdown("""
     <a class="nav-card" href="/Salary_Projector" target="_top">
-        <div class="nav-title">Salary Projector</div>
+        <div class="nav-title">Visualizer</div>
         <div class="nav-desc">See what every player should earn based on their Barrett Score rank versus their actual contract.</div>
-        <span class="nav-cta">Open Projector →</span>
+        <span class="nav-cta">Open Visualizer →</span>
     </a>
     """, unsafe_allow_html=True)
 with col4:
@@ -119,9 +119,9 @@ with col4:
 with col5:
     st.markdown("""
     <a class="nav-card" href="/Free_Agent_Class" target="_top">
-        <div class="nav-title">Free Agent Class</div>
+        <div class="nav-title">Current Free Agency</div>
         <div class="nav-desc">UFAs, player options, and team options ranked by Barrett Score — a GM's offseason draft board.</div>
-        <span class="nav-cta">Open Free Agents →</span>
+        <span class="nav-cta">Open Free Agency →</span>
     </a>
     """, unsafe_allow_html=True)
 
