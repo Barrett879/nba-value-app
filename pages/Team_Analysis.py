@@ -9,7 +9,7 @@ import plotly.express as px
 from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
     normalize, season_to_espn_year,
-    build_raw, apply_rankings, apply_projections,
+    build_ranked_projected,
     fetch_bref_positions, render_nav, _bootstrap_warm,
 )
 
@@ -54,9 +54,7 @@ with ctrl_r:
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
-raw = build_raw(season)
-df = apply_rankings(raw)
-df = apply_projections(df)
+df = build_ranked_projected(season)
 df = df[df["total_min"] >= min_threshold]
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)

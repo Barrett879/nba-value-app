@@ -9,7 +9,7 @@ import plotly.express as px
 from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
     normalize, season_to_espn_year,
-    build_raw, apply_rankings, apply_projections,
+    build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, _bootstrap_warm,
@@ -56,9 +56,7 @@ with ctrl_r:
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
-raw = build_raw(season)
-df = apply_rankings(raw)
-df = apply_projections(df)
+df = build_ranked_projected(season)
 df = df[df["total_min"] >= min_threshold]
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
@@ -199,7 +197,7 @@ st.dataframe(
         "Next $":        st.column_config.TextColumn("Next $",
             help="Option value or — for UFAs. Blue (PO) = player option. Orange (TO) = team option.",
             width="medium"),
-        "Status":        st.column_config.TextColumn(
+        "Status":        st.column_config.TextColumn(width="medium",
             help="UFA = unrestricted free agent. RFA = restricted (team has right of first refusal on offer sheets). "
                  "Player Option = player controls opt-out. Team Option = team controls whether to keep player."),
         "Pos":           st.column_config.TextColumn("Pos", width="small"),

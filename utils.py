@@ -896,8 +896,8 @@ def _raw_disk_fresh(season: str) -> bool:
     p = _raw_disk_path(season)
     if not p.exists():
         return False
-    # Current season refreshes every hour; historical seasons every 24 hours
-    ttl = 3600 if season == SEASONS[0] else 86_400
+    # Current season refreshes every hour; historical seasons every 30 days
+    ttl = 3600 if season == SEASONS[0] else 30 * 86_400
     return (time.time() - p.stat().st_mtime) < ttl
 
 @st.cache_data(ttl=3600, show_spinner="Building rankings...")
@@ -980,9 +980,8 @@ def build_raw(season: str) -> pd.DataFrame:
 
 
 def warm_all_seasons() -> None:
-    """Background-warm every season's build_raw + supporting data.
-    Safe to call from a daemon thread — uses a bounded pool so the
-    NBA API isn't hammered. Already-cached seasons return instantly.
+    """Background-warm historical seasons. Current season is already warmed
+    synchronously by _bootstrap_warm, so we skip it here to avoid duplicate work.
     """
     def _warm(s: str) -> None:
         try:
@@ -994,8 +993,9 @@ def warm_all_seasons() -> None:
             pass
 
     def _run_pool() -> None:
+        historical = SEASONS[1:]  # current season already warm
         with ThreadPoolExecutor(max_workers=5) as pool:
-            pool.map(_warm, SEASONS)
+            pool.map(_warm, historical)
         # After all individual seasons are warm, pre-build the combined legacy dataset
         try:
             build_all_seasons_combined()
@@ -1011,10 +1011,21 @@ def warm_all_seasons() -> None:
 
 @st.cache_resource
 def _bootstrap_warm() -> None:
-    """Fires warm_all_seasons exactly once per server process — not once per
-    user or per rerun. Called at module import time from app.py so warming
-    begins the moment Streamlit boots, before any user arrives.
+    """Fires once per server process. Current season is warmed synchronously so
+    the first user never hits a cold build_raw. Historical seasons warm in a
+    background thread so startup doesn't block.
     """
+    # Warm current season + its supporting data synchronously — eliminates
+    # the race condition where background threads haven't finished when the
+    # first user hits the Rankings page.
+    try:
+        build_ranked_projected(SEASONS[0])
+        fetch_bref_positions(season_to_espn_year(SEASONS[0]), cache_v=3)
+        fetch_next_year_contracts(season_to_espn_year(SEASONS[0]), cache_v=7)
+        fetch_rookie_scale_players(SEASONS[0])
+    except Exception:
+        pass
+    # Remaining seasons in the background
     warm_all_seasons()
 
 
@@ -1112,6 +1123,12 @@ def fetch_player_career_all_seasons(player_name: str) -> pd.DataFrame:
     combined["_season_year"] = combined["Season"].apply(lambda s: int(s.split("-")[0]))
     combined = combined.sort_values("_season_year").reset_index(drop=True)
     return combined
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def build_ranked_projected(season: str) -> pd.DataFrame:
+    """Full pipeline — build_raw + apply_rankings + apply_projections — cached."""
+    return apply_projections(apply_rankings(build_raw(season)))
 
 
 def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:

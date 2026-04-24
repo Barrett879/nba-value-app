@@ -10,7 +10,7 @@ import plotly.express as px
 from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD, SEASON_GAMES_LOOKUP,
     normalize, season_to_espn_year,
-    build_raw, apply_rankings, apply_projections,
+    build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     fetch_dlebron, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
@@ -68,14 +68,12 @@ with ctrl_r:
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
-raw = build_raw(season)
-df = apply_rankings(raw)
-df = apply_projections(df)
+df = build_ranked_projected(season)
 df = df[df["total_min"] >= min_threshold]
 
 salary_lookup = tuple(
     (normalize(row["Player"]), row["salary"])
-    for _, row in raw.iterrows()
+    for _, row in df.iterrows()
 )
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
@@ -119,8 +117,7 @@ _improved_delta = None
 _prev_df = None
 if _prev_season:
     try:
-        _prev_raw = build_raw(_prev_season)
-        _prev_df  = apply_projections(apply_rankings(_prev_raw))
+        _prev_df  = build_ranked_projected(_prev_season)
         _prev_df  = _prev_df[_prev_df["total_min"] >= DEFAULT_MIN_THRESHOLD]
         _merged   = df[["Player", "Team", "barrett_score"]].merge(
             _prev_df[["Player", "barrett_score"]].rename(columns={"barrett_score": "prev_score"}),
@@ -387,7 +384,9 @@ def render_splits_panel(player_name, season):
 
 
 # ── Compare players (multiselect) ─────────────────────────────────────────
-all_player_names = sorted(df["Player"].unique().tolist())
+all_player_names = (
+    df.sort_values("barrett_score", ascending=False)["Player"].unique().tolist()
+)
 compare_selected = st.multiselect(
     "Compare players",
     options=all_player_names,

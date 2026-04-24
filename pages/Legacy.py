@@ -249,11 +249,17 @@ with tab_arc:
         if len(arc_matches) == 0:
             st.info("No player found. Try a different spelling.")
         else:
+            # Sort matches by avg career Barrett Score descending
+            arc_matches_sorted = (
+                _career_avg.loc[_career_avg.index.isin(arc_matches)]
+                .sort_values("avg_score", ascending=False)
+                .index.tolist()
+            )
             # If multiple matches, let user pick
-            if len(arc_matches) > 1:
-                arc_player = st.selectbox("Select player", sorted(arc_matches), key="arc_player_pick")
+            if len(arc_matches_sorted) > 1:
+                arc_player = st.selectbox("Select player", arc_matches_sorted, key="arc_player_pick")
             else:
-                arc_player = arc_matches[0]
+                arc_player = arc_matches_sorted[0] if arc_matches_sorted else arc_matches[0]
 
             # Load every season this player appeared in — no minutes threshold
             with st.spinner(f"Loading full career for {arc_player}…"):
