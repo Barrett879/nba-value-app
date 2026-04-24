@@ -235,7 +235,7 @@ with tab_arc:
     st.subheader("Career Arc")
     st.caption(
         "How did a player's Barrett Score evolve over their career? "
-        "Only seasons where they met the minutes threshold (≥500) are shown."
+        "Every season they appear in the data is shown, including injury years."
     )
 
     arc_search = st.text_input(
@@ -332,6 +332,7 @@ with tab_arc:
                     annotation_font_color="rgba(255,255,255,0.5)",
                 )
 
+                n_seasons = len(arc_df)
                 fig_arc.update_layout(
                     title=f"{arc_player} — Barrett Score by Season",
                     xaxis_title="",
@@ -340,8 +341,16 @@ with tab_arc:
                     plot_bgcolor="rgba(0,0,0,0.15)",
                     font_color="white",
                     height=420,
-                    margin=dict(t=50, b=20, r=120),
-                    xaxis=dict(gridcolor="rgba(255,255,255,0.07)", tickangle=-35),
+                    margin=dict(t=50, b=60, r=120),
+                    xaxis=dict(
+                        type="category",                          # prevent date parsing
+                        range=[-0.5, n_seasons - 0.5],           # show every season
+                        categoryorder="array",
+                        categoryarray=arc_df["Season"].tolist(),  # preserve chron order
+                        gridcolor="rgba(255,255,255,0.07)",
+                        tickangle=-40,
+                        tickfont=dict(size=11),
+                    ),
                     yaxis=dict(gridcolor="rgba(255,255,255,0.1)"),
                     showlegend=False,
                 )
