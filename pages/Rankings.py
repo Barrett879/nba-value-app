@@ -242,11 +242,13 @@ _fig_bar.add_trace(go.Bar(
             for d in _top10["delta"]
         ],
     ),
-    customdata=_top10[["delta"]].values,
+    customdata=_top10["delta"].apply(
+        lambda d: f"{d:+.1f}" if not pd.isna(d) else "—"
+    ).values,
     hovertemplate=(
         "<b>%{y}</b><br>"
         "Barrett Score: %{x:.1f}<br>"
-        "vs last season: %{customdata[0]:+.1f}"
+        "vs last season: %{customdata[0]}"
         "<extra></extra>"
     ),
 ))
