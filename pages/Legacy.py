@@ -351,7 +351,7 @@ with tab_arc:
                         tickangle=-40,
                         tickfont=dict(size=11),
                     ),
-                    yaxis=dict(gridcolor="rgba(255,255,255,0.1)"),
+                    yaxis=dict(gridcolor="rgba(255,255,255,0.1)", tickformat=".1f"),
                     showlegend=False,
                 )
                 st.plotly_chart(fig_arc, use_container_width=True, config={"displayModeBar": False})
@@ -468,7 +468,7 @@ with tab_team:
             font_color="white",
             height=300,
             margin=dict(t=50, b=20, l=20, r=60),
-            xaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score"),
+            xaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score", tickformat=".1f"),
             yaxis=dict(gridcolor="rgba(0,0,0,0)"),
         )
         st.plotly_chart(fig_rush, use_container_width=True, config={"displayModeBar": False})
@@ -562,8 +562,8 @@ with tab_long:
         font_color="white",
         coloraxis_showscale=False,
         margin=dict(t=20, b=20),
-        xaxis=dict(gridcolor="rgba(255,255,255,0.08)"),
-        yaxis=dict(gridcolor="rgba(255,255,255,0.08)"),
+        xaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat="d"),
+        yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat=".1f"),
     )
     # Label top 10
     top_long = long_df.head(10)
@@ -703,8 +703,8 @@ with tab_rec:
                     plot_bgcolor="rgba(0,0,0,0.15)",
                     font_color="white",
                     margin=dict(t=40, b=10),
-                    xaxis=dict(gridcolor="rgba(255,255,255,0.07)", tickangle=-30),
-                    yaxis=dict(gridcolor="rgba(255,255,255,0.08)"),
+                    xaxis=dict(gridcolor="rgba(255,255,255,0.07)", tickangle=-30, type="category"),
+                    yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat=".1f"),
                 )
                 st.plotly_chart(fig_fall, use_container_width=True, config={"displayModeBar": False})
 
@@ -801,7 +801,7 @@ with tab_draft:
                     font_color="white",
                     legend=dict(orientation="v", x=1.01, y=1, font_size=10),
                     margin=dict(t=50, b=20, r=140),
-                    xaxis=dict(gridcolor="rgba(255,255,255,0.07)", tickangle=-30),
-                    yaxis=dict(gridcolor="rgba(255,255,255,0.08)"),
+                    xaxis=dict(gridcolor="rgba(255,255,255,0.07)", tickangle=-30, type="category"),
+                    yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat=".1f"),
                 )
                 st.plotly_chart(fig_class, use_container_width=True, config={"displayModeBar": False})

@@ -108,7 +108,7 @@ fig_teams.update_layout(
     font_color="white",
     coloraxis_showscale=False,
     xaxis=dict(gridcolor="rgba(255,255,255,0.05)", categoryorder="total ascending"),
-    yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickprefix="$", ticksuffix="M"),
+    yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickprefix="$", ticksuffix="M", tickformat=".1f"),
     margin=dict(t=50, b=20),
 )
 st.plotly_chart(fig_teams, use_container_width=True, config={"displayModeBar": False})

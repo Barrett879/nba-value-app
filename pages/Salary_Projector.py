@@ -138,11 +138,11 @@ fig.update_layout(
     paper_bgcolor="rgba(0,0,0,0)",
     plot_bgcolor="rgba(0,0,0,0.15)",
     font_color="white",
-    coloraxis_colorbar=dict(title="Δ ($M)"),
+    coloraxis_colorbar=dict(title="Δ ($M)", tickformat=".1f"),
     xaxis=dict(gridcolor="rgba(255,255,255,0.1)", tickprefix="$", ticksuffix="M",
-               range=[0, axis_max]),
+               tickformat=".1f", range=[0, axis_max]),
     yaxis=dict(gridcolor="rgba(255,255,255,0.1)", tickprefix="$", ticksuffix="M",
-               range=[0, axis_max]),
+               tickformat=".1f", range=[0, axis_max]),
 )
 st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": True, "displaylogo": False})
 

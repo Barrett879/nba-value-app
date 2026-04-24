@@ -249,7 +249,7 @@ if not fa_display.empty:
             labels={"position": "", "count": "Players", "Status": ""},
             height=320,
             category_orders={"position": ["Guard", "Forward", "Center"]},
-            text_auto=True,
+            text_auto="d",
         )
         fig_fa.update_layout(
             paper_bgcolor="rgba(0,0,0,0)",
@@ -257,7 +257,7 @@ if not fa_display.empty:
             font_color="white",
             margin=dict(t=20, b=20),
             xaxis=dict(gridcolor="rgba(255,255,255,0.05)"),
-            yaxis=dict(gridcolor="rgba(255,255,255,0.08)"),
+            yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat="d"),
             legend=dict(orientation="h", x=0.5, xanchor="center", y=1.1),
         )
         st.plotly_chart(fig_fa, use_container_width=True, config={"displayModeBar": False})

@@ -266,6 +266,7 @@ _fig_bar.update_layout(
         range=[0, _score_max * 1.18],
         gridcolor="rgba(255,255,255,0.06)",
         showticklabels=True,
+        tickformat=".1f",
         title="",
     ),
     yaxis=dict(
@@ -737,7 +738,7 @@ if new_selected:
                            type="category",
                            categoryorder="array",
                            categoryarray=selected_seasons),
-                yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score"),
+                yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score", tickformat=".1f"),
                 legend=dict(
                     orientation="h",
                     x=0.5, xanchor="center",
@@ -826,6 +827,7 @@ if new_selected:
                         yaxis=dict(
                             gridcolor="rgba(255,255,255,0.06)",
                             title="Barrett Score",
+                            tickformat=".1f",
                         ),
                         hovermode="x unified",
                     )
