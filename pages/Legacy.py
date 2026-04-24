@@ -238,16 +238,26 @@ with tab_arc:
         "Every season they appear in the data is shown, including injury years."
     )
 
-    _arc_options = (
-        _career_avg.sort_values("avg_score", ascending=False)["Player"].tolist()
+    _arc_all = _career_avg.sort_values("avg_score", ascending=False)["Player"].tolist()
+    arc_search = st.text_input(
+        "Search player", "", key="arc_search",
+        placeholder="Type a name to filter…",
     )
-    arc_player = st.selectbox(
-        "Select player",
-        options=_arc_options,
-        index=None,
-        placeholder="Search by name — sorted by career avg Barrett Score…",
-        key="arc_player_select",
+    _arc_filtered = (
+        [p for p in _arc_all if arc_search.lower() in p.lower()]
+        if arc_search else _arc_all
     )
+    if not _arc_filtered:
+        st.info("No player found.")
+        arc_player = None
+    else:
+        arc_player = st.selectbox(
+            "Select player",
+            options=_arc_filtered,
+            index=0 if arc_search else None,
+            placeholder="— browse or search above —",
+            key="arc_player_select",
+        )
 
     if arc_player:
         # Load every season this player appeared in — no minutes threshold
