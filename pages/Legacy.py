@@ -11,6 +11,7 @@ from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
     normalize,
     build_all_seasons_combined, fetch_draft_classes,
+    fetch_player_career_all_seasons,
     render_nav, _bootstrap_warm,
 )
 
@@ -243,6 +244,7 @@ with tab_arc:
     )
 
     if arc_search:
+        # Search against the full combined pool first just to get a name match
         arc_matches = all_df[all_df["Player"].str.contains(arc_search, case=False)]["Player"].unique()
         if len(arc_matches) == 0:
             st.info("No player found. Try a different spelling.")
@@ -253,14 +255,22 @@ with tab_arc:
             else:
                 arc_player = arc_matches[0]
 
-            arc_df = (
-                all_df[all_df["Player"] == arc_player]
-                .sort_values("_season_year")[["Season", "barrett_score", "Team", "score_rank", "salary"]]
-                .reset_index(drop=True)
-            )
+            # Load every season this player appeared in — no minutes threshold
+            with st.spinner(f"Loading full career for {arc_player}…"):
+                _career_raw = fetch_player_career_all_seasons(arc_player)
+
+            if _career_raw.empty:
+                arc_df = pd.DataFrame()
+            else:
+                arc_df = (
+                    _career_raw
+                    .sort_values("_season_year")
+                    [["Season", "_season_year", "barrett_score", "Team", "score_rank", "salary", "total_min", "GP"]]
+                    .reset_index(drop=True)
+                )
 
             if arc_df.empty:
-                st.info("No qualifying seasons found.")
+                st.info("No seasons found for this player.")
             else:
                 peak_idx  = arc_df["barrett_score"].idxmax()
                 peak_row  = arc_df.loc[peak_idx]
@@ -268,7 +278,7 @@ with tab_arc:
 
                 # Summary metrics
                 mc1, mc2, mc3, mc4 = st.columns(4)
-                mc1.metric("Seasons Qualified", len(arc_df))
+                mc1.metric("Seasons in Data", len(arc_df))
                 mc2.metric("Peak Score", f"{peak_row['barrett_score']:.1f}", f"({peak_row['Season']})")
                 mc3.metric("Career Average", f"{avg_score:.1f}")
                 mc4.metric("Peak Season Rank", f"#{peak_row['score_rank']}")
@@ -338,20 +348,22 @@ with tab_arc:
                 st.plotly_chart(fig_arc, use_container_width=True, config={"displayModeBar": False})
 
                 # Season-by-season table
-                arc_tbl = arc_df.copy()
+                arc_tbl = arc_df[["Season", "barrett_score", "Team", "score_rank", "GP", "total_min", "salary"]].copy()
                 arc_tbl["salary"] = arc_tbl["salary"] / 1e6
-                arc_tbl.columns = ["Season", "Barrett Score", "Team", "Season Rank", "Salary $M"]
+                arc_tbl.columns = ["Season", "Barrett Score", "Team", "Season Rank", "GP", "Total Min", "Salary $M"]
                 st.dataframe(
                     arc_tbl.style.highlight_max(subset=["Barrett Score"], color="#4a3500", axis=0),
                     column_config={
                         "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
                         "Salary $M":     st.column_config.NumberColumn(format="$%.2fM"),
+                        "Total Min":     st.column_config.NumberColumn(help="Total minutes played that season."),
+                        "GP":            st.column_config.NumberColumn(help="Games played."),
                     },
                     use_container_width=True,
                     hide_index=True,
                 )
     else:
-        st.info("👆 Type a player name above to see their career arc.")
+        st.info("Type a player name above to see their career arc.")
 
 
 # ─────────────────────────────────────────────────────────────────────────────

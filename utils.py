@@ -1083,6 +1083,35 @@ def fetch_draft_classes() -> pd.DataFrame:
                                      "ROUND_NUMBER", "ROUND_PICK", "OVERALL_PICK"])
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_player_career_all_seasons(player_name: str) -> pd.DataFrame:
+    """Return every season a player appears in raw data, regardless of minutes played.
+
+    Uses per-season apply_rankings so score_rank reflects their true league rank
+    that year.  No minutes threshold — injury years, cameo seasons all included.
+    """
+    name_norm = normalize(player_name)
+    frames: list[pd.DataFrame] = []
+    for season in SEASONS:
+        try:
+            raw  = build_raw(season)
+            mask = raw["Player"].apply(normalize) == name_norm
+            if not mask.any():
+                continue
+            ranked = apply_rankings(raw)
+            row    = ranked[mask].copy()
+            row["Season"] = season
+            frames.append(row)
+        except Exception:
+            pass
+    if not frames:
+        return pd.DataFrame()
+    combined = pd.concat(frames, ignore_index=True)
+    combined["_season_year"] = combined["Season"].apply(lambda s: int(s.split("-")[0]))
+    combined = combined.sort_values("_season_year").reset_index(drop=True)
+    return combined
+
+
 def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["score_rank"]  = df["barrett_score"].rank(ascending=False, method="min").astype(int)
