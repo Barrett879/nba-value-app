@@ -737,7 +737,9 @@ with tab_draft:
                 .reset_index()
             )
             class_peaks["player_norm"] = class_peaks["Player"].apply(normalize)
-            class_summary = class_peaks.merge(draft_info, on="player_norm", how="left")
+            # Drop draft_info's own "Player" column before merging to avoid Player_x / Player_y
+            _draft_info_merge = draft_info.drop(columns=["Player"], errors="ignore")
+            class_summary = class_peaks.merge(_draft_info_merge, on="player_norm", how="left")
             class_summary = class_summary.sort_values("peak_score", ascending=False).reset_index(drop=True)
 
             mc1, mc2 = st.columns([1, 2])
