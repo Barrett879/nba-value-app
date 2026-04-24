@@ -77,8 +77,8 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# ── Nav cards — row 1: 3 cards ────────────────────────────────────────────────
-col1, col2, col3 = st.columns(3, gap="medium")
+# ── Nav cards — row 1: Rankings + Legacy (2 centered) ─────────────────────────
+_, col1, col2, _ = st.columns([0.5, 1, 1, 0.5], gap="medium")
 with col1:
     st.markdown("""
     <a class="nav-card" href="/Rankings" target="_top">
@@ -89,13 +89,26 @@ with col1:
     """, unsafe_allow_html=True)
 with col2:
     st.markdown("""
+    <a class="nav-card" href="/Legacy" target="_top">
+        <div class="nav-title">Legacy</div>
+        <div class="nav-desc">The historical record — all-time rankings, career arcs, era leaderboards, team Mount Rushmores, and more.</div>
+        <span class="nav-cta">Open Legacy →</span>
+    </a>
+    """, unsafe_allow_html=True)
+
+st.markdown("<div style='margin-top:0.75rem'></div>", unsafe_allow_html=True)
+
+# ── Nav cards — row 2: Salary Projector, Team Analysis, Free Agent Class ───────
+col3, col4, col5 = st.columns(3, gap="medium")
+with col3:
+    st.markdown("""
     <a class="nav-card" href="/Salary_Projector" target="_top">
         <div class="nav-title">Salary Projector</div>
         <div class="nav-desc">See what every player should earn based on their Barrett Score rank versus their actual contract.</div>
         <span class="nav-cta">Open Projector →</span>
     </a>
     """, unsafe_allow_html=True)
-with col3:
+with col4:
     st.markdown("""
     <a class="nav-card" href="/Team_Analysis" target="_top">
         <div class="nav-title">Team Analysis</div>
@@ -103,25 +116,12 @@ with col3:
         <span class="nav-cta">Open Teams →</span>
     </a>
     """, unsafe_allow_html=True)
-
-st.markdown("<div style='margin-top:0.75rem'></div>", unsafe_allow_html=True)
-
-# ── Nav cards — row 2: 2 cards centered ───────────────────────────────────────
-_, col4, col5, _ = st.columns([0.5, 1, 1, 0.5], gap="medium")
-with col4:
+with col5:
     st.markdown("""
     <a class="nav-card" href="/Free_Agent_Class" target="_top">
         <div class="nav-title">Free Agent Class</div>
         <div class="nav-desc">UFAs, player options, and team options ranked by Barrett Score — a GM's offseason draft board.</div>
         <span class="nav-cta">Open Free Agents →</span>
-    </a>
-    """, unsafe_allow_html=True)
-with col5:
-    st.markdown("""
-    <a class="nav-card" href="/Legacy" target="_top">
-        <div class="nav-title">Legacy</div>
-        <div class="nav-desc">The historical record — all-time rankings, career arcs, era leaderboards, team Mount Rushmores, and more.</div>
-        <span class="nav-cta">Open Legacy →</span>
     </a>
     """, unsafe_allow_html=True)
 
