@@ -20,7 +20,7 @@ from utils import (
 )
 import threading
 
-st.set_page_config(page_title="Barrett Score — Rankings", layout="wide", page_icon="🏀")
+st.set_page_config(page_title="Barrett Score — Rankings", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
@@ -44,7 +44,7 @@ components.html("""
 </script>
 """, height=0)
 
-render_nav("🏆 Rankings")
+render_nav("Rankings")
 
 st.title("Barrett Score — NBA Contract Value Rankings")
 st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
@@ -570,7 +570,7 @@ if show_splits and splits_df is not None:
     dl_col, cap_col = st.columns([1, 5])
     with dl_col:
         st.download_button(
-            "⬇ Export CSV",
+            "Export CSV",
             data=sfmt.to_csv(index=False),
             file_name=f"barrett_score_splits_{season}.csv",
             mime="text/csv",
@@ -657,7 +657,7 @@ else:
     dl_col_r, cap_col_r = st.columns([1, 5])
     with dl_col_r:
         st.download_button(
-            "⬇ Export CSV",
+            "Export CSV",
             data=display_fmt.to_csv(index=False),
             file_name=f"barrett_score_{season}.csv",
             mime="text/csv",

@@ -13,7 +13,7 @@ from utils import (
     fetch_bref_positions, render_nav, _bootstrap_warm,
 )
 
-st.set_page_config(page_title="Barrett Score — Team Analysis", layout="wide", page_icon="🏀")
+st.set_page_config(page_title="Barrett Score — Team Analysis", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
@@ -38,7 +38,7 @@ components.html("""
 """, height=0)
 
 _bootstrap_warm()
-render_nav("📊 Team Analysis")
+render_nav("Team Analysis")
 
 st.title("Barrett Score — Team Analysis")
 

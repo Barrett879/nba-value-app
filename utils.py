@@ -108,16 +108,16 @@ COMMON_CSS = """
 """
 
 _NAV_PAGES = [
-    ("🏆 Rankings",        "/Rankings"),
-    ("💰 Salary Projector", "/Salary_Projector"),
-    ("📊 Team Analysis",    "/Team_Analysis"),
-    ("🆓 Free Agent Class", "/Free_Agent_Class"),
-    ("🏛️ Legacy",          "/Legacy"),
+    ("Rankings",        "/Rankings"),
+    ("Salary Projector", "/Salary_Projector"),
+    ("Team Analysis",    "/Team_Analysis"),
+    ("Free Agent Class", "/Free_Agent_Class"),
+    ("Legacy",           "/Legacy"),
 ]
 
 def render_nav(current: str) -> None:
     """Render the top nav bar. Pass the current page title to highlight it."""
-    links = '<a class="home-link" href="/" target="_top">⌂ Home</a><span class="divider">|</span>'
+    links = '<a class="home-link" href="/" target="_top">Home</a><span class="divider">|</span>'
     for label, url in _NAV_PAGES:
         css_class = "active" if label == current else ""
         links += f'<a class="{css_class}" href="{url}" target="_top">{label}</a>'

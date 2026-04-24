@@ -14,7 +14,7 @@ from utils import (
     render_nav, _bootstrap_warm,
 )
 
-st.set_page_config(page_title="Barrett Score — Legacy", layout="wide", page_icon="🏀")
+st.set_page_config(page_title="Barrett Score — Legacy", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
@@ -39,7 +39,7 @@ components.html("""
 """, height=0)
 
 _bootstrap_warm()
-render_nav("🏛️ Legacy")
+render_nav("Legacy")
 
 st.title("Barrett Score — Legacy")
 st.caption(
@@ -137,13 +137,13 @@ st.divider()
 # Tabs
 # ══════════════════════════════════════════════════════════════════════════════
 tab_rank, tab_arc, tab_era, tab_team, tab_long, tab_rec, tab_draft = st.tabs([
-    "🏅 All-Time Rankings",
-    "📈 Career Arc",
-    "🗓️ Era Leaderboards",
-    "🏟️ Team Legacy",
-    "💎 Sustained Excellence",
-    "📉 Records",
-    "🎓 Draft Class",
+    "All-Time Rankings",
+    "Career Arc",
+    "Era Leaderboards",
+    "Team Legacy",
+    "Sustained Excellence",
+    "Records",
+    "Draft Class",
 ])
 
 
@@ -579,7 +579,7 @@ with tab_long:
 # Tab 6: Records (Most Undervalued + The Fall)
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_rec:
-    rec_sub1, rec_sub2 = st.tabs(["💰 Most Undervalued Ever", "📉 The Fall"])
+    rec_sub1, rec_sub2 = st.tabs(["Most Undervalued Ever", "The Fall"])
 
     with rec_sub1:
         st.subheader("Most Undervalued Seasons in NBA History")

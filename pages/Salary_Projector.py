@@ -14,7 +14,7 @@ from utils import (
     color_value_diff, render_nav, _bootstrap_warm,
 )
 
-st.set_page_config(page_title="Barrett Score — Salary Projector", layout="wide", page_icon="🏀")
+st.set_page_config(page_title="Barrett Score — Salary Projector", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
@@ -39,7 +39,7 @@ components.html("""
 """, height=0)
 
 _bootstrap_warm()
-render_nav("💰 Salary Projector")
+render_nav("Salary Projector")
 
 st.title("Barrett Score — Salary Projector")
 

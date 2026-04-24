@@ -15,7 +15,7 @@ from utils import (
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, _bootstrap_warm,
 )
 
-st.set_page_config(page_title="Barrett Score — Free Agent Class", layout="wide", page_icon="🏀")
+st.set_page_config(page_title="Barrett Score — Free Agent Class", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
@@ -40,7 +40,7 @@ components.html("""
 """, height=0)
 
 _bootstrap_warm()
-render_nav("🆓 Free Agent Class")
+render_nav("Free Agent Class")
 
 st.title("Barrett Score — Free Agent Class")
 
@@ -212,7 +212,7 @@ st.dataframe(
 fa_dl_col, fa_cap_col = st.columns([1, 5])
 with fa_dl_col:
     st.download_button(
-        "⬇ Export CSV",
+        "Export CSV",
         data=fa_fmt.to_csv(index=False),
         file_name=f"barrett_score_free_agents_{season}.csv",
         mime="text/csv",
