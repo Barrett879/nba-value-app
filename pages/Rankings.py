@@ -92,7 +92,7 @@ def _fmt_next_contract_local(player_name: str) -> str:
 
 df["next_contract"] = df["Player"].apply(_fmt_next_contract_local)
 
-season_games = int(raw["GP"].max())
+season_games = int(df["GP"].max())
 splits_mpg_lookup = df.set_index("Player")["MPG"]
 
 st.caption(
@@ -290,7 +290,7 @@ def _style_rookie_salary(row):
 
 player_id_map_full = {row["Player"]: int(row["PLAYER_ID"]) for _, row in df.iterrows()}
 dlebron_lookup = fetch_dlebron(season)
-league_avg_ts = float((raw["ts_pct"] * raw["GP"]).sum() / raw["GP"].sum())
+league_avg_ts = float((df["ts_pct"] * df["GP"]).sum() / df["GP"].sum())
 if not dlebron_lookup:
     st.info("⚠️ D-LEBRON data is not available for this season — defensive ratings are set to 0 for all players. "
             "Barrett Scores reflect only box-score statistics.")
