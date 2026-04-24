@@ -119,7 +119,7 @@ with col4:
 with col5:
     st.markdown("""
     <a class="nav-card" href="/Free_Agent_Class" target="_top">
-        <div class="nav-title">Current Free Agency</div>
+        <div class="nav-title">Current Free Agents</div>
         <div class="nav-desc">UFAs, player options, and team options ranked by Barrett Score — a GM's offseason draft board.</div>
         <span class="nav-cta">Open Free Agency →</span>
     </a>
