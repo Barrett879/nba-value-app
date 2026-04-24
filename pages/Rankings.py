@@ -397,13 +397,27 @@ _current_players = set(df["Player"].unique())
 all_player_names = (
     _career_avg_rnk[_career_avg_rnk["Player"].isin(_current_players)]["Player"].tolist()
 )
-compare_selected = st.multiselect(
-    "Compare players",
-    options=all_player_names,
-    max_selections=10,
-    placeholder="Select up to 10 players to compare…",
-    key="rankings_multiselect",
+
+# Separate search input so we control filtering order (multiselect's built-in
+# search ignores the options order; this preserves career-avg ranking).
+_cmp_col1, _cmp_col2 = st.columns([1, 2])
+with _cmp_col1:
+    compare_filter = st.text_input(
+        "Search players", "", key="compare_filter",
+        placeholder="Type to filter by name…",
+    )
+_filtered_names = (
+    [n for n in all_player_names if compare_filter.lower() in n.lower()]
+    if compare_filter else all_player_names
 )
+with _cmp_col2:
+    compare_selected = st.multiselect(
+        "Compare players",
+        options=_filtered_names,
+        max_selections=10,
+        placeholder="Select up to 10 players to compare…",
+        key="rankings_multiselect",
+    )
 st.session_state["rankings_selected"] = compare_selected
 
 panel_placeholder = st.empty()
