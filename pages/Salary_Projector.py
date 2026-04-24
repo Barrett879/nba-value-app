@@ -39,7 +39,7 @@ components.html("""
 """, height=0)
 
 _bootstrap_warm()
-render_nav("Salary Projector")
+render_nav("Visualizer")
 
 st.title("Barrett Score — Salary Projector")
 

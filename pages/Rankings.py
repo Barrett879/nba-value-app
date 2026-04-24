@@ -44,7 +44,7 @@ components.html("""
 </script>
 """, height=0)
 
-render_nav("Rankings")
+render_nav("Current Rankings")
 
 st.title("Barrett Score — NBA Contract Value Rankings")
 st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")

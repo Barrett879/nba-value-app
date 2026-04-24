@@ -108,11 +108,11 @@ COMMON_CSS = """
 """
 
 _NAV_PAGES = [
-    ("Rankings",        "/Rankings"),
-    ("Salary Projector", "/Salary_Projector"),
-    ("Team Analysis",    "/Team_Analysis"),
-    ("Free Agent Class", "/Free_Agent_Class"),
-    ("Legacy",           "/Legacy"),
+    ("Current Rankings",  "/Rankings"),
+    ("Visualizer",        "/Salary_Projector"),
+    ("Team Analysis",     "/Team_Analysis"),
+    ("Current Free Agents", "/Free_Agent_Class"),
+    ("Legacy",            "/Legacy"),
 ]
 
 def render_nav(current: str) -> None:

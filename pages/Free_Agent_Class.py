@@ -40,7 +40,7 @@ components.html("""
 """, height=0)
 
 _bootstrap_warm()
-render_nav("Free Agent Class")
+render_nav("Current Free Agents")
 
 st.title("Barrett Score — Free Agent Class")
 
