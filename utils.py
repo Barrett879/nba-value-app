@@ -500,65 +500,42 @@ def fetch_monthly_scores(player_id: int, season: str,
     return pd.DataFrame(rows)
 
 
-@st.cache_data(ttl=3600, show_spinner="Fetching career trend...")
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_career_trend(player_id: int, num_seasons: int = 5) -> pd.DataFrame:
-    """Barrett Score for each of the player's last N seasons, with real D-LEBRON."""
-    dlebron_all = fetch_dlebron_all()
-    player_dlebron = {}
-    if not dlebron_all.empty:
-        pdf = dlebron_all[dlebron_all["nba_id"].astype(str) == str(player_id)]
-        player_dlebron = {row["Season"]: float(row["D-LEBRON"]) for _, row in pdf.iterrows()}
+    """Barrett Score per season pulled directly from build_raw — guaranteed to
+    match the stat panel since both use the same LeagueDashPlayerStats source."""
+    player_info = nba_players_static.find_player_by_id(player_id)
+    if not player_info:
+        return pd.DataFrame()
+    name_norm = normalize(player_info["full_name"])
 
-    career = None
-    delay = 1
-    while career is None:
+    rows = []
+    for season in SEASONS:
         try:
-            career = playercareerstats.PlayerCareerStats(player_id=player_id)
+            raw = build_raw(season)
+            mask = raw["Player"].apply(normalize) == name_norm
+            if not mask.any():
+                continue
+            r = raw[mask].iloc[0]
+            rows.append({
+                "Season":        season,
+                "GP":            int(r["GP"]),
+                "MPG":           float(r["MPG"]),
+                "total_min":     int(r["total_min"]),
+                "base_score":    float(r["base_score"]),
+                "avail_mult":    float(r["avail_mult"]),
+                "barrett_score": float(r["barrett_score"]),
+            })
         except Exception:
-            time.sleep(delay)
-            delay = min(delay * 2, 30)
+            pass
 
-    df = career.get_data_frames()[0]
-
-    rows_out = []
-    for season_id, grp in df.groupby("SEASON_ID"):
-        if not str(season_id)[0:2] in ("19", "20"):
-            continue
-        tot = grp[grp["TEAM_ABBREVIATION"] == "TOT"]
-        row = tot.iloc[0].copy() if not tot.empty else grp.iloc[0].copy()
-        if len(grp) > 1 and tot.empty:
-            for col in ["GP", "MIN", "PTS", "AST", "OREB", "DREB", "BLK", "STL", "TOV", "PF", "FGA", "FTA"]:
-                if col in grp.columns:
-                    row[col] = grp[col].sum()
-        rows_out.append(row)
-
-    if not rows_out:
+    if not rows:
         return pd.DataFrame()
 
-    cdf = pd.DataFrame(rows_out).sort_values("SEASON_ID", ascending=False).head(num_seasons)
-
-    for col in ["MIN", "PTS", "AST", "OREB", "DREB", "BLK", "STL", "TOV", "PF", "FGA", "FTA"]:
-        cdf[col] = cdf[col] / cdf["GP"]
-
-    cdf["d_lebron"] = cdf["SEASON_ID"].map(lambda s: player_dlebron.get(s, 0.0))
-    cdf["ts_pct"] = cdf["PTS"] / (2 * (cdf["FGA"] + 0.44 * cdf["FTA"])).replace(0, float("nan"))
-    cdf["league_avg_ts"] = cdf["SEASON_ID"].map(fetch_league_avg_ts)
-    cdf["efficiency_adj"] = cdf.apply(
-        lambda r: float(min(max(0.15 * (r["ts_pct"] - r["league_avg_ts"]) * 100, -4), 4))
-        if r.get("FGA", 0) >= 2.0 and not pd.isna(r["ts_pct"]) else 0.0, axis=1
-    )
-    cdf["total_min"] = (cdf["MIN"] * cdf["GP"]).round(0).astype(int)
-    cdf["base_score"] = cdf.apply(base_score, axis=1) + cdf["efficiency_adj"] * 2
-    cdf["sg"] = cdf["SEASON_ID"].map(lambda s: SEASON_GAMES_LOOKUP.get(s, 82))
-    cdf["avail_mult"] = cdf.apply(
-        lambda r: availability_multiplier(r["GP"], r["total_min"], int(r["sg"])), axis=1
-    )
-    cdf["barrett_score"] = cdf["base_score"] * cdf["avail_mult"]
-
-    return cdf[["SEASON_ID", "GP", "MIN", "total_min",
-                "base_score", "avail_mult", "barrett_score"]].rename(
-        columns={"SEASON_ID": "Season", "MIN": "MPG"}
-    ).sort_values("Season")
+    result = pd.DataFrame(rows)
+    result["_year"] = result["Season"].apply(lambda s: int(s.split("-")[0]))
+    result = result.sort_values("_year").drop(columns=["_year"]).reset_index(drop=True)
+    return result.tail(num_seasons).reset_index(drop=True)
 
 
 def _player_season_splits_raw(player_id: int, season: str,
