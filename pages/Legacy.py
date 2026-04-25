@@ -49,8 +49,9 @@ st.caption(
 )
 
 # ── Load combined data ─────────────────────────────────────────────────────────
+# build_all_seasons_combined is @st.cache_resource (no copy on hit) — must copy before mutating
 with st.spinner("Loading historical data across all seasons…"):
-    all_df = build_all_seasons_combined()
+    all_df = build_all_seasons_combined().copy()
 
 if all_df.empty:
     st.error("Historical data unavailable. Please try again shortly.")

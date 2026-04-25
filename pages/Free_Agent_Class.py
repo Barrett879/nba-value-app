@@ -56,8 +56,9 @@ with ctrl_r:
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
+# build_ranked_projected is @st.cache_resource (no copy on hit) — must copy before mutating
 df = build_ranked_projected(season)
-df = df[df["total_min"] >= min_threshold]
+df = df[df["total_min"] >= min_threshold].copy()
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
 df["position"] = df["Player"].map(

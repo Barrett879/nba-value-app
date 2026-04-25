@@ -68,8 +68,9 @@ with ctrl_r:
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
+# build_ranked_projected is @st.cache_resource (no copy on hit) — must copy before mutating
 df = build_ranked_projected(season)
-df = df[df["total_min"] >= min_threshold]
+df = df[df["total_min"] >= min_threshold].copy()
 
 salary_lookup = tuple(
     (normalize(row["Player"]), row["salary"])
@@ -118,7 +119,7 @@ _prev_df = None
 if _prev_season:
     try:
         _prev_df  = build_ranked_projected(_prev_season)
-        _prev_df  = _prev_df[_prev_df["total_min"] >= DEFAULT_MIN_THRESHOLD]
+        _prev_df  = _prev_df[_prev_df["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
         _merged   = df[["Player", "Team", "barrett_score"]].merge(
             _prev_df[["Player", "barrett_score"]].rename(columns={"barrett_score": "prev_score"}),
             on="Player", how="inner",

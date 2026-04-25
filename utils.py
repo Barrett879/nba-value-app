@@ -1000,19 +1000,23 @@ def _bootstrap_warm() -> None:
         fetch_bref_positions(season_to_espn_year(SEASONS[0]), cache_v=3)
         fetch_next_year_contracts(season_to_espn_year(SEASONS[0]), cache_v=7)
         fetch_rookie_scale_players(SEASONS[0])
+        fetch_dlebron(SEASONS[0])
     except Exception:
         pass
     # Remaining seasons in the background
     warm_all_seasons()
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_resource(ttl=3600, show_spinner=False)
 def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD) -> pd.DataFrame:
     """Load every season, apply per-season rankings + projections, and concatenate.
 
     Rankings/projections are applied *within* each season so score_rank and
     value_diff are always comparable within a year.  The Season column is added
     so cross-season analysis can group/filter by year.
+
+    NOTE: Uses @st.cache_resource (singleton, no copy on hit) instead of
+    @st.cache_data. Callers MUST .copy() before mutating columns.
     """
     path = _dc_path(f"all_seasons_{min_threshold}.parquet")
     if _dc_fresh(path, ttl=3600):
@@ -1102,9 +1106,13 @@ def fetch_player_career_all_seasons(player_name: str) -> pd.DataFrame:
     return combined
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
+@st.cache_resource(ttl=3600, show_spinner=False)
 def build_ranked_projected(season: str) -> pd.DataFrame:
-    """Full pipeline — build_raw + apply_rankings + apply_projections — cached."""
+    """Full pipeline — build_raw + apply_rankings + apply_projections — cached.
+
+    NOTE: Uses @st.cache_resource (singleton, no copy on hit) instead of
+    @st.cache_data. Callers MUST .copy() before mutating columns.
+    """
     return apply_projections(apply_rankings(build_raw(season)))
 
 
