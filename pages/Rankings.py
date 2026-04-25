@@ -291,9 +291,10 @@ def _style_rookie_salary(row):
 # Rankings content
 # ══════════════════════════════════════════════════════════════════════════════
 
-player_id_map_full = {row["Player"]: int(row["PLAYER_ID"]) for _, row in df.iterrows()}
+player_id_map_full = dict(zip(df["Player"], df["PLAYER_ID"].astype(int)))
 dlebron_lookup = fetch_dlebron(season)
-league_avg_ts = float((df["ts_pct"] * df["GP"]).sum() / df["GP"].sum())
+_gp_sum = float(df["GP"].sum())
+league_avg_ts = float((df["ts_pct"] * df["GP"]).sum() / _gp_sum) if _gp_sum > 0 else 0.0
 if not dlebron_lookup:
     st.info("⚠️ D-LEBRON data is not available for this season — defensive ratings are set to 0 for all players. "
             "Barrett Scores reflect only box-score statistics.")

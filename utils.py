@@ -1127,6 +1127,10 @@ def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:
 def apply_projections(df: pd.DataFrame) -> pd.DataFrame:
     """Projected salary = the actual salary of whoever holds the same rank position by salary."""
     df = df.copy()
+    if df.empty:
+        df["projected_salary"] = pd.Series(dtype=float)
+        df["value_diff"]       = pd.Series(dtype=float)
+        return df
     salaries_by_rank = df.sort_values("salary", ascending=False)["salary"].values
     n = len(salaries_by_rank)
     df["projected_salary"] = df["score_rank"].apply(
