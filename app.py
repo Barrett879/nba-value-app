@@ -261,39 +261,47 @@ def _diverging_bars(rows, w=320, h=170):
 
 
 def _sparkline(points, labels=None, w=320, h=170, color="#f1c40f"):
-    """points: list of (label, value). Renders a line + dots + endpoint labels."""
+    """points: list of (label, value). Renders a line + dots + endpoint labels.
+    Value labels sit OUTSIDE the chart area in the side margins so they never
+    collide with the line/area fill."""
     if not points:
         return ""
-    pad_x, pad_y = 14, 24
+    # Asymmetric padding: leave reserved space on the sides for value labels
+    # to live in (outside the line area entirely).
+    pad_left, pad_right = 36, 36
+    pad_top, pad_bot    = 14, 22  # bottom = room for year labels
+
     n = len(points)
     vals = [p[1] for p in points]
     vmin = min(vals)
     vmax = max(vals)
     rng  = (vmax - vmin) or 1.0
 
-    chart_w = w - pad_x * 2
-    chart_h = h - pad_y * 2
+    chart_w = w - pad_left - pad_right
+    chart_h = h - pad_top  - pad_bot
 
     coords = []
     for i, (_, v) in enumerate(points):
-        x = pad_x + (i / (n - 1)) * chart_w if n > 1 else w / 2
-        y = pad_y + chart_h - ((v - vmin) / rng) * chart_h
+        x = pad_left + (i / (n - 1)) * chart_w if n > 1 else w / 2
+        y = pad_top  + chart_h - ((v - vmin) / rng) * chart_h
         coords.append((x, y))
 
     line_points = " ".join(f"{x:.1f},{y:.1f}" for x, y in coords)
-    area_points = f"{coords[0][0]:.1f},{pad_y + chart_h} " + line_points + f" {coords[-1][0]:.1f},{pad_y + chart_h}"
+    area_points = (
+        f"{coords[0][0]:.1f},{pad_top + chart_h} "
+        + line_points
+        + f" {coords[-1][0]:.1f},{pad_top + chart_h}"
+    )
 
     dots = "".join(
         f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{color}" stroke="#14142a" stroke-width="1.5"/>'
         for x, y in coords
     )
 
-    # Labels at first and last point + min/max value badges
-    first_lbl = points[0][0]
-    last_lbl  = points[-1][0]
-    first_val = vals[0]
-    last_val  = vals[-1]
+    first_lbl, last_lbl = points[0][0], points[-1][0]
+    first_val, last_val = vals[0], vals[-1]
 
+    # Year labels — centered under endpoint dots, in the bottom padding zone
     label_first = (
         f'<text x="{coords[0][0]:.1f}" y="{h - 6}" text-anchor="middle" '
         f'fill="#888" font-size="10" font-family="system-ui">{_esc(first_lbl)}</text>'
@@ -303,12 +311,13 @@ def _sparkline(points, labels=None, w=320, h=170, color="#f1c40f"):
         f'fill="#888" font-size="10" font-family="system-ui">{_esc(last_lbl)}</text>'
     )
 
+    # Value labels — in the LEFT/RIGHT margins, vertically aligned with their dots
     val_first = (
-        f'<text x="{coords[0][0]:.1f}" y="{coords[0][1] - 8:.1f}" text-anchor="middle" '
-        f'fill="#fff" font-size="10" font-weight="700" font-family="system-ui">{first_val:.1f}</text>'
+        f'<text x="{coords[0][0] - 7:.1f}" y="{coords[0][1] + 4:.1f}" text-anchor="end" '
+        f'fill="#fff" font-size="11" font-weight="700" font-family="system-ui">{first_val:.1f}</text>'
     )
     val_last = (
-        f'<text x="{coords[-1][0]:.1f}" y="{coords[-1][1] - 8:.1f}" text-anchor="middle" '
+        f'<text x="{coords[-1][0] + 7:.1f}" y="{coords[-1][1] + 4:.1f}" text-anchor="start" '
         f'fill="{color}" font-size="11" font-weight="700" font-family="system-ui">{last_val:.1f}</text>'
     )
 
