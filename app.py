@@ -24,7 +24,15 @@ st.set_page_config(page_title="Barrett Score", layout="wide")
 # ── Hide Streamlit chrome & sidebar nav ────────────────────────────────────────
 st.markdown("""
 <style>
-    .main .block-container { padding-left: 0.5rem; padding-right: 0.5rem; max-width: 100%; }
+    .main .block-container,
+    section.main > .block-container {
+        padding-top: 1.5rem !important;
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+        max-width: 100%;
+    }
+    /* Streamlit's iframe app shell often has its own top padding too */
+    [data-testid="stAppViewContainer"] > .main .block-container { padding-top: 1.5rem !important; }
     #MainMenu { visibility: hidden; }
     header { visibility: hidden; }
     footer { visibility: hidden; }
@@ -50,7 +58,7 @@ st.markdown("""
         text-decoration: none;
         transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
         cursor: pointer;
-        min-height: 300px;
+        min-height: 400px;
         box-sizing: border-box;
         position: relative;
         overflow: hidden;
@@ -132,11 +140,11 @@ st.markdown("""
 
 # ── Hero ───────────────────────────────────────────────────────────────────────
 st.markdown("""
-<div style="text-align:center; padding: 2.5rem 0 1.75rem 0;">
-    <div style="font-size:3rem; font-weight:800; letter-spacing:-1px; color:#fff;">
+<div style="text-align:center; padding: 0.5rem 0 1.5rem 0;">
+    <div style="font-size:2.75rem; font-weight:800; letter-spacing:-1px; color:#fff;">
         Barrett Score
     </div>
-    <div style="font-size:1.05rem; color:#aaa; margin-top:0.5rem;">
+    <div style="font-size:1.05rem; color:#aaa; margin-top:0.4rem;">
         A stat-driven NBA player valuation tool — who's underpaid, overpaid, and available.
     </div>
 </div>
@@ -186,10 +194,12 @@ def _compute_previews():
         fa_mask  = df["Player"].apply(_is_fa)
         fa_count = int(fa_mask.sum())
         if fa_mask.any():
-            top_fa_row = df[fa_mask].sort_values("barrett_score", ascending=False).iloc[0]
-            top_fa     = str(top_fa_row["Player"])
+            top_fa_row   = df[fa_mask].sort_values("barrett_score", ascending=False).iloc[0]
+            top_fa       = str(top_fa_row["Player"])
+            top_fa_score = float(top_fa_row["barrett_score"])
         else:
-            top_fa = "—"
+            top_fa       = "—"
+            top_fa_score = 0.0
 
         return {
             "season":        SEASONS[0],
@@ -205,6 +215,7 @@ def _compute_previews():
             "worst_team_val": worst_team_val,
             "fa_count":      fa_count,
             "top_fa":        top_fa,
+            "top_fa_score":  top_fa_score,
         }
     except Exception:
         return None
@@ -236,6 +247,7 @@ if _p:
         (f"1. {_p['top3'][0][0]}", f"{_p['top3'][0][1]:.1f}", "gold"),
         (f"2. {_p['top3'][1][0]}", f"{_p['top3'][1][1]:.1f}", ""),
         (f"3. {_p['top3'][2][0]}", f"{_p['top3'][2][1]:.1f}", ""),
+        ("Players ranked",         f"{_p['n_players']}",     ""),
     ])
     visualizer_preview = _preview_block([
         ("Biggest steal",  f"{_p['steal_name']}",    "green"),
@@ -250,9 +262,10 @@ if _p:
         ("",                 f"${_p['worst_team_val']:+.1f}M", "red"),
     ])
     fa_preview = _preview_block([
-        ("Free agents",   f"{_p['fa_count']}",  "blue"),
-        ("Top FA",        f"{_p['top_fa']}",    ""),
-        ("Season",        f"{_p['season']}",    ""),
+        ("Free agents",  f"{_p['fa_count']}",         "blue"),
+        ("Top FA",       f"{_p['top_fa']}",           ""),
+        ("Top FA score", f"{_p['top_fa_score']:.1f}", "gold"),
+        ("Season",       f"{_p['season']}",           ""),
     ])
 else:
     rankings_preview = visualizer_preview = team_preview = fa_preview = _preview_block([])
