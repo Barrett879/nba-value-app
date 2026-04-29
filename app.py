@@ -9,12 +9,16 @@ from utils import (
     build_ranked_projected,
     fetch_next_year_contracts,
     fetch_rookie_scale_players,
+    fetch_career_trend,
     fmt_next_contract,
     season_to_espn_year,
     normalize,
     SEASONS,
     DEFAULT_MIN_THRESHOLD,
 )
+
+# LeBron James' NBA Stats player ID — used for the Legacy career arc sparkline
+LEBRON_PLAYER_ID = 2544
 
 # Start warming all season caches the moment the server boots —
 # before any user arrives, so the first visitor doesn't pay the cost.
@@ -378,9 +382,9 @@ def _compute_charts():
         # Top 5 by Barrett Score
         top5 = df.nsmallest(5, "score_rank")[["Player", "barrett_score"]].values.tolist()
 
-        # Biggest steal + most overpaid
-        steal_row    = df.loc[df["value_diff"].idxmin()]
-        overpaid_row = df.loc[df["value_diff"].idxmax()]
+        # Top 3 most underpaid (biggest steals) and top 3 most overpaid
+        steals_3   = df.nsmallest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
+        overpaid_3 = df.nlargest(3,  "value_diff")[["Player", "value_diff"]].values.tolist()
 
         # Team payroll efficiency: top 3 efficient + bottom 3 inefficient
         team_eff = (
@@ -413,26 +417,24 @@ def _compute_charts():
             elif " TO" in nc:
                 n_to += 1
 
-        # Top barrett-score per season for last 10 seasons (sparkline)
-        # Each call is a cache hit since seasons get warmed in the background.
-        spark = []
-        for s in list(reversed(SEASONS[:10])):  # chronological order, oldest first
-            try:
-                sdf = build_ranked_projected(s)
-                sdf = sdf[sdf["total_min"] >= DEFAULT_MIN_THRESHOLD]
-                if not sdf.empty:
-                    spark.append((s.split("-")[0], float(sdf["barrett_score"].max())))
-            except Exception:
-                pass
+        # LeBron James' Barrett Score for every season we have data for —
+        # the legacy sparkline shows his full career arc.
+        # fetch_career_trend hits build_raw per season (cached), so this is fast on a warm server.
+        try:
+            lebron_df = fetch_career_trend(LEBRON_PLAYER_ID, num_seasons=len(SEASONS))
+            lebron_career = [
+                (str(row["Season"]).split("-")[0], float(row["barrett_score"]))
+                for _, row in lebron_df.iterrows()
+            ]
+        except Exception:
+            lebron_career = []
 
         return {
             "season":       SEASONS[0],
             "n_players":    len(df),
             "top5":         top5,
-            "steal_name":   str(steal_row["Player"]),
-            "steal_amt":    abs(float(steal_row["value_diff"])) / 1e6,
-            "over_name":    str(overpaid_row["Player"]),
-            "over_amt":     float(overpaid_row["value_diff"]) / 1e6,
+            "steals_3":     [(str(p), float(v)) for p, v in steals_3],
+            "overpaid_3":   [(str(p), float(v)) for p, v in overpaid_3],
             "best_teams":   [(str(t), float(v)) for t, v in best_teams],
             "worst_teams":  [(str(t), float(v)) for t, v in worst_teams],
             "fa_segments":  [
@@ -441,7 +443,7 @@ def _compute_charts():
                 {"label": "PO",  "value": n_po,  "color": "#3498db"},
                 {"label": "TO",  "value": n_to,  "color": "#f39c12"},
             ],
-            "spark":        spark,
+            "lebron_career": lebron_career,
         }
     except Exception:
         return None
@@ -470,23 +472,27 @@ if _p:
         for i, (name, score) in enumerate(_p["top5"])
     ]))
 
-    # Visualizer — diverging-style bars (steal vs overpaid)
-    vis_chart = _wrap_chart(_diverging_bars([
-        {
-            "label":     _p["steal_name"].split()[-1],
-            "value":     _p["steal_amt"],
-            "value_str": f"-${_p['steal_amt']:.1f}M",
+    # Visualizer — diverging bars: top 3 steals (left, green) + top 3 overpaid (right, red)
+    vis_rows = []
+    for name, vd in _p["steals_3"]:
+        amt = abs(vd) / 1e6
+        vis_rows.append({
+            "label":     name.split()[-1],
+            "value":     amt,
+            "value_str": f"-${amt:.1f}M",
             "color":     "#2ecc71",
             "side":      "neg",
-        },
-        {
-            "label":     _p["over_name"].split()[-1],
-            "value":     _p["over_amt"],
-            "value_str": f"+${_p['over_amt']:.1f}M",
+        })
+    for name, vd in _p["overpaid_3"]:
+        amt = vd / 1e6
+        vis_rows.append({
+            "label":     name.split()[-1],
+            "value":     amt,
+            "value_str": f"+${amt:.1f}M",
             "color":     "#e74c3c",
             "side":      "pos",
-        },
-    ]))
+        })
+    vis_chart = _wrap_chart(_diverging_bars(vis_rows))
 
     # Team Analysis — top 3 efficient (green, neg side) + 3 inefficient (red, pos side)
     team_rows = []
@@ -509,9 +515,9 @@ if _p:
 else:
     rankings_chart = vis_chart = team_chart = fa_chart = _wrap_chart("")
 
-# Legacy — sparkline of top Barrett Score per season for the last 10 seasons
-if _p and _p["spark"]:
-    legacy_chart = _wrap_chart(_sparkline(_p["spark"], color="#f1c40f"))
+# Legacy — LeBron James' full career arc as a sparkline
+if _p and _p["lebron_career"]:
+    legacy_chart = _wrap_chart(_sparkline(_p["lebron_career"], color="#f1c40f"))
 else:
     legacy_chart = _wrap_chart("")
 
@@ -531,7 +537,7 @@ with col2:
     st.markdown(f"""
     <a class="nav-card" href="/Legacy" target="_top" style="--accent:#f1c40f;">
         <div class="nav-title">Legacy</div>
-        <div class="nav-desc">Best Barrett Score per season · last 10 years</div>
+        <div class="nav-desc">LeBron James — full career Barrett Score arc</div>
         {legacy_chart}
         <span class="nav-cta">Open Legacy →</span>
     </a>
@@ -545,7 +551,7 @@ with col3:
     st.markdown(f"""
     <a class="nav-card" href="/Salary_Projector" target="_top" style="--accent:#9b59b6;">
         <div class="nav-title">Visualizer</div>
-        <div class="nav-desc">Biggest steal vs most overpaid this season</div>
+        <div class="nav-desc">Top 3 steals vs top 3 overpaid · current season</div>
         {vis_chart}
         <span class="nav-cta">Open Visualizer →</span>
     </a>
