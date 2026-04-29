@@ -130,6 +130,13 @@ st.markdown("""
         font-style: italic;
         padding: 1rem;
     }
+    .nav-chart-caption {
+        font-size: 0.7rem;
+        color: #777;
+        text-align: center;
+        font-style: italic;
+        margin-top: 0.25rem;
+    }
 
     .nav-cta {
         align-self: center;
@@ -316,6 +323,54 @@ def _sparkline(points, labels=None, w=320, h=170, color="#f1c40f"):
     )
 
 
+def _fa_category_chart(items, w=320, h=170):
+    """items: list of {label, count, avg_score, color}. Renders 4 horizontal bars
+    of avg Barrett Score per category, with the count shown next to the label.
+    Header at top shows total free-agent count.
+    """
+    if not items:
+        return ""
+    n      = len(items)
+    total  = sum(it["count"] for it in items)
+    header_y = 14
+    chart_y  = 30
+    chart_h  = h - chart_y - 8
+    row_h    = chart_h / n
+    bar_h    = row_h * 0.62
+
+    label_w = 95
+    chart_x = label_w
+    chart_w = w - chart_x - 50
+    avg_max = max(it["avg_score"] for it in items) or 1.0
+
+    parts = [
+        f'<text x="{w/2:.1f}" y="{header_y}" text-anchor="middle" fill="#cfcfd6" '
+        f'font-size="11" font-family="system-ui">'
+        f'<tspan fill="#fff" font-weight="700">{int(total)}</tspan> free agents · avg Barrett Score</text>'
+    ]
+    for i, it in enumerate(items):
+        y  = chart_y + i * row_h + (row_h - bar_h) / 2
+        bw = (it["avg_score"] / avg_max) * chart_w if avg_max else 0
+        parts.append(
+            f'<text x="6" y="{y + bar_h/2 + 4:.1f}" font-size="11" font-family="system-ui">'
+            f'<tspan fill="{it["color"]}" font-weight="700">{_esc(it["label"])}</tspan> '
+            f'<tspan fill="#888"> ({int(it["count"])})</tspan></text>'
+        )
+        parts.append(
+            f'<rect x="{chart_x:.1f}" y="{y:.1f}" rx="3" ry="3" '
+            f'width="{max(bw, 1):.1f}" height="{bar_h:.1f}" fill="{it["color"]}" opacity="0.88"/>'
+        )
+        parts.append(
+            f'<text x="{chart_x + bw + 6:.1f}" y="{y + bar_h/2 + 4:.1f}" '
+            f'fill="#fff" font-size="11" font-weight="700" font-family="system-ui">'
+            f'{it["avg_score"]:.1f}</text>'
+        )
+    return (
+        f'<svg viewBox="0 0 {w} {h}" preserveAspectRatio="xMidYMid meet" '
+        f'style="width:100%; height:{h}px;">{"".join(parts)}</svg>'
+    )
+
+
 def _stacked_bar(segments, total_label="Total", w=320, h=170):
     """segments: list of dicts {label, value, color}. Renders a single horizontal stacked bar
     with a legend underneath.
@@ -401,21 +456,29 @@ def _compute_charts():
         next_contracts = fetch_next_year_contracts(season_to_espn_year(SEASONS[0]), cache_v=7)
         rookie_scale   = fetch_rookie_scale_players(SEASONS[0])
 
-        n_ufa = n_rfa = n_po = n_to = 0
-        for name in df["Player"]:
-            nc = fmt_next_contract(name, next_contracts)
+        ufa_scores, rfa_scores, po_scores, to_scores = [], [], [], []
+        for _, row in df[["Player", "barrett_score"]].iterrows():
+            name  = row["Player"]
+            score = float(row["barrett_score"])
+            nc    = fmt_next_contract(name, next_contracts)
             if nc == "RFA":
-                n_rfa += 1
+                rfa_scores.append(score)
             elif nc == "—":
                 # rookie scale player about to become RFA, otherwise UFA
                 if normalize(name) in rookie_scale:
-                    n_rfa += 1
+                    rfa_scores.append(score)
                 else:
-                    n_ufa += 1
+                    ufa_scores.append(score)
             elif " PO" in nc:
-                n_po += 1
+                po_scores.append(score)
             elif " TO" in nc:
-                n_to += 1
+                to_scores.append(score)
+
+        def _avg(xs):
+            return sum(xs) / len(xs) if xs else 0.0
+
+        n_ufa, n_rfa, n_po, n_to = len(ufa_scores), len(rfa_scores), len(po_scores), len(to_scores)
+        avg_ufa, avg_rfa, avg_po, avg_to = _avg(ufa_scores), _avg(rfa_scores), _avg(po_scores), _avg(to_scores)
 
         # LeBron James' Barrett Score for every season we have data for —
         # the legacy sparkline shows his full career arc.
@@ -437,11 +500,11 @@ def _compute_charts():
             "overpaid_3":   [(str(p), float(v)) for p, v in overpaid_3],
             "best_teams":   [(str(t), float(v)) for t, v in best_teams],
             "worst_teams":  [(str(t), float(v)) for t, v in worst_teams],
-            "fa_segments":  [
-                {"label": "UFA", "value": n_ufa, "color": "#aaaaaa"},
-                {"label": "RFA", "value": n_rfa, "color": "#2ecc71"},
-                {"label": "PO",  "value": n_po,  "color": "#3498db"},
-                {"label": "TO",  "value": n_to,  "color": "#f39c12"},
+            "fa_categories": [
+                {"label": "UFA", "count": n_ufa, "avg_score": avg_ufa, "color": "#aaaaaa"},
+                {"label": "RFA", "count": n_rfa, "avg_score": avg_rfa, "color": "#2ecc71"},
+                {"label": "PO",  "count": n_po,  "avg_score": avg_po,  "color": "#3498db"},
+                {"label": "TO",  "count": n_to,  "avg_score": avg_to,  "color": "#f39c12"},
             ],
             "lebron_career": lebron_career,
         }
@@ -510,14 +573,20 @@ if _p:
         })
     team_chart = _wrap_chart(_diverging_bars(team_rows))
 
-    # Free Agents — stacked bar with 4 segments
-    fa_chart = _wrap_chart(_stacked_bar(_p["fa_segments"], total_label="Free Agents"))
+    # Free Agents — count + avg Barrett Score per category
+    fa_chart = _wrap_chart(_fa_category_chart(_p["fa_categories"]))
 else:
     rankings_chart = vis_chart = team_chart = fa_chart = _wrap_chart("")
 
-# Legacy — LeBron James' full career arc as a sparkline
+# Legacy — LeBron James' full career arc as a sparkline (teaser; the page has much more)
 if _p and _p["lebron_career"]:
-    legacy_chart = _wrap_chart(_sparkline(_p["lebron_career"], color="#f1c40f"))
+    _lebron_svg = _sparkline(_p["lebron_career"], color="#f1c40f")
+    legacy_chart = (
+        '<div class="nav-chart">'
+        f'{_lebron_svg}'
+        '<div class="nav-chart-caption">Featured arc — LeBron James</div>'
+        '</div>'
+    )
 else:
     legacy_chart = _wrap_chart("")
 
@@ -537,7 +606,7 @@ with col2:
     st.markdown(f"""
     <a class="nav-card" href="/Legacy" target="_top" style="--accent:#f1c40f;">
         <div class="nav-title">Legacy</div>
-        <div class="nav-desc">LeBron James — full career Barrett Score arc</div>
+        <div class="nav-desc">All-time ranks · career arcs · era leaders · Mount Rushmores</div>
         {legacy_chart}
         <span class="nav-cta">Open Legacy →</span>
     </a>
@@ -569,7 +638,7 @@ with col5:
     st.markdown(f"""
     <a class="nav-card" href="/Free_Agent_Class" target="_top" style="--accent:#2ecc71;">
         <div class="nav-title">Current Free Agents</div>
-        <div class="nav-desc">UFA · RFA · player options · team options</div>
+        <div class="nav-desc">Average Barrett Score by category · current pool</div>
         {fa_chart}
         <span class="nav-cta">Open Free Agency →</span>
     </a>
