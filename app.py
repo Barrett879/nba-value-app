@@ -174,7 +174,7 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
         font-size: 2.4rem;
         line-height: 1;
-        letter-spacing: 0.13em;
+        letter-spacing: 0.1em;
         text-shadow: 0 3px 14px rgba(0,0,0,0.55);
         white-space: nowrap;
     ">
@@ -595,7 +595,7 @@ with col1:
     st.markdown(f"""
     <a class="nav-card" href="/Rankings" target="_top" style="--accent:#e63946;">
         <div class="nav-title">Current Rankings</div>
-        <div class="nav-desc">Top 5 by Barrett Score · {_p['n_players'] if _p else '—'} players ranked</div>
+        <div class="nav-desc">Who's the best NBA player right now? See where every player stacks up this season.</div>
         {rankings_chart}
         <span class="nav-cta">Open Rankings →</span>
     </a>
@@ -604,7 +604,7 @@ with col2:
     st.markdown(f"""
     <a class="nav-card" href="/Legacy" target="_top" style="--accent:#f1c40f;">
         <div class="nav-title">Legacy</div>
-        <div class="nav-desc">All-time ranks · career arcs · era leaders · Mount Rushmores</div>
+        <div class="nav-desc">20 seasons of NBA history — career arcs, all-time greats, and team legends.</div>
         {legacy_chart}
         <span class="nav-cta">Open Legacy →</span>
     </a>
@@ -618,7 +618,7 @@ with col3:
     st.markdown(f"""
     <a class="nav-card" href="/Salary_Projector" target="_top" style="--accent:#9b59b6;">
         <div class="nav-title">Visualizer</div>
-        <div class="nav-desc">Top 3 steals vs top 3 overpaid · current season</div>
+        <div class="nav-desc">Find the league's biggest bargains — and worst contracts — at a glance.</div>
         {vis_chart}
         <span class="nav-cta">Open Visualizer →</span>
     </a>
@@ -627,7 +627,7 @@ with col4:
     st.markdown(f"""
     <a class="nav-card" href="/Team_Analysis" target="_top" style="--accent:#3498db;">
         <div class="nav-title">Team Analysis</div>
-        <div class="nav-desc">Best vs worst payroll efficiency · current season</div>
+        <div class="nav-desc">Which front offices are getting the most for their money?</div>
         {team_chart}
         <span class="nav-cta">Open Teams →</span>
     </a>
@@ -636,7 +636,7 @@ with col5:
     st.markdown(f"""
     <a class="nav-card" href="/Free_Agent_Class" target="_top" style="--accent:#2ecc71;">
         <div class="nav-title">Current Free Agents</div>
-        <div class="nav-desc">Average Barrett Score by category · current pool</div>
+        <div class="nav-desc">Every player hitting the market this offseason — and what they're worth.</div>
         {fa_chart}
         <span class="nav-cta">Open Free Agency →</span>
     </a>
