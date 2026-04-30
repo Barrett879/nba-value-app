@@ -170,8 +170,16 @@ st.markdown("""
 # ── Hero — title + intro blurb ────────────────────────────────────────────────
 st.markdown("""
 <div style="text-align:center; padding: 0.4rem 0 0.7rem 0;">
-    <img src="./app/static/BarrettScoreLogo2.png?v=cropped" alt="The Barrett Score"
-         style="height:36px; width:auto; display:block; margin:0 auto; filter: drop-shadow(0 4px 14px rgba(0,0,0,0.5));"/>
+    <div style="
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
+        font-size: 2.4rem;
+        line-height: 1;
+        letter-spacing: 0.18em;
+        text-shadow: 0 3px 14px rgba(0,0,0,0.55);
+        white-space: nowrap;
+    ">
+        <span style="color: #c8cdd6; font-weight: 600;">THE&nbsp;</span><span style="color: #ffffff; font-weight: 800;">BARRETT&nbsp;</span><span style="color: #7ec8e8; font-weight: 800;">SCORE</span>
+    </div>
     <div style="font-size:0.95rem; color:#d6d6dc; margin-top:0.7rem; max-width:1100px; margin-left:auto; margin-right:auto; line-height:1.5; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
         Ever wonder which NBA stars are quietly outplaying their contracts and which ones aren't earning their paycheck?<br>
         Welcome to <b style="color:#fff;">The Barrett Score</b>.<br>
