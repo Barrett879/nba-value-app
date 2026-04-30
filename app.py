@@ -170,10 +170,9 @@ st.markdown("""
 # ── Hero — title + intro blurb ────────────────────────────────────────────────
 st.markdown("""
 <div style="text-align:center; padding: 0.1rem 0 0.6rem 0;">
-    <div style="font-size:2.1rem; font-weight:800; letter-spacing:-1px; color:#fff; line-height:1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.5);">
-        Barrett Score
-    </div>
-    <div style="font-size:0.95rem; color:#d6d6dc; margin-top:0.4rem; max-width:1100px; margin-left:auto; margin-right:auto; line-height:1.5; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
+    <img src="./app/static/BarrettScoreLogo1.png" alt="The Barrett Score"
+         style="max-height:120px; width:auto; display:inline-block; filter: drop-shadow(0 4px 18px rgba(0,0,0,0.55));"/>
+    <div style="font-size:0.95rem; color:#d6d6dc; margin-top:0.5rem; max-width:1100px; margin-left:auto; margin-right:auto; line-height:1.5; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
         Ever wonder which NBA stars are quietly outplaying their contracts and which ones aren't earning their paycheck?<br>
         Welcome to <b style="color:#fff;">The Barrett Score</b>.<br>
         We calculate scoring, playmaking, defense, and efficiency into a single value, then we put every player's on-court impact next to what they're paid.<br>
