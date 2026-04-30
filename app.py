@@ -174,7 +174,7 @@ st.markdown("""
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
         font-size: 2.4rem;
         line-height: 1;
-        letter-spacing: 0.18em;
+        letter-spacing: 0.13em;
         text-shadow: 0 3px 14px rgba(0,0,0,0.55);
         white-space: nowrap;
     ">
