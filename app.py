@@ -172,7 +172,7 @@ st.markdown("""
 <div style="text-align:center; padding: 0.1rem 0 0.6rem 0;">
     <img src="./app/static/BarrettScoreLogo2.png" alt="The Barrett Score"
          style="max-height:120px; width:auto; display:inline-block; filter: drop-shadow(0 4px 18px rgba(0,0,0,0.55));"/>
-    <div style="font-size:0.95rem; color:#d6d6dc; margin-top:0.5rem; max-width:1100px; margin-left:auto; margin-right:auto; line-height:1.5; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
+    <div style="font-size:0.95rem; color:#d6d6dc; margin-top:0.25rem; max-width:1100px; margin-left:auto; margin-right:auto; line-height:1.5; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
         Ever wonder which NBA stars are quietly outplaying their contracts and which ones aren't earning their paycheck?<br>
         Welcome to <b style="color:#fff;">The Barrett Score</b>.<br>
         We calculate scoring, playmaking, defense, and efficiency into a single value, then we put every player's on-court impact next to what they're paid.<br>
