@@ -26,12 +26,15 @@ SEASONS = [
     "2025-26", "2024-25", "2023-24", "2022-23", "2021-22", "2020-21", "2019-20",
     "2018-19", "2017-18", "2016-17", "2015-16", "2014-15", "2013-14", "2012-13",
     "2011-12", "2010-11", "2009-10", "2008-09", "2007-08", "2006-07",
+    # ─── Pre-2006 era (no D-LEBRON; defensive rating falls back to 0) ───────
+    "2005-06", "2004-05", "2003-04", "2002-03", "2001-02", "2000-01", "1999-00",
 ]
 DEFAULT_MIN_THRESHOLD = 500
 
 # Actual games played per season (shortened seasons due to lockout/COVID)
 SEASON_GAMES_LOOKUP = {
     "2020-21": 72, "2019-20": 72, "2011-12": 66,
+    "1998-99": 50,  # if we ever add it (not yet — no salary source)
 }
 
 # ── Salary supplement ──────────────────────────────────────────────────────────
@@ -45,6 +48,28 @@ SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
     },
     "2015-16": {
         "lebron james": 22_970_500,
+    },
+    # ── Pre-2006 supplement ────────────────────────────────────────────────
+    # ESPN's older salary pages cap around ~180 players and exclude many
+    # rookie-scale contracts and veteran minimums. Fill in legends so they
+    # show up in legacy career comparisons.
+    "2005-06": {
+        "lebron james":   4_621_800,   # rookie scale yr 3
+    },
+    "2004-05": {
+        "lebron james":   4_320_360,   # rookie scale yr 2
+    },
+    "2003-04": {
+        "lebron james":   4_018_920,   # rookie scale yr 1
+        "carmelo anthony": 3_603_480,   # #3 pick
+        "dwyane wade":    2_581_440,   # #5 pick
+        "chris bosh":     3_036_240,   # #4 pick
+    },
+    "2002-03": {
+        "michael jordan": 1_030_000,   # vet minimum, Wizards
+    },
+    "2001-02": {
+        "michael jordan": 1_000_000,   # vet minimum, Wizards comeback
     },
 }
 
