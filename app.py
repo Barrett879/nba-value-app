@@ -32,7 +32,7 @@ st.markdown("""
     /* Light-gray page background (replaces Streamlit's near-black default) */
     .stApp,
     [data-testid="stAppViewContainer"],
-    [data-testid="stMain"] { background-color: #e8e9ee !important; }
+    [data-testid="stMain"] { background-color: #c8cad1 !important; }
 
     /* Aggressively kill the Streamlit header/toolbar height */
     header[data-testid="stHeader"],
@@ -162,11 +162,11 @@ st.markdown("""
     <div style="font-size:2.1rem; font-weight:800; letter-spacing:-1px; color:#1a1a2e; line-height:1.1;">
         Barrett Score
     </div>
-    <div style="font-size:0.95rem; color:#444; margin-top:0.3rem; max-width:760px; margin-left:auto; margin-right:auto; line-height:1.45;">
-        Ever wonder which NBA stars are quietly outplaying their contracts —
-        and which ones aren't earning their paycheck?
-        The <b>Barrett Score</b> blends scoring, playmaking, defense, and efficiency
-        into a single number, then puts every player's on-court impact next to what they're paid.
+    <div style="font-size:0.95rem; color:#333; margin-top:0.4rem; max-width:780px; margin-left:auto; margin-right:auto; line-height:1.5;">
+        Ever wonder which NBA stars are quietly outplaying their contracts and which ones aren't earning their paycheck?<br>
+        Welcome to <b>The Barrett Score</b>.<br>
+        We calculate scoring, playmaking, defense, and efficiency into a single value, then we put every player's on-court impact next to what they're paid.<br>
+        <span style="color:#1a1a2e; font-weight:600;">That's the Barrett Score.</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
