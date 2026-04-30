@@ -35,7 +35,7 @@ st.markdown("""
     .stApp {
         background-image:
             linear-gradient(rgba(8, 8, 16, 0.78), rgba(8, 8, 16, 0.86)),
-            url("./app/static/court.jpeg") !important;
+            url("./app/static/LightCourt.jpeg") !important;
         background-size: cover !important;
         background-position: center top !important;
         background-attachment: fixed !important;
@@ -173,7 +173,7 @@ st.markdown("""
     <div style="font-size:2.1rem; font-weight:800; letter-spacing:-1px; color:#fff; line-height:1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.5);">
         Barrett Score
     </div>
-    <div style="font-size:0.95rem; color:#d6d6dc; margin-top:0.4rem; max-width:780px; margin-left:auto; margin-right:auto; line-height:1.5; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
+    <div style="font-size:0.95rem; color:#d6d6dc; margin-top:0.4rem; max-width:1100px; margin-left:auto; margin-right:auto; line-height:1.5; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
         Ever wonder which NBA stars are quietly outplaying their contracts and which ones aren't earning their paycheck?<br>
         Welcome to <b style="color:#fff;">The Barrett Score</b>.<br>
         We calculate scoring, playmaking, defense, and efficiency into a single value, then we put every player's on-court impact next to what they're paid.<br>
