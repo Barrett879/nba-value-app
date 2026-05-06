@@ -171,7 +171,7 @@ def base_score(row) -> float:
     d_lebron = row["d_lebron"] if "d_lebron" in row.index else 0
     return (
         row["PTS"]
-        + row["AST"] * 2
+        + row["AST"] * 1.5
         + row["OREB"] / 2
         + row["DREB"] / 3
         + row["BLK"] / 2
@@ -597,9 +597,9 @@ def fetch_monthly_scores(player_id: int, season: str,
 
         eff_adj = 0.0
         if (total_fga / gp) >= 2.0 and not pd.isna(ts_pct):
-            eff_adj = float(min(max(0.15 * (ts_pct - league_avg_ts_val) * 100, -4), 4))
+            eff_adj = float(min(max(0.15 * (ts_pct - league_avg_ts_val) * 100, -6), 6))
 
-        bs = (pts + ast * 2 + oreb / 2 + dreb / 3 + blk / 2 + stl / 1.5
+        bs = (pts + ast * 1.5 + oreb / 2 + dreb / 3 + blk / 2 + stl / 1.5
               - tov / 1.5 - pf / 3 + d_lebron_val * 2 + eff_adj * 2)
 
         # avail_mult uses team_gp as the season-games denominator so that
@@ -987,9 +987,16 @@ def fetch_dlebron(season: str) -> dict:
 
 # ── Build raw data ─────────────────────────────────────────────────────────────
 
+# Bump this when the Barrett Score formula changes — old parquet caches with
+# previous formula values are then ignored and rebuilt on demand.
+#   v1: AST × 2, TS efficiency cap ±4 (original formula)
+#   v2: AST × 1.5, TS efficiency cap ±6 (rebalanced 2026-04)
+FORMULA_VERSION = "v2"
+
+
 def _raw_disk_path(season: str) -> Path:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    return CACHE_DIR / f"raw_{season.replace('-', '_')}.parquet"
+    return CACHE_DIR / f"raw_{season.replace('-', '_')}_{FORMULA_VERSION}.parquet"
 
 def _raw_disk_fresh(season: str) -> bool:
     """True if the on-disk parquet is still within its TTL."""
@@ -1058,7 +1065,7 @@ def build_raw(season: str) -> pd.DataFrame:
     def eff_adj(row):
         if row["FGA"] < MIN_FGA or pd.isna(row["ts_pct"]):
             return 0.0
-        return float(min(max(K_EFF * (row["ts_pct"] - league_avg_ts) * 100, -4), 4))
+        return float(min(max(K_EFF * (row["ts_pct"] - league_avg_ts) * 100, -6), 6))
 
     stats["efficiency_adj"] = stats.apply(eff_adj, axis=1)
 
