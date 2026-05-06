@@ -1,4 +1,5 @@
 import math
+import re
 import time
 import io
 import pickle
@@ -28,13 +29,15 @@ SEASONS = [
     "2011-12", "2010-11", "2009-10", "2008-09", "2007-08", "2006-07",
     # ─── Pre-2006 era (no D-LEBRON; defensive rating falls back to 0) ───────
     "2005-06", "2004-05", "2003-04", "2002-03", "2001-02", "2000-01", "1999-00",
+    # ─── Jordan-era Bulls + lockout (salary data scraped from BBRef teams) ──
+    "1998-99", "1997-98", "1996-97",
 ]
 DEFAULT_MIN_THRESHOLD = 500
 
 # Actual games played per season (shortened seasons due to lockout/COVID)
 SEASON_GAMES_LOOKUP = {
     "2020-21": 72, "2019-20": 72, "2011-12": 66,
-    "1998-99": 50,  # if we ever add it (not yet — no salary source)
+    "1998-99": 50,  # lockout-shortened
 }
 
 # ── Salary supplement ──────────────────────────────────────────────────────────
@@ -388,6 +391,101 @@ def fetch_hoopshype_salaries(season: str) -> dict:
         except Exception:
             continue
     return {}
+
+
+# ── Basketball Reference team-page salary scraper ─────────────────────────────
+# For seasons before 1999-2000 ESPN's salary pages don't exist. BBRef has
+# salary tables on each team's season page (hidden inside HTML comments to
+# defeat scrapers — we extract them anyway). One season costs ~30 HTTP
+# requests so the result is cached aggressively to disk.
+
+_BREF_UA = (
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+    "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36"
+)
+
+
+def _bref_team_abbrs(end_year: int) -> list[str]:
+    """All NBA team abbreviations active in the given season (end-year)."""
+    url = f"https://www.basketball-reference.com/leagues/NBA_{end_year}.html"
+    try:
+        r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        if r.status_code != 200:
+            return []
+        return sorted(set(re.findall(rf"/teams/([A-Z]{{3}})/{end_year}\.html", r.text)))
+    except Exception:
+        return []
+
+
+def _bref_team_salaries(team_abbr: str, end_year: int) -> list[tuple[str, float]]:
+    """Scrape one team's salary table (hidden in an HTML comment on BBRef)."""
+    url = f"https://www.basketball-reference.com/teams/{team_abbr}/{end_year}.html"
+    try:
+        r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        if r.status_code != 200:
+            return []
+        from bs4 import Comment
+        soup = BeautifulSoup(r.text, "html.parser")
+        for comment in soup.find_all(string=lambda x: isinstance(x, Comment)):
+            if 'id="salaries2"' not in comment:
+                continue
+            inner = BeautifulSoup(comment, "html.parser")
+            tbl = inner.find("table", id="salaries2")
+            if tbl is None or tbl.find("tbody") is None:
+                continue
+            rows = []
+            for tr in tbl.find("tbody").find_all("tr"):
+                cells = tr.find_all(["th", "td"])
+                if len(cells) < 3:
+                    continue
+                player = cells[1].get_text(strip=True)
+                sal_txt = cells[2].get_text(strip=True)
+                if not player or not sal_txt:
+                    continue
+                try:
+                    salary = float(re.sub(r"[\$,]", "", sal_txt))
+                    rows.append((player, salary))
+                except ValueError:
+                    continue
+            return rows
+        return []
+    except Exception:
+        return []
+
+
+@st.cache_data(ttl=30 * 86_400, show_spinner=False)
+def fetch_bref_salaries(season: str) -> dict:
+    """Aggregated salary lookup from BBRef team pages.
+
+    Returns {normalized_name: salary}. Used as a fallback when ESPN doesn't
+    have salary data for the season (i.e. pre-1999-2000). Caches both in
+    Streamlit's cache and to disk so we only hit BBRef once per season.
+    """
+    end_year = season_to_espn_year(season)
+    disk_path = _dc_path(f"bref_salaries_{season}.pkl")
+    if _dc_fresh(disk_path, ttl=30 * 86_400):
+        try:
+            return _pkl_load(disk_path)
+        except Exception:
+            pass
+
+    result: dict[str, float] = {}
+    abbrs = _bref_team_abbrs(end_year)
+    for i, abbr in enumerate(abbrs):
+        try:
+            for player, salary in _bref_team_salaries(abbr, end_year):
+                result[normalize(player)] = salary
+        except Exception:
+            pass
+        # Be polite to BBRef — sleep between requests to avoid rate limiting
+        if i < len(abbrs) - 1:
+            time.sleep(1.5)
+
+    try:
+        _pkl_save(disk_path, result)
+    except Exception:
+        pass
+    return result
 
 
 @st.cache_data(ttl=3600, show_spinner="Fetching player splits...")
@@ -934,6 +1032,17 @@ def build_raw(season: str) -> pd.DataFrame:
         if hh_lookup:
             stats.loc[missing_mask, "salary"] = stats.loc[missing_mask, "PLAYER_NAME"].apply(
                 lambda n: hh_lookup.get(normalize(n), float("nan"))
+            )
+
+    # Pre-2000 fallback: ESPN doesn't have those years, so scrape BBRef team
+    # pages for salaries. We trigger this only when most rows are still missing
+    # (cheap heuristic — current/recent seasons should be 95%+ filled by ESPN).
+    if stats["salary"].isna().mean() > 0.5:
+        bref_lookup = fetch_bref_salaries(season)
+        if bref_lookup:
+            still_missing = stats["salary"].isna()
+            stats.loc[still_missing, "salary"] = stats.loc[still_missing, "PLAYER_NAME"].apply(
+                lambda n: bref_lookup.get(normalize(n), float("nan"))
             )
 
     stats = stats.dropna(subset=["salary"])
