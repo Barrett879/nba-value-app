@@ -45,9 +45,14 @@ render_nav("Current Free Agents")
 st.title("Barrett Score — Free Agent Class")
 
 # ── Season selector ────────────────────────────────────────────────────────────
+# Free agency data (next-year contracts, options) is only reliable for the
+# current season — Spotrac's URL has no historical year, so older seasons
+# would mix today's free-agency status with stale stat data. Limit to the
+# current + immediately prior season so the page always makes sense.
+_FA_SEASONS = SEASONS[:2]
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
-    season = st.selectbox("Season", SEASONS, index=0)
+    season = st.selectbox("Season", _FA_SEASONS, index=0)
 with ctrl_r:
     min_threshold = st.slider(
         "Min total minutes", min_value=0, max_value=1500,

@@ -63,6 +63,16 @@ df["position"] = df["Player"].map(
     lambda n: _bref_positions.get(normalize(n), "")
 )
 
+# Warn when salary coverage is too sparse to make team-level totals meaningful
+# (pre-1996 BBRef team pages miss most players, leaving many at $0).
+_salary_coverage = (df["salary"] > 0).mean() if len(df) else 0.0
+if _salary_coverage < 0.5:
+    st.warning(
+        f"⚠️ Salary coverage for {season} is {_salary_coverage*100:.0f}% — "
+        "many players have no salary data on file. Team payroll totals below "
+        "are unreliable for this season. Use the Rankings page for player-level analysis."
+    )
+
 # ══════════════════════════════════════════════════════════════════════════════
 # Team Analysis content
 # ══════════════════════════════════════════════════════════════════════════════

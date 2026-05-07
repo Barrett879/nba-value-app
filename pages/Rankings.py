@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
 import plotly.express as px
+import plotly.graph_objects as go
 from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD, SEASON_GAMES_LOOKUP,
     normalize, season_to_espn_year,
@@ -107,8 +108,15 @@ st.divider()
 # Hero callout cards
 # ══════════════════════════════════════════════════════════════════════════════
 _best_row      = df.loc[df["barrett_score"].idxmax()]
-_steal_row     = df.loc[df["value_diff"].idxmin()]   # most underpaid
-_overpaid_row  = df.loc[df["value_diff"].idxmax()]   # most overpaid
+# Salary-based hero cards only meaningful when salary data exists.
+# Pre-1996 has sparse coverage so $0-salary rows aren't actually "underpaid".
+_value_pool = df[df["salary"] > 0]
+if not _value_pool.empty:
+    _steal_row     = _value_pool.loc[_value_pool["value_diff"].idxmin()]
+    _overpaid_row  = _value_pool.loc[_value_pool["value_diff"].idxmax()]
+else:
+    _steal_row    = _best_row
+    _overpaid_row = _best_row
 
 # Most Improved: compare current season to the previous one
 _season_idx   = SEASONS.index(season)
@@ -192,8 +200,6 @@ st.divider()
 # ══════════════════════════════════════════════════════════════════════════════
 st.subheader("Top 10 Players — Barrett Score")
 st.caption(f"Current {season} Barrett Score with change vs prior season.")
-
-import plotly.graph_objects as go
 
 _top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score"]].reset_index(drop=True)
 
@@ -465,12 +471,21 @@ if show_salary_scatter:
         "If Jokic is #1 by Barrett Score, he deserves the #1 salary (e.g. Curry's contract). "
         "No invented numbers — every projected salary is a real contract on the books."
     )
-    proj = display.copy()
+    # Drop rows with no salary data — they cluster at $0 and obscure the chart
+    # (mostly affects pre-1996 where BBRef coverage is sparse).
+    _n_no_salary = (display["salary"] <= 0).sum()
+    proj = display[display["salary"] > 0].copy()
     proj["Actual $M"]     = proj["salary"] / 1e6
     proj["Proj. $M"]      = proj["projected_salary"] / 1e6
     proj["Δ $M"]          = proj["value_diff"] / 1e6
     proj["Barrett Score"] = proj["barrett_score"].round(2)
     proj["Score Rank"]    = proj["score_rank"]
+
+    if _n_no_salary > 0:
+        st.caption(
+            f"⚠️ Hiding {_n_no_salary} player(s) with no salary data on file "
+            "(common for older seasons). Their ranks are still accurate elsewhere."
+        )
 
     sc_col_a, sc_col_b = st.columns([2, 1])
     with sc_col_a:
@@ -881,7 +896,8 @@ if new_selected:
             caption = "★ = current season"
             if no_dlebron:
                 caption += (f"  ·  ⚠️ D-LEBRON unavailable for "
-                            f"{', '.join(no_dlebron)} — defensive ratings set to 0 those seasons")
+                            f"{', '.join(no_dlebron)} — defense estimated from box-score stats "
+                            "(BLK, STL, DREB, PF) on the same scale")
             st.caption(caption)
 
         # ── Monthly cumulative trend (single-player only) ─────────────────────

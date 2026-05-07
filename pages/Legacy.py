@@ -44,7 +44,7 @@ render_nav("Legacy")
 
 st.title("Barrett Score — Legacy")
 st.caption(
-    "The historical record. Every player, every season since 2006–07 — "
+    "The historical record. Every player, every season from 1984–85 to today — "
     "ranked, compared, and put in context."
 )
 
@@ -91,8 +91,14 @@ _consistent_name  = _consistent.iloc[0]["Player"]  if not _consistent.empty else
 _consistent_avg   = _consistent.iloc[0]["avg_score"] if not _consistent.empty else 0
 _consistent_seas  = int(_consistent.iloc[0]["seasons"]) if not _consistent.empty else 0
 
-# Most undervalued single season
-_steal_row = all_df.loc[all_df["value_diff"].idxmin()]
+# Most undervalued single season — only count rows with real salary data
+# (pre-1996 has sparse coverage, so $0-salary rows aren't actually "underpaid",
+# they just don't have data and would dominate the ranking with fake gaps).
+_value_pool = all_df[all_df["salary"] > 0]
+if not _value_pool.empty:
+    _steal_row = _value_pool.loc[_value_pool["value_diff"].idxmin()]
+else:
+    _steal_row = all_df.iloc[0]  # fallback; shouldn't happen in practice
 
 st.markdown("""
 <style>
@@ -155,7 +161,7 @@ tab_rank, tab_arc, tab_era, tab_team, tab_long, tab_rec, tab_draft = st.tabs([
 with tab_rank:
     st.subheader("Best Single-Season Barrett Scores — All Time")
     st.caption(
-        "Every qualifying player-season since 2006–07, ranked by Barrett Score. "
+        "Every qualifying player-season from 1984–85 to today, ranked by Barrett Score. "
         "Switch the sort to surface the most underpaid seasons in history."
     )
 
@@ -185,9 +191,11 @@ with tab_rank:
     if rank_sort == "Barrett Score ↓":
         rank_display = rank_display.sort_values("barrett_score", ascending=False)
     elif rank_sort == "Most Underpaid":
-        rank_display = rank_display.sort_values("value_diff", ascending=True)
+        # Only consider rows with real salary data — pre-1996 $0-salary rows
+        # would otherwise dominate with artificial value_diff gaps.
+        rank_display = rank_display[rank_display["salary"] > 0].sort_values("value_diff", ascending=True)
     else:
-        rank_display = rank_display.sort_values("value_diff", ascending=False)
+        rank_display = rank_display[rank_display["salary"] > 0].sort_values("value_diff", ascending=False)
 
     rank_display = rank_display.reset_index(drop=True)
 
@@ -379,12 +387,17 @@ with tab_era:
     st.caption("Average Barrett Score within each era. Minimum 2 qualifying seasons required.")
 
     ERAS = {
-        "Pre-Analytics\n(2006–2012)":  [s for s in SEASONS_CHRON if _season_year(s) <= 2011],
-        "Pace & Space\n(2012–2018)":   [s for s in SEASONS_CHRON if 2011 < _season_year(s) <= 2017],
-        "Modern\n(2018–present)":      [s for s in SEASONS_CHRON if _season_year(s) > 2017],
+        "Showtime / Bird\n(1984–1991)": [s for s in SEASONS_CHRON if _season_year(s) <= 1990],
+        "Jordan Era\n(1991–1998)":      [s for s in SEASONS_CHRON if 1990 < _season_year(s) <= 1997],
+        "Post-Jordan\n(1998–2005)":     [s for s in SEASONS_CHRON if 1997 < _season_year(s) <= 2004],
+        "Pre-Analytics\n(2005–2012)":   [s for s in SEASONS_CHRON if 2004 < _season_year(s) <= 2011],
+        "Pace & Space\n(2012–2018)":    [s for s in SEASONS_CHRON if 2011 < _season_year(s) <= 2017],
+        "Modern\n(2018–present)":       [s for s in SEASONS_CHRON if _season_year(s) > 2017],
     }
+    # Drop empty eras (e.g. seasons not seeded yet)
+    ERAS = {k: v for k, v in ERAS.items() if v}
 
-    era_cols = st.columns(3, gap="medium")
+    era_cols = st.columns(len(ERAS) if ERAS else 1, gap="medium")
     for col, (era_name, era_seasons) in zip(era_cols, ERAS.items()):
         with col:
             era_df = all_df[all_df["Season"].isin(era_seasons)]
@@ -605,8 +618,11 @@ with tab_rec:
             "These are the GMs who got away with something."
         )
 
+        # Only include rows with real salary data — pre-1996 has sparse
+        # coverage so $0-salary rows aren't true "underpaid" cases.
         underval = (
-            all_df.sort_values("value_diff", ascending=True)
+            all_df[all_df["salary"] > 0]
+            .sort_values("value_diff", ascending=True)
             .reset_index(drop=True)
             .head(50)
         )
@@ -721,9 +737,11 @@ with tab_draft:
     if draft_df.empty:
         st.warning("Draft history data unavailable. Please try again later.")
     else:
-        # Available draft years that overlap with our season data
+        # Available draft years that overlap with our season data (1984+).
+        # Older drafts won't have full career data but still surface picks
+        # like MJ '84, Hakeem '84, Magic-era classes.
         avail_years = sorted(
-            [y for y in draft_df["draft_year"].unique() if 2003 <= y <= 2023],
+            [y for y in draft_df["draft_year"].unique() if 1980 <= y <= 2024],
             reverse=True,
         )
         draft_year_sel = st.selectbox(

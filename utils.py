@@ -1384,6 +1384,9 @@ def fetch_dlebron(season: str) -> dict:
 #   v2: AST × 1.5, TS efficiency cap ±6 (rebalanced 2026-04)
 #   v3: Box Score Defense fallback for pre-2009 seasons (BLK*1.5 + STL*1.5
 #       + DREB*0.15 - PF*0.4, centered on league avg, clipped to [-5, 6])
+#   v4: Pre-1996 seasons keep all players (salary filled with 0 instead of
+#       dropna), so MJ's pre-96 ranks are out of full league not just the
+#       ~50 players with matched salary data.
 FORMULA_VERSION = "v4"
 
 
