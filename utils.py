@@ -1384,7 +1384,7 @@ def fetch_dlebron(season: str) -> dict:
 #   v2: AST × 1.5, TS efficiency cap ±6 (rebalanced 2026-04)
 #   v3: Box Score Defense fallback for pre-2009 seasons (BLK*1.5 + STL*1.5
 #       + DREB*0.15 - PF*0.4, centered on league avg, clipped to [-5, 6])
-FORMULA_VERSION = "v3"
+FORMULA_VERSION = "v4"
 
 
 def _raw_disk_path(season: str) -> Path:
@@ -1456,7 +1456,16 @@ def build_raw(season: str) -> pd.DataFrame:
                 lambda n: bref_lookup.get(normalize(n), float("nan"))
             )
 
-    stats = stats.dropna(subset=["salary"])
+    # Pre-1996 has sparse salary coverage (BBRef team pages miss most players,
+    # HoopsHype starts ~1990, ESPN starts ~2000). Dropping salary-less rows
+    # would leave only ~50 players per season → bogus "1/50" ranks for legends
+    # like MJ. For those years, keep everyone with valid stats and fill missing
+    # salaries with 0 (already documented as "salary unavailable" in the UI).
+    pre_1996 = int(season.split("-")[0]) < 1996
+    if pre_1996:
+        stats["salary"] = stats["salary"].fillna(0)
+    else:
+        stats = stats.dropna(subset=["salary"])
 
     dlebron = fetch_dlebron(season)
     stats["d_lebron"] = stats["PLAYER_ID"].map(dlebron).fillna(0)
