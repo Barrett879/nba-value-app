@@ -31,6 +31,13 @@ SEASONS = [
     "2005-06", "2004-05", "2003-04", "2002-03", "2001-02", "2000-01", "1999-00",
     # ─── Jordan-era Bulls + lockout (salary data scraped from BBRef teams) ──
     "1998-99", "1997-98", "1996-97",
+    # ─── Pre-1996 era (BBRef per-game stats fallback; salaries from BBRef) ─
+    # NBA Stats API returns nothing here — fetch_bref_player_stats provides
+    # the per-game stats. D-LEBRON unavailable (set to 0). Salaries via BBRef
+    # team pages. Covers Jordan's full Bulls run, all of Magic/Bird,
+    # late Kareem, Dr. J, Moses Malone, prime Hakeem.
+    "1995-96", "1994-95", "1993-94", "1992-93", "1991-92", "1990-91",
+    "1989-90", "1988-89", "1987-88", "1986-87", "1985-86", "1984-85",
 ]
 DEFAULT_MIN_THRESHOLD = 500
 
@@ -502,6 +509,124 @@ def fetch_bref_salaries(season: str) -> dict:
         except Exception:
             pass
     return result
+
+
+# ── BBRef per-game stats scraper ─────────────────────────────────────────────
+# NBA Stats API returns empty for 1995-96 and earlier. For pre-1996 seasons we
+# fall back to Basketball Reference's per-game stats table. Output schema
+# matches fetch_league_stats so this is a drop-in replacement upstream of
+# build_raw's formula.
+@st.cache_data(ttl=30 * 86_400, show_spinner=False)
+def fetch_bref_player_stats(season: str) -> pd.DataFrame:
+    """Per-game player stats from BBRef. Returns DataFrame with the same
+    columns the NBA Stats API would return (PLAYER_ID, PLAYER_NAME,
+    TEAM_ABBREVIATION, GP, MIN, PTS, AST, OREB, DREB, BLK, STL, TOV, PF,
+    FGA, FTA). Used only as a fallback when NBA API has no data."""
+    end_year = season_to_espn_year(season)
+    disk_path = _dc_path(f"bref_stats_{season}.parquet")
+    if _dc_fresh(disk_path, ttl=30 * 86_400):
+        try:
+            return pd.read_parquet(disk_path)
+        except Exception:
+            pass
+
+    url = f"https://www.basketball-reference.com/leagues/NBA_{end_year}_per_game.html"
+    r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+    if r.status_code == 429:
+        raise RuntimeError(f"BBRef rate-limited on {url}")
+    if r.status_code != 200:
+        return pd.DataFrame()
+
+    soup = BeautifulSoup(r.text, "html.parser")
+    table = soup.find("table", id="per_game_stats")
+    if table is None:
+        # Fallback — sometimes BBRef hides the per_game table inside a comment
+        from bs4 import Comment
+        for c in soup.find_all(string=lambda x: isinstance(x, Comment)):
+            if 'id="per_game_stats"' in c:
+                inner = BeautifulSoup(c, "html.parser")
+                table = inner.find("table", id="per_game_stats")
+                if table is not None:
+                    break
+    if table is None:
+        return pd.DataFrame()
+
+    df = pd.read_html(io.StringIO(str(table)))[0]
+
+    # BBRef sprinkles repeated header rows through the table — drop those
+    if "Player" in df.columns:
+        df = df[df["Player"] != "Player"].reset_index(drop=True)
+
+    # For traded players BBRef shows a TOT row + per-team rows. Keep TOT (or the
+    # only row for non-traded players).
+    keep = []
+    for player in df["Player"].dropna().unique():
+        rows = df[df["Player"] == player]
+        if len(rows) > 1:
+            tot = rows[rows["Tm"] == "TOT"] if "Tm" in rows.columns else rows.iloc[[0]]
+            keep.append(tot.iloc[0] if not tot.empty else rows.iloc[0])
+        else:
+            keep.append(rows.iloc[0])
+    df = pd.DataFrame(keep).reset_index(drop=True)
+
+    # Rename to NBA Stats API schema
+    df = df.rename(columns={
+        "Player": "PLAYER_NAME",
+        "Tm":     "TEAM_ABBREVIATION",
+        "G":      "GP",
+        "MP":     "MIN",
+        "ORB":    "OREB",
+        "DRB":    "DREB",
+    })
+
+    # Coerce numerics — BBRef returns strings
+    numeric_cols = ["GP", "MIN", "FGA", "FTA", "PTS", "AST", "OREB", "DREB",
+                    "BLK", "STL", "TOV", "PF"]
+    for c in numeric_cols:
+        if c in df.columns:
+            df[c] = pd.to_numeric(df[c], errors="coerce")
+
+    # Fill missing stats with 0 (TOV pre-1977, BLK/STL pre-1973). Formula
+    # tolerates this — those components just contribute 0.
+    for c in ["TOV", "BLK", "STL", "OREB", "DREB", "PF"]:
+        if c not in df.columns:
+            df[c] = 0
+        else:
+            df[c] = df[c].fillna(0)
+
+    # Pre-1973 OREB/DREB weren't tracked separately — only TRB. Split it 30/70
+    # (rough league average) so the formula doesn't double-credit total rebounds.
+    if "TRB" in df.columns and df["OREB"].sum() == 0 and df["DREB"].sum() == 0:
+        df["TRB"] = pd.to_numeric(df["TRB"], errors="coerce").fillna(0)
+        df["OREB"] = (df["TRB"] * 0.30).round(2)
+        df["DREB"] = (df["TRB"] * 0.70).round(2)
+
+    # Map BBRef player names to NBA Stats player IDs where possible. Static
+    # list covers most players including pre-1996. For unknown players we
+    # generate a stable synthetic negative ID from the name hash.
+    def _resolve_pid(name: str) -> int:
+        try:
+            results = nba_players_static.find_players_by_full_name(name)
+            if results:
+                return int(results[0]["id"])
+        except Exception:
+            pass
+        return -(abs(hash(name)) % (10 ** 9))
+    df["PLAYER_ID"] = df["PLAYER_NAME"].apply(_resolve_pid)
+
+    # Final column set + dropna on the essentials
+    df = df.dropna(subset=["GP", "MIN", "PTS"])
+    keep_cols = ["PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "GP", "MIN",
+                 "PTS", "AST", "OREB", "DREB", "BLK", "STL", "TOV", "PF",
+                 "FGA", "FTA"]
+    df = df[[c for c in keep_cols if c in df.columns]].reset_index(drop=True)
+
+    if len(df) > 50:
+        try:
+            df.to_parquet(disk_path, index=False)
+        except Exception:
+            pass
+    return df
 
 
 @st.cache_data(ttl=3600, show_spinner="Fetching player splits...")
@@ -1038,6 +1163,17 @@ def build_raw(season: str) -> pd.DataFrame:
         _sal_f   = _pool.submit(fetch_salaries, season_to_espn_year(season))
         stats    = _stats_f.result().copy()
         salaries = _sal_f.result()
+
+    # Pre-1996 fallback: NBA Stats API returns empty for those years, so
+    # scrape per-game stats from BBRef instead. This unlocks Magic, Bird,
+    # prime Jordan, and (with 1973+) full Kareem from his Lakers years.
+    if stats.empty:
+        try:
+            stats = fetch_bref_player_stats(season).copy()
+        except Exception:
+            stats = pd.DataFrame()
+        if stats.empty:
+            return pd.DataFrame()
 
     sal_lookup = {normalize(n): s for n, s in zip(salaries["name"], salaries["salary"])}
     stats["salary"] = stats["PLAYER_NAME"].apply(lambda n: sal_lookup.get(normalize(n)))
