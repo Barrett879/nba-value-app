@@ -41,6 +41,54 @@ SEASONS = [
 ]
 DEFAULT_MIN_THRESHOLD = 500
 
+# ── League-wide pace by season (possessions per 48 minutes) ────────────────────
+# Source: Basketball Reference league-averages page. Used to era-adjust volume
+# stats (PTS, AST, REB, BLK, STL, TOV, PF) so a 25 PPG game in 1985 (high-pace)
+# is normalized against a 25 PPG game in 2003 (dead-ball). D-LEBRON and the
+# TS% efficiency adjustment are already era-relative so they don't get scaled.
+LEAGUE_PACE: dict[str, float] = {
+    "2025-26": 99.0,   # in-progress estimate
+    "2024-25": 99.1, "2023-24": 98.5, "2022-23": 99.2, "2021-22": 97.2,
+    "2020-21": 99.2, "2019-20": 100.3, "2018-19": 100.0,
+    "2017-18": 97.3, "2016-17": 96.4, "2015-16": 95.8, "2014-15": 93.9,
+    "2013-14": 93.9, "2012-13": 92.0, "2011-12": 91.3, "2010-11": 92.1,
+    "2009-10": 92.7, "2008-09": 91.7, "2007-08": 92.4, "2006-07": 91.9,
+    "2005-06": 90.5, "2004-05": 90.9, "2003-04": 90.1, "2002-03": 91.0,
+    "2001-02": 90.7, "2000-01": 91.3, "1999-00": 93.1, "1998-99": 88.9,
+    "1997-98": 90.3, "1996-97": 90.1, "1995-96": 91.8, "1994-95": 92.9,
+    "1993-94": 95.1, "1992-93": 96.8, "1991-92": 96.6, "1990-91": 97.8,
+    "1989-90": 98.3, "1988-89": 100.6, "1987-88": 99.6, "1986-87": 100.8,
+    "1985-86": 102.1, "1984-85": 102.1,
+}
+# Reference pace = roughly the average across all seasons we cover. Volume stats
+# get scaled toward this number so dead-ball-era players get a boost and
+# Showtime/modern-era players get a small haircut.
+REFERENCE_PACE = 96.0
+
+
+def pace_factor(season: str) -> float:
+    """Multiplier to bring a season's volume stats onto a pace-neutral baseline.
+    Returns 1.0 for unknown seasons (no adjustment)."""
+    p = LEAGUE_PACE.get(season)
+    if not p or p <= 0:
+        return 1.0
+    return REFERENCE_PACE / p
+
+
+def pace_adjusted_barrett(base_score: float, d_lebron: float,
+                          efficiency_adj: float, avail_mult: float,
+                          season: str) -> float:
+    """Era-adjusted Barrett Score.
+
+    The 'volume' portion of base_score (PTS + AST×1.5 + REB terms + BLK/STL/TOV
+    /PF terms) gets scaled by pace_factor. D-LEBRON and the TS%-based efficiency
+    adjustment are already era-relative (D-LEBRON is RAPM-based, efficiency is
+    measured against league-avg TS% that season) so they're left alone.
+    """
+    volume = base_score - d_lebron * 2 - efficiency_adj * 2
+    adjusted_base = volume * pace_factor(season) + d_lebron * 2 + efficiency_adj * 2
+    return adjusted_base * avail_mult
+
 # Actual games played per season (shortened seasons due to lockout/COVID)
 SEASON_GAMES_LOOKUP = {
     "2020-21": 72, "2019-20": 72, "2011-12": 66,
@@ -976,6 +1024,14 @@ def fetch_player_full_career(player_name: str) -> pd.DataFrame:
                 continue
             br_row = ranked[mask2].iloc[0]
 
+            barrett_raw = float(br_row["barrett_score"])
+            barrett_pace = pace_adjusted_barrett(
+                float(br_row.get("base_score", 0)),
+                float(br_row.get("d_lebron", 0)),
+                float(br_row.get("efficiency_adj", 0)),
+                float(br_row.get("avail_mult", 1.0)),
+                season,
+            )
             rows.append({
                 "Season":         season,
                 "Team":           raw_row["TEAM_ABBREVIATION"],
@@ -988,7 +1044,8 @@ def fetch_player_full_career(player_name: str) -> pd.DataFrame:
                 "BLK":            float(raw_row["BLK"]),
                 "TOV":            float(raw_row["TOV"]),
                 "TS%":            float(br_row.get("ts_pct", 0)) * 100,
-                "Barrett Score":  float(br_row["barrett_score"]),
+                "Barrett Score":  barrett_raw,
+                "Barrett (Pace)": barrett_pace,
                 "Score Rank":     int(br_row["score_rank"]),
                 "Total Players":  int(len(ranked)),
                 "Salary":         float(br_row.get("salary", 0) or 0),
