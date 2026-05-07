@@ -146,10 +146,10 @@ COMMON_CSS = """
 
 _NAV_PAGES = [
     ("Current Rankings",  "/Rankings"),
-    ("Visualizer",        "/Salary_Projector"),
+    ("Search Player",     "/Search"),
+    ("Legacy",            "/Legacy"),
     ("Team Analysis",     "/Team_Analysis"),
     ("Current Free Agents", "/Free_Agent_Class"),
-    ("Legacy",            "/Legacy"),
 ]
 
 def render_nav(current: str) -> None:
@@ -762,6 +762,78 @@ def fetch_monthly_scores(player_id: int, season: str,
         })
 
     return pd.DataFrame(rows)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def get_all_player_names(min_seasons: int = 1) -> list[str]:
+    """All player names that appear in any season, sorted by career-average
+    Barrett Score (highest first). Used to populate autocomplete dropdowns."""
+    try:
+        all_seasons = build_all_seasons_combined()
+        if all_seasons.empty:
+            return []
+        # Group by player, get career averages, filter and sort
+        career = (
+            all_seasons.groupby("Player")
+            .agg(avg_score=("barrett_score", "mean"),
+                 n_seasons=("Season", "nunique"))
+            .reset_index()
+        )
+        career = career[career["n_seasons"] >= min_seasons]
+        career = career.sort_values("avg_score", ascending=False)
+        return career["Player"].tolist()
+    except Exception:
+        return []
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_player_full_career(player_name: str) -> pd.DataFrame:
+    """Full per-season career stats for one player: raw counting stats from
+    fetch_league_stats joined with Barrett Score / rank from build_raw +
+    apply_rankings. One row per season the player appeared in."""
+    name_norm = normalize(player_name)
+    rows: list[dict] = []
+    for season in SEASONS:
+        try:
+            stats = fetch_league_stats(season)
+            mask = stats["PLAYER_NAME"].apply(normalize) == name_norm
+            if not mask.any():
+                continue
+            raw_row = stats[mask].iloc[0]
+
+            ranked = apply_rankings(build_raw(season))
+            mask2 = ranked["Player"].apply(normalize) == name_norm
+            if not mask2.any():
+                continue
+            br_row = ranked[mask2].iloc[0]
+
+            rows.append({
+                "Season":         season,
+                "Team":           raw_row["TEAM_ABBREVIATION"],
+                "GP":             int(raw_row["GP"]),
+                "MPG":            float(raw_row["MIN"]),
+                "PTS":            float(raw_row["PTS"]),
+                "AST":            float(raw_row["AST"]),
+                "REB":            float(raw_row.get("OREB", 0)) + float(raw_row.get("DREB", 0)),
+                "STL":            float(raw_row["STL"]),
+                "BLK":            float(raw_row["BLK"]),
+                "TOV":            float(raw_row["TOV"]),
+                "TS%":            float(br_row.get("ts_pct", 0)) * 100,
+                "Barrett Score":  float(br_row["barrett_score"]),
+                "Score Rank":     int(br_row["score_rank"]),
+                "Total Players":  int(len(ranked)),
+                "Salary":         float(br_row.get("salary", 0) or 0),
+            })
+        except Exception:
+            pass
+
+    if not rows:
+        return pd.DataFrame()
+
+    result = pd.DataFrame(rows)
+    result["_year"] = result["Season"].apply(lambda s: int(s.split("-")[0]))
+    result = result.sort_values("_year").drop(columns=["_year"]).reset_index(drop=True)
+    return result
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
