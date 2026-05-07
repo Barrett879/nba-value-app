@@ -523,17 +523,17 @@ def fetch_bref_player_stats(season: str) -> pd.DataFrame:
     TEAM_ABBREVIATION, GP, MIN, PTS, AST, OREB, DREB, BLK, STL, TOV, PF,
     FGA, FTA). Used only as a fallback when NBA API has no data."""
     end_year = season_to_espn_year(season)
-    disk_path = _dc_path(f"bref_stats_{season}.parquet")
+    # v2: cache filename bumped 2026-04-30 to orphan v1 parquets that were
+    # written without TEAM_ABBREVIATION (rename map missed BBRef's "Team"
+    # column). v2 files are guaranteed to have the right schema.
+    disk_path = _dc_path(f"bref_stats_v2_{season}.parquet")
     if _dc_fresh(disk_path, ttl=30 * 86_400):
         try:
             cached = pd.read_parquet(disk_path)
-            # Validate the cached parquet has the columns build_raw expects.
-            # Older broken scrapes wrote files missing TEAM_ABBREVIATION
-            # (rename map didn't match BBRef's "Team" column). Treat those
-            # files as invalid and re-fetch fresh data.
             required = {"PLAYER_NAME", "TEAM_ABBREVIATION", "GP", "PTS"}
             if required.issubset(cached.columns):
                 return cached
+            # Silently fall through and re-fetch if cache somehow lacks columns
         except Exception:
             pass
 
