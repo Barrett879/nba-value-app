@@ -561,11 +561,9 @@ if _p:
 
     teams_preview = _diverging_bars(team_rows) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Net payroll efficiency · green = team is winning the value game</div>'
     fa_preview = _fa_category_chart(_p["fa_categories"]) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Free-agent class breakdown · this offseason</div>'
-    legacy_svg = _multi_sparkline(_p.get("legacy_series", []))
-    if legacy_svg:
-        legacy_preview = legacy_svg + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Career arcs aligned by year — Jordan · Kobe · LeBron · Jokić</div>'
-    else:
-        legacy_preview = "<em>Loading…</em>"
+    # Legacy preview is rendered specially below (needs an interactive radio
+    # for the user to pick a featured player), so we just stash the data here.
+    legacy_preview = None
 
     # Trades preview — Harden→Houston featured trade
     def _build_trades_preview():
@@ -590,7 +588,7 @@ if _p:
 
     trades_preview = _build_trades_preview()
 else:
-    rankings_preview = teams_preview = fa_preview = legacy_preview = trades_preview = "<em>Loading live data…</em>"
+    rankings_preview = teams_preview = fa_preview = trades_preview = "<em>Loading live data…</em>"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -604,13 +602,50 @@ render_strip(
     preview_html=rankings_preview,
 )
 
-render_strip(
-    name="Legacy",
-    href="/Legacy",
-    accent="#f1c40f",
-    description="42 seasons of NBA history — all-time greats, era leaderboards, team Mount Rushmores, draft classes.",
-    preview_html=legacy_preview,
-)
+# ── Legacy strip — special-cased for the interactive player picker ───────────
+st.markdown(f"""
+<a class="tab-strip" href="/Legacy" target="_top" style="--accent:#f1c40f;">
+    <div class="tab-strip-name">Legacy</div>
+    <div class="tab-strip-desc">42 seasons of NBA history — all-time greats, era leaderboards, team Mount Rushmores, draft classes.</div>
+    <span class="tab-strip-arrow">→</span>
+</a>
+""", unsafe_allow_html=True)
+with st.expander("Preview", expanded=False):
+    legacy_series = (_p or {}).get("legacy_series", [])
+    if not legacy_series:
+        st.markdown('<em>Loading live data…</em>', unsafe_allow_html=True)
+    else:
+        names = [s["name"] for s in legacy_series]
+        # Default to LeBron (index 2 in LEGACY_FEATURED)
+        default_name = "LeBron James" if "LeBron James" in names else names[0]
+        picked = st.radio(
+            "Featured player",
+            options=names,
+            index=names.index(default_name),
+            horizontal=True,
+            label_visibility="collapsed",
+            key="legacy_preview_pick",
+        )
+        chosen = next((s for s in legacy_series if s["name"] == picked), None)
+        if chosen and chosen["career"]:
+            chart_html = _multi_sparkline([chosen])
+            n_seasons = len(chosen["career"])
+            first = chosen["career"][0][0]
+            last  = chosen["career"][-1][0]
+            st.markdown(
+                f'<div class="preview-box">'
+                f'{chart_html}'
+                f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">'
+                f'{picked} · {n_seasons} seasons · {first}–{last}'
+                f'</div>'
+                f'</div>',
+                unsafe_allow_html=True,
+            )
+        else:
+            st.markdown(
+                f'<em>No data on disk yet for {picked} — try after re-seeding.</em>',
+                unsafe_allow_html=True,
+            )
 
 render_strip(
     name="Team Analysis",
