@@ -526,7 +526,14 @@ def fetch_bref_player_stats(season: str) -> pd.DataFrame:
     disk_path = _dc_path(f"bref_stats_{season}.parquet")
     if _dc_fresh(disk_path, ttl=30 * 86_400):
         try:
-            return pd.read_parquet(disk_path)
+            cached = pd.read_parquet(disk_path)
+            # Validate the cached parquet has the columns build_raw expects.
+            # Older broken scrapes wrote files missing TEAM_ABBREVIATION
+            # (rename map didn't match BBRef's "Team" column). Treat those
+            # files as invalid and re-fetch fresh data.
+            required = {"PLAYER_NAME", "TEAM_ABBREVIATION", "GP", "PTS"}
+            if required.issubset(cached.columns):
+                return cached
         except Exception:
             pass
 
