@@ -956,6 +956,15 @@ def fetch_player_full_career(player_name: str) -> pd.DataFrame:
             continue
         try:
             stats = fetch_league_stats(season)
+            # Pre-1996 fallback: NBA Stats API returns empty, so pull per-game
+            # stats from BBRef (same source build_raw uses for those years).
+            if stats.empty or "PLAYER_NAME" not in stats.columns:
+                try:
+                    stats = fetch_bref_player_stats(season)
+                except Exception:
+                    stats = pd.DataFrame()
+            if stats.empty or "PLAYER_NAME" not in stats.columns:
+                continue
             mask = stats["PLAYER_NAME"].apply(normalize) == name_norm
             if not mask.any():
                 continue
