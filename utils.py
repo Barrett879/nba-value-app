@@ -557,27 +557,41 @@ def fetch_bref_player_stats(season: str) -> pd.DataFrame:
     if "Player" in df.columns:
         df = df[df["Player"] != "Player"].reset_index(drop=True)
 
-    # For traded players BBRef shows a TOT row + per-team rows. Keep TOT (or the
-    # only row for non-traded players).
+    # For traded players BBRef shows a TOT/2TM row + per-team rows. Keep the
+    # combined row (TOT, 2TM, 3TM, ...) when present, otherwise the single row.
+    team_col = "Team" if "Team" in df.columns else ("Tm" if "Tm" in df.columns else None)
     keep = []
     for player in df["Player"].dropna().unique():
         rows = df[df["Player"] == player]
-        if len(rows) > 1:
-            tot = rows[rows["Tm"] == "TOT"] if "Tm" in rows.columns else rows.iloc[[0]]
-            keep.append(tot.iloc[0] if not tot.empty else rows.iloc[0])
+        if len(rows) > 1 and team_col:
+            # Combined-team rows historically labeled TOT, but newer BBRef uses
+            # 2TM / 3TM / 4TM tags depending on stints.
+            mask = rows[team_col].astype(str).str.match(r"^(TOT|\dTM)$", na=False)
+            combined = rows[mask]
+            keep.append(combined.iloc[0] if not combined.empty else rows.iloc[0])
         else:
             keep.append(rows.iloc[0])
     df = pd.DataFrame(keep).reset_index(drop=True)
 
-    # Rename to NBA Stats API schema
-    df = df.rename(columns={
-        "Player": "PLAYER_NAME",
-        "Tm":     "TEAM_ABBREVIATION",
-        "G":      "GP",
-        "MP":     "MIN",
-        "ORB":    "OREB",
-        "DRB":    "DREB",
-    })
+    # Flatten multi-level column headers if pd.read_html returned them
+    if isinstance(df.columns, pd.MultiIndex):
+        df.columns = [c[-1] if isinstance(c, tuple) else c for c in df.columns]
+
+    # Rename to NBA Stats API schema. BBRef has used both "Tm" and "Team" over
+    # time, so accept either. Build the rename map only for columns that exist.
+    rename_map: dict[str, str] = {}
+    for src, dst in [
+        ("Player",  "PLAYER_NAME"),
+        ("Team",    "TEAM_ABBREVIATION"),  # current BBRef column name
+        ("Tm",      "TEAM_ABBREVIATION"),  # legacy column name
+        ("G",       "GP"),
+        ("MP",      "MIN"),
+        ("ORB",     "OREB"),
+        ("DRB",     "DREB"),
+    ]:
+        if src in df.columns:
+            rename_map[src] = dst
+    df = df.rename(columns=rename_map)
 
     # Coerce numerics — BBRef returns strings
     numeric_cols = ["GP", "MIN", "FGA", "FTA", "PTS", "AST", "OREB", "DREB",
