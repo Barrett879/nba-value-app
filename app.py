@@ -194,7 +194,7 @@ st.markdown("""
 _, _search_col, _ = st.columns([1, 2, 1])
 with _search_col:
     st.markdown(
-        '<div class="home-search-label">SEARCH ANY PLAYER · 1984 → today</div>',
+        '<div class="home-search-label">SEARCH ANY PLAYER · CAREER ARCS · HEAD-TO-HEAD COMPARISONS · 1984 → TODAY</div>',
         unsafe_allow_html=True,
     )
     _all_player_names = get_all_player_names() or []
@@ -400,7 +400,7 @@ def _compute_charts():
         if df.empty:
             return None
 
-        top5 = df.nsmallest(5, "score_rank")[["Player", "barrett_score"]].values.tolist()
+        top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score"]].values.tolist()
         steals_3 = df.nsmallest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
         overpaid_3 = df.nlargest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
 
@@ -445,7 +445,7 @@ def _compute_charts():
             lebron_career = []
 
         return {
-            "top5": top5,
+            "top10": top10,
             "steals_3": [(str(p), float(v)) for p, v in steals_3],
             "overpaid_3": [(str(p), float(v)) for p, v in overpaid_3],
             "best_teams": [(str(t), float(v)) for t, v in best_teams],
@@ -483,16 +483,20 @@ def render_strip(name: str, href: str, accent: str, description: str, preview_ht
 
 # ── Rankings preview ─────────────────────────────────────────────────────────
 if _p:
-    rank_colors = ["#f1c40f", "#e8b923", "#c9a02e", "#a78232", "#7a6334"]
+    # Gold → bronze gradient for ranks 1 → 10
+    rank_colors = [
+        "#f1c40f", "#ecbe1a", "#e3b121", "#d3a02a", "#bf8e34",
+        "#a87c3a", "#916b3d", "#7a5b3c", "#634c39", "#4d3e35",
+    ]
     rankings_preview = _hbar_chart([
         {
             "label":     f"{i+1}. {name.split()[-1] if len(name.split()) > 1 else name}",
             "value":     score,
             "value_str": f"{score:.1f}",
-            "color":     rank_colors[i],
+            "color":     rank_colors[i] if i < len(rank_colors) else rank_colors[-1],
         }
-        for i, (name, score) in enumerate(_p["top5"])
-    ]) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Top 5 by Barrett Score · this season</div>'
+        for i, (name, score) in enumerate(_p["top10"])
+    ], w=460, h=260, label_w=150) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Top 10 by Barrett Score · this season</div>'
 
     vis_rows = []
     for n_, vd in _p["steals_3"]:
@@ -515,21 +519,6 @@ if _p:
     teams_preview = _diverging_bars(team_rows) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Net payroll efficiency · green = team is winning the value game</div>'
     fa_preview = _fa_category_chart(_p["fa_categories"]) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Free-agent class breakdown · this offseason</div>'
     legacy_preview = _sparkline_gradient(_p["lebron_career"]) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">LeBron\'s career arc · 22 seasons</div>' if _p["lebron_career"] else "<em>Loading…</em>"
-
-    n_indexed = _p.get("n_indexed_players", 0)
-    search_preview = (
-        f'<div style="text-align:center; padding: 0.6rem 0.5rem;">'
-        f'  <div style="font-size:1.6rem; font-weight:800; color:#7ec8e8; line-height:1;">'
-        f'    {n_indexed:,}'
-        f'  </div>'
-        f'  <div style="font-size:0.78rem; color:#aaa; margin-top:0.3rem;">'
-        f'    players indexed · 1984 → today'
-        f'  </div>'
-        f'  <div style="font-size:0.72rem; color:#888; margin-top:0.6rem; line-height:1.4;">'
-        f'    All-time greats · Active stars · Pre-1996 legends · Two-way contracts'
-        f'  </div>'
-        f'</div>'
-    )
 
     # Trades preview — Harden→Houston featured trade
     def _build_trades_preview():
@@ -554,7 +543,7 @@ if _p:
 
     trades_preview = _build_trades_preview()
 else:
-    rankings_preview = teams_preview = fa_preview = legacy_preview = search_preview = trades_preview = "<em>Loading live data…</em>"
+    rankings_preview = teams_preview = fa_preview = legacy_preview = trades_preview = "<em>Loading live data…</em>"
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -566,14 +555,6 @@ render_strip(
     accent="#e63946",
     description="Who's the best NBA player right now? Every player ranked by Barrett Score this season.",
     preview_html=rankings_preview,
-)
-
-render_strip(
-    name="Search Player",
-    href="/Search",
-    accent="#7ec8e8",
-    description="Find any player from 1984 to today — career arcs, peak seasons, head-to-head comparisons.",
-    preview_html=search_preview,
 )
 
 render_strip(
