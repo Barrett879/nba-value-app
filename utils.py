@@ -804,10 +804,15 @@ def get_all_player_names(min_seasons: int = 1) -> list[str]:
 def fetch_player_full_career(player_name: str) -> pd.DataFrame:
     """Full per-season career stats for one player: raw counting stats from
     fetch_league_stats joined with Barrett Score / rank from build_raw +
-    apply_rankings. One row per season the player appeared in."""
+    apply_rankings. One row per season the player appeared in.
+
+    Only reads seasons that are already on disk — view-time requests must
+    NEVER trigger fresh BBRef scrapes. seed_cache.py populates the disk."""
     name_norm = normalize(player_name)
     rows: list[dict] = []
     for season in SEASONS:
+        if not _raw_disk_fresh(season):
+            continue
         try:
             stats = fetch_league_stats(season)
             mask = stats["PLAYER_NAME"].apply(normalize) == name_norm
@@ -853,7 +858,12 @@ def fetch_player_full_career(player_name: str) -> pd.DataFrame:
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_career_trend(player_id: int, num_seasons: int = 5) -> pd.DataFrame:
     """Barrett Score per season pulled directly from build_raw — guaranteed to
-    match the stat panel since both use the same LeagueDashPlayerStats source."""
+    match the stat panel since both use the same LeagueDashPlayerStats source.
+
+    IMPORTANT: only reads seasons that are already on disk. View-time requests
+    must NEVER trigger fresh BBRef scrapes (those take ~50s each and would
+    block home-page rendering). Cache-population is seed_cache.py's job.
+    """
     player_info = nba_players_static.find_player_by_id(player_id)
     if not player_info:
         return pd.DataFrame()
@@ -861,6 +871,10 @@ def fetch_career_trend(player_id: int, num_seasons: int = 5) -> pd.DataFrame:
 
     rows = []
     for season in SEASONS:
+        if not _raw_disk_fresh(season):
+            # Season not yet seeded — skip rather than trigger a fresh fetch
+            # that would hang this request for tens of seconds.
+            continue
         try:
             raw = build_raw(season)
             mask = raw["Player"].apply(normalize) == name_norm
