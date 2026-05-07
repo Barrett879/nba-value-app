@@ -446,12 +446,127 @@ sort_map = {
 sort_col, sort_asc = sort_map[view]
 display = display.sort_values(sort_col, ascending=sort_asc).reset_index(drop=True)
 
-tog_a, tog_b, tog_rest = st.columns([1, 1, 6])
+tog_a, tog_b, tog_c, tog_rest = st.columns([1, 1, 1, 5])
 with tog_a:
     advanced = st.toggle("Advanced view", value=False)
 with tog_b:
     show_splits = st.toggle("Splits View", value=False,
                             help="Per-team stints ranked together. Team-switchers appear as separate rows.")
+with tog_c:
+    show_salary_scatter = st.toggle("Salary scatter", value=False,
+                            help="Visualize each player's actual salary vs. their Barrett-Score-based projected salary. "
+                                 "Above the diagonal = overpaid. Below = underpaid.")
+
+# ── Salary scatter view (formerly the standalone Visualizer page) ─────────────
+if show_salary_scatter:
+    st.markdown("### Actual vs. projected salary")
+    st.caption(
+        "Projected salary = the actual salary of whoever holds the same rank position by pay. "
+        "If Jokic is #1 by Barrett Score, he deserves the #1 salary (e.g. Curry's contract). "
+        "No invented numbers — every projected salary is a real contract on the books."
+    )
+    proj = display.copy()
+    proj["Actual $M"]     = proj["salary"] / 1e6
+    proj["Proj. $M"]      = proj["projected_salary"] / 1e6
+    proj["Δ $M"]          = proj["value_diff"] / 1e6
+    proj["Barrett Score"] = proj["barrett_score"].round(2)
+    proj["Score Rank"]    = proj["score_rank"]
+
+    sc_col_a, sc_col_b = st.columns([2, 1])
+    with sc_col_a:
+        proj_search = st.text_input(
+            "Highlight player on chart", "", key="proj_search",
+            placeholder="Type a name to highlight…")
+    with sc_col_b:
+        proj_sort = st.selectbox("Table order",
+                                  ["Most Overpaid", "Most Underpaid"], key="proj_sort")
+
+    axis_max = max(0.01, float(proj[["Actual $M", "Proj. $M"]].max().max()) * 1.05)
+
+    fig_scatter = px.scatter(
+        proj,
+        x="Proj. $M", y="Actual $M",
+        color="Δ $M",
+        color_continuous_scale="RdYlGn_r",
+        color_continuous_midpoint=0,
+        hover_name="Player",
+        hover_data={
+            "Team": True, "Score Rank": True,
+            "Barrett Score": ":.2f",
+            "Actual $M": ":.1f", "Proj. $M": ":.1f", "Δ $M": ":.1f",
+        },
+        labels={"Proj. $M": "Projected Salary ($M)", "Actual $M": "Actual Salary ($M)"},
+        height=520,
+    )
+    fig_scatter.add_shape(
+        type="line", x0=0, y0=0, x1=axis_max, y1=axis_max,
+        line=dict(color="rgba(255,255,255,0.5)", width=2, dash="dash"),
+    )
+    fig_scatter.add_annotation(
+        x=axis_max * 0.72, y=axis_max * 0.82,
+        text="Fairly paid", showarrow=False,
+        font=dict(color="rgba(255,255,255,0.5)", size=11),
+        textangle=-40,
+    )
+    if proj_search:
+        hi = proj[proj["Player"].str.contains(proj_search, case=False)]
+        if not hi.empty:
+            fig_scatter.add_traces(px.scatter(
+                hi, x="Proj. $M", y="Actual $M",
+                text="Player",
+            ).update_traces(
+                marker=dict(size=14, color="yellow", line=dict(color="black", width=1)),
+                textposition="top center",
+                name="Highlighted",
+            ).data)
+    fig_scatter.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0.15)",
+        font_color="white",
+        coloraxis_colorbar=dict(title="Δ ($M)", tickformat=".1f"),
+        xaxis=dict(gridcolor="rgba(255,255,255,0.1)",
+                   tickprefix="$", ticksuffix="M",
+                   tickformat=".1f", range=[0, axis_max]),
+        yaxis=dict(gridcolor="rgba(255,255,255,0.1)",
+                   tickprefix="$", ticksuffix="M",
+                   tickformat=".1f", range=[0, axis_max]),
+    )
+    st.plotly_chart(fig_scatter, use_container_width=True,
+                    config={"displayModeBar": True, "displaylogo": False})
+
+    sc_tbl = proj[["Player", "Team", "Score Rank", "Barrett Score",
+                    "Proj. $M", "Actual $M", "Δ $M"]].copy()
+    sc_tbl["Proj. $M"]  = sc_tbl["Proj. $M"].round(2)
+    sc_tbl["Actual $M"] = sc_tbl["Actual $M"].round(2)
+    sc_tbl["Δ $M"]      = sc_tbl["Δ $M"].round(2)
+    sc_tbl = sc_tbl.sort_values("Δ $M",
+        ascending=(proj_sort == "Most Underpaid")).reset_index(drop=True)
+    sc_tbl.insert(0, "#", range(1, len(sc_tbl) + 1))
+
+    def _scatter_color_delta(val):
+        try: n = float(val)
+        except (ValueError, TypeError): return ""
+        if n > 20:  return "color: #e74c3c; font-weight: bold"
+        if n > 5:   return "color: #f1a8a8"
+        if n < -20: return "color: #2ecc71; font-weight: bold"
+        if n < -5:  return "color: #a8e6a8"
+        return ""
+
+    st.dataframe(
+        sc_tbl.style.map(_scatter_color_delta, subset=["Δ $M"]),
+        column_config={
+            "Proj. $M":      st.column_config.NumberColumn(format="$%.2fM"),
+            "Actual $M":     st.column_config.NumberColumn(format="$%.2fM"),
+            "Δ $M":          st.column_config.NumberColumn(format="$%.2fM"),
+            "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
+        },
+        use_container_width=True, hide_index=True, height=500,
+    )
+    st.caption(
+        "**Proj. Salary** = salary of whoever is the same rank by pay. "
+        "**Δ $M** = Actual − Projected. Positive (red) = overpaid. Negative (green) = underpaid."
+    )
+    st.divider()
 
 if show_splits:
     splits_df = build_splits_data(season, salary_lookup)

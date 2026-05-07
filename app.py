@@ -15,6 +15,9 @@ from utils import (
     normalize,
     SEASONS,
     DEFAULT_MIN_THRESHOLD,
+    get_all_player_names,
+    HISTORICAL_TRADES,
+    trade_side_summary,
 )
 
 # LeBron James' NBA Stats player ID — used for the Legacy career arc sparkline
@@ -188,6 +191,62 @@ st.markdown("""
     </div>
 </div>
 """, unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Search hero — centerpiece on the home page
+# ══════════════════════════════════════════════════════════════════════════════
+st.markdown("""
+<style>
+/* Style the search box to feel like a hero element */
+[data-testid="stSelectbox"][data-baseweb] div[role="combobox"] {
+    background: rgba(20, 20, 42, 0.7) !important;
+    border: 2px solid rgba(126, 200, 232, 0.55) !important;
+    border-radius: 12px !important;
+    backdrop-filter: blur(6px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+.home-search-wrap {
+    max-width: 760px;
+    margin: 0.7rem auto 1.2rem auto;
+}
+.home-search-label {
+    font-size: 0.85rem;
+    color: #d6d6dc;
+    text-align: center;
+    margin-bottom: 0.4rem;
+    text-shadow: 0 1px 6px rgba(0,0,0,0.6);
+    letter-spacing: 0.04em;
+}
+</style>
+""", unsafe_allow_html=True)
+
+_, _search_col, _ = st.columns([1, 2, 1])
+with _search_col:
+    st.markdown(
+        '<div class="home-search-label">SEARCH ANY PLAYER · 1984 → today</div>',
+        unsafe_allow_html=True,
+    )
+    _all_player_names = get_all_player_names() or []
+    _picked = st.selectbox(
+        "Search any player",
+        options=_all_player_names,
+        index=None,
+        placeholder="Type a name — LeBron, Jordan, Magic, Jokić, Wembanyama…",
+        label_visibility="collapsed",
+        key="home_search_select",
+    )
+    if _picked:
+        st.session_state["search_player"] = _picked
+        try:
+            st.switch_page("pages/Search.py")
+        except Exception:
+            # Older Streamlit fallback — render a link the user can click
+            st.markdown(
+                f'<a href="/Search" target="_top" style="color:#7ec8e8; text-decoration: underline;">'
+                f'Click here to view {_picked}\'s profile →</a>',
+                unsafe_allow_html=True,
+            )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -510,6 +569,7 @@ def _compute_charts():
                 {"label": "TO",  "count": n_to,  "avg_score": avg_to,  "color": "#f39c12"},
             ],
             "lebron_career": lebron_career,
+            "n_indexed_players": len(_all_player_names) if _all_player_names else 0,
         }
     except Exception:
         return None
@@ -589,9 +649,59 @@ else:
     legacy_chart = _wrap_chart("")
 
 
-# ── Nav cards — row 1: Rankings + Legacy ──────────────────────────────────────
-_, col1, col2, _ = st.columns([0.5, 1, 1, 0.5], gap="medium")
-with col1:
+# ── Search card teaser — list of categories ──────────────────────────────────
+_n_indexed = (_p or {}).get("n_indexed_players", 0)
+search_chart = (
+    '<div class="nav-chart" style="justify-content: center; padding: 1rem 0.6rem;">'
+    f'  <div style="text-align:center; font-size:1.5rem; font-weight:800; color:#7ec8e8; line-height:1;">'
+    f'    {_n_indexed:,}'
+    f'  </div>'
+    f'  <div style="text-align:center; font-size:0.78rem; color:#aaa; margin-top:0.3rem;">'
+    f'    players indexed'
+    f'  </div>'
+    f'  <div style="text-align:center; font-size:0.72rem; color:#888; margin-top:0.7rem; line-height:1.5;">'
+    f'    All-time greats · Active stars<br>Pre-1996 legends · 1984 → today'
+    f'  </div>'
+    '</div>'
+)
+
+
+# ── Trades card teaser — show one famous historical trade with the math ──────
+def _build_trades_teaser():
+    if not HISTORICAL_TRADES:
+        return _wrap_chart("")
+    # Pick the Harden→Houston trade — one of the most famously lopsided
+    pick = next((t for t in HISTORICAL_TRADES if "Harden" in t["name"]), HISTORICAL_TRADES[0])
+    season = pick["season"]
+    sum_a = trade_side_summary(tuple(pick["side_a"]), season)
+    sum_b = trade_side_summary(tuple(pick["side_b"]), season)
+    a_total = sum_a["barrett_total"]
+    b_total = sum_b["barrett_total"]
+    if a_total == 0 and b_total == 0:
+        return _wrap_chart("")  # data not yet seeded
+    rows = [
+        {"label": pick["side_a_team"].split()[-1], "value": a_total,
+         "value_str": f"{a_total:.1f}",
+         "color": "#2ecc71" if a_total >= b_total else "#e63946", "side": "pos"},
+        {"label": pick["side_b_team"].split()[-1], "value": b_total,
+         "value_str": f"{b_total:.1f}",
+         "color": "#2ecc71" if b_total > a_total else "#e63946", "side": "pos"},
+    ]
+    body = _hbar_chart(rows, w=320, h=110, label_w=110)
+    caption = f'Featured trade — {pick["name"]}'
+    return (
+        '<div class="nav-chart">'
+        f'{body}'
+        f'<div class="nav-chart-caption">{caption}</div>'
+        '</div>'
+    )
+
+trades_chart = _build_trades_teaser() if _p else _wrap_chart("")
+
+
+# ── Nav cards — row 1: Rankings · Search · Legacy ────────────────────────────
+r1c1, r1c2, r1c3 = st.columns(3, gap="medium")
+with r1c1:
     st.markdown(f"""
     <a class="nav-card" href="/Rankings" target="_top" style="--accent:#e63946;">
         <div class="nav-title">Current Rankings</div>
@@ -600,30 +710,30 @@ with col1:
         <span class="nav-cta">Open Rankings →</span>
     </a>
     """, unsafe_allow_html=True)
-with col2:
+with r1c2:
+    st.markdown(f"""
+    <a class="nav-card" href="/Search" target="_top" style="--accent:#7ec8e8;">
+        <div class="nav-title">Search Player</div>
+        <div class="nav-desc">Find any player from 1984 to today — full career arcs and per-season stats.</div>
+        {search_chart}
+        <span class="nav-cta">Open Search →</span>
+    </a>
+    """, unsafe_allow_html=True)
+with r1c3:
     st.markdown(f"""
     <a class="nav-card" href="/Legacy" target="_top" style="--accent:#f1c40f;">
         <div class="nav-title">Legacy</div>
-        <div class="nav-desc">20 seasons of NBA history — career arcs, all-time greats, and team legends.</div>
+        <div class="nav-desc">42 seasons of NBA history — career arcs, all-time greats, and team legends.</div>
         {legacy_chart}
         <span class="nav-cta">Open Legacy →</span>
     </a>
     """, unsafe_allow_html=True)
 
-st.markdown("<div style='margin-top:0.4rem'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top:0.5rem'></div>", unsafe_allow_html=True)
 
-# ── Nav cards — row 2: Visualizer + Team Analysis + Free Agents ───────────────
-col3, col4, col5 = st.columns(3, gap="medium")
-with col3:
-    st.markdown(f"""
-    <a class="nav-card" href="/Salary_Projector" target="_top" style="--accent:#9b59b6;">
-        <div class="nav-title">Visualizer</div>
-        <div class="nav-desc">Find the league's biggest bargains — and worst contracts — at a glance.</div>
-        {vis_chart}
-        <span class="nav-cta">Open Visualizer →</span>
-    </a>
-    """, unsafe_allow_html=True)
-with col4:
+# ── Nav cards — row 2: Team Analysis · Trades · Free Agency ──────────────────
+r2c1, r2c2, r2c3 = st.columns(3, gap="medium")
+with r2c1:
     st.markdown(f"""
     <a class="nav-card" href="/Team_Analysis" target="_top" style="--accent:#3498db;">
         <div class="nav-title">Team Analysis</div>
@@ -632,7 +742,16 @@ with col4:
         <span class="nav-cta">Open Teams →</span>
     </a>
     """, unsafe_allow_html=True)
-with col5:
+with r2c2:
+    st.markdown(f"""
+    <a class="nav-card" href="/Trades" target="_top" style="--accent:#9b59b6;">
+        <div class="nav-title">Trades</div>
+        <div class="nav-desc">Stack any two trade sides head-to-head — past trades or your own.</div>
+        {trades_chart}
+        <span class="nav-cta">Open Trades →</span>
+    </a>
+    """, unsafe_allow_html=True)
+with r2c3:
     st.markdown(f"""
     <a class="nav-card" href="/Free_Agent_Class" target="_top" style="--accent:#2ecc71;">
         <div class="nav-title">Current Free Agents</div>

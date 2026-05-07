@@ -47,10 +47,16 @@ if not all_names:
     st.error("Player database not yet loaded. Try again in a moment.")
     st.stop()
 
+# Pre-select if we arrived here from the home-page search bar
+_default_idx = None
+_handed_off = st.session_state.pop("search_player", None)
+if _handed_off and _handed_off in all_names:
+    _default_idx = all_names.index(_handed_off)
+
 selected = st.selectbox(
     "Type a player name…",
     options=all_names,
-    index=None,
+    index=_default_idx,
     placeholder="Try LeBron James, Michael Jordan, Nikola Jokić…",
     key="player_search_select",
 )

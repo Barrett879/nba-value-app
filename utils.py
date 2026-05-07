@@ -149,6 +149,7 @@ _NAV_PAGES = [
     ("Search Player",     "/Search"),
     ("Legacy",            "/Legacy"),
     ("Team Analysis",     "/Team_Analysis"),
+    ("Trades",            "/Trades"),
     ("Current Free Agents", "/Free_Agent_Class"),
 ]
 
@@ -783,6 +784,139 @@ def fetch_monthly_scores(player_id: int, season: str,
         })
 
     return pd.DataFrame(rows)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def trade_side_summary(player_names: tuple[str, ...], season: str) -> dict:
+    """Summarize a list of players in a given season — their Barrett Scores
+    and salaries. Used by the Trades page. Player names matched by normalize().
+    Returns dict with: rows (DataFrame), found (list), missing (list),
+    barrett_total (float), salary_total (float)."""
+    if not _raw_disk_fresh(season):
+        # Don't trigger fresh build_raw on view-time requests
+        return {"rows": pd.DataFrame(), "found": [], "missing": list(player_names),
+                "barrett_total": 0.0, "salary_total": 0.0}
+
+    try:
+        df = apply_projections(apply_rankings(build_raw(season)))
+    except Exception:
+        return {"rows": pd.DataFrame(), "found": [], "missing": list(player_names),
+                "barrett_total": 0.0, "salary_total": 0.0}
+
+    if df.empty:
+        return {"rows": pd.DataFrame(), "found": [], "missing": list(player_names),
+                "barrett_total": 0.0, "salary_total": 0.0}
+
+    name_norms = {normalize(n) for n in player_names}
+    matched = df[df["Player"].apply(lambda n: normalize(n) in name_norms)].copy()
+    found_norms = {normalize(n) for n in matched["Player"]}
+    missing = [n for n in player_names if normalize(n) not in found_norms]
+
+    return {
+        "rows":          matched.reset_index(drop=True),
+        "found":         list(matched["Player"]),
+        "missing":       missing,
+        "barrett_total": float(matched["barrett_score"].sum()) if not matched.empty else 0.0,
+        "salary_total":  float(matched["salary"].sum())        if not matched.empty else 0.0,
+    }
+
+
+# ── Historical trades preloaded for the Trades page ───────────────────────────
+# season = the season the trade ENDED (i.e., where most of the players land
+# post-trade). year_after = next season, used to show how each side did after.
+# Keep names exactly as they appear in NBA Stats data so normalize() matches.
+HISTORICAL_TRADES = [
+    {
+        "name":        "Kevin Garnett to Boston (2007)",
+        "season":      "2007-08",
+        "year_after":  "2008-09",
+        "side_a_team": "Boston Celtics",
+        "side_a":      ["Kevin Garnett"],
+        "side_b_team": "Minnesota Timberwolves",
+        "side_b":      ["Al Jefferson", "Ryan Gomes", "Sebastian Telfair", "Gerald Green", "Theo Ratliff"],
+        "notes":       "Boston also sent two future first-round picks. Won the title that year.",
+    },
+    {
+        "name":        "Pau Gasol to Lakers (2008)",
+        "season":      "2007-08",
+        "year_after":  "2008-09",
+        "side_a_team": "Los Angeles Lakers",
+        "side_a":      ["Pau Gasol"],
+        "side_b_team": "Memphis Grizzlies",
+        "side_b":      ["Kwame Brown", "Javaris Crittenton", "Aaron McKie"],
+        "notes":       "Lakers also got Marc Gasol's draft rights. Reached 3 straight Finals; won 2 titles.",
+    },
+    {
+        "name":        "James Harden to Houston (2012)",
+        "season":      "2012-13",
+        "year_after":  "2013-14",
+        "side_a_team": "Houston Rockets",
+        "side_a":      ["James Harden", "Cole Aldrich", "Daequan Cook", "Lazar Hayward"],
+        "side_b_team": "Oklahoma City Thunder",
+        "side_b":      ["Kevin Martin", "Jeremy Lamb"],
+        "notes":       "Plus 2 firsts + 2nd to OKC. One of the most lopsided trades of the modern era.",
+    },
+    {
+        "name":        "Kawhi Leonard to Toronto (2018)",
+        "season":      "2018-19",
+        "year_after":  "2019-20",
+        "side_a_team": "Toronto Raptors",
+        "side_a":      ["Kawhi Leonard", "Danny Green"],
+        "side_b_team": "San Antonio Spurs",
+        "side_b":      ["DeMar DeRozan", "Jakob Poeltl"],
+        "notes":       "Toronto won the championship that season. Kawhi left in free agency the next summer.",
+    },
+    {
+        "name":        "Anthony Davis to Lakers (2019)",
+        "season":      "2019-20",
+        "year_after":  "2020-21",
+        "side_a_team": "Los Angeles Lakers",
+        "side_a":      ["Anthony Davis"],
+        "side_b_team": "New Orleans Pelicans",
+        "side_b":      ["Lonzo Ball", "Brandon Ingram", "Josh Hart"],
+        "notes":       "Lakers won the title with AD + LeBron. New Orleans got 3 firsts in the deal too.",
+    },
+    {
+        "name":        "Kyrie Irving to Boston (2017)",
+        "season":      "2017-18",
+        "year_after":  "2018-19",
+        "side_a_team": "Boston Celtics",
+        "side_a":      ["Kyrie Irving"],
+        "side_b_team": "Cleveland Cavaliers",
+        "side_b":      ["Isaiah Thomas", "Jae Crowder", "Ante Zizic"],
+        "notes":       "Boston also got the Brooklyn pick (used on Collin Sexton).",
+    },
+    {
+        "name":        "Pierce/Garnett to Brooklyn (2013)",
+        "season":      "2013-14",
+        "year_after":  "2014-15",
+        "side_a_team": "Brooklyn Nets",
+        "side_a":      ["Paul Pierce", "Kevin Garnett", "Jason Terry"],
+        "side_b_team": "Boston Celtics",
+        "side_b":      ["Gerald Wallace", "Kris Humphries", "Marshon Brooks", "Keith Bogans"],
+        "notes":       "Boston received 3 unprotected firsts. Cornerstone of Brooklyn's prolonged decline.",
+    },
+    {
+        "name":        "Jimmy Butler to Philadelphia (2018)",
+        "season":      "2018-19",
+        "year_after":  "2019-20",
+        "side_a_team": "Philadelphia 76ers",
+        "side_a":      ["Jimmy Butler", "Justin Patton"],
+        "side_b_team": "Minnesota Timberwolves",
+        "side_b":      ["Robert Covington", "Dario Šarić", "Jerryd Bayless"],
+        "notes":       "Butler walked to Miami the following summer in a sign-and-trade.",
+    },
+    {
+        "name":        "Allen Iverson to Detroit (2008)",
+        "season":      "2008-09",
+        "year_after":  "2009-10",
+        "side_a_team": "Detroit Pistons",
+        "side_a":      ["Allen Iverson"],
+        "side_b_team": "Denver Nuggets",
+        "side_b":      ["Chauncey Billups", "Antonio McDyess", "Cheikh Samb"],
+        "notes":       "Denver pivoted to a deeper team; Detroit's veteran core fell apart.",
+    },
+]
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
