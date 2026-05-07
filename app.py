@@ -20,7 +20,15 @@ from utils import (
     trade_side_summary,
 )
 
-LEBRON_PLAYER_ID = 2544
+# Featured players for the Legacy preview overlay on the home page.
+# IDs come from nba_api.stats.static.players. Order matters — earliest first
+# so older legends sit at the bottom of the legend.
+LEGACY_FEATURED = [
+    {"name": "Michael Jordan",  "id":    893, "color": "#f1c40f"},  # gold
+    {"name": "Kobe Bryant",     "id":    977, "color": "#9b59b6"},  # purple
+    {"name": "LeBron James",    "id":   2544, "color": "#e63946"},  # red
+    {"name": "Nikola Jokić",    "id": 203999, "color": "#7ec8e8"},  # blue
+]
 
 # Start warming all season caches the moment the server boots —
 # before any user arrives, so the first visitor doesn't pay the cost.
@@ -307,48 +315,74 @@ def _value_color(v, vmin, vmax, low="#e74c3c", mid="#f1c40f", high="#2ecc71"):
     return _interp_color(low, mid, t * 2) if t < 0.5 else _interp_color(mid, high, (t - 0.5) * 2)
 
 
-def _sparkline_gradient(points, w=460, h=140, gradient_id="lebron-grad"):
-    if not points:
+def _multi_sparkline(series_list, w=460, h=160):
+    """Overlay multiple career arcs aligned by career year.
+    series_list: list of dicts {name, color, career: [(season_str, score), ...]}.
+    Player labels render as a colored legend across the top.
+    """
+    valid = [s for s in series_list if s.get("career")]
+    if not valid:
         return ""
-    pad_left, pad_right = 36, 36
-    pad_top, pad_bot = 12, 22
-    n = len(points)
-    vals = [p[1] for p in points]
-    vmin, vmax = min(vals), max(vals)
-    rng = (vmax - vmin) or 1.0
+    pad_left, pad_right = 14, 14
+    pad_top, pad_bot = 26, 18  # extra top pad for legend
     chart_w = w - pad_left - pad_right
     chart_h = h - pad_top - pad_bot
-    coords = []
-    for i, (_, v) in enumerate(points):
-        x = pad_left + (i / (n - 1)) * chart_w if n > 1 else w / 2
-        y = pad_top + chart_h - ((v - vmin) / rng) * chart_h
-        coords.append((x, y))
-    line_points = " ".join(f"{x:.1f},{y:.1f}" for x, y in coords)
-    area_points = (
-        f"{coords[0][0]:.1f},{pad_top + chart_h} " + line_points +
-        f" {coords[-1][0]:.1f},{pad_top + chart_h}"
+
+    all_vals = [v for s in valid for _, v in s["career"]]
+    vmin, vmax = min(all_vals), max(all_vals)
+    rng = (vmax - vmin) or 1.0
+    max_len = max(len(s["career"]) for s in valid)
+    if max_len < 2:
+        return ""
+
+    parts = []
+
+    # Legend across the top — one tspan per player, colored to match its line
+    legend_segments = []
+    for i, s in enumerate(valid):
+        last_name = s["name"].split()[-1]
+        if i > 0:
+            legend_segments.append('<tspan fill="#666"> · </tspan>')
+        legend_segments.append(
+            f'<tspan fill="{s["color"]}" font-weight="700">{_esc(last_name)}</tspan>'
+        )
+    parts.append(
+        f'<text x="{w/2:.1f}" y="14" text-anchor="middle" '
+        f'font-size="11" font-family="system-ui">'
+        + "".join(legend_segments) + "</text>"
     )
-    defs = (
-        f'<defs>'
-        f'<linearGradient id="{gradient_id}" x1="0" y1="0" x2="0" y2="1">'
-        f'<stop offset="0%" stop-color="#2ecc71"/><stop offset="50%" stop-color="#f1c40f"/>'
-        f'<stop offset="100%" stop-color="#e74c3c"/></linearGradient>'
-        f'<linearGradient id="{gradient_id}-fill" x1="0" y1="0" x2="0" y2="1">'
-        f'<stop offset="0%" stop-color="#2ecc71" stop-opacity="0.18"/>'
-        f'<stop offset="50%" stop-color="#f1c40f" stop-opacity="0.10"/>'
-        f'<stop offset="100%" stop-color="#e74c3c" stop-opacity="0.05"/></linearGradient></defs>'
+
+    # Lines + dots per player
+    for s in valid:
+        coords = []
+        for i, (_, v) in enumerate(s["career"]):
+            x = pad_left + (i / (max_len - 1)) * chart_w
+            y = pad_top + chart_h - ((v - vmin) / rng) * chart_h
+            coords.append((x, y))
+        line_pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in coords)
+        parts.append(
+            f'<polyline points="{line_pts}" fill="none" stroke="{s["color"]}" '
+            f'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>'
+        )
+        for x, y in coords:
+            parts.append(
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{s["color"]}" '
+                f'stroke="#14142a" stroke-width="0.8"/>'
+            )
+
+    # X-axis hint
+    parts.append(
+        f'<text x="{pad_left:.1f}" y="{h - 4}" '
+        f'fill="#777" font-size="9" font-family="system-ui">Year 1</text>'
     )
-    dots = "".join(
-        f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{_value_color(v, vmin, vmax)}" '
-        f'stroke="#14142a" stroke-width="1.5"/>'
-        for (x, y), v in zip(coords, vals)
+    parts.append(
+        f'<text x="{w - pad_right:.1f}" y="{h - 4}" text-anchor="end" '
+        f'fill="#777" font-size="9" font-family="system-ui">Year {max_len}</text>'
     )
+
     return (
         f'<svg viewBox="0 0 {w} {h}" preserveAspectRatio="xMidYMid meet" '
-        f'style="width:100%; height:{h}px;">{defs}'
-        f'<polygon points="{area_points}" fill="url(#{gradient_id}-fill)"/>'
-        f'<polyline points="{line_points}" fill="none" stroke="url(#{gradient_id})" '
-        f'stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>{dots}</svg>'
+        f'style="width:100%; height:{h}px;">{"".join(parts)}</svg>'
     )
 
 
@@ -435,14 +469,23 @@ def _compute_charts():
         def _avg(xs):
             return sum(xs) / len(xs) if xs else 0.0
 
-        try:
-            lebron_df = fetch_career_trend(LEBRON_PLAYER_ID, num_seasons=len(SEASONS))
-            lebron_career = [
-                (str(row["Season"]).split("-")[0], float(row["barrett_score"]))
-                for _, row in lebron_df.iterrows()
-            ]
-        except Exception:
-            lebron_career = []
+        # Pull career arcs for all featured Legacy players. Each call reads
+        # disk-cached parquets — no API hits at view time.
+        legacy_series = []
+        for entry in LEGACY_FEATURED:
+            try:
+                ct = fetch_career_trend(entry["id"], num_seasons=len(SEASONS))
+                career = [
+                    (str(row["Season"]).split("-")[0], float(row["barrett_score"]))
+                    for _, row in ct.iterrows()
+                ]
+            except Exception:
+                career = []
+            legacy_series.append({
+                "name":   entry["name"],
+                "color":  entry["color"],
+                "career": career,
+            })
 
         return {
             "top10": top10,
@@ -456,7 +499,7 @@ def _compute_charts():
                 {"label": "PO", "count": len(po), "avg_score": _avg(po), "color": "#3498db"},
                 {"label": "TO", "count": len(to), "avg_score": _avg(to), "color": "#f39c12"},
             ],
-            "lebron_career": lebron_career,
+            "legacy_series":     legacy_series,
             "n_indexed_players": len(_all_player_names) if _all_player_names else 0,
         }
     except Exception:
@@ -518,7 +561,11 @@ if _p:
 
     teams_preview = _diverging_bars(team_rows) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Net payroll efficiency · green = team is winning the value game</div>'
     fa_preview = _fa_category_chart(_p["fa_categories"]) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Free-agent class breakdown · this offseason</div>'
-    legacy_preview = _sparkline_gradient(_p["lebron_career"]) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">LeBron\'s career arc · 22 seasons</div>' if _p["lebron_career"] else "<em>Loading…</em>"
+    legacy_svg = _multi_sparkline(_p.get("legacy_series", []))
+    if legacy_svg:
+        legacy_preview = legacy_svg + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Career arcs aligned by year — Jordan · Kobe · LeBron · Jokić</div>'
+    else:
+        legacy_preview = "<em>Loading…</em>"
 
     # Trades preview — Harden→Houston featured trade
     def _build_trades_preview():
