@@ -388,7 +388,7 @@ def render_splits_panel(player_name, season):
             "TS%":          st.column_config.TextColumn(help="True Shooting % — scoring efficiency across 2s, 3s, and free throws. PTS / (2 × (FGA + 0.44 × FTA)). League avg ~57%."),
             "Eff. Adj":     st.column_config.NumberColumn(help="Efficiency adjustment added to Base Score. clamp(0.15 × (TS% − League Avg TS%) × 100, −4, +4). Rewards efficient scorers, penalises inefficient ones."),
             "Base Score":   st.column_config.NumberColumn(help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj. Raw per-game value before the availability multiplier."),
-            "Avail ×":      st.column_config.NumberColumn(help="Availability multiplier (0.75–1.00). Rewards health and heavy minutes. 0.75 + 0.25 × √((GP/team games) × min(Total MIN/2500, 1))."),
+            "Avail ×":      st.column_config.NumberColumn(help="Availability multiplier (0.30–1.00). Rewards health and heavy minutes. 0.30 + 0.70 × √(min(Total MIN / (season games × 30.5), 1)). For traded players, season games is replaced by team games during that stint."),
             "Barrett Score":st.column_config.NumberColumn(help="Base Score × Availability Multiplier. The final contract value rating."),
         },
         use_container_width=True,
@@ -626,9 +626,10 @@ if show_splits and splits_df is not None:
     MINS_PER_GAME_CAP = 2500 / 82
     stint_mask = sdisplay["Player"].isin(traded_players) & (sdisplay["Team"] != "TOT")
     if stint_mask.any():
+        # v5 availability formula: 0.30 floor, sqrt of total_min/cap only.
         sdisplay.loc[stint_mask, "avail_mult"] = sdisplay[stint_mask].apply(
-            lambda r: 0.75 + 0.25 * math.sqrt(
-                min(r["total_min"] / (team_games.get(r["Team"], season_games) * MINS_PER_GAME_CAP), 1)
+            lambda r: 0.30 + 0.70 * math.sqrt(
+                min(r["total_min"] / (team_games.get(r["Team"], season_games) * MINS_PER_GAME_CAP), 1.0)
             ), axis=1
         )
         sdisplay.loc[stint_mask, "barrett_score"] = (
@@ -791,7 +792,7 @@ else:
             "Base Score": st.column_config.NumberColumn(format="%.2f",
                 help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj."),
             "Avail ×":    st.column_config.NumberColumn(format="%.3f",
-                help="0.75 + 0.25 × √((GP/82) × min(Total MIN/2500, 1))."),
+                help="0.30 + 0.70 × √(min(Total MIN / 2500, 1)). Range 0.30–1.00."),
             "Score Rank": st.column_config.NumberColumn(help="Rank by Barrett Score."),
             "Salary Rank":st.column_config.NumberColumn(help="Rank by actual salary."),
             "Rank Diff":  st.column_config.NumberColumn(help="Salary Rank − Score Rank. Positive = underpaid."),

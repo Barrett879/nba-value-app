@@ -239,8 +239,21 @@ def base_score(row) -> float:
 
 
 def availability_multiplier(gp: float, total_min: float, season_games: int = 82) -> float:
+    """Availability multiplier — punishes missed games + light minutes.
+
+    Range: 0.30 → 1.00. Sqrt curve so missing 20% of the season costs ~10%
+    rather than a linear 20%, but missing 80% costs much more than the
+    previous v4 formula (0.30 floor instead of 0.75). An 18-game season
+    at 30 MPG now lands ~0.62 instead of ~0.80.
+
+    Inputs:
+      gp:           games played
+      total_min:    total minutes played
+      season_games: games in this season (66 for 2011-12 lockout,
+                    72 for COVID years, 82 otherwise)
+    """
     min_cap = season_games * (2500 / 82)
-    return 0.75 + 0.25 * math.sqrt((gp / season_games) * min(total_min / min_cap, 1))
+    return 0.30 + 0.70 * math.sqrt(min(total_min / min_cap, 1.0))
 
 
 # ── Salary formatting ──────────────────────────────────────────────────────────
@@ -814,11 +827,10 @@ def fetch_monthly_scores(player_id: int, season: str,
               - tov / 1.5 - pf / 3 + d_lebron_val * 2 + eff_adj * 2)
 
         # avail_mult uses team_gp as the season-games denominator so that
-        # appearing in 30/30 team games = full availability, not 30/82
+        # appearing in 30/30 team games = full availability, not 30/82.
+        # v5 formula: 0.30 floor, sqrt of total_min/cap only.
         min_cap = team_gp * (2500 / 82)
-        avail = 0.75 + 0.25 * math.sqrt(
-            (gp / team_gp) * min(total_min / min_cap, 1)
-        )
+        avail = 0.30 + 0.70 * math.sqrt(min(total_min / min_cap, 1.0))
         barrett = bs * avail
 
         rows.append({
@@ -1453,7 +1465,10 @@ def fetch_dlebron(season: str) -> dict:
 #   v4: Pre-1996 seasons keep all players (salary filled with 0 instead of
 #       dropna), so MJ's pre-96 ranks are out of full league not just the
 #       ~50 players with matched salary data.
-FORMULA_VERSION = "v4"
+#   v5: Availability multiplier rebalanced — floor dropped from 0.75 to 0.30,
+#       drops the GP factor (only total_min/cap matters), so an 18-game
+#       season multiplier goes from 0.80 → 0.62. Injured stars score lower.
+FORMULA_VERSION = "v5"
 
 
 def _raw_disk_path(season: str) -> Path:
