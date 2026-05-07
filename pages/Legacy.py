@@ -80,10 +80,16 @@ _arc["yoy_delta"] = _arc["barrett_score"] - _arc["prev_score"]
 # ══════════════════════════════════════════════════════════════════════════════
 _goat_row     = all_df.loc[all_df["barrett_score"].idxmax()]
 
-# Most consistent: players with ≥5 qualifying seasons, ranked by avg score
+# Most consistent: players with ≥5 qualifying seasons, ranked by avg score.
+# GP-weighted so a 17-game cameo doesn't get equal weight as an 82-game peak
+# (which would let injury-shortened seasons drag legends below role players).
 _career_avg = (
     all_df.groupby("Player")
-    .agg(avg_score=("barrett_score", "mean"), seasons=("Season", "nunique"))
+    .apply(lambda g: pd.Series({
+        "avg_score": (g["barrett_score"] * g["GP"]).sum() / g["GP"].sum()
+                     if g["GP"].sum() > 0 else g["barrett_score"].mean(),
+        "seasons":   g["Season"].nunique(),
+    }))
     .reset_index()
 )
 _consistent = _career_avg[_career_avg["seasons"] >= 5].sort_values("avg_score", ascending=False)
@@ -403,9 +409,12 @@ with tab_era:
             era_df = all_df[all_df["Season"].isin(era_seasons)]
             era_stats = (
                 era_df.groupby("Player")
-                .agg(avg_score=("barrett_score", "mean"),
-                     peak_score=("barrett_score", "max"),
-                     seasons=("Season", "nunique"))
+                .apply(lambda g: pd.Series({
+                    "avg_score":  (g["barrett_score"] * g["GP"]).sum() / g["GP"].sum()
+                                  if g["GP"].sum() > 0 else g["barrett_score"].mean(),
+                    "peak_score": g["barrett_score"].max(),
+                    "seasons":    g["Season"].nunique(),
+                }))
                 .reset_index()
             )
             era_stats = era_stats[era_stats["seasons"] >= 2].sort_values("avg_score", ascending=False)
@@ -534,14 +543,15 @@ with tab_long:
 
     long_df = (
         all_df.groupby("Player")
-        .agg(
-            avg_score   = ("barrett_score", "mean"),
-            peak_score  = ("barrett_score", "max"),
-            min_score   = ("barrett_score", "min"),
-            seasons     = ("Season", "nunique"),
-            peak_season = ("Season", lambda s: all_df.loc[s.index[all_df.loc[s.index, "barrett_score"].argmax()], "Season"]),
-            teams       = ("Team", lambda t: ", ".join(sorted(t.unique()))),
-        )
+        .apply(lambda g: pd.Series({
+            "avg_score":   (g["barrett_score"] * g["GP"]).sum() / g["GP"].sum()
+                           if g["GP"].sum() > 0 else g["barrett_score"].mean(),
+            "peak_score":  g["barrett_score"].max(),
+            "min_score":   g["barrett_score"].min(),
+            "seasons":     g["Season"].nunique(),
+            "peak_season": g.loc[g["barrett_score"].idxmax(), "Season"],
+            "teams":       ", ".join(sorted(g["Team"].unique())),
+        }))
         .reset_index()
     )
     long_df = long_df[long_df["seasons"] >= min_seas].sort_values("avg_score", ascending=False).reset_index(drop=True)

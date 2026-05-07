@@ -970,16 +970,21 @@ HISTORICAL_TRADES = [
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_all_player_names(min_seasons: int = 1) -> list[str]:
     """All player names that appear in any season, sorted by career-average
-    Barrett Score (highest first). Used to populate autocomplete dropdowns."""
+    Barrett Score (highest first, GP-weighted). Used to populate autocomplete
+    dropdowns."""
     try:
         all_seasons = build_all_seasons_combined()
         if all_seasons.empty:
             return []
-        # Group by player, get career averages, filter and sort
+        # GP-weighted career average — so a 17-game cameo doesn't drag a
+        # legend's career avg down to a role-player level.
         career = (
             all_seasons.groupby("Player")
-            .agg(avg_score=("barrett_score", "mean"),
-                 n_seasons=("Season", "nunique"))
+            .apply(lambda g: pd.Series({
+                "avg_score": (g["barrett_score"] * g["GP"]).sum() / g["GP"].sum()
+                             if g["GP"].sum() > 0 else g["barrett_score"].mean(),
+                "n_seasons": g["Season"].nunique(),
+            }))
             .reset_index()
         )
         career = career[career["n_seasons"] >= min_seasons]

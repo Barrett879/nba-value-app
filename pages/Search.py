@@ -102,6 +102,18 @@ def _load_career(name: str) -> pd.DataFrame:
 _PALETTE = ["#f1c40f", "#e74c3c", "#3498db", "#2ecc71", "#9b59b6"]
 
 
+# ── Career-average helper (games-weighted, like real stat sites) ─────────────
+# Simple per-season .mean() weights every season equally — so a 17-game
+# 1994-95 MJ cameo contributes the same as an 82-game peak season, dragging
+# career PPG below the canonical 30.1. GP-weighted means match BBRef numbers.
+def _gp_weighted(career: pd.DataFrame, col: str) -> float:
+    gp = career["GP"]
+    total_gp = gp.sum()
+    if total_gp <= 0:
+        return float(career[col].mean()) if len(career) else 0.0
+    return float((career[col] * gp).sum() / total_gp)
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SINGLE-PLAYER VIEW — full career detail
 # ══════════════════════════════════════════════════════════════════════════════
@@ -124,10 +136,10 @@ if len(selected) == 1:
     best_season_idx = career[SCORE_COL].idxmax()
     best_season     = career.loc[best_season_idx]
 
-    career_avg_score = career[SCORE_COL].mean()
-    career_avg_pts   = career["PTS"].mean()
-    career_avg_ast   = career["AST"].mean()
-    career_avg_reb   = career["REB"].mean()
+    career_avg_score = _gp_weighted(career, SCORE_COL)
+    career_avg_pts   = _gp_weighted(career, "PTS")
+    career_avg_ast   = _gp_weighted(career, "AST")
+    career_avg_reb   = _gp_weighted(career, "REB")
     total_games      = int(career["GP"].sum())
 
     st.markdown(f"### {player_name}")
@@ -321,12 +333,12 @@ else:
             "Career":          career_yrs,
             "Seasons":         n_seasons,
             "Games":           int(c["GP"].sum()),
-            f"Avg {SCORE_LABEL}":  c[SCORE_COL].mean(),
+            f"Avg {SCORE_LABEL}":  _gp_weighted(c, SCORE_COL),
             f"Peak {SCORE_LABEL}": float(peak[SCORE_COL]),
             "Peak Season":     peak["Season"],
-            "PPG":             c["PTS"].mean(),
-            "APG":             c["AST"].mean(),
-            "RPG":             c["REB"].mean(),
+            "PPG":             _gp_weighted(c, "PTS"),
+            "APG":             _gp_weighted(c, "AST"),
+            "RPG":             _gp_weighted(c, "REB"),
         })
     summary = pd.DataFrame(rows)
     st.dataframe(

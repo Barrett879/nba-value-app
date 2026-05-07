@@ -398,10 +398,15 @@ def render_splits_panel(player_name, season):
 
 # ── Compare players (multiselect) ─────────────────────────────────────────
 _all_seasons = build_all_seasons_combined()
+# GP-weighted career avg so a 17-game cameo season doesn't drag legends down
+# to role-player level in the dropdown ordering.
 _career_avg_rnk = (
-    _all_seasons.groupby("Player")["barrett_score"].mean()
+    _all_seasons.groupby("Player")
+    .apply(lambda g: pd.Series({
+        "avg_score": (g["barrett_score"] * g["GP"]).sum() / g["GP"].sum()
+                     if g["GP"].sum() > 0 else g["barrett_score"].mean(),
+    }))
     .reset_index()
-    .rename(columns={"barrett_score": "avg_score"})
     .sort_values("avg_score", ascending=False)
 )
 _current_players = set(df["Player"].unique())
