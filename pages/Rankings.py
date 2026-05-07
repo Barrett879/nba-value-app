@@ -651,7 +651,7 @@ else:
     }
     if advanced:
         col_config.update({
-            "GP":         st.column_config.NumberColumn(help="Games played this season."),
+            "GP":         st.column_config.NumberColumn(format="%d", help="Games played this season."),
             "MPG":        st.column_config.NumberColumn(format="%.2f", help="Minutes per game."),
             "Base Score": st.column_config.NumberColumn(format="%.2f",
                 help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj."),

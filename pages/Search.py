@@ -207,6 +207,7 @@ st.dataframe(
     hide_index=True,
     height=min(700, max(120, len(tbl) * 35 + 40)),
     column_config={
+        "GP":            st.column_config.NumberColumn(format="%d", help="Games played that season."),
         "Salary $M":     st.column_config.TextColumn("Salary",     help="Salary that season ($M). Some pre-2000 rookie scale and minimum contracts may show $0."),
         "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
         "Rank":          st.column_config.TextColumn(help="Score rank that season out of all players who hit the minutes threshold."),

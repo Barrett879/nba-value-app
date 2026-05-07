@@ -362,7 +362,7 @@ with tab_arc:
                         "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
                         "Salary $M":     st.column_config.NumberColumn(format="$%.2fM"),
                         "Total Min":     st.column_config.NumberColumn(help="Total minutes played that season."),
-                        "GP":            st.column_config.NumberColumn(help="Games played."),
+                        "GP":            st.column_config.NumberColumn(format="%d", help="Games played."),
                     },
                     use_container_width=True,
                     hide_index=True,
