@@ -296,8 +296,11 @@ dlebron_lookup = fetch_dlebron(season)
 _gp_sum = float(df["GP"].sum())
 league_avg_ts = float((df["ts_pct"] * df["GP"]).sum() / _gp_sum) if _gp_sum > 0 else 0.0
 if not dlebron_lookup:
-    st.info("⚠️ D-LEBRON data is not available for this season — defensive ratings are set to 0 for all players. "
-            "Barrett Scores reflect only box-score statistics.")
+    st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) only goes back to 2009-10. "
+            "For this season, defensive contribution is estimated from box-score stats — "
+            "BLK, STL, DREB, and PF — centered on the season's league average. "
+            "Calibrated to roughly match D-LEBRON's scale, but noisier (no on/off, no role-adjustment, "
+            "no luck-adjustment).")
 
 
 def render_splits_panel(player_name, season):
