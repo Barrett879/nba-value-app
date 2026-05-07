@@ -1239,7 +1239,9 @@ def fetch_dlebron(season: str) -> dict:
 # previous formula values are then ignored and rebuilt on demand.
 #   v1: AST × 2, TS efficiency cap ±4 (original formula)
 #   v2: AST × 1.5, TS efficiency cap ±6 (rebalanced 2026-04)
-FORMULA_VERSION = "v2"
+#   v3: Box Score Defense fallback for pre-2009 seasons (BLK*1.5 + STL*1.5
+#       + DREB*0.15 - PF*0.4, centered on league avg, clipped to [-5, 6])
+FORMULA_VERSION = "v3"
 
 
 def _raw_disk_path(season: str) -> Path:
@@ -1315,6 +1317,27 @@ def build_raw(season: str) -> pd.DataFrame:
 
     dlebron = fetch_dlebron(season)
     stats["d_lebron"] = stats["PLAYER_ID"].map(dlebron).fillna(0)
+
+    # ── Box Score Defense fallback for pre-2009-10 seasons ────────────────────
+    # D-LEBRON only goes back to 2009-10. For older seasons we compute a
+    # box-score defensive estimate calibrated to roughly match D-LEBRON's
+    # ±5 scale so the same `d_lebron * 2` weighting in base_score works.
+    #
+    # Formula: BLK*1.5 + STL*1.5 + DREB*0.15 - PF*0.4, centered on the
+    # league average among qualified players (GP >= 20). Empirically this
+    # gives elite shot-blockers/wing defenders ~+3 to +4, league-average
+    # defenders ~0, and weak defenders ~-1.
+    if not dlebron:  # empty dict = season has no D-LEBRON coverage
+        _box = (stats["BLK"] * 1.5
+                + stats["STL"] * 1.5
+                + stats["DREB"] * 0.15
+                - stats["PF"]   * 0.4)
+        qualified_mask = stats["GP"] >= 20
+        if qualified_mask.any():
+            _league_avg_box = float(_box[qualified_mask].mean())
+        else:
+            _league_avg_box = float(_box.mean()) if len(_box) else 0.0
+        stats["d_lebron"] = (_box - _league_avg_box).clip(-5, 6)
 
     stats["ts_pct"] = stats["PTS"] / (2 * (stats["FGA"] + 0.44 * stats["FTA"])).replace(0, float("nan"))
     league_avg_ts = (stats["ts_pct"] * stats["GP"]).sum() / stats["GP"].sum()
