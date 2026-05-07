@@ -406,22 +406,27 @@ _BREF_UA = (
 
 
 def _bref_team_abbrs(end_year: int) -> list[str]:
-    """All NBA team abbreviations active in the given season (end-year)."""
+    """All NBA team abbreviations active in the given season (end-year).
+    Raises on rate-limit so the caller can back off instead of caching empty.
+    """
     url = f"https://www.basketball-reference.com/leagues/NBA_{end_year}.html"
-    try:
-        r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
-        if r.status_code != 200:
-            return []
-        return sorted(set(re.findall(rf"/teams/([A-Z]{{3}})/{end_year}\.html", r.text)))
-    except Exception:
+    r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+    if r.status_code == 429:
+        raise RuntimeError(f"BBRef rate-limited on {url}")
+    if r.status_code != 200:
         return []
+    return sorted(set(re.findall(rf"/teams/([A-Z]{{3}})/{end_year}\.html", r.text)))
 
 
 def _bref_team_salaries(team_abbr: str, end_year: int) -> list[tuple[str, float]]:
-    """Scrape one team's salary table (hidden in an HTML comment on BBRef)."""
+    """Scrape one team's salary table (hidden in an HTML comment on BBRef).
+    Raises on rate-limit so the caller can back off.
+    """
     url = f"https://www.basketball-reference.com/teams/{team_abbr}/{end_year}.html"
     try:
         r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        if r.status_code == 429:
+            raise RuntimeError(f"BBRef rate-limited on {url}")
         if r.status_code != 200:
             return []
         from bs4 import Comment
@@ -470,21 +475,32 @@ def fetch_bref_salaries(season: str) -> dict:
             pass
 
     result: dict[str, float] = {}
-    abbrs = _bref_team_abbrs(end_year)
+    try:
+        abbrs = _bref_team_abbrs(end_year)
+    except RuntimeError:
+        # Rate-limited fetching team list — bail out without caching empty
+        return {}
+
     for i, abbr in enumerate(abbrs):
         try:
             for player, salary in _bref_team_salaries(abbr, end_year):
                 result[normalize(player)] = salary
+        except RuntimeError:
+            # Rate-limited mid-season — stop, don't cache partial result
+            return result if len(result) > 50 else {}
         except Exception:
             pass
         # Be polite to BBRef — sleep between requests to avoid rate limiting
         if i < len(abbrs) - 1:
             time.sleep(1.5)
 
-    try:
-        _pkl_save(disk_path, result)
-    except Exception:
-        pass
+    # Only cache to disk if we got a meaningful result. Empty caches are evil
+    # because they look fresh but defeat the fallback chain.
+    if len(result) > 50:
+        try:
+            _pkl_save(disk_path, result)
+        except Exception:
+            pass
     return result
 
 
