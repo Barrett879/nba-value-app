@@ -971,9 +971,13 @@ HISTORICAL_TRADES = [
 def get_all_player_names(min_seasons: int = 1) -> list[str]:
     """All player names that appear in any season, sorted by career-average
     Barrett Score (highest first, GP-weighted). Used to populate autocomplete
-    dropdowns."""
+    dropdowns. Includes EVERY player who appeared in a game — including
+    bench players, two-way contracts, and cameo seasons (Bronny, etc.)."""
     try:
-        all_seasons = build_all_seasons_combined()
+        # Pass min_threshold=0 so even players with <500 total minutes show up.
+        # Sorts by career-avg Barrett, so legends still rise to the top —
+        # bench players just settle to the bottom of the list.
+        all_seasons = build_all_seasons_combined(min_threshold=0)
         if all_seasons.empty:
             return []
         # GP-weighted career average — so a 17-game cameo doesn't drag a

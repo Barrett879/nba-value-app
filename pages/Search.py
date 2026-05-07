@@ -73,17 +73,18 @@ if not selected:
 
 
 # ── Era-adjustment toggle ────────────────────────────────────────────────────
-# Available everywhere — single player view + comparison view.
+# Default = era-adjusted, since this page is heavily cross-era.
 era_mode = st.radio(
     "Score mode",
-    options=["Raw Barrett", "Era-Adjusted (pace)"],
+    options=["Era-Adjusted (pace)", "Raw Barrett"],
     horizontal=True,
+    index=0,
     help=(
-        "Raw = the actual Barrett Score for that season. "
         "Era-Adjusted scales volume stats (PTS, AST, REB, BLK, STL, TOV, PF) "
         "by pace, normalizing high-pace eras down and dead-ball eras up. "
         "D-LEBRON and the efficiency adjustment are already era-relative, "
-        "so they stay untouched."
+        "so they stay untouched. "
+        "Raw = the actual Barrett Score for that season."
     ),
     key="search_era_mode",
 )
