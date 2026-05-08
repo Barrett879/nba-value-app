@@ -682,6 +682,10 @@ with st.expander("Preview", expanded=False):
                     gridcolor="rgba(255,255,255,0.08)",
                     tickformat=".1f",
                     tickfont=dict(size=10, color="#aaa"),
+                    # Fixed scale across all five players so peaks compare
+                    # honestly — auto-scaling makes Jordan's 42 look as tall
+                    # as Curry's 50 if each gets their own y-axis.
+                    range=[10, 60],
                 ),
                 hoverlabel=dict(bgcolor="#1a1a2e", bordercolor=chosen["color"],
                                 font=dict(color="white", size=12)),
