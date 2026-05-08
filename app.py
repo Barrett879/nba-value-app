@@ -4,6 +4,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import streamlit as st
+import plotly.graph_objects as go
 from utils import (
     _bootstrap_warm,
     build_ranked_projected,
@@ -638,19 +639,59 @@ with st.expander("Preview", expanded=False):
         )
         chosen = next((s for s in legacy_series if s["name"] == picked), None)
         if chosen and chosen["career"]:
-            chart_html = _multi_sparkline([chosen])
-            n_seasons = len(chosen["career"])
-            first = chosen["career"][0]["season"]
-            last  = chosen["career"][-1]["season"]
-            st.markdown(
-                f'<div class="preview-box">'
-                f'{chart_html}'
-                f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">'
-                f'{picked} · {n_seasons} seasons · {first} → {last}  ·  '
-                f'<span style="color:#999;">hover any dot for details</span>'
-                f'</div>'
-                f'</div>',
-                unsafe_allow_html=True,
+            seasons = [pt["season"] for pt in chosen["career"]]
+            scores  = [pt["score"]  for pt in chosen["career"]]
+            ranks   = [pt["rank"]   for pt in chosen["career"]]
+            totals  = [pt["total"]  for pt in chosen["career"]]
+            xs      = list(range(1, len(seasons) + 1))
+
+            fig = go.Figure()
+            fig.add_trace(go.Scatter(
+                x=xs,
+                y=scores,
+                mode="lines+markers",
+                line=dict(color=chosen["color"], width=2.5),
+                marker=dict(size=9, color=chosen["color"],
+                            line=dict(color="#14142a", width=1.5)),
+                customdata=list(zip(seasons, ranks, totals)),
+                hovertemplate=(
+                    f"<b>{chosen['name']}</b><br>"
+                    "Season: %{customdata[0]}<br>"
+                    "Barrett Score: %{y:.2f}<br>"
+                    "Rank: #%{customdata[1]} of %{customdata[2]}"
+                    "<extra></extra>"
+                ),
+            ))
+            fig.update_layout(
+                height=240,
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0.18)",
+                font_color="white",
+                margin=dict(l=40, r=20, t=10, b=40),
+                showlegend=False,
+                xaxis=dict(
+                    title=dict(text="Career year", font=dict(size=10, color="#888")),
+                    gridcolor="rgba(255,255,255,0.05)",
+                    tickfont=dict(size=10, color="#aaa"),
+                    dtick=1 if len(xs) <= 25 else 2,
+                ),
+                yaxis=dict(
+                    title=dict(text="Barrett Score", font=dict(size=10, color="#888")),
+                    gridcolor="rgba(255,255,255,0.08)",
+                    tickformat=".1f",
+                    tickfont=dict(size=10, color="#aaa"),
+                ),
+                hoverlabel=dict(bgcolor="#1a1a2e", bordercolor=chosen["color"],
+                                font=dict(color="white", size=12)),
+            )
+            st.plotly_chart(
+                fig, use_container_width=True,
+                config={"displayModeBar": False},
+                key=f"legacy_preview_chart_{chosen['name']}",
+            )
+            st.caption(
+                f"{picked} · {len(seasons)} seasons · "
+                f"{seasons[0]} → {seasons[-1]} · hover any dot for details"
             )
         else:
             st.markdown(
