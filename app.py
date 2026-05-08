@@ -9,7 +9,7 @@ from utils import (
     build_ranked_projected,
     fetch_next_year_contracts,
     fetch_rookie_scale_players,
-    fetch_career_trend,
+    fetch_player_career_with_rank,
     fmt_next_contract,
     season_to_espn_year,
     normalize,
@@ -317,8 +317,10 @@ def _value_color(v, vmin, vmax, low="#e74c3c", mid="#f1c40f", high="#2ecc71"):
 
 def _multi_sparkline(series_list, w=460, h=160):
     """Overlay multiple career arcs aligned by career year.
-    series_list: list of dicts {name, color, career: [(season_str, score), ...]}.
+    series_list: list of dicts {name, color, career: [{season, score, rank, total}, ...]}.
     Player labels render as a colored legend across the top.
+    Each dot has a native browser tooltip (SVG <title>) showing
+    season · Barrett Score · rank that year.
     """
     valid = [s for s in series_list if s.get("career")]
     if not valid:
@@ -328,7 +330,7 @@ def _multi_sparkline(series_list, w=460, h=160):
     chart_w = w - pad_left - pad_right
     chart_h = h - pad_top - pad_bot
 
-    all_vals = [v for s in valid for _, v in s["career"]]
+    all_vals = [pt["score"] for s in valid for pt in s["career"]]
     vmin, vmax = min(all_vals), max(all_vals)
     rng = (vmax - vmin) or 1.0
     max_len = max(len(s["career"]) for s in valid)
@@ -355,19 +357,31 @@ def _multi_sparkline(series_list, w=460, h=160):
     # Lines + dots per player
     for s in valid:
         coords = []
-        for i, (_, v) in enumerate(s["career"]):
+        for i, pt in enumerate(s["career"]):
             x = pad_left + (i / (max_len - 1)) * chart_w
-            y = pad_top + chart_h - ((v - vmin) / rng) * chart_h
-            coords.append((x, y))
-        line_pts = " ".join(f"{x:.1f},{y:.1f}" for x, y in coords)
+            y = pad_top + chart_h - ((pt["score"] - vmin) / rng) * chart_h
+            coords.append((x, y, pt))
+        line_pts = " ".join(f"{x:.1f},{y:.1f}" for x, y, _ in coords)
         parts.append(
             f'<polyline points="{line_pts}" fill="none" stroke="{s["color"]}" '
             f'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>'
         )
-        for x, y in coords:
+        for x, y, pt in coords:
+            tooltip = (
+                f'{_esc(s["name"])}  ·  {_esc(pt["season"])}\n'
+                f'Barrett Score: {pt["score"]:.2f}\n'
+                f'Rank: #{pt["rank"]} of {pt["total"]} that season'
+            )
+            # Larger transparent hover target makes the dot easier to hit;
+            # the visible coloured circle sits underneath. <title> drives the
+            # native browser tooltip (no JS, no extra dependencies).
             parts.append(
+                f'<g><title>{tooltip}</title>'
                 f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{s["color"]}" '
                 f'stroke="#14142a" stroke-width="0.8"/>'
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="7" fill="transparent" '
+                f'style="cursor:help;"/>'
+                f'</g>'
             )
 
     # X-axis hint
@@ -470,21 +484,18 @@ def _compute_charts():
             return sum(xs) / len(xs) if xs else 0.0
 
         # Pull career arcs for all featured Legacy players. Each call reads
-        # disk-cached parquets — no API hits at view time.
+        # disk-cached parquets — no API hits at view time. Includes rank +
+        # total players per season for the hover tooltips.
         legacy_series = []
         for entry in LEGACY_FEATURED:
             try:
-                ct = fetch_career_trend(entry["id"], num_seasons=len(SEASONS))
-                career = [
-                    (str(row["Season"]).split("-")[0], float(row["barrett_score"]))
-                    for _, row in ct.iterrows()
-                ]
+                career = fetch_player_career_with_rank(entry["id"])
             except Exception:
                 career = []
             legacy_series.append({
                 "name":   entry["name"],
                 "color":  entry["color"],
-                "career": career,
+                "career": career,  # list of {'season', 'score', 'rank', 'total'}
             })
 
         return {
@@ -630,13 +641,14 @@ with st.expander("Preview", expanded=False):
         if chosen and chosen["career"]:
             chart_html = _multi_sparkline([chosen])
             n_seasons = len(chosen["career"])
-            first = chosen["career"][0][0]
-            last  = chosen["career"][-1][0]
+            first = chosen["career"][0]["season"]
+            last  = chosen["career"][-1]["season"]
             st.markdown(
                 f'<div class="preview-box">'
                 f'{chart_html}'
                 f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">'
-                f'{picked} · {n_seasons} seasons · {first}–{last}'
+                f'{picked} · {n_seasons} seasons · {first} → {last}  ·  '
+                f'<span style="color:#999;">hover any dot for details</span>'
                 f'</div>'
                 f'</div>',
                 unsafe_allow_html=True,

@@ -1130,6 +1130,40 @@ def fetch_career_trend(player_id: int, num_seasons: int = 5) -> pd.DataFrame:
     return result.tail(num_seasons).reset_index(drop=True)
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_player_career_with_rank(player_id: int) -> list[dict]:
+    """Career trajectory with score + season-rank for SVG hover tooltips.
+
+    Returns sorted list of {'season', 'score', 'rank', 'total'} for every
+    season on disk where the player appears. Disk-only — never triggers a
+    fresh API hit at view time.
+    """
+    info = nba_players_static.find_player_by_id(player_id)
+    if not info:
+        return []
+    name_norm = normalize(info["full_name"])
+    out: list[dict] = []
+    for season in SEASONS:
+        if not _raw_disk_fresh(season):
+            continue
+        try:
+            ranked = apply_rankings(build_raw(season))
+            mask = ranked["Player"].apply(normalize) == name_norm
+            if not mask.any():
+                continue
+            r = ranked[mask].iloc[0]
+            out.append({
+                "season": season,
+                "score":  float(r["barrett_score"]),
+                "rank":   int(r["score_rank"]),
+                "total":  int(len(ranked)),
+            })
+        except Exception:
+            continue
+    out.sort(key=lambda d: int(d["season"].split("-")[0]))
+    return out
+
+
 def _player_season_splits_raw(player_id: int, season: str,
                                d_lebron_val: float = 0.0,
                                league_avg_ts: float = 0.57,
