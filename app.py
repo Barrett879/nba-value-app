@@ -685,7 +685,7 @@ with st.expander("Preview", expanded=False):
                     # Fixed scale across all five players so peaks compare
                     # honestly — auto-scaling makes Jordan's 42 look as tall
                     # as Curry's 50 if each gets their own y-axis.
-                    range=[10, 60],
+                    range=[0, 60],
                 ),
                 hoverlabel=dict(bgcolor="#1a1a2e", bordercolor=chosen["color"],
                                 font=dict(color="white", size=12)),
