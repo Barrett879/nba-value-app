@@ -368,20 +368,19 @@ def _multi_sparkline(series_list, w=460, h=160):
         )
         for x, y, pt in coords:
             tooltip = (
-                f'{_esc(s["name"])}  ·  {_esc(pt["season"])}\n'
-                f'Barrett Score: {pt["score"]:.2f}\n'
-                f'Rank: #{pt["rank"]} of {pt["total"]} that season'
+                f'{_esc(s["name"])} · {_esc(pt["season"])}'
+                f'  —  Barrett {pt["score"]:.2f}'
+                f'  ·  Rank #{pt["rank"]}/{pt["total"]}'
             )
-            # Larger transparent hover target makes the dot easier to hit;
-            # the visible coloured circle sits underneath. <title> drives the
-            # native browser tooltip (no JS, no extra dependencies).
+            # Single visible dot — bigger (r=4.5) for an easy hover target.
+            # <title> as a direct child triggers the OS-native tooltip in
+            # every browser. Putting it inside a <g> with a transparent
+            # overlay was unreliable across browsers.
             parts.append(
-                f'<g><title>{tooltip}</title>'
-                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="2.5" fill="{s["color"]}" '
-                f'stroke="#14142a" stroke-width="0.8"/>'
-                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="7" fill="transparent" '
-                f'style="cursor:help;"/>'
-                f'</g>'
+                f'<circle cx="{x:.1f}" cy="{y:.1f}" r="4.5" fill="{s["color"]}" '
+                f'stroke="#14142a" stroke-width="1.2" style="cursor:help;">'
+                f'<title>{tooltip}</title>'
+                f'</circle>'
             )
 
     # X-axis hint
