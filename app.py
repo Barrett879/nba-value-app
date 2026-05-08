@@ -22,12 +22,14 @@ from utils import (
 )
 
 # Featured players for the Legacy preview overlay on the home page.
-# IDs come from nba_api.stats.static.players. Order matters — earliest first
-# so older legends sit at the bottom of the legend.
+# IDs come from nba_api.stats.static.players. One per major era — five eras:
+# Jordan ('80s/'90s), Kobe ('00s), LeBron ('10s), Curry (3-pt revolution),
+# Jokić (modern bigs).
 LEGACY_FEATURED = [
     {"name": "Michael Jordan",  "id":    893, "color": "#f1c40f"},  # gold
     {"name": "Kobe Bryant",     "id":    977, "color": "#9b59b6"},  # purple
     {"name": "LeBron James",    "id":   2544, "color": "#e63946"},  # red
+    {"name": "Stephen Curry",   "id": 201939, "color": "#16d4c1"},  # teal — splash
     {"name": "Nikola Jokić",    "id": 203999, "color": "#7ec8e8"},  # blue
 ]
 
