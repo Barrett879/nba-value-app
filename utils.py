@@ -712,10 +712,12 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
     """
     end_year = season_to_espn_year(season)
     # v2: cache filename bumped 2026-04-30 to orphan v1 parquets that were
-    # written without TEAM_ABBREVIATION (rename map missed BBRef's "Team"
-    # column). v2 files are guaranteed to have the right schema.
+    #     written without TEAM_ABBREVIATION (rename map missed BBRef's "Team"
+    #     column). v2 files are guaranteed to have the right schema.
+    # v3: bumped 2026-05-09 to orphan v2 parquets that kept BBRef's Hall-of-
+    #     Fame asterisk in player names ("Michael Jordan*"). v3 strips it.
     suffix = "_playoff" if playoffs else ""
-    disk_path = _dc_path(f"bref_stats_v2_{season}{suffix}.parquet")
+    disk_path = _dc_path(f"bref_stats_v3_{season}{suffix}.parquet")
     if _dc_fresh(disk_path, ttl=30 * 86_400):
         try:
             cached = pd.read_parquet(disk_path)
@@ -799,6 +801,13 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
         if src in df.columns:
             rename_map[src] = dst
     df = df.rename(columns=rename_map)
+
+    # Strip BBRef's Hall-of-Fame marker (trailing '*' on enshrined players,
+    # e.g. "Michael Jordan*"). Otherwise normalize() doesn't match modern
+    # NBA Stats API names and the same player gets two entries across data
+    # sources.
+    if "PLAYER_NAME" in df.columns:
+        df["PLAYER_NAME"] = df["PLAYER_NAME"].astype(str).str.rstrip("*").str.strip()
 
     # Coerce numerics — BBRef returns strings
     numeric_cols = ["GP", "MIN", "FGA", "FTA", "PTS", "AST", "OREB", "DREB",
@@ -1695,7 +1704,15 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
     # ── Disk cache hit: load parquet instead of hitting the APIs ──────────────
     if _raw_disk_fresh(season, playoffs):
         try:
-            return pd.read_parquet(_raw_disk_path(season, playoffs))
+            cached = pd.read_parquet(_raw_disk_path(season, playoffs))
+            # Sanitize old caches that captured BBRef's Hall-of-Fame asterisk
+            # in player names ("Michael Jordan*"). Newly-built parquets won't
+            # have these, but on-disk pre-fix files do.
+            if "Player" in cached.columns:
+                cached["Player"] = (
+                    cached["Player"].astype(str).str.rstrip("*").str.strip()
+                )
+            return cached
         except Exception:
             pass  # corrupted file — fall through to live fetch
 
