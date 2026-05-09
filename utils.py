@@ -1557,11 +1557,20 @@ def fetch_dlebron(season: str) -> dict:
 #       still available as `barrett_score_raw` for the Search toggle.
 FORMULA_VERSION = "v6"
 
+# Separate version tag for playoff caches so playoff-formula tweaks invalidate
+# only playoff parquets, leaving the regular-season caches valid.
+#   p1: initial Stage 1 (team-max GP, min/total_min cap)
+#   p2: league-max GP, min/total_min cap (depth-of-run signal)
+#   p3: GP-only ratio (drops the min cap so playoff stars at 38-42 MPG
+#       don't all max out the multiplier)
+PLAYOFF_VERSION = "p3"
+
 
 def _raw_disk_path(season: str, playoffs: bool = False) -> Path:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    suffix = "_playoff" if playoffs else ""
-    return CACHE_DIR / f"raw_{season.replace('-', '_')}{suffix}_{FORMULA_VERSION}.parquet"
+    if playoffs:
+        return CACHE_DIR / f"raw_{season.replace('-', '_')}_playoff_{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet"
+    return CACHE_DIR / f"raw_{season.replace('-', '_')}_{FORMULA_VERSION}.parquet"
 
 def _raw_disk_fresh(season: str, playoffs: bool = False) -> bool:
     """True if the on-disk parquet is still within its TTL."""
@@ -1805,10 +1814,12 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD,
     NOTE: Uses @st.cache_resource (singleton, no copy on hit) instead of
     @st.cache_data. Callers MUST .copy() before mutating columns.
     """
-    # Include FORMULA_VERSION + mode in the filename so formula bumps and
-    # mode switches both invalidate independently.
-    suffix = "_playoff" if playoffs else ""
-    path = _dc_path(f"all_seasons_{min_threshold}{suffix}_{FORMULA_VERSION}.parquet")
+    # Include FORMULA_VERSION + mode (and PLAYOFF_VERSION for playoff
+    # variants) so formula bumps and mode switches both invalidate.
+    if playoffs:
+        path = _dc_path(f"all_seasons_{min_threshold}_playoff_{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet")
+    else:
+        path = _dc_path(f"all_seasons_{min_threshold}_{FORMULA_VERSION}.parquet")
     if _dc_fresh(path, ttl=3600):
         try:
             return pd.read_parquet(path)
