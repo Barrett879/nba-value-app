@@ -3,6 +3,11 @@ Run once from Render Shell to pre-populate /data/cache with all season parquets.
     cd /app && python seed_cache.py
 
 After this runs, every page load reads from disk instead of hitting the NBA API.
+
+If the script gets rate-limited and bails partway through, just re-run it —
+disk caches make seasons that already finished a no-op, so it picks up where
+it left off. Pre-1996 seasons hit BBRef hardest (per-game stats + 30 team
+salary pages + playoff per-game), so expect 60-90 sec each on those years.
 """
 import sys
 import time
@@ -102,6 +107,13 @@ for i, season in enumerate(SEASONS, 1):
             print(f"         playoff    (no data — season in progress?)  {time.time()-t0:.1f}s")
     except Exception as e:
         print(f"         playoff    ERROR: {e}")
+
+    # Be polite to BBRef between seasons — they rate-limit hard. Brief sleep
+    # for modern seasons (NBA Stats API only), longer for pre-1996 / pre-2000
+    # which hit BBRef heavily for stats + salaries + playoff data.
+    is_bref_heavy = int(season.split("-")[0]) < 2000
+    inter_sleep = 4.0 if is_bref_heavy else 1.0
+    time.sleep(inter_sleep)
 
     print()
 

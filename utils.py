@@ -638,6 +638,14 @@ def fetch_playoff_rounds(season: str) -> dict:
         r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
     except Exception:
         return {}
+    # Retry once after a backoff if we hit BBRef's rate limit
+    if r.status_code == 429:
+        wait = int(r.headers.get("Retry-After", 60))
+        time.sleep(wait)
+        try:
+            r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        except Exception:
+            return {}
     if r.status_code != 200:
         return {}
 
@@ -723,8 +731,16 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
     else:
         url = f"https://www.basketball-reference.com/leagues/NBA_{end_year}_per_game.html"
     r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+    # Rate-limited? Wait and retry once before giving up — BBRef caps at
+    # roughly 20 req/min, and the seed script can blow through that on
+    # pre-1996 seasons. The Retry-After header isn't always populated, so
+    # default to 60 seconds (BBRef's typical penalty).
     if r.status_code == 429:
-        raise RuntimeError(f"BBRef rate-limited on {url}")
+        wait = int(r.headers.get("Retry-After", 60))
+        time.sleep(wait)
+        r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        if r.status_code == 429:
+            raise RuntimeError(f"BBRef rate-limited on {url} (retry also failed)")
     if r.status_code != 200:
         return pd.DataFrame()
 
