@@ -646,6 +646,14 @@ with st.expander("Preview", expanded=False):
             ranks   = [pt["rank"]   for pt in chosen["career"]]
             totals  = [pt["total"]  for pt in chosen["career"]]
             xs      = list(range(1, len(seasons) + 1))
+            # Use the longest career across all featured players as the
+            # shared x-axis upper bound — so Jordan's 15 seasons still draw
+            # against a 1–23 axis matching LeBron's, making short-career
+            # players visually honest about how long they actually played.
+            max_career_len = max(
+                (len(s["career"]) for s in legacy_series if s.get("career")),
+                default=len(xs),
+            )
 
             fig = go.Figure()
             fig.add_trace(go.Scatter(
@@ -675,10 +683,11 @@ with st.expander("Preview", expanded=False):
                     title=dict(text="Career year", font=dict(size=10, color="#888")),
                     gridcolor="rgba(255,255,255,0.05)",
                     tickfont=dict(size=10, color="#aaa"),
-                    dtick=1 if len(xs) <= 25 else 2,
-                    # Range 0.5 → N+0.5 prevents Plotly from showing a "0"
-                    # tick before Year 1 or padding past the final season.
-                    range=[0.5, len(xs) + 0.5],
+                    dtick=1 if max_career_len <= 25 else 2,
+                    # Shared upper bound across players — short careers
+                    # (Jordan, Kobe, Curry, Jokić) still draw on the
+                    # same 1 → max axis as LeBron.
+                    range=[0.5, max_career_len + 0.5],
                 ),
                 yaxis=dict(
                     title=dict(text="Barrett Score", font=dict(size=10, color="#888")),
