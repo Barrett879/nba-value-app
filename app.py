@@ -676,6 +676,9 @@ with st.expander("Preview", expanded=False):
                     gridcolor="rgba(255,255,255,0.05)",
                     tickfont=dict(size=10, color="#aaa"),
                     dtick=1 if len(xs) <= 25 else 2,
+                    # Range 0.5 → N+0.5 prevents Plotly from showing a "0"
+                    # tick before Year 1 or padding past the final season.
+                    range=[0.5, len(xs) + 0.5],
                 ),
                 yaxis=dict(
                     title=dict(text="Barrett Score", font=dict(size=10, color="#888")),
