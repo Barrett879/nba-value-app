@@ -1297,7 +1297,9 @@ def build_splits_data_live(season: str, salary_lookup: tuple) -> pd.DataFrame:
 
 @st.cache_data(ttl=3600)
 def load_splits_from_disk(season: str) -> pd.DataFrame | None:
-    path = CACHE_DIR / f"splits_{season.replace('-', '_')}.pkl"
+    # Splits cache also contains barrett_score values so it's formula-dependent.
+    # Same versioning rationale as the combined-seasons parquet above.
+    path = CACHE_DIR / f"splits_{season.replace('-', '_')}_{FORMULA_VERSION}.pkl"
     if not path.exists():
         return None
     with open(path, "rb") as f:
@@ -1711,7 +1713,12 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD) -> pd
     NOTE: Uses @st.cache_resource (singleton, no copy on hit) instead of
     @st.cache_data. Callers MUST .copy() before mutating columns.
     """
-    path = _dc_path(f"all_seasons_{min_threshold}.parquet")
+    # Include FORMULA_VERSION in the filename so a formula bump (e.g. v4 → v5)
+    # automatically orphans the old combined parquet. Otherwise the per-season
+    # raw_*_{VERSION}.parquet caches refresh but this combined snapshot stays
+    # stale for up to an hour, leaving the all-time rankings inconsistent
+    # with the per-player previews.
+    path = _dc_path(f"all_seasons_{min_threshold}_{FORMULA_VERSION}.parquet")
     if _dc_fresh(path, ttl=3600):
         try:
             return pd.read_parquet(path)
