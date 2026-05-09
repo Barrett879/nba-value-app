@@ -46,7 +46,7 @@ with _top_l:
         st.caption("Career arcs and per-season stats from postseason data only. Salaries reflect regular-season contracts.")
     else:
         st.title("Search Player")
-        st.caption("Find any player who's appeared in the league — career arcs, season-by-season stats, peak years. Add up to 5 players to compare careers head-to-head.")
+        st.caption("Find any player who's appeared in the league — career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
 with _top_r:
     playoff_mode = render_playoff_toggle()
 
@@ -63,10 +63,10 @@ if _handed_off and _handed_off in all_names:
     _default = [_handed_off]
 
 selected = st.multiselect(
-    "Type a player name…  (add up to 5 to compare)",
+    "Type a player name…  (add up to 10 to compare)",
     options=all_names,
     default=_default,
-    max_selections=5,
+    max_selections=10,
     placeholder="Try LeBron James, Michael Jordan, Nikola Jokić…",
     key="player_search_multiselect",
 )
@@ -112,7 +112,20 @@ def _load_career(name: str, playoffs: bool = False) -> pd.DataFrame:
 
 
 # ── Color palette for multi-player overlays ──────────────────────────────────
-_PALETTE = ["#f1c40f", "#e74c3c", "#3498db", "#2ecc71", "#9b59b6"]
+# 10 distinct colors so up to 10 selected players each get their own line.
+# Hand-picked for legibility on a dark background; alternates warm/cool tones.
+_PALETTE = [
+    "#f1c40f",  # gold
+    "#e74c3c",  # red
+    "#3498db",  # blue
+    "#2ecc71",  # green
+    "#9b59b6",  # purple
+    "#e67e22",  # orange
+    "#1abc9c",  # teal
+    "#ec407a",  # pink
+    "#7ec8e8",  # sky
+    "#c8d75e",  # lime
+]
 
 
 # ── Career-average helper (games-weighted, like real stat sites) ─────────────
