@@ -368,7 +368,9 @@ def render_splits_panel(player_name, season):
             r = r.copy()
             r["ts_pct"]         = main["ts_pct"]
             r["efficiency_adj"] = main["efficiency_adj"]
-            r["base_score"]     = main["base_score"]
+            # Use the pace-adjusted base_score so Base × Avail = Barrett Score
+            # arithmetic is internally consistent with the canonical column.
+            r["base_score"]     = main.get("base_score_pace", main["base_score"])
             r["avail_mult"]     = main["avail_mult"]
             r["barrett_score"]  = main["barrett_score"]
             r["MPG"]            = main["MPG"]
@@ -671,7 +673,13 @@ if show_splits and splits_df is not None:
         pos_players = set(df[df["position"] == pos_filter]["Player"])
         sdisplay = sdisplay[sdisplay["Player"].isin(pos_players)]
 
-    season_scores = df.set_index("Player")[["base_score", "avail_mult", "barrett_score"]]
+    # Use base_score_pace as the displayed "Base Score" so Base × Avail
+    # = Barrett Score arithmetic is internally consistent with the
+    # canonical (pace-adjusted) Barrett Score column.
+    df_with_pace_alias = df.copy()
+    if "base_score_pace" in df_with_pace_alias.columns:
+        df_with_pace_alias["base_score"] = df_with_pace_alias["base_score_pace"]
+    season_scores = df_with_pace_alias.set_index("Player")[["base_score", "avail_mult", "barrett_score"]]
     proj_lookup   = df.set_index("Player")[["salary", "projected_salary", "value_diff",
                                             "score_rank", "salary_rank", "rank_diff",
                                             "d_lebron", "ts_pct"]]
@@ -695,6 +703,8 @@ if show_splits and splits_df is not None:
                 min(r["total_min"] / (team_games.get(r["Team"], season_games) * MINS_PER_GAME_CAP), 1.0)
             ), axis=1
         )
+        # Multiplying by base_score (which is base_score_pace from the alias
+        # above) so the result matches the canonical pace-adjusted Barrett.
         sdisplay.loc[stint_mask, "barrett_score"] = (
             sdisplay.loc[stint_mask, "base_score"] * sdisplay.loc[stint_mask, "avail_mult"]
         )
@@ -800,12 +810,18 @@ if show_splits and splits_df is not None:
         )
 else:
     # ── Rankings table ────────────────────────────────────────────────────
+    # Use pace-adjusted base_score for the display so Base × Avail = Barrett
+    # arithmetic is consistent. Falls back to raw base_score if the pace
+    # column doesn't exist (older parquets pre-v6).
+    _base_col = "base_score_pace" if "base_score_pace" in display.columns else "base_score"
     display_fmt = display[[
         "Player", "Team", "GP",
-        "base_score", "avail_mult", "barrett_score",
+        _base_col, "avail_mult", "barrett_score",
         "score_rank", "salary", "projected_salary", "value_diff", "salary_rank", "rank_diff",
         "d_lebron", "ts_pct",
     ]].copy()
+    if _base_col != "base_score":
+        display_fmt = display_fmt.rename(columns={_base_col: "base_score"})
     display_fmt["MPG"] = display_fmt["Player"].map(splits_mpg_lookup)
     display_fmt = display_fmt[["Player", "Team", "GP", "MPG",
                                "base_score", "avail_mult", "barrett_score",
