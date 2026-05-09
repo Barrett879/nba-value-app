@@ -47,8 +47,12 @@ components.html("""
 
 render_nav("Current Rankings")
 
-st.title("Barrett Score — NBA Contract Value Rankings")
-st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
+if st.session_state.get("playoff_mode", False):
+    st.title("Barrett Score — Playoff Rankings")
+    st.caption("All scores computed from playoff games only. Salaries reflect the regular-season contract for that year.")
+else:
+    st.title("Barrett Score — NBA Contract Value Rankings")
+    st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
 
 with st.expander("How is this calculated?"):
     st.markdown(
@@ -57,21 +61,56 @@ with st.expander("How is this calculated?"):
         "Salaries are then ranked against scores to find who's overpaid, underpaid, or worth exactly what they're making."
     )
 
-# ── Season selector ────────────────────────────────────────────────────────────
+# ── Season selector + playoff toggle ──────────────────────────────────────────
+# playoff_mode is a session_state-backed sticky flag — set here, will be
+# extended to other pages in Stage 2.
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", SEASONS, index=0)
+with ctrl_mid:
+    playoff_mode = st.toggle(
+        "Playoff mode",
+        value=st.session_state.get("playoff_mode", False),
+        key="playoff_mode",
+        help=(
+            "Replaces all regular-season stats with playoff stats for that "
+            "season. Salaries stay the same (one annual contract). Defense "
+            "uses the box-score fallback in playoff mode (D-LEBRON is "
+            "regular-season only). Availability denominator switches to "
+            "each player's TEAM playoff games — so a 4-of-4 first-round "
+            "loser gets full credit instead of being penalized for their "
+            "team being eliminated early."
+        ),
+    )
+
+# Default minimum-minutes drops in playoff mode — playoff GP is 4-28 games,
+# so a 500-min threshold would hide most of the field.
+default_min_threshold = 100 if playoff_mode else DEFAULT_MIN_THRESHOLD
+slider_max = 600 if playoff_mode else 1500
 with ctrl_r:
     min_threshold = st.slider(
-        "Min total minutes", min_value=0, max_value=1500,
-        value=DEFAULT_MIN_THRESHOLD, step=50,
+        "Min total minutes", min_value=0, max_value=slider_max,
+        value=default_min_threshold, step=25 if playoff_mode else 50,
         help="Hides players below this threshold. Ranks are always computed on the full pool.",
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
 # build_ranked_projected is @st.cache_resource (no copy on hit) — must copy before mutating
-df = build_ranked_projected(season)
+df = build_ranked_projected(season, playoffs=playoff_mode)
+if df.empty:
+    st.warning(
+        f"No {'playoff' if playoff_mode else 'regular season'} data for {season} yet. "
+        "Try a previous season or toggle Playoff mode off."
+    )
+    st.stop()
 df = df[df["total_min"] >= min_threshold].copy()
+if df.empty:
+    st.warning(
+        f"No players cleared the {min_threshold}-minute threshold for "
+        f"{season} {'playoffs' if playoff_mode else 'regular season'}. "
+        "Lower the slider above to see more rows."
+    )
+    st.stop()
 
 salary_lookup = tuple(
     (normalize(row["Player"]), row["salary"])
@@ -126,8 +165,9 @@ _improved_delta = None
 _prev_df = None
 if _prev_season:
     try:
-        _prev_df  = build_ranked_projected(_prev_season)
-        _prev_df  = _prev_df[_prev_df["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
+        _prev_df  = build_ranked_projected(_prev_season, playoffs=playoff_mode)
+        _prev_threshold = 100 if playoff_mode else DEFAULT_MIN_THRESHOLD
+        _prev_df  = _prev_df[_prev_df["total_min"] >= _prev_threshold].copy()
         _merged   = df[["Player", "Team", "barrett_score"]].merge(
             _prev_df[["Player", "barrett_score"]].rename(columns={"barrett_score": "prev_score"}),
             on="Player", how="inner",
@@ -461,8 +501,12 @@ tog_a, tog_b, tog_c, tog_rest = st.columns([1, 1, 1, 5])
 with tog_a:
     advanced = st.toggle("Advanced view", value=False)
 with tog_b:
-    show_splits = st.toggle("Splits View", value=False,
-                            help="Per-team stints ranked together. Team-switchers appear as separate rows.")
+    if playoff_mode:
+        show_splits = False
+        st.caption("Splits view disabled in playoff mode")
+    else:
+        show_splits = st.toggle("Splits View", value=False,
+                                help="Per-team stints ranked together. Team-switchers appear as separate rows.")
 with tog_c:
     show_graph_mode = st.toggle("Graph mode", value=False,
                             help="Plot any two metrics against each other. Default view is "
@@ -864,7 +908,11 @@ if new_selected:
         all_trends = []
         for name in new_selected:
             if name in player_id_map_full:
-                t = fetch_career_trend(player_id_map_full[name], num_seasons=20)
+                t = fetch_career_trend(
+                    player_id_map_full[name],
+                    num_seasons=20,
+                    playoffs=playoff_mode,
+                )
                 if not t.empty:
                     t = t.copy()
                     t["Player"] = name
@@ -939,7 +987,9 @@ if new_selected:
             st.caption(caption)
 
         # ── Monthly cumulative trend (single-player only) ─────────────────────
-        if len(new_selected) == 1:
+        # Disabled in playoff mode — month-over-month is a regular-season concept
+        # (playoffs are a single ~2-month window).
+        if len(new_selected) == 1 and not playoff_mode:
             _solo = new_selected[0]
             if _solo in player_id_map_full:
                 _solo_pid    = player_id_map_full[_solo]

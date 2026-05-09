@@ -347,8 +347,15 @@ def _pkl_save(path: Path, obj) -> None:
 
 
 @st.cache_data(ttl=3600, show_spinner="Fetching league stats...")
-def fetch_league_stats(season: str) -> pd.DataFrame:
-    path = _dc_path(f"league_stats_{season.replace('-','_')}.parquet")
+def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.DataFrame:
+    """Per-game player stats for one season.
+
+    season_type controls regular season vs playoffs — accepts NBA Stats API's
+    own values: "Regular Season" (default) or "Playoffs". Each variant gets
+    its own disk cache so the two modes don't clobber each other.
+    """
+    suffix = "_playoff" if season_type == "Playoffs" else ""
+    path = _dc_path(f"league_stats_{season.replace('-','_')}{suffix}.parquet")
     if _dc_fresh(path, season=season):
         try:
             return pd.read_parquet(path)
@@ -362,6 +369,7 @@ def fetch_league_stats(season: str) -> pd.DataFrame:
             result = leaguedashplayerstats.LeagueDashPlayerStats(
                 season=season,
                 per_mode_detailed="PerGame",
+                season_type_all_star=season_type,
             )
         except Exception:
             time.sleep(delay)
@@ -1080,9 +1088,13 @@ def fetch_player_full_career(player_name: str) -> pd.DataFrame:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def fetch_career_trend(player_id: int, num_seasons: int = 5) -> pd.DataFrame:
+def fetch_career_trend(player_id: int, num_seasons: int = 5,
+                       playoffs: bool = False) -> pd.DataFrame:
     """Barrett Score per season pulled directly from build_raw — guaranteed to
     match the stat panel since both use the same LeagueDashPlayerStats source.
+
+    Pass playoffs=True for postseason scores (uses the separate playoff
+    parquet cache; seasons without playoff data on disk are skipped).
 
     IMPORTANT: only reads seasons that are already on disk. View-time requests
     must NEVER trigger fresh BBRef scrapes (those take ~50s each and would
@@ -1095,12 +1107,14 @@ def fetch_career_trend(player_id: int, num_seasons: int = 5) -> pd.DataFrame:
 
     rows = []
     for season in SEASONS:
-        if not _raw_disk_fresh(season):
+        if not _raw_disk_fresh(season, playoffs):
             # Season not yet seeded — skip rather than trigger a fresh fetch
             # that would hang this request for tens of seconds.
             continue
         try:
-            raw = build_raw(season)
+            raw = build_raw(season, playoffs)
+            if raw.empty:
+                continue
             mask = raw["Player"].apply(normalize) == name_norm
             if not mask.any():
                 continue
@@ -1507,13 +1521,14 @@ def fetch_dlebron(season: str) -> dict:
 FORMULA_VERSION = "v6"
 
 
-def _raw_disk_path(season: str) -> Path:
+def _raw_disk_path(season: str, playoffs: bool = False) -> Path:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
-    return CACHE_DIR / f"raw_{season.replace('-', '_')}_{FORMULA_VERSION}.parquet"
+    suffix = "_playoff" if playoffs else ""
+    return CACHE_DIR / f"raw_{season.replace('-', '_')}{suffix}_{FORMULA_VERSION}.parquet"
 
-def _raw_disk_fresh(season: str) -> bool:
+def _raw_disk_fresh(season: str, playoffs: bool = False) -> bool:
     """True if the on-disk parquet is still within its TTL."""
-    p = _raw_disk_path(season)
+    p = _raw_disk_path(season, playoffs)
     if not p.exists():
         return False
     # Current season refreshes every hour; historical seasons every 30 days
@@ -1521,17 +1536,21 @@ def _raw_disk_fresh(season: str) -> bool:
     return (time.time() - p.stat().st_mtime) < ttl
 
 @st.cache_data(ttl=3600, show_spinner="Building rankings...")
-def build_raw(season: str) -> pd.DataFrame:
+def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
     # ── Disk cache hit: load parquet instead of hitting the APIs ──────────────
-    if _raw_disk_fresh(season):
+    if _raw_disk_fresh(season, playoffs):
         try:
-            return pd.read_parquet(_raw_disk_path(season))
+            return pd.read_parquet(_raw_disk_path(season, playoffs))
         except Exception:
             pass  # corrupted file — fall through to live fetch
 
-    # Fetch stats + salaries in parallel — saves ~5s on cold cache misses
+    season_type = "Playoffs" if playoffs else "Regular Season"
+
+    # Fetch stats + salaries in parallel — saves ~5s on cold cache misses.
+    # Salaries are always regular-season (one annual salary applies to the
+    # whole year, including the postseason).
     with ThreadPoolExecutor(max_workers=2) as _pool:
-        _stats_f = _pool.submit(fetch_league_stats, season)
+        _stats_f = _pool.submit(fetch_league_stats, season, season_type)
         _sal_f   = _pool.submit(fetch_salaries, season_to_espn_year(season))
         stats    = _stats_f.result().copy()
         salaries = _sal_f.result()
@@ -1539,7 +1558,11 @@ def build_raw(season: str) -> pd.DataFrame:
     # Pre-1996 fallback: NBA Stats API returns empty for those years, so
     # scrape per-game stats from BBRef instead. This unlocks Magic, Bird,
     # prime Jordan, and (with 1973+) full Kareem from his Lakers years.
+    # NOTE: BBRef playoff stats live at a different URL — Stage 1 doesn't
+    # plumb that through, so pre-1996 playoff seasons return empty for now.
     if stats.empty:
+        if playoffs:
+            return pd.DataFrame()
         try:
             stats = fetch_bref_player_stats(season).copy()
         except Exception:
@@ -1587,24 +1610,27 @@ def build_raw(season: str) -> pd.DataFrame:
     else:
         stats = stats.dropna(subset=["salary"])
 
-    dlebron = fetch_dlebron(season)
-    stats["d_lebron"] = stats["PLAYER_ID"].map(dlebron).fillna(0)
+    # D-LEBRON: only available for regular-season. For playoffs we always
+    # fall through to the box-score defense estimate (same formula already
+    # used for pre-2009-10 seasons).
+    if playoffs:
+        dlebron = {}
+        stats["d_lebron"] = 0.0
+    else:
+        dlebron = fetch_dlebron(season)
+        stats["d_lebron"] = stats["PLAYER_ID"].map(dlebron).fillna(0)
 
-    # ── Box Score Defense fallback for pre-2009-10 seasons ────────────────────
-    # D-LEBRON only goes back to 2009-10. For older seasons we compute a
-    # box-score defensive estimate calibrated to roughly match D-LEBRON's
-    # ±5 scale so the same `d_lebron * 2` weighting in base_score works.
-    #
-    # Formula: BLK*1.5 + STL*1.5 + DREB*0.15 - PF*0.4, centered on the
-    # league average among qualified players (GP >= 20). Empirically this
-    # gives elite shot-blockers/wing defenders ~+3 to +4, league-average
-    # defenders ~0, and weak defenders ~-1.
-    if not dlebron:  # empty dict = season has no D-LEBRON coverage
+    # ── Box Score Defense fallback ────────────────────────────────────────────
+    # Used for pre-2009-10 (no D-LEBRON published) AND for any playoff query.
+    # Formula: BLK*1.5 + STL*1.5 + DREB*0.15 - PF*0.4, centered on the league
+    # average among qualified players (GP >= 20 reg season; GP >= 4 playoffs).
+    if not dlebron:  # empty dict = no D-LEBRON coverage (pre-2009 or playoffs)
         _box = (stats["BLK"] * 1.5
                 + stats["STL"] * 1.5
                 + stats["DREB"] * 0.15
                 - stats["PF"]   * 0.4)
-        qualified_mask = stats["GP"] >= 20
+        gp_threshold = 4 if playoffs else 20
+        qualified_mask = stats["GP"] >= gp_threshold
         if qualified_mask.any():
             _league_avg_box = float(_box[qualified_mask].mean())
         else:
@@ -1623,13 +1649,28 @@ def build_raw(season: str) -> pd.DataFrame:
 
     stats["efficiency_adj"] = stats.apply(eff_adj, axis=1)
 
-    season_games = int(stats["GP"].max())
-
     stats["total_min"] = (stats["MIN"] * stats["GP"]).round(0).astype(int)
     stats["base_score"] = stats.apply(base_score, axis=1) + stats["efficiency_adj"] * 2
-    stats["avail_mult"] = stats.apply(
-        lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
-    )
+
+    # Availability denominator:
+    #   Regular season → max GP across the league (the iron-man player).
+    #   Playoffs → each PLAYER's TEAM's max GP that postseason. So a guy
+    #   who played 4 of his team's 4 first-round games gets full-credit
+    #   availability — he wasn't penalized just because OTHER teams went
+    #   deeper. The team's GP is found via groupby on Team abbreviation.
+    if playoffs:
+        team_max_gp = stats.groupby("TEAM_ABBREVIATION")["GP"].max()
+        stats["_avail_denom"] = stats["TEAM_ABBREVIATION"].map(team_max_gp).fillna(stats["GP"])
+        stats["avail_mult"] = stats.apply(
+            lambda r: availability_multiplier(r["GP"], r["total_min"], int(r["_avail_denom"])),
+            axis=1,
+        )
+        stats = stats.drop(columns=["_avail_denom"])
+    else:
+        season_games = int(stats["GP"].max())
+        stats["avail_mult"] = stats.apply(
+            lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
+        )
     # Canonical Barrett Score is now PACE-ADJUSTED — applies across the whole
     # site (Rankings, Legacy, Trades, Search, etc.) so cross-era comparisons
     # are honest by default. Volume stats (PTS, AST, REB, BLK, STL, TOV, PF)
@@ -1654,7 +1695,7 @@ def build_raw(season: str) -> pd.DataFrame:
 
     # ── Persist to disk so future cold-starts skip the API entirely ───────────
     try:
-        result.to_parquet(_raw_disk_path(season), index=False)
+        result.to_parquet(_raw_disk_path(season, playoffs), index=False)
     except Exception:
         pass
 
@@ -1817,13 +1858,16 @@ def fetch_player_career_all_seasons(player_name: str) -> pd.DataFrame:
 
 
 @st.cache_resource(ttl=3600, show_spinner=False)
-def build_ranked_projected(season: str) -> pd.DataFrame:
+def build_ranked_projected(season: str, playoffs: bool = False) -> pd.DataFrame:
     """Full pipeline — build_raw + apply_rankings + apply_projections — cached.
+
+    Pass playoffs=True for postseason data (separate cache entry, separate
+    on-disk parquet).
 
     NOTE: Uses @st.cache_resource (singleton, no copy on hit) instead of
     @st.cache_data. Callers MUST .copy() before mutating columns.
     """
-    return apply_projections(apply_rankings(build_raw(season)))
+    return apply_projections(apply_rankings(build_raw(season, playoffs)))
 
 
 def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:
