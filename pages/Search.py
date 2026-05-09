@@ -420,7 +420,17 @@ else:
     if use_career_year:
         x_title = "Career year (Year 1 = first NBA season in our data)"
         x_type  = "linear"
-        x_kwargs = dict(dtick=1)
+        # Lock the x-axis to 1 → longest career across the selected players
+        # (shorter careers' lines just stop earlier rather than each chart
+        # auto-fitting to its own range — keeps the canvas constant).
+        max_career_year = max(
+            (len(s["career"]) for s in valid if s.get("career")),
+            default=1,
+        )
+        x_kwargs = dict(
+            dtick=1 if max_career_year <= 25 else 2,
+            range=[0.5, max_career_year + 0.5],
+        )
     else:
         x_title = ""
         x_type  = "category"
