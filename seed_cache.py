@@ -27,6 +27,7 @@ from utils import (
     SEASONS, CACHE_DIR, season_to_espn_year,
     build_raw, apply_rankings, apply_projections,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
+    fetch_playoff_rounds,
 )
 
 print(f"\nCache directory: {CACHE_DIR}")
@@ -76,6 +77,31 @@ for i, season in enumerate(SEASONS, 1):
         print(f"         rookies    ok  {time.time()-t0:.1f}s")
     except Exception as e:
         print(f"         rookies    ERROR: {e}")
+
+    # ── Playoff rounds (BBRef scrape, 1 page per season) ──────────────────────
+    t0 = time.time()
+    try:
+        rounds = fetch_playoff_rounds(season)
+        if rounds:
+            print(f"         pl_rounds  {len(rounds):2d} teams   {time.time()-t0:.1f}s")
+        else:
+            print(f"         pl_rounds  (none — pre-bracket era?)  {time.time()-t0:.1f}s")
+    except Exception as e:
+        print(f"         pl_rounds  ERROR: {e}")
+
+    # ── Playoff raw stats ─────────────────────────────────────────────────────
+    # Skip the current season if no playoffs have happened yet — empty
+    # response is normal and shouldn't pollute the log.
+    t0 = time.time()
+    try:
+        playoff_raw = build_raw(season, playoffs=True)
+        n = len(playoff_raw)
+        if n:
+            print(f"         playoff   {n:3d} players  {time.time()-t0:.1f}s")
+        else:
+            print(f"         playoff    (no data — season in progress?)  {time.time()-t0:.1f}s")
+    except Exception as e:
+        print(f"         playoff    ERROR: {e}")
 
     print()
 

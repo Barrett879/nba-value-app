@@ -605,6 +605,87 @@ def fetch_bref_salaries(season: str) -> dict:
     return result
 
 
+# ── BBRef playoff round scraper ───────────────────────────────────────────────
+# Maps each postseason team to the deepest round they reached. Used by
+# build_raw's playoff branch to weight availability by depth-of-run rather
+# than raw GP — so a 7-game first-round loss and a 4-game first-round sweep
+# both count as "1 round played", and the four Finals teams (champion +
+# Finals loser per year) all land at round 4 even when their GP differs.
+@st.cache_data(ttl=30 * 86_400, show_spinner=False)
+def fetch_playoff_rounds(season: str) -> dict:
+    """Returns {team_abbr: rounds_played} for one postseason.
+
+    rounds_played is 1-4:
+      1 = first-round exit
+      2 = conf semis exit
+      3 = conf finals exit
+      4 = Finals (winner OR loser)
+
+    Scraped once from Basketball Reference's playoff summary page and cached
+    to disk. Empty dict if the page returns nothing (very old seasons /
+    network failure / 429); callers should fall back to GP-only heuristic.
+    """
+    end_year = season_to_espn_year(season)
+    disk_path = _dc_path(f"bref_playoff_rounds_{season}.pkl")
+    if _dc_fresh(disk_path, ttl=30 * 86_400):
+        try:
+            return _pkl_load(disk_path)
+        except Exception:
+            pass
+
+    url = f"https://www.basketball-reference.com/playoffs/NBA_{end_year}.html"
+    try:
+        r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+    except Exception:
+        return {}
+    if r.status_code != 200:
+        return {}
+
+    # BBRef hides some series tables inside HTML comments. Strip the comment
+    # markers so the parser sees one continuous document — but DON'T parse
+    # them as tables, we only want the raw HTML for header/link scanning.
+    content = r.text.replace("<!--", "").replace("-->", "")
+
+    header_re    = re.compile(r"<h[23][^>]*>([^<]+)</h[23]>", re.IGNORECASE)
+    team_link_re = re.compile(rf"/teams/([A-Z]{{3}})/{end_year}[/.]")
+
+    def _round_for(text: str):
+        t = text.strip().lower()
+        # ORDER MATTERS — conference rounds must match before plain "finals"
+        if ("conference final" in t or "eastern final" in t or "east finals" in t
+                or "western final" in t or "west finals" in t):
+            return 3
+        if "semifinal" in t or "conference semi" in t or "second round" in t:
+            return 2
+        if "first round" in t or "conference quarter" in t or "quarterfinal" in t:
+            return 1
+        if "final" in t:  # bare "Finals" or "NBA Finals" — round 4
+            return 4
+        return None
+
+    round_markers = []  # (byte position, round_num)
+    for match in header_re.finditer(content):
+        rn = _round_for(match.group(1))
+        if rn is not None:
+            round_markers.append((match.start(), rn))
+    round_markers.sort()
+
+    team_rounds: dict[str, int] = {}
+    for i, (pos, round_num) in enumerate(round_markers):
+        end_pos = round_markers[i + 1][0] if i + 1 < len(round_markers) else len(content)
+        segment = content[pos:end_pos]
+        for team in set(team_link_re.findall(segment)):
+            if round_num > team_rounds.get(team, 0):
+                team_rounds[team] = round_num
+
+    if team_rounds:
+        try:
+            _pkl_save(disk_path, team_rounds)
+        except Exception:
+            pass
+    return team_rounds
+
+
 # ── BBRef per-game stats scraper ─────────────────────────────────────────────
 # NBA Stats API returns empty for 1995-96 and earlier. For pre-1996 seasons we
 # fall back to Basketball Reference's per-game stats table. Output schema
@@ -1563,7 +1644,10 @@ FORMULA_VERSION = "v6"
 #   p2: league-max GP, min/total_min cap (depth-of-run signal)
 #   p3: GP-only ratio (drops the min cap so playoff stars at 38-42 MPG
 #       don't all max out the multiplier)
-PLAYOFF_VERSION = "p3"
+#   p4: round × engagement — uses BBRef's actual round outcomes (via
+#       fetch_playoff_rounds) so Finals teams hit 1.00 regardless of GP,
+#       and 4-game vs 7-game first-round series both count as 1 round.
+PLAYOFF_VERSION = "p4"
 
 
 def _raw_disk_path(season: str, playoffs: bool = False) -> Path:
@@ -1700,18 +1784,31 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
 
     season_games = int(stats["GP"].max())
     if playoffs:
-        # Playoff availability is GP-only — depth of run is the entire signal.
-        # The regular-season formula caps on minutes (2500 = 82×30.5), but
-        # playoff rotations shrink so stars routinely hit 38-42 MPG. With the
-        # min cap they all max out at 1.00 regardless of GP, eating the
-        # depth-of-run distinction we actually want from playoff mode.
-        # Pure GP/league-max ratio + same sqrt curve as regular season:
-        #     4 GP / 22 = 0.18  → mult 0.60
-        #    13 GP / 22 = 0.59  → mult 0.84
-        #    17 GP / 22 = 0.77  → mult 0.92
-        #    22 GP / 22 = 1.00  → mult 1.00
-        gp_ratio = (stats["GP"] / max(season_games, 1)).clip(0, 1)
-        stats["avail_mult"] = (0.30 + 0.70 * gp_ratio.pow(0.5)).clip(0.30, 1.0)
+        # Playoff availability — round × engagement.
+        #   round_credit = team's deepest round / 4   (R1=0.25, F=1.00)
+        #   gp_factor    = player's GP / team's max GP (their share of the run)
+        #   mult         = 0.30 + 0.70 × √(round_credit × gp_factor)
+        # So Finals teams' iron-men land at 1.00, conf finals exits ~0.91,
+        # conf semis ~0.78, R1 exits ~0.65 (regardless of whether the series
+        # was a 4-game sweep or a 7-game battle). A player who missed games
+        # within their team's run gets a proportional haircut on top.
+        # Falls back to GP-only formula if BBRef rounds data is missing.
+        rounds_lookup = fetch_playoff_rounds(season)
+        team_max_gp = stats.groupby("TEAM_ABBREVIATION")["GP"].max()
+        if rounds_lookup:
+            stats["_team_rounds"] = (
+                stats["TEAM_ABBREVIATION"].map(rounds_lookup).fillna(1).astype(int)
+            )
+            round_credit = stats["_team_rounds"] / 4.0
+            denom        = stats["TEAM_ABBREVIATION"].map(team_max_gp).clip(lower=1)
+            gp_factor    = (stats["GP"] / denom).clip(upper=1.0)
+            engagement   = (round_credit * gp_factor).clip(lower=0, upper=1)
+            stats["avail_mult"] = (0.30 + 0.70 * engagement.pow(0.5)).clip(0.30, 1.0)
+            stats = stats.drop(columns=["_team_rounds"])
+        else:
+            # Heuristic fallback: GP-only ratio against league max
+            gp_ratio = (stats["GP"] / max(season_games, 1)).clip(0, 1)
+            stats["avail_mult"] = (0.30 + 0.70 * gp_ratio.pow(0.5)).clip(0.30, 1.0)
     else:
         # Regular season: GP × MPG via total_min / 2500-cap (default formula).
         stats["avail_mult"] = stats.apply(
