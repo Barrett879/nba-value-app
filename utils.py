@@ -189,6 +189,32 @@ COMMON_CSS = """
     }
     .top-nav .home-link:hover { color: #fff; border: none; }
     .top-nav .divider { color: #333; font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
+
+    /* Pin the global playoff-mode toggle to the right edge of the nav bar.
+       Streamlit assigns the wrapping div class 'st-key-playoff_nav_toggle'
+       when we use st.container(key='playoff_nav_toggle'). */
+    .st-key-playoff_nav_toggle {
+        position: fixed !important;
+        top: 0.45rem !important;
+        right: 1rem !important;
+        z-index: 10001 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        background: transparent !important;
+    }
+    .st-key-playoff_nav_toggle [data-testid="stToggle"] {
+        background: transparent;
+        padding: 0;
+    }
+    /* Toggle label colour to match nav text */
+    .st-key-playoff_nav_toggle label p {
+        color: #aaa !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+    }
+    .st-key-playoff_nav_toggle:hover label p { color: #fff !important; }
 </style>
 """
 
@@ -201,21 +227,36 @@ _NAV_PAGES = [
     ("Current Free Agents", "/Free_Agent_Class"),
 ]
 
-def render_nav(current: str) -> None:
-    """Render the top nav bar. Pass the current page title to highlight it."""
-    links = '<a class="home-link" href="/" target="_top">Home</a><span class="divider">|</span>'
-    for label, url in _NAV_PAGES:
-        css_class = "active" if label == current else ""
-        links += f'<a class="{css_class}" href="{url}" target="_top">{label}</a>'
-    st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
-
-
 _PLAYOFF_HELP = (
     "Replace regular-season stats with postseason stats for the selected "
     "season(s). Salaries stay the same (one annual contract). Defense uses "
     "box-score fallback. Availability is based on each team's depth-of-run "
     "— Finals MVPs outrank first-round stars with similar per-game production."
 )
+
+def render_nav(current: str) -> None:
+    """Render the top nav bar with the playoff toggle pinned right.
+
+    The toggle widget is rendered inside an st.container(key=...) and CSS
+    pulls the resulting `.st-key-playoff_nav_toggle` element into a
+    position:fixed slot at the top-right of the viewport (same row as the
+    nav links). State is shared via st.session_state.playoff_mode, so every
+    page sees the change immediately on its next render.
+    """
+    links = '<a class="home-link" href="/" target="_top">Home</a><span class="divider">|</span>'
+    for label, url in _NAV_PAGES:
+        css_class = "active" if label == current else ""
+        links += f'<a class="{css_class}" href="{url}" target="_top">{label}</a>'
+    st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
+
+    # Playoff toggle — keyed container, pinned via CSS in COMMON_CSS
+    with st.container(key="playoff_nav_toggle"):
+        st.toggle(
+            "Playoff mode",
+            value=st.session_state.get("playoff_mode", False),
+            key="playoff_mode",
+            help=_PLAYOFF_HELP,
+        )
 
 
 def render_playoff_toggle() -> bool:

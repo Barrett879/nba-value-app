@@ -38,23 +38,21 @@ components.html("""
 _bootstrap_warm()
 render_nav("Trades")
 
-_t_l, _t_r = st.columns([3, 1])
-with _t_l:
-    if st.session_state.get("playoff_mode", False):
-        st.title("Trade Comparison — Playoff Mode")
-        st.caption(
-            "Stack any two sides of a trade using PLAYOFF Barrett Scores. Salaries stay "
-            "regular-season (one annual contract). Useful for trades that swung a "
-            "championship — what each side actually delivered when it mattered."
-        )
-    else:
-        st.title("Trade Comparison")
-        st.caption(
-            "Stack any two sides of a trade against each other. Barrett Score totals + salary "
-            "tell you who came out ahead — at the time of the deal, and what actually happened the year after."
-        )
-with _t_r:
-    playoff_mode = render_playoff_toggle()
+# Playoff mode lives in the top nav bar (sticky across pages via session_state)
+playoff_mode = bool(st.session_state.get("playoff_mode", False))
+if playoff_mode:
+    st.title("Trade Comparison — Playoff Mode")
+    st.caption(
+        "Stack any two sides of a trade using PLAYOFF Barrett Scores. Salaries stay "
+        "regular-season (one annual contract). Useful for trades that swung a "
+        "championship — what each side actually delivered when it mattered."
+    )
+else:
+    st.title("Trade Comparison")
+    st.caption(
+        "Stack any two sides of a trade against each other. Barrett Score totals + salary "
+        "tell you who came out ahead — at the time of the deal, and what actually happened the year after."
+    )
 
 # ── Mode toggle ────────────────────────────────────────────────────────────────
 mode = st.radio(

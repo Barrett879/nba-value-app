@@ -38,17 +38,14 @@ components.html("""
 _bootstrap_warm()
 render_nav("Search Player")
 
-# Playoff mode toggle (sticky via session_state.playoff_mode across all pages)
-_top_l, _top_r = st.columns([3, 1])
-with _top_l:
-    if st.session_state.get("playoff_mode", False):
-        st.title("Search Player — Playoff Mode")
-        st.caption("Career arcs and per-season stats from postseason data only. Salaries reflect regular-season contracts.")
-    else:
-        st.title("Search Player")
-        st.caption("Find any player who's appeared in the league — career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
-with _top_r:
-    playoff_mode = render_playoff_toggle()
+# Playoff mode lives in the top nav bar (sticky across pages via session_state)
+playoff_mode = bool(st.session_state.get("playoff_mode", False))
+if playoff_mode:
+    st.title("Search Player — Playoff Mode")
+    st.caption("Career arcs and per-season stats from postseason data only. Salaries reflect regular-season contracts.")
+else:
+    st.title("Search Player")
+    st.caption("Find any player who's appeared in the league — career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
 
 # ── Search box ─────────────────────────────────────────────────────────────────
 all_names = get_all_player_names()

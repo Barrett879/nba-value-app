@@ -19,6 +19,7 @@ from utils import (
     get_all_player_names,
     HISTORICAL_TRADES,
     trade_side_summary,
+    _PLAYOFF_HELP,
 )
 
 # Featured players for the Legacy preview overlay on the home page.
@@ -159,8 +160,42 @@ st.markdown("""
         margin-left: 1rem;
         margin-top: 0.3rem;
     }
+
+    /* Playoff-mode toggle pinned to the top-right (same CSS as the
+       inner pages — the home page doesn't have the nav bar but still
+       needs the toggle in the same visual slot). */
+    .st-key-playoff_nav_toggle {
+        position: fixed !important;
+        top: 0.45rem !important;
+        right: 1rem !important;
+        z-index: 10001 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        background: transparent !important;
+    }
+    .st-key-playoff_nav_toggle [data-testid="stToggle"] {
+        background: transparent;
+        padding: 0;
+    }
+    .st-key-playoff_nav_toggle label p {
+        color: #aaa !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+    }
+    .st-key-playoff_nav_toggle:hover label p { color: #fff !important; }
 </style>
 """, unsafe_allow_html=True)
+
+# Playoff-mode toggle (pinned top-right via CSS, sticky via session_state)
+with st.container(key="playoff_nav_toggle"):
+    st.toggle(
+        "Playoff mode",
+        value=st.session_state.get("playoff_mode", False),
+        key="playoff_mode",
+        help=_PLAYOFF_HELP,
+    )
 
 # ── Hero — title + intro blurb ────────────────────────────────────────────────
 st.markdown("""

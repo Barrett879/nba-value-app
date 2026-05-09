@@ -42,23 +42,20 @@ components.html("""
 _bootstrap_warm()
 render_nav("Legacy")
 
-_t_l, _t_r = st.columns([3, 1])
-with _t_l:
-    if st.session_state.get("playoff_mode", False):
-        st.title("Barrett Score — Playoff Legacy")
-        st.caption(
-            "The all-time playoff record. Every player-postseason from 1996–97 forward "
-            "(pre-1996 BBRef playoff data not yet plumbed) — ranked, compared, "
-            "weighted by depth-of-run."
-        )
-    else:
-        st.title("Barrett Score — Legacy")
-        st.caption(
-            "The historical record. Every player, every season from 1984–85 to today — "
-            "ranked, compared, and put in context."
-        )
-with _t_r:
-    playoff_mode = render_playoff_toggle()
+# Playoff mode lives in the top nav bar (sticky across pages via session_state)
+playoff_mode = bool(st.session_state.get("playoff_mode", False))
+if playoff_mode:
+    st.title("Barrett Score — Playoff Legacy")
+    st.caption(
+        "The all-time playoff record. Every player-postseason from 1984–85 forward "
+        "— ranked, compared, weighted by depth-of-run."
+    )
+else:
+    st.title("Barrett Score — Legacy")
+    st.caption(
+        "The historical record. Every player, every season from 1984–85 to today — "
+        "ranked, compared, and put in context."
+    )
 
 # ── Load combined data ─────────────────────────────────────────────────────────
 # build_all_seasons_combined is @st.cache_resource (no copy on hit) — must copy before mutating

@@ -40,14 +40,12 @@ components.html("""
 _bootstrap_warm()
 render_nav("Team Analysis")
 
-_t_l, _t_r = st.columns([3, 1])
-with _t_l:
-    if st.session_state.get("playoff_mode", False):
-        st.title("Barrett Score — Team Analysis (Playoffs)")
-    else:
-        st.title("Barrett Score — Team Analysis")
-with _t_r:
-    playoff_mode = render_playoff_toggle()
+# Playoff mode lives in the top nav bar (sticky across pages via session_state)
+playoff_mode = bool(st.session_state.get("playoff_mode", False))
+if playoff_mode:
+    st.title("Barrett Score — Team Analysis (Playoffs)")
+else:
+    st.title("Barrett Score — Team Analysis")
 
 # ── Season selector ────────────────────────────────────────────────────────────
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])

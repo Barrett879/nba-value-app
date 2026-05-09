@@ -61,14 +61,13 @@ with st.expander("How is this calculated?"):
         "Salaries are then ranked against scores to find who's overpaid, underpaid, or worth exactly what they're making."
     )
 
-# ── Season selector + playoff toggle ──────────────────────────────────────────
-# playoff_mode is a session_state-backed sticky flag shared with Search,
-# Legacy, Trades, and Team Analysis via render_playoff_toggle().
+# ── Season selector ──────────────────────────────────────────────────────────
+# playoff_mode lives in the top nav bar (rendered by render_nav above) and is
+# read here from session_state — synced sitewide.
+playoff_mode = bool(st.session_state.get("playoff_mode", False))
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", SEASONS, index=0)
-with ctrl_mid:
-    playoff_mode = render_playoff_toggle()
 
 # Default minimum-minutes drops in playoff mode — playoff GP is 4-28 games,
 # so a 500-min threshold would hide most of the field.
