@@ -2024,6 +2024,13 @@ def build_ranked_projected(season: str, playoffs: bool = False) -> pd.DataFrame:
 
 def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
+    # Empty input (e.g. playoff data missing for a season) — return early
+    # with the expected columns so downstream code (apply_projections,
+    # apply_rankings consumers) can handle gracefully without KeyErrors.
+    if df.empty:
+        for col in ("score_rank", "salary_rank", "rank_diff"):
+            df[col] = pd.Series(dtype=int)
+        return df
     df["score_rank"]  = df["barrett_score"].rank(ascending=False, method="min").astype(int)
     df["salary_rank"] = df["salary"].rank(ascending=False, method="min").astype(int)
     df["rank_diff"]   = df["salary_rank"] - df["score_rank"]
