@@ -692,16 +692,22 @@ def fetch_playoff_rounds(season: str) -> dict:
 # matches fetch_league_stats so this is a drop-in replacement upstream of
 # build_raw's formula.
 @st.cache_data(ttl=30 * 86_400, show_spinner=False)
-def fetch_bref_player_stats(season: str) -> pd.DataFrame:
+def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame:
     """Per-game player stats from BBRef. Returns DataFrame with the same
     columns the NBA Stats API would return (PLAYER_ID, PLAYER_NAME,
     TEAM_ABBREVIATION, GP, MIN, PTS, AST, OREB, DREB, BLK, STL, TOV, PF,
-    FGA, FTA). Used only as a fallback when NBA API has no data."""
+    FGA, FTA). Used as a fallback when NBA API has no data.
+
+    playoffs=True pulls postseason per-game stats from BBRef's playoff
+    page — used for pre-1996 playoff seasons since the NBA Stats API
+    doesn't return playoff data either for those years.
+    """
     end_year = season_to_espn_year(season)
     # v2: cache filename bumped 2026-04-30 to orphan v1 parquets that were
     # written without TEAM_ABBREVIATION (rename map missed BBRef's "Team"
     # column). v2 files are guaranteed to have the right schema.
-    disk_path = _dc_path(f"bref_stats_v2_{season}.parquet")
+    suffix = "_playoff" if playoffs else ""
+    disk_path = _dc_path(f"bref_stats_v2_{season}{suffix}.parquet")
     if _dc_fresh(disk_path, ttl=30 * 86_400):
         try:
             cached = pd.read_parquet(disk_path)
@@ -712,7 +718,10 @@ def fetch_bref_player_stats(season: str) -> pd.DataFrame:
         except Exception:
             pass
 
-    url = f"https://www.basketball-reference.com/leagues/NBA_{end_year}_per_game.html"
+    if playoffs:
+        url = f"https://www.basketball-reference.com/playoffs/NBA_{end_year}_per_game.html"
+    else:
+        url = f"https://www.basketball-reference.com/leagues/NBA_{end_year}_per_game.html"
     r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
     if r.status_code == 429:
         raise RuntimeError(f"BBRef rate-limited on {url}")
@@ -1147,11 +1156,11 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
             continue
         try:
             stats = fetch_league_stats(season, season_type)
-            # Pre-1996 fallback (regular season only) — playoff has no BBRef
-            # fallback yet, so pre-96 playoff seasons just skip.
-            if (stats.empty or "PLAYER_NAME" not in stats.columns) and not playoffs:
+            # Pre-1996 fallback — pulls per-game stats from BBRef. Same path
+            # works for both regular season and playoffs (different URLs).
+            if stats.empty or "PLAYER_NAME" not in stats.columns:
                 try:
-                    stats = fetch_bref_player_stats(season)
+                    stats = fetch_bref_player_stats(season, playoffs=playoffs)
                 except Exception:
                     stats = pd.DataFrame()
             if stats.empty or "PLAYER_NAME" not in stats.columns:
@@ -1687,14 +1696,11 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
 
     # Pre-1996 fallback: NBA Stats API returns empty for those years, so
     # scrape per-game stats from BBRef instead. This unlocks Magic, Bird,
-    # prime Jordan, and (with 1973+) full Kareem from his Lakers years.
-    # NOTE: BBRef playoff stats live at a different URL — Stage 1 doesn't
-    # plumb that through, so pre-1996 playoff seasons return empty for now.
+    # prime Jordan, and full Kareem. Both regular season AND playoffs are
+    # supported (different BBRef URLs).
     if stats.empty:
-        if playoffs:
-            return pd.DataFrame()
         try:
-            stats = fetch_bref_player_stats(season).copy()
+            stats = fetch_bref_player_stats(season, playoffs=playoffs).copy()
         except Exception:
             stats = pd.DataFrame()
         if stats.empty:
