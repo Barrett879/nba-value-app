@@ -73,23 +73,24 @@ if not selected:
 
 
 # ── Era-adjustment toggle ────────────────────────────────────────────────────
-# Default = era-adjusted, since this page is heavily cross-era.
+# Pace-adjusted is now the canonical Barrett Score across the whole site
+# (Rankings, Legacy, Trades, all-time lists). Toggle off to see the original
+# unadjusted scoring for diagnostic / nostalgic purposes.
 era_mode = st.radio(
     "Score mode",
-    options=["Era-Adjusted (pace)", "Raw Barrett"],
+    options=["Era-Adjusted (default)", "Raw / un-adjusted"],
     horizontal=True,
     index=0,
     help=(
         "Era-Adjusted scales volume stats (PTS, AST, REB, BLK, STL, TOV, PF) "
         "by pace, normalizing high-pace eras down and dead-ball eras up. "
-        "D-LEBRON and the efficiency adjustment are already era-relative, "
-        "so they stay untouched. "
-        "Raw = the actual Barrett Score for that season."
+        "This is the canonical Barrett Score everywhere on the site. "
+        "Toggle to Raw to see the un-adjusted version for that season."
     ),
     key="search_era_mode",
 )
-SCORE_COL = "Barrett (Pace)" if era_mode.startswith("Era") else "Barrett Score"
-SCORE_LABEL = "Era-Adj. Barrett" if era_mode.startswith("Era") else "Barrett Score"
+SCORE_COL   = "Barrett Score" if era_mode.startswith("Era") else "Barrett (Raw)"
+SCORE_LABEL = "Barrett Score" if era_mode.startswith("Era") else "Raw Barrett"
 
 
 # ── Helper: load + cache one player's full career ─────────────────────────────
@@ -233,7 +234,7 @@ if len(selected) == 1:
 
     tbl = career[[
         "Season", "Team", "GP", "MPG", "PTS", "AST", "REB", "STL", "BLK", "TOV",
-        "TS%", "Barrett Score", "Barrett (Pace)", "Score Rank", "Total Players", "Salary",
+        "TS%", "Barrett Score", "Barrett (Raw)", "Score Rank", "Total Players", "Salary",
     ]].copy()
     tbl["Salary $M"] = (tbl["Salary"] / 1_000_000).round(2)
     tbl = tbl.drop(columns=["Salary"])
@@ -253,7 +254,7 @@ if len(selected) == 1:
             "MPG": "{:.1f}", "PTS": "{:.1f}", "AST": "{:.1f}", "REB": "{:.1f}",
             "STL": "{:.2f}", "BLK": "{:.2f}", "TOV": "{:.2f}",
             "TS%": "{:.1f}%", "Barrett Score": "{:.2f}",
-            "Barrett (Pace)": "{:.2f}", "Salary $M": "${:.2f}M",
+            "Barrett (Raw)": "{:.2f}", "Salary $M": "${:.2f}M",
         })
     )
 
@@ -265,9 +266,9 @@ if len(selected) == 1:
         column_config={
             "GP":              st.column_config.NumberColumn(format="%d", help="Games played that season."),
             "Salary $M":       st.column_config.TextColumn("Salary",     help="Salary that season ($M). Some pre-2000 rookie scale and minimum contracts may show $0."),
-            "Barrett Score":   st.column_config.NumberColumn(format="%.2f", help="Raw Barrett Score — unadjusted for era pace."),
-            "Barrett (Pace)":  st.column_config.NumberColumn(format="%.2f", help="Era-adjusted via pace. Volume stats normalized to a cross-era baseline (~96 poss/48). Boosts dead-ball-era players, trims high-pace eras."),
-            "Rank":            st.column_config.TextColumn(help="Score rank that season out of all players who hit the minutes threshold (raw Barrett)."),
+            "Barrett Score":   st.column_config.NumberColumn(format="%.2f", help="Era-adjusted via pace — the canonical Barrett Score across the site."),
+            "Barrett (Raw)":   st.column_config.NumberColumn(format="%.2f", help="Un-adjusted version for that season — preserved for reference and the Score-mode toggle."),
+            "Rank":            st.column_config.TextColumn(help="Score rank that season — based on the canonical (era-adjusted) Barrett Score."),
             "TS%":             st.column_config.TextColumn("TS%", help="True Shooting %."),
         },
     )

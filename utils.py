@@ -1045,14 +1045,10 @@ def fetch_player_full_career(player_name: str) -> pd.DataFrame:
                 continue
             br_row = ranked[mask2].iloc[0]
 
-            barrett_raw = float(br_row["barrett_score"])
-            barrett_pace = pace_adjusted_barrett(
-                float(br_row.get("base_score", 0)),
-                float(br_row.get("d_lebron", 0)),
-                float(br_row.get("efficiency_adj", 0)),
-                float(br_row.get("avail_mult", 1.0)),
-                season,
-            )
+            # In v6+ the canonical barrett_score is already pace-adjusted.
+            # Fall back gracefully if older caches lack barrett_score_raw.
+            barrett_canonical = float(br_row["barrett_score"])
+            barrett_raw = float(br_row.get("barrett_score_raw", barrett_canonical))
             rows.append({
                 "Season":         season,
                 "Team":           raw_row["TEAM_ABBREVIATION"],
@@ -1065,8 +1061,8 @@ def fetch_player_full_career(player_name: str) -> pd.DataFrame:
                 "BLK":            float(raw_row["BLK"]),
                 "TOV":            float(raw_row["TOV"]),
                 "TS%":            float(br_row.get("ts_pct", 0)) * 100,
-                "Barrett Score":  barrett_raw,
-                "Barrett (Pace)": barrett_pace,
+                "Barrett Score":  barrett_canonical,  # pace-adjusted (v6+)
+                "Barrett (Raw)":  barrett_raw,         # un-adjusted, for Search toggle
                 "Score Rank":     int(br_row["score_rank"]),
                 "Total Players":  int(len(ranked)),
                 "Salary":         float(br_row.get("salary", 0) or 0),
@@ -1504,7 +1500,11 @@ def fetch_dlebron(season: str) -> dict:
 #   v5: Availability multiplier rebalanced — floor dropped from 0.75 to 0.30,
 #       drops the GP factor (only total_min/cap matters), so an 18-game
 #       season multiplier goes from 0.80 → 0.62. Injured stars score lower.
-FORMULA_VERSION = "v5"
+#   v6: Pace adjustment is now CANONICAL — applied to barrett_score in
+#       build_raw so every page (Rankings, Legacy, Trades, Search, all-time
+#       lists) gets era-normalized scores by default. Old un-adjusted view
+#       still available as `barrett_score_raw` for the Search toggle.
+FORMULA_VERSION = "v6"
 
 
 def _raw_disk_path(season: str) -> Path:
@@ -1630,11 +1630,21 @@ def build_raw(season: str) -> pd.DataFrame:
     stats["avail_mult"] = stats.apply(
         lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
     )
-    stats["barrett_score"] = stats["base_score"] * stats["avail_mult"]
+    # Canonical Barrett Score is now PACE-ADJUSTED — applies across the whole
+    # site (Rankings, Legacy, Trades, Search, etc.) so cross-era comparisons
+    # are honest by default. Volume stats (PTS, AST, REB, BLK, STL, TOV, PF)
+    # get scaled by season pace; D-LEBRON and the TS% efficiency adjustment
+    # are already era-relative so they're left alone.
+    pf = pace_factor(season)
+    volume_part = stats["base_score"] - stats["d_lebron"] * 2 - stats["efficiency_adj"] * 2
+    stats["base_score_pace"] = volume_part * pf + stats["d_lebron"] * 2 + stats["efficiency_adj"] * 2
+    stats["barrett_score"]     = stats["base_score_pace"] * stats["avail_mult"]
+    stats["barrett_score_raw"] = stats["base_score"]      * stats["avail_mult"]
 
     result = stats[[
         "PLAYER_ID", "PLAYER_NAME", "TEAM_ABBREVIATION", "GP", "MIN", "total_min",
-        "base_score", "avail_mult", "barrett_score", "salary",
+        "base_score", "base_score_pace", "avail_mult",
+        "barrett_score", "barrett_score_raw", "salary",
         "d_lebron", "ts_pct", "efficiency_adj",
     ]].rename(columns={
         "PLAYER_NAME": "Player",
