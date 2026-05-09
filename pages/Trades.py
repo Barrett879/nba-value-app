@@ -9,7 +9,7 @@ from utils import (
     COMMON_CSS, SEASONS,
     HISTORICAL_TRADES,
     get_all_player_names, trade_side_summary,
-    render_nav, _bootstrap_warm,
+    render_nav, render_playoff_toggle, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Barrett Score — Trades", layout="wide")
@@ -38,11 +38,23 @@ components.html("""
 _bootstrap_warm()
 render_nav("Trades")
 
-st.title("Trade Comparison")
-st.caption(
-    "Stack any two sides of a trade against each other. Barrett Score totals + salary "
-    "tell you who came out ahead — at the time of the deal, and what actually happened the year after."
-)
+_t_l, _t_r = st.columns([3, 1])
+with _t_l:
+    if st.session_state.get("playoff_mode", False):
+        st.title("Trade Comparison — Playoff Mode")
+        st.caption(
+            "Stack any two sides of a trade using PLAYOFF Barrett Scores. Salaries stay "
+            "regular-season (one annual contract). Useful for trades that swung a "
+            "championship — what each side actually delivered when it mattered."
+        )
+    else:
+        st.title("Trade Comparison")
+        st.caption(
+            "Stack any two sides of a trade against each other. Barrett Score totals + salary "
+            "tell you who came out ahead — at the time of the deal, and what actually happened the year after."
+        )
+with _t_r:
+    playoff_mode = render_playoff_toggle()
 
 # ── Mode toggle ────────────────────────────────────────────────────────────────
 mode = st.radio(
@@ -130,8 +142,8 @@ if mode == "Historical trade":
 
     # Trade-year evaluation
     st.markdown(f"### At time of trade — {season_at}")
-    sum_a_at = trade_side_summary(tuple(trade["side_a"]), season_at)
-    sum_b_at = trade_side_summary(tuple(trade["side_b"]), season_at)
+    sum_a_at = trade_side_summary(tuple(trade["side_a"]), season_at, playoffs=playoff_mode)
+    sum_b_at = trade_side_summary(tuple(trade["side_b"]), season_at, playoffs=playoff_mode)
 
     cA, cB = st.columns(2)
     with cA:
@@ -164,8 +176,8 @@ if mode == "Historical trade":
         "got hurt show up missing here."
     )
 
-    sum_a_aft = trade_side_summary(tuple(trade["side_a"]), season_aft)
-    sum_b_aft = trade_side_summary(tuple(trade["side_b"]), season_aft)
+    sum_a_aft = trade_side_summary(tuple(trade["side_a"]), season_aft, playoffs=playoff_mode)
+    sum_b_aft = trade_side_summary(tuple(trade["side_b"]), season_aft, playoffs=playoff_mode)
 
     cA2, cB2 = st.columns(2)
     with cA2:
@@ -230,8 +242,8 @@ else:
         st.warning(f"Same player on both sides: {', '.join(overlap)}. Remove from one side to compare.")
 
     if side_a or side_b:
-        sum_a = trade_side_summary(tuple(side_a), season)
-        sum_b = trade_side_summary(tuple(side_b), season)
+        sum_a = trade_side_summary(tuple(side_a), season, playoffs=playoff_mode)
+        sum_b = trade_side_summary(tuple(side_b), season, playoffs=playoff_mode)
 
         c1, c2 = st.columns(2)
         with c1:

@@ -10,7 +10,7 @@ from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
     normalize, season_to_espn_year,
     build_ranked_projected,
-    fetch_bref_positions, render_nav, _bootstrap_warm,
+    fetch_bref_positions, render_nav, render_playoff_toggle, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Barrett Score — Team Analysis", layout="wide")
@@ -40,22 +40,38 @@ components.html("""
 _bootstrap_warm()
 render_nav("Team Analysis")
 
-st.title("Barrett Score — Team Analysis")
+_t_l, _t_r = st.columns([3, 1])
+with _t_l:
+    if st.session_state.get("playoff_mode", False):
+        st.title("Barrett Score — Team Analysis (Playoffs)")
+    else:
+        st.title("Barrett Score — Team Analysis")
+with _t_r:
+    playoff_mode = render_playoff_toggle()
 
 # ── Season selector ────────────────────────────────────────────────────────────
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", SEASONS, index=0)
+default_threshold = 100 if playoff_mode else DEFAULT_MIN_THRESHOLD
+slider_max = 600 if playoff_mode else 1500
+slider_step = 25 if playoff_mode else 50
 with ctrl_r:
     min_threshold = st.slider(
-        "Min total minutes", min_value=0, max_value=1500,
-        value=DEFAULT_MIN_THRESHOLD, step=50,
+        "Min total minutes", min_value=0, max_value=slider_max,
+        value=default_threshold, step=slider_step,
         help="Hides players below this threshold. Ranks are always computed on the full pool.",
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
 # build_ranked_projected is @st.cache_resource (no copy on hit) — must copy before mutating
-df = build_ranked_projected(season)
+df = build_ranked_projected(season, playoffs=playoff_mode)
+if df.empty:
+    st.warning(
+        f"No {'playoff' if playoff_mode else 'regular season'} data for {season} yet. "
+        "Try a previous season or toggle Playoff mode off."
+    )
+    st.stop()
 df = df[df["total_min"] >= min_threshold].copy()
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)

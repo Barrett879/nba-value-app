@@ -12,7 +12,7 @@ from utils import (
     normalize,
     build_all_seasons_combined, fetch_draft_classes,
     fetch_player_career_all_seasons,
-    render_nav, _bootstrap_warm,
+    render_nav, render_playoff_toggle, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Barrett Score — Legacy", layout="wide")
@@ -42,19 +42,43 @@ components.html("""
 _bootstrap_warm()
 render_nav("Legacy")
 
-st.title("Barrett Score — Legacy")
-st.caption(
-    "The historical record. Every player, every season from 1984–85 to today — "
-    "ranked, compared, and put in context."
-)
+_t_l, _t_r = st.columns([3, 1])
+with _t_l:
+    if st.session_state.get("playoff_mode", False):
+        st.title("Barrett Score — Playoff Legacy")
+        st.caption(
+            "The all-time playoff record. Every player-postseason from 1996–97 forward "
+            "(pre-1996 BBRef playoff data not yet plumbed) — ranked, compared, "
+            "weighted by depth-of-run."
+        )
+    else:
+        st.title("Barrett Score — Legacy")
+        st.caption(
+            "The historical record. Every player, every season from 1984–85 to today — "
+            "ranked, compared, and put in context."
+        )
+with _t_r:
+    playoff_mode = render_playoff_toggle()
 
 # ── Load combined data ─────────────────────────────────────────────────────────
 # build_all_seasons_combined is @st.cache_resource (no copy on hit) — must copy before mutating
-with st.spinner("Loading historical data across all seasons…"):
-    all_df = build_all_seasons_combined().copy()
+# Playoff mode uses a much lower min_threshold since playoff GP is 4-28 games.
+combined_threshold = 100 if playoff_mode else DEFAULT_MIN_THRESHOLD
+with st.spinner(
+    f"Loading {'playoff' if playoff_mode else 'historical'} data across all seasons…"
+):
+    all_df = build_all_seasons_combined(
+        min_threshold=combined_threshold, playoffs=playoff_mode,
+    ).copy()
 
 if all_df.empty:
-    st.error("Historical data unavailable. Please try again shortly.")
+    if playoff_mode:
+        st.warning(
+            "No playoff data on disk yet. Toggle Playoff mode off to view "
+            "regular-season legacy, or wait for the playoff seed to populate."
+        )
+    else:
+        st.error("Historical data unavailable. Please try again shortly.")
     st.stop()
 
 # Season sort helper (ascending chronological order for charts)
@@ -267,7 +291,7 @@ with tab_arc:
     if arc_player:
         # Load every season this player appeared in — no minutes threshold
         with st.spinner(f"Loading full career for {arc_player}…"):
-            _career_raw = fetch_player_career_all_seasons(arc_player)
+            _career_raw = fetch_player_career_all_seasons(arc_player, playoffs=playoff_mode)
 
             if _career_raw.empty:
                 arc_df = pd.DataFrame()

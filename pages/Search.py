@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 from utils import (
     COMMON_CSS,
     get_all_player_names, fetch_player_full_career,
-    render_nav, _bootstrap_warm,
+    render_nav, render_playoff_toggle, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Barrett Score — Search Player", layout="wide")
@@ -38,8 +38,17 @@ components.html("""
 _bootstrap_warm()
 render_nav("Search Player")
 
-st.title("Search Player")
-st.caption("Find any player who's appeared in the league — career arcs, season-by-season stats, peak years. Add up to 5 players to compare careers head-to-head.")
+# Playoff mode toggle (sticky via session_state.playoff_mode across all pages)
+_top_l, _top_r = st.columns([3, 1])
+with _top_l:
+    if st.session_state.get("playoff_mode", False):
+        st.title("Search Player — Playoff Mode")
+        st.caption("Career arcs and per-season stats from postseason data only. Salaries reflect regular-season contracts.")
+    else:
+        st.title("Search Player")
+        st.caption("Find any player who's appeared in the league — career arcs, season-by-season stats, peak years. Add up to 5 players to compare careers head-to-head.")
+with _top_r:
+    playoff_mode = render_playoff_toggle()
 
 # ── Search box ─────────────────────────────────────────────────────────────────
 all_names = get_all_player_names()
@@ -95,9 +104,11 @@ SCORE_LABEL = "Barrett Score" if era_mode.startswith("Era") else "Raw Barrett"
 
 # ── Helper: load + cache one player's full career ─────────────────────────────
 @st.cache_data(ttl=3600, show_spinner=False)
-def _load_career(name: str) -> pd.DataFrame:
-    """Wraps fetch_player_full_career so each player is cached independently."""
-    return fetch_player_full_career(name)
+def _load_career(name: str, playoffs: bool = False) -> pd.DataFrame:
+    """Wraps fetch_player_full_career so each player is cached independently
+    per (name, mode). Playoff and regular-season careers each get their
+    own cache entry."""
+    return fetch_player_full_career(name, playoffs=playoffs)
 
 
 # ── Color palette for multi-player overlays ──────────────────────────────────
@@ -122,7 +133,7 @@ def _gp_weighted(career: pd.DataFrame, col: str) -> float:
 if len(selected) == 1:
     player_name = selected[0]
     with st.spinner(f"Loading {player_name}'s career…"):
-        career = _load_career(player_name)
+        career = _load_career(player_name, playoffs=playoff_mode)
 
     if career.empty:
         st.warning(f"No career data found for {player_name}.")
@@ -283,7 +294,7 @@ else:
     careers: dict[str, pd.DataFrame] = {}
     with st.spinner(f"Loading {len(selected)} careers…"):
         for name in selected:
-            c = _load_career(name)
+            c = _load_career(name, playoffs=playoff_mode)
             if not c.empty:
                 careers[name] = c
 

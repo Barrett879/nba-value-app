@@ -17,7 +17,7 @@ from utils import (
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
-    render_nav, _bootstrap_warm,
+    render_nav, render_playoff_toggle, _bootstrap_warm,
 )
 import threading
 
@@ -62,26 +62,13 @@ with st.expander("How is this calculated?"):
     )
 
 # ── Season selector + playoff toggle ──────────────────────────────────────────
-# playoff_mode is a session_state-backed sticky flag — set here, will be
-# extended to other pages in Stage 2.
+# playoff_mode is a session_state-backed sticky flag shared with Search,
+# Legacy, Trades, and Team Analysis via render_playoff_toggle().
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", SEASONS, index=0)
 with ctrl_mid:
-    playoff_mode = st.toggle(
-        "Playoff mode",
-        value=st.session_state.get("playoff_mode", False),
-        key="playoff_mode",
-        help=(
-            "Replaces all regular-season stats with playoff stats for that "
-            "season. Salaries stay the same (one annual contract). Defense "
-            "uses the box-score fallback in playoff mode (D-LEBRON is "
-            "regular-season only). Availability denominator switches to "
-            "each player's TEAM playoff games — so a 4-of-4 first-round "
-            "loser gets full credit instead of being penalized for their "
-            "team being eliminated early."
-        ),
-    )
+    playoff_mode = render_playoff_toggle()
 
 # Default minimum-minutes drops in playoff mode — playoff GP is 4-28 games,
 # so a 500-min threshold would hide most of the field.

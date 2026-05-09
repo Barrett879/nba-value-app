@@ -210,6 +210,30 @@ def render_nav(current: str) -> None:
     st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
 
 
+_PLAYOFF_HELP = (
+    "Replace regular-season stats with postseason stats for the selected "
+    "season(s). Salaries stay the same (one annual contract). Defense uses "
+    "box-score fallback. Availability is based on each team's depth-of-run "
+    "— Finals MVPs outrank first-round stars with similar per-game production."
+)
+
+
+def render_playoff_toggle() -> bool:
+    """Shared playoff-mode toggle, backed by st.session_state.playoff_mode.
+
+    Same key on every page — Streamlit allows reusing widget keys across
+    different page renders since each page is its own script execution. The
+    flag persists across page navigations because session_state.playoff_mode
+    survives between scripts in the same multi-page app.
+    """
+    return st.toggle(
+        "Playoff mode",
+        value=st.session_state.get("playoff_mode", False),
+        key="playoff_mode",
+        help=_PLAYOFF_HELP,
+    )
+
+
 # ── Name matching ──────────────────────────────────────────────────────────────
 
 def normalize(name: str) -> str:
@@ -855,18 +879,22 @@ def fetch_monthly_scores(player_id: int, season: str,
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def trade_side_summary(player_names: tuple[str, ...], season: str) -> dict:
+def trade_side_summary(player_names: tuple[str, ...], season: str,
+                       playoffs: bool = False) -> dict:
     """Summarize a list of players in a given season — their Barrett Scores
     and salaries. Used by the Trades page. Player names matched by normalize().
     Returns dict with: rows (DataFrame), found (list), missing (list),
-    barrett_total (float), salary_total (float)."""
-    if not _raw_disk_fresh(season):
+    barrett_total (float), salary_total (float).
+
+    playoffs=True uses postseason scores instead of regular-season.
+    """
+    if not _raw_disk_fresh(season, playoffs):
         # Don't trigger fresh build_raw on view-time requests
         return {"rows": pd.DataFrame(), "found": [], "missing": list(player_names),
                 "barrett_total": 0.0, "salary_total": 0.0}
 
     try:
-        df = apply_projections(apply_rankings(build_raw(season)))
+        df = apply_projections(apply_rankings(build_raw(season, playoffs)))
     except Exception:
         return {"rows": pd.DataFrame(), "found": [], "missing": list(player_names),
                 "barrett_total": 0.0, "salary_total": 0.0}
@@ -1019,23 +1047,28 @@ def get_all_player_names(min_seasons: int = 1) -> list[str]:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def fetch_player_full_career(player_name: str) -> pd.DataFrame:
+def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.DataFrame:
     """Full per-season career stats for one player: raw counting stats from
     fetch_league_stats joined with Barrett Score / rank from build_raw +
     apply_rankings. One row per season the player appeared in.
 
+    playoffs=True uses postseason data — pulls from the playoff-cached
+    league_stats and raw parquets. Pre-1996 playoff data isn't seeded yet
+    (different BBRef URL), so those seasons just won't appear.
+
     Only reads seasons that are already on disk — view-time requests must
     NEVER trigger fresh BBRef scrapes. seed_cache.py populates the disk."""
     name_norm = normalize(player_name)
+    season_type = "Playoffs" if playoffs else "Regular Season"
     rows: list[dict] = []
     for season in SEASONS:
-        if not _raw_disk_fresh(season):
+        if not _raw_disk_fresh(season, playoffs):
             continue
         try:
-            stats = fetch_league_stats(season)
-            # Pre-1996 fallback: NBA Stats API returns empty, so pull per-game
-            # stats from BBRef (same source build_raw uses for those years).
-            if stats.empty or "PLAYER_NAME" not in stats.columns:
+            stats = fetch_league_stats(season, season_type)
+            # Pre-1996 fallback (regular season only) — playoff has no BBRef
+            # fallback yet, so pre-96 playoff seasons just skip.
+            if (stats.empty or "PLAYER_NAME" not in stats.columns) and not playoffs:
                 try:
                     stats = fetch_bref_player_stats(season)
                 except Exception:
@@ -1047,7 +1080,9 @@ def fetch_player_full_career(player_name: str) -> pd.DataFrame:
                 continue
             raw_row = stats[mask].iloc[0]
 
-            ranked = apply_rankings(build_raw(season))
+            ranked = apply_rankings(build_raw(season, playoffs))
+            if ranked.empty:
+                continue
             mask2 = ranked["Player"].apply(normalize) == name_norm
             if not mask2.any():
                 continue
@@ -1141,12 +1176,12 @@ def fetch_career_trend(player_id: int, num_seasons: int = 5,
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def fetch_player_career_with_rank(player_id: int) -> list[dict]:
+def fetch_player_career_with_rank(player_id: int, playoffs: bool = False) -> list[dict]:
     """Career trajectory with score + season-rank for SVG hover tooltips.
 
     Returns sorted list of {'season', 'score', 'rank', 'total'} for every
     season on disk where the player appears. Disk-only — never triggers a
-    fresh API hit at view time.
+    fresh API hit at view time. playoffs=True reads postseason caches.
     """
     info = nba_players_static.find_player_by_id(player_id)
     if not info:
@@ -1154,10 +1189,12 @@ def fetch_player_career_with_rank(player_id: int) -> list[dict]:
     name_norm = normalize(info["full_name"])
     out: list[dict] = []
     for season in SEASONS:
-        if not _raw_disk_fresh(season):
+        if not _raw_disk_fresh(season, playoffs):
             continue
         try:
-            ranked = apply_rankings(build_raw(season))
+            ranked = apply_rankings(build_raw(season, playoffs))
+            if ranked.empty:
+                continue
             mask = ranked["Player"].apply(normalize) == name_norm
             if not mask.any():
                 continue
@@ -1754,22 +1791,24 @@ def _bootstrap_warm() -> None:
 
 
 @st.cache_resource(ttl=3600, show_spinner=False)
-def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD) -> pd.DataFrame:
+def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD,
+                               playoffs: bool = False) -> pd.DataFrame:
     """Load every season, apply per-season rankings + projections, and concatenate.
 
     Rankings/projections are applied *within* each season so score_rank and
     value_diff are always comparable within a year.  The Season column is added
     so cross-season analysis can group/filter by year.
 
+    playoffs=True builds a separate combined dataset from postseason caches.
+    Different parquet on disk so the two modes don't clobber each other.
+
     NOTE: Uses @st.cache_resource (singleton, no copy on hit) instead of
     @st.cache_data. Callers MUST .copy() before mutating columns.
     """
-    # Include FORMULA_VERSION in the filename so a formula bump (e.g. v4 → v5)
-    # automatically orphans the old combined parquet. Otherwise the per-season
-    # raw_*_{VERSION}.parquet caches refresh but this combined snapshot stays
-    # stale for up to an hour, leaving the all-time rankings inconsistent
-    # with the per-player previews.
-    path = _dc_path(f"all_seasons_{min_threshold}_{FORMULA_VERSION}.parquet")
+    # Include FORMULA_VERSION + mode in the filename so formula bumps and
+    # mode switches both invalidate independently.
+    suffix = "_playoff" if playoffs else ""
+    path = _dc_path(f"all_seasons_{min_threshold}{suffix}_{FORMULA_VERSION}.parquet")
     if _dc_fresh(path, ttl=3600):
         try:
             return pd.read_parquet(path)
@@ -1779,7 +1818,9 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD) -> pd
     frames: list[pd.DataFrame] = []
     for season in SEASONS:
         try:
-            raw      = build_raw(season)
+            raw      = build_raw(season, playoffs)
+            if raw.empty:
+                continue
             ranked   = apply_rankings(raw)
             projected = apply_projections(ranked)
             filt     = projected[projected["total_min"] >= min_threshold].copy()
@@ -1829,17 +1870,20 @@ def fetch_draft_classes() -> pd.DataFrame:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def fetch_player_career_all_seasons(player_name: str) -> pd.DataFrame:
+def fetch_player_career_all_seasons(player_name: str, playoffs: bool = False) -> pd.DataFrame:
     """Return every season a player appears in raw data, regardless of minutes played.
 
     Uses per-season apply_rankings so score_rank reflects their true league rank
     that year.  No minutes threshold — injury years, cameo seasons all included.
+    playoffs=True reads postseason caches instead of regular season.
     """
     name_norm = normalize(player_name)
     frames: list[pd.DataFrame] = []
     for season in SEASONS:
         try:
-            raw  = build_raw(season)
+            raw  = build_raw(season, playoffs)
+            if raw.empty:
+                continue
             mask = raw["Player"].apply(normalize) == name_norm
             if not mask.any():
                 continue
