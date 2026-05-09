@@ -1652,25 +1652,18 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
     stats["total_min"] = (stats["MIN"] * stats["GP"]).round(0).astype(int)
     stats["base_score"] = stats.apply(base_score, axis=1) + stats["efficiency_adj"] * 2
 
-    # Availability denominator:
-    #   Regular season → max GP across the league (the iron-man player).
-    #   Playoffs → each PLAYER's TEAM's max GP that postseason. So a guy
-    #   who played 4 of his team's 4 first-round games gets full-credit
-    #   availability — he wasn't penalized just because OTHER teams went
-    #   deeper. The team's GP is found via groupby on Team abbreviation.
-    if playoffs:
-        team_max_gp = stats.groupby("TEAM_ABBREVIATION")["GP"].max()
-        stats["_avail_denom"] = stats["TEAM_ABBREVIATION"].map(team_max_gp).fillna(stats["GP"])
-        stats["avail_mult"] = stats.apply(
-            lambda r: availability_multiplier(r["GP"], r["total_min"], int(r["_avail_denom"])),
-            axis=1,
-        )
-        stats = stats.drop(columns=["_avail_denom"])
-    else:
-        season_games = int(stats["GP"].max())
-        stats["avail_mult"] = stats.apply(
-            lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
-        )
+    # Availability denominator: max GP across the dataset for that mode.
+    #   Regular season → 82 / 72 / 66 (the iron-man player who played every game).
+    #   Playoffs       → the deepest run that postseason (~16 if all sweeps,
+    #                    up to 28 if every series goes 7). Using league-max
+    #                    instead of team-max means depth of run *matters*:
+    #                    a 4-game first-round loser gets ~0.62 multiplier,
+    #                    a 22-game Finals winner gets ~1.00. So Finals MVPs
+    #                    outrank first-round stars with similar per-game stats.
+    season_games = int(stats["GP"].max())
+    stats["avail_mult"] = stats.apply(
+        lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
+    )
     # Canonical Barrett Score is now PACE-ADJUSTED — applies across the whole
     # site (Rankings, Legacy, Trades, Search, etc.) so cross-era comparisons
     # are honest by default. Volume stats (PTS, AST, REB, BLK, STL, TOV, PF)
