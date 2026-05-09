@@ -424,7 +424,7 @@ else:
         # (shorter careers' lines just stop earlier rather than each chart
         # auto-fitting to its own range — keeps the canvas constant).
         max_career_year = max(
-            (len(s["career"]) for s in valid if s.get("career")),
+            (len(c) for c in careers.values() if not c.empty),
             default=1,
         )
         x_kwargs = dict(
