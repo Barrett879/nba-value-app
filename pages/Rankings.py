@@ -154,10 +154,19 @@ if _prev_season:
         _prev_df  = build_ranked_projected(_prev_season, playoffs=playoff_mode)
         _prev_threshold = 100 if playoff_mode else DEFAULT_MIN_THRESHOLD
         _prev_df  = _prev_df[_prev_df["total_min"] >= _prev_threshold].copy()
-        _merged   = df[["Player", "Team", "barrett_score"]].merge(
-            _prev_df[["Player", "barrett_score"]].rename(columns={"barrett_score": "prev_score"}),
-            on="Player", how="inner",
-        )
+        # Use normalize() for the merge key — guards against diacritic /
+        # whitespace / case mismatches across cache versions (Jokić vs
+        # 'Jokic', etc.) that would otherwise drop matches silently.
+        _df_for_merge   = df[["Player", "Team", "barrett_score"]].copy()
+        _df_for_merge["_k"]   = _df_for_merge["Player"].apply(normalize)
+        _prev_for_merge = _prev_df[["Player", "barrett_score"]].rename(
+            columns={"barrett_score": "prev_score"}
+        ).copy()
+        _prev_for_merge["_k"] = _prev_for_merge["Player"].apply(normalize)
+        _merged = _df_for_merge.merge(
+            _prev_for_merge[["_k", "prev_score"]],
+            on="_k", how="inner",
+        ).drop(columns=["_k"])
         _merged["delta"] = _merged["barrett_score"] - _merged["prev_score"]
         _improved_row   = _merged.loc[_merged["delta"].idxmax()]
         _improved_delta = float(_improved_row["delta"])
@@ -229,12 +238,19 @@ st.caption(f"Current {season} Barrett Score with change vs prior season.")
 
 _top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score"]].reset_index(drop=True)
 
-# Attach prior-season delta if available (reuse _prev_df from Most Improved calc)
+# Attach prior-season delta if available. Use normalize() as the merge key
+# so diacritic / case / whitespace mismatches don't drop players (e.g.
+# Jokić previously came back with no delta because of a tiny encoding diff).
 if _prev_df is not None:
+    _top10["_k"] = _top10["Player"].apply(normalize)
+    _prev_for_top10 = _prev_df[["Player", "barrett_score"]].rename(
+        columns={"barrett_score": "prev_score"}
+    ).copy()
+    _prev_for_top10["_k"] = _prev_for_top10["Player"].apply(normalize)
     _top10 = _top10.merge(
-        _prev_df[["Player", "barrett_score"]].rename(columns={"barrett_score": "prev_score"}),
-        on="Player", how="left",
-    )
+        _prev_for_top10[["_k", "prev_score"]],
+        on="_k", how="left",
+    ).drop(columns=["_k"])
     _top10["delta"] = _top10["barrett_score"] - _top10["prev_score"]
 else:
     _top10["delta"] = float("nan")
