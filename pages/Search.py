@@ -328,7 +328,7 @@ else:
 
     align_mode = st.radio(
         "Align by",
-        options=["Career year (Year 1 = rookie season)", "Actual season (1984-85 → today)"],
+        options=["Career year (Year 1 = rookie season)", "Actual season (1973-74 → today)"],
         horizontal=True,
         help="Career year aligns peaks for direct comparison. Actual season shows era context.",
         key="search_align_mode",

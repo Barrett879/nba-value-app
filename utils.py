@@ -38,6 +38,16 @@ SEASONS = [
     # late Kareem, Dr. J, Moses Malone, prime Hakeem.
     "1995-96", "1994-95", "1993-94", "1992-93", "1991-92", "1990-91",
     "1989-90", "1988-89", "1987-88", "1986-87", "1985-86", "1984-85",
+    # ─── 1970s / early-80s era (full counting stats: BLK, STL, TOV, OREB,
+    # DREB all start 1973-74 — earlier seasons would need a different
+    # formula). Salaries: pre-1990 the BBRef team pages don't have data,
+    # so most rows show $0 (the pre_1996 fillna path handles it cleanly).
+    # Covers: rookie Magic / Bird, Dr. J's full prime, Kareem at his peak,
+    # Wilt's last year, Walt Frazier, Rick Barry, prime Moses Malone.
+    # Playoff bracket sizes varied (8-12 teams) until 1983-84's 16-team
+    # standard — round-credit math still works, just with fewer R1 teams.
+    "1983-84", "1982-83", "1981-82", "1980-81", "1979-80",
+    "1978-79", "1977-78", "1976-77", "1975-76", "1974-75", "1973-74",
 ]
 DEFAULT_MIN_THRESHOLD = 500
 
@@ -59,6 +69,10 @@ LEAGUE_PACE: dict[str, float] = {
     "1993-94": 95.1, "1992-93": 96.8, "1991-92": 96.6, "1990-91": 97.8,
     "1989-90": 98.3, "1988-89": 100.6, "1987-88": 99.6, "1986-87": 100.8,
     "1985-86": 102.1, "1984-85": 102.1,
+    # ─── 1970s / early-80s pace (high-pace, low-efficiency era) ───────────
+    "1983-84": 101.4, "1982-83": 103.1, "1981-82": 100.9, "1980-81": 101.4,
+    "1979-80": 103.1, "1978-79": 108.1, "1977-78": 107.8, "1976-77": 106.5,
+    "1975-76": 105.5, "1974-75": 105.6, "1973-74": 107.8,
 }
 # Reference pace = roughly the average across all seasons we cover. Volume stats
 # get scaled toward this number so dead-ball-era players get a boost and

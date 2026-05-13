@@ -47,13 +47,13 @@ playoff_mode = bool(st.session_state.get("playoff_mode", False))
 if playoff_mode:
     st.title("Barrett Score — Playoff Legacy")
     st.caption(
-        "The all-time playoff record. Every player-postseason from 1984–85 forward "
+        "The all-time playoff record. Every player-postseason from 1973–74 forward "
         "— ranked, compared, weighted by depth-of-run."
     )
 else:
     st.title("Barrett Score — Legacy")
     st.caption(
-        "The historical record. Every player, every season from 1984–85 to today — "
+        "The historical record. Every player, every season from 1973–74 to today — "
         "ranked, compared, and put in context."
     )
 
@@ -188,7 +188,7 @@ tab_rank, tab_arc, tab_era, tab_team, tab_long, tab_rec, tab_draft = st.tabs([
 with tab_rank:
     st.subheader("Best Single-Season Barrett Scores — All Time")
     st.caption(
-        "Every qualifying player-season from 1984–85 to today, ranked by Barrett Score. "
+        "Every qualifying player-season from 1973–74 to today, ranked by Barrett Score. "
         "Switch the sort to surface the most underpaid seasons in history."
     )
 
@@ -414,7 +414,8 @@ with tab_era:
     st.caption("Average Barrett Score within each era. Minimum 2 qualifying seasons required.")
 
     ERAS = {
-        "Showtime / Bird\n(1984–1991)": [s for s in SEASONS_CHRON if _season_year(s) <= 1990],
+        "Disco Era\n(1973–1979)":       [s for s in SEASONS_CHRON if _season_year(s) <= 1978],
+        "Showtime / Bird\n(1979–1991)": [s for s in SEASONS_CHRON if 1978 < _season_year(s) <= 1990],
         "Jordan Era\n(1991–1998)":      [s for s in SEASONS_CHRON if 1990 < _season_year(s) <= 1997],
         "Post-Jordan\n(1998–2005)":     [s for s in SEASONS_CHRON if 1997 < _season_year(s) <= 2004],
         "Pre-Analytics\n(2005–2012)":   [s for s in SEASONS_CHRON if 2004 < _season_year(s) <= 2011],
@@ -768,11 +769,11 @@ with tab_draft:
     if draft_df.empty:
         st.warning("Draft history data unavailable. Please try again later.")
     else:
-        # Available draft years that overlap with our season data (1984+).
-        # Older drafts won't have full career data but still surface picks
-        # like MJ '84, Hakeem '84, Magic-era classes.
+        # Available draft years overlapping our season data (now 1973+).
+        # Earliest drafts (Kareem '69, Walton '74) still have partial career
+        # coverage since we start at 1973-74.
         avail_years = sorted(
-            [y for y in draft_df["draft_year"].unique() if 1980 <= y <= 2024],
+            [y for y in draft_df["draft_year"].unique() if 1969 <= y <= 2024],
             reverse=True,
         )
         draft_year_sel = st.selectbox(

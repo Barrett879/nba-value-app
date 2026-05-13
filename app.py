@@ -240,7 +240,7 @@ st.markdown("""
 _, _search_col, _ = st.columns([1, 2, 1])
 with _search_col:
     st.markdown(
-        '<div class="home-search-label">SEARCH ANY PLAYER · CAREER ARCS · HEAD-TO-HEAD COMPARISONS · 1984 → TODAY</div>',
+        '<div class="home-search-label">SEARCH ANY PLAYER · CAREER ARCS · HEAD-TO-HEAD COMPARISONS · 1973 → TODAY</div>',
         unsafe_allow_html=True,
     )
     _all_player_names = get_all_player_names() or []
