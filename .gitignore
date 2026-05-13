@@ -1,0 +1,21 @@
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# Local-only cache (Render uses /data/cache, repo cache/ is dev-only)
+cache/
+*.parquet
+*.pkl
+
+# Local scratch
+refresh_splits.py
+app_archive_v1.py
+Trades_backup.py
+Trades_disabled.py
