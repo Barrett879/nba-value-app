@@ -18,6 +18,7 @@ from utils import (
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
     render_nav, render_playoff_toggle, _bootstrap_warm,
+    PRE_1990_SALARY_NOTE,
 )
 import threading
 
@@ -121,6 +122,10 @@ df["next_contract"] = df["Player"].apply(_fmt_next_contract_local)
 
 season_games = int(df["GP"].max())
 splits_mpg_lookup = df.set_index("Player")["MPG"]
+
+_is_pre_1990 = int(season.split("-")[0]) < 1990
+if _is_pre_1990:
+    st.warning(PRE_1990_SALARY_NOTE, icon="📜")
 
 st.caption(
     f"**{len(df)}** players ranked · "

@@ -10,6 +10,7 @@ from utils import (
     COMMON_CSS,
     get_all_player_names, fetch_player_full_career,
     render_nav, render_playoff_toggle, _bootstrap_warm,
+    PRE_1990_SALARY_NOTE,
 )
 
 st.set_page_config(page_title="Barrett Score — Search Player", layout="wide")
@@ -155,6 +156,10 @@ if len(selected) == 1:
     last_yr_end = career["Season"].iloc[-1].split("-")[1]
     career_yrs  = f"{first_yr} – 20{last_yr_end}" if int(last_yr_end) < 50 else f"{first_yr} – 19{last_yr_end}"
     teams       = list(dict.fromkeys(career["Team"]))   # preserve order, dedup
+
+    # Pre-1990 salary disclaimer if any of this player's seasons fall in that era
+    if any(int(s.split("-")[0]) < 1990 for s in career["Season"]):
+        st.warning(PRE_1990_SALARY_NOTE, icon="📜")
 
     best_season_idx = career[SCORE_COL].idxmax()
     best_season     = career.loc[best_season_idx]

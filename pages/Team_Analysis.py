@@ -11,6 +11,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected,
     fetch_bref_positions, render_nav, render_playoff_toggle, _bootstrap_warm,
+    PRE_1990_SALARY_NOTE,
 )
 
 st.set_page_config(page_title="Barrett Score — Team Analysis", layout="wide")
@@ -79,8 +80,11 @@ df["position"] = df["Player"].map(
 
 # Warn when salary coverage is too sparse to make team-level totals meaningful
 # (pre-1996 BBRef team pages miss most players, leaving many at $0).
+_is_pre_1990 = int(season.split("-")[0]) < 1990
+if _is_pre_1990:
+    st.warning(PRE_1990_SALARY_NOTE, icon="📜")
 _salary_coverage = (df["salary"] > 0).mean() if len(df) else 0.0
-if _salary_coverage < 0.5:
+if _salary_coverage < 0.5 and not _is_pre_1990:
     st.warning(
         f"⚠️ Salary coverage for {season} is {_salary_coverage*100:.0f}% — "
         "many players have no salary data on file. Team payroll totals below "

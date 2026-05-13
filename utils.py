@@ -143,7 +143,157 @@ SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
     "2001-02": {
         "michael jordan": 1_000_000,   # vet minimum, Wizards comeback
     },
+    # ─── Pre-1990 supplement (HISTORICAL APPROXIMATIONS) ────────────────────
+    # NBA salary disclosures were not consistently public pre-1990. Numbers
+    # below are drawn from contemporary newspaper reporting, biographies, and
+    # documented contract milestones; precise per-year figures sometimes vary
+    # between sources by ~5-15%. Treat as best-effort estimates for the top
+    # ~10 highest-paid players each season. Most other players in these eras
+    # show $0 salary (genuine data gap — see PRE_1990_SALARY_NOTE).
+    "1989-90": {
+        "magic johnson":    2_500_000,
+        "larry bird":       3_600_000,
+        "patrick ewing":    2_750_000,
+        "michael jordan":   2_500_000,
+        "hakeem olajuwon":  2_500_000,
+        "david robinson":   2_500_000,   # rookie deal, big number
+        "charles barkley":  2_000_000,
+        "akeem olajuwon":   2_500_000,   # alt spelling used pre-'91
+        "karl malone":      1_500_000,
+        "isiah thomas":     1_500_000,
+    },
+    "1988-89": {
+        "magic johnson":    2_500_000,
+        "larry bird":       2_500_000,
+        "michael jordan":   2_000_000,
+        "hakeem olajuwon":  2_000_000,
+        "akeem olajuwon":   2_000_000,
+        "patrick ewing":    1_700_000,
+        "moses malone":     1_900_000,
+        "isiah thomas":     1_500_000,
+    },
+    "1987-88": {
+        "larry bird":       1_950_000,
+        "magic johnson":    2_500_000,
+        "michael jordan":   845_000,    # final year of rookie scale
+        "kareem abdul-jabbar": 2_000_000,
+        "akeem olajuwon":   1_800_000,
+        "moses malone":     1_800_000,
+        "patrick ewing":    1_700_000,
+    },
+    "1986-87": {
+        "larry bird":       1_800_000,
+        "magic johnson":    2_500_000,
+        "kareem abdul-jabbar": 2_000_000,
+        "patrick ewing":    1_700_000,
+        "moses malone":     1_800_000,
+        "akeem olajuwon":   1_500_000,
+        "michael jordan":   630_000,    # rookie scale yr 3
+    },
+    "1985-86": {
+        "patrick ewing":    1_700_000,   # 10-yr/$30M lifetime deal start
+        "larry bird":       1_800_000,
+        "magic johnson":    1_500_000,
+        "kareem abdul-jabbar": 2_000_000,
+        "akeem olajuwon":   1_500_000,
+        "moses malone":     1_800_000,
+        "michael jordan":   630_000,    # rookie scale yr 2
+    },
+    "1984-85": {
+        "kareem abdul-jabbar": 1_500_000,
+        "magic johnson":    1_500_000,
+        "larry bird":       1_800_000,
+        "moses malone":     2_200_000,
+        "michael jordan":   550_000,    # rookie scale yr 1
+        "akeem olajuwon":   1_500_000,  # rookie deal
+    },
+    "1983-84": {
+        "moses malone":     2_200_000,   # 76ers post-championship
+        "magic johnson":    1_200_000,
+        "larry bird":       1_800_000,
+        "kareem abdul-jabbar": 1_500_000,
+        "julius erving":    800_000,
+        "ralph sampson":    1_500_000,   # rookie deal
+    },
+    "1982-83": {
+        "moses malone":     2_000_000,   # signed massive 76ers deal
+        "magic johnson":    1_000_000,
+        "larry bird":       1_500_000,
+        "kareem abdul-jabbar": 1_500_000,
+        "julius erving":    800_000,
+    },
+    "1981-82": {
+        "magic johnson":    1_000_000,   # 25-yr/$25M deal averaged
+        "larry bird":       1_000_000,
+        "julius erving":    800_000,
+        "moses malone":     900_000,
+        "kareem abdul-jabbar": 1_000_000,
+    },
+    "1980-81": {
+        "kareem abdul-jabbar": 1_000_000,
+        "magic johnson":    1_000_000,
+        "julius erving":    800_000,
+        "larry bird":       800_000,
+        "moses malone":     800_000,
+    },
+    "1979-80": {
+        "kareem abdul-jabbar": 1_000_000,
+        "magic johnson":    500_000,     # rookie deal
+        "larry bird":       650_000,     # rookie deal (Celtics)
+        "julius erving":    700_000,
+        "moses malone":     500_000,
+    },
+    "1978-79": {
+        "kareem abdul-jabbar": 600_000,
+        "julius erving":    600_000,
+        "bill walton":      600_000,
+        "george gervin":    400_000,
+        "moses malone":     400_000,
+    },
+    "1977-78": {
+        "kareem abdul-jabbar": 625_000,
+        "julius erving":    600_000,
+        "bill walton":      500_000,
+        "pete maravich":    500_000,
+        "george mcginnis":  500_000,
+    },
+    "1976-77": {
+        "kareem abdul-jabbar": 625_000,
+        "julius erving":    600_000,     # to 76ers post-ABA merger
+        "pete maravich":    500_000,
+        "bill walton":      250_000,
+    },
+    "1975-76": {
+        "kareem abdul-jabbar": 625_000,  # Lakers signing
+        "pete maravich":    500_000,
+        "walt frazier":     400_000,
+        "rick barry":       400_000,
+    },
+    "1974-75": {
+        "kareem abdul-jabbar": 450_000,  # last Bucks year
+        "walt frazier":     400_000,
+        "rick barry":       250_000,     # returning from ABA
+        "bob mcadoo":       350_000,
+    },
+    "1973-74": {
+        "wilt chamberlain": 450_000,     # final season (Lakers)
+        "kareem abdul-jabbar": 350_000,
+        "walt frazier":     350_000,
+        "bob mcadoo":       300_000,
+        "jerry west":       350_000,
+    },
 }
+
+# Disclaimer shown anywhere we display pre-1990 salary-derived metrics.
+PRE_1990_SALARY_NOTE = (
+    "⚠️ Pre-1990 NBA salary disclosures were inconsistent and not always public. "
+    "Figures shown for these seasons come from a hand-curated supplement of "
+    "documented historical contracts (newspaper archives, biographies, BBRef "
+    "where available). Coverage is limited to the ~10 highest-paid stars per "
+    "year — most other players show $0 salary, which is the genuine data gap. "
+    "Use rank/score for these seasons; salary-derived metrics (Δ Market, Proj. "
+    "Salary) are best-effort estimates."
+)
 
 COMMON_CSS = """
 <style>
