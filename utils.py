@@ -387,7 +387,9 @@ _NAV_PAGES = [
     ("Search Player",     "/Search"),
     ("Legacy",            "/Legacy"),
     ("Team Analysis",     "/Team_Analysis"),
-    ("Trades",            "/Trades"),
+    # Trades tab removed — page lives at /Trades_disabled.py (kept for
+    # easy revival) and a backup of the verdict-aware version is in
+    # Trades_backup.py at repo root.
     ("Current Free Agents", "/Free_Agent_Class"),
 ]
 

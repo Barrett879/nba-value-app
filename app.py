@@ -766,13 +766,15 @@ render_strip(
     preview_html=teams_preview,
 )
 
-render_strip(
-    name="Trades",
-    href="/Trades",
-    accent="#9b59b6",
-    description="Stack any two trade sides head-to-head — past trades or your own. Who actually came out ahead?",
-    preview_html=trades_preview,
-)
+# Trades strip removed — page disabled. Restore by uncommenting and adding
+# back to _NAV_PAGES in utils.py + un-disabling pages/Trades.py.
+# render_strip(
+#     name="Trades",
+#     href="/Trades",
+#     accent="#9b59b6",
+#     description="Stack any two trade sides head-to-head — past trades or your own. Who actually came out ahead?",
+#     preview_html=trades_preview,
+# )
 
 render_strip(
     name="Current Free Agents",
