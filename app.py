@@ -613,7 +613,10 @@ if _p:
     # for the user to pick a featured player), so we just stash the data here.
     legacy_preview = None
 
-    # Trades preview — Harden→Houston featured trade
+    # Trades preview — Harden→Houston featured trade. Color the bars based on
+    # the editorial 'winner' field (grounded in actual outcomes), NOT raw
+    # Barrett-Score sums — those would mislead for trades like AD-to-Lakers
+    # where the Lakers won a title with a side that had a lower Barrett sum.
     def _build_trades_preview():
         if not HISTORICAL_TRADES:
             return "<em>No featured trades.</em>"
@@ -624,13 +627,16 @@ if _p:
         a_total, b_total = sum_a["barrett_total"], sum_b["barrett_total"]
         if a_total == 0 and b_total == 0:
             return "<em>Data still seeding…</em>"
+        winner = pick.get("winner", "wash")
+        a_color = "#2ecc71" if winner == "side_a" else ("#888" if winner == "wash" else "#e63946")
+        b_color = "#2ecc71" if winner == "side_b" else ("#888" if winner == "wash" else "#e63946")
         rows = [
-            {"label": pick["side_a_team"].split()[-1], "value": a_total,
+            {"label": pick["side_a_team"].split()[-1], "value": max(a_total, 0.5),
              "value_str": f"{a_total:.1f}",
-             "color": "#2ecc71" if a_total >= b_total else "#e63946", "side": "pos"},
-            {"label": pick["side_b_team"].split()[-1], "value": b_total,
+             "color": a_color, "side": "pos"},
+            {"label": pick["side_b_team"].split()[-1], "value": max(b_total, 0.5),
              "value_str": f"{b_total:.1f}",
-             "color": "#2ecc71" if b_total > a_total else "#e63946", "side": "pos"},
+             "color": b_color, "side": "pos"},
         ]
         return _hbar_chart(rows, w=460, h=110, label_w=110) + f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Featured trade — {pick["name"]}</div>'
 

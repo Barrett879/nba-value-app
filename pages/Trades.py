@@ -43,15 +43,16 @@ playoff_mode = bool(st.session_state.get("playoff_mode", False))
 if playoff_mode:
     st.title("Trade Comparison — Playoff Mode")
     st.caption(
-        "Stack any two sides of a trade using PLAYOFF Barrett Scores. Salaries stay "
-        "regular-season (one annual contract). Useful for trades that swung a "
-        "championship — what each side actually delivered when it mattered."
+        "Player-side breakdowns use PLAYOFF Barrett Scores. Salaries always reflect "
+        "regular-season contracts. The verdicts and key-points stay grounded in actual "
+        "outcomes (championships, Finals, who actually delivered)."
     )
 else:
     st.title("Trade Comparison")
     st.caption(
-        "Stack any two sides of a trade against each other. Barrett Score totals + salary "
-        "tell you who came out ahead — at the time of the deal, and what actually happened the year after."
+        "Stack any two sides of a trade and compare the player breakdowns. "
+        "For famous trades, the verdict is grounded in what actually happened — "
+        "championships, Finals runs, what the picks became — not just summed Barrett Scores."
     )
 
 # ── Mode toggle ────────────────────────────────────────────────────────────────
@@ -66,7 +67,8 @@ mode = st.radio(
 st.divider()
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
-def _render_side_summary(label: str, color: str, summary: dict, season: str):
+def _render_side_summary(label: str, color: str, summary: dict, season: str,
+                          picks_note: str | None = None):
     st.markdown(f"#### {label}")
     if summary["found"]:
         rows = summary["rows"][["Player", "Team", "barrett_score", "salary"]].copy()
@@ -96,33 +98,41 @@ def _render_side_summary(label: str, color: str, summary: dict, season: str):
     c1.metric("Total Barrett",  f"{summary['barrett_total']:.1f}")
     c2.metric("Total Salary",   f"${summary['salary_total']/1_000_000:.1f}M")
 
+    if picks_note and picks_note != "—":
+        st.caption(f"**Plus:** {picks_note}")
 
-def _render_winner_banner(a_total: float, b_total: float,
-                           a_label: str, b_label: str, context: str):
-    delta = a_total - b_total
-    if abs(delta) < 0.5:
-        st.markdown(
-            f'<div style="background:#2a2a44; border-left:4px solid #888; padding:0.9rem 1.1rem; '
-            f'border-radius:6px; color:#fff;"><b>{context}</b><br>'
-            f'Roughly even — within 0.5 Barrett points.</div>',
-            unsafe_allow_html=True,
-        )
-    elif delta > 0:
-        st.markdown(
-            f'<div style="background:#1a3a1a; border-left:4px solid #2ecc71; padding:0.9rem 1.1rem; '
-            f'border-radius:6px; color:#fff;"><b>{context}</b><br>'
-            f'<b style="color:#2ecc71;">{a_label}</b> wins by '
-            f'<b>{abs(delta):.1f}</b> Barrett points.</div>',
-            unsafe_allow_html=True,
-        )
+
+def _render_verdict(trade: dict):
+    """Editorial verdict box, grounded in actual outcomes (titles, Finals, etc).
+    Replaces the previous misleading 'X wins by N Barrett points' auto-banner.
+    """
+    winner = trade.get("winner", "wash")
+    verdict = trade.get("verdict", "")
+    points  = trade.get("key_points", [])
+
+    if winner == "side_a":
+        bg, border = "#1a3a1a", "#2ecc71"
+        winner_label = trade["side_a_team"]
+    elif winner == "side_b":
+        bg, border = "#1a3a1a", "#2ecc71"
+        winner_label = trade["side_b_team"]
     else:
-        st.markdown(
-            f'<div style="background:#1a3a1a; border-left:4px solid #2ecc71; padding:0.9rem 1.1rem; '
-            f'border-radius:6px; color:#fff;"><b>{context}</b><br>'
-            f'<b style="color:#2ecc71;">{b_label}</b> wins by '
-            f'<b>{abs(delta):.1f}</b> Barrett points.</div>',
-            unsafe_allow_html=True,
-        )
+        bg, border = "#2a2a44", "#888"
+        winner_label = "Roughly even"
+
+    points_html = "".join(
+        f'<li style="margin-bottom:0.25rem;">{p}</li>' for p in points
+    )
+
+    st.markdown(
+        f'<div style="background:{bg}; border-left:4px solid {border}; '
+        f'padding:1rem 1.2rem; border-radius:6px; color:#fff;">'
+        f'<div style="font-size:0.75rem; opacity:0.7; text-transform:uppercase; letter-spacing:0.08em;">Verdict</div>'
+        f'<div style="font-size:1.15rem; font-weight:700; margin:0.2rem 0 0.5rem 0;">{verdict}</div>'
+        f'<ul style="margin:0.4rem 0 0 1.2rem; padding:0; font-size:0.88rem; opacity:0.92;">{points_html}</ul>'
+        f'</div>',
+        unsafe_allow_html=True,
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -136,10 +146,16 @@ if mode == "Historical trade":
     season_at  = trade["season"]
     season_aft = trade["year_after"]
 
-    st.caption(trade["notes"])
+    # Editorial verdict up top — the core of the page now
+    _render_verdict(trade)
+    st.markdown("")
 
-    # Trade-year evaluation
-    st.markdown(f"### At time of trade — {season_at}")
+    # Trade-year player breakdown
+    st.markdown(f"### Player breakdown — {season_at}")
+    st.caption(
+        "Barrett Scores from the season the trade landed in. "
+        "Picks / future assets listed below each side where applicable."
+    )
     sum_a_at = trade_side_summary(tuple(trade["side_a"]), season_at, playoffs=playoff_mode)
     sum_b_at = trade_side_summary(tuple(trade["side_b"]), season_at, playoffs=playoff_mode)
 
@@ -150,6 +166,7 @@ if mode == "Historical trade":
             "#e63946",
             sum_a_at,
             season_at,
+            picks_note=trade.get("side_a_picks"),
         )
     with cB:
         _render_side_summary(
@@ -157,21 +174,17 @@ if mode == "Historical trade":
             "#3498db",
             sum_b_at,
             season_at,
+            picks_note=trade.get("side_b_picks"),
         )
-
-    _render_winner_banner(
-        sum_a_at["barrett_total"], sum_b_at["barrett_total"],
-        trade["side_a_team"], trade["side_b_team"],
-        f"At-trade evaluation ({season_at})",
-    )
 
     st.divider()
 
-    # Year-after evaluation
+    # Year-after view (no auto-verdict — just the data)
     st.markdown(f"### One season later — {season_aft}")
     st.caption(
-        "How each side actually performed the year after the trade. Players who left in free agency or "
-        "got hurt show up missing here."
+        "Same lookups against the next season's data. Players who left in free agency "
+        "or got hurt show up missing here. Useful for tracking how the deal aged on day-1, "
+        "but the editorial verdict above accounts for the full multi-year outcome."
     )
 
     sum_a_aft = trade_side_summary(tuple(trade["side_a"]), season_aft, playoffs=playoff_mode)
@@ -193,18 +206,15 @@ if mode == "Historical trade":
             season_aft,
         )
 
-    _render_winner_banner(
-        sum_a_aft["barrett_total"], sum_b_aft["barrett_total"],
-        trade["side_a_team"], trade["side_b_team"],
-        f"Year-after reality ({season_aft})",
-    )
-
 # ══════════════════════════════════════════════════════════════════════════════
 # Build-your-own trade mode
 # ══════════════════════════════════════════════════════════════════════════════
 else:
     st.caption(
-        "Pick the season, then drag any number of players into each side. The math runs as you go."
+        "Pick the season, then drag any number of players into each side. "
+        "We show each side's Barrett totals and salaries — no automated 'winner' label, "
+        "because trades hinge on picks, fit, and multi-year outcomes that a single "
+        "Barrett sum can't capture. You judge."
     )
 
     season = st.selectbox("Season", options=SEASONS, index=0, key="byo_season")
@@ -250,10 +260,11 @@ else:
             _render_side_summary("Team B side", "#3498db", sum_b, season)
 
         if side_a and side_b:
-            _render_winner_banner(
-                sum_a["barrett_total"], sum_b["barrett_total"],
-                "Team A", "Team B",
-                f"Trade evaluation ({season})",
+            st.info(
+                "💡 No auto-verdict here — Barrett Score totals favour whichever side has "
+                "more star talent, but real trade outcomes are decided by picks, fit, "
+                "championships, and what assets become 3-5 years later. Look at the "
+                "Historical trade tab for examples of how those factors actually played out."
             )
     else:
         st.info("Add at least one player to each side to see the comparison.")
