@@ -272,16 +272,25 @@ with st.container(key="playoff_nav_toggle"):
     )
 
 # ── Hero — HoopsValue logo + tagline ────────────────────────────────────────
-# Logo is served via Streamlit's built-in static-file path. The file should
-# live at static/hoopsvalue_logo.png. The same path-prefix trick used for
-# the LightCourt.jpeg background (./app/static/...) handles deploy + local.
+# Streamlit serves static files via enableStaticServing in config.toml, but
+# inline <img src="./app/static/..."> doesn't resolve cleanly inside HTML
+# markdown (CSS background-image works, <img> doesn't — different base URL
+# handling). st.image() loads the file directly and avoids the path issue.
+_hero_left, _hero_logo, _hero_right = st.columns([1, 2, 1])
+with _hero_logo:
+    _logo_path = Path(__file__).parent / "static" / "hoopsvalue_logo.png"
+    if _logo_path.exists():
+        st.image(str(_logo_path), use_container_width=True)
+    else:
+        # Fallback to the old wordmark if the logo file is missing
+        st.markdown(
+            '<div style="font-size:2.2rem; font-weight:800; text-align:center; '
+            'color:#fff; letter-spacing:0.1em;">HoopsValue</div>',
+            unsafe_allow_html=True,
+        )
 st.markdown("""
-<div style="text-align:center; padding: 0.4rem 0 0.6rem 0;">
-    <img src="./app/static/hoopsvalue_logo.png"
-         alt="HoopsValue"
-         style="max-width: 440px; width: 100%; height: auto;
-                filter: drop-shadow(0 3px 14px rgba(0,0,0,0.55));"/>
-    <div style="font-size:0.88rem; color:#cdcdd5; margin-top:0.55rem; max-width:760px; margin-left:auto; margin-right:auto; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
+<div style="text-align:center; padding: 0 0 0.6rem 0;">
+    <div style="font-size:0.88rem; color:#cdcdd5; max-width:760px; margin:0.4rem auto 0; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
         The <b style="color:#fff;">Barrett Score</b> — scoring, playmaking, defense, and efficiency distilled into one number — put next to what each player gets paid.
     </div>
 </div>
