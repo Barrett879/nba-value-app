@@ -154,26 +154,61 @@ _prev_season  = SEASONS[_season_idx + 1] if _season_idx + 1 < len(SEASONS) else 
 _improved_row = None
 _improved_delta = None
 _prev_df = None
+def _attach_prev_score(current_df: pd.DataFrame, prev_df: pd.DataFrame) -> pd.DataFrame:
+    """Two-tier prev-season score attachment that's defensive against every
+    failure mode we've hit so far:
+      1. PRIMARY: merge on PLAYER_ID coerced to nullable Int64 (handles
+         int64-vs-string dtype mismatches across cache versions).
+      2. FALLBACK: for any row that PLAYER_ID didn't match, look up by
+         normalize(Player) — catches cases where one parquet has a
+         negative-hash ID (BBRef path) and the other has the real NBA
+         Stats ID, or any dtype weirdness that slips through coercion.
+
+    Returns current_df with a 'prev_score' column attached (NaN for any
+    player who genuinely didn't exist in prev_df, which is honest).
+    """
+    out = current_df.copy()
+    out["prev_score"] = float("nan")
+
+    if "PLAYER_ID" in current_df.columns and "PLAYER_ID" in prev_df.columns:
+        c_ids = pd.to_numeric(out["PLAYER_ID"], errors="coerce").astype("Int64")
+        p_ids = pd.to_numeric(prev_df["PLAYER_ID"], errors="coerce").astype("Int64")
+        prev_by_id = (
+            prev_df.assign(_pid=p_ids)
+                   .dropna(subset=["_pid"])
+                   .drop_duplicates(subset=["_pid"], keep="first")
+                   .set_index("_pid")["barrett_score"]
+                   .to_dict()
+        )
+        out["prev_score"] = c_ids.map(prev_by_id).astype("Float64").astype(float)
+
+    # Name fallback for any unmatched players
+    missing = out["prev_score"].isna()
+    if missing.any():
+        prev_by_name = {
+            normalize(n): s
+            for n, s in zip(prev_df["Player"], prev_df["barrett_score"])
+            if pd.notna(s)
+        }
+        out.loc[missing, "prev_score"] = out.loc[missing, "Player"].apply(
+            lambda n: prev_by_name.get(normalize(n), float("nan"))
+        )
+    return out
+
+
 if _prev_season:
     try:
         _prev_df  = build_ranked_projected(_prev_season, playoffs=playoff_mode)
         _prev_threshold = 100 if playoff_mode else DEFAULT_MIN_THRESHOLD
         _prev_df  = _prev_df[_prev_df["total_min"] >= _prev_threshold].copy()
-        # Merge on PLAYER_ID (NBA Stats canonical identifier) — bulletproof
-        # against any name-string mismatch (diacritics, casing, whitespace,
-        # truncation, anything). Falls back to normalize(Player) if PLAYER_ID
-        # isn't present in either side (e.g. very old BBRef-only caches).
-        _df_for_merge   = df[["Player", "Team", "barrett_score", "PLAYER_ID"]].copy()
-        _prev_for_merge = _prev_df[["Player", "barrett_score", "PLAYER_ID"]].rename(
-            columns={"barrett_score": "prev_score"}
-        ).copy()
-        _merged = _df_for_merge.merge(
-            _prev_for_merge[["PLAYER_ID", "prev_score"]],
-            on="PLAYER_ID", how="inner",
-        )
+
+        _df_for_merge = df[["Player", "Team", "barrett_score", "PLAYER_ID"]].copy()
+        _merged = _attach_prev_score(_df_for_merge, _prev_df)
+        _merged = _merged.dropna(subset=["prev_score"])
         _merged["delta"] = _merged["barrett_score"] - _merged["prev_score"]
-        _improved_row   = _merged.loc[_merged["delta"].idxmax()]
-        _improved_delta = float(_improved_row["delta"])
+        if not _merged.empty:
+            _improved_row   = _merged.loc[_merged["delta"].idxmax()]
+            _improved_delta = float(_improved_row["delta"])
     except Exception:
         pass
 
@@ -242,15 +277,11 @@ st.caption(f"Current {season} Barrett Score with change vs prior season.")
 
 _top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score", "PLAYER_ID"]].reset_index(drop=True)
 
-# Attach prior-season delta via PLAYER_ID — the only identifier guaranteed
-# to be stable across cache versions, name encodings, etc.
+# Same two-tier attachment as the Most-Improved hero card — PLAYER_ID
+# (dtype-coerced) primary, name-normalize fallback. Anyone who's still
+# missing after that genuinely didn't qualify last season (e.g. rookies).
 if _prev_df is not None:
-    _prev_for_top10 = _prev_df[["PLAYER_ID", "barrett_score"]].rename(
-        columns={"barrett_score": "prev_score"}
-    ).copy()
-    _top10 = _top10.merge(
-        _prev_for_top10, on="PLAYER_ID", how="left",
-    )
+    _top10 = _attach_prev_score(_top10, _prev_df)
     _top10["delta"] = _top10["barrett_score"] - _top10["prev_score"]
 else:
     _top10["delta"] = float("nan")
