@@ -38,7 +38,7 @@ LEGACY_FEATURED = [
 # before any user arrives, so the first visitor doesn't pay the cost.
 _bootstrap_warm()
 
-st.set_page_config(page_title="Barrett Score", layout="wide")
+st.set_page_config(page_title="HoopsValue — Barrett Score", layout="wide")
 
 # ── Page chrome (background, hide Streamlit UI) ────────────────────────────────
 st.markdown("""
@@ -271,21 +271,18 @@ with st.container(key="playoff_nav_toggle"):
         help=_PLAYOFF_HELP,
     )
 
-# ── Hero — title + intro blurb ────────────────────────────────────────────────
+# ── Hero — HoopsValue logo + tagline ────────────────────────────────────────
+# Logo is served via Streamlit's built-in static-file path. The file should
+# live at static/hoopsvalue_logo.png. The same path-prefix trick used for
+# the LightCourt.jpeg background (./app/static/...) handles deploy + local.
 st.markdown("""
 <div style="text-align:center; padding: 0.4rem 0 0.6rem 0;">
-    <div style="
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
-        font-size: 2.2rem;
-        line-height: 1;
-        letter-spacing: 0.1em;
-        text-shadow: 0 3px 14px rgba(0,0,0,0.55);
-        white-space: nowrap;
-    ">
-        <span style="color: #c8cdd6; font-weight: 600;">THE&nbsp;</span><span style="color: #ffffff; font-weight: 800;">BARRETT&nbsp;</span><span style="color: #7ec8e8; font-weight: 800;">SCORE</span>
-    </div>
+    <img src="./app/static/hoopsvalue_logo.png"
+         alt="HoopsValue"
+         style="max-width: 440px; width: 100%; height: auto;
+                filter: drop-shadow(0 3px 14px rgba(0,0,0,0.55));"/>
     <div style="font-size:0.88rem; color:#cdcdd5; margin-top:0.55rem; max-width:760px; margin-left:auto; margin-right:auto; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
-        Scoring, playmaking, defense, and efficiency — distilled into one number, then put next to what each player gets paid.
+        The <b style="color:#fff;">Barrett Score</b> — scoring, playmaking, defense, and efficiency distilled into one number — put next to what each player gets paid.
     </div>
 </div>
 """, unsafe_allow_html=True)
