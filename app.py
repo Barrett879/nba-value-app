@@ -502,17 +502,42 @@ def _compute_charts():
         overpaid_3 = df.nlargest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
 
         # Hero-card data (#1 in each category, with team info for the subtitle).
-        # Kept separate from the 2-tuple top10/steals_3/overpaid_3 above so the
-        # strip-preview consumers (which expect 2-tuples) don't need to change.
         _b = df.nsmallest(1, "score_rank").iloc[0]
         _s = df.nsmallest(1, "value_diff").iloc[0]
         _o = df.nlargest(1, "value_diff").iloc[0]
         best_card = {"name": str(_b["Player"]), "team": str(_b["Team"]),
                      "score": float(_b["barrett_score"])}
         steal_card = {"name": str(_s["Player"]), "team": str(_s["Team"]),
-                      "value_diff": float(_s["value_diff"])}
+                      "value_diff": float(_s["value_diff"]),
+                      "score": float(_s["barrett_score"])}
         overpaid_card = {"name": str(_o["Player"]), "team": str(_o["Team"]),
-                         "value_diff": float(_o["value_diff"])}
+                         "value_diff": float(_o["value_diff"]),
+                         "score": float(_o["barrett_score"])}
+
+        # Most Improved — merge current vs previous-season barrett_score by
+        # PLAYER_ID and pick the biggest positive delta.
+        improved_card = None
+        if len(SEASONS) > 1:
+            try:
+                prev_df_mi = build_ranked_projected(SEASONS[1])
+                prev_df_mi = prev_df_mi[prev_df_mi["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
+                merged = df[["PLAYER_ID", "Player", "Team", "barrett_score"]].merge(
+                    prev_df_mi[["PLAYER_ID", "barrett_score"]].rename(
+                        columns={"barrett_score": "prev_score"}),
+                    on="PLAYER_ID", how="inner",
+                )
+                merged["delta"] = merged["barrett_score"] - merged["prev_score"]
+                if not merged.empty:
+                    _i = merged.loc[merged["delta"].idxmax()]
+                    improved_card = {
+                        "name":  str(_i["Player"]),
+                        "team":  str(_i["Team"]),
+                        "score": float(_i["barrett_score"]),
+                        "prev":  float(_i["prev_score"]),
+                        "delta": float(_i["delta"]),
+                    }
+            except Exception:
+                pass
 
         team_eff = (
             df.groupby("Team")
@@ -545,6 +570,52 @@ def _compute_charts():
         def _avg(xs):
             return sum(xs) / len(xs) if xs else 0.0
 
+        # Hottest Rookie — best Barrett Score among players on rookie-scale
+        # contracts (1st-round pick, years 1-4 of their deal).
+        rookie_card = None
+        try:
+            rookie_mask = df["Player"].apply(lambda n: normalize(n) in rookie_scale)
+            rookies = df[rookie_mask]
+            if not rookies.empty:
+                _r = rookies.loc[rookies["barrett_score"].idxmax()]
+                rookie_card = {
+                    "name":  str(_r["Player"]),
+                    "team":  str(_r["Team"]),
+                    "score": float(_r["barrett_score"]),
+                }
+        except Exception:
+            pass
+
+        # Best Team — first entry in best_teams (sorted by surplus). Carry
+        # the top-3 Barrett scorers on that team for a micro-bar in the widget.
+        team_card = None
+        try:
+            if best_teams:
+                tabbr, tnet = best_teams[0]
+                top_players_on_team = (
+                    df[df["Team"] == tabbr]
+                    .nlargest(3, "barrett_score")[["Player", "barrett_score"]]
+                    .values.tolist()
+                )
+                team_card = {
+                    "team": str(tabbr),
+                    "surplus_m": float(abs(tnet)),
+                    "top_players": [(str(p), float(s)) for p, s in top_players_on_team],
+                }
+        except Exception:
+            pass
+
+        # FA-market summary — counts + avg score per category (UFA/RFA/PO/TO).
+        fa_summary = {
+            "total": len(ufa) + len(rfa) + len(po) + len(to),
+            "categories": [
+                {"label": "UFA", "count": len(ufa), "avg": _avg(ufa)},
+                {"label": "RFA", "count": len(rfa), "avg": _avg(rfa)},
+                {"label": "PO",  "count": len(po),  "avg": _avg(po)},
+                {"label": "TO",  "count": len(to),  "avg": _avg(to)},
+            ],
+        }
+
         # Pull career arcs for all featured Legacy players. Each call reads
         # disk-cached parquets — no API hits at view time. Includes rank +
         # total players per season for the hover tooltips.
@@ -565,6 +636,10 @@ def _compute_charts():
             "best_card":     best_card,
             "steal_card":    steal_card,
             "overpaid_card": overpaid_card,
+            "improved_card": improved_card,
+            "rookie_card":   rookie_card,
+            "team_card":     team_card,
+            "fa_summary":    fa_summary,
             "steals_3": [(str(p), float(v)) for p, v in steals_3],
             "overpaid_3": [(str(p), float(v)) for p, v in overpaid_3],
             "best_teams": [(str(t), float(v)) for t, v in best_teams],
@@ -586,150 +661,201 @@ _p = _compute_charts()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# 3 hero cards — Best Player Right Now / Biggest Steal / Most Overpaid
-# Rendered above the strips so they're the first big visual after the search.
+# DIRECTION 2: Living Stat Dashboard
+# Hero (Top 5 leaderboard) → 6-widget grid → cross-era spotlight → compact nav
 # ══════════════════════════════════════════════════════════════════════════════
-if _p and _p.get("best_card") and _p.get("steal_card") and _p.get("overpaid_card"):
-    _bc, _sc, _oc = _p["best_card"], _p["steal_card"], _p["overpaid_card"]
-    hc1, hc2, hc3 = st.columns(3, gap="medium")
-    with hc1:
-        st.markdown(f"""
-        <div class="home-hero-card" style="background:#1a2e1a; border:1px solid #2ecc71;">
-            <div class="hh-label">Best Player Right Now</div>
-            <div class="hh-name">{_bc["name"]}</div>
-            <div class="hh-sub">{_bc["team"]} · Barrett Score {_bc["score"]:.1f}</div>
-        </div>""", unsafe_allow_html=True)
-    with hc2:
-        st.markdown(f"""
-        <div class="home-hero-card" style="background:#1a2a1a; border:1px solid #27ae60;">
-            <div class="hh-label">Biggest Steal</div>
-            <div class="hh-name">{_sc["name"]}</div>
-            <div class="hh-sub">{_sc["team"]} · ${abs(_sc["value_diff"])/1e6:.1f}M below market value</div>
-        </div>""", unsafe_allow_html=True)
-    with hc3:
-        st.markdown(f"""
-        <div class="home-hero-card" style="background:#2e1a1a; border:1px solid #e74c3c;">
-            <div class="hh-label">Most Overpaid</div>
-            <div class="hh-name">{_oc["name"]}</div>
-            <div class="hh-sub">{_oc["team"]} · ${_oc["value_diff"]/1e6:.1f}M above market value</div>
-        </div>""", unsafe_allow_html=True)
-    st.markdown("<div style='margin-top:1rem'></div>", unsafe_allow_html=True)
 
-
-# ══════════════════════════════════════════════════════════════════════════════
-# Render one tab strip + collapsible preview
-# ══════════════════════════════════════════════════════════════════════════════
-def render_strip(name: str, href: str, accent: str, description: str, preview_html: str):
-    st.markdown(f"""
-    <a class="tab-strip" href="{href}" target="_top" style="--accent:{accent};">
-        <div class="tab-strip-name">{name}</div>
-        <div class="tab-strip-desc">{description}</div>
-        <span class="tab-strip-arrow">→</span>
-    </a>
-    """, unsafe_allow_html=True)
-    with st.expander("Preview", expanded=False):
-        st.markdown(f'<div class="preview-box">{preview_html}</div>', unsafe_allow_html=True)
-
-
-# ── Rankings preview ─────────────────────────────────────────────────────────
-if _p:
-    # Gold → bronze gradient for ranks 1 → 10
-    rank_colors = [
-        "#f1c40f", "#ecbe1a", "#e3b121", "#d3a02a", "#bf8e34",
-        "#a87c3a", "#916b3d", "#7a5b3c", "#634c39", "#4d3e35",
-    ]
-    rankings_preview = _hbar_chart([
-        {
-            "label":     f"{i+1}. {name.split()[-1] if len(name.split()) > 1 else name}",
-            "value":     score,
-            "value_str": f"{score:.1f}",
-            "color":     rank_colors[i] if i < len(rank_colors) else rank_colors[-1],
-        }
-        for i, (name, score) in enumerate(_p["top10"])
-    ], w=460, h=260, label_w=150) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Top 10 by Barrett Score · this season</div>'
-
-    vis_rows = []
-    for n_, vd in _p["steals_3"]:
-        amt = abs(vd) / 1e6
-        vis_rows.append({"label": n_.split()[-1], "value": amt, "value_str": f"-${amt:.1f}M",
-                         "color": "#2ecc71", "side": "neg"})
-    for n_, vd in _p["overpaid_3"]:
-        amt = vd / 1e6
-        vis_rows.append({"label": n_.split()[-1], "value": amt, "value_str": f"+${amt:.1f}M",
-                         "color": "#e74c3c", "side": "pos"})
-
-    team_rows = []
-    for t, v in _p["best_teams"]:
-        team_rows.append({"label": t, "value": abs(v), "value_str": f"-${abs(v):.1f}M",
-                          "color": "#2ecc71", "side": "neg"})
-    for t, v in _p["worst_teams"]:
-        team_rows.append({"label": t, "value": abs(v), "value_str": f"+${abs(v):.1f}M",
-                          "color": "#e74c3c", "side": "pos"})
-
-    teams_preview = _diverging_bars(team_rows) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Net payroll efficiency · green = team is winning the value game</div>'
-    fa_preview = _fa_category_chart(_p["fa_categories"]) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Free-agent class breakdown · this offseason</div>'
-    # Legacy preview is rendered specially below (needs an interactive radio
-    # for the user to pick a featured player), so we just stash the data here.
-    legacy_preview = None
-
-    # Trades preview — Harden→Houston featured trade. Color the bars based on
-    # the editorial 'winner' field (grounded in actual outcomes), NOT raw
-    # Barrett-Score sums — those would mislead for trades like AD-to-Lakers
-    # where the Lakers won a title with a side that had a lower Barrett sum.
-    def _build_trades_preview():
-        if not HISTORICAL_TRADES:
-            return "<em>No featured trades.</em>"
-        pick = next((t for t in HISTORICAL_TRADES if "Harden" in t["name"]), HISTORICAL_TRADES[0])
-        season = pick["season"]
-        sum_a = trade_side_summary(tuple(pick["side_a"]), season)
-        sum_b = trade_side_summary(tuple(pick["side_b"]), season)
-        a_total, b_total = sum_a["barrett_total"], sum_b["barrett_total"]
-        if a_total == 0 and b_total == 0:
-            return "<em>Data still seeding…</em>"
-        winner = pick.get("winner", "wash")
-        a_color = "#2ecc71" if winner == "side_a" else ("#888" if winner == "wash" else "#e63946")
-        b_color = "#2ecc71" if winner == "side_b" else ("#888" if winner == "wash" else "#e63946")
-        rows = [
-            {"label": pick["side_a_team"].split()[-1], "value": max(a_total, 0.5),
-             "value_str": f"{a_total:.1f}",
-             "color": a_color, "side": "pos"},
-            {"label": pick["side_b_team"].split()[-1], "value": max(b_total, 0.5),
-             "value_str": f"{b_total:.1f}",
-             "color": b_color, "side": "pos"},
-        ]
-        return _hbar_chart(rows, w=460, h=110, label_w=110) + f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Featured trade — {pick["name"]}</div>'
-
-    trades_preview = _build_trades_preview()
-else:
-    rankings_preview = teams_preview = fa_preview = trades_preview = "<em>Loading live data…</em>"
-
-
-# ══════════════════════════════════════════════════════════════════════════════
-# Render 6 tab strips
-# ══════════════════════════════════════════════════════════════════════════════
-render_strip(
-    name="Current Rankings",
-    href="/Rankings",
-    accent="#e63946",
-    description="Who's the best NBA player right now? Every player ranked by Barrett Score this season.",
-    preview_html=rankings_preview,
-)
-
-# ── Legacy strip — special-cased for the interactive player picker ───────────
-st.markdown(f"""
-<a class="tab-strip" href="/Legacy" target="_top" style="--accent:#f1c40f;">
-    <div class="tab-strip-name">Legacy</div>
-    <div class="tab-strip-desc">42 seasons of NBA history — all-time greats, era leaderboards, team Mount Rushmores, draft classes.</div>
-    <span class="tab-strip-arrow">→</span>
-</a>
+# Widget styling — defined once, used by all six dashboard cards below.
+st.markdown("""
+<style>
+.stat-widget {
+    background: rgba(20, 20, 42, 0.55);
+    border: 1px solid rgba(80, 80, 110, 0.35);
+    border-left: 3px solid var(--wig-accent, #e63946);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+    height: 100%;
+    min-height: 130px;
+    backdrop-filter: blur(2px);
+}
+.sw-label   { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.09em; color: #888; margin-bottom: 0.3rem; }
+.sw-name    { font-size: 1.15rem; font-weight: 800; color: #fff; line-height: 1.15; }
+.sw-sub     { font-size: 0.78rem; color: #aaa; margin-top: 0.25rem; }
+.sw-metric  { font-size: 0.85rem; color: #fff; margin-top: 0.4rem; font-weight: 600; }
+.sw-metric-green { color: #2ecc71; }
+.sw-metric-red   { color: #e74c3c; }
+.sw-mini-list   { font-size: 0.75rem; color: #cfcfd6; margin-top: 0.5rem; line-height: 1.55; }
+.sw-mini-list b { color: #fff; }
+.dash-section-label {
+    margin-top: 1.2rem;
+    margin-bottom: 0.4rem;
+    font-size: 0.78rem;
+    color: #aaa;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+</style>
 """, unsafe_allow_html=True)
-with st.expander("Preview", expanded=False):
-    legacy_series = (_p or {}).get("legacy_series", [])
-    if not legacy_series:
-        st.markdown('<em>Loading live data…</em>', unsafe_allow_html=True)
-    else:
+
+if _p:
+    # ── 1. HERO: Top 5 by Barrett Score (animated horizontal bars) ───────────
+    _top5 = _p["top10"][:5]
+    _top5_sorted = sorted(_top5, key=lambda r: r[1])  # asc → #1 on top of h-bar
+    _rank_colors_5 = ["#f1c40f", "#ecbe1a", "#e3b121", "#d3a02a", "#bf8e34"]
+    _bar_colors_5 = [_rank_colors_5[len(_top5_sorted) - 1 - i] for i in range(len(_top5_sorted))]
+
+    st.markdown(
+        f'<div class="dash-section-label" style="margin-top:0.4rem; text-align:center;">'
+        f'Top 5 Players — {SEASONS[0]}</div>',
+        unsafe_allow_html=True,
+    )
+    _fig_top5 = go.Figure(go.Bar(
+        x=[s for _, s in _top5_sorted],
+        y=[n for n, _ in _top5_sorted],
+        orientation="h",
+        marker=dict(color=_bar_colors_5, line=dict(width=0)),
+        text=[f"{s:.1f}" for _, s in _top5_sorted],
+        textposition="outside",
+        textfont=dict(size=14, color="#fff"),
+        hovertemplate="<b>%{y}</b><br>Barrett Score: %{x:.1f}<extra></extra>",
+    ))
+    _score_max_5 = max(s for _, s in _top5_sorted)
+    _fig_top5.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color="white",
+        height=260,
+        margin=dict(l=10, r=80, t=10, b=20),
+        showlegend=False,
+        xaxis=dict(range=[0, _score_max_5 * 1.15], showgrid=False, showticklabels=False),
+        yaxis=dict(gridcolor="rgba(0,0,0,0)", title="", tickfont=dict(size=14)),
+        hoverlabel=dict(bgcolor="#1a1a2e", font=dict(color="white", size=12)),
+    )
+    st.plotly_chart(_fig_top5, use_container_width=True,
+                    config={"displayModeBar": False})
+
+    # ── 2. WIDGET GRID (3 cols × 2 rows) ─────────────────────────────────────
+    st.markdown(
+        '<div class="dash-section-label">This season at a glance</div>',
+        unsafe_allow_html=True,
+    )
+
+    # Row 1: Biggest Steal · Most Overpaid · Most Improved
+    w1, w2, w3 = st.columns(3, gap="medium")
+    with w1:
+        sc = _p.get("steal_card") or {}
+        amt = abs(sc.get("value_diff", 0)) / 1e6
+        st.markdown(f"""
+        <div class="stat-widget" style="--wig-accent:#2ecc71;">
+            <div class="sw-label">Biggest Steal</div>
+            <div class="sw-name">{sc.get("name", "—")}</div>
+            <div class="sw-sub">{sc.get("team", "")} · Barrett {sc.get("score", 0):.1f}</div>
+            <div class="sw-metric sw-metric-green">▼ ${amt:.1f}M below market value</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with w2:
+        oc = _p.get("overpaid_card") or {}
+        amt = oc.get("value_diff", 0) / 1e6
+        st.markdown(f"""
+        <div class="stat-widget" style="--wig-accent:#e74c3c;">
+            <div class="sw-label">Most Overpaid</div>
+            <div class="sw-name">{oc.get("name", "—")}</div>
+            <div class="sw-sub">{oc.get("team", "")} · Barrett {oc.get("score", 0):.1f}</div>
+            <div class="sw-metric sw-metric-red">▲ ${amt:.1f}M above market value</div>
+        </div>
+        """, unsafe_allow_html=True)
+    with w3:
+        ic = _p.get("improved_card")
+        if ic:
+            st.markdown(f"""
+            <div class="stat-widget" style="--wig-accent:#4cc9f0;">
+                <div class="sw-label">Most Improved</div>
+                <div class="sw-name">{ic["name"]}</div>
+                <div class="sw-sub">{ic["team"]} · Barrett {ic["score"]:.1f}</div>
+                <div class="sw-metric sw-metric-green">▲ +{ic["delta"]:.1f} vs last season ({ic["prev"]:.1f} → {ic["score"]:.1f})</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div class="stat-widget" style="--wig-accent:#4cc9f0;">
+                <div class="sw-label">Most Improved</div>
+                <div class="sw-name">—</div>
+                <div class="sw-sub">No prior season to compare</div>
+            </div>
+            """, unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-top:0.55rem'></div>", unsafe_allow_html=True)
+
+    # Row 2: Hottest Rookie · Best Front Office · FA Market
+    w4, w5, w6 = st.columns(3, gap="medium")
+    with w4:
+        rc = _p.get("rookie_card")
+        if rc:
+            st.markdown(f"""
+            <div class="stat-widget" style="--wig-accent:#a855f7;">
+                <div class="sw-label">Hottest Rookie</div>
+                <div class="sw-name">{rc["name"]}</div>
+                <div class="sw-sub">{rc["team"]} · Barrett {rc["score"]:.1f}</div>
+                <div class="sw-metric">Top of the rookie-scale field</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div class="stat-widget" style="--wig-accent:#a855f7;">
+                <div class="sw-label">Hottest Rookie</div>
+                <div class="sw-name">—</div>
+                <div class="sw-sub">No rookie-scale players found</div>
+            </div>
+            """, unsafe_allow_html=True)
+    with w5:
+        tc = _p.get("team_card")
+        if tc:
+            tp_list = "".join(
+                f"<div><b>{p}</b> · {s:.1f}</div>"
+                for p, s in tc["top_players"][:3]
+            )
+            st.markdown(f"""
+            <div class="stat-widget" style="--wig-accent:#3498db;">
+                <div class="sw-label">Best Front Office</div>
+                <div class="sw-name">{tc["team"]}</div>
+                <div class="sw-metric sw-metric-green">${tc["surplus_m"]:.1f}M net value surplus</div>
+                <div class="sw-mini-list">{tp_list}</div>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            st.markdown("""
+            <div class="stat-widget" style="--wig-accent:#3498db;">
+                <div class="sw-label">Best Front Office</div>
+                <div class="sw-name">—</div>
+            </div>
+            """, unsafe_allow_html=True)
+    with w6:
+        fs = _p.get("fa_summary") or {}
+        cats = fs.get("categories", [])
+        rows_html_parts = []
+        for c in cats:
+            if c["count"]:
+                avg_str = f" · avg {c['avg']:.1f}" if c["count"] else ""
+                rows_html_parts.append(f'<div><b>{c["count"]}</b> {c["label"]}{avg_str}</div>')
+        cats_html = "".join(rows_html_parts)
+        st.markdown(f"""
+        <div class="stat-widget" style="--wig-accent:#f39c12;">
+            <div class="sw-label">Free Agent Market</div>
+            <div class="sw-name">{fs.get("total", 0)} players</div>
+            <div class="sw-sub">hitting this offseason</div>
+            <div class="sw-mini-list">{cats_html}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+    # ── 3. CROSS-ERA SPOTLIGHT ───────────────────────────────────────────────
+    st.markdown(
+        '<div class="dash-section-label">Cross-era spotlight</div>',
+        unsafe_allow_html=True,
+    )
+
+    legacy_series = _p.get("legacy_series", [])
+    if legacy_series:
         names = [s["name"] for s in legacy_series]
-        # Default to LeBron (index 2 in LEGACY_FEATURED)
         default_name = "LeBron James" if "LeBron James" in names else names[0]
         picked = st.radio(
             "Featured player",
@@ -737,7 +863,7 @@ with st.expander("Preview", expanded=False):
             index=names.index(default_name),
             horizontal=True,
             label_visibility="collapsed",
-            key="legacy_preview_pick",
+            key="home_legacy_pick",
         )
         chosen = next((s for s in legacy_series if s["name"] == picked), None)
         if chosen and chosen["career"]:
@@ -746,10 +872,6 @@ with st.expander("Preview", expanded=False):
             ranks   = [pt["rank"]   for pt in chosen["career"]]
             totals  = [pt["total"]  for pt in chosen["career"]]
             xs      = list(range(1, len(seasons) + 1))
-            # Use the longest career across all featured players as the
-            # shared x-axis upper bound — so Jordan's 15 seasons still draw
-            # against a 1–23 axis matching LeBron's, making short-career
-            # players visually honest about how long they actually played.
             max_career_len = max(
                 (len(s["career"]) for s in legacy_series if s.get("career")),
                 default=len(xs),
@@ -760,8 +882,8 @@ with st.expander("Preview", expanded=False):
                 x=xs,
                 y=scores,
                 mode="lines+markers",
-                line=dict(color=chosen["color"], width=2.5),
-                marker=dict(size=9, color=chosen["color"],
+                line=dict(color=chosen["color"], width=2.8),
+                marker=dict(size=10, color=chosen["color"],
                             line=dict(color="#14142a", width=1.5)),
                 customdata=list(zip(seasons, ranks, totals)),
                 hovertemplate=(
@@ -773,7 +895,7 @@ with st.expander("Preview", expanded=False):
                 ),
             ))
             fig.update_layout(
-                height=240,
+                height=300,
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0.18)",
                 font_color="white",
@@ -784,9 +906,6 @@ with st.expander("Preview", expanded=False):
                     gridcolor="rgba(255,255,255,0.05)",
                     tickfont=dict(size=10, color="#aaa"),
                     dtick=1 if max_career_len <= 25 else 2,
-                    # Shared upper bound across players — short careers
-                    # (Jordan, Kobe, Curry, Jokić) still draw on the
-                    # same 1 → max axis as LeBron.
                     range=[0.5, max_career_len + 0.5],
                 ),
                 yaxis=dict(
@@ -794,9 +913,6 @@ with st.expander("Preview", expanded=False):
                     gridcolor="rgba(255,255,255,0.08)",
                     tickformat=".1f",
                     tickfont=dict(size=10, color="#aaa"),
-                    # Fixed scale across all five players so peaks compare
-                    # honestly — auto-scaling makes Jordan's 42 look as tall
-                    # as Curry's 50 if each gets their own y-axis.
                     range=[0, 60],
                 ),
                 hoverlabel=dict(bgcolor="#1a1a2e", bordercolor=chosen["color"],
@@ -805,7 +921,7 @@ with st.expander("Preview", expanded=False):
             st.plotly_chart(
                 fig, use_container_width=True,
                 config={"displayModeBar": False},
-                key=f"legacy_preview_chart_{chosen['name']}",
+                key=f"home_legacy_chart_{chosen['name']}",
             )
             st.caption(
                 f"{picked} · {len(seasons)} seasons · "
@@ -817,31 +933,33 @@ with st.expander("Preview", expanded=False):
                 unsafe_allow_html=True,
             )
 
-render_strip(
-    name="Team Analysis",
-    href="/Team_Analysis",
-    accent="#3498db",
-    description="Which front offices are getting the most for their money? Payroll efficiency by team.",
-    preview_html=teams_preview,
+# ── 4. COMPACT BOTTOM NAV ────────────────────────────────────────────────────
+st.markdown(
+    '<div class="dash-section-label">Explore deeper</div>',
+    unsafe_allow_html=True,
 )
 
-# Trades strip removed — page disabled. Restore by uncommenting and adding
-# back to _NAV_PAGES in utils.py + un-disabling pages/Trades.py.
-# render_strip(
-#     name="Trades",
-#     href="/Trades",
-#     accent="#9b59b6",
-#     description="Stack any two trade sides head-to-head — past trades or your own. Who actually came out ahead?",
-#     preview_html=trades_preview,
-# )
 
-render_strip(
-    name="Current Free Agents",
-    href="/Free_Agent_Class",
-    accent="#2ecc71",
-    description="Every player hitting the market this offseason — UFAs, RFAs, options. What they're worth.",
-    preview_html=fa_preview,
-)
+def _simple_strip(name: str, href: str, accent: str, description: str):
+    st.markdown(f"""
+    <a class="tab-strip" href="{href}" target="_top" style="--accent:{accent};">
+        <div class="tab-strip-name">{name}</div>
+        <div class="tab-strip-desc">{description}</div>
+        <span class="tab-strip-arrow">→</span>
+    </a>
+    """, unsafe_allow_html=True)
+
+
+_simple_strip("Current Rankings", "/Rankings", "#e63946",
+              "Every NBA player ranked by Barrett Score this season. Advanced view, splits, value scatter.")
+_simple_strip("Search Player", "/Search", "#7ec8e8",
+              "Career arcs and per-season stats. Compare up to 10 players head-to-head across eras.")
+_simple_strip("Legacy", "/Legacy", "#f1c40f",
+              "53 seasons of NBA history — all-time greats, era leaderboards, team Mount Rushmores, draft classes.")
+_simple_strip("Team Analysis", "/Team_Analysis", "#3498db",
+              "Which front offices are winning the value game? Payroll efficiency by team.")
+_simple_strip("Current Free Agents", "/Free_Agent_Class", "#2ecc71",
+              "Every player hitting the market this offseason. UFAs, RFAs, options. What they're worth.")
 
 
 # ── Footer ────────────────────────────────────────────────────────────────────
