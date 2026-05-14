@@ -283,51 +283,6 @@ _top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score", "PLAYER_ID"]
 if _prev_df is not None:
     _top10 = _attach_prev_score(_top10, _prev_df)
     _top10["delta"] = _top10["barrett_score"] - _top10["prev_score"]
-
-    # ── Diagnostic: surface unmatched players + WHY they didn't match ──
-    # Three commits trying to fix the merge — let's just expose the data
-    # state so a real bug vs. a real data gap is visually obvious.
-    _unmatched = _top10[_top10["prev_score"].isna()]
-    if not _unmatched.empty and _prev_season:
-        # Name + ID lookup tables from prev_df
-        _prev_by_name = {
-            normalize(n): s for n, s in
-            zip(_prev_df["Player"], _prev_df["barrett_score"])
-        }
-        _prev_pid_series = pd.to_numeric(_prev_df["PLAYER_ID"], errors="coerce")
-        _prev_with_pid = _prev_df.assign(_pid=_prev_pid_series).dropna(subset=["_pid"])
-        _prev_by_id = dict(zip(
-            _prev_with_pid["_pid"].astype(int),
-            _prev_with_pid["barrett_score"],
-        ))
-        with st.expander(
-            f"ℹ️ {len(_unmatched)} top-10 player(s) have no prior-season delta — see why",
-            expanded=False,
-        ):
-            for _, row in _unmatched.iterrows():
-                name = row["Player"]
-                norm = normalize(name)
-                pid_raw = row["PLAYER_ID"]
-                pid = int(pid_raw) if pd.notna(pid_raw) else None
-                by_name = _prev_by_name.get(norm)
-                by_id   = _prev_by_id.get(pid) if pid is not None else None
-                if pd.isna(by_name) and pd.isna(by_id):
-                    by_name, by_id = None, None  # NaN → None for clearer log
-                qualified_total = len(_prev_df)
-                if by_name is None and by_id is None:
-                    st.write(
-                        f"- **{name}** (id `{pid}`): NOT in the {_prev_season} "
-                        f"qualifying pool ({qualified_total} players ≥ "
-                        f"{_prev_threshold} min). True data gap — they "
-                        f"either didn't play, didn't qualify on minutes, "
-                        f"or the {_prev_season} cache parquet is missing them."
-                    )
-                else:
-                    st.write(
-                        f"- **{name}** (id `{pid}`): match found but merge "
-                        f"failed — by-name lookup returned `{by_name}`, "
-                        f"by-id lookup returned `{by_id}`. This is a bug."
-                    )
 else:
     _top10["delta"] = float("nan")
 
@@ -367,9 +322,13 @@ _fig_bar.add_trace(go.Bar(
             for d in _top10["delta"]
         ],
     ),
-    customdata=_top10["delta"].apply(
-        lambda d: f"{d:+.1f}" if not pd.isna(d) else "—"
-    ).values,
+    # Pass customdata as a 2D column so %{customdata[0]} in the
+    # hovertemplate resolves correctly (a flat 1D array would make the
+    # [0] index return nothing — which was the actual bug behind every
+    # 'vs last season: -' tooltip, NOT a merge failure).
+    customdata=[[d] for d in _top10["delta"].apply(
+        lambda v: f"{v:+.1f}" if not pd.isna(v) else "—"
+    )],
     hovertemplate=(
         "<b>%{y}</b><br>"
         "Barrett Score: %{x:.1f}<br>"
