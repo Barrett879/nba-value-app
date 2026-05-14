@@ -276,11 +276,11 @@ with st.container(key="playoff_nav_toggle"):
 # inline <img src="./app/static/..."> doesn't resolve cleanly inside HTML
 # markdown (CSS background-image works, <img> doesn't — different base URL
 # handling). st.image() loads the file directly and avoids the path issue.
-_hero_left, _hero_logo, _hero_right = st.columns([1, 2, 1])
+_hero_left, _hero_logo, _hero_right = st.columns([3, 2, 3])
 with _hero_logo:
     _logo_path = Path(__file__).parent / "static" / "hoopsvalue_logo.png"
     if _logo_path.exists():
-        st.image(str(_logo_path), use_container_width=True)
+        st.image(str(_logo_path), width=380)
     else:
         # Fallback to the old wordmark if the logo file is missing
         st.markdown(
