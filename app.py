@@ -197,12 +197,12 @@ with st.container(key="playoff_nav_toggle"):
         help=_PLAYOFF_HELP,
     )
 
-# ── Hero — title + intro blurb ────────────────────────────────────────────────
+# ── Hero — title + tagline (compact, leaderboard is the focal point) ─────────
 st.markdown("""
-<div style="text-align:center; padding: 0.4rem 0 0.6rem 0;">
+<div style="text-align:center; padding: 0.3rem 0 0.4rem 0;">
     <div style="
         font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, system-ui, sans-serif;
-        font-size: 2.2rem;
+        font-size: 2.0rem;
         line-height: 1;
         letter-spacing: 0.1em;
         text-shadow: 0 3px 14px rgba(0,0,0,0.55);
@@ -210,13 +210,14 @@ st.markdown("""
     ">
         <span style="color: #c8cdd6; font-weight: 600;">THE&nbsp;</span><span style="color: #ffffff; font-weight: 800;">BARRETT&nbsp;</span><span style="color: #7ec8e8; font-weight: 800;">SCORE</span>
     </div>
-    <div style="font-size:0.88rem; color:#cdcdd5; margin-top:0.55rem; max-width:760px; margin-left:auto; margin-right:auto; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
-        Scoring, playmaking, defense, and efficiency — distilled into one number, then put next to what each player gets paid.
+    <div style="font-size:0.82rem; color:#cdcdd5; margin-top:0.4rem; max-width:680px; margin-left:auto; margin-right:auto; line-height:1.4; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
+        Every NBA player's on-court value, distilled into one number — and put next to what they're paid.
     </div>
 </div>
 """, unsafe_allow_html=True)
 
-# ── Search hero ─────────────────────────────────────────────────────────────
+# Search hero gets a CSS hook so the selectbox styles consistently when we
+# render the inline search box below the leaderboard.
 st.markdown("""
 <style>
 [data-testid="stSelectbox"][data-baseweb] div[role="combobox"] {
@@ -234,36 +235,23 @@ st.markdown("""
     text-shadow: 0 1px 6px rgba(0,0,0,0.6);
     letter-spacing: 0.04em;
 }
+/* Hero cards on the landing page */
+.home-hero-card {
+    border-radius: 12px;
+    padding: 0.9rem 1.1rem;
+    text-align: center;
+    height: 100%;
+    backdrop-filter: blur(2px);
+}
+.hh-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .09em; opacity: .65; margin-bottom: .25rem; color: #fff; }
+.hh-name  { font-size: 1.15rem; font-weight: 800; line-height: 1.2; color: #fff; }
+.hh-sub   { font-size: 0.78rem; margin-top: .35rem; opacity: .75; color: #fff; }
 </style>
 """, unsafe_allow_html=True)
 
-_, _search_col, _ = st.columns([1, 2, 1])
-with _search_col:
-    st.markdown(
-        '<div class="home-search-label">SEARCH ANY PLAYER · CAREER ARCS · HEAD-TO-HEAD COMPARISONS · 1973 → TODAY</div>',
-        unsafe_allow_html=True,
-    )
-    _all_player_names = get_all_player_names() or []
-    _picked = st.selectbox(
-        "Search any player",
-        options=_all_player_names,
-        index=None,
-        placeholder="Type a name — LeBron, Jordan, Magic, Jokić, Wembanyama…",
-        label_visibility="collapsed",
-        key="home_search_select",
-    )
-    if _picked:
-        st.session_state["search_player"] = _picked
-        try:
-            st.switch_page("pages/Search.py")
-        except Exception:
-            st.markdown(
-                f'<a href="/Search" target="_top" style="color:#7ec8e8; text-decoration: underline;">'
-                f'Click here to view {_picked}\'s profile →</a>',
-                unsafe_allow_html=True,
-            )
-
-st.markdown("<div style='margin-top:0.8rem'></div>", unsafe_allow_html=True)
+# _all_player_names is needed by _compute_charts for the "indexed" stat and
+# by the inline search box below the leaderboard.
+_all_player_names = get_all_player_names() or []
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -485,9 +473,9 @@ def _compute_charts():
         if df.empty:
             return None
 
-        top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score"]].values.tolist()
-        steals_3 = df.nsmallest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
-        overpaid_3 = df.nlargest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
+        top10 = df.nsmallest(10, "score_rank")[["Player", "Team", "barrett_score"]].values.tolist()
+        steals_3 = df.nsmallest(3, "value_diff")[["Player", "Team", "value_diff", "barrett_score"]].values.tolist()
+        overpaid_3 = df.nlargest(3, "value_diff")[["Player", "Team", "value_diff", "barrett_score"]].values.tolist()
 
         team_eff = (
             df.groupby("Team")
@@ -536,9 +524,9 @@ def _compute_charts():
             })
 
         return {
-            "top10": top10,
-            "steals_3": [(str(p), float(v)) for p, v in steals_3],
-            "overpaid_3": [(str(p), float(v)) for p, v in overpaid_3],
+            "top10":      [(str(p), str(t), float(s)) for p, t, s in top10],
+            "steals_3":   [(str(p), str(t), float(v), float(s)) for p, t, v, s in steals_3],
+            "overpaid_3": [(str(p), str(t), float(v), float(s)) for p, t, v, s in overpaid_3],
             "best_teams": [(str(t), float(v)) for t, v in best_teams],
             "worst_teams": [(str(t), float(v)) for t, v in worst_teams],
             "fa_categories": [
@@ -558,6 +546,132 @@ _p = _compute_charts()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
+# OPTION B HERO — leaderboard + 3 hero cards as the landing-page focal point
+# (replaces the previous preview-strip-heavy layout). Search lives in the
+# nav strip below; people who want it click "Search Player".
+# ══════════════════════════════════════════════════════════════════════════════
+if _p:
+    # ── 3 hero cards: Best Player Right Now / Biggest Steal / Most Overpaid ──
+    _best_name, _best_team, _best_score = _p["top10"][0]
+    _steal_name, _steal_team, _steal_vd, _steal_score = _p["steals_3"][0]
+    _over_name,  _over_team,  _over_vd,  _over_score  = _p["overpaid_3"][0]
+
+    hc1, hc2, hc3 = st.columns(3, gap="medium")
+    with hc1:
+        st.markdown(f"""
+        <div class="home-hero-card" style="background:#1a2e1a; border:1px solid #2ecc71;">
+            <div class="hh-label">Best Player Right Now</div>
+            <div class="hh-name">{_best_name}</div>
+            <div class="hh-sub">{_best_team} · Barrett Score {_best_score:.1f}</div>
+        </div>""", unsafe_allow_html=True)
+    with hc2:
+        st.markdown(f"""
+        <div class="home-hero-card" style="background:#1a2a1a; border:1px solid #27ae60;">
+            <div class="hh-label">Biggest Steal</div>
+            <div class="hh-name">{_steal_name}</div>
+            <div class="hh-sub">{_steal_team} · ${abs(_steal_vd)/1e6:.1f}M below market value</div>
+        </div>""", unsafe_allow_html=True)
+    with hc3:
+        st.markdown(f"""
+        <div class="home-hero-card" style="background:#2e1a1a; border:1px solid #e74c3c;">
+            <div class="hh-label">Most Overpaid</div>
+            <div class="hh-name">{_over_name}</div>
+            <div class="hh-sub">{_over_team} · ${_over_vd/1e6:.1f}M above market value</div>
+        </div>""", unsafe_allow_html=True)
+
+    # ── Big Top-10 leaderboard chart (Plotly, with hover tooltips) ───────────
+    st.markdown(
+        "<div style='margin: 1.2rem 0 0.4rem 0; text-align:center;'>"
+        "<span style='font-size:1.5rem; font-weight:800; color:#fff;'>"
+        f"Top 10 Players — {SEASONS[0]} Barrett Score</span></div>",
+        unsafe_allow_html=True,
+    )
+
+    _top10_data = _p["top10"]  # list of (name, team, score)
+    # Sort ascending so #1 is at the top of the horizontal chart
+    _top10_sorted = sorted(_top10_data, key=lambda r: r[2])
+
+    _rank_colors_chart = [
+        "#f1c40f", "#ecbe1a", "#e3b121", "#d3a02a", "#bf8e34",
+        "#a87c3a", "#916b3d", "#7a5b3c", "#634c39", "#4d3e35",
+    ]
+    # rank (1 is best) for each bar — invert because we sorted ascending
+    _bar_colors = [
+        _rank_colors_chart[len(_top10_data) - 1 - i]
+        if (len(_top10_data) - 1 - i) < len(_rank_colors_chart)
+        else _rank_colors_chart[-1]
+        for i in range(len(_top10_sorted))
+    ]
+
+    _fig_top10 = go.Figure(go.Bar(
+        x=[r[2] for r in _top10_sorted],
+        y=[r[0] for r in _top10_sorted],
+        orientation="h",
+        marker=dict(color=_bar_colors, line=dict(width=0)),
+        text=[f"{r[2]:.1f}" for r in _top10_sorted],
+        textposition="outside",
+        textfont=dict(size=12, color="#fff"),
+        customdata=[[r[1]] for r in _top10_sorted],   # team
+        hovertemplate=(
+            "<b>%{y}</b><br>"
+            "Team: %{customdata[0]}<br>"
+            "Barrett Score: %{x:.1f}"
+            "<extra></extra>"
+        ),
+    ))
+    _score_max = max(r[2] for r in _top10_sorted)
+    _fig_top10.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font_color="white",
+        height=440,
+        margin=dict(l=10, r=80, t=10, b=30),
+        showlegend=False,
+        xaxis=dict(
+            range=[0, _score_max * 1.15],
+            gridcolor="rgba(255,255,255,0.06)",
+            tickformat=".1f",
+            title="",
+        ),
+        yaxis=dict(gridcolor="rgba(0,0,0,0)", title="", tickfont=dict(size=13)),
+        hoverlabel=dict(bgcolor="#1a1a2e", font=dict(color="white", size=12)),
+    )
+    st.plotly_chart(_fig_top10, use_container_width=True,
+                    config={"displayModeBar": False})
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# Inline search box (under the leaderboard) — small, functional
+# ══════════════════════════════════════════════════════════════════════════════
+st.markdown("<div style='margin-top:1rem'></div>", unsafe_allow_html=True)
+_, _search_col, _ = st.columns([1, 2, 1])
+with _search_col:
+    st.markdown(
+        '<div class="home-search-label">SEARCH ANY PLAYER · 1973 → TODAY</div>',
+        unsafe_allow_html=True,
+    )
+    _picked = st.selectbox(
+        "Search any player",
+        options=_all_player_names,
+        index=None,
+        placeholder="Type a name — LeBron, Jordan, Magic, Jokić, Wembanyama…",
+        label_visibility="collapsed",
+        key="home_search_select",
+    )
+    if _picked:
+        st.session_state["search_player"] = _picked
+        try:
+            st.switch_page("pages/Search.py")
+        except Exception:
+            st.markdown(
+                f'<a href="/Search" target="_top" style="color:#7ec8e8; text-decoration: underline;">'
+                f'Click here to view {_picked}\'s profile →</a>',
+                unsafe_allow_html=True,
+            )
+st.markdown("<div style='margin-top:1rem'></div>", unsafe_allow_html=True)
+
+
+# ══════════════════════════════════════════════════════════════════════════════
 # Render one tab strip + collapsible preview
 # ══════════════════════════════════════════════════════════════════════════════
 def render_strip(name: str, href: str, accent: str, description: str, preview_html: str):
@@ -572,29 +686,22 @@ def render_strip(name: str, href: str, accent: str, description: str, preview_ht
         st.markdown(f'<div class="preview-box">{preview_html}</div>', unsafe_allow_html=True)
 
 
-# ── Rankings preview ─────────────────────────────────────────────────────────
+# Tuple shapes for top10/steals/overpaid changed to include Team in this commit.
+# The strip-preview SVGs below still get built for the compact strips, but no
+# longer have expanders rendered around them (Option B layout).
 if _p:
-    # Gold → bronze gradient for ranks 1 → 10
     rank_colors = [
         "#f1c40f", "#ecbe1a", "#e3b121", "#d3a02a", "#bf8e34",
         "#a87c3a", "#916b3d", "#7a5b3c", "#634c39", "#4d3e35",
     ]
-    rankings_preview = _hbar_chart([
-        {
-            "label":     f"{i+1}. {name.split()[-1] if len(name.split()) > 1 else name}",
-            "value":     score,
-            "value_str": f"{score:.1f}",
-            "color":     rank_colors[i] if i < len(rank_colors) else rank_colors[-1],
-        }
-        for i, (name, score) in enumerate(_p["top10"])
-    ], w=460, h=260, label_w=150) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Top 10 by Barrett Score · this season</div>'
+    rankings_preview = ""  # not used in Option B — leaderboard is the hero
 
     vis_rows = []
-    for n_, vd in _p["steals_3"]:
+    for n_, t_, vd, s_ in _p["steals_3"]:
         amt = abs(vd) / 1e6
         vis_rows.append({"label": n_.split()[-1], "value": amt, "value_str": f"-${amt:.1f}M",
                          "color": "#2ecc71", "side": "neg"})
-    for n_, vd in _p["overpaid_3"]:
+    for n_, t_, vd, s_ in _p["overpaid_3"]:
         amt = vd / 1e6
         vis_rows.append({"label": n_.split()[-1], "value": amt, "value_str": f"+${amt:.1f}M",
                          "color": "#e74c3c", "side": "pos"})
@@ -648,140 +755,55 @@ else:
 # ══════════════════════════════════════════════════════════════════════════════
 # Render 6 tab strips
 # ══════════════════════════════════════════════════════════════════════════════
-render_strip(
+# ══════════════════════════════════════════════════════════════════════════════
+# Compact nav strips (no preview expanders — Option B keeps the focus on the
+# leaderboard hero above). Each strip is just a clickable link to its page.
+# ══════════════════════════════════════════════════════════════════════════════
+def _render_simple_strip(name: str, href: str, accent: str, description: str):
+    st.markdown(f"""
+    <a class="tab-strip" href="{href}" target="_top" style="--accent:{accent};">
+        <div class="tab-strip-name">{name}</div>
+        <div class="tab-strip-desc">{description}</div>
+        <span class="tab-strip-arrow">→</span>
+    </a>
+    """, unsafe_allow_html=True)
+
+
+st.markdown(
+    "<div style='margin-top:0.8rem; font-size:0.78rem; color:#888; "
+    "text-transform:uppercase; letter-spacing:0.08em;'>Explore deeper</div>",
+    unsafe_allow_html=True,
+)
+
+_render_simple_strip(
     name="Current Rankings",
     href="/Rankings",
     accent="#e63946",
-    description="Who's the best NBA player right now? Every player ranked by Barrett Score this season.",
-    preview_html=rankings_preview,
+    description="Every NBA player ranked by Barrett Score this season. Splits, advanced view, value scatter.",
 )
-
-# ── Legacy strip — special-cased for the interactive player picker ───────────
-st.markdown(f"""
-<a class="tab-strip" href="/Legacy" target="_top" style="--accent:#f1c40f;">
-    <div class="tab-strip-name">Legacy</div>
-    <div class="tab-strip-desc">42 seasons of NBA history — all-time greats, era leaderboards, team Mount Rushmores, draft classes.</div>
-    <span class="tab-strip-arrow">→</span>
-</a>
-""", unsafe_allow_html=True)
-with st.expander("Preview", expanded=False):
-    legacy_series = (_p or {}).get("legacy_series", [])
-    if not legacy_series:
-        st.markdown('<em>Loading live data…</em>', unsafe_allow_html=True)
-    else:
-        names = [s["name"] for s in legacy_series]
-        # Default to LeBron (index 2 in LEGACY_FEATURED)
-        default_name = "LeBron James" if "LeBron James" in names else names[0]
-        picked = st.radio(
-            "Featured player",
-            options=names,
-            index=names.index(default_name),
-            horizontal=True,
-            label_visibility="collapsed",
-            key="legacy_preview_pick",
-        )
-        chosen = next((s for s in legacy_series if s["name"] == picked), None)
-        if chosen and chosen["career"]:
-            seasons = [pt["season"] for pt in chosen["career"]]
-            scores  = [pt["score"]  for pt in chosen["career"]]
-            ranks   = [pt["rank"]   for pt in chosen["career"]]
-            totals  = [pt["total"]  for pt in chosen["career"]]
-            xs      = list(range(1, len(seasons) + 1))
-            # Use the longest career across all featured players as the
-            # shared x-axis upper bound — so Jordan's 15 seasons still draw
-            # against a 1–23 axis matching LeBron's, making short-career
-            # players visually honest about how long they actually played.
-            max_career_len = max(
-                (len(s["career"]) for s in legacy_series if s.get("career")),
-                default=len(xs),
-            )
-
-            fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=xs,
-                y=scores,
-                mode="lines+markers",
-                line=dict(color=chosen["color"], width=2.5),
-                marker=dict(size=9, color=chosen["color"],
-                            line=dict(color="#14142a", width=1.5)),
-                customdata=list(zip(seasons, ranks, totals)),
-                hovertemplate=(
-                    f"<b>{chosen['name']}</b><br>"
-                    "Season: %{customdata[0]}<br>"
-                    "Barrett Score: %{y:.2f}<br>"
-                    "Rank: #%{customdata[1]} of %{customdata[2]}"
-                    "<extra></extra>"
-                ),
-            ))
-            fig.update_layout(
-                height=240,
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0.18)",
-                font_color="white",
-                margin=dict(l=40, r=20, t=10, b=40),
-                showlegend=False,
-                xaxis=dict(
-                    title=dict(text="Career year", font=dict(size=10, color="#888")),
-                    gridcolor="rgba(255,255,255,0.05)",
-                    tickfont=dict(size=10, color="#aaa"),
-                    dtick=1 if max_career_len <= 25 else 2,
-                    # Shared upper bound across players — short careers
-                    # (Jordan, Kobe, Curry, Jokić) still draw on the
-                    # same 1 → max axis as LeBron.
-                    range=[0.5, max_career_len + 0.5],
-                ),
-                yaxis=dict(
-                    title=dict(text="Barrett Score", font=dict(size=10, color="#888")),
-                    gridcolor="rgba(255,255,255,0.08)",
-                    tickformat=".1f",
-                    tickfont=dict(size=10, color="#aaa"),
-                    # Fixed scale across all five players so peaks compare
-                    # honestly — auto-scaling makes Jordan's 42 look as tall
-                    # as Curry's 50 if each gets their own y-axis.
-                    range=[0, 60],
-                ),
-                hoverlabel=dict(bgcolor="#1a1a2e", bordercolor=chosen["color"],
-                                font=dict(color="white", size=12)),
-            )
-            st.plotly_chart(
-                fig, use_container_width=True,
-                config={"displayModeBar": False},
-                key=f"legacy_preview_chart_{chosen['name']}",
-            )
-            st.caption(
-                f"{picked} · {len(seasons)} seasons · "
-                f"{seasons[0]} → {seasons[-1]} · hover any dot for details"
-            )
-        else:
-            st.markdown(
-                f'<em>No data on disk yet for {picked} — try after re-seeding.</em>',
-                unsafe_allow_html=True,
-            )
-
-render_strip(
+_render_simple_strip(
+    name="Search Player",
+    href="/Search",
+    accent="#7ec8e8",
+    description="Career arcs and per-season stats. Compare up to 10 players head-to-head across eras.",
+)
+_render_simple_strip(
+    name="Legacy",
+    href="/Legacy",
+    accent="#f1c40f",
+    description="53 seasons of NBA history — all-time greats, era leaderboards, team Mount Rushmores, draft classes.",
+)
+_render_simple_strip(
     name="Team Analysis",
     href="/Team_Analysis",
     accent="#3498db",
-    description="Which front offices are getting the most for their money? Payroll efficiency by team.",
-    preview_html=teams_preview,
+    description="Which front offices are winning the value game? Payroll efficiency by team.",
 )
-
-# Trades strip removed — page disabled. Restore by uncommenting and adding
-# back to _NAV_PAGES in utils.py + un-disabling pages/Trades.py.
-# render_strip(
-#     name="Trades",
-#     href="/Trades",
-#     accent="#9b59b6",
-#     description="Stack any two trade sides head-to-head — past trades or your own. Who actually came out ahead?",
-#     preview_html=trades_preview,
-# )
-
-render_strip(
+_render_simple_strip(
     name="Current Free Agents",
     href="/Free_Agent_Class",
     accent="#2ecc71",
     description="Every player hitting the market this offseason — UFAs, RFAs, options. What they're worth.",
-    preview_html=fa_preview,
 )
 
 
