@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 import unicodedata
 from pathlib import Path
 import requests
+import numpy as np
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -1627,16 +1628,32 @@ def _player_season_splits_raw(player_id: int, season: str,
 
     rows["d_lebron"] = d_lebron_val
     rows["ts_pct"] = rows["PTS"] / (2 * (rows["FGA"] + 0.44 * rows["FTA"])).replace(0, float("nan"))
-    rows["efficiency_adj"] = rows.apply(
-        lambda r: float(min(max(0.15 * (r["ts_pct"] - league_avg_ts) * 100, -4), 4))
-        if r["FGA"] >= 2.0 and not pd.isna(r["ts_pct"]) else 0.0, axis=1
-    )
+
+    # Vectorised per-stint pipeline (was three apply-axis-1 loops). Same
+    # math as build_raw above; clipped at ±4 here vs ±6 in build_raw — that's
+    # intentional, not a typo: stints use a tighter band since they're a
+    # subset of a season's data.
+    _eff = (0.15 * (rows["ts_pct"] - league_avg_ts) * 100).clip(-4, 4)
+    _eligible = (rows["FGA"] >= 2.0) & rows["ts_pct"].notna()
+    rows["efficiency_adj"] = _eff.where(_eligible, 0.0).astype(float)
 
     rows["total_min"] = (rows["MIN"] * rows["GP"]).round(0).astype(int)
-    rows["base_score"] = rows.apply(base_score, axis=1) + rows["efficiency_adj"] * 2
-    rows["avail_mult"] = rows.apply(
-        lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
+    rows["base_score"] = (
+        rows["PTS"]
+        + rows["AST"] * 1.5
+        + rows["OREB"] / 2
+        + rows["DREB"] / 3
+        + rows["BLK"] / 2
+        + rows["STL"] / 1.5
+        - rows["TOV"] / 1.5
+        - rows["PF"] / 3
+        + rows["d_lebron"] * 2
+        + rows["efficiency_adj"] * 2
     )
+
+    _min_cap = season_games * (2500 / 82)
+    _ratio   = (rows["total_min"] / max(_min_cap, 1)).clip(0, 1)
+    rows["avail_mult"] = 0.30 + 0.70 * np.sqrt(_ratio)
     rows["barrett_score"] = rows["base_score"] * rows["avail_mult"]
 
     return rows[["TEAM_ABBREVIATION", "GP", "MIN", "total_min",
@@ -2090,15 +2107,33 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
     K_EFF = 0.15
     MIN_FGA = 2.0
 
-    def eff_adj(row):
-        if row["FGA"] < MIN_FGA or pd.isna(row["ts_pct"]):
-            return 0.0
-        return float(min(max(K_EFF * (row["ts_pct"] - league_avg_ts) * 100, -6), 6))
-
-    stats["efficiency_adj"] = stats.apply(eff_adj, axis=1)
+    # ── Vectorised efficiency adjustment ──────────────────────────────────────
+    # Previously per-row apply (lambda row -> python conditional). Same logic
+    # expressed as column arithmetic + np.where is ~50× faster on hundreds
+    # of rows because pandas/numpy never drops into Python for the iteration.
+    _eff = K_EFF * (stats["ts_pct"] - league_avg_ts) * 100
+    _eff = _eff.clip(-6, 6)
+    _eligible = (stats["FGA"] >= MIN_FGA) & stats["ts_pct"].notna()
+    stats["efficiency_adj"] = _eff.where(_eligible, 0.0).astype(float)
 
     stats["total_min"] = (stats["MIN"] * stats["GP"]).round(0).astype(int)
-    stats["base_score"] = stats.apply(base_score, axis=1) + stats["efficiency_adj"] * 2
+
+    # ── Vectorised base_score ─────────────────────────────────────────────────
+    # Was: stats.apply(base_score, axis=1) → per-row Python loop. The function
+    # is just column arithmetic so column ops are equivalent.
+    _d_lebron = stats["d_lebron"] if "d_lebron" in stats.columns else 0
+    stats["base_score"] = (
+        stats["PTS"]
+        + stats["AST"] * 1.5
+        + stats["OREB"] / 2
+        + stats["DREB"] / 3
+        + stats["BLK"] / 2
+        + stats["STL"] / 1.5
+        - stats["TOV"] / 1.5
+        - stats["PF"] / 3
+        + _d_lebron * 2
+        + stats["efficiency_adj"] * 2
+    )
 
     season_games = int(stats["GP"].max())
     if playoffs:
@@ -2129,9 +2164,11 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
             stats["avail_mult"] = (0.30 + 0.70 * gp_ratio.pow(0.5)).clip(0.30, 1.0)
     else:
         # Regular season: GP × MPG via total_min / 2500-cap (default formula).
-        stats["avail_mult"] = stats.apply(
-            lambda r: availability_multiplier(r["GP"], r["total_min"], season_games), axis=1
-        )
+        # Vectorised — same math as availability_multiplier() applied to the
+        # whole column at once. min_cap is constant across rows.
+        _min_cap = season_games * (2500 / 82)
+        _ratio = (stats["total_min"] / max(_min_cap, 1)).clip(0, 1)
+        stats["avail_mult"] = 0.30 + 0.70 * np.sqrt(_ratio)
     # Canonical Barrett Score is now PACE-ADJUSTED — applies across the whole
     # site (Rankings, Legacy, Trades, Search, etc.) so cross-era comparisons
     # are honest by default. Volume stats (PTS, AST, REB, BLK, STL, TOV, PF)
