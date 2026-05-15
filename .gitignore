@@ -19,3 +19,10 @@ refresh_splits.py
 app_archive_v1.py
 Trades_backup.py
 Trades_disabled.py
+
+# Home-page layout backups (revert checkpoints — git history is the real backup)
+app_home_*.py
+
+# Original logo source files (processed final is static/hoopsvalue_logo.png)
+static/ChatGPT*.png
+static/hf_*.png
