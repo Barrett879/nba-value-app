@@ -291,7 +291,7 @@ with _hero_logo:
 st.markdown("""
 <div style="text-align:center; padding: 0 0 0.6rem 0;">
     <div style="font-size:0.88rem; color:#cdcdd5; max-width:760px; margin:0.4rem auto 0; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
-        Every NBA player since 1973, ranked by the <b style="color:#fff;">Barrett Score</b> — on-court production sized up against every paycheck. <span style="color:#cdcdd5;">Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</span>
+        Every NBA player since 1973, ranked by the <b style="color:#fff;">Barrett Score</b>. On-court production sized up against every paycheck.<br><span style="color:#cdcdd5;">Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
