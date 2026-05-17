@@ -797,26 +797,84 @@ render_strip(
     preview_html=rankings_preview,
 )
 
-# ── Legacy preview — static SVG sparkline of one featured player's career.
-# Previously had an interactive radio + Plotly chart, but the new <details>
-# pattern doesn't host Streamlit widgets cleanly. The full interactive
-# version (5-player picker + Plotly) lives on the Legacy page itself.
+# ── Legacy preview — interactive player picker via pure HTML radio inputs.
+# Five sparkline SVGs are rendered up-front (one per featured player), then
+# CSS sibling-selector rules show only the chart matching the currently-
+# checked radio. No Streamlit reruns / no JS — fits cleanly inside raw
+# <details>, instant on click.
 _legacy_preview_html = '<em>Loading live data…</em>'
 if _p:
     _legacy_series = _p.get("legacy_series", [])
-    _featured = next(
-        (s for s in _legacy_series if s["name"] == "LeBron James"),
-        _legacy_series[0] if _legacy_series else None,
-    )
-    if _featured and _featured["career"]:
-        _legacy_preview_html = (
-            _multi_sparkline([_featured])
-            + f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">'
-              f'{_featured["name"]} · {len(_featured["career"])} seasons · '
-              f'{_featured["career"][0]["season"]} → {_featured["career"][-1]["season"]} '
-              f'· open Legacy for the full 5-player picker'
-              f'</div>'
+    _valid_legacy = [s for s in _legacy_series if s.get("career")]
+    if _valid_legacy:
+        # Default to LeBron (or first available player if LeBron is missing)
+        _default_idx = next(
+            (i for i, s in enumerate(_valid_legacy) if s["name"] == "LeBron James"),
+            0,
         )
+
+        # Hidden radio inputs (one per player) — sibling to labels + charts
+        _radio_html = "".join(
+            f'<input type="radio" name="legacy-pick" id="lg-{i}" class="lg-radio"'
+            f'{" checked" if i == _default_idx else ""}>'
+            for i in range(len(_valid_legacy))
+        )
+
+        # Player-name labels rendered as clickable pills
+        _labels_html = "".join(
+            f'<label for="lg-{i}" class="lg-label">{html.escape(s["name"])}</label>'
+            for i, s in enumerate(_valid_legacy)
+        )
+
+        # One sparkline + caption per player; CSS shows only the matching one
+        _charts_html = "".join(
+            f'<div class="lg-chart" data-idx="{i}">'
+            f'{_multi_sparkline([s])}'
+            f'<div class="lg-caption">{html.escape(s["name"])} · '
+            f'{len(s["career"])} seasons · '
+            f'{s["career"][0]["season"]} → {s["career"][-1]["season"]}'
+            f'</div>'
+            f'</div>'
+            for i, s in enumerate(_valid_legacy)
+        )
+
+        # Per-player CSS rules (each radio :checked toggles ITS label + chart)
+        _picker_rules = "\n".join(
+            f'#lg-{i}:checked ~ .lg-labels label[for="lg-{i}"] '
+            f'{{ background:#f1c40f; color:#1a1a2e; font-weight:700; }}\n'
+            f'#lg-{i}:checked ~ .lg-chart-stack .lg-chart[data-idx="{i}"] '
+            f'{{ display:block; }}'
+            for i in range(len(_valid_legacy))
+        )
+
+        _legacy_preview_html = f"""
+<style>
+.legacy-picker-wrap input[type="radio"].lg-radio {{
+    position: absolute; left: -9999px;
+}}
+.lg-labels {{
+    display: flex; gap: 0.4rem; justify-content: center;
+    margin-bottom: 0.7rem; flex-wrap: wrap;
+}}
+.lg-label {{
+    display: inline-block; padding: 0.3rem 0.75rem; border-radius: 4px;
+    cursor: pointer; color: #aaa; background: rgba(255,255,255,0.05);
+    font-size: 0.82rem; transition: background 0.15s, color 0.15s;
+    user-select: none;
+}}
+.lg-label:hover {{ background: rgba(255,255,255,0.12); color: #fff; }}
+.lg-chart {{ display: none; }}
+.lg-caption {{
+    text-align: center; font-size: 0.7rem; color: #777; margin-top: 0.4rem;
+}}
+{_picker_rules}
+</style>
+<div class="legacy-picker-wrap">
+    {_radio_html}
+    <div class="lg-labels">{_labels_html}</div>
+    <div class="lg-chart-stack">{_charts_html}</div>
+</div>
+"""
 
 render_strip(
     name="Legacy",
