@@ -55,14 +55,14 @@ else:
     st.title("Barrett Score — NBA Contract Value Rankings")
     st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
 
-_exp_l, _exp_mid, _exp_r = st.columns([1, 6, 1])
-with _exp_mid:
-    with st.expander("How is this calculated?"):
-        st.markdown(
-            "The Barrett Score's confidential formula combines scoring, playmaking, rebounding, defense, and efficiency "
-            "into a single number. Then, it adjusts for how often they're actually on the floor. "
-            "Salaries are then ranked against scores to find who's overpaid, underpaid, or worth exactly what they're making."
-        )
+st.markdown("<div style='height:1.25rem'></div>", unsafe_allow_html=True)
+with st.expander("How is this calculated?"):
+    st.markdown(
+        "The Barrett Score's confidential formula combines scoring, playmaking, rebounding, defense, and efficiency "
+        "into a single number. Then, it adjusts for how often they're actually on the floor. "
+        "Salaries are then ranked against scores to find who's overpaid, underpaid, or worth exactly what they're making."
+    )
+st.markdown("<div style='height:1.25rem'></div>", unsafe_allow_html=True)
 
 # ── Season selector ──────────────────────────────────────────────────────────
 # playoff_mode lives in the top nav bar (rendered by render_nav above) and is
