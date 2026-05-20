@@ -64,6 +64,12 @@ st.markdown("""
       margin-top: 2rem !important;
       margin-bottom: 2rem !important;
   }
+  /* A touch of air between any st.caption line and the title/widget above
+     it (title → caption, subheader → caption, selectbox → caption, etc.). */
+  [data-testid="stCaptionContainer"],
+  [data-testid="stCaption"] {
+      margin-top: 0.45rem !important;
+  }
 </style>
 """, unsafe_allow_html=True)
 with st.expander("How is this calculated?"):
