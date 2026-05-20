@@ -381,14 +381,23 @@ COMMON_CSS = """
     }
     .st-key-playoff_nav_toggle:hover label p { color: #fff !important; }
 
-    /* Zero out the flow space Streamlit reserves for the toggle's parent
-       vertical-block / element-container. The toggle itself is position:fixed
-       so it doesn't need a slot in the document flow, but Streamlit's
-       wrapping divs default to ~3rem min-height which was creating a big
-       empty gap between the nav bar and the page title. */
-    [data-testid="stVerticalBlock"]:has(> .st-key-playoff_nav_toggle),
+    /* Make the toggle's wrapper hierarchy vanish from layout entirely.
+       display:contents removes an element from the box tree (its children
+       render in its place); since our only child is position:fixed, no
+       flow space is claimed. Apply to every ancestor that might wrap the
+       keyed container so it doesn't matter which one Streamlit creates. */
     .element-container:has(.st-key-playoff_nav_toggle),
-    div:has(> .st-key-playoff_nav_toggle) {
+    [data-testid="element-container"]:has(.st-key-playoff_nav_toggle),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-playoff_nav_toggle),
+    [data-testid="stVerticalBlock"]:has(.st-key-playoff_nav_toggle):not(.st-key-playoff_nav_toggle) {
+        display: contents !important;
+    }
+
+    /* Belt-and-suspenders: zero out any remaining wrapper dimensions in
+       case display:contents isn't enough on some browser. */
+    .element-container:has(.st-key-playoff_nav_toggle),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-playoff_nav_toggle),
+    [data-testid="stVerticalBlock"]:has(.st-key-playoff_nav_toggle):not(.st-key-playoff_nav_toggle) {
         min-height: 0 !important;
         height: 0 !important;
         margin: 0 !important;
@@ -396,11 +405,28 @@ COMMON_CSS = """
         gap: 0 !important;
     }
 
+    /* Reduce overall top-padding on the page block so the nav bar's
+       fixed-position offset doesn't compound with extra Streamlit margins. */
+    .main .block-container,
+    section.main > .block-container,
+    [data-testid="stMain"] .block-container,
+    [data-testid="stMainBlockContainer"] {
+        padding-top: 3.2rem !important;
+    }
+
     /* Same trick for the components.html hide-badge iframe — height=0 in
        the call but Streamlit's component wrapper still claims default space. */
-    [data-testid="stCustomComponentV1"] iframe[height="0"],
+    [data-testid="stCustomComponentV1"],
+    [data-testid="stCustomComponentV1"] iframe,
     [data-testid="stIFrame"] iframe[height="0"] {
         display: none !important;
+    }
+    .element-container:has(iframe[height="0"]),
+    .element-container:has([data-testid="stCustomComponentV1"]) {
+        display: contents !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
 </style>
 """
