@@ -49,10 +49,10 @@ components.html("""
 render_nav("Current Rankings")
 
 if st.session_state.get("playoff_mode", False):
-    st.title("Barrett Score — Playoff Rankings")
+    st.title("Playoff Rankings")
     st.caption("All scores computed from playoff games only. Salaries reflect the regular-season contract for that year.")
 else:
-    st.title("Barrett Score — NBA Contract Value Rankings")
+    st.title("NBA Contract Value Rankings")
     st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
 
 st.markdown("""
@@ -283,7 +283,7 @@ st.divider()
 # ══════════════════════════════════════════════════════════════════════════════
 # Top 10 — current season bar chart
 # ══════════════════════════════════════════════════════════════════════════════
-st.subheader("Top 10 Players — Barrett Score")
+st.subheader("Top 10 Players")
 st.caption(f"Current {season} Barrett Score with change vs prior season.")
 
 _top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score", "PLAYER_ID"]].reset_index(drop=True)
