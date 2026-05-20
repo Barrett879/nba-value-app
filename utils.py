@@ -405,13 +405,16 @@ COMMON_CSS = """
         gap: 0 !important;
     }
 
-    /* Reduce overall top-padding on the page block so the nav bar's
-       fixed-position offset doesn't compound with extra Streamlit margins. */
+    /* Page block-container top padding — fits the nav bar (3rem tall) plus
+       comfortable breathing room before the page title. Goldilocks number:
+       3.8rem was too generous (huge empty gap), 3.2rem was too tight
+       (title mashed against the nav). 4.5rem leaves a clean ~1.5rem of
+       space between nav and title, matching the bottom padding rhythm. */
     .main .block-container,
     section.main > .block-container,
     [data-testid="stMain"] .block-container,
     [data-testid="stMainBlockContainer"] {
-        padding-top: 3.2rem !important;
+        padding-top: 4.5rem !important;
     }
 
     /* Same trick for the components.html hide-badge iframe — height=0 in
