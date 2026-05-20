@@ -380,6 +380,28 @@ COMMON_CSS = """
         margin: 0 !important;
     }
     .st-key-playoff_nav_toggle:hover label p { color: #fff !important; }
+
+    /* Zero out the flow space Streamlit reserves for the toggle's parent
+       vertical-block / element-container. The toggle itself is position:fixed
+       so it doesn't need a slot in the document flow, but Streamlit's
+       wrapping divs default to ~3rem min-height which was creating a big
+       empty gap between the nav bar and the page title. */
+    [data-testid="stVerticalBlock"]:has(> .st-key-playoff_nav_toggle),
+    .element-container:has(.st-key-playoff_nav_toggle),
+    div:has(> .st-key-playoff_nav_toggle) {
+        min-height: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        gap: 0 !important;
+    }
+
+    /* Same trick for the components.html hide-badge iframe — height=0 in
+       the call but Streamlit's component wrapper still claims default space. */
+    [data-testid="stCustomComponentV1"] iframe[height="0"],
+    [data-testid="stIFrame"] iframe[height="0"] {
+        display: none !important;
+    }
 </style>
 """
 
