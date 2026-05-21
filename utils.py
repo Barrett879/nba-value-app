@@ -291,7 +291,7 @@ PRE_1990_SALARY_NOTE = (
     "Figures shown for these seasons come from a hand-curated supplement of "
     "documented historical contracts (newspaper archives, biographies, BBRef "
     "where available). Coverage is limited to the ~10 highest-paid stars per "
-    "year — most other players show $0 salary, which is the genuine data gap. "
+    "year, so most other players show $0 salary, which is the genuine data gap. "
     "Use rank/score for these seasons; salary-derived metrics (Δ Market, Proj. "
     "Salary) are best-effort estimates."
 )
@@ -476,8 +476,8 @@ _NAV_PAGES = [
 _PLAYOFF_HELP = (
     "Replace regular-season stats with postseason stats for the selected "
     "season(s). Salaries stay the same (one annual contract). Defense uses "
-    "box-score fallback. Availability is based on each team's depth-of-run "
-    "— Finals MVPs outrank first-round stars with similar per-game production."
+    "box-score fallback. Availability is based on each team's depth-of-run, "
+    "so Finals MVPs outrank first-round stars with similar per-game production."
 )
 
 def render_nav(current: str) -> None:

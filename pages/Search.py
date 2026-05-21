@@ -42,11 +42,11 @@ render_nav("Search Player")
 # Playoff mode lives in the top nav bar (sticky across pages via session_state)
 playoff_mode = bool(st.session_state.get("playoff_mode", False))
 if playoff_mode:
-    st.title("Search Player — Playoff Mode")
+    st.title("Search Player (Playoff Mode)")
     st.caption("Career arcs and per-season stats from postseason data only. Salaries reflect regular-season contracts.")
 else:
     st.title("Search Player")
-    st.caption("Find any player who's appeared in the league — career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
+    st.caption("Find any player who's appeared in the league: career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
 
 render_barrett_score_explainer()
 
@@ -188,7 +188,7 @@ if len(selected) == 1:
     st.divider()
 
     # ── Career arc chart ───────────────────────────────────────────────────────
-    st.subheader(f"Career arc — {SCORE_LABEL} by season")
+    st.subheader(f"Career arc · {SCORE_LABEL} by season")
     fig = go.Figure()
 
     # Color points by Barrett Score (red→gold→green)
@@ -294,9 +294,9 @@ if len(selected) == 1:
         column_config={
             "GP":              st.column_config.NumberColumn(format="%d", help="Games played that season."),
             "Salary $M":       st.column_config.TextColumn("Salary",     help="Salary that season ($M). Some pre-2000 rookie scale and minimum contracts may show $0."),
-            "Barrett Score":   st.column_config.NumberColumn(format="%.2f", help="Era-adjusted via pace — the canonical Barrett Score across the site."),
-            "Barrett (Raw)":   st.column_config.NumberColumn(format="%.2f", help="Un-adjusted version for that season — preserved for reference and the Score-mode toggle."),
-            "Rank":            st.column_config.TextColumn(help="Score rank that season — based on the canonical (era-adjusted) Barrett Score."),
+            "Barrett Score":   st.column_config.NumberColumn(format="%.2f", help="Era-adjusted via pace. The canonical Barrett Score across the site."),
+            "Barrett (Raw)":   st.column_config.NumberColumn(format="%.2f", help="Un-adjusted version for that season, preserved for reference and the Score-mode toggle."),
+            "Rank":            st.column_config.TextColumn(help="Score rank that season, based on the canonical (era-adjusted) Barrett Score."),
             "TS%":             st.column_config.TextColumn("TS%", help="True Shooting %."),
         },
     )
@@ -388,7 +388,7 @@ else:
     st.divider()
 
     # ── Overlaid career arc chart ─────────────────────────────────────────────
-    st.subheader(f"{SCORE_LABEL} — career arcs overlaid")
+    st.subheader(f"{SCORE_LABEL} · career arcs overlaid")
 
     fig = go.Figure()
     all_x_vals: list = []

@@ -53,7 +53,7 @@ if st.session_state.get("playoff_mode", False):
     st.caption("All scores computed from playoff games only. Salaries reflect the regular-season contract for that year.")
 else:
     st.title("NBA Contract Value Rankings")
-    st.caption("A stat-driven ranking of every NBA player's contract value — who's underpaid, who's overpaid, and who's available.")
+    st.caption("A stat-driven ranking of every NBA player's contract value: who's underpaid, who's overpaid, and who's available.")
 
 st.markdown("""
 <style>
@@ -396,8 +396,8 @@ _gp_sum = float(df["GP"].sum())
 league_avg_ts = float((df["ts_pct"] * df["GP"]).sum() / _gp_sum) if _gp_sum > 0 else 0.0
 if not dlebron_lookup:
     st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) only goes back to 2009-10. "
-            "For this season, defensive contribution is estimated from box-score stats — "
-            "BLK, STL, DREB, and PF — centered on the season's league average. "
+            "For this season, defensive contribution is estimated from box-score stats "
+            "(BLK, STL, DREB, and PF) centered on the season's league average. "
             "Calibrated to roughly match D-LEBRON's scale, but noisier (no on/off, no role-adjustment, "
             "no luck-adjustment).")
 
@@ -479,8 +479,8 @@ def render_splits_panel(player_name, season):
             "STL":          st.column_config.NumberColumn(help="Steals per game."),
             "TOV":          st.column_config.NumberColumn(help="Turnovers per game."),
             "PF":           st.column_config.NumberColumn(help="Personal fouls per game."),
-            "D-LEBRON":     st.column_config.NumberColumn(help="Defensive LEBRON — estimated points prevented per game vs average. Full-season metric, same across all stints."),
-            "TS%":          st.column_config.TextColumn(help="True Shooting % — scoring efficiency across 2s, 3s, and free throws. PTS / (2 × (FGA + 0.44 × FTA)). League avg ~57%."),
+            "D-LEBRON":     st.column_config.NumberColumn(help="Defensive LEBRON: estimated points prevented per game vs average. Full-season metric, same across all stints."),
+            "TS%":          st.column_config.TextColumn(help="True Shooting %: scoring efficiency across 2s, 3s, and free throws. PTS / (2 × (FGA + 0.44 × FTA)). League avg ~57%."),
             "Eff. Adj":     st.column_config.NumberColumn(help="Efficiency adjustment added to Base Score. clamp(0.15 × (TS% − League Avg TS%) × 100, −4, +4). Rewards efficient scorers, penalises inefficient ones."),
             "Base Score":   st.column_config.NumberColumn(help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj. Raw per-game value before the availability multiplier."),
             "Avail ×":      st.column_config.NumberColumn(help="Availability multiplier (0.30–1.00). Rewards health and heavy minutes. 0.30 + 0.70 × √(min(Total MIN / (season games × 30.5), 1)). For traded players, season games is replaced by team games during that stint."),
@@ -714,7 +714,7 @@ if show_graph_mode:
     )
     st.caption(
         "**Δ Market** = Actual − Projected. Positive (red) = overpaid. Negative (green) = underpaid. "
-        "Switch the X/Y dropdowns above to plot any two metrics — e.g. MPG vs Barrett Score, "
+        "Switch the X/Y dropdowns above to plot any two metrics: e.g. MPG vs Barrett Score, "
         "TS% vs Δ Market, or D-LEBRON vs Salary."
     )
     st.divider()
@@ -1012,7 +1012,7 @@ if new_selected:
                 trend_df, x="Season", y="barrett_score",
                 color="Player", markers=True,
                 labels={"barrett_score": "Barrett Score", "Season": ""},
-                title=f"Barrett Score — {n_seasons}-Season Trend",
+                title=f"Barrett Score · {n_seasons}-Season Trend",
                 height=340,
                 category_orders={"Season": selected_seasons},
             )
@@ -1065,7 +1065,7 @@ if new_selected:
                 _solo_dleb   = float(dlebron_lookup.get(_solo_pid, 0.0))
                 _monthly     = fetch_monthly_scores(_solo_pid, season, _solo_dleb, league_avg_ts)
                 if not _monthly.empty:
-                    st.markdown(f"#### {_solo} — {season} Monthly Cumulative Score")
+                    st.markdown(f"#### {_solo} · {season} Monthly Cumulative Score")
                     st.caption("Each point is the cumulative season-to-date Barrett Score through end of that month.")
 
                     _season_score = float(df.loc[df["Player"] == _solo, "barrett_score"].iloc[0]) \
@@ -1139,7 +1139,7 @@ if new_selected:
         for name in new_selected:
             title_col, btn_col = st.columns([20, 1])
             with title_col:
-                st.subheader(f"{name} — {season}")
+                st.subheader(f"{name} · {season}")
             with btn_col:
                 if st.button("✕", key=f"x_{name}", help="Remove"):
                     updated = [n for n in new_selected if n != name]

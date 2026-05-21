@@ -47,13 +47,13 @@ playoff_mode = bool(st.session_state.get("playoff_mode", False))
 if playoff_mode:
     st.title("Playoff Legacy")
     st.caption(
-        "The all-time playoff record. Every player-postseason from 1973–74 forward "
-        "— ranked, compared, weighted by depth-of-run."
+        "The all-time playoff record. Every player-postseason from 1973–74 forward, "
+        "ranked, compared, weighted by depth-of-run."
     )
 else:
     st.title("Legacy")
     st.caption(
-        "The historical record. Every player, every season from 1973–74 to today — "
+        "The historical record. Every player, every season from 1973–74 to today, "
         "ranked, compared, and put in context."
     )
 
@@ -188,7 +188,7 @@ tab_rank, tab_arc, tab_era, tab_team, tab_long, tab_rec, tab_draft = st.tabs([
 # Tab 1: All-Time Rankings
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_rank:
-    st.subheader("Best Single-Season Barrett Scores — All Time")
+    st.subheader("Best Single-Season Barrett Scores · All Time")
     st.caption(
         "Every qualifying player-season from 1973–74 to today, ranked by Barrett Score. "
         "Switch the sort to surface the most underpaid seasons in history."
@@ -283,7 +283,7 @@ with tab_arc:
         "Select player",
         options=_arc_options,
         index=None,
-        placeholder="Search by name — sorted by career avg Barrett Score…",
+        placeholder="Search by name, sorted by career avg Barrett Score…",
         key="arc_player_select",
     )
 
@@ -367,7 +367,7 @@ with tab_arc:
 
                 n_seasons = len(arc_df)
                 fig_arc.update_layout(
-                    title=f"{arc_player} — Barrett Score by Season",
+                    title=f"{arc_player} · Barrett Score by Season",
                     xaxis_title="",
                     yaxis_title="Barrett Score",
                     paper_bgcolor="rgba(0,0,0,0)",
@@ -465,7 +465,7 @@ with tab_era:
 # Tab 4: Team Legacy — Mount Rushmore
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_team:
-    st.subheader("Team Legacy — Mount Rushmore")
+    st.subheader("Team Legacy · Mount Rushmore")
     st.caption(
         "The four best single-season Barrett Scores in franchise history. "
         "Note: team abbreviations reflect the season they were played (e.g. NJN = Brooklyn)."
@@ -504,7 +504,7 @@ with tab_team:
             textfont=dict(color="white", size=13),
         ))
         fig_rush.update_layout(
-            title=f"{rush_team} — All-Time Top 4 Barrett Score Seasons",
+            title=f"{rush_team} · All-Time Top 4 Barrett Score Seasons",
             paper_bgcolor="rgba(0,0,0,0)",
             plot_bgcolor="rgba(0,0,0,0.15)",
             font_color="white",
@@ -627,7 +627,7 @@ with tab_long:
                 help="Average Barrett Score across all qualifying seasons."),
             "Peak Score":  st.column_config.NumberColumn(format="%.2f"),
             "Floor Score": st.column_config.NumberColumn(format="%.2f",
-                help="Their lowest qualifying season score — the floor of their value."),
+                help="Their lowest qualifying season score: the floor of their value."),
         },
         use_container_width=True,
         hide_index=True,
@@ -686,9 +686,9 @@ with tab_rec:
         )
 
     with rec_sub2:
-        st.subheader("The Fall — Biggest Single-Season Score Drops")
+        st.subheader("The Fall · Biggest Single-Season Score Drops")
         st.caption(
-            "Players whose Barrett Score fell the most from one season to the next — "
+            "Players whose Barrett Score fell the most from one season to the next, "
             "injuries, age, system changes, or contract-year motivation."
         )
 
@@ -813,7 +813,7 @@ with tab_draft:
 
             mc1, mc2 = st.columns([1, 2])
             with mc1:
-                st.markdown(f"**{draft_year_sel} Class — {len(class_summary)} players in our data**")
+                st.markdown(f"**{draft_year_sel} Class · {len(class_summary)} players in our data**")
                 sum_tbl = class_summary[["Player", "OVERALL_PICK", "peak_score", "seasons"]].copy()
                 sum_tbl.columns = ["Player", "Pick #", "Peak Score", "Seasons"]
                 sum_tbl["Peak Score"] = sum_tbl["Peak Score"].round(2)
@@ -839,7 +839,7 @@ with tab_draft:
                     color="Player",
                     markers=True,
                     labels={"barrett_score": "Barrett Score", "Season": ""},
-                    title=f"{draft_year_sel} Draft Class — Career Arcs (Top 10 by peak)",
+                    title=f"{draft_year_sel} Draft Class · Career Arcs (Top 10 by peak)",
                     height=460,
                 )
                 fig_class.update_traces(line_width=2, marker_size=6)

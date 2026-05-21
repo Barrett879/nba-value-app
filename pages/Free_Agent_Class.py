@@ -46,9 +46,9 @@ render_nav("Current Free Agents")
 st.title("Free Agent Class")
 
 st.caption(
-    "Every player whose contract situation makes them available this offseason — "
+    "Every player whose contract situation makes them available this offseason: "
     "UFAs, RFAs (team holds right of first refusal), player options (they may opt out), "
-    "and team options (team may decline). Ranked by Barrett Score — a GM's draft board."
+    "and team options (team may decline). Ranked by Barrett Score, a GM's draft board."
 )
 
 render_barrett_score_explainer()
@@ -201,7 +201,7 @@ st.dataframe(
             help="What this player would earn if paid by their Barrett Score rank. "
                  "Useful baseline for contract negotiations."),
         "Δ Market":      st.column_config.NumberColumn(format="$%.2fM",
-            help="Actual − Projected. Negative (green) = currently underpaid — "
+            help="Actual − Projected. Negative (green) = currently underpaid, "
                  "expect them to command a raise. Positive (red) = overpaid relative to production."),
         "Next $":        st.column_config.TextColumn("Next $",
             help="Option value or — for UFAs. Blue (PO) = player option. Orange (TO) = team option.",
@@ -228,7 +228,7 @@ with fa_dl_col:
 with fa_cap_col:
     st.caption(
         f"**{len(fa_display)}** free agents shown · "
-        "**Proj. Value** = salary of the player at the same Barrett Score rank in the current pool — "
+        "**Proj. Value** = salary of the player at the same Barrett Score rank in the current pool, "
         "a market-rate anchor for what this player should cost. "
         "**Δ Market**: green = underpaid (will demand raise) · red = overpaid (value risk)."
     )

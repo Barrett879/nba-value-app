@@ -38,7 +38,7 @@ LEGACY_FEATURED = [
 # before any user arrives, so the first visitor doesn't pay the cost.
 _bootstrap_warm()
 
-st.set_page_config(page_title="HoopsValue — Barrett Score", layout="wide")
+st.set_page_config(page_title="HoopsValue", layout="wide")
 
 # ── Page chrome (background, hide Streamlit UI) ────────────────────────────────
 st.markdown("""
@@ -328,7 +328,7 @@ with _search_col:
         "Search any player",
         options=_all_player_names,
         index=None,
-        placeholder="Type a name — LeBron, Jordan, Magic, Jokić, Wembanyama…",
+        placeholder="Type a name: LeBron, Jordan, Magic, Jokić, Wembanyama…",
         label_visibility="collapsed",
         key="home_search_select",
     )
@@ -487,7 +487,7 @@ def _multi_sparkline(series_list, w=460, h=160):
         for x, y, pt in coords:
             tooltip = (
                 f'{_esc(s["name"])} · {_esc(pt["season"])}'
-                f'  —  Barrett {pt["score"]:.2f}'
+                f'  ·  Barrett {pt["score"]:.2f}'
                 f'  ·  Rank #{pt["rank"]}/{pt["total"]}'
             )
             # Single visible dot — bigger (r=4.5) for an easy hover target.
@@ -772,7 +772,7 @@ if _p:
              "value_str": f"{b_total:.1f}",
              "color": b_color, "side": "pos"},
         ]
-        return _hbar_chart(rows, w=460, h=110, label_w=110) + f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Featured trade — {pick["name"]}</div>'
+        return _hbar_chart(rows, w=460, h=110, label_w=110) + f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Featured trade · {pick["name"]}</div>'
 
     trades_preview = _build_trades_preview()
 else:
@@ -880,7 +880,7 @@ render_strip(
     name="Legacy",
     href="/Legacy",
     accent="#f1c40f",
-    description="53 seasons of NBA history — all-time greats, era leaderboards, team Mount Rushmores, draft classes.",
+    description="53 seasons of NBA history: all-time greats, era leaderboards, team Mount Rushmores, draft classes.",
     preview_html=_legacy_preview_html,
 )
 
@@ -906,7 +906,7 @@ render_strip(
     name="Current Free Agents",
     href="/Free_Agent_Class",
     accent="#2ecc71",
-    description="Every player hitting the market this offseason — UFAs, RFAs, options. What they're worth.",
+    description="Every player hitting the market this offseason: UFAs, RFAs, options. What they're worth.",
     preview_html=fa_preview,
 )
 

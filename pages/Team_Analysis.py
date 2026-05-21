@@ -96,8 +96,8 @@ if _is_pre_1990:
 _salary_coverage = (df["salary"] > 0).mean() if len(df) else 0.0
 if _salary_coverage < 0.5 and not _is_pre_1990:
     st.warning(
-        f"⚠️ Salary coverage for {season} is {_salary_coverage*100:.0f}% — "
-        "many players have no salary data on file. Team payroll totals below "
+        f"⚠️ Salary coverage for {season} is {_salary_coverage*100:.0f}%. "
+        "Many players have no salary data on file. Team payroll totals below "
         "are unreliable for this season. Use the Rankings page for player-level analysis."
     )
 
@@ -186,7 +186,7 @@ st.dataframe(
 )
 st.caption(
     f"Based on **{len(df)}** players with ≥ {min_threshold} total minutes. "
-    "Only players in the rankings pool are included — rookies on minimum deals may not appear."
+    "Only players in the rankings pool are included; rookies on minimum deals may not appear."
 )
 
 st.divider()
