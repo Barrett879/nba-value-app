@@ -144,12 +144,21 @@ _is_pre_1990 = int(season.split("-")[0]) < 1990
 if _is_pre_1990:
     st.warning(PRE_1990_SALARY_NOTE, icon="📜")
 
-st.caption(
-    f"**{len(df)}** players ranked · "
-    f"**{(df['value_diff'] < -5_000_000).sum()}** underpaid (earning \\$5M+ below projection) · "
-    f"**{(df['value_diff'] > 5_000_000).sum()}** overpaid (earning \\$5M+ above projection)"
+_n_under = int((df['value_diff'] < -5_000_000).sum())
+_n_over  = int((df['value_diff'] >  5_000_000).sum())
+st.markdown(
+    f"""
+    <div style="margin-top:0.85rem; margin-bottom:0.35rem;
+                font-size:0.875rem; color:rgba(250,250,250,0.6);">
+        <b style="color:rgba(250,250,250,0.85);">{len(df)}</b> players ranked ·
+        <b style="color:rgba(250,250,250,0.85);">{_n_under}</b> underpaid (earning $5M+ below projection) ·
+        <b style="color:rgba(250,250,250,0.85);">{_n_over}</b> overpaid (earning $5M+ above projection)
+    </div>
+    <hr style="margin-top:0.35rem; margin-bottom:1rem;
+               border:0; border-top:1px solid rgba(250,250,250,0.12);" />
+    """,
+    unsafe_allow_html=True,
 )
-st.divider()
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Hero callout cards
