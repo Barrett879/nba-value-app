@@ -443,6 +443,7 @@ COMMON_CSS = """
     [data-testid="stCaptionContainer"],
     [data-testid="stCaption"] {
         margin-top: 0.45rem !important;
+        margin-bottom: 0.7rem !important;
     }
     /* If a caption sits directly above a divider, tighten the gap below
        the caption so the divider hugs the line above it (not the section
@@ -450,6 +451,13 @@ COMMON_CSS = """
     [data-testid="stCaptionContainer"] + hr,
     [data-testid="stCaption"]          + hr {
         margin-top: 0.35rem !important;
+    }
+    /* Info / success / warning / error alerts get a touch of breathing
+       room from whatever widget they sit beneath (e.g. the "X players
+       indexed..." info box below the player multiselect on Search). */
+    [data-testid="stAlert"],
+    [data-testid="stAlertContainer"] {
+        margin-top: 0.85rem !important;
     }
 </style>
 """
