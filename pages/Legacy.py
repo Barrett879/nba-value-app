@@ -12,7 +12,7 @@ from utils import (
     normalize,
     build_all_seasons_combined, fetch_draft_classes,
     fetch_player_career_all_seasons,
-    render_nav, render_playoff_toggle, _bootstrap_warm,
+    render_nav, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Legacy", layout="wide")
@@ -56,6 +56,8 @@ else:
         "The historical record. Every player, every season from 1973–74 to today — "
         "ranked, compared, and put in context."
     )
+
+render_barrett_score_explainer()
 
 # ── Load combined data ─────────────────────────────────────────────────────────
 # build_all_seasons_combined is @st.cache_resource (no copy on hit) — must copy before mutating

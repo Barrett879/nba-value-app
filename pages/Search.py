@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 from utils import (
     COMMON_CSS,
     get_all_player_names, fetch_player_full_career,
-    render_nav, render_playoff_toggle, _bootstrap_warm,
+    render_nav, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
 
@@ -47,6 +47,8 @@ if playoff_mode:
 else:
     st.title("Search Player")
     st.caption("Find any player who's appeared in the league — career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
+
+render_barrett_score_explainer()
 
 # ── Search box ─────────────────────────────────────────────────────────────────
 all_names = get_all_player_names()

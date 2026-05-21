@@ -17,7 +17,7 @@ from utils import (
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
-    render_nav, render_playoff_toggle, _bootstrap_warm,
+    render_nav, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
 import threading
@@ -67,14 +67,7 @@ st.markdown("""
   }
 </style>
 """, unsafe_allow_html=True)
-with st.expander("What is the Barrett Score?"):
-    st.markdown(
-        "The Barrett Score combines scoring, playmaking, rebounding, defense, efficiency, and availability "
-        "into one player value metric. Each player's score is compared against real NBA contracts by "
-        "matching the highest scores with the highest salaries, creating an estimated contract value for "
-        "every player. The result shows who is underpaid, overpaid, or being paid roughly in line with "
-        "their on-court value."
-    )
+render_barrett_score_explainer()
 
 # ── Season selector ──────────────────────────────────────────────────────────
 # playoff_mode lives in the top nav bar (rendered by render_nav above) and is

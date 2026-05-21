@@ -12,7 +12,8 @@ from utils import (
     build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract,
-    color_next_contract, style_rookie_salary, color_value_diff, render_nav, _bootstrap_warm,
+    color_next_contract, style_rookie_salary, color_value_diff, render_nav,
+    render_barrett_score_explainer, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Free Agent Class", layout="wide")
@@ -43,6 +44,8 @@ _bootstrap_warm()
 render_nav("Current Free Agents")
 
 st.title("Free Agent Class")
+
+render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────
 # Free agency data (next-year contracts, options) is only reliable for the

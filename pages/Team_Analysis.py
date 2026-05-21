@@ -10,7 +10,8 @@ from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
     normalize, season_to_espn_year,
     build_ranked_projected,
-    fetch_bref_positions, render_nav, render_playoff_toggle, _bootstrap_warm,
+    fetch_bref_positions, render_nav, render_playoff_toggle,
+    render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
 
@@ -47,6 +48,8 @@ if playoff_mode:
     st.title("Team Analysis (Playoffs)")
 else:
     st.title("Team Analysis")
+
+render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
