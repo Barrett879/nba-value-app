@@ -22,7 +22,7 @@ from utils import (
 )
 import threading
 
-st.set_page_config(page_title="Barrett Score — Rankings", layout="wide")
+st.set_page_config(page_title="Rankings", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 

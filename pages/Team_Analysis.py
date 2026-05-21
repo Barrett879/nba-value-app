@@ -14,7 +14,7 @@ from utils import (
     PRE_1990_SALARY_NOTE,
 )
 
-st.set_page_config(page_title="Barrett Score — Team Analysis", layout="wide")
+st.set_page_config(page_title="Team Analysis", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
@@ -44,9 +44,9 @@ render_nav("Team Analysis")
 # Playoff mode lives in the top nav bar (sticky across pages via session_state)
 playoff_mode = bool(st.session_state.get("playoff_mode", False))
 if playoff_mode:
-    st.title("Barrett Score — Team Analysis (Playoffs)")
+    st.title("Team Analysis (Playoffs)")
 else:
-    st.title("Barrett Score — Team Analysis")
+    st.title("Team Analysis")
 
 # ── Season selector ────────────────────────────────────────────────────────────
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])

@@ -13,7 +13,7 @@ from utils import (
     PRE_1990_SALARY_NOTE,
 )
 
-st.set_page_config(page_title="Barrett Score — Search Player", layout="wide")
+st.set_page_config(page_title="Search Player", layout="wide")
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
 components.html("""

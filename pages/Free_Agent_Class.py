@@ -15,7 +15,7 @@ from utils import (
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, _bootstrap_warm,
 )
 
-st.set_page_config(page_title="Barrett Score — Free Agent Class", layout="wide")
+st.set_page_config(page_title="Free Agent Class", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
@@ -42,7 +42,7 @@ components.html("""
 _bootstrap_warm()
 render_nav("Current Free Agents")
 
-st.title("Barrett Score — Free Agent Class")
+st.title("Free Agent Class")
 
 # ── Season selector ────────────────────────────────────────────────────────────
 # Free agency data (next-year contracts, options) is only reliable for the

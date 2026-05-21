@@ -15,7 +15,7 @@ from utils import (
     render_nav, render_playoff_toggle, _bootstrap_warm,
 )
 
-st.set_page_config(page_title="Barrett Score — Legacy", layout="wide")
+st.set_page_config(page_title="Legacy", layout="wide")
 
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
@@ -45,13 +45,13 @@ render_nav("Legacy")
 # Playoff mode lives in the top nav bar (sticky across pages via session_state)
 playoff_mode = bool(st.session_state.get("playoff_mode", False))
 if playoff_mode:
-    st.title("Barrett Score — Playoff Legacy")
+    st.title("Playoff Legacy")
     st.caption(
         "The all-time playoff record. Every player-postseason from 1973–74 forward "
         "— ranked, compared, weighted by depth-of-run."
     )
 else:
-    st.title("Barrett Score — Legacy")
+    st.title("Legacy")
     st.caption(
         "The historical record. Every player, every season from 1973–74 to today — "
         "ranked, compared, and put in context."
