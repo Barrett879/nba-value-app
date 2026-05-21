@@ -49,6 +49,13 @@ if playoff_mode:
 else:
     st.title("Team Analysis")
 
+st.caption(
+    "Which front offices are getting the most value? "
+    "Payroll efficiency = how much a team is over- or under-paying relative to what their "
+    "players' Barrett Scores say they deserve. Negative = underpaying (efficient). "
+    "Positive = overpaying (inefficient)."
+)
+
 render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────
@@ -97,13 +104,6 @@ if _salary_coverage < 0.5 and not _is_pre_1990:
 # ══════════════════════════════════════════════════════════════════════════════
 # Team Analysis content
 # ══════════════════════════════════════════════════════════════════════════════
-
-st.caption(
-    "Which front offices are getting the most value? "
-    "Payroll efficiency = how much a team is over- or under-paying relative to what their "
-    "players' Barrett Scores say they deserve. Negative = underpaying (efficient). "
-    "Positive = overpaying (inefficient)."
-)
 
 team_grp = df.groupby("Team").agg(
     players        = ("Player",           "count"),

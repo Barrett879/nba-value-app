@@ -45,6 +45,12 @@ render_nav("Current Free Agents")
 
 st.title("Free Agent Class")
 
+st.caption(
+    "Every player whose contract situation makes them available this offseason — "
+    "UFAs, RFAs (team holds right of first refusal), player options (they may opt out), "
+    "and team options (team may decline). Ranked by Barrett Score — a GM's draft board."
+)
+
 render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────
@@ -87,12 +93,6 @@ def _style_rookie_salary(row):
 # ══════════════════════════════════════════════════════════════════════════════
 # Free Agent Class content
 # ══════════════════════════════════════════════════════════════════════════════
-
-st.caption(
-    "Every player whose contract situation makes them available this offseason — "
-    "UFAs, RFAs (team holds right of first refusal), player options (they may opt out), "
-    "and team options (team may decline). Ranked by Barrett Score — a GM's draft board."
-)
 
 def _fa_status(row) -> str | None:
     nc   = row["next_contract"]
