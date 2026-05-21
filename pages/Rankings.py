@@ -74,11 +74,11 @@ st.markdown("""
 """, unsafe_allow_html=True)
 with st.expander("What is the Barrett Score?"):
     st.markdown(
-        "The Barrett Score combines scoring, playmaking, rebounding, defense, and efficiency into a single metric. "
-        "Then, it adjusts for how often they're actually on the floor. "
-        "Salaries are then ranked against scores using real NBA contracts, so the highest rated Barrett Score "
-        "will get the highest paid contract (this year, Jokić will get Curry's contract). "
-        "The goal is to find who's overpaid, underpaid, or worth exactly what they're making."
+        "The Barrett Score combines scoring, playmaking, rebounding, defense, efficiency, and availability "
+        "into one player value metric. Each player's score is compared against real NBA contracts by "
+        "matching the highest scores with the highest salaries, creating an estimated contract value for "
+        "every player. The result shows who is underpaid, overpaid, or being paid roughly in line with "
+        "their on-court value."
     )
 
 # ── Season selector ──────────────────────────────────────────────────────────
