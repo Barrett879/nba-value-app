@@ -431,6 +431,26 @@ COMMON_CSS = """
         margin: 0 !important;
         padding: 0 !important;
     }
+
+    /* ── Global typographic rhythm ────────────────────────────────────────
+       Adds consistent breathing room sitewide between page titles, their
+       captions, and the content blocks below. Without these, st.title sits
+       flush against the next widget/section and st.caption sits flush
+       against the title above it. */
+    [data-testid="stHeading"]:has(h1) {
+        margin-bottom: 0.85rem !important;
+    }
+    [data-testid="stCaptionContainer"],
+    [data-testid="stCaption"] {
+        margin-top: 0.45rem !important;
+    }
+    /* If a caption sits directly above a divider, tighten the gap below
+       the caption so the divider hugs the line above it (not the section
+       below). */
+    [data-testid="stCaptionContainer"] + hr,
+    [data-testid="stCaption"]          + hr {
+        margin-top: 0.35rem !important;
+    }
 </style>
 """
 

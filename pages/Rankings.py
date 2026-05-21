@@ -57,18 +57,13 @@ else:
 
 st.markdown("""
 <style>
-  /* Breathing room above and below the "How is this calculated?" expander
-     on the Rankings page. Targets the element-container that wraps the
-     expander so vertical-block gap collapse doesn't eat the spacing. */
+  /* Breathing room above and below the "What is the Barrett Score?"
+     expander. Targets the element-container that wraps the expander so
+     vertical-block gap collapse doesn't eat the spacing. Caption / title
+     spacing rules live in COMMON_CSS (utils.py) and apply sitewide. */
   [data-testid="stExpander"] {
       margin-top: 2rem !important;
       margin-bottom: 2rem !important;
-  }
-  /* A touch of air between any st.caption line and the title/widget above
-     it (title → caption, subheader → caption, selectbox → caption, etc.). */
-  [data-testid="stCaptionContainer"],
-  [data-testid="stCaption"] {
-      margin-top: 0.45rem !important;
   }
 </style>
 """, unsafe_allow_html=True)
