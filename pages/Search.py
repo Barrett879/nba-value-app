@@ -122,14 +122,20 @@ if not selected:
 
 
 # ── Shareable link ───────────────────────────────────────────────────────────
-# Once at least one player is selected, expose the current view as a clean
-# URL that other people can paste into their browser. Uses a tiny HTML
-# snippet so the "Copy" button can talk to navigator.clipboard directly
-# (Streamlit's st.code copy button works fine too but doesn't show toast).
+# Rendered via components.html (iframe) instead of st.markdown so the inline
+# onclick handler isn't stripped by Streamlit's HTML sanitizer. We also build
+# the absolute URL inside the iframe's JS from window.parent.location.origin
+# so it works on both the deployed Render URL and on localhost.
 _share_path = "/Search?" + "&".join(f"player={quote(p)}" for p in selected)
-_share_html = f"""
+
+# Two fallbacks for clipboard access in case navigator.clipboard isn't
+# available (Safari private mode, older browsers, or iframe permission
+# quirks): try navigator.clipboard first, then execCommand('copy') on a
+# temporary textarea. Either way the user sees the "✓ Copied" flash.
+_share_widget = f"""
 <div style="display:flex; align-items:center; gap:0.6rem;
-            margin: 0.25rem 0 1rem 0; flex-wrap:wrap;">
+            margin: 0; flex-wrap:wrap; font-family: 'Source Sans Pro',
+            -apple-system, BlinkMacSystemFont, sans-serif;">
   <span style="font-size:0.78rem; color:rgba(250,250,250,0.55);
                letter-spacing:0.02em; text-transform:uppercase;
                font-weight:600;">Share this view</span>
@@ -141,21 +147,69 @@ _share_html = f"""
                               text-overflow:ellipsis; white-space:nowrap;">
     {_share_path}
   </code>
-  <button onclick="
-    const u = window.location.origin + '{_share_path}';
-    navigator.clipboard.writeText(u);
-    this.innerText = '✓ Copied';
-    setTimeout(() => this.innerText = 'Copy link', 1500);
-  " style="background:#e63946; color:white; border:none; border-radius:6px;
-           padding:0.3rem 0.85rem; font-size:0.8rem; font-weight:600;
-           cursor:pointer; transition:opacity 0.15s;"
-    onmouseover="this.style.opacity='0.85'"
-    onmouseout="this.style.opacity='1'">
+  <button id="share-btn" type="button"
+          style="background:#e63946; color:white; border:none;
+                 border-radius:6px; padding:0.3rem 0.85rem; font-size:0.8rem;
+                 font-weight:600; cursor:pointer; transition:opacity 0.15s;
+                 font-family:inherit;">
     Copy link
   </button>
 </div>
+<script>
+  (function() {{
+    const sharePath = {repr(_share_path)};
+    const btn = document.getElementById("share-btn");
+    if (!btn) return;
+
+    // Resolve the absolute URL using the *parent* window's origin so the
+    // link points at hoopsvalue.onrender.com (or wherever the app lives),
+    // not the iframe's component-asset URL.
+    function getFullUrl() {{
+      try {{
+        return window.parent.location.origin + sharePath;
+      }} catch (e) {{
+        return window.location.origin + sharePath;
+      }}
+    }}
+
+    function flashCopied() {{
+      btn.innerText = "✓ Copied";
+      btn.style.background = "#2ecc71";
+      setTimeout(() => {{
+        btn.innerText = "Copy link";
+        btn.style.background = "#e63946";
+      }}, 1500);
+    }}
+
+    function fallbackCopy(text) {{
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.opacity = "0";
+      document.body.appendChild(ta);
+      ta.focus();
+      ta.select();
+      try {{ document.execCommand("copy"); flashCopied(); }}
+      catch (e) {{ console.error(e); }}
+      document.body.removeChild(ta);
+    }}
+
+    btn.addEventListener("click", function() {{
+      const url = getFullUrl();
+      if (navigator.clipboard && window.isSecureContext) {{
+        navigator.clipboard.writeText(url).then(flashCopied)
+          .catch(() => fallbackCopy(url));
+      }} else {{
+        fallbackCopy(url);
+      }}
+    }});
+
+    btn.addEventListener("mouseover", () => btn.style.opacity = "0.85");
+    btn.addEventListener("mouseout",  () => btn.style.opacity = "1");
+  }})();
+</script>
 """
-st.markdown(_share_html, unsafe_allow_html=True)
+components.html(_share_widget, height=58)
 
 
 # ── Era-adjustment toggle ────────────────────────────────────────────────────

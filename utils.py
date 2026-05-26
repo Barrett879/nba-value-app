@@ -418,14 +418,16 @@ COMMON_CSS = """
     }
 
     /* Same trick for the components.html hide-badge iframe — height=0 in
-       the call but Streamlit's component wrapper still claims default space. */
-    [data-testid="stCustomComponentV1"],
-    [data-testid="stCustomComponentV1"] iframe,
+       the call but Streamlit's component wrapper still claims default
+       space. Narrow these selectors to height="0" iframes only so other
+       components.html embeds (like the Search "Share this view" widget)
+       still render. */
+    [data-testid="stCustomComponentV1"]:has(iframe[height="0"]),
+    [data-testid="stCustomComponentV1"] iframe[height="0"],
     [data-testid="stIFrame"] iframe[height="0"] {
         display: none !important;
     }
-    .element-container:has(iframe[height="0"]),
-    .element-container:has([data-testid="stCustomComponentV1"]) {
+    .element-container:has(iframe[height="0"]) {
         display: contents !important;
         height: 0 !important;
         margin: 0 !important;
