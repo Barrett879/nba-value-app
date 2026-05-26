@@ -1993,7 +1993,7 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
     return result
 
 
-def fetch_player_positions_detailed(season: str, cache_v: int = 1) -> dict:
+def fetch_player_positions_detailed(season: str, cache_v: int = 2) -> dict:
     """Returns {normalized_name: "PG"|"SG"|"SF"|"PF"|"C"} from BBRef
     per-game stats. Much better coverage than the ESPN-salary-page scrape
     in fetch_bref_positions, and gives 5-bucket positions instead of 3.
@@ -2016,19 +2016,32 @@ def fetch_player_positions_detailed(season: str, cache_v: int = 1) -> dict:
         url = f"https://www.basketball-reference.com/leagues/NBA_{year}_per_game.html"
         r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
         soup = BeautifulSoup(r.text, "html.parser")
-        # BBRef sometimes wraps stats tables in HTML comments — unwrap them.
-        try:
-            from bs4 import Comment
-            for c in soup.find_all(string=lambda t: isinstance(t, Comment)):
-                if "per_game_stats" in c or "<table" in c:
-                    inner = BeautifulSoup(str(c), "html.parser")
-                    c.replace_with(inner)
-        except Exception:
-            pass
 
+        # Two layouts: BBRef sometimes serves the per-game table inline,
+        # other times it wraps the table HTML inside a comment (anti-scraper
+        # measure for current-season pages). Try inline first, then comments,
+        # then any table with Player + Pos headers.
         table = soup.find("table", id="per_game_stats")
+
         if table is None:
-            # Fallback: any table that has both Player and Pos column headers.
+            try:
+                from bs4 import Comment
+                for c in soup.find_all(string=lambda t: isinstance(t, Comment)):
+                    txt = str(c)
+                    if 'id="per_game_stats"' in txt or 'id="per_game"' in txt:
+                        inner_soup = BeautifulSoup(txt, "html.parser")
+                        candidate = (
+                            inner_soup.find("table", id="per_game_stats")
+                            or inner_soup.find("table", id="per_game")
+                        )
+                        if candidate is not None:
+                            table = candidate
+                            break
+            except Exception:
+                pass
+
+        if table is None:
+            # Last-ditch fallback: any table with Player + Pos column headers.
             for t in soup.find_all("table"):
                 headers = [th.get_text(strip=True) for th in t.find_all("th")]
                 if "Player" in headers and "Pos" in headers:

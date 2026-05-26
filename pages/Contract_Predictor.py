@@ -164,7 +164,7 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     # then to Unknown.
     detailed_pos = "Unknown"
     try:
-        detailed_lookup = fetch_player_positions_detailed(season, cache_v=1)
+        detailed_lookup = fetch_player_positions_detailed(season, cache_v=2)
         detailed_pos = detailed_lookup.get(name_norm, "Unknown")
     except Exception:
         detailed_lookup = {}
@@ -255,20 +255,37 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     base = features["career_base_proj"]
     age_mult = AGE_MULTIPLIERS.get(_age_bucket(features["age"]), 1.0)
     pos_mult = POSITION_MULTIPLIERS.get(features["position"], 1.0)
-    predicted = base * age_mult * pos_mult
+
+    # Supermax-tier suppression: the position multipliers were fit on
+    # mid-market signings, where Centers especially get systematically
+    # less than their box-score rank suggests. But supermax/max-contract
+    # players sign at fixed CBA percentages of the cap regardless of
+    # position — Jokić doesn't get a "Center discount" on his deal.
+    # When the base projection is already ≥28% of cap (supermax / near-max
+    # tier), unwind the position multiplier so we don't fake-discount
+    # the league's best players.
+    cap_M = SALARY_CAP_M.get(target_season, 154.6)
+    supermax_threshold = cap_M * 1_000_000 * 0.28
+    pos_mult_applied = pos_mult
+    if base >= supermax_threshold:
+        pos_mult_applied = 1.0  # no positional discount at the top tier
+
+    predicted = base * age_mult * pos_mult_applied
 
     cap_M = SALARY_CAP_M.get(target_season, 154.6)
     band = cap_M * 1_000_000 * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
-        "base":        base,
-        "age_mult":    age_mult,
-        "pos_mult":    pos_mult,
-        "predicted":   predicted,
-        "low":         max(0, predicted - band),
-        "high":        predicted + band,
-        "band":        band,
-        "cap":         cap_M * 1_000_000,
+        "base":              base,
+        "age_mult":          age_mult,
+        "pos_mult":          pos_mult_applied,    # the multiplier actually used
+        "pos_mult_raw":      pos_mult,            # the unsuppressed value, for transparency
+        "pos_mult_suppressed": pos_mult_applied != pos_mult,
+        "predicted":         predicted,
+        "low":               max(0, predicted - band),
+        "high":              predicted + band,
+        "band":              band,
+        "cap":               cap_M * 1_000_000,
     }
 
 
@@ -308,7 +325,7 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
             raw_prev = fetch_league_stats(prev, "Regular Season")
             # Use the better BBRef detailed positions, fall back to the older
             # ESPN coarse map when a player isn't in BBRef's table.
-            detailed_lookup = fetch_player_positions_detailed(prev, cache_v=1)
+            detailed_lookup = fetch_player_positions_detailed(prev, cache_v=2)
             coarse_lookup = fetch_bref_positions(season_to_espn_year(prev), cache_v=3)
         except Exception:
             continue
@@ -725,7 +742,7 @@ breakdown_html = f"""
 
   <div style="color:#666; font-size:0.78rem;">Career-weighted Barrett {features['career_barrett']:.1f} → effective rank #{features['effective_rank']}</div>
   <div style="color:#666; font-size:0.78rem;">Age {int(features['age']) if features['age'] else '?'} · "{_age_bucket(features['age'])}"</div>
-  <div style="color:#666; font-size:0.78rem;">{features['position_detailed']} ({features['position']})</div>
+  <div style="color:#666; font-size:0.78rem;">{features['position_detailed']} ({features['position']}){' · base ≥28% cap, multiplier suppressed (was ×' + f"{prediction['pos_mult_raw']:.2f}" + ')' if prediction.get('pos_mult_suppressed') else ''}</div>
   <div style="color:#666; font-size:0.78rem;">±${prediction['band']/1_000_000:.1f}M band</div>
 </div>
 <div style="font-size:0.74rem; color:#888; margin: -0.5rem 0 1rem 0.2rem;">
