@@ -21,7 +21,8 @@ import streamlit.components.v1 as components
 from utils import (
     COMMON_CSS, SEASONS, normalize, season_to_espn_year,
     get_all_player_names, fetch_player_full_career,
-    build_ranked_projected, fetch_league_stats, fetch_bref_positions,
+    build_ranked_projected, fetch_league_stats,
+    fetch_bref_positions, fetch_player_positions_detailed, position_to_bucket,
     render_nav, render_barrett_score_explainer, _bootstrap_warm,
 )
 
@@ -158,11 +159,28 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         age_lookup = dict(zip(raw["PLAYER_ID"], raw["AGE"]))
         age = age_lookup.get(int(row["PLAYER_ID"]))
 
+    # Try the detailed BBRef per-game scrape first (PG/SG/SF/PF/C, better
+    # coverage). Fall back to the older ESPN-salary scrape (G/F/C only),
+    # then to Unknown.
+    detailed_pos = "Unknown"
     try:
-        pos_lookup = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
+        detailed_lookup = fetch_player_positions_detailed(season, cache_v=1)
+        detailed_pos = detailed_lookup.get(name_norm, "Unknown")
     except Exception:
-        pos_lookup = {}
-    pos = pos_lookup.get(name_norm, "Unknown")
+        detailed_lookup = {}
+    if detailed_pos == "Unknown":
+        try:
+            pos_lookup = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
+        except Exception:
+            pos_lookup = {}
+        coarse_fallback = pos_lookup.get(name_norm, "Unknown")
+        # Old function returns "Guard"/"Forward"/"Center" already.
+        pos_bucket = coarse_fallback
+        detailed_display = coarse_fallback
+    else:
+        pos_bucket = position_to_bucket(detailed_pos)
+        detailed_display = detailed_pos
+    pos = pos_bucket  # use the 3-bucket for the multiplier (preserves fit)
 
     # ── Career-weighted Barrett Score — the GM's view ────────────────────────
     # Real front offices project contracts off a body of work, not a half
@@ -214,7 +232,8 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         "name":               row["Player"],
         "team":               row.get("Team", ""),
         "age":                age,
-        "position":           pos,
+        "position":           pos,                # G/F/C — drives multiplier
+        "position_detailed":  detailed_display,   # PG/SG/SF/PF/C — for display
         "barrett_score":      float(row["barrett_score"]),       # current season
         "career_barrett":     career_barrett,                    # 3-year weighted
         "career_basis":       career_basis,
@@ -287,11 +306,26 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
             prev_df = build_ranked_projected(prev)
             curr_df = build_ranked_projected(curr)
             raw_prev = fetch_league_stats(prev, "Regular Season")
-            pos_lookup = fetch_bref_positions(season_to_espn_year(prev), cache_v=3)
+            # Use the better BBRef detailed positions, fall back to the older
+            # ESPN coarse map when a player isn't in BBRef's table.
+            detailed_lookup = fetch_player_positions_detailed(prev, cache_v=1)
+            coarse_lookup = fetch_bref_positions(season_to_espn_year(prev), cache_v=3)
         except Exception:
             continue
         if prev_df.empty or curr_df.empty or raw_prev.empty:
             continue
+
+        def _resolve_pos(n):
+            d = detailed_lookup.get(normalize(n))
+            if d:
+                return position_to_bucket(d)
+            return coarse_lookup.get(normalize(n), "Unknown")
+
+        def _resolve_pos_detailed(n):
+            d = detailed_lookup.get(normalize(n))
+            if d:
+                return d
+            return coarse_lookup.get(normalize(n), "Unknown")
 
         age_lookup = dict(zip(raw_prev["PLAYER_ID"], raw_prev.get("AGE", [])))
         curr_slim = curr_df[["PLAYER_ID", "salary"]].rename(
@@ -305,11 +339,12 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         if m.empty:
             continue
         m["age"] = m["PLAYER_ID"].map(age_lookup)
-        m["pos"] = m["Player"].map(lambda n: pos_lookup.get(normalize(n), "Unknown"))
+        m["pos"] = m["Player"].map(_resolve_pos)
+        m["pos_detailed"] = m["Player"].map(_resolve_pos_detailed)
         m["signed_in"] = curr
         m["prev_season"] = prev  # needed to compute career-weighted-at-signing
         rows.append(m[[
-            "Player", "age", "pos", "barrett_score",
+            "Player", "age", "pos", "pos_detailed", "barrett_score",
             "salary", "salary_curr", "signed_in", "prev_season",
         ]])
 
@@ -503,7 +538,7 @@ breakdown_html = f"""
 
   <div style="color:#666; font-size:0.78rem;">Career-weighted Barrett {features['career_barrett']:.1f} → effective rank #{features['effective_rank']}</div>
   <div style="color:#666; font-size:0.78rem;">Age {int(features['age']) if features['age'] else '?'} · "{_age_bucket(features['age'])}"</div>
-  <div style="color:#666; font-size:0.78rem;">{features['position']}</div>
+  <div style="color:#666; font-size:0.78rem;">{features['position_detailed']} ({features['position']})</div>
   <div style="color:#666; font-size:0.78rem;">±${prediction['band']/1_000_000:.1f}M band</div>
 </div>
 <div style="font-size:0.74rem; color:#888; margin: -0.5rem 0 1rem 0.2rem;">
@@ -518,7 +553,7 @@ snap_cols = st.columns(5)
 with snap_cols[0]:
     st.metric("Age", int(features["age"]) if features["age"] else "—")
 with snap_cols[1]:
-    st.metric("Position", features["position"])
+    st.metric("Position", features["position_detailed"])
 with snap_cols[2]:
     st.metric("Barrett Score", f"{features['barrett_score']:.1f}")
 with snap_cols[3]:
@@ -543,11 +578,14 @@ else:
     if comps.empty:
         st.info("No close comparables found.")
     else:
+        # Prefer detailed position (PG/SG/SF/PF/C) when available, fall back
+        # to the 3-bucket label for older / unknown players.
+        _pos_col = comps.get("pos_detailed", comps["pos"]).fillna(comps["pos"])
         comp_disp = pd.DataFrame({
             "Player":         comps["Player"].values,
             "Signed in":      comps["signed_in"].values,
             "Age then":       comps["age"].astype(int).values,
-            "Position":       comps["pos"].values,
+            "Position":       _pos_col.values,
             "Career Barrett": comps["career_weighted_barrett"].round(1).values,
             "Walk-yr Barrett": comps["barrett_score"].round(1).values,
             "Salary then":    [_fmt_money(v) for v in comps["salary"]],

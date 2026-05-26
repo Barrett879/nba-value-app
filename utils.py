@@ -1993,6 +1993,85 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
     return result
 
 
+def fetch_player_positions_detailed(season: str, cache_v: int = 1) -> dict:
+    """Returns {normalized_name: "PG"|"SG"|"SF"|"PF"|"C"} from BBRef
+    per-game stats. Much better coverage than the ESPN-salary-page scrape
+    in fetch_bref_positions, and gives 5-bucket positions instead of 3.
+
+    For hyphenated positions like "PG-SG" we take the primary (first) listing.
+    Disk-cached for 1 day per season.
+    """
+    year = season_to_espn_year(season)
+    path = _dc_path(f"positions_detailed_{year}_v{cache_v}.pkl")
+    if _dc_fresh(path, ttl=86400):
+        try:
+            cached = _pkl_load(path)
+            if cached:  # don't trust empty cache files
+                return cached
+        except Exception:
+            pass
+
+    result: dict = {}
+    try:
+        url = f"https://www.basketball-reference.com/leagues/NBA_{year}_per_game.html"
+        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+        soup = BeautifulSoup(r.text, "html.parser")
+        # BBRef sometimes wraps stats tables in HTML comments — unwrap them.
+        try:
+            from bs4 import Comment
+            for c in soup.find_all(string=lambda t: isinstance(t, Comment)):
+                if "per_game_stats" in c or "<table" in c:
+                    inner = BeautifulSoup(str(c), "html.parser")
+                    c.replace_with(inner)
+        except Exception:
+            pass
+
+        table = soup.find("table", id="per_game_stats")
+        if table is None:
+            # Fallback: any table that has both Player and Pos column headers.
+            for t in soup.find_all("table"):
+                headers = [th.get_text(strip=True) for th in t.find_all("th")]
+                if "Player" in headers and "Pos" in headers:
+                    table = t
+                    break
+
+        if table is not None:
+            df = pd.read_html(io.StringIO(str(table)))[0]
+            # Repeated header rows show up periodically in BBRef tables.
+            if "Player" in df.columns:
+                df = df[df["Player"].astype(str) != "Player"]
+            if "Pos" not in df.columns or "Player" not in df.columns:
+                raise RuntimeError("Missing Player/Pos columns")
+            df = df[df["Pos"].notna() & df["Player"].notna()]
+            for _, row in df.iterrows():
+                name = str(row["Player"]).strip().rstrip("*").strip()
+                pos_raw = str(row["Pos"]).strip().upper()
+                primary = pos_raw.split("-")[0].strip()
+                if primary in {"PG", "SG", "SF", "PF", "C"}:
+                    # Multi-team players appear once per stint plus a TOT row.
+                    # First occurrence wins; later identical entries are no-ops.
+                    result.setdefault(normalize(name), primary)
+    except Exception:
+        pass
+
+    if result:
+        _pkl_save(path, result)
+    return result
+
+
+def position_to_bucket(detailed_pos: str) -> str:
+    """PG/SG → Guard, SF/PF → Forward, C → Center. Used to roll up
+    5-bucket BBRef positions to the 3-bucket scheme the contract
+    multipliers were fit against."""
+    if detailed_pos in ("PG", "SG"):
+        return "Guard"
+    if detailed_pos in ("SF", "PF"):
+        return "Forward"
+    if detailed_pos == "C":
+        return "Center"
+    return "Unknown"
+
+
 @st.cache_data(ttl=86400, show_spinner=False)
 def fetch_rookie_scale_players(season: str) -> set:
     """Returns a set of normalized names for players on rookie scale contracts."""
