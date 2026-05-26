@@ -471,6 +471,7 @@ _NAV_PAGES = [
     # easy revival) and a backup of the verdict-aware version is in
     # Trades_backup.py at repo root.
     ("Current Free Agents", "/Free_Agent_Class"),
+    ("Track Record",      "/Track_Record"),
 ]
 
 _PLAYOFF_HELP = (
