@@ -307,9 +307,10 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         m["age"] = m["PLAYER_ID"].map(age_lookup)
         m["pos"] = m["Player"].map(lambda n: pos_lookup.get(normalize(n), "Unknown"))
         m["signed_in"] = curr
+        m["prev_season"] = prev  # needed to compute career-weighted-at-signing
         rows.append(m[[
             "Player", "age", "pos", "barrett_score",
-            "salary", "salary_curr", "signed_in",
+            "salary", "salary_curr", "signed_in", "prev_season",
         ]])
 
     if not rows:
@@ -319,21 +320,73 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     return out
 
 
+def _career_weighted_barrett_at(player_name: str, up_to_season: str,
+                                fallback_score: float) -> float:
+    """Weighted avg of a player's last 3 completed seasons BEFORE signing.
+    Mirrors the same 50/30/20 weighting we use for the live player.
+    Falls back to the walk-year score if no career data."""
+    try:
+        career = fetch_player_full_career(player_name)
+        if career.empty:
+            return fallback_score
+        # Sort by season chronologically — fetch_player_full_career already
+        # returns oldest→newest. Include seasons up to and including the
+        # season they played before signing.
+        up_to = career[career["Season"] <= up_to_season]
+        if up_to.empty:
+            return fallback_score
+        recent = up_to.tail(3)
+        weights_full = [0.20, 0.30, 0.50]
+        weights = weights_full[-len(recent):]
+        w_sum = sum(weights)
+        return float((recent["Barrett Score"].values * weights).sum() / w_sum)
+    except Exception:
+        return fallback_score
+
+
 def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
+    """Two-pass match:
+       1. Coarse: same position, top-30 closest by walk-year Barrett + age
+       2. Refine: compute career-weighted Barrett for those 30, re-sort
+          using career-weighted vs. career-weighted (apples to apples)
+    """
     if history.empty:
         return history
 
-    history = history.copy()
-    pos_match = (history["pos"] == features["position"]).astype(int)
-    pos_penalty = (1 - pos_match) * 20  # 20-Barrett-point penalty for wrong position
+    target_position = features["position"]
+    target_age = features["age"] if features["age"] else 27
+    target_barrett = features["career_barrett"]
 
-    age = features["age"] if features["age"] else 27
-    barrett = features["barrett_score"]
-    barrett_diff = (history["barrett_score"] - barrett).abs()
-    age_diff = (history["age"] - age).abs() * 1.5
+    # ── Coarse pass: prefer same position, take top-30 by quick distance ─────
+    same_pos = history[history["pos"] == target_position].copy()
+    if len(same_pos) < n:
+        # Not enough same-position comparables — open up to all positions
+        # with a soft penalty so same-position still wins ties.
+        same_pos = history.copy()
+    same_pos["coarse_dist"] = (
+        (same_pos["barrett_score"] - target_barrett).abs()
+        + (same_pos["age"] - target_age).abs() * 1.5
+        + (same_pos["pos"] != target_position).astype(float) * 10
+    )
+    top30 = same_pos.nsmallest(min(30, len(same_pos)), "coarse_dist").copy()
 
-    history["distance"] = barrett_diff + age_diff + pos_penalty
-    return history.nsmallest(n, "distance")
+    # ── Refine pass: career-weighted-at-signing, apples to apples ────────────
+    top30["career_weighted_barrett"] = top30.apply(
+        lambda r: _career_weighted_barrett_at(
+            r["Player"], r["prev_season"], float(r["barrett_score"])
+        ),
+        axis=1,
+    )
+
+    pos_match = (top30["pos"] == target_position).astype(int)
+    pos_penalty = (1 - pos_match) * 20
+
+    top30["distance"] = (
+        (top30["career_weighted_barrett"] - target_barrett).abs()
+        + (top30["age"] - target_age).abs() * 1.5
+        + pos_penalty
+    )
+    return top30.nsmallest(n, "distance")
 
 
 # ── Player picker ────────────────────────────────────────────────────────────
@@ -476,9 +529,10 @@ with snap_cols[4]:
 # ── Comparables ──────────────────────────────────────────────────────────────
 st.subheader("Comparable signings (last 3 seasons)")
 st.caption(
-    "Players with the closest (Barrett Score, age, position) profile who actually "
-    "signed new contracts in recent seasons. The most useful sanity check on the "
-    "predicted dollar amount."
+    "Players with the closest **career-weighted Barrett Score** + age + position "
+    "who actually signed new contracts in recent seasons. Career-weighted (not "
+    "walk-year) so injury years don't pull stars down into bench comps. The "
+    "most useful sanity check on the predicted dollar amount."
 )
 
 history = load_historical_signings(n_recent_pairs=3)
@@ -490,15 +544,16 @@ else:
         st.info("No close comparables found.")
     else:
         comp_disp = pd.DataFrame({
-            "Player":      comps["Player"].values,
-            "Signed in":   comps["signed_in"].values,
-            "Age then":    comps["age"].astype(int).values,
-            "Position":    comps["pos"].values,
-            "Barrett":     comps["barrett_score"].round(1).values,
-            "Salary then": [_fmt_money(v) for v in comps["salary"]],
-            "Signed for":  [_fmt_money(v) for v in comps["salary_curr"]],
-            "Δ":           [f"{((c - p)/p)*100:+.0f}%" if p > 0 else "—"
-                            for p, c in zip(comps["salary"], comps["salary_curr"])],
+            "Player":         comps["Player"].values,
+            "Signed in":      comps["signed_in"].values,
+            "Age then":       comps["age"].astype(int).values,
+            "Position":       comps["pos"].values,
+            "Career Barrett": comps["career_weighted_barrett"].round(1).values,
+            "Walk-yr Barrett": comps["barrett_score"].round(1).values,
+            "Salary then":    [_fmt_money(v) for v in comps["salary"]],
+            "Signed for":     [_fmt_money(v) for v in comps["salary_curr"]],
+            "Δ":              [f"{((c - p)/p)*100:+.0f}%" if p > 0 else "—"
+                              for p, c in zip(comps["salary"], comps["salary_curr"])],
         })
         st.dataframe(comp_disp, use_container_width=True, hide_index=True,
                      height=min(400, 60 + len(comp_disp) * 35))
