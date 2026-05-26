@@ -168,9 +168,17 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
             # Drop the in-progress current season — partial-season data
             # gets penalized by the availability multiplier mid-year.
             completed = career[career["Season"] != season].copy()
-            if not completed.empty:
-                # Take the last (most recent) up to 3 completed seasons.
-                recent = completed.tail(3)
+
+            # Also skip historical injury years (GP < 40) — real GMs
+            # discount partial seasons. For Zach LaVine, this drops his
+            # 25-game 2023-24 surgery season from the weighted average.
+            healthy = completed[completed["GP"] >= 40]
+            used_healthy_filter = len(healthy) >= 1
+            pool = healthy if used_healthy_filter else completed
+
+            if not pool.empty:
+                # Take the last (most recent) up to 3 healthy seasons.
+                recent = pool.tail(3)
                 weights_full = [0.20, 0.30, 0.50]
                 weights = weights_full[-len(recent):]
                 w_sum = sum(weights)
@@ -178,10 +186,19 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
                     (recent["Barrett Score"].values * weights).sum() / w_sum
                 )
                 seasons_used = list(recent["Season"].values)
+                # Did we actually skip any years?
+                skipped = (
+                    not completed.empty
+                    and len(completed) > len(pool)
+                    and used_healthy_filter
+                )
+                skip_note = (
+                    " · injury years (<40 GP) skipped" if skipped else ""
+                )
                 career_basis = (
-                    f"weighted avg of {len(recent)} prior season"
+                    f"weighted avg of {len(recent)} healthy season"
                     f"{'s' if len(recent) > 1 else ''} "
-                    f"({', '.join(seasons_used)})"
+                    f"({', '.join(seasons_used)}){skip_note}"
                 )
     except Exception:
         pass
@@ -372,20 +389,24 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
 
 def _career_weighted_barrett_at(player_name: str, up_to_season: str,
                                 fallback_score: float) -> float:
-    """Weighted avg of a player's last 3 completed seasons BEFORE signing.
-    Mirrors the same 50/30/20 weighting we use for the live player.
-    Falls back to the walk-year score if no career data."""
+    """Weighted avg of a player's last 3 healthy seasons (GP ≥ 40) BEFORE
+    signing. Same 50/30/20 weighting we use for the live player.
+    Skipping injury years keeps the comparables apples-to-apples — we don't
+    want to match Zach LaVine's healthy-Score against a comparable's
+    injury-deflated walk year."""
     try:
         career = fetch_player_full_career(player_name)
         if career.empty:
             return fallback_score
-        # Sort by season chronologically — fetch_player_full_career already
-        # returns oldest→newest. Include seasons up to and including the
-        # season they played before signing.
+        # Include only seasons up to and including the walk year.
         up_to = career[career["Season"] <= up_to_season]
         if up_to.empty:
             return fallback_score
-        recent = up_to.tail(3)
+        # Prefer healthy seasons (GP ≥ 40), fall back to all seasons if
+        # the player has no healthy data on file.
+        healthy = up_to[up_to["GP"] >= 40]
+        pool = healthy if not healthy.empty else up_to
+        recent = pool.tail(3)
         weights_full = [0.20, 0.30, 0.50]
         weights = weights_full[-len(recent):]
         w_sum = sum(weights)
