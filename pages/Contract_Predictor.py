@@ -569,22 +569,41 @@ current_names = (
 )
 active_names = [n for n in all_names if n in current_names]
 
-_default_idx = None
-if "player" in st.query_params:
+_PICKER_KEY = "contract_predictor_player"
+
+# Seed widget state from URL on first load only — before the widget
+# renders. After that, the widget's own state is the source of truth
+# and the on_change callback mirrors it back into the URL.
+if _PICKER_KEY not in st.session_state and "player" in st.query_params:
     qp = st.query_params["player"]
     qp_resolved = next(
         (n for n in active_names if normalize(n) == normalize(qp)),
         None,
     )
     if qp_resolved:
-        _default_idx = active_names.index(qp_resolved)
+        st.session_state[_PICKER_KEY] = qp_resolved
+
+
+def _on_player_change():
+    """Sync the widget's current value back into ?player= when it changes.
+    Fires only on actual selection changes (not on every rerun), which
+    avoids the re-render loop the old `st.query_params[...] = selected`
+    one-liner triggered."""
+    sel = st.session_state.get(_PICKER_KEY)
+    if sel:
+        st.query_params["player"] = sel
+    elif "player" in st.query_params:
+        del st.query_params["player"]
+
 
 selected = st.selectbox(
     "Player",
-    options=[""] + active_names,
-    index=0 if _default_idx is None else _default_idx + 1,
+    options=active_names,
+    index=None,  # placeholder shows when nothing's selected
     placeholder="Type a name…",
     label_visibility="collapsed",
+    key=_PICKER_KEY,
+    on_change=_on_player_change,
 )
 
 if not selected:
@@ -594,8 +613,6 @@ if not selected:
         "rising player for the rookie-scale caveat."
     )
     st.stop()
-
-st.query_params["player"] = selected
 
 # ── Compute prediction ───────────────────────────────────────────────────────
 features = get_player_features(selected, CURRENT_SEASON)
