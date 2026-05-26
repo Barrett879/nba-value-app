@@ -31,11 +31,76 @@ warnings.filterwarnings("ignore")
 
 import numpy as np
 import pandas as pd
-from scipy.optimize import differential_evolution, minimize
 
 from utils import (
     SEASONS, fetch_league_stats, build_raw, apply_rankings,
 )
+
+
+# ── Hand-rolled optimizer (avoids scipy dependency on Render) ────────────────
+def random_search_plus_coordinate_descent(
+    objective, x0, bounds, n_restarts: int = 12,
+    n_random: int = 200, cd_rounds: int = 4, cd_steps: int = 25,
+    rng_seed: int = 42, verbose: bool = False,
+):
+    """Stochastic + coordinate-descent optimizer.
+
+    1. Random-search the bounded box for n_random candidates, keep top K
+    2. From each (plus the seed x0), run cd_rounds of coordinate descent
+       — for each coord, sweep cd_steps values in its bound and keep the
+       best
+    3. Return the global best across all restarts
+    """
+    rng = np.random.default_rng(rng_seed)
+    bounds = np.array(bounds, dtype=float)
+    lo, hi = bounds[:, 0], bounds[:, 1]
+    dim = len(x0)
+
+    # Phase 1: random search
+    samples = rng.uniform(lo, hi, size=(n_random, dim))
+    samples = np.vstack([samples, x0[None, :]])  # always include the seed
+    losses = np.array([objective(x) for x in samples])
+    order = np.argsort(losses)
+    starts = samples[order[:n_restarts]].copy()
+    best_x = samples[order[0]].copy()
+    best_loss = float(losses[order[0]])
+    if verbose:
+        print(f"    Random search: best loss = {best_loss:.4f}")
+
+    # Phase 2: coordinate descent from each start
+    for s_idx, start in enumerate(starts):
+        x = start.copy()
+        cur = float(objective(x))
+        for _round in range(cd_rounds):
+            improved = False
+            # Try coordinates in shuffled order each round.
+            for d in rng.permutation(dim):
+                grid = np.linspace(lo[d], hi[d], cd_steps)
+                best_v, best_c = x[d], cur
+                for v in grid:
+                    x_try = x.copy()
+                    x_try[d] = v
+                    c = float(objective(x_try))
+                    if c < best_c - 1e-6:
+                        best_c, best_v = c, v
+                if best_v != x[d]:
+                    x[d] = best_v
+                    cur = best_c
+                    improved = True
+            if not improved:
+                break
+        if cur < best_loss:
+            best_loss = cur
+            best_x = x.copy()
+            if verbose:
+                print(f"    Restart {s_idx+1}/{len(starts)}: new best {cur:.4f}")
+
+    class _Result:
+        pass
+    r = _Result()
+    r.x = best_x
+    r.fun = best_loss
+    return r
 
 
 NEW_DEAL_PCT_THRESHOLD = 0.25
@@ -330,37 +395,21 @@ def main():
     print("\n" + "=" * 76)
     print(f"OPTIMIZING — metric: {args.metric}")
     print("=" * 76)
-    print("Running differential evolution (global search)...")
+    print("Running random search + coordinate descent...")
     t0 = time.time()
-    de_args = dict(
-        bounds=bounds,
-        maxiter=60 if args.quick else 200,
-        popsize=15 if args.quick else 25,
-        seed=42,
-        tol=1e-4,
-        workers=-1,
-        polish=True,
-        updating="deferred",
-        x0=current_vec,
-    )
-    try:
-        result = differential_evolution(obj, **de_args)
-    except TypeError:
-        # Older scipy lacks x0 kwarg
-        de_args.pop("x0")
-        result = differential_evolution(obj, **de_args)
-    print(f"  Done in {time.time() - t0:.1f}s. Loss: {result.fun:.4f}")
-
-    # Local refinement with Nelder-Mead.
-    print("Refining with Nelder-Mead...")
-    t0 = time.time()
-    nm = minimize(obj, result.x, method="Nelder-Mead",
-                  options={"xatol": 1e-4, "fatol": 1e-6, "maxiter": 2000})
-    if nm.fun < result.fun:
-        result = nm
-        print(f"  Improved to {nm.fun:.4f} in {time.time() - t0:.1f}s")
+    if args.quick:
+        result = random_search_plus_coordinate_descent(
+            obj, current_vec, bounds,
+            n_restarts=6, n_random=80, cd_rounds=3, cd_steps=15,
+            verbose=True,
+        )
     else:
-        print(f"  No improvement.")
+        result = random_search_plus_coordinate_descent(
+            obj, current_vec, bounds,
+            n_restarts=15, n_random=300, cd_rounds=5, cd_steps=25,
+            verbose=True,
+        )
+    print(f"  Done in {time.time() - t0:.1f}s. Final loss: {result.fun:.4f}")
 
     optimal_vec = result.x
 
