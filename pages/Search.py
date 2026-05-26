@@ -8,10 +8,12 @@ import streamlit.components.v1 as components
 import plotly.graph_objects as go
 from utils import (
     COMMON_CSS,
+    normalize,
     get_all_player_names, fetch_player_full_career,
     render_nav, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
+from urllib.parse import quote
 
 st.set_page_config(page_title="Search Player", layout="wide")
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
@@ -56,11 +58,37 @@ if not all_names:
     st.error("Player database not yet loaded. Try again in a moment.")
     st.stop()
 
-# Pre-select if we arrived here from the home-page search bar
-_default = []
-_handed_off = st.session_state.pop("search_player", None)
-if _handed_off and _handed_off in all_names:
-    _default = [_handed_off]
+# Pre-select if we arrived here from one of three sources, in priority order:
+#   1. ?player=Name (or ?player=A&player=B...) query-string deep link — used
+#      for sharing direct URLs (e.g. /Search?player=Jok%C4%87)
+#   2. session_state hand-off from the home-page search bar
+#   3. nothing — empty state
+_default: list[str] = []
+
+_qs_players = st.query_params.get_all("player") if hasattr(st.query_params, "get_all") else (
+    [st.query_params["player"]] if "player" in st.query_params else []
+)
+
+# Case-insensitive resolve so /Search?player=jokic still finds "Nikola Jokić".
+def _resolve_qs_name(qs_name: str) -> str | None:
+    if qs_name in all_names:
+        return qs_name
+    target = normalize(qs_name)
+    for full in all_names:
+        if normalize(full) == target:
+            return full
+    return None
+
+for _qsp in _qs_players[:10]:
+    _resolved = _resolve_qs_name(_qsp)
+    if _resolved and _resolved not in _default:
+        _default.append(_resolved)
+
+# Fall back to home-page hand-off if no query string match.
+if not _default:
+    _handed_off = st.session_state.pop("search_player", None)
+    if _handed_off and _handed_off in all_names:
+        _default = [_handed_off]
 
 selected = st.multiselect(
     "Type a player name…  (add up to 10 to compare)",
@@ -71,6 +99,18 @@ selected = st.multiselect(
     key="player_search_multiselect",
 )
 
+# Mirror the current selection back into the URL so the address bar
+# always reflects what's on screen. Triggers a no-op rerun if a user
+# pasted a URL, then immediately changed the selection — that's fine.
+_current_qs = st.query_params.get_all("player") if hasattr(st.query_params, "get_all") else (
+    [st.query_params["player"]] if "player" in st.query_params else []
+)
+if list(selected) != list(_current_qs):
+    if selected:
+        st.query_params["player"] = selected
+    elif "player" in st.query_params:
+        del st.query_params["player"]
+
 if not selected:
     st.info(
         f"**{len(all_names):,} players** indexed across "
@@ -79,6 +119,43 @@ if not selected:
         "Add a second player to overlay career arcs side by side."
     )
     st.stop()
+
+
+# ── Shareable link ───────────────────────────────────────────────────────────
+# Once at least one player is selected, expose the current view as a clean
+# URL that other people can paste into their browser. Uses a tiny HTML
+# snippet so the "Copy" button can talk to navigator.clipboard directly
+# (Streamlit's st.code copy button works fine too but doesn't show toast).
+_share_path = "/Search?" + "&".join(f"player={quote(p)}" for p in selected)
+_share_html = f"""
+<div style="display:flex; align-items:center; gap:0.6rem;
+            margin: 0.25rem 0 1rem 0; flex-wrap:wrap;">
+  <span style="font-size:0.78rem; color:rgba(250,250,250,0.55);
+               letter-spacing:0.02em; text-transform:uppercase;
+               font-weight:600;">Share this view</span>
+  <code id="share-url" style="background:rgba(255,255,255,0.04);
+                              border:1px solid rgba(255,255,255,0.08);
+                              border-radius:6px; padding:0.25rem 0.6rem;
+                              font-size:0.82rem; color:#cdcdd5;
+                              max-width:520px; overflow:hidden;
+                              text-overflow:ellipsis; white-space:nowrap;">
+    {_share_path}
+  </code>
+  <button onclick="
+    const u = window.location.origin + '{_share_path}';
+    navigator.clipboard.writeText(u);
+    this.innerText = '✓ Copied';
+    setTimeout(() => this.innerText = 'Copy link', 1500);
+  " style="background:#e63946; color:white; border:none; border-radius:6px;
+           padding:0.3rem 0.85rem; font-size:0.8rem; font-weight:600;
+           cursor:pointer; transition:opacity 0.15s;"
+    onmouseover="this.style.opacity='0.85'"
+    onmouseout="this.style.opacity='1'">
+    Copy link
+  </button>
+</div>
+"""
+st.markdown(_share_html, unsafe_allow_html=True)
 
 
 # ── Era-adjustment toggle ────────────────────────────────────────────────────
