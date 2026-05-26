@@ -91,36 +91,8 @@ st.caption(
     "80% within 5% of cap on 435 real new contracts since 2022."
 )
 
-render_barrett_score_explainer()
-
-with st.expander("How is the next contract predicted?"):
-    st.markdown(
-        """
-        Four layers stack on top of the Barrett Score:
-
-        1. **Career-weighted Barrett Score** — instead of using just the
-           in-progress current season (which gets deflated by partial
-           games + the availability multiplier), the projection uses a
-           weighted average of the player's last 3 *completed* seasons
-           (50% most recent, 30% two seasons ago, 20% three seasons ago).
-           This matches how front offices actually evaluate a body of work
-           — they don't penalize you for being injured or for the league
-           not being done yet.
-        2. **Base projection** — what the player at that career-weighted
-           rank would earn based on the current season's salary distribution.
-        3. **Age multiplier** — front offices heavily discount age. A 33-year-old
-           with the same Barrett Score as a 27-year-old signs for about 28% less.
-           Fit on 2014-22 real new contracts.
-        4. **Position multiplier** — Centers are systematically overprojected by
-           the box-score-heavy Barrett Score (rebounds aren't paid like points).
-
-        **Confidence band:** ±$5.5M reflects the model's typical out-of-sample
-        error on this kind of profile. Roughly two-thirds of predictions land
-        inside this band; the rest are usually supermax extensions, rookie scale
-        contracts, or veteran minimums — situations the model can't fully predict
-        from production stats alone.
-        """
-    )
+# Methodology expanders live at the bottom of the page (after the prediction
+# and comparables) so the page leads with the answer, not the methodology.
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -624,53 +596,60 @@ if _market_median is not None:
         f'</div>'
         if divergence >= 0.40 else ''
     )
+    # Compact player metadata line — replaces the standalone Player Snapshot
+    # section below by inlining age / position / current salary / current Barrett.
+    _meta_bits = [features["name"]]
+    if features.get("team"): _meta_bits.append(features["team"])
+    _meta_bits.append(CURRENT_SEASON)
+    if features.get("age"): _meta_bits.append(f"Age {int(features['age'])}")
+    _meta_bits.append(str(features.get("position_detailed", features["position"])))
+    _meta_bits.append(f"Barrett {features['barrett_score']:.1f} (#{features['score_rank']})")
+    if features.get("salary", 0) > 0:
+        _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
+    _player_meta_line = " · ".join(_meta_bits)
+
     _header_html = f"""
     <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
                 border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-                padding:1.8rem 2rem; margin: 0.5rem 0 1.5rem 0;">
-      <div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:1rem;">
-        <div style="font-size:0.78rem; color:#888; text-transform:uppercase;
-                    letter-spacing:0.1em; font-weight:600;">
-          Predicted next contract
-        </div>
-        <div style="margin-left:auto; font-size:0.78rem; color:#888;">
-          {features['name']} · {features['team']} · {CURRENT_SEASON}
-        </div>
+                padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+      <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
+                  letter-spacing:0.1em; font-weight:600;">
+        Predicted next contract
+      </div>
+      <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
+        {_player_meta_line}
       </div>
 
-      <div style="display:flex; gap:2.2rem; margin-top:0.8rem;
-                  flex-wrap:wrap; align-items:flex-start;">
+      <div style="display:flex; gap:1.6rem; margin-top:0.85rem;
+                  flex-wrap:wrap; align-items:flex-end;">
         <div>
-          <div style="font-size:0.7rem; color:#888;
+          <div style="font-size:0.65rem; color:#888;
                       text-transform:uppercase; letter-spacing:0.08em;">
-            Model prediction
+            Model
           </div>
-          <div style="font-size:2.4rem; font-weight:800; color:#fff;
-                      line-height:1.05; margin-top:0.15rem;">
+          <div style="font-size:2.2rem; font-weight:800; color:#fff;
+                      line-height:1;">
             ${predicted_M:.1f}M
           </div>
-          <div style="font-size:0.78rem; color:#888;">±${prediction['band']/1_000_000:.1f}M band</div>
         </div>
-        <div style="font-size:2rem; color:#444; padding:0.6rem 0;">|</div>
+        <div style="font-size:1.4rem; color:#444; padding-bottom:0.4rem;">|</div>
         <div>
-          <div style="font-size:0.7rem; color:#888;
+          <div style="font-size:0.65rem; color:#888;
                       text-transform:uppercase; letter-spacing:0.08em;">
-            Market view (comparables median)
+            Market (comps median)
           </div>
-          <div style="font-size:2.4rem; font-weight:800; color:#16d4c1;
-                      line-height:1.05; margin-top:0.15rem;">
+          <div style="font-size:2.2rem; font-weight:800; color:#16d4c1;
+                      line-height:1;">
             ${market_M:.1f}M
           </div>
-          <div style="font-size:0.78rem; color:#888;">based on actual recent signings</div>
         </div>
-        <div style="margin-left:auto; align-self:center;">
-          <div style="font-size:0.7rem; color:#888;
-                      text-transform:uppercase; letter-spacing:0.08em;
-                      text-align:right;">
+        <div style="margin-left:auto; text-align:right;">
+          <div style="font-size:0.65rem; color:#888;
+                      text-transform:uppercase; letter-spacing:0.08em;">
             Honest range
           </div>
-          <div style="font-size:1.5rem; color:#fff; font-weight:700;
-                      text-align:right; margin-top:0.15rem;">
+          <div style="font-size:1.3rem; color:#fff; font-weight:700;
+                      line-height:1.1;">
             ${honest_low_M:.1f}M – ${honest_high_M:.1f}M
           </div>
         </div>
@@ -680,98 +659,97 @@ if _market_median is not None:
     """
 else:
     # No comparables available — fall back to the model-only display.
+    _meta_bits = [features["name"]]
+    if features.get("team"): _meta_bits.append(features["team"])
+    _meta_bits.append(CURRENT_SEASON)
+    if features.get("age"): _meta_bits.append(f"Age {int(features['age'])}")
+    _meta_bits.append(str(features.get("position_detailed", features["position"])))
+    _meta_bits.append(f"Barrett {features['barrett_score']:.1f} (#{features['score_rank']})")
+    if features.get("salary", 0) > 0:
+        _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
+    _player_meta_line = " · ".join(_meta_bits)
+
     _header_html = f"""
     <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
                 border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-                padding:1.8rem 2rem; margin: 0.5rem 0 1.5rem 0;">
-      <div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:1rem;">
-        <div style="font-size:0.78rem; color:#888; text-transform:uppercase;
-                    letter-spacing:0.1em; font-weight:600;">
-          Predicted next contract
-        </div>
-        <div style="margin-left:auto; font-size:0.78rem; color:#888;">
-          {features['name']} · {features['team']} · {CURRENT_SEASON}
-        </div>
+                padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+      <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
+                  letter-spacing:0.1em; font-weight:600;">
+        Predicted next contract
       </div>
-      <div style="display:flex; align-items:baseline; gap:1.2rem;
-                  margin-top:0.6rem; flex-wrap:wrap;">
-        <div style="font-size:3.2rem; font-weight:800; color:#fff; line-height:1;">
+      <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
+        {_player_meta_line}
+      </div>
+      <div style="display:flex; align-items:baseline; gap:1rem;
+                  margin-top:0.7rem; flex-wrap:wrap;">
+        <div style="font-size:2.8rem; font-weight:800; color:#fff; line-height:1;">
           ${predicted_M:.1f}M
         </div>
-        <div style="color:#aaa; font-size:1rem;">
-          per year · range
-          <b style="color:#cdcdd5;">${low_M:.1f}M</b> –
+        <div style="color:#aaa; font-size:0.9rem;">
+          ±${prediction['band']/1_000_000:.1f}M band ·
+          range <b style="color:#cdcdd5;">${low_M:.1f}M</b> –
           <b style="color:#cdcdd5;">${high_M:.1f}M</b>
         </div>
       </div>
-      <div style="margin-top:0.5rem; font-size:0.78rem; color:#888;">
-        No comparable signings on file — model prediction only.
+      <div style="margin-top:0.35rem; font-size:0.75rem; color:#888;">
+        Model prediction only — no comparable signings on file.
       </div>
     </div>
     """
 st.markdown(_header_html, unsafe_allow_html=True)
 
-# ── Structural caveats ────────────────────────────────────────────────────────
+# ── Structural caveats — compact chip-style instead of full-width banners ────
 if caveats:
-    for note in caveats:
-        st.info(f"⚠ {note}")
+    _caveat_chips_html = "".join(
+        f'<div style="display:inline-block; background:rgba(243,156,18,0.10); '
+        f'border:1px solid rgba(243,156,18,0.30); border-radius:6px; '
+        f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
+        f'font-size:0.8rem; color:#f1c40f;">⚠ {note}</div>'
+        for note in caveats
+    )
+    st.markdown(
+        f'<div style="margin: -0.4rem 0 1rem 0;">{_caveat_chips_html}</div>',
+        unsafe_allow_html=True,
+    )
 
-# ── Breakdown ────────────────────────────────────────────────────────────────
-st.subheader("Why this number?")
+# ── Breakdown — single horizontal line ───────────────────────────────────────
+# Was a 4-column grid taking ~3 vertical inches; now a one-line equation with
+# tiny detail annotations underneath. Same info, way less screen real estate.
 base_M = prediction["base"] / 1_000_000
-breakdown_html = f"""
-<div style="display:grid; grid-template-columns: auto auto auto auto; gap:0.6rem;
-            align-items:center; margin: 0.5rem 0 1rem 0;
-            background:rgba(255,255,255,0.03);
+_pos_factor_note = (
+    f" (suppressed from ×{prediction['pos_mult_raw']:.2f} — base ≥28% of cap)"
+    if prediction.get("pos_mult_suppressed") else ""
+)
+_breakdown_one_line = f"""
+<div style="background:rgba(255,255,255,0.03);
             border:1px solid rgba(255,255,255,0.08);
-            border-radius:10px; padding:1rem 1.4rem;">
-
-  <div style="font-size:0.74rem; color:#888; letter-spacing:0.05em;
-              text-transform:uppercase;">Base (Barrett rank)</div>
-  <div style="font-size:0.74rem; color:#888; letter-spacing:0.05em;
-              text-transform:uppercase;">× Age factor</div>
-  <div style="font-size:0.74rem; color:#888; letter-spacing:0.05em;
-              text-transform:uppercase;">× Position factor</div>
-  <div style="font-size:0.74rem; color:#888; letter-spacing:0.05em;
-              text-transform:uppercase;">= Predicted</div>
-
-  <div style="font-size:1.4rem; color:#fff; font-weight:600;">${base_M:.1f}M</div>
-  <div style="font-size:1.4rem; color:#cdcdd5;">×{prediction['age_mult']:.2f}</div>
-  <div style="font-size:1.4rem; color:#cdcdd5;">×{prediction['pos_mult']:.2f}</div>
-  <div style="font-size:1.4rem; color:#16d4c1; font-weight:700;">${predicted_M:.1f}M</div>
-
-  <div style="color:#666; font-size:0.78rem;">Career-weighted Barrett {features['career_barrett']:.1f} → effective rank #{features['effective_rank']}</div>
-  <div style="color:#666; font-size:0.78rem;">Age {int(features['age']) if features['age'] else '?'} · "{_age_bucket(features['age'])}"</div>
-  <div style="color:#666; font-size:0.78rem;">{features['position_detailed']} ({features['position']}){' · base ≥28% cap, multiplier suppressed (was ×' + f"{prediction['pos_mult_raw']:.2f}" + ')' if prediction.get('pos_mult_suppressed') else ''}</div>
-  <div style="color:#666; font-size:0.78rem;">±${prediction['band']/1_000_000:.1f}M band</div>
-</div>
-<div style="font-size:0.74rem; color:#888; margin: -0.5rem 0 1rem 0.2rem;">
-  Base uses <b style="color:#cdcdd5;">{features['career_basis']}</b> instead of just the in-progress current season — matches how front offices actually value bodies of work.
+            border-radius:10px; padding:0.85rem 1.1rem; margin: 0 0 0.7rem 0;
+            font-size:0.95rem; color:#cdcdd5; line-height:1.55;">
+  <span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;
+               text-transform:uppercase; margin-right:0.5rem;">Math</span>
+  <b style="color:#fff;">${base_M:.1f}M</b>
+  <span style="color:#777;">(career Barrett {features['career_barrett']:.1f} → rank #{features['effective_rank']})</span>
+  &nbsp;<span style="color:#666;">×</span>&nbsp;
+  <b>×{prediction['age_mult']:.2f}</b>
+  <span style="color:#777;">(age {int(features['age']) if features['age'] else '?'})</span>
+  &nbsp;<span style="color:#666;">×</span>&nbsp;
+  <b>×{prediction['pos_mult']:.2f}</b>
+  <span style="color:#777;">({features.get('position_detailed', features['position'])}{_pos_factor_note})</span>
+  &nbsp;<span style="color:#666;">=</span>&nbsp;
+  <b style="color:#16d4c1;">${predicted_M:.1f}M</b>
+  <span style="color:#666;">±${prediction['band']/1_000_000:.1f}M</span>
+  <div style="font-size:0.72rem; color:#777; margin-top:0.35rem;">
+    Base uses {features['career_basis']} (not the in-progress current season).
+  </div>
 </div>
 """
-st.markdown(breakdown_html, unsafe_allow_html=True)
-
-# ── Player snapshot ──────────────────────────────────────────────────────────
-st.subheader("Player snapshot")
-snap_cols = st.columns(5)
-with snap_cols[0]:
-    st.metric("Age", int(features["age"]) if features["age"] else "—")
-with snap_cols[1]:
-    st.metric("Position", features["position_detailed"])
-with snap_cols[2]:
-    st.metric("Barrett Score", f"{features['barrett_score']:.1f}")
-with snap_cols[3]:
-    st.metric("Score Rank", f"#{features['score_rank']}")
-with snap_cols[4]:
-    st.metric("Current Salary", _fmt_money(features["salary"]))
+st.markdown(_breakdown_one_line, unsafe_allow_html=True)
 
 # ── Comparables ──────────────────────────────────────────────────────────────
-st.subheader("Comparable signings (last 3 seasons)")
+st.subheader("Comparable signings")
 st.caption(
-    "Players with the closest **career-weighted Barrett Score** + age + position "
-    "who actually signed new contracts in recent seasons. Career-weighted (not "
-    "walk-year) so injury years don't pull stars down into bench comps. The "
-    "most useful sanity check on the predicted dollar amount."
+    "Closest career-weighted Barrett + age + position matches. Real signings — "
+    "the model's market sanity check."
 )
 
 # Reuse the comparables we already loaded at the top for the hero card.
@@ -855,22 +833,43 @@ else:
                      height=min(400, 60 + len(comp_disp) * 35))
 
         st.caption(
-            "**Context tags** indicate the signing type so you can weight each "
-            "comparable accordingly: **Supermax** ≥28% of cap (a structurally "
-            "different category), **Free-agent raise** = typical new deal with "
-            "≥15% bump, **Rookie extension** = young player's first non-rookie "
-            "deal (CBA mechanics distort), **Paycut** = player took less to stay "
-            "(usually distorts the median downward)."
+            "Context tags: **Supermax** ≥28% cap · **Free-agent raise** ≥15% bump · "
+            "**Rookie extension** first non-rookie deal · **Paycut** took less to stay."
         )
 
-# ── Methodology footer ───────────────────────────────────────────────────────
+# ── Methodology footer (collapsed — info-after-action) ──────────────────────
 st.divider()
-st.caption(
-    "**Limitations** · The model uses Barrett Score (production), age, and "
-    "position — it can't see contract structure (Bird rights, supermax "
-    "eligibility, rookie scale lock), team cap space, agent leverage, or "
-    "off-court factors. Median out-of-sample error is 1.8% of cap (~$2.7M in "
-    "current dollars); 80% of predictions land within $8M of actual; the 20% "
-    "that don't are usually supermax extensions, rookie-scale contracts, or "
-    "veteran-minimum signings — situations the box score can't predict."
-)
+with st.expander("About this prediction"):
+    render_barrett_score_explainer()
+    st.markdown(
+        """
+        ### How the next contract is predicted
+        Four layers stack on top of the Barrett Score:
+
+        1. **Career-weighted Barrett Score** — instead of just the in-progress
+           current season (which gets deflated by partial games + the
+           availability multiplier), the projection uses a weighted average
+           of the player's last 3 *completed* seasons (50/30/20 weighting).
+           Matches how front offices evaluate bodies of work.
+        2. **Base projection** — what the player at that career-weighted rank
+           would earn based on the current season's salary distribution.
+        3. **Age multiplier** — fit on 2014-22 real new contracts. A 33yo
+           signs for ~28% less than a 27yo at the same Barrett Score.
+        4. **Position multiplier** — Centers are systematically overprojected
+           by the box-score-heavy Barrett Score (rebounds aren't paid like
+           points). **Suppressed at the supermax tier** (base ≥28% of cap)
+           since max-contract players sign at fixed CBA percentages
+           regardless of position.
+
+        **Confidence band:** ±$5.5M reflects out-of-sample median error.
+
+        ### Limitations
+        The model uses Barrett Score, age, and position. It **can't see**
+        contract structure (Bird rights, supermax eligibility, rookie scale
+        lock), team cap space, agent leverage, or off-court factors.
+        Median out-of-sample error is 1.8% of cap (~$2.7M); 80% of
+        predictions land within $8M of actual. The 20% that don't are
+        usually supermax extensions, rookie-scale contracts, or
+        veteran-minimum signings — situations the box score can't predict.
+        """
+    )
