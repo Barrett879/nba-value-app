@@ -465,15 +465,16 @@ COMMON_CSS = """
 """
 
 _NAV_PAGES = [
-    ("Current Rankings",  "/Rankings"),
-    ("Search Player",     "/Search"),
-    ("Legacy",            "/Legacy"),
-    ("Team Analysis",     "/Team_Analysis"),
+    ("Current Rankings",   "/Rankings"),
+    ("Search Player",      "/Search"),
+    ("Legacy",             "/Legacy"),
+    ("Team Analysis",      "/Team_Analysis"),
     # Trades tab removed — page lives at /Trades_disabled.py (kept for
     # easy revival) and a backup of the verdict-aware version is in
     # Trades_backup.py at repo root.
+    ("Contract Predictor", "/Contract_Predictor"),
     ("Current Free Agents", "/Free_Agent_Class"),
-    ("Track Record",      "/Track_Record"),
+    ("Track Record",       "/Track_Record"),
 ]
 
 _PLAYOFF_HELP = (

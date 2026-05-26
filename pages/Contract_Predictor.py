@@ -1,21 +1,15 @@
-"""Contract Predictor mockup — standalone preview app.
+"""Contract Predictor — predict a player's next contract.
 
-Run separately, does NOT touch the main site:
-    streamlit run mockup_contract_predictor.py
+Takes a player's current production (Barrett Score), applies age + position
+calibration multipliers learned from 2014-22 historical contracts, and returns
+a dollar projection with a confidence band and a list of comparable signings.
 
-Once you approve the design we'd move this into pages/Contract_Predictor.py
-and add it to the nav. Until then it lives at the repo root and is invisible
-to the real app.
-
-Uses the existing Barrett Score model as the production rating, then applies
-the age + position calibration layer (learned from 2014-22 training data) to
-predict the player's next contract. Shows the prediction with a breakdown,
-confidence band, structural caveats, and a "comparable signings" list grounded
-in real historical data.
+Out-of-sample accuracy: ~80% within 5% of cap on 435 real new contracts since
+2022. Median error 1.8% of cap (~$2.7M in 2025-26 dollars).
 """
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).parent))
+sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -23,18 +17,17 @@ warnings.filterwarnings("ignore")
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
-from urllib.parse import quote
 
 from utils import (
     COMMON_CSS, SEASONS, normalize, season_to_espn_year,
-    get_all_player_names, fetch_player_full_career,
+    get_all_player_names,
     build_ranked_projected, fetch_league_stats, fetch_bref_positions,
+    render_nav, render_barrett_score_explainer, _bootstrap_warm,
 )
 
 
-# ── Configuration (from out-of-sample testing) ───────────────────────────────
-# Age multipliers learned on 2014-22 training set, fit on real new contracts.
-# A 33-yo at the same Barrett Score as a 27-yo signs for ~28% less.
+# ── Calibration parameters (from out-of-sample test, 2014-22 training) ───────
+# Age multipliers — front offices heavily discount age.
 AGE_MULTIPLIERS = {
     "≤22":   0.890,
     "23-25": 0.971,
@@ -44,8 +37,8 @@ AGE_MULTIPLIERS = {
     "35+":   0.574,
 }
 
-# Position multipliers — same fit. Centers systematically overprojected
-# by the box-score-weighted Barrett Score (rebounds aren't paid like points).
+# Position multipliers — Centers systematically overprojected by the
+# box-score-weighted Barrett Score (rebounds aren't paid like points).
 POSITION_MULTIPLIERS = {
     "Guard":   0.971,
     "Forward": 0.949,
@@ -53,7 +46,6 @@ POSITION_MULTIPLIERS = {
     "Unknown": 0.960,
 }
 
-# Salary cap by season — used to translate predictions to current-year dollars.
 SALARY_CAP_M = {
     "2015-16": 70.0,  "2016-17": 94.1,  "2017-18": 99.1,  "2018-19": 101.9,
     "2019-20": 109.1, "2020-21": 109.1, "2021-22": 112.4, "2022-23": 123.7,
@@ -61,10 +53,44 @@ SALARY_CAP_M = {
 }
 
 CURRENT_SEASON = SEASONS[0]
+CONFIDENCE_BAND_PCT_OF_CAP = 3.6 / 100  # ≈ 2 × median |err| out-of-sample
 
-# Out-of-sample median |error| on this kind of profile = 1.82% of cap.
-# Use 2x median ≈ 3.6% of cap as ±band, scaled by the current cap.
-CONFIDENCE_BAND_PCT_OF_CAP = 3.6 / 100
+
+# ── Page boilerplate ─────────────────────────────────────────────────────────
+st.set_page_config(page_title="Contract Predictor", layout="wide")
+st.markdown(COMMON_CSS, unsafe_allow_html=True)
+
+components.html("""
+<script>
+    function hideBadge() {
+        try {
+            const doc = window.parent.document;
+            [
+                '[data-testid="stAppViewerBadge"]',
+                '[data-testid="stBottom"]',
+                '[data-testid="stToolbar"]',
+                '[data-testid="stStatusWidget"]',
+                '[class*="viewerBadge"]',
+                '[class*="ViewerBadge"]',
+            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
+        } catch(e) {}
+    }
+    hideBadge();
+    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
+</script>
+""", height=0)
+
+_bootstrap_warm()
+render_nav("Contract Predictor")
+
+st.title("Contract Predictor")
+st.caption(
+    "Type a player's name to see their projected next contract. Based on the "
+    "Barrett Score, adjusted for age and position. Out-of-sample accuracy: "
+    "80% within 5% of cap on 435 real new contracts since 2022."
+)
+
+render_barrett_score_explainer()
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
@@ -88,7 +114,6 @@ def _fmt_money(v: float) -> str:
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict | None:
-    """Pull everything we need to make a prediction for one player."""
     ranked = build_ranked_projected(season)
     if ranked.empty:
         return None
@@ -126,8 +151,7 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
 
 
 def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dict:
-    """Apply baseline rank projection + age + position calibration."""
-    base = features["projected_salary"]  # already in current-season dollars
+    base = features["projected_salary"]
     age_mult = AGE_MULTIPLIERS.get(_age_bucket(features["age"]), 1.0)
     pos_mult = POSITION_MULTIPLIERS.get(features["position"], 1.0)
     predicted = base * age_mult * pos_mult
@@ -148,29 +172,22 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
 
 
 def detect_caveats(features: dict) -> list[str]:
-    """Structural notes about contract context — things the model can't
-    predict from box-score stats alone."""
-    notes = []
+    notes: list[str] = []
     age = features.get("age")
     salary = features.get("salary", 0)
     barrett = features.get("barrett_score", 0)
 
-    # Rookie scale — typically signed for years 1-4 of career, very low salary.
     if salary > 0 and salary < 12_000_000 and age and age <= 23:
         notes.append(
             "Possibly on rookie scale — locked salary by CBA until contract "
-            "expires (usually year 4). The market price below is a forecast "
-            "of their next contract, not their current one."
+            "expires (usually year 4). The market price below forecasts their "
+            "next contract, not their current one."
         )
-    # Supermax eligibility — All-NBA / 10+ years / 35% of cap. Our model can't
-    # see All-NBA selections, so it underprojects these.
     if age and age >= 27 and barrett >= 28:
         notes.append(
             "Star-tier producer — if All-NBA-eligible, may sign a supermax "
-            "(35% of cap, ~$54M in 2025-26), which exceeds this projection."
+            "(35% of cap, ~$54M in 2025-26), which would exceed this projection."
         )
-    # Veteran-minimum range — older role players often sign for $2-3M
-    # regardless of production tier.
     if age and age >= 33 and barrett < 20:
         notes.append(
             "Veteran end-of-career zone — may sign for the minimum "
@@ -179,12 +196,10 @@ def detect_caveats(features: dict) -> list[str]:
     return notes
 
 
-@st.cache_data(ttl=3600, show_spinner="Loading comparable signings...")
+@st.cache_data(ttl=3600, show_spinner="Loading comparable signings…")
 def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
-    """All players who signed materially new contracts (≥25% YoY change)
-    in the last N season pairs. Used to find comparables."""
     pairs = [(SEASONS[i + 1], SEASONS[i]) for i in range(n_recent_pairs)]
-    rows = []
+    rows: list[pd.DataFrame] = []
     for prev, curr in pairs:
         try:
             prev_df = build_ranked_projected(prev)
@@ -197,7 +212,8 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
             continue
 
         age_lookup = dict(zip(raw_prev["PLAYER_ID"], raw_prev.get("AGE", [])))
-        curr_slim = curr_df[["PLAYER_ID", "salary"]].rename(columns={"salary": "salary_curr"})
+        curr_slim = curr_df[["PLAYER_ID", "salary"]].rename(
+            columns={"salary": "salary_curr"})
         m = prev_df[prev_df["salary"] > 0].merge(curr_slim, on="PLAYER_ID", how="left")
         m = m[m["salary_curr"].notna() & (m["salary_curr"] > 0)]
         if m.empty:
@@ -221,92 +237,29 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     return out
 
 
-def find_comparables(features: dict, history: pd.DataFrame, n: int = 5) -> pd.DataFrame:
-    """Closest matches in (Barrett Score, age, position) space."""
+def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
     if history.empty:
         return history
 
     history = history.copy()
-    # Position bonus — same position is heavily preferred (large penalty for mismatch).
     pos_match = (history["pos"] == features["position"]).astype(int)
-    pos_penalty = (1 - pos_match) * 20  # 20-Barrett-point equivalent penalty
+    pos_penalty = (1 - pos_match) * 20  # 20-Barrett-point penalty for wrong position
 
-    # Distance in (Barrett Score, age) space.
     age = features["age"] if features["age"] else 27
     barrett = features["barrett_score"]
     barrett_diff = (history["barrett_score"] - barrett).abs()
-    age_diff = (history["age"] - age).abs() * 1.5  # age diff weighted ×1.5 per year
+    age_diff = (history["age"] - age).abs() * 1.5
 
     history["distance"] = barrett_diff + age_diff + pos_penalty
     return history.nsmallest(n, "distance")
 
 
-# ══════════════════════════════════════════════════════════════════════════════
-# UI
-# ══════════════════════════════════════════════════════════════════════════════
-st.set_page_config(page_title="Contract Predictor (mockup)", layout="wide")
-st.markdown(COMMON_CSS, unsafe_allow_html=True)
-
-components.html("""
-<script>
-    function hideBadge() {
-        try {
-            const doc = window.parent.document;
-            [
-                '[data-testid="stAppViewerBadge"]',
-                '[data-testid="stBottom"]',
-                '[data-testid="stToolbar"]',
-                '[data-testid="stStatusWidget"]',
-                '[class*="viewerBadge"]',
-                '[class*="ViewerBadge"]',
-            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
-        } catch(e) {}
-    }
-    hideBadge();
-    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
-</script>
-""", height=0)
-
-st.title("Contract Predictor")
-st.caption(
-    "Type a player's name to see their projected next contract. Based on the "
-    "Barrett Score, adjusted for age and position. Out-of-sample accuracy: "
-    "80% within 5% of cap on 435 actual contracts since 2022."
-)
-
-# Calibration disclosure expander
-with st.expander("How is the contract predicted?"):
-    st.markdown(
-        """
-        **Three layers stack on top of the Barrett Score:**
-
-        1. **Base projection** — the salary of whoever currently holds the same
-           Barrett Score rank by money. If you're the 5th-best producer this
-           season, your base projection equals the salary of the 5th-highest-paid
-           player.
-        2. **Age multiplier** — front offices heavily discount age. A 33-year-old
-           with the same Barrett Score as a 27-year-old signs for about 28% less.
-           Multipliers are fit on 2014-22 real new contracts.
-        3. **Position multiplier** — Centers are systematically overprojected by
-           the box-score-heavy Barrett Score (rebounds aren't paid like points).
-
-        **Confidence band:** ±$5.5M reflects the model's typical out-of-sample
-        error on this kind of profile. Roughly two-thirds of predictions land
-        inside this band; the rest are usually supermax extensions, rookie scale
-        contracts, or veteran minimums — situations the model can't fully predict
-        from production stats alone.
-        """
-    )
-
-st.divider()
-
-# Player picker
+# ── Player picker ────────────────────────────────────────────────────────────
 all_names = get_all_player_names()
 if not all_names:
     st.error("Player database not yet loaded. Try again in a moment.")
     st.stop()
 
-# Filter to current-season players so the predictor only shows active careers.
 current_ranked = build_ranked_projected(CURRENT_SEASON)
 current_names = (
     set(current_ranked["Player"].tolist())
@@ -314,7 +267,6 @@ current_names = (
 )
 active_names = [n for n in all_names if n in current_names]
 
-# Optional URL-based hand-off (?player=Name)
 _default_idx = None
 if "player" in st.query_params:
     qp = st.query_params["player"]
@@ -336,12 +288,11 @@ selected = st.selectbox(
 if not selected:
     st.info(
         f"**{len(active_names):,} active players** available. Try a star to see "
-        "a supermax-eligible note, a veteran to see the age discount, or a "
-        "young rising player to see the rookie-scale caveat."
+        "a supermax-eligible note, a veteran for the age discount, or a young "
+        "rising player for the rookie-scale caveat."
     )
     st.stop()
 
-# Mirror selection to URL.
 st.query_params["player"] = selected
 
 # ── Compute prediction ───────────────────────────────────────────────────────
@@ -391,9 +342,8 @@ if caveats:
     for note in caveats:
         st.info(f"⚠ {note}")
 
-# ── Why this number — breakdown ──────────────────────────────────────────────
+# ── Breakdown ────────────────────────────────────────────────────────────────
 st.subheader("Why this number?")
-
 base_M = prediction["base"] / 1_000_000
 breakdown_html = f"""
 <div style="display:grid; grid-template-columns: auto auto auto auto; gap:0.6rem;
@@ -438,7 +388,7 @@ with snap_cols[3]:
 with snap_cols[4]:
     st.metric("Current Salary", _fmt_money(features["salary"]))
 
-# ── Comparable signings ───────────────────────────────────────────────────────
+# ── Comparables ──────────────────────────────────────────────────────────────
 st.subheader("Comparable signings (last 3 seasons)")
 st.caption(
     "Players with the closest (Barrett Score, age, position) profile who actually "
@@ -455,21 +405,19 @@ else:
         st.info("No close comparables found.")
     else:
         comp_disp = pd.DataFrame({
-            "Player":         comps["Player"].values,
-            "Signed in":      comps["signed_in"].values,
-            "Age then":       comps["age"].astype(int).values,
-            "Position":       comps["pos"].values,
-            "Barrett":        comps["barrett_score"].round(1).values,
-            "Salary then":    [_fmt_money(v) for v in comps["salary"]],
-            "Signed for":     [_fmt_money(v) for v in comps["salary_curr"]],
-            "Δ":              [f"{((c - p)/p)*100:+.0f}%" if p > 0 else "—"
-                              for p, c in zip(comps["salary"], comps["salary_curr"])],
+            "Player":      comps["Player"].values,
+            "Signed in":   comps["signed_in"].values,
+            "Age then":    comps["age"].astype(int).values,
+            "Position":    comps["pos"].values,
+            "Barrett":     comps["barrett_score"].round(1).values,
+            "Salary then": [_fmt_money(v) for v in comps["salary"]],
+            "Signed for":  [_fmt_money(v) for v in comps["salary_curr"]],
+            "Δ":           [f"{((c - p)/p)*100:+.0f}%" if p > 0 else "—"
+                            for p, c in zip(comps["salary"], comps["salary_curr"])],
         })
         st.dataframe(comp_disp, use_container_width=True, hide_index=True,
                      height=min(400, 60 + len(comp_disp) * 35))
 
-        # Comparables-implied range — actual signed values from the comparables
-        # give a market-grounded alternative range estimate.
         actuals = comps["salary_curr"].values
         st.caption(
             f"**Comparables-implied range:** "
