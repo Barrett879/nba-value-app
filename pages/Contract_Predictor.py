@@ -4,8 +4,8 @@ Takes a player's current production (Barrett Score), applies age + position
 calibration multipliers learned from 2014-22 historical contracts, and returns
 a dollar projection with a confidence band and a list of comparable signings.
 
-Out-of-sample accuracy: ~80% within 5% of cap on 435 real new contracts since
-2022. Median error 1.8% of cap (~$2.7M in 2025-26 dollars).
+Out-of-sample accuracy: ~74% within 5% of cap on 4,500 real new contracts since
+1985. Median error 2.4% of cap (~$3.7M in 2025-26 dollars).
 """
 import sys
 from pathlib import Path
@@ -88,7 +88,7 @@ st.title("Contract Predictor")
 st.caption(
     "Type a player's name to see their projected next contract. Based on the "
     "Barrett Score, adjusted for age and position. Out-of-sample accuracy: "
-    "80% within 5% of cap on 435 real new contracts since 2022."
+    "74% within 5% of cap on 4,500 real new contracts validated since 1985."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -514,12 +514,12 @@ def _scouting_take(features: dict, comps: pd.DataFrame) -> dict:
     if abs(bar_diff) >= 3:
         if bar_diff > 0:
             x_factor_parts.append(
-                f"higher career Barrett than median comp ({target_bar:.1f} vs {comp_bar_med:.1f}) "
+                f"higher career Score than median comp ({target_bar:.1f} vs {comp_bar_med:.1f}) "
                 "— premium lean"
             )
         else:
             x_factor_parts.append(
-                f"lower career Barrett than median comp ({target_bar:.1f} vs {comp_bar_med:.1f}) "
+                f"lower career Score than median comp ({target_bar:.1f} vs {comp_bar_med:.1f}) "
                 "— discount lean"
             )
 
@@ -754,7 +754,7 @@ _breakdown_one_line = f"""
   <span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;
                text-transform:uppercase; margin-right:0.5rem;">Math</span>
   <b style="color:#fff;">${base_M:.1f}M</b>
-  <span style="color:#777;">(career Barrett {features['career_barrett']:.1f} → rank #{features['effective_rank']})</span>
+  <span style="color:#777;">(career Score {features['career_barrett']:.1f} → rank #{features['effective_rank']})</span>
   &nbsp;<span style="color:#666;">×</span>&nbsp;
   <b>×{prediction['age_mult']:.2f}</b>
   <span style="color:#777;">(age {int(features['age']) if features['age'] else '?'})</span>
@@ -774,7 +774,7 @@ st.markdown(_breakdown_one_line, unsafe_allow_html=True)
 # ── Comparables ──────────────────────────────────────────────────────────────
 st.subheader("Comparable signings")
 st.caption(
-    "Closest career-weighted Barrett + age + position matches. Real signings — "
+    "Closest career-weighted Score + age + position matches. Real signings — "
     "the model's market sanity check."
 )
 
@@ -847,8 +847,8 @@ else:
             "Age then":       comps_with_ctx["age"].astype(int).values,
             "Position":       _pos_col.values,
             "Context":        comps_with_ctx["context"].values,
-            "Career Barrett": comps_with_ctx["career_weighted_barrett"].round(1).values,
-            "Walk-yr Barrett": comps_with_ctx["barrett_score"].round(1).values,
+            "Career Score":   comps_with_ctx["career_weighted_barrett"].round(1).values,
+            "Sign-yr Score":  comps_with_ctx["barrett_score"].round(1).values,
             "Signed for":     [_fmt_money(v) for v in comps_with_ctx["salary_curr"]],
         })
         st.dataframe(comp_disp, use_container_width=True, hide_index=True,
