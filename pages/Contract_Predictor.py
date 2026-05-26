@@ -572,37 +572,126 @@ if features is None:
 prediction = predict_contract(features, CURRENT_SEASON)
 caveats = detect_caveats(features)
 
-# ── Big number header ────────────────────────────────────────────────────────
+# Compute comparables here too — we need their median for the hero card
+# so the "Model vs. Market" framing is visible up top, not buried below.
+_history = load_historical_signings(n_recent_pairs=3)
+_comps = (
+    find_comparables(features, _history, n=6)
+    if not _history.empty else pd.DataFrame()
+)
+_market_median = (
+    float(_comps["salary_curr"].median()) if not _comps.empty else None
+)
+
+# ── Big number header: Model + Market side-by-side ───────────────────────────
 predicted_M = prediction["predicted"] / 1_000_000
 low_M  = prediction["low"]  / 1_000_000
 high_M = prediction["high"] / 1_000_000
 
-_header_html = f"""
-<div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
-            border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-            padding:1.8rem 2rem; margin: 0.5rem 0 1.5rem 0;">
-  <div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:1rem;">
-    <div style="font-size:0.78rem; color:#888; text-transform:uppercase;
-                letter-spacing:0.1em; font-weight:600;">
-      Predicted next contract
+if _market_median is not None:
+    market_M = _market_median / 1_000_000
+    # Honest range = min(model, market) → max(model_high, market)
+    honest_low_M  = min(predicted_M, market_M)
+    honest_high_M = max(predicted_M, market_M)
+    # Note when model vs market diverge by >40% — flag it for the user.
+    divergence = (
+        abs(predicted_M - market_M) / max(predicted_M, market_M)
+        if max(predicted_M, market_M) > 0 else 0
+    )
+    diverge_note = (
+        f'<div style="margin-top:0.7rem; padding-top:0.6rem; '
+        f'border-top:1px solid rgba(255,255,255,0.08); '
+        f'font-size:0.78rem; color:#f39c12;">'
+        f'⚠ Model and market diverge by {divergence*100:.0f}%. '
+        f'Use the range as the honest answer — single number would overclaim.'
+        f'</div>'
+        if divergence >= 0.40 else ''
+    )
+    _header_html = f"""
+    <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
+                border:1px solid rgba(255,255,255,0.12); border-radius:14px;
+                padding:1.8rem 2rem; margin: 0.5rem 0 1.5rem 0;">
+      <div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:1rem;">
+        <div style="font-size:0.78rem; color:#888; text-transform:uppercase;
+                    letter-spacing:0.1em; font-weight:600;">
+          Predicted next contract
+        </div>
+        <div style="margin-left:auto; font-size:0.78rem; color:#888;">
+          {features['name']} · {features['team']} · {CURRENT_SEASON}
+        </div>
+      </div>
+
+      <div style="display:flex; gap:2.2rem; margin-top:0.8rem;
+                  flex-wrap:wrap; align-items:flex-start;">
+        <div>
+          <div style="font-size:0.7rem; color:#888;
+                      text-transform:uppercase; letter-spacing:0.08em;">
+            Model prediction
+          </div>
+          <div style="font-size:2.4rem; font-weight:800; color:#fff;
+                      line-height:1.05; margin-top:0.15rem;">
+            ${predicted_M:.1f}M
+          </div>
+          <div style="font-size:0.78rem; color:#888;">±${prediction['band']/1_000_000:.1f}M band</div>
+        </div>
+        <div style="font-size:2rem; color:#444; padding:0.6rem 0;">|</div>
+        <div>
+          <div style="font-size:0.7rem; color:#888;
+                      text-transform:uppercase; letter-spacing:0.08em;">
+            Market view (comparables median)
+          </div>
+          <div style="font-size:2.4rem; font-weight:800; color:#16d4c1;
+                      line-height:1.05; margin-top:0.15rem;">
+            ${market_M:.1f}M
+          </div>
+          <div style="font-size:0.78rem; color:#888;">based on actual recent signings</div>
+        </div>
+        <div style="margin-left:auto; align-self:center;">
+          <div style="font-size:0.7rem; color:#888;
+                      text-transform:uppercase; letter-spacing:0.08em;
+                      text-align:right;">
+            Honest range
+          </div>
+          <div style="font-size:1.5rem; color:#fff; font-weight:700;
+                      text-align:right; margin-top:0.15rem;">
+            ${honest_low_M:.1f}M – ${honest_high_M:.1f}M
+          </div>
+        </div>
+      </div>
+      {diverge_note}
     </div>
-    <div style="margin-left:auto; font-size:0.78rem; color:#888;">
-      {features['name']} · {features['team']} · {CURRENT_SEASON}
+    """
+else:
+    # No comparables available — fall back to the model-only display.
+    _header_html = f"""
+    <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
+                border:1px solid rgba(255,255,255,0.12); border-radius:14px;
+                padding:1.8rem 2rem; margin: 0.5rem 0 1.5rem 0;">
+      <div style="display:flex; align-items:baseline; flex-wrap:wrap; gap:1rem;">
+        <div style="font-size:0.78rem; color:#888; text-transform:uppercase;
+                    letter-spacing:0.1em; font-weight:600;">
+          Predicted next contract
+        </div>
+        <div style="margin-left:auto; font-size:0.78rem; color:#888;">
+          {features['name']} · {features['team']} · {CURRENT_SEASON}
+        </div>
+      </div>
+      <div style="display:flex; align-items:baseline; gap:1.2rem;
+                  margin-top:0.6rem; flex-wrap:wrap;">
+        <div style="font-size:3.2rem; font-weight:800; color:#fff; line-height:1;">
+          ${predicted_M:.1f}M
+        </div>
+        <div style="color:#aaa; font-size:1rem;">
+          per year · range
+          <b style="color:#cdcdd5;">${low_M:.1f}M</b> –
+          <b style="color:#cdcdd5;">${high_M:.1f}M</b>
+        </div>
+      </div>
+      <div style="margin-top:0.5rem; font-size:0.78rem; color:#888;">
+        No comparable signings on file — model prediction only.
+      </div>
     </div>
-  </div>
-  <div style="display:flex; align-items:baseline; gap:1.2rem;
-              margin-top:0.6rem; flex-wrap:wrap;">
-    <div style="font-size:3.2rem; font-weight:800; color:#fff; line-height:1;">
-      ${predicted_M:.1f}M
-    </div>
-    <div style="color:#aaa; font-size:1rem;">
-      per year · range
-      <b style="color:#cdcdd5;">${low_M:.1f}M</b> –
-      <b style="color:#cdcdd5;">${high_M:.1f}M</b>
-    </div>
-  </div>
-</div>
-"""
+    """
 st.markdown(_header_html, unsafe_allow_html=True)
 
 # ── Structural caveats ────────────────────────────────────────────────────────
@@ -668,11 +757,12 @@ st.caption(
     "most useful sanity check on the predicted dollar amount."
 )
 
-history = load_historical_signings(n_recent_pairs=3)
+# Reuse the comparables we already loaded at the top for the hero card.
+history = _history
 if history.empty:
     st.info("No historical comparables on disk yet.")
 else:
-    comps = find_comparables(features, history, n=6)
+    comps = _comps
     if comps.empty:
         st.info("No close comparables found.")
     else:
