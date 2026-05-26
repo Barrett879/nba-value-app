@@ -849,11 +849,7 @@ else:
             "Context":        comps_with_ctx["context"].values,
             "Career Barrett": comps_with_ctx["career_weighted_barrett"].round(1).values,
             "Walk-yr Barrett": comps_with_ctx["barrett_score"].round(1).values,
-            "Salary then":    [_fmt_money(v) for v in comps_with_ctx["salary"]],
             "Signed for":     [_fmt_money(v) for v in comps_with_ctx["salary_curr"]],
-            "Δ":              [f"{((c - p)/p)*100:+.0f}%" if p > 0 else "—"
-                              for p, c in zip(comps_with_ctx["salary"],
-                                              comps_with_ctx["salary_curr"])],
         })
         st.dataframe(comp_disp, use_container_width=True, hide_index=True,
                      height=min(400, 60 + len(comp_disp) * 35))
