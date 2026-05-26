@@ -20,7 +20,7 @@ import streamlit.components.v1 as components
 
 from utils import (
     COMMON_CSS, SEASONS, normalize, season_to_espn_year,
-    get_all_player_names,
+    get_all_player_names, fetch_player_full_career,
     build_ranked_projected, fetch_league_stats, fetch_bref_positions,
     render_nav, render_barrett_score_explainer, _bootstrap_warm,
 )
@@ -92,6 +92,35 @@ st.caption(
 
 render_barrett_score_explainer()
 
+with st.expander("How is the next contract predicted?"):
+    st.markdown(
+        """
+        Four layers stack on top of the Barrett Score:
+
+        1. **Career-weighted Barrett Score** — instead of using just the
+           in-progress current season (which gets deflated by partial
+           games + the availability multiplier), the projection uses a
+           weighted average of the player's last 3 *completed* seasons
+           (50% most recent, 30% two seasons ago, 20% three seasons ago).
+           This matches how front offices actually evaluate a body of work
+           — they don't penalize you for being injured or for the league
+           not being done yet.
+        2. **Base projection** — what the player at that career-weighted
+           rank would earn based on the current season's salary distribution.
+        3. **Age multiplier** — front offices heavily discount age. A 33-year-old
+           with the same Barrett Score as a 27-year-old signs for about 28% less.
+           Fit on 2014-22 real new contracts.
+        4. **Position multiplier** — Centers are systematically overprojected by
+           the box-score-heavy Barrett Score (rebounds aren't paid like points).
+
+        **Confidence band:** ±$5.5M reflects the model's typical out-of-sample
+        error on this kind of profile. Roughly two-thirds of predictions land
+        inside this band; the rest are usually supermax extensions, rookie scale
+        contracts, or veteran minimums — situations the model can't fully predict
+        from production stats alone.
+        """
+    )
+
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 def _age_bucket(age) -> str:
@@ -135,23 +164,76 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         pos_lookup = {}
     pos = pos_lookup.get(name_norm, "Unknown")
 
+    # ── Career-weighted Barrett Score — the GM's view ────────────────────────
+    # Real front offices project contracts off a body of work, not a half
+    # season. We pull the player's full per-season career and weight the
+    # last three completed seasons (50/30/20, most recent first), skipping
+    # the current season since it's still in progress (and injuries /
+    # ramp-up artificially deflate availability-adjusted scores).
+    career_barrett = None
+    career_basis = "current season (no prior data)"
+    try:
+        career = fetch_player_full_career(player_name)
+        if not career.empty:
+            # Drop the in-progress current season — partial-season data
+            # gets penalized by the availability multiplier mid-year.
+            completed = career[career["Season"] != season].copy()
+            if not completed.empty:
+                # Take the last (most recent) up to 3 completed seasons.
+                recent = completed.tail(3)
+                weights_full = [0.20, 0.30, 0.50]
+                weights = weights_full[-len(recent):]
+                w_sum = sum(weights)
+                career_barrett = float(
+                    (recent["Barrett Score"].values * weights).sum() / w_sum
+                )
+                seasons_used = list(recent["Season"].values)
+                career_basis = (
+                    f"weighted avg of {len(recent)} prior season"
+                    f"{'s' if len(recent) > 1 else ''} "
+                    f"({', '.join(seasons_used)})"
+                )
+    except Exception:
+        pass
+
+    # Fall back to current-season Barrett if no career history.
+    if career_barrett is None:
+        career_barrett = float(row["barrett_score"])
+        career_basis = "current season only (rookie / first appearance)"
+
+    # Find what salary rank this career-weighted score would command in the
+    # current season's pool — gives a stable "GM-view" base projection.
+    cur_scores = ranked["barrett_score"].sort_values(ascending=False).values
+    cur_salaries = ranked["salary"].sort_values(ascending=False).values
+    # Career-weighted rank = number of current players with a higher score
+    effective_rank = int((cur_scores > career_barrett).sum()) + 1
+    capped_rank = min(effective_rank, len(cur_salaries)) - 1
+    career_base_proj = float(cur_salaries[capped_rank])
+
     return {
-        "name":            row["Player"],
-        "team":            row.get("Team", ""),
-        "age":             age,
-        "position":        pos,
-        "barrett_score":   float(row["barrett_score"]),
-        "score_rank":      int(row["score_rank"]),
-        "salary":          float(row.get("salary", 0) or 0),
-        "projected_salary": float(row.get("projected_salary", 0) or 0),
-        "gp":              int(row.get("GP", 0) or 0),
-        "mpg":             float(row.get("MPG", 0) or 0),
-        "total_pool_size": len(ranked),
+        "name":               row["Player"],
+        "team":               row.get("Team", ""),
+        "age":                age,
+        "position":           pos,
+        "barrett_score":      float(row["barrett_score"]),       # current season
+        "career_barrett":     career_barrett,                    # 3-year weighted
+        "career_basis":       career_basis,
+        "score_rank":         int(row["score_rank"]),
+        "effective_rank":     effective_rank,
+        "career_base_proj":   career_base_proj,
+        "salary":             float(row.get("salary", 0) or 0),
+        "projected_salary":   float(row.get("projected_salary", 0) or 0),
+        "gp":                 int(row.get("GP", 0) or 0),
+        "mpg":                float(row.get("MPG", 0) or 0),
+        "total_pool_size":    len(ranked),
     }
 
 
 def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dict:
-    base = features["projected_salary"]
+    # Use the career-weighted projection as the base — much more stable
+    # for players in the middle of an injury/comeback season than the raw
+    # current-season Barrett rank.
+    base = features["career_base_proj"]
     age_mult = AGE_MULTIPLIERS.get(_age_bucket(features["age"]), 1.0)
     pos_mult = POSITION_MULTIPLIERS.get(features["position"], 1.0)
     predicted = base * age_mult * pos_mult
@@ -366,10 +448,13 @@ breakdown_html = f"""
   <div style="font-size:1.4rem; color:#cdcdd5;">×{prediction['pos_mult']:.2f}</div>
   <div style="font-size:1.4rem; color:#16d4c1; font-weight:700;">${predicted_M:.1f}M</div>
 
-  <div style="color:#666; font-size:0.78rem;">Rank #{features['score_rank']} of {features['total_pool_size']}</div>
+  <div style="color:#666; font-size:0.78rem;">Career-weighted Barrett {features['career_barrett']:.1f} → effective rank #{features['effective_rank']}</div>
   <div style="color:#666; font-size:0.78rem;">Age {int(features['age']) if features['age'] else '?'} · "{_age_bucket(features['age'])}"</div>
   <div style="color:#666; font-size:0.78rem;">{features['position']}</div>
   <div style="color:#666; font-size:0.78rem;">±${prediction['band']/1_000_000:.1f}M band</div>
+</div>
+<div style="font-size:0.74rem; color:#888; margin: -0.5rem 0 1rem 0.2rem;">
+  Base uses <b style="color:#cdcdd5;">{features['career_basis']}</b> instead of just the in-progress current season — matches how front offices actually value bodies of work.
 </div>
 """
 st.markdown(breakdown_html, unsafe_allow_html=True)
