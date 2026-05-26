@@ -341,6 +341,32 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         return pd.DataFrame()
     out = pd.concat(rows, ignore_index=True)
     out = out.dropna(subset=["age", "barrett_score", "salary_curr"])
+
+    # Exclude rookie-scale ladder steps (year-N → year-N+1 team-option
+    # progressions, CBA-mandated). These aren't real new contracts but
+    # they're often >25% YoY change because rookie scale escalates.
+    # Signal: both salaries still inside rookie scale band (<~15-18% of
+    # the year's cap) AND player young (≤23). Legitimate rookie
+    # extensions (e.g. Sengun's $5.4M → $33.9M jump) keep their
+    # signed_for ABOVE the band, so they're untouched.
+    def _is_rookie_ladder(row) -> bool:
+        cap_prev = SALARY_CAP_M.get(row["prev_season"], 154.6) * 1_000_000
+        cap_curr = SALARY_CAP_M.get(row["signed_in"], 154.6) * 1_000_000
+        if cap_prev <= 0 or cap_curr <= 0:
+            return False
+        salary_then_pct = float(row["salary"]) / cap_prev
+        salary_curr_pct = float(row["salary_curr"]) / cap_curr
+        age = row.get("age")
+        if pd.isna(age) or age is None:
+            return False
+        return (
+            salary_then_pct < 0.15
+            and salary_curr_pct < 0.18
+            and float(age) <= 23
+        )
+
+    mask = ~out.apply(_is_rookie_ladder, axis=1)
+    out = out[mask].reset_index(drop=True)
     return out
 
 
