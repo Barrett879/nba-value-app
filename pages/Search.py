@@ -10,6 +10,7 @@ from utils import (
     COMMON_CSS,
     normalize,
     get_all_player_names, fetch_player_full_career,
+    fetch_season_component_distribution,
     render_nav, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
@@ -409,96 +410,156 @@ if len(selected) == 1:
 
     _bd_row = career[career["Season"] == _bd_season].iloc[0]
 
-    # Component formulas mirror utils.base_score() — kept in sync there.
-    _scoring     = float(_bd_row["PTS"])
-    _playmaking  = float(_bd_row["AST"]) * 1.5 - float(_bd_row["TOV"]) / 1.5
-    _rebounding  = float(_bd_row.get("OREB", 0)) / 2 + float(_bd_row.get("DREB", 0)) / 3
-    _defense     = (float(_bd_row["BLK"]) / 2
-                    + float(_bd_row["STL"]) / 1.5
-                    - float(_bd_row.get("PF", 0)) / 3
-                    + float(_bd_row.get("D-LEBRON", 0)) * 2)
-    _efficiency  = float(_bd_row.get("EffAdj", 0)) * 2
-    _availability = float(_bd_row.get("Avail", 1.0))
-    _base_total  = _scoring + _playmaking + _rebounding + _defense + _efficiency
+    # Pull the full league-wide distribution for this season so we can rank
+    # this player's component values against everyone else — a 95th-percentile
+    # scorer in 2007-08 means "Kobe was a top-5% scorer that year."
+    _dist = fetch_season_component_distribution(_bd_season, playoffs=playoff_mode)
 
     _components = [
-        ("Scoring",      _scoring,      "#e63946"),
-        ("Playmaking",   _playmaking,   "#f39c12"),
-        ("Rebounding",   _rebounding,   "#16d4c1"),
-        ("Defense",      _defense,      "#3498db"),
-        ("Efficiency",   _efficiency,   "#9b59b6"),
+        ("Scoring",      "#e63946", "PTS"),
+        ("Playmaking",   "#f39c12", "AST × 1.5 − TOV / 1.5"),
+        ("Rebounding",   "#16d4c1", "OREB / 2 + DREB / 3"),
+        ("Defense",      "#3498db", "BLK / 2 + STL / 1.5 − PF / 3 + D-LEBRON × 2"),
+        ("Efficiency",   "#9b59b6", "TS% vs league avg"),
+        ("Availability", "#2ecc71", "GP × MPG vs 82-game cap"),
     ]
-    _components.sort(key=lambda x: x[1], reverse=True)
-    _labels = [c[0] for c in _components]
-    _values = [c[1] for c in _components]
-    _colors = [c[2] for c in _components]
 
-    _bd_fig = go.Figure(go.Bar(
-        x=_values,
-        y=_labels,
-        orientation="h",
-        marker=dict(color=_colors, line=dict(color="rgba(0,0,0,0)", width=0)),
-        text=[f"<b>{v:+.1f}</b>" if v < 0 else f"<b>{v:.1f}</b>" for v in _values],
-        textposition="outside",
-        textfont=dict(color="#fff", size=13),
-        hovertemplate="<b>%{y}</b><br>Contribution: %{x:.2f}<extra></extra>",
-    ))
-    _x_pad = max(2.0, max(abs(v) for v in _values) * 0.18)
-    _bd_fig.update_layout(
-        height=270,
-        paper_bgcolor="rgba(0,0,0,0)",
-        plot_bgcolor="rgba(0,0,0,0)",
-        font=dict(color="#cdcdd5"),
-        margin=dict(l=10, r=40, t=10, b=30),
-        xaxis=dict(
-            gridcolor="rgba(255,255,255,0.06)",
-            zerolinecolor="rgba(255,255,255,0.25)",
-            title="Contribution to Base Score",
-            range=[min(0, min(_values)) - _x_pad, max(_values) + _x_pad],
-        ),
-        yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
-        showlegend=False,
-    )
-    st.plotly_chart(_bd_fig, use_container_width=True, config={"displayModeBar": False})
+    if _dist.empty:
+        st.info(
+            f"No league-wide component data on disk for {_bd_season} yet — "
+            "the percentile bars need that. Try a more recent season."
+        )
+    else:
+        # Resolve this player's row in the distribution by PLAYER_ID first
+        # (most reliable) and fall back to normalized name.
+        _this_row = _dist[_dist["Player"].apply(normalize) == normalize(player_name)]
+        if _this_row.empty:
+            st.info("This player isn't in the season's ranking pool (minute-threshold).")
+        else:
+            _this = _this_row.iloc[0]
+            _rows = []
+            for label, color, formula in _components:
+                vals = _dist[label].astype(float).values
+                my_val = float(_this[label])
+                # Percentile rank: % of league at or below this value. Higher = better.
+                # Uses average rank for ties so duplicates don't artificially deflate.
+                pct = (vals < my_val).sum() + 0.5 * (vals == my_val).sum()
+                pct = (pct / len(vals)) * 100 if len(vals) else 0
+                _rows.append({
+                    "label":   label,
+                    "color":   color,
+                    "pct":     pct,
+                    "value":   my_val,
+                    "formula": formula,
+                })
+            _rows.sort(key=lambda r: r["pct"], reverse=True)
 
-    # Availability + summary equation strip
-    _barrett_final = _base_total * _availability
-    _avail_pct = _availability * 100
-    _avail_color = "#2ecc71" if _availability >= 0.85 else ("#f39c12" if _availability >= 0.7 else "#e63946")
+            def _fmt_value(label: str, value: float) -> str:
+                if label == "Availability":
+                    return f"{value * 100:.0f}%"
+                if label == "Efficiency":
+                    return f"{value:+.1f} pts"
+                return f"{value:.1f}"
 
-    _eq_html = f"""
-    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;
-                margin-top:0.5rem; padding:0.85rem 1rem;
-                background:rgba(255,255,255,0.03);
-                border:1px solid rgba(255,255,255,0.08); border-radius:8px;">
-        <span style="color:#cdcdd5; font-size:0.9rem;">
-            <b style="color:#fff; font-size:1.05rem;">{_base_total:.1f}</b>
-            <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
-                         letter-spacing:0.04em; margin-left:0.3rem;">Base Score</span>
-        </span>
-        <span style="color:#666;">×</span>
-        <span style="color:{_avail_color}; font-size:0.9rem;">
-            <b style="font-size:1.05rem;">{_avail_pct:.0f}%</b>
-            <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
-                         letter-spacing:0.04em; margin-left:0.3rem;">Availability</span>
-        </span>
-        <span style="color:#666;">=</span>
-        <span style="color:#fff; font-size:0.9rem;">
-            <b style="font-size:1.15rem;">{_barrett_final:.1f}</b>
-            <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
-                         letter-spacing:0.04em; margin-left:0.3rem;">Barrett Score</span>
-        </span>
-        <span style="margin-left:auto; color:#888; font-size:0.75rem;">
-            {_bd_season} · {int(_bd_row['GP'])} GP · {_bd_row['MPG']:.1f} MPG
-        </span>
-    </div>
-    """
-    st.markdown(_eq_html, unsafe_allow_html=True)
-    st.caption(
-        "Each bar shows that category's contribution to the Base Score. Availability "
-        "is applied as a multiplier on top: a player who only played 40 games keeps "
-        "their per-stat production but gets a smaller final Barrett Score."
-    )
+            _labels  = [r["label"] for r in _rows]
+            _pcts    = [r["pct"] for r in _rows]
+            _colors  = [r["color"] for r in _rows]
+            _values  = [r["value"] for r in _rows]
+            _formulas = [r["formula"] for r in _rows]
+            _texts   = [
+                f"<b>{r['pct']:.0f}th</b> · {_fmt_value(r['label'], r['value'])}"
+                for r in _rows
+            ]
+
+            _bd_fig = go.Figure()
+            # Background track for each row so 100% is visually anchored.
+            _bd_fig.add_trace(go.Bar(
+                x=[100] * len(_labels),
+                y=_labels,
+                orientation="h",
+                marker=dict(color="rgba(255,255,255,0.04)",
+                            line=dict(color="rgba(255,255,255,0.06)", width=1)),
+                hoverinfo="skip",
+                showlegend=False,
+            ))
+            # Foreground = actual percentile bar.
+            _bd_fig.add_trace(go.Bar(
+                x=_pcts,
+                y=_labels,
+                orientation="h",
+                marker=dict(color=_colors, line=dict(color="rgba(0,0,0,0)", width=0)),
+                text=_texts,
+                textposition="outside",
+                textfont=dict(color="#fff", size=13),
+                customdata=list(zip(_values, _formulas)),
+                hovertemplate=(
+                    "<b>%{y}</b><br>"
+                    "Percentile: <b>%{x:.0f}th</b><br>"
+                    "Value: %{customdata[0]:.2f}<br>"
+                    "<i>%{customdata[1]}</i><extra></extra>"
+                ),
+                showlegend=False,
+            ))
+            _bd_fig.update_layout(
+                height=320,
+                barmode="overlay",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#cdcdd5"),
+                margin=dict(l=10, r=80, t=10, b=30),
+                xaxis=dict(
+                    range=[0, 118],
+                    tickvals=[0, 25, 50, 75, 100],
+                    ticktext=["0", "25th", "50th", "75th", "100th"],
+                    gridcolor="rgba(255,255,255,0.06)",
+                    zerolinecolor="rgba(255,255,255,0.15)",
+                    title="Percentile vs. all qualifying players this season",
+                ),
+                yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
+            )
+            st.plotly_chart(_bd_fig, use_container_width=True,
+                            config={"displayModeBar": False})
+
+            # Summary strip: Base × Avail = Barrett Score for transparency.
+            _bs = float(_bd_row["Barrett Score"])
+            _av = float(_bd_row.get("Avail", 1.0))
+            _base_score = _bs / _av if _av > 0 else _bs
+            _avail_color = ("#2ecc71" if _av >= 0.85
+                            else ("#f39c12" if _av >= 0.7 else "#e63946"))
+
+            _eq_html = f"""
+            <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;
+                        margin-top:0.5rem; padding:0.85rem 1rem;
+                        background:rgba(255,255,255,0.03);
+                        border:1px solid rgba(255,255,255,0.08); border-radius:8px;">
+                <span style="color:#cdcdd5; font-size:0.9rem;">
+                    <b style="color:#fff; font-size:1.05rem;">{_base_score:.1f}</b>
+                    <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                                 letter-spacing:0.04em; margin-left:0.3rem;">Base Score</span>
+                </span>
+                <span style="color:#666;">×</span>
+                <span style="color:{_avail_color}; font-size:0.9rem;">
+                    <b style="font-size:1.05rem;">{_av * 100:.0f}%</b>
+                    <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                                 letter-spacing:0.04em; margin-left:0.3rem;">Availability</span>
+                </span>
+                <span style="color:#666;">=</span>
+                <span style="color:#fff; font-size:0.9rem;">
+                    <b style="font-size:1.15rem;">{_bs:.1f}</b>
+                    <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                                 letter-spacing:0.04em; margin-left:0.3rem;">Barrett Score</span>
+                </span>
+                <span style="margin-left:auto; color:#888; font-size:0.75rem;">
+                    {_bd_season} · {int(_bd_row['GP'])} GP · {_bd_row['MPG']:.1f} MPG
+                </span>
+            </div>
+            """
+            st.markdown(_eq_html, unsafe_allow_html=True)
+            st.caption(
+                "Each bar shows where this player ranked among all qualifying players "
+                f"in {_bd_season} — 90th percentile = better than 90% of the league. "
+                "Hover any bar for the underlying formula and raw value."
+            )
 
     st.divider()
 

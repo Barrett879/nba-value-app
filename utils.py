@@ -1627,6 +1627,74 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
+def fetch_season_component_distribution(season: str, playoffs: bool = False) -> pd.DataFrame:
+    """Per-player six-component breakdown for one season.
+
+    Returns one row per player who appears in the rankings pool, with
+    columns:
+      PLAYER_ID, Player, Scoring, Playmaking, Rebounding, Defense,
+      Efficiency, Availability
+
+    Each column is computed using the same formula as utils.base_score:
+      Scoring     = PTS (per-game)
+      Playmaking  = AST × 1.5 − TOV / 1.5
+      Rebounding  = OREB / 2 + DREB / 3
+      Defense     = BLK / 2 + STL / 1.5 − PF / 3 + D-LEBRON × 2
+      Efficiency  = efficiency_adj × 2 (signed; TS%-based)
+      Availability = avail_mult (0.30 → 1.00 multiplier)
+
+    Used by the Score Breakdown section on Search to convert one
+    player's components into percentile ranks against the rest of the
+    league for that same season.
+    """
+    season_type = "Playoffs" if playoffs else "Regular Season"
+    raw_stats = fetch_league_stats(season, season_type)
+    if raw_stats.empty or "PLAYER_NAME" not in raw_stats.columns:
+        # Pre-1996 fallback — BBRef per-game stats (NBA Stats API doesn't
+        # cover these years for some endpoints).
+        try:
+            raw_stats = fetch_bref_player_stats(season, playoffs=playoffs)
+        except Exception:
+            raw_stats = pd.DataFrame()
+    if raw_stats.empty or "PLAYER_NAME" not in raw_stats.columns:
+        return pd.DataFrame()
+
+    ranked = apply_rankings(build_raw(season, playoffs))
+    if ranked.empty:
+        return pd.DataFrame()
+
+    # Need a name key on both sides. raw_stats has PLAYER_NAME; ranked has Player.
+    raw_keep = raw_stats[["PLAYER_NAME", "PTS", "AST",
+                          "OREB", "DREB", "BLK", "STL", "TOV", "PF"]].copy()
+    raw_keep["_key"] = raw_keep["PLAYER_NAME"].apply(normalize)
+    ranked2 = ranked.copy()
+    ranked2["_key"] = ranked2["Player"].apply(normalize)
+
+    merged = ranked2.merge(raw_keep, on="_key", how="inner", suffixes=("", "_raw"))
+    if merged.empty:
+        return pd.DataFrame()
+
+    # All fields are per-game from fetch_league_stats. d_lebron, eff_adj,
+    # avail_mult are season-level from build_raw.
+    out = pd.DataFrame({
+        "PLAYER_ID":   merged["PLAYER_ID"].values,
+        "Player":      merged["Player"].values,
+        "Scoring":     merged["PTS"].astype(float).values,
+        "Playmaking":  (merged["AST"].astype(float) * 1.5
+                        - merged["TOV"].astype(float) / 1.5).values,
+        "Rebounding":  (merged["OREB"].astype(float) / 2
+                        + merged["DREB"].astype(float) / 3).values,
+        "Defense":     (merged["BLK"].astype(float) / 2
+                        + merged["STL"].astype(float) / 1.5
+                        - merged["PF"].astype(float) / 3
+                        + merged.get("d_lebron", 0).astype(float) * 2).values,
+        "Efficiency":  (merged.get("efficiency_adj", 0).astype(float) * 2).values,
+        "Availability": merged.get("avail_mult", 1.0).astype(float).values,
+    })
+    return out
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_career_trend(player_id: int, num_seasons: int = 5,
                        playoffs: bool = False) -> pd.DataFrame:
     """Barrett Score per season pulled directly from build_raw — guaranteed to
