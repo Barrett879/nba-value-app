@@ -424,6 +424,104 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
     return top30.nsmallest(n, "distance")
 
 
+def _signing_cap(signed_in_season: str) -> float:
+    """Salary cap in dollars for a comparable's signing year."""
+    return SALARY_CAP_M.get(signed_in_season, 154.6) * 1_000_000
+
+
+def _classify_context(row) -> str:
+    """Classify what KIND of signing this was — context the model can't see.
+    Returns one of: 'Supermax', 'Free-agent raise', 'Rookie extension',
+    'Paycut to stay', 'Standard new deal'."""
+    cap = _signing_cap(str(row["signed_in"]))
+    salary_then = float(row["salary"])
+    salary_signed = float(row["salary_curr"])
+    age = float(row["age"]) if not pd.isna(row["age"]) else 27
+    pct_change = (salary_signed - salary_then) / salary_then if salary_then > 0 else 0
+
+    # Supermax-tier: signing >= 28% of cap (35% supermax tier or near-max deals).
+    if salary_signed >= cap * 0.28:
+        return "Supermax"
+    # Paycut: lost real money to stay or re-sign.
+    if pct_change <= -0.10:
+        return "Paycut"
+    # Rookie extension: very low prior salary, young player, big jump.
+    if salary_then < cap * 0.10 and age <= 24 and pct_change >= 0.50:
+        return "Rookie extension"
+    # Standard meaningful raise (typical free-agent / vet new deal).
+    if pct_change >= 0.15:
+        return "Free-agent raise"
+    return "New deal"
+
+
+_CONTEXT_BADGE_COLOR = {
+    "Supermax":          "#9b59b6",
+    "Free-agent raise":  "#2ecc71",
+    "Rookie extension":  "#16d4c1",
+    "Paycut":            "#e74c3c",
+    "New deal":          "#999999",
+}
+
+
+def _scouting_take(features: dict, comps: pd.DataFrame) -> dict:
+    """Build the 'Scouting take' summary: top-3 names, median deal, IQR
+    range, X-factor narrative."""
+    if comps.empty:
+        return {}
+
+    salaries = comps["salary_curr"].astype(float).values
+    median = float(pd.Series(salaries).median())
+    q25 = float(pd.Series(salaries).quantile(0.25))
+    q75 = float(pd.Series(salaries).quantile(0.75))
+
+    top3 = comps.head(3)["Player"].tolist()
+
+    # X-factor: largest meaningful divergence on either age or career Barrett.
+    target_age = features["age"] or 27
+    target_bar = features["career_barrett"]
+    comp_age_med = float(comps["age"].median())
+    comp_bar_med = float(comps["career_weighted_barrett"].median())
+    age_diff = target_age - comp_age_med
+    bar_diff = target_bar - comp_bar_med
+
+    x_factor_parts: list[str] = []
+    if abs(age_diff) >= 2:
+        if age_diff < 0:
+            x_factor_parts.append(
+                f"younger than median comp ({int(target_age)} vs {int(comp_age_med)}) "
+                "— upside lean"
+            )
+        else:
+            x_factor_parts.append(
+                f"older than median comp ({int(target_age)} vs {int(comp_age_med)}) "
+                "— downward lean"
+            )
+    if abs(bar_diff) >= 3:
+        if bar_diff > 0:
+            x_factor_parts.append(
+                f"higher career Barrett than median comp ({target_bar:.1f} vs {comp_bar_med:.1f}) "
+                "— premium lean"
+            )
+        else:
+            x_factor_parts.append(
+                f"lower career Barrett than median comp ({target_bar:.1f} vs {comp_bar_med:.1f}) "
+                "— discount lean"
+            )
+
+    if not x_factor_parts:
+        x_factor = "Profile is right in line with comparable signings."
+    else:
+        x_factor = " · ".join(p.capitalize() for p in x_factor_parts) + "."
+
+    return {
+        "top3":     top3,
+        "median":   median,
+        "q25":      q25,
+        "q75":      q75,
+        "x_factor": x_factor,
+    }
+
+
 # ── Player picker ────────────────────────────────────────────────────────────
 all_names = get_all_player_names()
 if not all_names:
@@ -578,30 +676,84 @@ else:
     if comps.empty:
         st.info("No close comparables found.")
     else:
-        # Prefer detailed position (PG/SG/SF/PF/C) when available, fall back
-        # to the 3-bucket label for older / unknown players.
-        _pos_col = comps.get("pos_detailed", comps["pos"]).fillna(comps["pos"])
+        # ── Scouting take card ──────────────────────────────────────────────
+        take = _scouting_take(features, comps)
+        if take:
+            top3_str = ", ".join(take["top3"])
+            scouting_html = f"""
+            <div style="background:rgba(22,212,193,0.06);
+                        border:1px solid rgba(22,212,193,0.25);
+                        border-radius:10px; padding:1rem 1.3rem; margin:0.4rem 0 1rem 0;">
+              <div style="font-size:0.74rem; color:#16d4c1; letter-spacing:0.08em;
+                          text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">
+                📋 Scouting take
+              </div>
+              <div style="display:flex; flex-wrap:wrap; gap:1.5rem; margin-bottom:0.6rem;">
+                <div>
+                  <div style="font-size:0.72rem; color:#888;
+                              text-transform:uppercase; letter-spacing:0.05em;">
+                    Median new contract
+                  </div>
+                  <div style="font-size:1.6rem; color:#fff; font-weight:700;">
+                    ${take['median']/1e6:.1f}M
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:0.72rem; color:#888;
+                              text-transform:uppercase; letter-spacing:0.05em;">
+                    Middle 50%
+                  </div>
+                  <div style="font-size:1.6rem; color:#cdcdd5; font-weight:600;">
+                    ${take['q25']/1e6:.1f}M – ${take['q75']/1e6:.1f}M
+                  </div>
+                </div>
+                <div style="flex:1; min-width:260px;">
+                  <div style="font-size:0.72rem; color:#888;
+                              text-transform:uppercase; letter-spacing:0.05em;">
+                    Closest 3 comps
+                  </div>
+                  <div style="font-size:0.95rem; color:#cdcdd5;">{top3_str}</div>
+                </div>
+              </div>
+              <div style="font-size:0.85rem; color:#aaa;
+                          border-top:1px solid rgba(255,255,255,0.08);
+                          padding-top:0.5rem;">
+                <b style="color:#cdcdd5;">X factor:</b> {take['x_factor']}
+              </div>
+            </div>
+            """
+            st.markdown(scouting_html, unsafe_allow_html=True)
+
+        # ── Comparables table with Context column ──────────────────────────
+        comps_with_ctx = comps.copy()
+        comps_with_ctx["context"] = comps_with_ctx.apply(_classify_context, axis=1)
+
+        _pos_col = comps_with_ctx.get("pos_detailed", comps_with_ctx["pos"]).fillna(
+            comps_with_ctx["pos"])
         comp_disp = pd.DataFrame({
-            "Player":         comps["Player"].values,
-            "Signed in":      comps["signed_in"].values,
-            "Age then":       comps["age"].astype(int).values,
+            "Player":         comps_with_ctx["Player"].values,
+            "Signed in":      comps_with_ctx["signed_in"].values,
+            "Age then":       comps_with_ctx["age"].astype(int).values,
             "Position":       _pos_col.values,
-            "Career Barrett": comps["career_weighted_barrett"].round(1).values,
-            "Walk-yr Barrett": comps["barrett_score"].round(1).values,
-            "Salary then":    [_fmt_money(v) for v in comps["salary"]],
-            "Signed for":     [_fmt_money(v) for v in comps["salary_curr"]],
+            "Context":        comps_with_ctx["context"].values,
+            "Career Barrett": comps_with_ctx["career_weighted_barrett"].round(1).values,
+            "Walk-yr Barrett": comps_with_ctx["barrett_score"].round(1).values,
+            "Salary then":    [_fmt_money(v) for v in comps_with_ctx["salary"]],
+            "Signed for":     [_fmt_money(v) for v in comps_with_ctx["salary_curr"]],
             "Δ":              [f"{((c - p)/p)*100:+.0f}%" if p > 0 else "—"
-                              for p, c in zip(comps["salary"], comps["salary_curr"])],
+                              for p, c in zip(comps_with_ctx["salary"],
+                                              comps_with_ctx["salary_curr"])],
         })
         st.dataframe(comp_disp, use_container_width=True, hide_index=True,
                      height=min(400, 60 + len(comp_disp) * 35))
 
-        actuals = comps["salary_curr"].values
         st.caption(
-            f"**Comparables-implied range:** "
-            f"${min(actuals)/1e6:.1f}M – ${max(actuals)/1e6:.1f}M, "
-            f"median ${pd.Series(actuals).median()/1e6:.1f}M. "
-            "Use this as a second opinion on the model's prediction above."
+            "**Context tags** indicate the signing type so you can weight each "
+            "comparable accordingly: **Supermax** ≥28% of cap (a structurally "
+            "different category), **Free-agent raise** = typical new deal with "
+            "≥15% bump, **Rookie extension** = young player's first non-rookie "
+            "deal (CBA mechanics distort), **Paycut** = player took less to stay "
+            "(usually distorts the median downward)."
         )
 
 # ── Methodology footer ───────────────────────────────────────────────────────
