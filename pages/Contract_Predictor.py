@@ -165,19 +165,20 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     try:
         career = fetch_player_full_career(player_name)
         if not career.empty:
-            # Drop the in-progress current season — partial-season data
-            # gets penalized by the availability multiplier mid-year.
-            completed = career[career["Season"] != season].copy()
-
-            # Also skip historical injury years (GP < 40) — real GMs
-            # discount partial seasons. For Zach LaVine, this drops his
-            # 25-game 2023-24 surgery season from the weighted average.
-            healthy = completed[completed["GP"] >= 40]
+            # Apply the same GP ≥ 40 filter to ALL seasons including the
+            # current one. Late in the season this naturally includes the
+            # current year (Luka with 70+ games gets picked up); early in
+            # the season it excludes the in-progress year (only 10-20
+            # games played, availability multiplier deflates the score).
+            # Historical injury years (e.g. Zach LaVine's 25-GP 2023-24)
+            # also drop out the same way.
+            healthy = career[career["GP"] >= 40]
             used_healthy_filter = len(healthy) >= 1
-            pool = healthy if used_healthy_filter else completed
+            pool = healthy if used_healthy_filter else career
 
             if not pool.empty:
-                # Take the last (most recent) up to 3 healthy seasons.
+                # Take the most recent up to 3 healthy seasons (50/30/20
+                # weighting, most recent gets the highest weight).
                 recent = pool.tail(3)
                 weights_full = [0.20, 0.30, 0.50]
                 weights = weights_full[-len(recent):]
@@ -186,14 +187,11 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
                     (recent["Barrett Score"].values * weights).sum() / w_sum
                 )
                 seasons_used = list(recent["Season"].values)
-                # Did we actually skip any years?
                 skipped = (
-                    not completed.empty
-                    and len(completed) > len(pool)
-                    and used_healthy_filter
+                    used_healthy_filter and len(career) > len(pool)
                 )
                 skip_note = (
-                    " · injury years (<40 GP) skipped" if skipped else ""
+                    " · low-GP seasons (<40) skipped" if skipped else ""
                 )
                 career_basis = (
                     f"weighted avg of {len(recent)} healthy season"
@@ -786,7 +784,7 @@ _breakdown_one_line = f"""
   <b style="color:#16d4c1;">${predicted_M:.1f}M</b>
   <span style="color:#666;">±${prediction['band']/1_000_000:.1f}M</span>
   <div style="font-size:0.72rem; color:#777; margin-top:0.35rem;">
-    Base uses {features['career_basis']} (not the in-progress current season).
+    Base uses {features['career_basis']}.
   </div>
 </div>
 """
@@ -889,11 +887,12 @@ with st.expander("About this prediction"):
         ### How the next contract is predicted
         Four layers stack on top of the Barrett Score:
 
-        1. **Career-weighted Barrett Score** — instead of just the in-progress
-           current season (which gets deflated by partial games + the
-           availability multiplier), the projection uses a weighted average
-           of the player's last 3 *completed* seasons (50/30/20 weighting).
-           Matches how front offices evaluate bodies of work.
+        1. **Career-weighted Barrett Score** — uses a weighted average of
+           the player's last 3 **healthy seasons** (GP ≥ 40), with 50/30/20
+           weighting (most recent first). The current season is included
+           once it has enough games to be representative; injury years
+           (historical or in-progress mid-season) are skipped. Matches
+           how front offices evaluate bodies of work.
         2. **Base projection** — what the player at that career-weighted rank
            would earn based on the current season's salary distribution.
         3. **Age multiplier** — fit on 2014-22 real new contracts. A 33yo
