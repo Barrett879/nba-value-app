@@ -1591,11 +1591,20 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
                 "MPG":            float(raw_row["MIN"]),
                 "PTS":            float(raw_row["PTS"]),
                 "AST":            float(raw_row["AST"]),
+                "OREB":           float(raw_row.get("OREB", 0)),
+                "DREB":           float(raw_row.get("DREB", 0)),
                 "REB":            float(raw_row.get("OREB", 0)) + float(raw_row.get("DREB", 0)),
                 "STL":            float(raw_row["STL"]),
                 "BLK":            float(raw_row["BLK"]),
                 "TOV":            float(raw_row["TOV"]),
+                "PF":             float(raw_row.get("PF", 0)),
                 "TS%":            float(br_row.get("ts_pct", 0)) * 100,
+                # Raw component pieces — used by the "Score Breakdown" view on Search.
+                # All season-level (not per-game) so the breakdown matches the
+                # base-score arithmetic exactly.
+                "D-LEBRON":       float(br_row.get("d_lebron", 0) or 0),
+                "EffAdj":         float(br_row.get("efficiency_adj", 0) or 0),
+                "Avail":          float(br_row.get("avail_mult", 1.0) or 1.0),
                 "Barrett Score":  barrett_canonical,  # pace-adjusted (v6+)
                 "Barrett (Raw)":  barrett_raw,         # un-adjusted, for Search toggle
                 "Score Rank":     int(br_row["score_rank"]),

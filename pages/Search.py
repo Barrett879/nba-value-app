@@ -334,6 +334,120 @@ if len(selected) == 1:
 
     st.divider()
 
+    # ── Score Breakdown — what's driving the Barrett Score this season? ─────
+    # Decomposes the score into its 6 inputs (scoring / playmaking / rebounding
+    # / defense / efficiency / availability) so users can see *why* a player
+    # ranks where they do, rather than just trusting the final number.
+    st.subheader("Score Breakdown")
+
+    _peak_season = best_season["Season"]
+    _bd_seasons = career["Season"].tolist()
+    _bd_default_idx = _bd_seasons.index(_peak_season) if _peak_season in _bd_seasons else len(_bd_seasons) - 1
+    _bd_col_l, _bd_col_r = st.columns([1, 3])
+    with _bd_col_l:
+        _bd_season = st.selectbox(
+            "Season",
+            _bd_seasons,
+            index=_bd_default_idx,
+            key=f"breakdown_season_{player_name}",
+            help="What was driving the Barrett Score this season? Defaults to the peak.",
+        )
+
+    _bd_row = career[career["Season"] == _bd_season].iloc[0]
+
+    # Component formulas mirror utils.base_score() — kept in sync there.
+    _scoring     = float(_bd_row["PTS"])
+    _playmaking  = float(_bd_row["AST"]) * 1.5 - float(_bd_row["TOV"]) / 1.5
+    _rebounding  = float(_bd_row.get("OREB", 0)) / 2 + float(_bd_row.get("DREB", 0)) / 3
+    _defense     = (float(_bd_row["BLK"]) / 2
+                    + float(_bd_row["STL"]) / 1.5
+                    - float(_bd_row.get("PF", 0)) / 3
+                    + float(_bd_row.get("D-LEBRON", 0)) * 2)
+    _efficiency  = float(_bd_row.get("EffAdj", 0)) * 2
+    _availability = float(_bd_row.get("Avail", 1.0))
+    _base_total  = _scoring + _playmaking + _rebounding + _defense + _efficiency
+
+    _components = [
+        ("Scoring",      _scoring,      "#e63946"),
+        ("Playmaking",   _playmaking,   "#f39c12"),
+        ("Rebounding",   _rebounding,   "#16d4c1"),
+        ("Defense",      _defense,      "#3498db"),
+        ("Efficiency",   _efficiency,   "#9b59b6"),
+    ]
+    _components.sort(key=lambda x: x[1], reverse=True)
+    _labels = [c[0] for c in _components]
+    _values = [c[1] for c in _components]
+    _colors = [c[2] for c in _components]
+
+    _bd_fig = go.Figure(go.Bar(
+        x=_values,
+        y=_labels,
+        orientation="h",
+        marker=dict(color=_colors, line=dict(color="rgba(0,0,0,0)", width=0)),
+        text=[f"<b>{v:+.1f}</b>" if v < 0 else f"<b>{v:.1f}</b>" for v in _values],
+        textposition="outside",
+        textfont=dict(color="#fff", size=13),
+        hovertemplate="<b>%{y}</b><br>Contribution: %{x:.2f}<extra></extra>",
+    ))
+    _x_pad = max(2.0, max(abs(v) for v in _values) * 0.18)
+    _bd_fig.update_layout(
+        height=270,
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+        font=dict(color="#cdcdd5"),
+        margin=dict(l=10, r=40, t=10, b=30),
+        xaxis=dict(
+            gridcolor="rgba(255,255,255,0.06)",
+            zerolinecolor="rgba(255,255,255,0.25)",
+            title="Contribution to Base Score",
+            range=[min(0, min(_values)) - _x_pad, max(_values) + _x_pad],
+        ),
+        yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
+        showlegend=False,
+    )
+    st.plotly_chart(_bd_fig, use_container_width=True, config={"displayModeBar": False})
+
+    # Availability + summary equation strip
+    _barrett_final = _base_total * _availability
+    _avail_pct = _availability * 100
+    _avail_color = "#2ecc71" if _availability >= 0.85 else ("#f39c12" if _availability >= 0.7 else "#e63946")
+
+    _eq_html = f"""
+    <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;
+                margin-top:0.5rem; padding:0.85rem 1rem;
+                background:rgba(255,255,255,0.03);
+                border:1px solid rgba(255,255,255,0.08); border-radius:8px;">
+        <span style="color:#cdcdd5; font-size:0.9rem;">
+            <b style="color:#fff; font-size:1.05rem;">{_base_total:.1f}</b>
+            <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                         letter-spacing:0.04em; margin-left:0.3rem;">Base Score</span>
+        </span>
+        <span style="color:#666;">×</span>
+        <span style="color:{_avail_color}; font-size:0.9rem;">
+            <b style="font-size:1.05rem;">{_avail_pct:.0f}%</b>
+            <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                         letter-spacing:0.04em; margin-left:0.3rem;">Availability</span>
+        </span>
+        <span style="color:#666;">=</span>
+        <span style="color:#fff; font-size:0.9rem;">
+            <b style="font-size:1.15rem;">{_barrett_final:.1f}</b>
+            <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                         letter-spacing:0.04em; margin-left:0.3rem;">Barrett Score</span>
+        </span>
+        <span style="margin-left:auto; color:#888; font-size:0.75rem;">
+            {_bd_season} · {int(_bd_row['GP'])} GP · {_bd_row['MPG']:.1f} MPG
+        </span>
+    </div>
+    """
+    st.markdown(_eq_html, unsafe_allow_html=True)
+    st.caption(
+        "Each bar shows that category's contribution to the Base Score. Availability "
+        "is applied as a multiplier on top: a player who only played 40 games keeps "
+        "their per-stat production but gets a smaller final Barrett Score."
+    )
+
+    st.divider()
+
     # ── Season-by-season table ─────────────────────────────────────────────────
     st.subheader("Season by season")
 
