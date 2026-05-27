@@ -379,10 +379,16 @@ def playoff_bonus_multiplier(playoff_career_df, lookback_seasons: int = 3
     Returns: (multiplier, tier_label, most_recent_playoff_barrett, gp).
 
     Tiers (most recent playoff Barrett, with availability):
-        >= 33:  Elite playoff    → ×1.08   (Jokic Finals MVP tier)
-        >= 26:  Strong playoff   → ×1.05   (SGA / Tatum)
-        >= 18:  Solid playoff    → ×1.02   (Rui WCF / Bruce Brown BKN)
-        < 18:   Average / role   → ×1.00
+        >= 31:  Elite playoff    → ×1.15   (Jokic Finals MVP tier)
+        >= 24:  Strong playoff   → ×1.10   (SGA / Tatum)
+        >= 16:  Solid playoff    → ×1.05   (Rui WCF / Bruce Brown BKN)
+        < 16:   Average / role   → ×1.00
+
+    Magnitudes calibrated to be meaningful without overwhelming the rate-
+    score base. Real-world playoff signings (Bruce Brown +244%, Rui ~+200%)
+    are outliers driven by free-agent market dynamics the model can't see;
+    these multipliers capture the systematic playoff premium, not the
+    breakout-event magnitude.
     """
     if playoff_career_df is None or playoff_career_df.empty:
         return 1.0, "No playoff data", 0.0, 0
@@ -399,12 +405,12 @@ def playoff_bonus_multiplier(playoff_career_df, lookback_seasons: int = 3
     gp = int(most_recent["GP"])
     playoff_barrett = float(most_recent["Barrett Score"])
 
-    if playoff_barrett >= 33:
-        return 1.08, "Elite playoff",   playoff_barrett, gp
-    if playoff_barrett >= 26:
-        return 1.05, "Strong playoff",  playoff_barrett, gp
-    if playoff_barrett >= 18:
-        return 1.02, "Solid playoff",   playoff_barrett, gp
+    if playoff_barrett >= 31:
+        return 1.15, "Elite playoff",   playoff_barrett, gp
+    if playoff_barrett >= 24:
+        return 1.10, "Strong playoff",  playoff_barrett, gp
+    if playoff_barrett >= 16:
+        return 1.05, "Solid playoff",   playoff_barrett, gp
     return 1.0, "Average playoff",  playoff_barrett, gp
 
 

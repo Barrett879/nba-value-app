@@ -1439,7 +1439,7 @@ if _playoff_gp >= 4 and _playoff_tier_label not in ("No playoff data", ""):
         else:
             _msg = (
                 f"Last playoff: Barrett {_playoff_barrett_val_h:.1f} "
-                f"over {_playoff_gp} GP (below 18-Barrett threshold)"
+                f"over {_playoff_gp} GP (below 16-Barrett threshold)"
             )
         _playoff_chip_html = (
             f'<div style="display:inline-block; background:rgba(255,255,255,0.04); '
@@ -1734,8 +1734,8 @@ with st.expander("About this prediction"):
            GMs negotiate off the freshest playoff impression, not a
            multi-year average — Bruce Brown after BKN, Wiggins after the
            GSW title, Rui after the LAL WCF run all got paid off ONE
-           playoff run. Tiers: Elite ≥33 Barrett (×1.08), Strong ≥26
-           (×1.05), Solid ≥18 (×1.02). One-way bonus — no penalty for
+           playoff run. Tiers: Elite ≥31 Barrett (×1.15), Strong ≥24
+           (×1.10), Solid ≥16 (×1.05). One-way bonus — no penalty for
            lottery-team players who can't earn postseason reps.
         7. **CBA max cap** — derived from years of NBA service. 0-6 yrs:
            25% of cap. 7-9 yrs: 30%. 10+ yrs: 35%. Caps the projection
