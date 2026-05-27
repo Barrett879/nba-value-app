@@ -2514,17 +2514,29 @@ def position_to_bucket(detailed_pos: str) -> str:
 
 
 @st.cache_data(ttl=86400, show_spinner=False)
-def fetch_rookie_scale_players(season: str) -> set:
-    """Returns a set of normalized names for players on rookie scale contracts."""
-    path = _dc_path(f"rookie_scale_{season.replace('-','_')}.pkl")
+def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
+    """Returns a set of normalized names for first-round picks currently
+    inside their rookie scale contract (years 1-4 post-draft).
+
+    For season "2025-26": the most recent draft was Summer 2025 (rookies).
+    Year-4 players were drafted Summer 2022. Range: 2022-2025.
+
+    cache_v=2: fixes a year-range bug in v1 that missed year-4 rookies
+    (e.g. 2022 draftees in the 2025-26 season — Jalen Duren, Tari Eason).
+    """
+    path = _dc_path(f"rookie_scale_{season.replace('-','_')}_v{cache_v}.pkl")
     if _dc_fresh(path, ttl=86400):
         try:
             return _pkl_load(path)
         except Exception:
             pass
     try:
-        end_year = int(season.split("-")[0]) + 1
-        rookie_draft_years = set(range(end_year - 3, end_year + 1))
+        end_year = int(season.split("-")[0]) + 1  # "2025-26" → 2026
+
+        # Rookie scale spans years 1-4. For season ending in end_year,
+        # year-4 players were drafted (end_year - 4), year-1 rookies drafted
+        # (end_year - 1). Range: end_year-4 inclusive, end_year exclusive.
+        rookie_draft_years = set(range(end_year - 4, end_year))
 
         idx = playerindex.PlayerIndex(season=season)
         df_idx = idx.get_data_frames()[0]

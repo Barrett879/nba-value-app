@@ -436,30 +436,27 @@ def detect_caveats(features: dict) -> list[str]:
     salary = features.get("salary", 0)
     barrett = features.get("barrett_score", 0)
 
-    # Rookie scale lock — now driven by the actual rookie-scale set, not
-    # a salary heuristic. CBA-binding: they cannot sign a new market deal
-    # until the rookie scale expires.
+    # Rookie scale lock — driven by the actual NBA player index (first-round
+    # picks within years 1-4 of their rookie scale). CBA-binding: they
+    # cannot sign a new market deal until the rookie scale expires.
     if features.get("on_rookie_scale"):
         notes.append(
             "Currently on rookie scale (CBA-locked salary). The projection "
             "below is for their NEXT contract — i.e. their rookie-scale "
             "extension or first market deal."
         )
-    elif salary > 0 and salary < 12_000_000 and age and age <= 23:
-        # Fallback heuristic for players not in our rookie-scale set.
-        notes.append(
-            "Possibly on rookie scale — locked salary by CBA until contract "
-            "expires (usually year 4). The market price below forecasts their "
-            "next contract, not their current one."
-        )
 
-    # Supermax eligibility — surface the specific tier so the user sees
-    # WHY the model floored their projection.
+    # Supermax eligibility — surface the specific tier + dollar amount so
+    # the user sees WHY the model floored their projection.
     if features.get("supermax_eligible"):
         recent = features.get("recent_all_nba", []) or []
         tier_label = features.get("supermax_tier", "")
+        # Compute the dollar amount for the supermax tier.
+        cap_M = SALARY_CAP_M.get(CURRENT_SEASON, 154.6)
+        max_pct = float(features.get("max_pct", 0.35) or 0.35)
+        supermax_dollars_M = cap_M * max_pct
         notes.append(
-            f"Supermax-eligible: {tier_label}. "
+            f"Supermax-eligible: {tier_label} ≈ ${supermax_dollars_M:.1f}M. "
             f"{len(recent)} All-NBA selection{'s' if len(recent) != 1 else ''} "
             f"in last 3 seasons + {features.get('team_tenure', 0)} years with "
             f"{features.get('current_team', 'current team')}. "
