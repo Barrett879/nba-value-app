@@ -1086,12 +1086,16 @@ def _search_players(query: str) -> list[str]:
 #     updates to show the selected player's FULL name (not the partial
 #     search term the user typed). Still editable in place — Cmd+A to
 #     replace, etc.
+#   - default_options: shown before any typing — the component does NOT
+#     call _search_players with an empty string, so we explicitly seed it
+#     with the alphabetical roster so users can browse without typing.
 #   - rerun_on_update=True: refreshes the page when a new player is
 #     picked so the contract details update.
 selected = st_searchbox(
     search_function=_search_players,
     placeholder="Type a player name…",
     default=_init_player,
+    default_options=sorted(active_names),
     edit_after_submit="option",
     rerun_on_update=True,
     key=_PICKER_KEY,
