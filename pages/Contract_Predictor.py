@@ -199,36 +199,59 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     age_mult = AGE_MULTIPLIERS.get(_age_bucket(features["age"]), 1.0)
     pos_mult = POSITION_MULTIPLIERS.get(features["position"], 1.0)
 
+    cap_M = SALARY_CAP_M.get(target_season, 154.6)
+    cap_dollars_val = cap_M * 1_000_000
+    supermax_threshold = cap_dollars_val * SUPERMAX_CAP_PCT
+
     # Supermax-tier suppression: the position multipliers were fit on
     # mid-market signings, where Centers especially get systematically
     # less than their box-score rank suggests. But supermax/max-contract
     # players sign at fixed CBA percentages of the cap regardless of
     # position — Jokić doesn't get a "Center discount" on his deal.
-    # When the base projection is already ≥28% of cap (supermax / near-max
-    # tier), unwind the position multiplier so we don't fake-discount
-    # the league's best players.
-    cap_M = SALARY_CAP_M.get(target_season, 154.6)
-    supermax_threshold = cap_M * 1_000_000 * SUPERMAX_CAP_PCT
     pos_mult_applied = pos_mult
     if base >= supermax_threshold:
         pos_mult_applied = 1.0  # no positional discount at the top tier
 
-    predicted = base * age_mult * pos_mult_applied
+    # Tier-aware age multiplier:
+    # The standard age multipliers (0.57 at 35+, 0.72 at 32-34) are fit on
+    # the AVERAGE aging player, who takes a paycut to keep playing. But
+    # stars currently earning at supermax tier are a structurally
+    # different cohort — they sign for max% (CBA-capped, not market-
+    # discounted). Treating Curry like the average 38yo PG predicts $25M
+    # for a guy currently making $60M; that's wrong by ~50%.
+    #
+    # Heuristic: if the player is currently earning ≥28% of cap (supermax
+    # tier) AND their career Score still places them in the elite pool,
+    # floor the age multiplier at 0.85. They might decline 15% but not
+    # 45%.
+    current_salary = float(features.get("salary", 0) or 0)
+    current_salary_pct = current_salary / cap_dollars_val if cap_dollars_val > 0 else 0
+    age_mult_applied = age_mult
+    age_mult_floored = False
+    if (
+        current_salary_pct >= SUPERMAX_CAP_PCT
+        and base >= supermax_threshold
+        and age_mult < 0.85
+    ):
+        age_mult_applied = 0.85
+        age_mult_floored = True
 
-    cap_M = SALARY_CAP_M.get(target_season, 154.6)
-    band = cap_M * 1_000_000 * CONFIDENCE_BAND_PCT_OF_CAP
+    predicted = base * age_mult_applied * pos_mult_applied
+    band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
-        "base":              base,
-        "age_mult":          age_mult,
-        "pos_mult":          pos_mult_applied,    # the multiplier actually used
-        "pos_mult_raw":      pos_mult,            # the unsuppressed value, for transparency
+        "base":                base,
+        "age_mult":            age_mult_applied,    # the one actually used
+        "age_mult_raw":        age_mult,            # the unfloored value
+        "age_mult_floored":    age_mult_floored,
+        "pos_mult":            pos_mult_applied,
+        "pos_mult_raw":        pos_mult,
         "pos_mult_suppressed": pos_mult_applied != pos_mult,
-        "predicted":         predicted,
-        "low":               max(0, predicted - band),
-        "high":              predicted + band,
-        "band":              band,
-        "cap":               cap_M * 1_000_000,
+        "predicted":           predicted,
+        "low":                 max(0, predicted - band),
+        "high":                predicted + band,
+        "band":                band,
+        "cap":                 cap_dollars_val,
     }
 
 
@@ -634,15 +657,42 @@ _comps = (
     find_comparables(features, _history, n=6)
     if not _history.empty else pd.DataFrame()
 )
-# Market view uses distance-weighted median so the closest comparables
-# count more than the farthest. Equal-weighting was making the Market
-# number track outliers too closely; weighted brings it closer to the
-# 1-2 best matches without ignoring the tail entirely.
+
+# Tag context up front so we can filter the market-median pool. We'll
+# carry this through to the table render below (no double computation).
 if not _comps.empty:
-    _salaries = _comps["salary_curr"].astype(float).values
-    if "distance" in _comps.columns:
+    _comps = _comps.copy()
+    _comps["context"] = _comps.apply(_classify_context, axis=1)
+
+# Currently-supermax-tier filter for the market view:
+# If the queried player is currently earning ≥28% of cap (Curry, Jokić,
+# AD, etc.) and the comparables pool is dominated by Paycut signings,
+# the market median collapses to ~$3M and becomes meaningless. Paycut
+# comps are "former stars taking less to keep playing" — a different
+# population from "stayed at tier." Filter them out for this group.
+_market_used_comps = _comps
+_market_filter_applied = False
+if not _comps.empty:
+    _player_cur_sal_pct = (
+        float(features.get("salary", 0) or 0)
+        / (SALARY_CAP_M.get(CURRENT_SEASON, 154.6) * 1_000_000)
+    )
+    if _player_cur_sal_pct >= SUPERMAX_CAP_PCT:
+        _non_paycut = _comps[_comps["context"] != "Paycut"]
+        # Only apply the filter if it leaves us with at least 2 comps
+        # (so the median is still meaningful). If everyone is a Paycut,
+        # fall back to the original pool and flag it in the UI later.
+        if len(_non_paycut) >= 2:
+            _market_used_comps = _non_paycut
+            _market_filter_applied = True
+
+# Market view uses distance-weighted median so the closest comparables
+# count more than the farthest.
+if not _market_used_comps.empty:
+    _salaries = _market_used_comps["salary_curr"].astype(float).values
+    if "distance" in _market_used_comps.columns:
         _weights = _inverse_distance_weights(
-            _comps["distance"].astype(float).values
+            _market_used_comps["distance"].astype(float).values
         )
     else:
         _weights = np.ones_like(_salaries)
@@ -674,6 +724,20 @@ if _market_median is not None:
         f'</div>'
         if divergence >= 0.40 else ''
     )
+    # If we filtered out Paycut comparables (because the player is
+    # currently a supermax-tier earner whose true comparables don't
+    # include the "former star, took less to keep playing" cohort),
+    # surface that to the user so the higher market median isn't
+    # mysterious.
+    _filter_note = (
+        f'<div style="margin-top:0.5rem; font-size:0.74rem; color:#888;">'
+        f'Market view excludes Paycut comparables for currently '
+        f'supermax-tier players — the "stayed at tier" cohort is the '
+        f'right peer group, not "former star took less."'
+        f'</div>'
+        if _market_filter_applied else ''
+    )
+    diverge_note = diverge_note + _filter_note
     # Compact player metadata line — replaces the standalone Player Snapshot
     # section below by inlining age / position / current salary / current Barrett.
     _meta_bits = [features["name"]]
@@ -798,6 +862,10 @@ _pos_factor_note = (
     f" (suppressed from ×{prediction['pos_mult_raw']:.2f} — base ≥28% of cap)"
     if prediction.get("pos_mult_suppressed") else ""
 )
+_age_factor_note = (
+    f" (floored from ×{prediction['age_mult_raw']:.2f} — currently supermax-tier)"
+    if prediction.get("age_mult_floored") else ""
+)
 _breakdown_one_line = f"""
 <div style="background:rgba(255,255,255,0.03);
             border:1px solid rgba(255,255,255,0.08);
@@ -809,7 +877,7 @@ _breakdown_one_line = f"""
   <span style="color:#777;">(career Score {features['career_barrett']:.1f} → rank #{features['effective_rank']})</span>
   &nbsp;<span style="color:#666;">×</span>&nbsp;
   <b>×{prediction['age_mult']:.2f}</b>
-  <span style="color:#777;">(age {int(features['age']) if features['age'] else '?'})</span>
+  <span style="color:#777;">(age {int(features['age']) if features['age'] else '?'}{_age_factor_note})</span>
   &nbsp;<span style="color:#666;">×</span>&nbsp;
   <b>×{prediction['pos_mult']:.2f}</b>
   <span style="color:#777;">({features.get('position_detailed', features['position'])}{_pos_factor_note})</span>
@@ -888,8 +956,12 @@ else:
             st.markdown(scouting_html, unsafe_allow_html=True)
 
         # ── Comparables table with Context column ──────────────────────────
-        comps_with_ctx = comps.copy()
-        comps_with_ctx["context"] = comps_with_ctx.apply(_classify_context, axis=1)
+        # `comps` already has the context column attached up at the
+        # market-median computation site — reuse it instead of recomputing.
+        comps_with_ctx = (
+            comps.copy() if "context" in comps.columns
+            else comps.assign(context=comps.apply(_classify_context, axis=1))
+        )
 
         _pos_col = comps_with_ctx.get("pos_detailed", comps_with_ctx["pos"]).fillna(
             comps_with_ctx["pos"])
