@@ -683,7 +683,7 @@ def explain_prediction(features: dict, prediction: dict,
             f"({features.get('career_barrett', 0):.1f}, rank "
             f"#{features.get('effective_rank', 0)}), then adjusted for age, "
             f"position, durability, and recent playoff impact. See the math "
-            f"breakdown in *About this prediction* below."
+            f"breakdown below."
         )
 
     # ── Bullet 2: model vs market ──────────────────────────────────────────
@@ -1327,6 +1327,20 @@ high_M = prediction["high"] / 1_000_000
 # Initialize divergence so downstream code (confidence label, "Why this
 # prediction" explainer) can reference it whether or not market data exists.
 divergence = 0.0
+
+# Compact CBA-status caption shown under the Model dollar (both hero
+# variants — with market and without). Gives a one-line "why" at a
+# glance; the full explanation lives in the About expander.
+_supermax_label = prediction.get("supermax_tier_label", "")
+if prediction.get("cba_cap_applied"):
+    _model_caption = f"Capped at max ({_supermax_label})"
+elif prediction.get("cba_floor_applied"):
+    _model_caption = f"Supermax floor ({_supermax_label})"
+elif features.get("on_rookie_scale"):
+    _model_caption = "Currently on rookie scale"
+else:
+    _model_caption = ""
+
 if _market_median is not None:
     market_M = _market_median / 1_000_000
     # Honest range = min(model, market) → max(model_high, market)
@@ -1415,6 +1429,7 @@ if _market_median is not None:
                       line-height:1;">
             ${predicted_M:.1f}M
           </div>
+          {f'<div style="font-size:0.7rem; color:#16d4c1; margin-top:0.25rem; font-weight:600;">{_model_caption}</div>' if _model_caption else ''}
         </div>
         <div style="font-size:1.4rem; color:#444; padding-bottom:0.4rem;">|</div>
         <div>
@@ -1512,6 +1527,7 @@ else:
               </div>
               <div style="font-size:2.2rem; font-weight:800; color:#fff;
                           line-height:1;">${predicted_M:.1f}M</div>
+              {f'<div style="font-size:0.7rem; color:#16d4c1; margin-top:0.25rem; font-weight:600;">{_model_caption}</div>' if _model_caption else ''}
             </div>
             <div style="font-size:1.4rem; color:#444; padding-bottom:0.4rem;">|</div>
             <div>
@@ -1628,29 +1644,13 @@ if caveats or _playoff_chip_html:
 # keeps the main view clean (Model / Market / Honest range) while still
 # letting curious users see the per-player calculation.
 
-# ── Plain-English "Why this prediction" explanation ─────────────────────────
-# Tailored per-player bullets explaining what drove the dollar amount and
-# how model vs market compare. Sits between the hero card and the
-# comparables so the user knows WHY they're seeing the number before
-# diving into the comps table.
+# "Why this prediction" plain-English bullets live inside the About
+# expander below. The main view stays clean — the CBA-status caption
+# under the Model dollar gives a one-line summary; the expander has
+# the full reasoning for curious users.
 _explain_bullets = explain_prediction(
     features, prediction, _market_median, divergence,
 )
-if _explain_bullets:
-    _explain_html = "<br><br>".join(_explain_bullets)
-    # Render the bullets as a single paragraph inside a soft callout.
-    _why_html = (
-        '<div style="background:rgba(22,212,193,0.05); '
-        'border:1px solid rgba(22,212,193,0.20); border-radius:10px; '
-        'padding:0.85rem 1.1rem; margin: 0 0 1rem 0; '
-        'font-size:0.88rem; color:#cdcdd5; line-height:1.55;">'
-        '<div style="font-size:0.7rem; color:#16d4c1; text-transform:uppercase; '
-        'letter-spacing:0.08em; font-weight:700; margin-bottom:0.5rem;">'
-        'Why this prediction</div>'
-        f'{_explain_html}'
-        '</div>'
-    )
-    st.markdown(_why_html, unsafe_allow_html=True)
 
 # ── Comparables ──────────────────────────────────────────────────────────────
 st.subheader("Comparable signings")
@@ -1776,6 +1776,16 @@ else:
 # ── Methodology footer (collapsed — info-after-action) ──────────────────────
 st.divider()
 with st.expander("About this prediction"):
+    # ── Plain-English explanation (player-specific) ─────────────────────────
+    # Tailored bullets describing what drove the dollar amount and how
+    # model vs market compare. Sits at the top of the expander so curious
+    # users see the "why" before the math.
+    if _explain_bullets:
+        _explain_md = "\n\n".join(_explain_bullets)
+        st.markdown(
+            f"### Why this prediction\n\n{_explain_md}\n\n---"
+        )
+
     # ── Per-player math breakdown ───────────────────────────────────────────
     # Same one-line equation that used to live in the main view. Moved here
     # so the predicted-contract hero is the focal point of the page; the
