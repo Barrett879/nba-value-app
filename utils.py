@@ -222,7 +222,11 @@ TOP_N_DIRECTIONAL   = 20    # top-N underpaid/overpaid calls per season
 def age_bucket(age) -> str:
     """Five-bucket age classification used by the contract calibration layer.
     Stays consistent across the Contract Predictor page and all analyzer
-    scripts so a tweak here propagates everywhere."""
+    scripts so a tweak here propagates everywhere.
+
+    NOTE: kept for backward-compat with analyzer scripts that compare
+    bucket-based calibration to the new tiered model. Production
+    prediction now uses tiered_age_multiplier() below."""
     if pd.isna(age) if hasattr(pd, "isna") else age is None:
         return "UNK"
     try:
@@ -235,6 +239,68 @@ def age_bucket(age) -> str:
     if age <= 31: return "29-31"
     if age <= 34: return "32-34"
     return "35+"
+
+
+def tiered_age_multiplier(age, career_score: float,
+                          current_rank: int | None = None) -> tuple[float, str]:
+    """Tier-aware age decline curve. Returns (multiplier, tier_name).
+
+    Three populations age very differently in real NBA contracts:
+
+      ELITE     — Top 30 by career-weighted score, OR career_score ≥ 28.
+                  These guys (LeBron, Curry, KD, Harden) hold their
+                  contract value until ~37 then decline slowly (1.5% / yr).
+                  Their body fails before the market does.
+
+      ROTATION  — Top 100, OR career_score ≥ 18. Real NBA starters who
+                  take moderate age discounts (~3% / yr past 28).
+
+      DEPTH     — Everyone else. Bench / role guys who get steeply
+                  discounted past 28 (6% / yr) — flooded out by younger
+                  options at similar production.
+
+    All tiers get an additional decline past age 35 (body fails). The
+    floor is 0.40 — a 40+ year-old depth player isn't completely
+    worthless but is signing at vet-minimum tier.
+
+    Replaces the bucket-based age multiplier (CONTRACT_AGE_MULTIPLIERS).
+    Continuous (no discontinuities at bucket boundaries) and tier-aware
+    (the average aging player and the aging star are different
+    populations).
+    """
+    if age is None or (hasattr(pd, "isna") and pd.isna(age)):
+        return 1.0, "Unknown"
+    try:
+        age = float(age)
+    except (TypeError, ValueError):
+        return 1.0, "Unknown"
+
+    # No age penalty in prime years.
+    if age <= 28:
+        return 1.0, "Prime (≤28)"
+
+    # Tier classification — production rank takes priority because it's
+    # the freshest signal. Fall back to career-score threshold when rank
+    # is unknown.
+    score = float(career_score or 0)
+    rank_ok = current_rank is not None and current_rank > 0
+    if (rank_ok and current_rank <= 30) or score >= 28:
+        tier = "Elite"
+        decline_rate    = 0.015  # 1.5% per year past 28
+        body_fail_rate  = 0.010  # extra 1% per year past 34
+    elif (rank_ok and current_rank <= 100) or score >= 18:
+        tier = "Rotation"
+        decline_rate    = 0.030
+        body_fail_rate  = 0.020
+    else:
+        tier = "Depth"
+        decline_rate    = 0.060
+        body_fail_rate  = 0.040
+
+    base_decline  = decline_rate   * (age - 28)
+    extra_decline = body_fail_rate * max(0.0, age - 34)
+    multiplier = max(0.40, 1.0 - base_decline - extra_decline)
+    return round(multiplier, 3), tier
 
 
 # ── League-wide pace by season (possessions per 48 minutes) ────────────────────

@@ -31,11 +31,10 @@ from utils import (
     render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
     # Calibration constants — single source of truth in utils
     SALARY_CAP_M, cap_dollars,
-    CONTRACT_AGE_MULTIPLIERS as AGE_MULTIPLIERS,
     CONTRACT_POSITION_MULTIPLIERS as POSITION_MULTIPLIERS,
     CONFIDENCE_BAND_PCT_OF_CAP,
     HEALTHY_SEASON_GP, NEW_CONTRACT_PCT, SUPERMAX_CAP_PCT,
-    age_bucket as _age_bucket,
+    tiered_age_multiplier,
 )
 
 
@@ -196,62 +195,48 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     # for players in the middle of an injury/comeback season than the raw
     # current-season Barrett rank.
     base = features["career_base_proj"]
-    age_mult = AGE_MULTIPLIERS.get(_age_bucket(features["age"]), 1.0)
+
+    # Tiered age multiplier (replaces the old bucket-based version).
+    # Function of (age, career_score, current_rank) — captures the real
+    # NBA pattern that elite producers don't follow the average aging
+    # curve. See utils.tiered_age_multiplier for the three tiers and
+    # their decline rates.
+    age_mult, age_tier = tiered_age_multiplier(
+        age=features.get("age"),
+        career_score=features.get("career_barrett", 0),
+        current_rank=features.get("effective_rank"),
+    )
+
     pos_mult = POSITION_MULTIPLIERS.get(features["position"], 1.0)
 
     cap_M = SALARY_CAP_M.get(target_season, 154.6)
     cap_dollars_val = cap_M * 1_000_000
     supermax_threshold = cap_dollars_val * SUPERMAX_CAP_PCT
 
-    # Supermax-tier suppression: the position multipliers were fit on
-    # mid-market signings, where Centers especially get systematically
-    # less than their box-score rank suggests. But supermax/max-contract
-    # players sign at fixed CBA percentages of the cap regardless of
-    # position — Jokić doesn't get a "Center discount" on his deal.
+    # Position suppression at supermax tier:
+    # Position multipliers were fit on mid-market signings (Centers get
+    # systematically less than box score suggests). But supermax/max-
+    # contract players sign at fixed CBA percentages regardless of
+    # position. When base ≥ 28% of cap, drop the positional discount.
     pos_mult_applied = pos_mult
     if base >= supermax_threshold:
-        pos_mult_applied = 1.0  # no positional discount at the top tier
+        pos_mult_applied = 1.0
 
-    # Tier-aware age multiplier:
-    # The standard age multipliers (0.57 at 35+, 0.72 at 32-34) are fit on
-    # the AVERAGE aging player, who takes a paycut to keep playing. But
-    # stars currently earning at supermax tier are a structurally
-    # different cohort — they sign for max% (CBA-capped, not market-
-    # discounted). Treating Curry like the average 38yo PG predicts $25M
-    # for a guy currently making $60M; that's wrong by ~50%.
-    #
-    # Heuristic: if the player is currently earning ≥28% of cap (supermax
-    # tier) AND their career Score still places them in the elite pool,
-    # floor the age multiplier at 0.85. They might decline 15% but not
-    # 45%.
-    current_salary = float(features.get("salary", 0) or 0)
-    current_salary_pct = current_salary / cap_dollars_val if cap_dollars_val > 0 else 0
-    age_mult_applied = age_mult
-    age_mult_floored = False
-    if (
-        current_salary_pct >= SUPERMAX_CAP_PCT
-        and base >= supermax_threshold
-        and age_mult < 0.85
-    ):
-        age_mult_applied = 0.85
-        age_mult_floored = True
-
-    predicted = base * age_mult_applied * pos_mult_applied
+    predicted = base * age_mult * pos_mult_applied
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
         "base":                base,
-        "age_mult":            age_mult_applied,    # the one actually used
-        "age_mult_raw":        age_mult,            # the unfloored value
-        "age_mult_floored":    age_mult_floored,
-        "pos_mult":            pos_mult_applied,
-        "pos_mult_raw":        pos_mult,
-        "pos_mult_suppressed": pos_mult_applied != pos_mult,
-        "predicted":           predicted,
-        "low":                 max(0, predicted - band),
-        "high":                predicted + band,
-        "band":                band,
-        "cap":                 cap_dollars_val,
+        "age_mult":             age_mult,
+        "age_tier":             age_tier,
+        "pos_mult":             pos_mult_applied,
+        "pos_mult_raw":         pos_mult,
+        "pos_mult_suppressed":  pos_mult_applied != pos_mult,
+        "predicted":            predicted,
+        "low":                  max(0, predicted - band),
+        "high":                 predicted + band,
+        "band":                 band,
+        "cap":                  cap_dollars_val,
     }
 
 
@@ -949,9 +934,12 @@ _pos_factor_note = (
     f" (suppressed from ×{prediction['pos_mult_raw']:.2f} — base ≥28% of cap)"
     if prediction.get("pos_mult_suppressed") else ""
 )
+# Annotate the age multiplier with the tier label so the user sees WHY
+# Harden's 36-year-old multiplier is gentler than an average 36yo's.
 _age_factor_note = (
-    f" (floored from ×{prediction['age_mult_raw']:.2f} — currently supermax-tier)"
-    if prediction.get("age_mult_floored") else ""
+    f" · {prediction['age_tier']} tier"
+    if prediction.get("age_tier") and prediction["age_tier"] not in
+       ("Prime (≤28)", "Unknown") else ""
 )
 _breakdown_one_line = f"""
 <div style="background:rgba(255,255,255,0.03);
