@@ -575,6 +575,15 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
     target_tier_idx = DRAFT_TIER_ORDINAL.get(target_tier, 4)
     tier_weight = _tier_penalty_weight(features.get("age"))
 
+    # Exclude the target player from their own comp pool. Otherwise Vassell's
+    # prior rookie extension ($29.3M, 2024-25) shows up in his own table —
+    # which both looks weird and gives them an artificial perfect-match
+    # comparable that biases the median.
+    target_norm = normalize(features.get("name", ""))
+    history = history[history["Player"].apply(normalize) != target_norm]
+    if history.empty:
+        return history
+
     # Match against same position bucket (Guard / Forward / Center —
     # already broad; PG and SG are both "Guard"). Fall back to all
     # positions only when same-bucket pool is too small.
