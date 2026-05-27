@@ -1076,15 +1076,17 @@ def _search_players(query: str) -> list[str]:
 # st_searchbox is a real text input (Cmd+A, cursor positioning, character
 # selection all work) backed by a custom dropdown of matches. Replaces the
 # old st.selectbox which displayed selected values as static label text.
-#   - edit_after_submit="current": keeps the selected value editable in
-#     place so the user can replace it without clicking the X first.
-#   - rerun_on_update=True: refreshes the page when a new player is picked
-#     so the contract details update.
+#   - edit_after_submit="option": after selecting a player, the input
+#     updates to show the selected player's FULL name (not the partial
+#     search term the user typed). Still editable in place — Cmd+A to
+#     replace, etc.
+#   - rerun_on_update=True: refreshes the page when a new player is
+#     picked so the contract details update.
 selected = st_searchbox(
     search_function=_search_players,
     placeholder="Type a player name…",
     default=_init_player,
-    edit_after_submit="current",
+    edit_after_submit="option",
     rerun_on_update=True,
     key=_PICKER_KEY,
 )
