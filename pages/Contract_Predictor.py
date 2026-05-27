@@ -42,6 +42,7 @@ from utils import (
     # CBA / contract structure
     get_max_contract_eligibility,
     fetch_rookie_scale_players,
+    fetch_all_nba_selections,
 )
 
 
@@ -466,11 +467,26 @@ def detect_caveats(features: dict) -> list[str]:
         )
     elif age and age >= 27 and barrett >= 28:
         # Production warrants supermax but missing CBA-binding criteria
-        # (no All-NBA, not tenured, etc.). Still flag the possibility.
-        notes.append(
-            "Star-tier producer — supermax-track if they hit All-NBA AND stay "
-            "with their current team. Projection uses standard max ceiling."
-        )
+        # (no All-NBA, not tenured, etc.). Only flag the speculative
+        # "supermax-track if they hit All-NBA" path BEFORE this year's
+        # All-NBA has been awarded. Once voting is closed and they
+        # didn't make the team, the caveat is stale — the model handles
+        # their pricing as a star-tier non-All-NBA producer.
+        try:
+            selections = fetch_all_nba_selections()
+            all_nba_decided = any(
+                s.get("season") == CURRENT_SEASON
+                for player_sels in selections.values()
+                for s in player_sels
+            )
+        except Exception:
+            all_nba_decided = False
+        if not all_nba_decided:
+            notes.append(
+                "Star-tier producer — supermax-track if they hit All-NBA "
+                "this season AND stay with their current team. Projection "
+                "uses standard max ceiling."
+            )
 
     if age and age >= 33 and barrett < 20:
         notes.append(
