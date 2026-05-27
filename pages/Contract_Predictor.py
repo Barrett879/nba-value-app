@@ -1055,10 +1055,16 @@ if "player" in st.query_params:
 
 def _search_players(query: str) -> list[str]:
     """Filter active-season players by case- and accent-insensitive substring.
-    Returns up to 10 matches sorted by match quality (exact → prefix → substring),
-    then alphabetical as a tiebreak."""
+
+    Empty query → return the full active-season roster (alphabetical) so the
+    dropdown is browsable without typing (matches the old selectbox UX).
+
+    With a query → return up to 10 matches sorted by match quality
+    (exact → prefix → substring), then alphabetical as a tiebreak.
+    """
     if not query or not query.strip():
-        return []
+        # Empty: show everything sorted alphabetically.
+        return sorted(active_names)
     q = normalize(query)
     scored: list[tuple[int, str]] = []
     for n in active_names:
