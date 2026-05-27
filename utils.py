@@ -351,6 +351,55 @@ def durability_multiplier(career_df, lookback_seasons: int = 3
     return 0.65, "Severe", avail
 
 
+def playoff_bonus_multiplier(playoff_career_df, lookback_seasons: int = 3
+                              ) -> tuple[float, str, float, int]:
+    """Bonus multiplier for proven recent playoff performers.
+
+    Why one-way (bonus only, no penalty):
+      - Lottery teams can't help that their team didn't make the playoffs.
+        Penalizing a star on a 25-win team for "no playoff exposure" would
+        confuse "playing for a bad team" with "underperforming under
+        pressure." The market doesn't do that.
+      - Players who DO make playoffs AND perform well get a real bump
+        from GMs (Jokic, Tatum, SGA premium). We capture that.
+
+    Computed on trailing N postseason appearances. Uses 50/30/20 weighting
+    matching the regular-season trailing Barrett.
+
+    Returns: (multiplier, tier_label, weighted_playoff_barrett, gp_total).
+
+    Tiers (weighted playoff Barrett, with availability):
+        >= 35:  Elite playoff    → ×1.08   (Jokic / Giannis tier)
+        >= 28:  Strong playoff   → ×1.05   (SGA / Tatum tier)
+        >= 20:  Solid playoff    → ×1.02   (rotation starter)
+        < 20:   Average / role   → ×1.00
+
+    Requires ≥10 cumulative GP across trailing window for any bonus —
+    small samples (2-game first-round exits) are noise.
+    """
+    if playoff_career_df is None or playoff_career_df.empty:
+        return 1.0, "No playoff data", 0.0, 0
+    recent = playoff_career_df.tail(lookback_seasons)
+    total_gp = int(recent["GP"].sum())
+    if total_gp < 10:
+        return 1.0, "Limited playoff exposure", 0.0, total_gp
+
+    weights_full = [0.20, 0.30, 0.50]
+    weights = weights_full[-len(recent):]
+    wsum = sum(weights)
+    playoff_barrett = float(
+        (recent["Barrett Score"].values * weights).sum() / wsum
+    )
+
+    if playoff_barrett >= 35:
+        return 1.08, "Elite playoff",   playoff_barrett, total_gp
+    if playoff_barrett >= 28:
+        return 1.05, "Strong playoff",  playoff_barrett, total_gp
+    if playoff_barrett >= 20:
+        return 1.02, "Solid playoff",   playoff_barrett, total_gp
+    return 1.0, "Average playoff",  playoff_barrett, total_gp
+
+
 # ── League-wide pace by season (possessions per 48 minutes) ────────────────────
 # Source: Basketball Reference league-averages page. Used to era-adjust volume
 # stats (PTS, AST, REB, BLK, STL, TOV, PF) so a 25 PPG game in 1985 (high-pace)

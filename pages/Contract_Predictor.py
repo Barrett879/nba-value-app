@@ -34,7 +34,7 @@ from utils import (
     CONTRACT_POSITION_MULTIPLIERS as POSITION_MULTIPLIERS,
     CONFIDENCE_BAND_PCT_OF_CAP,
     HEALTHY_SEASON_GP, NEW_CONTRACT_PCT, SUPERMAX_CAP_PCT,
-    tiered_age_multiplier, durability_multiplier,
+    tiered_age_multiplier, durability_multiplier, playoff_bonus_multiplier,
     # Draft tier — used to keep comparables apples-to-apples (lottery picks
     # earn on pedigree; non-lottery developers don't).
     DRAFT_TIERS, DRAFT_TIER_ORDINAL,
@@ -75,6 +75,80 @@ def _fmt_money(v: float) -> str:
     if pd.isna(v) or v == 0:
         return "—"
     return f"${v / 1_000_000:.1f}M"
+
+
+def _confidence_label(features: dict, prediction: dict, divergence: float = 0.0
+                       ) -> tuple[str, str, list[str]]:
+    """Compute how much faith to put in the prediction.
+
+    Drivers (each adjusts a starting score of 75):
+      - Model vs Market divergence: agreement → confidence up; divergence
+        ≥ 40% → confidence down.
+      - CBA-bound predictions (max cap or supermax floor) get a bump —
+        the CBA does the math, less of a model guess.
+      - Long career (≥8 yrs service): more data, more confidence.
+      - Short career (<2 yrs service): less data, less confidence.
+      - Chronic/Severe durability: uncertainty about availability.
+      - Rookie scale: there's CBA-mandated timing uncertainty (when the
+        next deal even happens depends on whether team picks up option).
+
+    Returns (label, color_hex, reasons) where reasons is a list of
+    short strings ready to show as a tooltip / detail line.
+    """
+    score = 75
+    reasons: list[str] = []
+
+    # Model vs market agreement.
+    if divergence and divergence > 0:
+        if divergence < 0.10:
+            score += 15
+            reasons.append("model & market within 10%")
+        elif divergence < 0.20:
+            score += 5
+            reasons.append("model & market within 20%")
+        elif divergence < 0.40:
+            score -= 10
+            reasons.append("model and market disagree (20-40%)")
+        else:
+            score -= 25
+            reasons.append(f"model/market divergence {divergence*100:.0f}%")
+
+    # CBA-bound = high confidence (CBA does the math)
+    if prediction.get("cba_cap_applied"):
+        score += 15
+        reasons.append("CBA-capped at this player's max")
+    elif prediction.get("cba_floor_applied"):
+        score += 15
+        reasons.append("CBA-floored at supermax tier")
+
+    # Service depth.
+    service = features.get("service_years", 0)
+    if service < 2:
+        score -= 20
+        reasons.append("limited NBA history")
+    elif service >= 8:
+        score += 5
+        reasons.append(f"{service}+ yrs of career data")
+
+    # Durability concerns.
+    dur = features.get("durability_tier", "")
+    if dur in ("Chronic", "Severe"):
+        score -= 15
+        reasons.append(f"{dur.lower()} injury history")
+    elif dur == "Moderate":
+        score -= 5
+        reasons.append("moderate availability")
+
+    # Rookie scale = future timing uncertainty.
+    if features.get("on_rookie_scale"):
+        score -= 5
+        reasons.append("rookie-scale extension timing")
+
+    if score >= 85:
+        return "High", "#16d4c1", reasons
+    if score >= 70:
+        return "Medium", "#f6b73c", reasons
+    return "Low", "#e63946", reasons
 
 
 # Single-letter position display. The detailed BBRef scrape returns
@@ -276,6 +350,20 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         trailing_gp_total = 0
         trailing_gp_max = 0
 
+    # Playoff bonus — proven playoff performers (Jokic, Tatum, SGA) earn
+    # a premium at the negotiating table beyond what regular-season
+    # production suggests. One-way: bonus only, no penalty for players on
+    # tanking teams who can't get postseason reps.
+    try:
+        playoff_career = fetch_player_full_career(player_name, playoffs=True)
+        playoff_mult, playoff_tier, playoff_barrett_val, playoff_gp = (
+            playoff_bonus_multiplier(playoff_career, lookback_seasons=3)
+        )
+    except Exception:
+        playoff_mult, playoff_tier, playoff_barrett_val, playoff_gp = (
+            1.0, "No playoff data", 0.0, 0
+        )
+
     # Draft tier — lottery picks signal earning ceiling beyond what production
     # rank implies; 2nd-round / undrafted developers don't get that bump.
     # Used by find_comparables to keep the comp pool apples-to-apples.
@@ -320,6 +408,10 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         "durability_avail":   dur_avail,
         "trailing_gp_total":  trailing_gp_total,
         "trailing_gp_max":    trailing_gp_max,
+        "playoff_mult":       playoff_mult,
+        "playoff_tier":       playoff_tier,
+        "playoff_barrett":    playoff_barrett_val,
+        "playoff_gp":         playoff_gp,
         "draft_tier":         draft_info["draft_tier"],
         "draft_pick":         draft_info["draft_pick"],
         "draft_year":         draft_info["draft_year"],
@@ -380,7 +472,13 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     dur_mult = float(features.get("durability_mult", 1.0) or 1.0)
     dur_tier = features.get("durability_tier", "")
 
-    raw_predicted = base * age_mult * pos_mult_applied * dur_mult
+    # Playoff bonus — Jokic / Tatum / SGA tier earn a premium beyond
+    # regular-season production. One-way bonus (no penalty for lottery
+    # teams) computed by playoff_bonus_multiplier in utils.
+    playoff_mult = float(features.get("playoff_mult", 1.0) or 1.0)
+    playoff_tier = features.get("playoff_tier", "")
+
+    raw_predicted = base * age_mult * pos_mult_applied * dur_mult * playoff_mult
 
     # ── CBA cap-and-floor adjustments ───────────────────────────────────────
     # 1. Cap at player's CBA max %. A 25% max player (≤6 yrs service)
@@ -434,6 +532,8 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
         "pos_mult_suppressed":  pos_mult_applied != pos_mult,
         "durability_mult":      dur_mult,
         "durability_tier":      dur_tier,
+        "playoff_mult":         playoff_mult,
+        "playoff_tier":         playoff_tier,
         "raw_predicted":        raw_predicted,
         "predicted":            predicted,
         "low":                  max(0, predicted - band),
@@ -1075,6 +1175,11 @@ if _market_median is not None:
         abs(predicted_M - market_M) / max(predicted_M, market_M)
         if max(predicted_M, market_M) > 0 else 0
     )
+    # Confidence label — uses divergence + CBA constraints + career depth.
+    _conf_label, _conf_color, _conf_reasons = _confidence_label(
+        features, prediction, divergence,
+    )
+    _conf_tooltip = " · ".join(_conf_reasons) if _conf_reasons else "baseline"
     diverge_note = (
         f'<div style="margin-top:0.7rem; padding-top:0.6rem; '
         f'border-top:1px solid rgba(255,255,255,0.08); '
@@ -1113,13 +1218,24 @@ if _market_median is not None:
         _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
     _player_meta_line = " · ".join(_meta_bits)
 
+    _conf_badge = (
+        f'<span title="{_conf_tooltip}" '
+        f'style="display:inline-block; padding:0.15rem 0.6rem; '
+        f'border-radius:999px; font-size:0.62rem; font-weight:700; '
+        f'letter-spacing:0.08em; text-transform:uppercase; '
+        f'background:{_conf_color}22; color:{_conf_color}; '
+        f'border:1px solid {_conf_color}55; margin-left:0.6rem; '
+        f'vertical-align:1px;">'
+        f'{_conf_label} Confidence'
+        f'</span>'
+    )
     _header_html = f"""
     <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
                 border:1px solid rgba(255,255,255,0.12); border-radius:14px;
                 padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
       <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
                   letter-spacing:0.1em; font-weight:600;">
-        Predicted next contract
+        Predicted next contract{_conf_badge}
       </div>
       <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
         {_player_meta_line}
@@ -1175,6 +1291,23 @@ else:
     if features.get("salary", 0) > 0:
         _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
     _player_meta_line = " · ".join(_meta_bits)
+    # No market value to compare against, so divergence isn't a signal.
+    # Confidence still uses career depth + CBA constraints + durability.
+    _conf_label, _conf_color, _conf_reasons = _confidence_label(
+        features, prediction, divergence=0.0,
+    )
+    _conf_tooltip = " · ".join(_conf_reasons) if _conf_reasons else "no market data"
+    _conf_badge = (
+        f'<span title="{_conf_tooltip}" '
+        f'style="display:inline-block; padding:0.15rem 0.6rem; '
+        f'border-radius:999px; font-size:0.62rem; font-weight:700; '
+        f'letter-spacing:0.08em; text-transform:uppercase; '
+        f'background:{_conf_color}22; color:{_conf_color}; '
+        f'border:1px solid {_conf_color}55; margin-left:0.6rem; '
+        f'vertical-align:1px;">'
+        f'{_conf_label} Confidence'
+        f'</span>'
+    )
 
     # Two sub-cases for the no-market display:
     #   - Suppressed: queried player is supermax-tier but the comparables
@@ -1202,7 +1335,7 @@ else:
                     padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
           <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
                       letter-spacing:0.1em; font-weight:600;">
-            Predicted next contract
+            Predicted next contract{_conf_badge}
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
             {_player_meta_line}
@@ -1251,7 +1384,7 @@ else:
                     padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
           <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
                       letter-spacing:0.1em; font-weight:600;">
-            Predicted next contract
+            Predicted next contract{_conf_badge}
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
             {_player_meta_line}
@@ -1445,6 +1578,19 @@ with st.expander("About this prediction"):
         f'GP over last 3 yrs)</span>'
         if _show_durability else ""
     )
+    # Playoff multiplier — only shown when ≠ 1.00 (i.e., player earned a bonus).
+    _playoff_mult = prediction.get("playoff_mult", 1.0) or 1.0
+    _playoff_tier = prediction.get("playoff_tier", "") or ""
+    _playoff_gp_target = features.get("playoff_gp", 0)
+    _playoff_barrett_target = features.get("playoff_barrett", 0.0)
+    _show_playoff = _playoff_mult != 1.0
+    _playoff_html_fragment = (
+        f'&nbsp;<span style="color:#666;">×</span>&nbsp;'
+        f'<b>×{_playoff_mult:.2f}</b>'
+        f'<span style="color:#777;"> (playoff: {_playoff_tier} · '
+        f'Barrett {_playoff_barrett_target:.1f} on {_playoff_gp_target} GP)</span>'
+        if _show_playoff else ""
+    )
 
     # Build the math line as a single-line HTML string. Multi-line f-strings
     # of HTML have caused rendering bugs (Streamlit's markdown parser sees a
@@ -1495,6 +1641,7 @@ with st.expander("About this prediction"):
         f'<b>×{prediction["pos_mult"]:.2f}</b>'
         f' <span style="color:#777;">({_pos_label}{_pos_factor_note})</span>'
         f'{_dur_html_fragment}'
+        f'{_playoff_html_fragment}'
         f' &nbsp;<span style="color:#666;">=</span>&nbsp; '
         f'<b style="color:#16d4c1;">${_equation_end_M:.1f}M</b>'
         f' <span style="color:#666;">±${prediction["band"]/1_000_000:.1f}M</span>'
@@ -1542,10 +1689,16 @@ with st.expander("About this prediction"):
         5. **Durability multiplier** — trailing-3-year availability tier
            (Healthy / Mild / Moderate / Chronic / Severe). Embiid's chronic
            injury history applies ~0.78× even though his rate is elite.
-        6. **CBA max cap** — derived from years of NBA service. 0-6 yrs:
+        6. **Playoff bonus** — proven recent playoff performers (≥10 GP
+           over last 3 postseasons) earn a small premium beyond regular-
+           season production. Tiered: Elite playoff ≥35 Barrett (×1.08),
+           Strong ≥28 (×1.05), Solid ≥20 (×1.02), else neutral. One-way
+           bonus only — no penalty for players on tanking teams who
+           can't earn postseason reps.
+        7. **CBA max cap** — derived from years of NBA service. 0-6 yrs:
            25% of cap. 7-9 yrs: 30%. 10+ yrs: 35%. Caps the projection
            because no player can legally earn more than their max.
-        7. **Supermax floor** — for players with recent All-NBA selections
+        8. **Supermax floor** — for players with recent All-NBA selections
            AND tenure with their current team (Designated Vet at 35%,
            Designated Rookie at 30%). Elite stars in their prime almost
            universally take the max they're offered. Floor disabled for
@@ -1553,11 +1706,18 @@ with st.expander("About this prediction"):
 
         **Confidence band:** ±$5.5M reflects out-of-sample median error.
 
+        **Confidence indicator** (badge on hero card): High / Medium / Low
+        based on model-market agreement, CBA constraints, career depth,
+        and durability. CBA-bound predictions (max-capped / supermax-
+        floored) and long-career healthy vets get high confidence; large
+        model-market divergence + limited NBA history drags it down.
+
         ### What's in the model
         - Production (Barrett Score, healthy-season trailing average)
         - Age (with tier-aware decline curve)
         - Position (G/F/C bucket)
         - Durability (last 3 yrs GP)
+        - **Playoff performance** (trailing-3-postseason Barrett tier bonus)
         - Draft pedigree (lottery / mid-1st / late-1st / 2nd / undrafted)
         - **All-NBA selections** (scraped from BBRef awards page)
         - **NBA service years** (derived from career data)
