@@ -1,7 +1,9 @@
+import logging
 import math
 import re
 import time
 import io
+import os
 import pickle
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -17,6 +19,18 @@ from bs4 import BeautifulSoup
 from nba_api.stats.endpoints import leaguedashplayerstats, playercareerstats, playerindex
 from nba_api.stats.static import players as nba_players_static
 from nba_api.stats.static import teams as nba_teams_static
+
+
+# ── Logging ──────────────────────────────────────────────────────────────────
+# Centralized logger so cache misses, scrape failures, and parse errors don't
+# silently disappear. View logs in `render logs` for the live app or in your
+# terminal locally. Set HOOPSVALUE_LOG=DEBUG for verbose output.
+logger = logging.getLogger("hoopsvalue")
+if not logger.handlers:
+    _h = logging.StreamHandler()
+    _h.setFormatter(logging.Formatter("[hoopsvalue] %(levelname)s %(message)s"))
+    logger.addHandler(_h)
+    logger.setLevel(os.environ.get("HOOPSVALUE_LOG", "WARNING").upper())
 
 # CACHE_DIR — use Render's persistent disk if mounted, otherwise local fallback.
 # On Render: attach a disk, set mount path to /data, size 1 GB.
@@ -1056,7 +1070,8 @@ def fetch_playoff_rounds(season: str) -> dict:
     url = f"https://www.basketball-reference.com/playoffs/NBA_{end_year}.html"
     try:
         r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
-    except Exception:
+    except Exception as e:
+        logger.warning("BBRef GET failed for %s: %s", url, e)
         return {}
     # Retry once after a backoff if we hit BBRef's rate limit
     if r.status_code == 429:
@@ -1064,7 +1079,8 @@ def fetch_playoff_rounds(season: str) -> dict:
         time.sleep(wait)
         try:
             r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
-        except Exception:
+        except Exception as e:
+            logger.warning("BBRef retry GET failed for %s: %s", url, e)
             return {}
     if r.status_code != 200:
         return {}
@@ -2098,8 +2114,9 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
                 mapped = _pos_map.get(pos.strip().upper())
                 if mapped:
                     result[normalize(name.strip())] = mapped
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("fetch_bref_positions(espn_year=%s) scrape failed: %s",
+                       espn_year, e)
     _pkl_save(path, result)
     return result
 
@@ -2175,8 +2192,10 @@ def fetch_player_positions_detailed(season: str, cache_v: int = 2) -> dict:
                     # Multi-team players appear once per stint plus a TOT row.
                     # First occurrence wins; later identical entries are no-ops.
                     result.setdefault(normalize(name), primary)
-    except Exception:
-        pass
+    except Exception as e:
+        logger.warning("fetch_player_positions_detailed(season=%s) scrape "
+                       "failed (will fall back to ESPN coarse positions): %s",
+                       season, e)
 
     if result:
         _pkl_save(path, result)
