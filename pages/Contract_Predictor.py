@@ -34,7 +34,7 @@ from utils import (
     CONTRACT_POSITION_MULTIPLIERS as POSITION_MULTIPLIERS,
     CONFIDENCE_BAND_PCT_OF_CAP,
     HEALTHY_SEASON_GP, NEW_CONTRACT_PCT, SUPERMAX_CAP_PCT,
-    tiered_age_multiplier,
+    tiered_age_multiplier, durability_multiplier,
 )
 
 
@@ -198,6 +198,22 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     capped_rank = min(effective_rank, len(cur_salaries)) - 1
     career_base_proj = float(cur_salaries[capped_rank])
 
+    # Durability: separate from production rate. Curry's anomaly 41-GP
+    # year shouldn't drag him into the chronic tier, but Embiid's
+    # multi-season pattern of ~30 GP should heavily discount his
+    # projected AAV.
+    try:
+        full_career = fetch_player_full_career(player_name)
+        dur_mult, dur_tier, dur_avail = durability_multiplier(
+            full_career, lookback_seasons=3,
+        )
+        trailing_gp_total = int(full_career.tail(3)["GP"].sum())
+        trailing_gp_max   = min(len(full_career), 3) * 82
+    except Exception:
+        dur_mult, dur_tier, dur_avail = 1.0, "no career data", 0.0
+        trailing_gp_total = 0
+        trailing_gp_max = 0
+
     return {
         "name":               row["Player"],
         "team":               row.get("Team", ""),
@@ -210,6 +226,11 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         "score_rank":         int(row["score_rank"]),
         "effective_rank":     effective_rank,
         "career_base_proj":   career_base_proj,
+        "durability_mult":    dur_mult,
+        "durability_tier":    dur_tier,
+        "durability_avail":   dur_avail,
+        "trailing_gp_total":  trailing_gp_total,
+        "trailing_gp_max":    trailing_gp_max,
         "salary":             float(row.get("salary", 0) or 0),
         "projected_salary":   float(row.get("projected_salary", 0) or 0),
         "gp":                 int(row.get("GP", 0) or 0),
@@ -250,16 +271,25 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     if base >= supermax_threshold:
         pos_mult_applied = 1.0
 
-    predicted = base * age_mult * pos_mult_applied
+    # Durability discount — comes from get_player_features which already
+    # computed it from the full career. Healthy players (avail ≥ 85%
+    # over 3 years): ×1.00, no penalty. Chronic injury cases (Embiid):
+    # heavy discount even when rate score is elite.
+    dur_mult = float(features.get("durability_mult", 1.0) or 1.0)
+    dur_tier = features.get("durability_tier", "")
+
+    predicted = base * age_mult * pos_mult_applied * dur_mult
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
-        "base":                base,
+        "base":                 base,
         "age_mult":             age_mult,
         "age_tier":             age_tier,
         "pos_mult":             pos_mult_applied,
         "pos_mult_raw":         pos_mult,
         "pos_mult_suppressed":  pos_mult_applied != pos_mult,
+        "durability_mult":      dur_mult,
+        "durability_tier":      dur_tier,
         "predicted":            predicted,
         "low":                  max(0, predicted - band),
         "high":                 predicted + band,
@@ -969,6 +999,20 @@ _age_factor_note = (
     if prediction.get("age_tier") and prediction["age_tier"] not in
        ("Prime (≤28)", "Unknown") else ""
 )
+# Durability multiplier only shown in the math line when it's actually
+# moving the number — Healthy → ×1.00 means no change, no need to clutter.
+_dur_mult = prediction.get("durability_mult", 1.0) or 1.0
+_dur_tier = prediction.get("durability_tier", "") or ""
+_show_durability = _dur_mult != 1.0
+_dur_html_fragment = (
+    f'&nbsp;<span style="color:#666;">×</span>&nbsp;'
+    f'<b>×{_dur_mult:.2f}</b>'
+    f'<span style="color:#777;"> (durability: {_dur_tier} · '
+    f'{features.get("trailing_gp_total", 0)}/{features.get("trailing_gp_max", 246)} '
+    f'GP over last 3 yrs)</span>'
+    if _show_durability else ""
+)
+
 _breakdown_one_line = f"""
 <div style="background:rgba(255,255,255,0.03);
             border:1px solid rgba(255,255,255,0.08);
@@ -984,6 +1028,7 @@ _breakdown_one_line = f"""
   &nbsp;<span style="color:#666;">×</span>&nbsp;
   <b>×{prediction['pos_mult']:.2f}</b>
   <span style="color:#777;">({features.get('position_detailed', features['position'])}{_pos_factor_note})</span>
+  {_dur_html_fragment}
   &nbsp;<span style="color:#666;">=</span>&nbsp;
   <b style="color:#16d4c1;">${predicted_M:.1f}M</b>
   <span style="color:#666;">±${prediction['band']/1_000_000:.1f}M</span>

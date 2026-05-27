@@ -303,6 +303,54 @@ def tiered_age_multiplier(age, career_score: float,
     return round(multiplier, 3), tier
 
 
+def durability_multiplier(career_df, lookback_seasons: int = 3
+                          ) -> tuple[float, str, float]:
+    """Contract discount based on chronic availability.
+
+    Real GMs separate two things when projecting contracts:
+      1. Production rate (what you do when on the floor)  → rate score
+      2. Durability     (how often you're actually on the floor) → THIS
+
+    The rate-score input to the model treats Curry's one-anomaly 41-GP
+    season the same as a healthy 75-GP year (he's elite either way).
+    But the durability question is real for chronic cases — Embiid
+    averaging 30 GP/yr over 3 years signals teams can't bank on him.
+    That deserves its own multiplier separate from production.
+
+    Computed on trailing N seasons (default 3). All seasons count toward
+    the GP sum, including ones below the GP ≥ 40 "healthy" filter — we
+    explicitly want to PENALIZE missing games here, not exclude them.
+
+    Returns: (multiplier, tier_label, trailing_gp_ratio).
+
+    Tiers:
+        >= 0.85 trailing avail (~70 GP/yr): healthy   → ×1.00
+        >= 0.70 (~58 GP/yr):                mild      → ×0.95
+        >= 0.55 (~45 GP/yr):                moderate  → ×0.88
+        >= 0.40 (~33 GP/yr):                chronic   → ×0.78
+        < 0.40:                              severe    → ×0.65
+
+    Rookies / players with <2 seasons: returns ×1.00 ("insufficient
+    history") so we don't double-penalize them on top of the rookie
+    scale lock.
+    """
+    if career_df.empty:
+        return 1.0, "no career data", 0.0
+    recent = career_df.tail(lookback_seasons)
+    if len(recent) < 2:
+        return 1.0, "insufficient history", 0.0
+
+    total_gp = float(recent["GP"].sum())
+    expected = len(recent) * 82  # max possible GP across the window
+    avail = total_gp / expected if expected > 0 else 0.0
+
+    if avail >= 0.85: return 1.00, "Healthy",  avail
+    if avail >= 0.70: return 0.95, "Mild",     avail
+    if avail >= 0.55: return 0.88, "Moderate", avail
+    if avail >= 0.40: return 0.78, "Chronic",  avail
+    return 0.65, "Severe", avail
+
+
 # ── League-wide pace by season (possessions per 48 minutes) ────────────────────
 # Source: Basketball Reference league-averages page. Used to era-adjust volume
 # stats (PTS, AST, REB, BLK, STL, TOV, PF) so a 25 PPG game in 1985 (high-pace)
