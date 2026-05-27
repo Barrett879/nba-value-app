@@ -1,3 +1,98 @@
+"""Shared logic + UI helpers for the HoopsValue Streamlit app.
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║  TABLE OF CONTENTS                                                       ║
+║                                                                          ║
+║  1.  Configuration constants                                             ║
+║      - CACHE_DIR, SEASONS, DEFAULT_MIN_THRESHOLD                         ║
+║      - SALARY_CAP_M, cap_dollars()                                       ║
+║      - Contract calibration: AGE / POSITION multipliers, thresholds      ║
+║      - age_bucket()                                                      ║
+║      - LEAGUE_PACE, pace_factor(), pace_adjusted_barrett()               ║
+║      - SALARY_SUPPLEMENT (pre-1990 hand-curated)                         ║
+║      - SEASON_GAMES_LOOKUP                                               ║
+║      - FORMULA_VERSION + PLAYOFF_VERSION (cache invalidation)            ║
+║      - Logger                                                            ║
+║                                                                          ║
+║  2.  CSS + nav rendering                                                 ║
+║      - COMMON_CSS                                                        ║
+║      - _HIDE_BADGE_SCRIPT, render_page_chrome()                          ║
+║      - render_nav(), render_playoff_toggle()                             ║
+║      - render_barrett_score_explainer()                                  ║
+║      - stat_card_html()                                                  ║
+║                                                                          ║
+║  3.  Text + name normalization                                           ║
+║      - normalize(), season_to_espn_year()                                ║
+║                                                                          ║
+║  4.  Scoring formula                                                     ║
+║      - base_score(), availability_multiplier()                           ║
+║                                                                          ║
+║  5.  Formatting helpers                                                  ║
+║      - _fmt_salary(), fmt_next_contract()                                ║
+║      - color_rank_diff(), color_value_diff(), color_next_contract()      ║
+║      - style_rookie_salary()                                             ║
+║                                                                          ║
+║  6.  Disk cache helpers                                                  ║
+║      - _dc_path(), _dc_fresh(), _pkl_load(), _pkl_save()                 ║
+║                                                                          ║
+║  7.  Data sources (network scrapers)                                     ║
+║      - NBA Stats API: fetch_league_stats(), fetch_dlebron(), …           ║
+║      - BBRef: fetch_bref_player_stats(), fetch_bref_salaries(),          ║
+║        fetch_playoff_rounds(), fetch_player_positions_detailed()         ║
+║      - Spotrac/HoopsHype: fetch_next_year_contracts(),                   ║
+║        fetch_hoopshype_salaries(), fetch_rookie_scale_players()          ║
+║      - ESPN: fetch_bref_positions() (legacy coarse positions)            ║
+║                                                                          ║
+║  8.  Ranking pipeline                                                    ║
+║      - build_raw() — raw per-season stats + Barrett Score                ║
+║      - apply_rankings(), apply_projections()                             ║
+║      - build_ranked_projected() — entry point used by every page         ║
+║      - warm_all_seasons(), _bootstrap_warm()                             ║
+║      - build_all_seasons_combined() (Legacy page)                        ║
+║                                                                          ║
+║  9.  Career / player lookup                                              ║
+║      - get_all_player_names(), get_player_id_map()                       ║
+║      - fetch_player_full_career(), fetch_career_trend()                  ║
+║      - fetch_season_component_distribution()                             ║
+║      - fetch_player_career_all_seasons(),                                ║
+║        fetch_player_career_with_rank()                                   ║
+║                                                                          ║
+║  10. Splits + monthly                                                    ║
+║      - fetch_player_season_splits(), fetch_monthly_scores()              ║
+║      - build_splits_data(), load_splits_from_disk()                      ║
+║                                                                          ║
+║  11. Trades (page disabled but logic preserved)                          ║
+║      - trade_side_summary(), HISTORICAL_TRADES                           ║
+║                                                                          ║
+║  12. Draft                                                               ║
+║      - fetch_draft_classes()                                             ║
+║                                                                          ║
+║  CACHE STRATEGY                                                          ║
+║                                                                          ║
+║  Three layers of caching, in order from fastest to slowest:              ║
+║                                                                          ║
+║  a. @st.cache_data — in-memory per Streamlit session. Keyed by all       ║
+║     function arguments. Use TTL for data that ages (current-season       ║
+║     stats: 1h; historical: 24h+; truly static: no TTL).                  ║
+║                                                                          ║
+║  b. Disk cache (CACHE_DIR/*.{parquet,pkl}) — survives process restart.   ║
+║     Filenames carry a version suffix to invalidate on schema changes.    ║
+║     Conventions:                                                         ║
+║       raw_<season>_<FORMULA_VERSION>.parquet     — main ranking output   ║
+║       raw_<season>_playoff_<PLAYOFF_VERSION>_<FORMULA_VERSION>.parquet   ║
+║       splits_<season>_<FORMULA_VERSION>.pkl                              ║
+║       bref_positions_<year>_v<cache_v>.pkl       — per-scraper cache_v   ║
+║       positions_detailed_<year>_v<cache_v>.pkl                           ║
+║       bref_salaries_<season>.pkl                                         ║
+║                                                                          ║
+║     Bump FORMULA_VERSION when base_score() weights change so stale       ║
+║     ranks don't poison fresh ones. Bump per-scraper cache_v when         ║
+║     that scraper's parser changes.                                       ║
+║                                                                          ║
+║  c. Network fetch (slow, last resort). Always behind @st.cache_data,     ║
+║     always wrapped in try/except + logger.warning so failures surface.   ║
+╚══════════════════════════════════════════════════════════════════════════╝
+"""
 import logging
 import math
 import re
