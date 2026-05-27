@@ -77,6 +77,22 @@ def _fmt_money(v: float) -> str:
     return f"${v / 1_000_000:.1f}M"
 
 
+# Single-letter position display. The detailed BBRef scrape returns
+# PG/SG/SF/PF/C; the legacy ESPN coarse scrape returns Guard/Forward/Center.
+# When the detailed lookup misses a player (Sengun, some rookies) we fall
+# back to coarse — but mixing "C" and "Center" in the same comps table
+# looks broken. Normalize the coarse names to their single-letter equivalent.
+_COARSE_TO_LETTER = {"Guard": "G", "Forward": "F", "Center": "C"}
+
+
+def _pos_abbrev(pos: str) -> str:
+    """Return the abbreviated position. PG/SG/SF/PF/C pass through; the
+    coarse 'Guard'/'Forward'/'Center' fallback maps to G/F/C."""
+    if not pos:
+        return "—"
+    return _COARSE_TO_LETTER.get(pos, pos)
+
+
 def _fmt_draft(features: dict) -> str | None:
     """Short draft label for the metadata line, e.g. 'Lottery (#7, 2021)' or
     'Undrafted'. Returns None when we have no useful info to display."""
@@ -127,12 +143,15 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         except Exception:
             pos_lookup = {}
         coarse_fallback = pos_lookup.get(name_norm, "Unknown")
-        # Old function returns "Guard"/"Forward"/"Center" already.
+        # pos_bucket stays as the full "Guard"/"Forward"/"Center" name
+        # because POSITION_MULTIPLIERS is keyed on those strings.
+        # detailed_display normalizes to the single-letter abbreviation
+        # to match the PG/SG/SF/PF/C style used everywhere else.
         pos_bucket = coarse_fallback
-        detailed_display = coarse_fallback
+        detailed_display = _pos_abbrev(coarse_fallback)
     else:
         pos_bucket = position_to_bucket(detailed_pos)
-        detailed_display = detailed_pos
+        detailed_display = detailed_pos  # already PG/SG/SF/PF/C
     pos = pos_bucket  # use the 3-bucket for the multiplier (preserves fit)
 
     # ── Career-weighted RATE Score — the GM's view ──────────────────────────
@@ -523,8 +542,11 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         def _resolve_pos_detailed(n):
             d = detailed_lookup.get(normalize(n))
             if d:
-                return d
-            return coarse_lookup.get(normalize(n), "Unknown")
+                return d  # PG/SG/SF/PF/C
+            # Fallback returns "Guard"/"Forward"/"Center" — convert to
+            # single-letter so the comps Position column stays consistent
+            # (Sengun was showing "Center" while others showed "C").
+            return _pos_abbrev(coarse_lookup.get(normalize(n), "Unknown"))
 
         age_lookup = dict(zip(raw_prev["PLAYER_ID"], raw_prev.get("AGE", [])))
         curr_slim = curr_df[["PLAYER_ID", "salary"]].rename(
@@ -1344,6 +1366,11 @@ else:
 
         _pos_col = comps_with_ctx.get("pos_detailed", comps_with_ctx["pos"]).fillna(
             comps_with_ctx["pos"])
+        # Final normalize: any remaining "Guard"/"Forward"/"Center" → G/F/C.
+        # Belt-and-suspenders — the resolvers in load_historical_signings
+        # should already produce single-letter, but if anything slips
+        # through (cached row, edge case) we still display consistently.
+        _pos_col = _pos_col.map(_pos_abbrev)
 
         # Build a draft column. Use tier alone (compact) — full pick number
         # would crowd the table. Fall back to "—" when unknown.
