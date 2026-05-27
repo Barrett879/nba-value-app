@@ -475,6 +475,23 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
 
     mask = ~out.apply(_is_rookie_ladder, axis=1)
     out = out[mask].reset_index(drop=True)
+
+    # Precompute career-weighted Barrett (50/30/20 of last 3 healthy seasons,
+    # with availability — same metric as the target's trailing_barrett) for
+    # every comp in the pool. Stored on the cached frame so we don't pay
+    # the per-player fetch on every page load.
+    #
+    # Used by find_comparables for the min(sign_yr_gap, career_gap)
+    # distance: a comp counts as close if EITHER their walk year OR their
+    # 3-yr trajectory matched the target's trailing form. Pulls in
+    # breakout-walk-year comps via their career, and trajectory-matched
+    # comps via their walk year.
+    out["career_weighted_barrett"] = out.apply(
+        lambda r: _career_weighted_barrett_at(
+            r["Player"], r["prev_season"], float(r["barrett_score"])
+        ),
+        axis=1,
+    )
     return out
 
 
@@ -543,23 +560,21 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
     player's last 3 healthy sign-year Barrett Scores (with availability) —
     same weighting as career_barrett, but raw Barrett instead of rate.
 
-    Why not just one season: pure single-year sign-yr is noisy. Vassell's
-    2025-26 (15.2) understates him because of injury; matching on that
-    alone pulls in too many backup-tier comps. Trailing-weighted smooths
-    one-off bad years while still being responsive to recent form.
+    Score-distance weight is age-scaled (1.0 + tier_weight):
+      - Young developers (≤27): 2.0× score — prevents Zion-style stretch
+        matches where a far-off score sneaks in via perfect age/position/
+        tier alignment. Forces the pool to favor score-close comps.
+      - Veterans (≥31): 1.0× score — keeps age relatively important so
+        aging vets match other aging vets (Harden's paycut cohort), not
+        young production-similar stars (Brunson/Booker).
 
-    Why not career-rate (no availability): historical comps' walk-year
-    scores ARE availability-included (that's what the market saw when
-    they signed). Matching career-rate against walk-year-with-availability
-    is apples-to-oranges — Lonzo's career-rate is high (great when on
-    floor) but his walk-year Barrett of 9 (injured) is what triggered
-    his $10M paycut signing.
+    Tried min(sign-yr, career-weighted) for the score term but it brought
+    back paycut comps via their pre-collapse career scores (Lonzo career
+    19.5 matched Vassell trailing 17.2 even though Lonzo signed for $10M
+    after collapsing to sign-yr 9). Sign-yr-only is the right discriminator
+    because that's the snapshot the market actually priced.
 
-    Comp side stays single walk-year: each historical signing is anchored
-    to a specific season, so the comp_score is just that walk year. Match
-    is target's trailing average → comp's walk year.
-
-    Distance = |comp_walk_yr_score − target_trailing_score|
+    Distance = |comp_walk_yr − target_trailing| × (1 + tier_weight)
              + |age_diff| × 1.5
              + position_penalty (broad G/F/C bucket — PG/SG are pooled)
              + tier_penalty (faded by age — see _tier_penalty_weight)
@@ -597,23 +612,23 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
     tier_penalty = (comp_tier_idx - target_tier_idx).abs() * 4 * tier_weight
     pos_penalty = (same_pos["pos"] != target_position).astype(float) * 20
 
+    # Score weight scales with age (uses the same tier_w curve). For young
+    # developers (≤27), score is 2x — prevents Zion-style stretch matches
+    # where a far-off score sneaks past via perfect age/position/tier
+    # alignment. For veterans (≥31), score reverts to 1x because their
+    # market is age-driven (Harden/Curry should match aging-vet paycut
+    # cohort, not young production-similar stars) — so keeping age
+    # relatively important.
+    score_weight = 1.0 + tier_weight  # 2.0 young → 1.0 old
+
     same_pos["distance"] = (
-        (same_pos["barrett_score"] - target_barrett).abs()
+        (same_pos["barrett_score"] - target_barrett).abs() * score_weight
         + (same_pos["age"] - target_age).abs() * 1.5
         + pos_penalty
         + tier_penalty
     )
 
-    # Still compute career-weighted Barrett for *display* — it's useful
-    # context in the comp table even though we don't rank by it anymore.
-    picked = same_pos.nsmallest(n, "distance").copy()
-    picked["career_weighted_barrett"] = picked.apply(
-        lambda r: _career_weighted_barrett_at(
-            r["Player"], r["prev_season"], float(r["barrett_score"])
-        ),
-        axis=1,
-    )
-    return picked
+    return same_pos.nsmallest(n, "distance").copy()
 
 
 def _signing_cap(signed_in_season: str) -> float:
