@@ -1418,7 +1418,9 @@ if _market_median is not None:
     # is still tracked for potential future use / debugging.
     # Compact player metadata line — replaces the standalone Player Snapshot
     # section below by inlining age / position / current salary / current Barrett.
-    _meta_bits = [features["name"]]
+    # Player name is rendered as the hero title above; meta_bits now
+    # starts with the team so the line reads "LAL · 2025-26 · Age 27…".
+    _meta_bits = []
     if features.get("team"): _meta_bits.append(features["team"])
     _meta_bits.append(CURRENT_SEASON)
     if features.get("age"): _meta_bits.append(f"Age {int(features['age'])}")
@@ -1445,9 +1447,12 @@ if _market_median is not None:
     _header_html = f"""
     <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
                 border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-                padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+                padding:1.4rem 1.8rem 1.8rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+      <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
+        {features["name"]}
+      </div>
       <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
-                  letter-spacing:0.1em; font-weight:600;">
+                  letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
         Predicted next contract{_conf_badge}
       </div>
       <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
@@ -1490,7 +1495,9 @@ if _market_median is not None:
     """
 else:
     # No comparables available — fall back to the model-only display.
-    _meta_bits = [features["name"]]
+    # Player name is rendered as the hero title above; meta_bits now
+    # starts with the team so the line reads "LAL · 2025-26 · Age 27…".
+    _meta_bits = []
     if features.get("team"): _meta_bits.append(features["team"])
     _meta_bits.append(CURRENT_SEASON)
     if features.get("age"): _meta_bits.append(f"Age {int(features['age'])}")
@@ -1544,8 +1551,11 @@ else:
         <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
                     border:1px solid rgba(255,255,255,0.12); border-radius:14px;
                     padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+          <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
+            {features["name"]}
+          </div>
           <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
-                      letter-spacing:0.1em; font-weight:600;">
+                      letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
             Predicted next contract{_conf_badge}
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
@@ -1593,8 +1603,11 @@ else:
         <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
                     border:1px solid rgba(255,255,255,0.12); border-radius:14px;
                     padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+          <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
+            {features["name"]}
+          </div>
           <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
-                      letter-spacing:0.1em; font-weight:600;">
+                      letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
             Predicted next contract{_conf_badge}
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
@@ -1668,7 +1681,11 @@ if caveats or _playoff_chip_html:
         for note in caveats
     )
     st.markdown(
-        f'<div style="margin: -0.4rem 0 1rem 0;">{_caveat_chips_html}{_playoff_chip_html}</div>',
+        # Positive top margin (not negative) so chips sit cleanly BELOW the
+        # hero card. The previous -0.4rem caused the chip to clip into the
+        # hero's bottom edge, especially when the "Capped at max" caption
+        # was sitting in the hero's padding-bottom area.
+        f'<div style="margin: 0.4rem 0 1rem 0;">{_caveat_chips_html}{_playoff_chip_html}</div>',
         unsafe_allow_html=True,
     )
 
