@@ -484,6 +484,41 @@ _PLAYOFF_HELP = (
     "so Finals MVPs outrank first-round stars with similar per-game production."
 )
 
+_HIDE_BADGE_SCRIPT = """
+<script>
+    function hideBadge() {
+        try {
+            const doc = window.parent.document;
+            [
+                '[data-testid="stAppViewerBadge"]',
+                '[data-testid="stBottom"]',
+                '[data-testid="stToolbar"]',
+                '[data-testid="stStatusWidget"]',
+                '[class*="viewerBadge"]',
+                '[class*="ViewerBadge"]',
+            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
+        } catch(e) {}
+    }
+    hideBadge();
+    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
+</script>
+"""
+
+
+def render_page_chrome() -> None:
+    """One-call page chrome: COMMON_CSS + the hide-badge MutationObserver.
+
+    Call this once near the top of every page right after st.set_page_config.
+    Replaces ~20 lines of identical components.html + st.markdown boilerplate
+    that used to be copy-pasted into every page. Adding new pages? Just call
+    render_page_chrome() and you're done — no need to remember which iframe
+    script to copy.
+    """
+    import streamlit.components.v1 as _components
+    st.markdown(COMMON_CSS, unsafe_allow_html=True)
+    _components.html(_HIDE_BADGE_SCRIPT, height=0)
+
+
 def render_nav(current: str) -> None:
     """Render the top nav bar with the playoff toggle pinned right.
 

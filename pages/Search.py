@@ -11,34 +11,13 @@ from utils import (
     normalize,
     get_all_player_names, fetch_player_full_career,
     fetch_season_component_distribution,
-    render_nav, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
+    render_nav, render_page_chrome, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
 from urllib.parse import quote
 
 st.set_page_config(page_title="Search Player", layout="wide")
-st.markdown(COMMON_CSS, unsafe_allow_html=True)
-
-components.html("""
-<script>
-    function hideBadge() {
-        try {
-            const doc = window.parent.document;
-            [
-                '[data-testid="stAppViewerBadge"]',
-                '[data-testid="stBottom"]',
-                '[data-testid="stToolbar"]',
-                '[data-testid="stStatusWidget"]',
-                '[class*="viewerBadge"]',
-                '[class*="ViewerBadge"]',
-            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
-        } catch(e) {}
-    }
-    hideBadge();
-    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
-</script>
-""", height=0)
-
+render_page_chrome()
 _bootstrap_warm()
 render_nav("Search Player")
 

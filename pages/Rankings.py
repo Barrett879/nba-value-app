@@ -17,35 +17,14 @@ from utils import (
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
-    render_nav, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
+    render_nav, render_page_chrome, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
 import threading
 
 st.set_page_config(page_title="Rankings", layout="wide")
 
-st.markdown(COMMON_CSS, unsafe_allow_html=True)
-
-components.html("""
-<script>
-    function hideBadge() {
-        try {
-            const doc = window.parent.document;
-            [
-                '[data-testid="stAppViewerBadge"]',
-                '[data-testid="stBottom"]',
-                '[data-testid="stToolbar"]',
-                '[data-testid="stStatusWidget"]',
-                '[class*="viewerBadge"]',
-                '[class*="ViewerBadge"]',
-            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
-        } catch(e) {}
-    }
-    hideBadge();
-    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
-</script>
-""", height=0)
-
+render_page_chrome()
 render_nav("Current Rankings")
 
 if st.session_state.get("playoff_mode", False):

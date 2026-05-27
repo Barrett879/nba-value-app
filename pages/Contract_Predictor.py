@@ -23,7 +23,7 @@ from utils import (
     get_all_player_names, fetch_player_full_career,
     build_ranked_projected, fetch_league_stats,
     fetch_bref_positions, fetch_player_positions_detailed, position_to_bucket,
-    render_nav, render_barrett_score_explainer, _bootstrap_warm,
+    render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
 )
 
 
@@ -59,28 +59,7 @@ CONFIDENCE_BAND_PCT_OF_CAP = 3.6 / 100  # ≈ 2 × median |err| out-of-sample
 
 # ── Page boilerplate ─────────────────────────────────────────────────────────
 st.set_page_config(page_title="Contract Predictor", layout="wide")
-st.markdown(COMMON_CSS, unsafe_allow_html=True)
-
-components.html("""
-<script>
-    function hideBadge() {
-        try {
-            const doc = window.parent.document;
-            [
-                '[data-testid="stAppViewerBadge"]',
-                '[data-testid="stBottom"]',
-                '[data-testid="stToolbar"]',
-                '[data-testid="stStatusWidget"]',
-                '[class*="viewerBadge"]',
-                '[class*="ViewerBadge"]',
-            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
-        } catch(e) {}
-    }
-    hideBadge();
-    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
-</script>
-""", height=0)
-
+render_page_chrome()
 _bootstrap_warm()
 render_nav("Contract Predictor")
 

@@ -10,35 +10,14 @@ from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
     normalize, season_to_espn_year,
     build_ranked_projected,
-    fetch_bref_positions, render_nav, render_playoff_toggle,
+    fetch_bref_positions, render_nav, render_page_chrome, render_playoff_toggle,
     render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
 
 st.set_page_config(page_title="Team Analysis", layout="wide")
 
-st.markdown(COMMON_CSS, unsafe_allow_html=True)
-
-components.html("""
-<script>
-    function hideBadge() {
-        try {
-            const doc = window.parent.document;
-            [
-                '[data-testid="stAppViewerBadge"]',
-                '[data-testid="stBottom"]',
-                '[data-testid="stToolbar"]',
-                '[data-testid="stStatusWidget"]',
-                '[class*="viewerBadge"]',
-                '[class*="ViewerBadge"]',
-            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
-        } catch(e) {}
-    }
-    hideBadge();
-    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
-</script>
-""", height=0)
-
+render_page_chrome()
 _bootstrap_warm()
 render_nav("Team Analysis")
 

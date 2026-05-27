@@ -12,34 +12,13 @@ from utils import (
     build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract,
-    color_next_contract, style_rookie_salary, color_value_diff, render_nav,
+    color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
     render_barrett_score_explainer, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Free Agent Class", layout="wide")
 
-st.markdown(COMMON_CSS, unsafe_allow_html=True)
-
-components.html("""
-<script>
-    function hideBadge() {
-        try {
-            const doc = window.parent.document;
-            [
-                '[data-testid="stAppViewerBadge"]',
-                '[data-testid="stBottom"]',
-                '[data-testid="stToolbar"]',
-                '[data-testid="stStatusWidget"]',
-                '[class*="viewerBadge"]',
-                '[class*="ViewerBadge"]',
-            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
-        } catch(e) {}
-    }
-    hideBadge();
-    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
-</script>
-""", height=0)
-
+render_page_chrome()
 _bootstrap_warm()
 render_nav("Current Free Agents")
 

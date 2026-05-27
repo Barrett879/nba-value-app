@@ -21,32 +21,11 @@ import plotly.graph_objects as go
 from utils import (
     COMMON_CSS, SEASONS,
     build_ranked_projected,
-    render_nav, render_barrett_score_explainer, _bootstrap_warm,
+    render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Track Record", layout="wide")
-st.markdown(COMMON_CSS, unsafe_allow_html=True)
-
-components.html("""
-<script>
-    function hideBadge() {
-        try {
-            const doc = window.parent.document;
-            [
-                '[data-testid="stAppViewerBadge"]',
-                '[data-testid="stBottom"]',
-                '[data-testid="stToolbar"]',
-                '[data-testid="stStatusWidget"]',
-                '[class*="viewerBadge"]',
-                '[class*="ViewerBadge"]',
-            ].forEach(sel => doc.querySelectorAll(sel).forEach(el => el.remove()));
-        } catch(e) {}
-    }
-    hideBadge();
-    new MutationObserver(hideBadge).observe(document.documentElement, { childList: true, subtree: true });
-</script>
-""", height=0)
-
+render_page_chrome()
 _bootstrap_warm()
 render_nav("Track Record")
 
