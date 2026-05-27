@@ -1108,24 +1108,24 @@ def _scouting_take(features: dict, comps: pd.DataFrame) -> dict:
     if abs(age_diff) >= 2:
         if age_diff < 0:
             x_factor_parts.append(
-                f"younger than median comp ({int(target_age)} vs {int(comp_age_med)}) "
-                "— upside lean"
+                f"younger than comps ({int(target_age)} vs {int(comp_age_med)}) "
+                "→ projects higher"
             )
         else:
             x_factor_parts.append(
-                f"older than median comp ({int(target_age)} vs {int(comp_age_med)}) "
-                "— downward lean"
+                f"older than comps ({int(target_age)} vs {int(comp_age_med)}) "
+                "→ projects lower"
             )
     if abs(bar_diff) >= 3:
         if bar_diff > 0:
             x_factor_parts.append(
-                f"higher career Score than median comp ({target_bar:.1f} vs {comp_bar_med:.1f}) "
-                "— premium lean"
+                f"higher score than comps ({target_bar:.1f} vs {comp_bar_med:.1f}) "
+                "→ projects higher"
             )
         else:
             x_factor_parts.append(
-                f"lower career Score than median comp ({target_bar:.1f} vs {comp_bar_med:.1f}) "
-                "— discount lean"
+                f"lower score than comps ({target_bar:.1f} vs {comp_bar_med:.1f}) "
+                "→ projects lower"
             )
 
     if not x_factor_parts:
@@ -1742,7 +1742,7 @@ else:
               <div style="font-size:0.85rem; color:#aaa;
                           border-top:1px solid rgba(255,255,255,0.08);
                           padding-top:0.5rem;">
-                <b style="color:#cdcdd5;">X factor:</b> {take['x_factor']}
+                <b style="color:#cdcdd5;">Note:</b> {take['x_factor']}
               </div>
             </div>
             """
