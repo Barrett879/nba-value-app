@@ -1559,7 +1559,7 @@ def trade_side_summary(player_names: tuple[str, ...], season: str,
 
     playoffs=True uses postseason scores instead of regular-season.
     """
-    if not _raw_disk_fresh(season, playoffs):
+    if not _raw_disk_exists(season, playoffs):
         # Don't trigger fresh build_raw on view-time requests
         return {"rows": pd.DataFrame(), "found": [], "missing": list(player_names),
                 "barrett_total": 0.0, "salary_total": 0.0}
@@ -1805,7 +1805,7 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
     season_type = "Playoffs" if playoffs else "Regular Season"
     rows: list[dict] = []
     for season in SEASONS:
-        if not _raw_disk_fresh(season, playoffs):
+        if not _raw_disk_exists(season, playoffs):
             continue
         try:
             stats = fetch_league_stats(season, season_type)
@@ -2023,7 +2023,7 @@ def fetch_career_trend(player_id: int, num_seasons: int = 5,
 
     rows = []
     for season in SEASONS:
-        if not _raw_disk_fresh(season, playoffs):
+        if not _raw_disk_exists(season, playoffs):
             # Season not yet seeded — skip rather than trigger a fresh fetch
             # that would hang this request for tens of seconds.
             continue
@@ -2070,7 +2070,7 @@ def fetch_player_career_with_rank(player_id: int, playoffs: bool = False) -> lis
     name_norm = normalize(info["full_name"])
     out: list[dict] = []
     for season in SEASONS:
-        if not _raw_disk_fresh(season, playoffs):
+        if not _raw_disk_exists(season, playoffs):
             continue
         try:
             ranked = apply_rankings(build_raw(season, playoffs))
@@ -2568,13 +2568,35 @@ def _raw_disk_path(season: str, playoffs: bool = False) -> Path:
     return CACHE_DIR / f"raw_{season.replace('-', '_')}_{FORMULA_VERSION}.parquet"
 
 def _raw_disk_fresh(season: str, playoffs: bool = False) -> bool:
-    """True if the on-disk parquet is still within its TTL."""
+    """True if the on-disk parquet exists AND is within its TTL.
+
+    Used by **write-side** decisions: `build_raw` calls this to decide
+    whether to load the cached parquet or rebuild from APIs. Returning
+    False here triggers a network rebuild, which is expensive — so we
+    only do it when the cache is genuinely stale.
+
+    Use `_raw_disk_exists()` for view-time reads instead — those should
+    serve cached data even when slightly stale (don't drop a season from
+    a player's career arc just because the cache hasn't been touched in
+    a few hours).
+    """
     p = _raw_disk_path(season, playoffs)
     if not p.exists():
         return False
     # Current season refreshes every hour; historical seasons every 30 days
     ttl = 3600 if season == SEASONS[0] else 30 * 86_400
     return (time.time() - p.stat().st_mtime) < ttl
+
+
+def _raw_disk_exists(season: str, playoffs: bool = False) -> bool:
+    """True if the on-disk parquet exists, regardless of TTL.
+
+    Use this in view-time read paths (player career arcs, position-peer
+    distributions, etc.) where serving slightly-stale cache is better
+    than silently dropping the season entirely. The freshness check is
+    for write-side decisions about when to refresh, not read-side gating.
+    """
+    return _raw_disk_path(season, playoffs).exists()
 
 @st.cache_data(ttl=3600, show_spinner="Building rankings...")
 def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
