@@ -1629,15 +1629,15 @@ _playoff_mult_val = features.get("playoff_mult", 1.0) or 1.0
 _playoff_barrett_val_h = features.get("playoff_barrett", 0.0) or 0.0
 if _playoff_gp >= 4 and _playoff_tier_label not in ("No playoff data", ""):
     if _playoff_mult_val > 1.0:
-        # Positive bonus — green chip. Numbers are for the most recent
-        # qualifying playoff appearance (≥4 GP).
+        # Positive bonus — green chip showing tier + multiplier only.
+        # Barrett/GP detail removed for brevity; available in the math
+        # line inside the About expander for users who want specifics.
         _playoff_chip_html = (
             f'<div style="display:inline-block; background:rgba(22,212,193,0.10); '
             f'border:1px solid rgba(22,212,193,0.35); border-radius:6px; '
             f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
             f'font-size:0.8rem; color:#16d4c1;">⭐ '
-            f'{_playoff_tier_label} ×{_playoff_mult_val:.2f} '
-            f'(Barrett {_playoff_barrett_val_h:.1f} over {_playoff_gp} GP, last postseason)'
+            f'{_playoff_tier_label} ×{_playoff_mult_val:.2f}'
             f'</div>'
         )
     else:
