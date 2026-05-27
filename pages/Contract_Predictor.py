@@ -613,6 +613,114 @@ def detect_caveats(features: dict) -> list[str]:
     return notes
 
 
+def explain_prediction(features: dict, prediction: dict,
+                       market_median: float | None,
+                       divergence: float) -> list[str]:
+    """Plain-English bullets describing what drove the prediction.
+
+    Each call returns 1-3 short sentences explaining:
+      - What sets the dollar amount (CBA cap, supermax floor, normal projection)
+      - How the market view compares (agreement, divergence, paycut filter)
+
+    Tailored per player — the bullets for Luka (CBA-capped, lost supermax
+    after trade) read differently than the bullets for Rui (model/market
+    diverge because box score undersells role-player value).
+    """
+    bullets: list[str] = []
+    name = features.get("name", "this player")
+    final_M = prediction.get("predicted", 0) / 1e6
+    raw_M = prediction.get("raw_predicted", prediction.get("predicted", 0)) / 1e6
+    max_pct = prediction.get("max_pct", 0.35)
+    max_pct_pct = int(round(max_pct * 100))
+    cba_max_M = prediction.get("cba_max_dollars", 0) / 1e6
+    supermax_tier = prediction.get("supermax_tier_label", "")
+    svc = features.get("service_years", 0)
+    tenure = features.get("team_tenure", 0)
+    team = features.get("current_team", "current team")
+    recent_nba = len(features.get("recent_all_nba", []) or [])
+
+    # ── Bullet 1: what sets the dollar amount ──────────────────────────────
+    if prediction.get("cba_floor_applied"):
+        # Supermax-eligible: floored at Designated Vet/Rookie max.
+        bullets.append(
+            f"**${final_M:.1f}M = {max_pct_pct}% of cap (CBA-mandated max).** "
+            f"{name} qualifies as **{supermax_tier}** with {recent_nba} recent "
+            f"All-NBA selection{'s' if recent_nba != 1 else ''} + {tenure} years "
+            f"on {team}. Raw production rate alone would have projected "
+            f"${raw_M:.1f}M; the supermax floor lifts elite stars to their "
+            f"eligible max."
+        )
+    elif prediction.get("cba_cap_applied"):
+        # Production exceeds the player's CBA max (capped).
+        if "Designated" in supermax_tier:
+            bullets.append(
+                f"**${final_M:.1f}M = {max_pct_pct}% of cap (CBA-mandated max).** "
+                f"{name} qualifies as **{supermax_tier}** ({recent_nba} recent "
+                f"All-NBA + {tenure} years on {team}). His raw production "
+                f"projects ${raw_M:.1f}M, but the CBA caps him at this max."
+            )
+        else:
+            # Standard max cap (no Designated tier).
+            extra = ""
+            if supermax_tier in ("Max 35%", "Max 30%", "Max 25%"):
+                extra = " (no Designated Vet because he isn't tenured with his current team)"
+            bullets.append(
+                f"**${final_M:.1f}M = {max_pct_pct}% of cap.** "
+                f"{name} has {svc} years of service → **{supermax_tier}** "
+                f"under the CBA{extra}. Raw production would project "
+                f"${raw_M:.1f}M; the max contract caps him here."
+            )
+    elif features.get("on_rookie_scale"):
+        bullets.append(
+            f"**Currently on rookie scale** (CBA-locked salary). The projection "
+            f"of ${final_M:.1f}M is for his **next** deal — typically a rookie-"
+            f"scale extension after year 4."
+        )
+    else:
+        # Normal projection — base × multipliers, no CBA override.
+        bullets.append(
+            f"**${final_M:.1f}M** is built from his career rate score "
+            f"({features.get('career_barrett', 0):.1f}, rank "
+            f"#{features.get('effective_rank', 0)}), then adjusted for age, "
+            f"position, durability, and recent playoff impact. See the math "
+            f"breakdown in *About this prediction* below."
+        )
+
+    # ── Bullet 2: model vs market ──────────────────────────────────────────
+    if market_median is not None:
+        market_M = market_median / 1e6
+        if divergence < 0.05:
+            bullets.append(
+                f"**Model and market agree** at ~${final_M:.1f}M — "
+                f"comparable signings cluster right at this number."
+            )
+        elif divergence < 0.15:
+            bullets.append(
+                f"**Model and market are close** "
+                f"(${final_M:.1f}M model, ${market_M:.1f}M market) — "
+                f"strong agreement on this profile's value."
+            )
+        elif divergence < 0.30:
+            higher = "market" if market_M > final_M else "model"
+            bullets.append(
+                f"**Model and market disagree somewhat** "
+                f"(${final_M:.1f}M model vs ${market_M:.1f}M market). The "
+                f"{higher} view is higher — use the range, not a point."
+            )
+        else:
+            higher = "market" if market_M > final_M else "model"
+            gap_pct = int(round(divergence * 100))
+            bullets.append(
+                f"**Big {gap_pct}% gap** between model (${final_M:.1f}M) and "
+                f"market (${market_M:.1f}M). The {higher} captures something "
+                f"the other doesn't — the box-score model sometimes underweights "
+                f"intangibles like defense, fit, and locker-room value that GMs "
+                f"actually pay for. Treat as a range."
+            )
+
+    return bullets
+
+
 @st.cache_data(ttl=3600, show_spinner="Loading comparable signings…")
 def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     pairs = [(SEASONS[i + 1], SEASONS[i]) for i in range(n_recent_pairs)]
@@ -1216,6 +1324,9 @@ predicted_M = prediction["predicted"] / 1_000_000
 low_M  = prediction["low"]  / 1_000_000
 high_M = prediction["high"] / 1_000_000
 
+# Initialize divergence so downstream code (confidence label, "Why this
+# prediction" explainer) can reference it whether or not market data exists.
+divergence = 0.0
 if _market_median is not None:
     market_M = _market_median / 1_000_000
     # Honest range = min(model, market) → max(model_high, market)
@@ -1247,9 +1358,10 @@ if _market_median is not None:
     # mysterious.
     _filter_note = (
         f'<div style="margin-top:0.5rem; font-size:0.74rem; color:#888;">'
-        f'Market view excludes Paycut comparables for currently '
-        f'supermax-tier players — the "stayed at tier" cohort is the '
-        f'right peer group, not "former star took less."'
+        f'Market view filters out aging stars who took big paycuts (e.g. '
+        f'Chris Paul at $10M, Westbrook at $4M). Those don\'t fit a '
+        f'currently-supermax player — the right comp group is other stars '
+        f'still earning at the top tier.'
         f'</div>'
         if _market_filter_applied else ''
     )
@@ -1515,6 +1627,30 @@ if caveats or _playoff_chip_html:
 # Math breakdown lives inside the "About this prediction" expander below —
 # keeps the main view clean (Model / Market / Honest range) while still
 # letting curious users see the per-player calculation.
+
+# ── Plain-English "Why this prediction" explanation ─────────────────────────
+# Tailored per-player bullets explaining what drove the dollar amount and
+# how model vs market compare. Sits between the hero card and the
+# comparables so the user knows WHY they're seeing the number before
+# diving into the comps table.
+_explain_bullets = explain_prediction(
+    features, prediction, _market_median, divergence,
+)
+if _explain_bullets:
+    _explain_html = "<br><br>".join(_explain_bullets)
+    # Render the bullets as a single paragraph inside a soft callout.
+    _why_html = (
+        '<div style="background:rgba(22,212,193,0.05); '
+        'border:1px solid rgba(22,212,193,0.20); border-radius:10px; '
+        'padding:0.85rem 1.1rem; margin: 0 0 1rem 0; '
+        'font-size:0.88rem; color:#cdcdd5; line-height:1.55;">'
+        '<div style="font-size:0.7rem; color:#16d4c1; text-transform:uppercase; '
+        'letter-spacing:0.08em; font-weight:700; margin-bottom:0.5rem;">'
+        'Why this prediction</div>'
+        f'{_explain_html}'
+        '</div>'
+    )
+    st.markdown(_why_html, unsafe_allow_html=True)
 
 # ── Comparables ──────────────────────────────────────────────────────────────
 st.subheader("Comparable signings")
