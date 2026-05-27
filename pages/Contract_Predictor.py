@@ -860,8 +860,7 @@ if _market_median is not None:
             ${honest_low_M:.1f}M – ${honest_high_M:.1f}M
           </div>
         </div>
-      </div>
-      {diverge_note}
+      </div>{diverge_note}
     </div>
     """
 else:
