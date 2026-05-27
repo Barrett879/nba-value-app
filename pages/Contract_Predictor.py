@@ -936,7 +936,7 @@ if _market_median is not None:
         f'border-top:1px solid rgba(255,255,255,0.08); '
         f'font-size:0.78rem; color:#f39c12;">'
         f'⚠ Model and market diverge by {divergence*100:.0f}%. '
-        f'Use the range as the honest answer — single number would overclaim.'
+        f'Use as a range.'
         f'</div>'
         if divergence >= 0.40 else ''
     )
