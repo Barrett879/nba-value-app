@@ -1017,31 +1017,42 @@ _dur_html_fragment = (
     if _show_durability else ""
 )
 
-_breakdown_one_line = f"""
-<div style="background:rgba(255,255,255,0.03);
-            border:1px solid rgba(255,255,255,0.08);
-            border-radius:10px; padding:0.85rem 1.1rem; margin: 0 0 0.7rem 0;
-            font-size:0.95rem; color:#cdcdd5; line-height:1.55;">
-  <span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;
-               text-transform:uppercase; margin-right:0.5rem;">Math</span>
-  <b style="color:#fff;">${base_M:.1f}M</b>
-  <span style="color:#777;">(career rate score {features['career_barrett']:.1f} → rank #{features['effective_rank']})</span>
-  &nbsp;<span style="color:#666;">×</span>&nbsp;
-  <b>×{prediction['age_mult']:.2f}</b>
-  <span style="color:#777;">(age {int(features['age']) if features['age'] else '?'}{_age_factor_note})</span>
-  &nbsp;<span style="color:#666;">×</span>&nbsp;
-  <b>×{prediction['pos_mult']:.2f}</b>
-  <span style="color:#777;">({features.get('position_detailed', features['position'])}{_pos_factor_note})</span>
-  {_dur_html_fragment}
-  &nbsp;<span style="color:#666;">=</span>&nbsp;
-  <b style="color:#16d4c1;">${predicted_M:.1f}M</b>
-  <span style="color:#666;">±${prediction['band']/1_000_000:.1f}M</span>
-  <div style="font-size:0.72rem; color:#777; margin-top:0.35rem;">
-    Base uses {features['career_basis']}.
-  </div>
-</div>
-"""
-st.markdown(_breakdown_one_line, unsafe_allow_html=True)
+# Build the math line as a single-line HTML string. Multi-line f-strings
+# of HTML have caused rendering bugs (Streamlit's markdown parser sees a
+# blank line — produced when _dur_html_fragment is empty — and switches
+# into code-block mode for everything after it). Single-line construction
+# avoids the issue entirely.
+_age_label = int(features['age']) if features['age'] else '?'
+_pos_label = features.get('position_detailed', features['position'])
+_math_line = (
+    '<span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;'
+    ' text-transform:uppercase; margin-right:0.5rem;">Math</span>'
+    f'<b style="color:#fff;">${base_M:.1f}M</b>'
+    f' <span style="color:#777;">(career rate score '
+    f'{features["career_barrett"]:.1f} → rank #{features["effective_rank"]})'
+    f'</span> &nbsp;<span style="color:#666;">×</span>&nbsp; '
+    f'<b>×{prediction["age_mult"]:.2f}</b>'
+    f' <span style="color:#777;">(age {_age_label}{_age_factor_note})</span>'
+    f' &nbsp;<span style="color:#666;">×</span>&nbsp; '
+    f'<b>×{prediction["pos_mult"]:.2f}</b>'
+    f' <span style="color:#777;">({_pos_label}{_pos_factor_note})</span>'
+    f'{_dur_html_fragment}'
+    f' &nbsp;<span style="color:#666;">=</span>&nbsp; '
+    f'<b style="color:#16d4c1;">${predicted_M:.1f}M</b>'
+    f' <span style="color:#666;">±${prediction["band"]/1_000_000:.1f}M</span>'
+)
+_breakdown_html = (
+    '<div style="background:rgba(255,255,255,0.03);'
+    ' border:1px solid rgba(255,255,255,0.08);'
+    ' border-radius:10px; padding:0.85rem 1.1rem; margin: 0 0 0.7rem 0;'
+    ' font-size:0.95rem; color:#cdcdd5; line-height:1.55;">'
+    f'{_math_line}'
+    '<div style="font-size:0.72rem; color:#777; margin-top:0.35rem;">'
+    f'Base uses {features["career_basis"]}.'
+    '</div>'
+    '</div>'
+)
+st.markdown(_breakdown_html, unsafe_allow_html=True)
 
 # ── Comparables ──────────────────────────────────────────────────────────────
 st.subheader("Comparable signings")
