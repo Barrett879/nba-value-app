@@ -154,6 +154,7 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     # Rate score = Barrett Score / Avail multiplier. (Equivalent to
     # base_score_pace before the availability multiplier was applied.)
     career_barrett = None
+    trailing_barrett = None  # same weighting but with availability — used for comp matching
     career_basis = "current season (no prior data)"
     try:
         career = fetch_player_full_career(player_name)
@@ -182,6 +183,16 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
                 career_barrett = float(
                     (recent["Barrett Rate"].values * weights).sum() / w_sum
                 )
+                # Same 50/30/20 weighting but on raw Barrett Score (with
+                # availability). This is what `find_comparables` uses to
+                # match against historical comps' walk-year scores —
+                # apples-to-apples, since the walk year is also a single
+                # availability-included season. Smooths out one-off bad
+                # years (Vassell's injury 2025-26) without erasing the
+                # availability signal the way the rate score does.
+                trailing_barrett = float(
+                    (recent["Barrett Score"].values * weights).sum() / w_sum
+                )
                 seasons_used = list(recent["Season"].values)
                 skipped = (
                     used_healthy_filter and len(career) > len(pool)
@@ -201,12 +212,14 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     except Exception:
         pass
 
-    # Fall back to current-season rate score if no career history.
+    # Fall back to current-season scores if no career history.
     if career_barrett is None:
         cur_avail = float(row.get("avail_mult", 1.0) or 1.0)
         cur_avail = max(cur_avail, 0.30)  # same clip as above
         career_barrett = float(row["barrett_score"]) / cur_avail
         career_basis = "current season rate only (rookie / first appearance)"
+    if trailing_barrett is None:
+        trailing_barrett = float(row["barrett_score"])
 
     # Effective rank: compare this player's RATE score to the rate scores
     # of every current-season player (also un-availability-adjusted) so
@@ -252,7 +265,8 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         "position":           pos,                # G/F/C — drives multiplier
         "position_detailed":  detailed_display,   # PG/SG/SF/PF/C — for display
         "barrett_score":      float(row["barrett_score"]),       # current season
-        "career_barrett":     career_barrett,                    # 3-year weighted
+        "career_barrett":     career_barrett,                    # 3-year weighted RATE (rank-mapping)
+        "trailing_barrett":   trailing_barrett,                  # 3-year weighted with availability (comp matching)
         "career_basis":       career_basis,
         "score_rank":         int(row["score_rank"]),
         "effective_rank":     effective_rank,
@@ -523,76 +537,74 @@ def _tier_penalty_weight(age) -> float:
 
 
 def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
-    """Two-pass match:
-       1. Coarse: same position, top-30 closest by walk-year Barrett + age
-       2. Refine: compute career-weighted Barrett for those 30, re-sort
-          using career-weighted vs. career-weighted (apples to apples)
+    """Match historical signings on **trailing-weighted Barrett** + age + position.
 
-    Draft-tier mismatch is penalized in both passes, but the penalty fades
-    with age (see _tier_penalty_weight). Developer-market players (Rollins,
-    Kessler) get strong tier filtering; veterans (Harden, Curry) get none —
-    their market is driven by production + age + durability, not pedigree.
+    The target's trailing_barrett is a 50/30/20-weighted average of the
+    player's last 3 healthy sign-year Barrett Scores (with availability) —
+    same weighting as career_barrett, but raw Barrett instead of rate.
 
-    Per-tier penalty unit = 4 distance points (≈ 3 age years or 3 score
-    units), then scaled by the age weight. Not enough to override a strong
-    position+score match, but enough to break ties in the right direction.
+    Why not just one season: pure single-year sign-yr is noisy. Vassell's
+    2025-26 (15.2) understates him because of injury; matching on that
+    alone pulls in too many backup-tier comps. Trailing-weighted smooths
+    one-off bad years while still being responsive to recent form.
+
+    Why not career-rate (no availability): historical comps' walk-year
+    scores ARE availability-included (that's what the market saw when
+    they signed). Matching career-rate against walk-year-with-availability
+    is apples-to-oranges — Lonzo's career-rate is high (great when on
+    floor) but his walk-year Barrett of 9 (injured) is what triggered
+    his $10M paycut signing.
+
+    Comp side stays single walk-year: each historical signing is anchored
+    to a specific season, so the comp_score is just that walk year. Match
+    is target's trailing average → comp's walk year.
+
+    Distance = |comp_walk_yr_score − target_trailing_score|
+             + |age_diff| × 1.5
+             + position_penalty (broad G/F/C bucket — PG/SG are pooled)
+             + tier_penalty (faded by age — see _tier_penalty_weight)
     """
     if history.empty:
         return history
 
     target_position = features["position"]
     target_age = features["age"] if features["age"] else 27
-    target_barrett = features["career_barrett"]
+    # Trailing-weighted Barrett with availability — smoothed sign-yr.
+    target_barrett = features.get("trailing_barrett", features["barrett_score"])
     target_tier = features.get("draft_tier", "Undrafted")
     target_tier_idx = DRAFT_TIER_ORDINAL.get(target_tier, 4)
     tier_weight = _tier_penalty_weight(features.get("age"))
 
-    # ── Coarse pass: prefer same position, take top-30 by quick distance ─────
+    # Match against same position bucket (Guard / Forward / Center —
+    # already broad; PG and SG are both "Guard"). Fall back to all
+    # positions only when same-bucket pool is too small.
     same_pos = history[history["pos"] == target_position].copy()
     if len(same_pos) < n:
-        # Not enough same-position comparables — open up to all positions
-        # with a soft penalty so same-position still wins ties.
         same_pos = history.copy()
 
-    # Tier penalty. Map each row's tier to its ordinal once, then take the
-    # absolute difference from the target's ordinal. Scaled by age weight
-    # so the penalty disappears for veterans.
     comp_tier_idx = same_pos["draft_tier"].map(
         lambda t: DRAFT_TIER_ORDINAL.get(t, 4)
     )
-    tier_penalty_coarse = (comp_tier_idx - target_tier_idx).abs() * 4 * tier_weight
+    tier_penalty = (comp_tier_idx - target_tier_idx).abs() * 4 * tier_weight
+    pos_penalty = (same_pos["pos"] != target_position).astype(float) * 20
 
-    same_pos["coarse_dist"] = (
+    same_pos["distance"] = (
         (same_pos["barrett_score"] - target_barrett).abs()
         + (same_pos["age"] - target_age).abs() * 1.5
-        + (same_pos["pos"] != target_position).astype(float) * 10
-        + tier_penalty_coarse
+        + pos_penalty
+        + tier_penalty
     )
-    top30 = same_pos.nsmallest(min(30, len(same_pos)), "coarse_dist").copy()
 
-    # ── Refine pass: career-weighted-at-signing, apples to apples ────────────
-    top30["career_weighted_barrett"] = top30.apply(
+    # Still compute career-weighted Barrett for *display* — it's useful
+    # context in the comp table even though we don't rank by it anymore.
+    picked = same_pos.nsmallest(n, "distance").copy()
+    picked["career_weighted_barrett"] = picked.apply(
         lambda r: _career_weighted_barrett_at(
             r["Player"], r["prev_season"], float(r["barrett_score"])
         ),
         axis=1,
     )
-
-    pos_match = (top30["pos"] == target_position).astype(int)
-    pos_penalty = (1 - pos_match) * 20
-
-    top30_tier_idx = top30["draft_tier"].map(
-        lambda t: DRAFT_TIER_ORDINAL.get(t, 4)
-    )
-    tier_penalty_refine = (top30_tier_idx - target_tier_idx).abs() * 4 * tier_weight
-
-    top30["distance"] = (
-        (top30["career_weighted_barrett"] - target_barrett).abs()
-        + (top30["age"] - target_age).abs() * 1.5
-        + pos_penalty
-        + tier_penalty_refine
-    )
-    return top30.nsmallest(n, "distance")
+    return picked
 
 
 def _signing_cap(signed_in_season: str) -> float:
@@ -1177,8 +1189,8 @@ st.markdown(_breakdown_html, unsafe_allow_html=True)
 # ── Comparables ──────────────────────────────────────────────────────────────
 st.subheader("Comparable signings")
 st.caption(
-    "Closest career-weighted Score + age + position matches. Real signings — "
-    "the model's market sanity check."
+    "Closest matches on trailing-weighted Barrett (last 3 healthy years, "
+    "50/30/20) + age + position. Real signings — the model's market sanity check."
 )
 
 # Reuse the comparables we already loaded at the top for the hero card.
