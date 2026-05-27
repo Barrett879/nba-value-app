@@ -386,10 +386,18 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     # Exclude rookie-scale ladder steps (year-N → year-N+1 team-option
     # progressions, CBA-mandated). These aren't real new contracts but
     # they're often >25% YoY change because rookie scale escalates.
+    #
     # Signal: both salaries still inside rookie scale band (<~15-18% of
-    # the year's cap) AND player young (≤23). Legitimate rookie
-    # extensions (e.g. Sengun's $5.4M → $33.9M jump) keep their
-    # signed_for ABOVE the band, so they're untouched.
+    # the year's cap) AND player young enough to plausibly still be on
+    # a rookie deal. Bumped the age cap from 23 → 25 to catch older
+    # draftees: Desmond Bane was almost-22 when drafted, so his year-4
+    # team option ($3.85M, 2023-24) lands at age 25 in NBA's Feb-1
+    # convention. Same pattern for Tari Eason / any 22-23-year-old
+    # draftee. Filter would have missed them all.
+    #
+    # Legitimate rookie EXTENSIONS (e.g. Sengun's $5.4M → $33.9M jump)
+    # keep their signed_for ABOVE the rookie-scale band so they're
+    # untouched by this filter.
     def _is_rookie_ladder(row) -> bool:
         cap_prev = SALARY_CAP_M.get(row["prev_season"], 154.6) * 1_000_000
         cap_curr = SALARY_CAP_M.get(row["signed_in"], 154.6) * 1_000_000
@@ -403,7 +411,7 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         return (
             salary_then_pct < 0.15
             and salary_curr_pct < 0.18
-            and float(age) <= 23
+            and float(age) <= 25
         )
 
     mask = ~out.apply(_is_rookie_ladder, axis=1)
@@ -506,7 +514,11 @@ def _classify_context(row) -> str:
     if pct_change <= -0.10:
         return "Paycut"
     # Rookie extension: very low prior salary, young player, big jump.
-    if salary_then < cap * 0.10 and age <= 24 and pct_change >= 0.50:
+    # Age threshold bumped from 24 → 26 to catch older draftees whose
+    # rookie-deal year-5 starts at 25-26 (Bane, Tari Eason, etc.). Their
+    # extension still qualifies as "Rookie extension" context — first
+    # non-rookie deal off the scale.
+    if salary_then < cap * 0.10 and age <= 26 and pct_change >= 0.50:
         return "Rookie extension"
     # Standard meaningful raise (typical free-agent / vet new deal).
     if pct_change >= 0.15:
