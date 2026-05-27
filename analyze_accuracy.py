@@ -36,7 +36,7 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 
-from utils import SEASONS, build_ranked_projected
+from utils import SEASONS, build_ranked_projected, SALARY_CAP_M
 
 
 TOP_N = 20
@@ -45,21 +45,6 @@ NEW_DEAL_PCT_THRESHOLD = 0.25  # ≥25% YoY salary change = "new contract" proxy
 
 # NBA salary cap by season (in millions, applied to the "curr" side of a pair).
 # Sources: NBA / Spotrac historical cap. Pre-1984 had no cap.
-SALARY_CAP_M = {
-    "1984-85":   3.6,  "1985-86":   4.2,  "1986-87":   4.9,  "1987-88":   6.2,
-    "1988-89":   7.2,  "1989-90":   9.8,  "1990-91":  11.9,  "1991-92":  12.5,
-    "1992-93":  14.0,  "1993-94":  15.2,  "1994-95":  15.9,  "1995-96":  23.0,
-    "1996-97":  24.4,  "1997-98":  26.9,  "1998-99":  30.0,  "1999-00":  34.0,
-    "2000-01":  35.5,  "2001-02":  42.5,  "2002-03":  40.3,  "2003-04":  43.8,
-    "2004-05":  43.9,  "2005-06":  49.5,  "2006-07":  53.1,  "2007-08":  55.6,
-    "2008-09":  58.7,  "2009-10":  57.7,  "2010-11":  58.0,  "2011-12":  58.0,
-    "2012-13":  58.0,  "2013-14":  58.7,  "2014-15":  63.1,  "2015-16":  70.0,
-    "2016-17":  94.1,  "2017-18":  99.1,  "2018-19": 101.9,  "2019-20": 109.1,
-    "2020-21": 109.1,  "2021-22": 112.4,  "2022-23": 123.7,  "2023-24": 136.0,
-    "2024-25": 140.6,  "2025-26": 154.6,
-}
-
-
 def _cap(season: str) -> float:
     """Salary cap in $M for a season. Falls back to 1.0 if pre-cap era so
     division still works (and we'll filter those out anyway)."""

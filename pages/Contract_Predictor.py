@@ -24,37 +24,17 @@ from utils import (
     build_ranked_projected, fetch_league_stats,
     fetch_bref_positions, fetch_player_positions_detailed, position_to_bucket,
     render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
+    # Calibration constants — single source of truth in utils
+    SALARY_CAP_M, cap_dollars,
+    CONTRACT_AGE_MULTIPLIERS as AGE_MULTIPLIERS,
+    CONTRACT_POSITION_MULTIPLIERS as POSITION_MULTIPLIERS,
+    CONFIDENCE_BAND_PCT_OF_CAP,
+    HEALTHY_SEASON_GP, SUPERMAX_CAP_PCT,
+    age_bucket as _age_bucket,
 )
 
 
-# ── Calibration parameters (from out-of-sample test, 2014-22 training) ───────
-# Age multipliers — front offices heavily discount age.
-AGE_MULTIPLIERS = {
-    "≤22":   0.890,
-    "23-25": 0.971,
-    "26-28": 1.000,
-    "29-31": 1.000,
-    "32-34": 0.723,
-    "35+":   0.574,
-}
-
-# Position multipliers — Centers systematically overprojected by the
-# box-score-weighted Barrett Score (rebounds aren't paid like points).
-POSITION_MULTIPLIERS = {
-    "Guard":   0.971,
-    "Forward": 0.949,
-    "Center":  0.810,
-    "Unknown": 0.960,
-}
-
-SALARY_CAP_M = {
-    "2015-16": 70.0,  "2016-17": 94.1,  "2017-18": 99.1,  "2018-19": 101.9,
-    "2019-20": 109.1, "2020-21": 109.1, "2021-22": 112.4, "2022-23": 123.7,
-    "2023-24": 136.0, "2024-25": 140.6, "2025-26": 154.6,
-}
-
 CURRENT_SEASON = SEASONS[0]
-CONFIDENCE_BAND_PCT_OF_CAP = 3.6 / 100  # ≈ 2 × median |err| out-of-sample
 
 
 # ── Page boilerplate ─────────────────────────────────────────────────────────
@@ -75,16 +55,8 @@ st.caption(
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
-def _age_bucket(age) -> str:
-    if pd.isna(age):
-        return "UNK"
-    age = int(age)
-    if age <= 22: return "≤22"
-    if age <= 25: return "23-25"
-    if age <= 28: return "26-28"
-    if age <= 31: return "29-31"
-    if age <= 34: return "32-34"
-    return "35+"
+# _age_bucket is imported from utils as `age_bucket` (aliased). Single source
+# of truth so the bucket boundaries stay in sync with the analyzer scripts.
 
 
 def _fmt_money(v: float) -> str:
@@ -151,7 +123,7 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
             # games played, availability multiplier deflates the score).
             # Historical injury years (e.g. Zach LaVine's 25-GP 2023-24)
             # also drop out the same way.
-            healthy = career[career["GP"] >= 40]
+            healthy = career[career["GP"] >= HEALTHY_SEASON_GP]
             used_healthy_filter = len(healthy) >= 1
             pool = healthy if used_healthy_filter else career
 
@@ -231,7 +203,7 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     # tier), unwind the position multiplier so we don't fake-discount
     # the league's best players.
     cap_M = SALARY_CAP_M.get(target_season, 154.6)
-    supermax_threshold = cap_M * 1_000_000 * 0.28
+    supermax_threshold = cap_M * 1_000_000 * SUPERMAX_CAP_PCT
     pos_mult_applied = pos_mult
     if base >= supermax_threshold:
         pos_mult_applied = 1.0  # no positional discount at the top tier
@@ -318,7 +290,7 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         if m.empty:
             continue
         m["pct_change"] = (m["salary_curr"] - m["salary"]) / m["salary"]
-        m = m[m["pct_change"].abs() >= 0.25]
+        m = m[m["pct_change"].abs() >= NEW_CONTRACT_PCT]
         if m.empty:
             continue
         m["age"] = m["PLAYER_ID"].map(age_lookup)
@@ -381,7 +353,7 @@ def _career_weighted_barrett_at(player_name: str, up_to_season: str,
             return fallback_score
         # Prefer healthy seasons (GP ≥ 40), fall back to all seasons if
         # the player has no healthy data on file.
-        healthy = up_to[up_to["GP"] >= 40]
+        healthy = up_to[up_to["GP"] >= HEALTHY_SEASON_GP]
         pool = healthy if not healthy.empty else up_to
         recent = pool.tail(3)
         weights_full = [0.20, 0.30, 0.50]
@@ -453,7 +425,7 @@ def _classify_context(row) -> str:
     pct_change = (salary_signed - salary_then) / salary_then if salary_then > 0 else 0
 
     # Supermax-tier: signing >= 28% of cap (35% supermax tier or near-max deals).
-    if salary_signed >= cap * 0.28:
+    if salary_signed >= cap * SUPERMAX_CAP_PCT:
         return "Supermax"
     # Paycut: lost real money to stay or re-sign.
     if pct_change <= -0.10:

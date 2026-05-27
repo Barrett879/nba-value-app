@@ -52,6 +52,82 @@ SEASONS = [
 ]
 DEFAULT_MIN_THRESHOLD = 500
 
+# ── Salary cap by season ($M) ──────────────────────────────────────────────────
+# NBA / Spotrac historical cap. Pre-1984 had no cap. Single source of truth
+# for the analyzer scripts (analyze_accuracy.py, optimize_weights.py, etc.)
+# and the Contract Predictor page. Update one place, every script picks it up.
+SALARY_CAP_M = {
+    "1984-85":   3.6,  "1985-86":   4.2,  "1986-87":   4.9,  "1987-88":   6.2,
+    "1988-89":   7.2,  "1989-90":   9.8,  "1990-91":  11.9,  "1991-92":  12.5,
+    "1992-93":  14.0,  "1993-94":  15.2,  "1994-95":  15.9,  "1995-96":  23.0,
+    "1996-97":  24.4,  "1997-98":  26.9,  "1998-99":  30.0,  "1999-00":  34.0,
+    "2000-01":  35.5,  "2001-02":  42.5,  "2002-03":  40.3,  "2003-04":  43.8,
+    "2004-05":  43.9,  "2005-06":  49.5,  "2006-07":  53.1,  "2007-08":  55.6,
+    "2008-09":  58.7,  "2009-10":  57.7,  "2010-11":  58.0,  "2011-12":  58.0,
+    "2012-13":  58.0,  "2013-14":  58.7,  "2014-15":  63.1,  "2015-16":  70.0,
+    "2016-17":  94.1,  "2017-18":  99.1,  "2018-19": 101.9,  "2019-20": 109.1,
+    "2020-21": 109.1,  "2021-22": 112.4,  "2022-23": 123.7,  "2023-24": 136.0,
+    "2024-25": 140.6,  "2025-26": 154.6,
+}
+
+
+def cap_dollars(season: str, fallback_M: float = 154.6) -> float:
+    """Salary cap in actual dollars (not millions) for a season.
+    Falls back to current-season cap if unknown (pre-1984)."""
+    return SALARY_CAP_M.get(season, fallback_M) * 1_000_000
+
+
+# ── Contract Predictor calibration constants ──────────────────────────────────
+# Age multipliers — fit on 2014-22 real new contracts. A 33-year-old with the
+# same Score as a 27-year-old signs for about 28% less.
+CONTRACT_AGE_MULTIPLIERS = {
+    "≤22":   0.890,
+    "23-25": 0.971,
+    "26-28": 1.000,
+    "29-31": 1.000,
+    "32-34": 0.723,
+    "35+":   0.574,
+}
+
+# Position multipliers — Centers are systematically overprojected by the
+# box-score-heavy Barrett Score (rebounds aren't paid like points).
+CONTRACT_POSITION_MULTIPLIERS = {
+    "Guard":   0.971,
+    "Forward": 0.949,
+    "Center":  0.810,
+    "Unknown": 0.960,
+}
+
+# Out-of-sample median |error| on the new-contract test set is 1.8% of cap.
+# Confidence band = ~2× median ≈ 3.6% of cap.
+CONFIDENCE_BAND_PCT_OF_CAP = 0.036
+
+# Filter thresholds — single source of truth across the analyzer scripts and
+# the Contract Predictor page.
+HEALTHY_SEASON_GP   = 40    # min GP for a season to count as "healthy"
+NEW_CONTRACT_PCT    = 0.25  # ≥25% YoY salary change = "new deal" proxy
+SUPERMAX_CAP_PCT    = 0.28  # base ≥ this fraction of cap → suppress pos mult
+TOP_N_DIRECTIONAL   = 20    # top-N underpaid/overpaid calls per season
+
+
+def age_bucket(age) -> str:
+    """Five-bucket age classification used by the contract calibration layer.
+    Stays consistent across the Contract Predictor page and all analyzer
+    scripts so a tweak here propagates everywhere."""
+    if pd.isna(age) if hasattr(pd, "isna") else age is None:
+        return "UNK"
+    try:
+        age = int(age)
+    except (TypeError, ValueError):
+        return "UNK"
+    if age <= 22: return "≤22"
+    if age <= 25: return "23-25"
+    if age <= 28: return "26-28"
+    if age <= 31: return "29-31"
+    if age <= 34: return "32-34"
+    return "35+"
+
+
 # ── League-wide pace by season (possessions per 48 minutes) ────────────────────
 # Source: Basketball Reference league-averages page. Used to era-adjust volume
 # stats (PTS, AST, REB, BLK, STL, TOV, PF) so a 25 PPG game in 1985 (high-pace)

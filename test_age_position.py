@@ -32,26 +32,14 @@ import numpy as np
 import pandas as pd
 
 from utils import (
-    SEASONS, normalize, season_to_espn_year,
+        SEASONS, normalize, season_to_espn_year,
     build_ranked_projected, fetch_league_stats, fetch_bref_positions,
+    SALARY_CAP_M,
+    age_bucket as _age_bucket,
 )
 
 
 # ── NBA cap by season (matches analyze_accuracy.py) ─────────────────────────
-SALARY_CAP_M = {
-    "1984-85": 3.6,  "1985-86": 4.2,  "1986-87": 4.9,  "1987-88": 6.2,
-    "1988-89": 7.2,  "1989-90": 9.8,  "1990-91": 11.9, "1991-92": 12.5,
-    "1992-93": 14.0, "1993-94": 15.2, "1994-95": 15.9, "1995-96": 23.0,
-    "1996-97": 24.4, "1997-98": 26.9, "1998-99": 30.0, "1999-00": 34.0,
-    "2000-01": 35.5, "2001-02": 42.5, "2002-03": 40.3, "2003-04": 43.8,
-    "2004-05": 43.9, "2005-06": 49.5, "2006-07": 53.1, "2007-08": 55.6,
-    "2008-09": 58.7, "2009-10": 57.7, "2010-11": 58.0, "2011-12": 58.0,
-    "2012-13": 58.0, "2013-14": 58.7, "2014-15": 63.1, "2015-16": 70.0,
-    "2016-17": 94.1, "2017-18": 99.1, "2018-19": 101.9, "2019-20": 109.1,
-    "2020-21": 109.1, "2021-22": 112.4, "2022-23": 123.7, "2023-24": 136.0,
-    "2024-25": 140.6, "2025-26": 154.6,
-}
-
 # Train/test split — chronological hold-out.
 TRAIN_PAIRS = [
     ("2014-15", "2015-16"), ("2015-16", "2016-17"), ("2016-17", "2017-18"),
@@ -76,17 +64,6 @@ def _norm_position(pos: str) -> str:
     return "UNK"
 
 
-def _age_bucket(age: float) -> str:
-    """Five age buckets covering NBA career arc."""
-    if pd.isna(age):
-        return "UNK"
-    age = int(age)
-    if age <= 22: return "≤22"
-    if age <= 25: return "23-25"
-    if age <= 28: return "26-28"
-    if age <= 31: return "29-31"
-    if age <= 34: return "32-34"
-    return "35+"
 
 
 def build_pair_dataset(prev: str, curr: str) -> pd.DataFrame | None:
