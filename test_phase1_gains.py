@@ -36,12 +36,70 @@ import pandas as pd
 
 from utils import (
     SEASONS, normalize, season_to_espn_year,
-    build_ranked_projected, fetch_league_stats, fetch_player_full_career,
+    build_ranked_projected, build_raw, apply_rankings,
+    fetch_league_stats,
     fetch_bref_positions, fetch_player_positions_detailed, position_to_bucket,
     SALARY_CAP_M, age_bucket,
     CONTRACT_AGE_MULTIPLIERS, CONTRACT_POSITION_MULTIPLIERS,
     HEALTHY_SEASON_GP, NEW_CONTRACT_PCT, SUPERMAX_CAP_PCT,
 )
+
+
+# Season → DataFrame index, computed once and reused. Keyed by (season, playoffs).
+# Filled lazily as we walk through SEASONS.
+def build_career_indexes() -> tuple[dict, dict]:
+    """Pre-compute every (player_id → list[(season, gp, barrett_score)])
+    across all SEASONS in ONE pass through the disk cache.
+
+    Replaces ~870 individual fetch_player_full_career calls with 2 × 53 =
+    106 build_raw reads. Each `season` parquet is already on disk — this
+    is just iterating + appending to dicts, no re-scraping.
+
+    Returns (regular_careers, playoff_careers).
+    Each dict maps player_id → DataFrame with columns: Season, GP,
+    Barrett Score (sorted oldest → newest).
+    """
+    regular: dict[int, list[dict]] = {}
+    playoffs: dict[int, list[dict]] = {}
+    # SEASONS is newest→oldest; iterate reverse so the dict ends up
+    # oldest→newest naturally.
+    for season in reversed(SEASONS):
+        # Regular season
+        try:
+            ranked = apply_rankings(build_raw(season, playoffs=False))
+            if not ranked.empty:
+                for _, r in ranked.iterrows():
+                    pid = r.get("PLAYER_ID")
+                    if pd.isna(pid):
+                        continue
+                    regular.setdefault(int(pid), []).append({
+                        "Season":        season,
+                        "GP":            int(r.get("GP", 0) or 0),
+                        "Barrett Score": float(r.get("barrett_score", 0) or 0),
+                    })
+        except Exception:
+            pass
+        # Playoffs
+        try:
+            ranked_po = apply_rankings(build_raw(season, playoffs=True))
+            if not ranked_po.empty:
+                for _, r in ranked_po.iterrows():
+                    pid = r.get("PLAYER_ID")
+                    if pd.isna(pid):
+                        continue
+                    playoffs.setdefault(int(pid), []).append({
+                        "Season":        season,
+                        "GP":            int(r.get("GP", 0) or 0),
+                        "Barrett Score": float(r.get("barrett_score", 0) or 0),
+                    })
+        except Exception:
+            pass
+
+    # Convert to DataFrames for the rest of the code path.
+    return (
+        {pid: pd.DataFrame(rows) for pid, rows in regular.items()},
+        {pid: pd.DataFrame(rows) for pid, rows in playoffs.items()},
+    )
 
 
 TRAIN_PAIRS = [
@@ -115,9 +173,13 @@ def playoff_blended_score(reg_career_score: float | None,
 
 
 # ── Build per-contract test rows ─────────────────────────────────────────────
-def build_test_rows(pairs: list[tuple[str, str]]) -> pd.DataFrame:
+def build_test_rows(
+    pairs: list[tuple[str, str]],
+    regular_careers: dict,
+    playoff_careers: dict,
+) -> pd.DataFrame:
     """One row per qualifying new-contract signing, with every feature each
-    variant needs."""
+    variant needs. Uses pre-built career indexes (no per-player scraping)."""
     rows = []
     for prev, curr in pairs:
         if prev not in SALARY_CAP_M or curr not in SALARY_CAP_M:
@@ -166,26 +228,20 @@ def build_test_rows(pairs: list[tuple[str, str]]) -> pd.DataFrame:
         if m.empty:
             continue
 
-        # Per-row enrichment: career-weighted Score, trajectory, playoff blend
+        # Per-row enrichment using pre-built career indexes.
+        # 200× faster than calling fetch_player_full_career per player.
         for _, row in m.iterrows():
             player = row["Player"]
-            age = age_lookup.get(int(row["PLAYER_ID"]))
+            pid = int(row["PLAYER_ID"])
+            age = age_lookup.get(pid)
             pos_bucket = _resolve_pos_bucket(player)
 
-            # Regular-season career
-            try:
-                reg_career = fetch_player_full_career(player, playoffs=False)
-            except Exception:
-                reg_career = pd.DataFrame()
-            reg_career_score = career_weighted_score_at(reg_career, prev)
-            traj = career_trajectory(reg_career, prev)
+            reg_career = regular_careers.get(pid, pd.DataFrame())
+            po_career  = playoff_careers.get(pid, pd.DataFrame())
 
-            # Playoff career
-            try:
-                po_career = fetch_player_full_career(player, playoffs=True)
-            except Exception:
-                po_career = pd.DataFrame()
-            po_career_score = career_weighted_score_at(po_career, prev)
+            reg_career_score = career_weighted_score_at(reg_career, prev)
+            traj             = career_trajectory(reg_career, prev)
+            po_career_score  = career_weighted_score_at(po_career, prev)
             po_gp_total = int(po_career["GP"].sum()) if not po_career.empty else 0
 
             # Compute effective rank (career-weighted-Score → salary rank
@@ -292,9 +348,18 @@ def print_scores(label: str, s: dict, baseline: dict | None = None) -> None:
 
 
 def main() -> None:
-    print("Loading test pool (2022-25)...")
-    test_df = build_test_rows(TEST_PAIRS)
-    print(f"  Loaded {len(test_df)} qualifying new-contract test rows.\n")
+    print("Pre-building career indexes (one pass over all seasons)...")
+    import time
+    t0 = time.time()
+    regular_careers, playoff_careers = build_career_indexes()
+    print(f"  Indexed {len(regular_careers)} regular-season careers and "
+          f"{len(playoff_careers)} playoff careers in {time.time() - t0:.1f}s.\n")
+
+    print("Building test pool (2022-25)...")
+    t0 = time.time()
+    test_df = build_test_rows(TEST_PAIRS, regular_careers, playoff_careers)
+    print(f"  Loaded {len(test_df)} qualifying new-contract test rows "
+          f"in {time.time() - t0:.1f}s.\n")
     if test_df.empty:
         print("No data. Has the cache been seeded?")
         return
