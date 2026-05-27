@@ -1426,7 +1426,7 @@ if _market_median is not None:
     _draft_label = _fmt_draft(features)
     if _draft_label:
         _meta_bits.append(_draft_label)
-    _meta_bits.append(f"Barrett {features['barrett_score']:.1f} (#{features['score_rank']})")
+    _meta_bits.append(f"Score {features['barrett_score']:.1f} (#{features['score_rank']})")
     if features.get("salary", 0) > 0:
         _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
     _player_meta_line = " · ".join(_meta_bits)
@@ -1498,7 +1498,7 @@ else:
     _draft_label = _fmt_draft(features)
     if _draft_label:
         _meta_bits.append(_draft_label)
-    _meta_bits.append(f"Barrett {features['barrett_score']:.1f} (#{features['score_rank']})")
+    _meta_bits.append(f"Score {features['barrett_score']:.1f} (#{features['score_rank']})")
     if features.get("salary", 0) > 0:
         _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
     _player_meta_line = " · ".join(_meta_bits)
