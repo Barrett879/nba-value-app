@@ -1418,27 +1418,28 @@ _playoff_mult_val = features.get("playoff_mult", 1.0) or 1.0
 _playoff_barrett_val_h = features.get("playoff_barrett", 0.0) or 0.0
 if _playoff_gp >= 4 and _playoff_tier_label not in ("No playoff data", ""):
     if _playoff_mult_val > 1.0:
-        # Positive bonus — green chip
+        # Positive bonus — green chip. Numbers are for the most recent
+        # qualifying playoff appearance (≥4 GP).
         _playoff_chip_html = (
             f'<div style="display:inline-block; background:rgba(22,212,193,0.10); '
             f'border:1px solid rgba(22,212,193,0.35); border-radius:6px; '
             f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
             f'font-size:0.8rem; color:#16d4c1;">⭐ '
             f'{_playoff_tier_label} ×{_playoff_mult_val:.2f} '
-            f'(Barrett {_playoff_barrett_val_h:.1f} over {_playoff_gp} GP, last 3 postseasons)'
+            f'(Barrett {_playoff_barrett_val_h:.1f} over {_playoff_gp} GP, last postseason)'
             f'</div>'
         )
     else:
         # Neutral playoff context — gray chip (visible but not a bonus)
-        if _playoff_tier_label == "Limited playoff exposure":
+        if _playoff_tier_label == "No qualifying playoff data":
             _msg = (
-                f"Limited playoff data: {_playoff_gp} GP last 3 postseasons "
-                f"(need ≥10 for a bonus tier)"
+                f"No qualifying playoff data ({_playoff_gp} GP last postseason — "
+                f"need ≥4 for a bonus tier)"
             )
         else:
             _msg = (
-                f"Playoff record: Barrett {_playoff_barrett_val_h:.1f} "
-                f"over {_playoff_gp} GP (below 20-Barrett threshold)"
+                f"Last playoff: Barrett {_playoff_barrett_val_h:.1f} "
+                f"over {_playoff_gp} GP (below 18-Barrett threshold)"
             )
         _playoff_chip_html = (
             f'<div style="display:inline-block; background:rgba(255,255,255,0.04); '
@@ -1627,7 +1628,7 @@ with st.expander("About this prediction"):
         f'&nbsp;<span style="color:#666;">×</span>&nbsp;'
         f'<b>×{_playoff_mult:.2f}</b>'
         f'<span style="color:#777;"> (playoff: {_playoff_tier} · '
-        f'Barrett {_playoff_barrett_target:.1f} on {_playoff_gp_target} GP)</span>'
+        f'Barrett {_playoff_barrett_target:.1f} on {_playoff_gp_target} GP last postseason)</span>'
         if _show_playoff else ""
     )
 
@@ -1728,12 +1729,14 @@ with st.expander("About this prediction"):
         5. **Durability multiplier** — trailing-3-year availability tier
            (Healthy / Mild / Moderate / Chronic / Severe). Embiid's chronic
            injury history applies ~0.78× even though his rate is elite.
-        6. **Playoff bonus** — proven recent playoff performers (≥10 GP
-           over last 3 postseasons) earn a small premium beyond regular-
-           season production. Tiered: Elite playoff ≥35 Barrett (×1.08),
-           Strong ≥28 (×1.05), Solid ≥20 (×1.02), else neutral. One-way
-           bonus only — no penalty for players on tanking teams who
-           can't earn postseason reps.
+        6. **Playoff bonus** — based on the player's **most recent
+           qualifying playoff appearance** (≥4 GP filters out cameos).
+           GMs negotiate off the freshest playoff impression, not a
+           multi-year average — Bruce Brown after BKN, Wiggins after the
+           GSW title, Rui after the LAL WCF run all got paid off ONE
+           playoff run. Tiers: Elite ≥33 Barrett (×1.08), Strong ≥26
+           (×1.05), Solid ≥18 (×1.02). One-way bonus — no penalty for
+           lottery-team players who can't earn postseason reps.
         7. **CBA max cap** — derived from years of NBA service. 0-6 yrs:
            25% of cap. 7-9 yrs: 30%. 10+ yrs: 35%. Caps the projection
            because no player can legally earn more than their max.

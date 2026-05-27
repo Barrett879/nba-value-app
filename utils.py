@@ -363,41 +363,49 @@ def playoff_bonus_multiplier(playoff_career_df, lookback_seasons: int = 3
       - Players who DO make playoffs AND perform well get a real bump
         from GMs (Jokic, Tatum, SGA premium). We capture that.
 
-    Computed on trailing N postseason appearances. Uses 50/30/20 weighting
-    matching the regular-season trailing Barrett.
+    Why MOST RECENT (not 3-year trailing average):
+      - GMs price the next contract off the freshest playoff impression.
+        Bruce Brown after the 2023 BKN run, Wiggins after the 2022 title,
+        Rui after the 2023 WCF run — all got paid off ONE playoff
+        performance, not a smoothed multi-year average.
+      - 3-year trailing dilutes a strong recent run with weak earlier
+        cameos. Rui's 2024-25 playoff Barrett ~20 gets dragged toward
+        ~14 by lower-role years on Washington.
 
-    Returns: (multiplier, tier_label, weighted_playoff_barrett, gp_total).
+    Requires ≥4 GP in the most recent playoff appearance (filters
+    2-game cameos / DNP first-round sweeps that aren't representative
+    of a real postseason role).
 
-    Tiers (weighted playoff Barrett, with availability):
-        >= 35:  Elite playoff    → ×1.08   (Jokic / Giannis tier)
-        >= 28:  Strong playoff   → ×1.05   (SGA / Tatum tier)
-        >= 20:  Solid playoff    → ×1.02   (rotation starter)
-        < 20:   Average / role   → ×1.00
+    Returns: (multiplier, tier_label, most_recent_playoff_barrett, gp).
 
-    Requires ≥10 cumulative GP across trailing window for any bonus —
-    small samples (2-game first-round exits) are noise.
+    Tiers (most recent playoff Barrett, with availability):
+        >= 33:  Elite playoff    → ×1.08   (Jokic Finals MVP tier)
+        >= 26:  Strong playoff   → ×1.05   (SGA / Tatum)
+        >= 18:  Solid playoff    → ×1.02   (Rui WCF / Bruce Brown BKN)
+        < 18:   Average / role   → ×1.00
     """
     if playoff_career_df is None or playoff_career_df.empty:
         return 1.0, "No playoff data", 0.0, 0
-    recent = playoff_career_df.tail(lookback_seasons)
-    total_gp = int(recent["GP"].sum())
-    if total_gp < 10:
-        return 1.0, "Limited playoff exposure", 0.0, total_gp
 
-    weights_full = [0.20, 0.30, 0.50]
-    weights = weights_full[-len(recent):]
-    wsum = sum(weights)
-    playoff_barrett = float(
-        (recent["Barrett Score"].values * weights).sum() / wsum
-    )
+    # Filter out cameo appearances (DNP, single-series sweeps where the
+    # player barely contributed). ≥4 GP = at least one round played.
+    healthy = playoff_career_df[playoff_career_df["GP"] >= 4]
+    if healthy.empty:
+        return 1.0, "No qualifying playoff data", 0.0, 0
 
-    if playoff_barrett >= 35:
-        return 1.08, "Elite playoff",   playoff_barrett, total_gp
-    if playoff_barrett >= 28:
-        return 1.05, "Strong playoff",  playoff_barrett, total_gp
-    if playoff_barrett >= 20:
-        return 1.02, "Solid playoff",   playoff_barrett, total_gp
-    return 1.0, "Average playoff",  playoff_barrett, total_gp
+    # Use the MOST RECENT qualifying playoff appearance as the tier
+    # driver. This matches what GMs actually price off.
+    most_recent = healthy.iloc[-1]
+    gp = int(most_recent["GP"])
+    playoff_barrett = float(most_recent["Barrett Score"])
+
+    if playoff_barrett >= 33:
+        return 1.08, "Elite playoff",   playoff_barrett, gp
+    if playoff_barrett >= 26:
+        return 1.05, "Strong playoff",  playoff_barrett, gp
+    if playoff_barrett >= 18:
+        return 1.02, "Solid playoff",   playoff_barrett, gp
+    return 1.0, "Average playoff",  playoff_barrett, gp
 
 
 # ── League-wide pace by season (possessions per 48 minutes) ────────────────────
