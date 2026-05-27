@@ -1007,7 +1007,7 @@ if _market_median is not None:
         <div style="margin-left:auto; text-align:right;">
           <div style="font-size:0.65rem; color:#888;
                       text-transform:uppercase; letter-spacing:0.08em;">
-            Honest range
+            Range
           </div>
           <div style="font-size:1.3rem; color:#fff; font-weight:700;
                       line-height:1.1;">
@@ -1085,7 +1085,7 @@ else:
             <div style="margin-left:auto; text-align:right;">
               <div style="font-size:0.65rem; color:#888;
                           text-transform:uppercase; letter-spacing:0.08em;">
-                Honest range
+                Range
               </div>
               <div style="font-size:1.3rem; color:#fff; font-weight:700;
                           line-height:1.1;">
