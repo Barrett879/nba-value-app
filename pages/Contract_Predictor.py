@@ -1349,14 +1349,18 @@ elif features.get("on_rookie_scale"):
 else:
     _model_caption = ""
 
-# Pre-build the caption HTML as a single string. Inlining the conditional
-# inside the f-string template caused Streamlit's markdown parser to flip
-# into code-block mode whenever _model_caption was empty (the conditional
-# evaluated to '' and the surrounding newlines formed a blank line).
-# Building it here means the f-string interpolation site is always a
-# single string with no blank-line risk.
+# Pre-build the caption HTML as a single string. Two design notes:
+#   1. Inline conditional in the f-string template caused Streamlit's
+#      markdown parser to flip into code-block mode whenever the caption
+#      was empty (blank-line bug). Building here keeps the interpolation
+#      site a single string.
+#   2. position:absolute so the caption doesn't affect the Model column's
+#      height. Without this, the caption pushed Market and Range dollars
+#      up to align with Model's caption bottom (flex-end alignment) —
+#      making the three dollar amounts sit on different vertical levels.
 _model_caption_html = (
-    f'<div style="font-size:0.7rem; color:#16d4c1; '
+    f'<div style="position:absolute; top:100%; left:0; '
+    f'white-space:nowrap; font-size:0.7rem; color:#16d4c1; '
     f'margin-top:0.25rem; font-weight:600;">{_model_caption}</div>'
     if _model_caption else ''
 )
@@ -1452,7 +1456,7 @@ if _market_median is not None:
 
       <div style="display:flex; gap:1.6rem; margin-top:0.85rem;
                   flex-wrap:wrap; align-items:flex-end;">
-        <div>
+        <div style="position:relative;">
           <div style="font-size:0.65rem; color:#888;
                       text-transform:uppercase; letter-spacing:0.08em;">
             Model
@@ -1549,7 +1553,7 @@ else:
           </div>{_signing_html}
           <div style="display:flex; gap:1.6rem; margin-top:0.85rem;
                       flex-wrap:wrap; align-items:flex-end;">
-            <div>
+            <div style="position:relative;">
               <div style="font-size:0.65rem; color:#888;
                           text-transform:uppercase; letter-spacing:0.08em;">
                 Model
