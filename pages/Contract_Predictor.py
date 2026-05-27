@@ -1144,71 +1144,9 @@ if caveats:
         unsafe_allow_html=True,
     )
 
-# ── Breakdown — single horizontal line ───────────────────────────────────────
-# Was a 4-column grid taking ~3 vertical inches; now a one-line equation with
-# tiny detail annotations underneath. Same info, way less screen real estate.
-base_M = prediction["base"] / 1_000_000
-_pos_factor_note = (
-    f" (suppressed from ×{prediction['pos_mult_raw']:.2f} — base ≥28% of cap)"
-    if prediction.get("pos_mult_suppressed") else ""
-)
-# Annotate the age multiplier with the tier label so the user sees WHY
-# Harden's 36-year-old multiplier is gentler than an average 36yo's.
-_age_factor_note = (
-    f" · {prediction['age_tier']} tier"
-    if prediction.get("age_tier") and prediction["age_tier"] not in
-       ("Prime (≤28)", "Unknown") else ""
-)
-# Durability multiplier only shown in the math line when it's actually
-# moving the number — Healthy → ×1.00 means no change, no need to clutter.
-_dur_mult = prediction.get("durability_mult", 1.0) or 1.0
-_dur_tier = prediction.get("durability_tier", "") or ""
-_show_durability = _dur_mult != 1.0
-_dur_html_fragment = (
-    f'&nbsp;<span style="color:#666;">×</span>&nbsp;'
-    f'<b>×{_dur_mult:.2f}</b>'
-    f'<span style="color:#777;"> (durability: {_dur_tier} · '
-    f'{features.get("trailing_gp_total", 0)}/{features.get("trailing_gp_max", 246)} '
-    f'GP over last 3 yrs)</span>'
-    if _show_durability else ""
-)
-
-# Build the math line as a single-line HTML string. Multi-line f-strings
-# of HTML have caused rendering bugs (Streamlit's markdown parser sees a
-# blank line — produced when _dur_html_fragment is empty — and switches
-# into code-block mode for everything after it). Single-line construction
-# avoids the issue entirely.
-_age_label = int(features['age']) if features['age'] else '?'
-_pos_label = features.get('position_detailed', features['position'])
-_math_line = (
-    '<span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;'
-    ' text-transform:uppercase; margin-right:0.5rem;">Math</span>'
-    f'<b style="color:#fff;">${base_M:.1f}M</b>'
-    f' <span style="color:#777;">(career rate score '
-    f'{features["career_barrett"]:.1f} → rank #{features["effective_rank"]})'
-    f'</span> &nbsp;<span style="color:#666;">×</span>&nbsp; '
-    f'<b>×{prediction["age_mult"]:.2f}</b>'
-    f' <span style="color:#777;">(age {_age_label}{_age_factor_note})</span>'
-    f' &nbsp;<span style="color:#666;">×</span>&nbsp; '
-    f'<b>×{prediction["pos_mult"]:.2f}</b>'
-    f' <span style="color:#777;">({_pos_label}{_pos_factor_note})</span>'
-    f'{_dur_html_fragment}'
-    f' &nbsp;<span style="color:#666;">=</span>&nbsp; '
-    f'<b style="color:#16d4c1;">${predicted_M:.1f}M</b>'
-    f' <span style="color:#666;">±${prediction["band"]/1_000_000:.1f}M</span>'
-)
-_breakdown_html = (
-    '<div style="background:rgba(255,255,255,0.03);'
-    ' border:1px solid rgba(255,255,255,0.08);'
-    ' border-radius:10px; padding:0.85rem 1.1rem; margin: 0 0 0.7rem 0;'
-    ' font-size:0.95rem; color:#cdcdd5; line-height:1.55;">'
-    f'{_math_line}'
-    '<div style="font-size:0.72rem; color:#777; margin-top:0.35rem;">'
-    f'Base uses {features["career_basis"]}.'
-    '</div>'
-    '</div>'
-)
-st.markdown(_breakdown_html, unsafe_allow_html=True)
+# Math breakdown lives inside the "About this prediction" expander below —
+# keeps the main view clean (Model / Market / Honest range) while still
+# letting curious users see the per-player calculation.
 
 # ── Comparables ──────────────────────────────────────────────────────────────
 st.subheader("Comparable signings")
@@ -1329,6 +1267,73 @@ else:
 # ── Methodology footer (collapsed — info-after-action) ──────────────────────
 st.divider()
 with st.expander("About this prediction"):
+    # ── Per-player math breakdown ───────────────────────────────────────────
+    # Same one-line equation that used to live in the main view. Moved here
+    # so the predicted-contract hero is the focal point of the page; the
+    # math is for curious users who want to see how the number was built.
+    base_M = prediction["base"] / 1_000_000
+    _pos_factor_note = (
+        f" (suppressed from ×{prediction['pos_mult_raw']:.2f} — base ≥28% of cap)"
+        if prediction.get("pos_mult_suppressed") else ""
+    )
+    # Annotate the age multiplier with the tier label so the user sees WHY
+    # Harden's 36-year-old multiplier is gentler than an average 36yo's.
+    _age_factor_note = (
+        f" · {prediction['age_tier']} tier"
+        if prediction.get("age_tier") and prediction["age_tier"] not in
+           ("Prime (≤28)", "Unknown") else ""
+    )
+    # Durability multiplier only shown in the math line when it's actually
+    # moving the number — Healthy → ×1.00 means no change, no need to clutter.
+    _dur_mult = prediction.get("durability_mult", 1.0) or 1.0
+    _dur_tier = prediction.get("durability_tier", "") or ""
+    _show_durability = _dur_mult != 1.0
+    _dur_html_fragment = (
+        f'&nbsp;<span style="color:#666;">×</span>&nbsp;'
+        f'<b>×{_dur_mult:.2f}</b>'
+        f'<span style="color:#777;"> (durability: {_dur_tier} · '
+        f'{features.get("trailing_gp_total", 0)}/{features.get("trailing_gp_max", 246)} '
+        f'GP over last 3 yrs)</span>'
+        if _show_durability else ""
+    )
+
+    # Build the math line as a single-line HTML string. Multi-line f-strings
+    # of HTML have caused rendering bugs (Streamlit's markdown parser sees a
+    # blank line — produced when _dur_html_fragment is empty — and switches
+    # into code-block mode for everything after it). Single-line construction
+    # avoids the issue entirely.
+    _age_label = int(features['age']) if features['age'] else '?'
+    _pos_label = features.get('position_detailed', features['position'])
+    _math_line = (
+        '<span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;'
+        ' text-transform:uppercase; margin-right:0.5rem;">Math</span>'
+        f'<b style="color:#fff;">${base_M:.1f}M</b>'
+        f' <span style="color:#777;">(career rate score '
+        f'{features["career_barrett"]:.1f} → rank #{features["effective_rank"]})'
+        f'</span> &nbsp;<span style="color:#666;">×</span>&nbsp; '
+        f'<b>×{prediction["age_mult"]:.2f}</b>'
+        f' <span style="color:#777;">(age {_age_label}{_age_factor_note})</span>'
+        f' &nbsp;<span style="color:#666;">×</span>&nbsp; '
+        f'<b>×{prediction["pos_mult"]:.2f}</b>'
+        f' <span style="color:#777;">({_pos_label}{_pos_factor_note})</span>'
+        f'{_dur_html_fragment}'
+        f' &nbsp;<span style="color:#666;">=</span>&nbsp; '
+        f'<b style="color:#16d4c1;">${predicted_M:.1f}M</b>'
+        f' <span style="color:#666;">±${prediction["band"]/1_000_000:.1f}M</span>'
+    )
+    _breakdown_html = (
+        '<div style="background:rgba(255,255,255,0.03);'
+        ' border:1px solid rgba(255,255,255,0.08);'
+        ' border-radius:10px; padding:0.85rem 1.1rem; margin: 0 0 1rem 0;'
+        ' font-size:0.95rem; color:#cdcdd5; line-height:1.55;">'
+        f'{_math_line}'
+        '<div style="font-size:0.72rem; color:#777; margin-top:0.35rem;">'
+        f'Base uses {features["career_basis"]}.'
+        '</div>'
+        '</div>'
+    )
+    st.markdown(_breakdown_html, unsafe_allow_html=True)
+
     render_barrett_score_explainer()
     st.markdown(
         """
