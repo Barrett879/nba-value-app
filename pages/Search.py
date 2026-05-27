@@ -10,7 +10,8 @@ from utils import (
     COMMON_CSS,
     normalize,
     get_all_player_names, fetch_player_full_career,
-    fetch_season_component_distribution,
+    fetch_season_component_distribution, fetch_position_peer_distribution,
+    fetch_player_positions_detailed, position_to_bucket,
     render_nav, render_page_chrome, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
@@ -538,6 +539,125 @@ if len(selected) == 1:
                 "Each bar shows where this player ranked among all qualifying players "
                 f"in {_bd_season} — 90th percentile = better than 90% of the league. "
                 "Hover any bar for the underlying formula and raw value."
+            )
+
+    # ── Position-peer Score Breakdown ─────────────────────────────────────────
+    # Same 6 components, but ranked against same-position peers only
+    # (pooled across current + previous season for a smoother pool). A
+    # PG scoring 18 ppg looks merely good vs the whole league but
+    # elite vs other PGs; this view makes that legible.
+    _peer_pos_lookup = {}
+    try:
+        _peer_pos_lookup = fetch_player_positions_detailed(_bd_season, cache_v=2)
+    except Exception:
+        pass
+    _peer_pos = _peer_pos_lookup.get(normalize(player_name))
+
+    if _peer_pos and _peer_pos in {"PG", "SG", "SF", "PF", "C"}:
+        st.markdown("")  # small visual gap
+        st.subheader(f"…vs. position peers ({_peer_pos})")
+
+        _peer_dist = fetch_position_peer_distribution(
+            _bd_season, _peer_pos, n_seasons_back=1,
+            playoffs=playoff_mode,
+        )
+
+        if _peer_dist.empty or len(_peer_dist) < 20:
+            st.info(
+                f"Not enough {_peer_pos} comparables on disk to compute "
+                f"position-peer percentiles (need ≥20, have {len(_peer_dist)})."
+            )
+        else:
+            _peer_row = _peer_dist[
+                _peer_dist["Player"].apply(normalize) == normalize(player_name)
+            ]
+            # If the player isn't in the pooled distribution (e.g. fell
+            # below the minute threshold one season), still compute
+            # percentiles vs the pool using the snapshot from `_this`.
+            _ref = _peer_row.iloc[0] if not _peer_row.empty else _this
+
+            _prows = []
+            for label, color, formula in _components:
+                vals = _peer_dist[label].astype(float).values
+                my_val = float(_ref[label])
+                pct = (vals < my_val).sum() + 0.5 * (vals == my_val).sum()
+                pct = (pct / len(vals)) * 100 if len(vals) else 0
+                _prows.append({
+                    "label":   label,
+                    "color":   color,
+                    "pct":     pct,
+                    "value":   my_val,
+                    "formula": formula,
+                })
+            _prows.sort(key=lambda r: r["pct"], reverse=True)
+
+            _p_labels  = [r["label"] for r in _prows]
+            _p_pcts    = [r["pct"] for r in _prows]
+            _p_colors  = [r["color"] for r in _prows]
+            _p_values  = [r["value"] for r in _prows]
+            _p_formulas = [r["formula"] for r in _prows]
+            _p_texts   = [
+                f"<b>{r['pct']:.0f}th</b> · {_fmt_value(r['label'], r['value'])}"
+                for r in _prows
+            ]
+
+            _peer_fig = go.Figure()
+            _peer_fig.add_trace(go.Bar(
+                x=[100] * len(_p_labels),
+                y=_p_labels,
+                orientation="h",
+                marker=dict(color="rgba(255,255,255,0.04)",
+                            line=dict(color="rgba(255,255,255,0.06)", width=1)),
+                hoverinfo="skip",
+                showlegend=False,
+            ))
+            _peer_fig.add_trace(go.Bar(
+                x=_p_pcts,
+                y=_p_labels,
+                orientation="h",
+                marker=dict(color=_p_colors,
+                            line=dict(color="rgba(0,0,0,0)", width=0)),
+                text=_p_texts,
+                textposition="outside",
+                textfont=dict(color="#fff", size=13),
+                customdata=list(zip(_p_values, _p_formulas)),
+                hovertemplate=(
+                    "<b>%{y}</b><br>"
+                    f"Percentile vs {_peer_pos}: <b>%{{x:.0f}}th</b><br>"
+                    "Value: %{customdata[0]:.2f}<br>"
+                    "<i>%{customdata[1]}</i><extra></extra>"
+                ),
+                showlegend=False,
+            ))
+            _peer_fig.update_layout(
+                height=320,
+                barmode="overlay",
+                paper_bgcolor="rgba(0,0,0,0)",
+                plot_bgcolor="rgba(0,0,0,0)",
+                font=dict(color="#cdcdd5"),
+                margin=dict(l=10, r=80, t=10, b=30),
+                xaxis=dict(
+                    range=[0, 118],
+                    tickvals=[0, 25, 50, 75, 100],
+                    ticktext=["0", "25th", "50th", "75th", "100th"],
+                    gridcolor="rgba(255,255,255,0.06)",
+                    zerolinecolor="rgba(255,255,255,0.15)",
+                    title=f"Percentile vs. all qualifying {_peer_pos}s "
+                          f"({_bd_season} + previous season)",
+                ),
+                yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
+            )
+            st.plotly_chart(_peer_fig, use_container_width=True,
+                            config={"displayModeBar": False})
+
+            _peer_n = len(_peer_dist)
+            st.caption(
+                f"Same components, ranked only against other {_peer_pos}s "
+                f"({_peer_n} qualifying player-seasons pooled across "
+                f"{_bd_season} + the previous season). A PG/SG playmaking "
+                f"at the 95th percentile of guards is different — usually "
+                f"more elite — than 95th vs the whole league, since "
+                f"Centers don't compete for that crown."
             )
 
     st.divider()

@@ -1943,6 +1943,67 @@ def fetch_season_component_distribution(season: str, playoffs: bool = False) -> 
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
+def fetch_position_peer_distribution(
+    season: str,
+    position: str,
+    n_seasons_back: int = 1,
+    playoffs: bool = False,
+) -> pd.DataFrame:
+    """Component breakdown for a single primary position (PG/SG/SF/PF/C),
+    pooled across the current season + N prior seasons for a smoother sample.
+
+    Used by the Search page's "position peer" Score Breakdown view so users
+    can see how a Guard's scoring stacks up against other Guards, not
+    against the whole league (where Centers monopolize rebounds and Guards
+    monopolize playmaking).
+
+    `position` is a 5-bucket value (PG/SG/SF/PF/C). For each pooled season,
+    we cross-reference fetch_player_positions_detailed and keep only
+    players whose primary position matches. Players who appear in
+    multiple pooled seasons appear multiple times (one row each) so the
+    percentile reflects the full pool of qualifying player-seasons.
+
+    Returns the same 6-component schema as
+    fetch_season_component_distribution but filtered + pooled.
+    """
+    if position not in {"PG", "SG", "SF", "PF", "C"}:
+        return pd.DataFrame()
+
+    # Build the list of seasons to pool (current + N back), staying within SEASONS.
+    if season not in SEASONS:
+        return pd.DataFrame()
+    base_idx = SEASONS.index(season)
+    pool_seasons = SEASONS[base_idx : base_idx + 1 + n_seasons_back]
+
+    frames: list[pd.DataFrame] = []
+    for s in pool_seasons:
+        dist = fetch_season_component_distribution(s, playoffs=playoffs)
+        if dist.empty:
+            continue
+        # Pull the position lookup for this season; gracefully fall back
+        # if the scrape failed for that year.
+        try:
+            pos_lookup = fetch_player_positions_detailed(s, cache_v=2)
+        except Exception:
+            pos_lookup = {}
+        if not pos_lookup:
+            continue
+
+        # Filter to same-position players (primary position from BBRef).
+        dist_pos = dist.copy()
+        dist_pos["_pos"] = dist_pos["Player"].apply(
+            lambda n: pos_lookup.get(normalize(n), "")
+        )
+        dist_pos = dist_pos[dist_pos["_pos"] == position]
+        if not dist_pos.empty:
+            frames.append(dist_pos)
+
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_career_trend(player_id: int, num_seasons: int = 5,
                        playoffs: bool = False) -> pd.DataFrame:
     """Barrett Score per season pulled directly from build_raw — guaranteed to
