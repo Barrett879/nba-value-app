@@ -3052,6 +3052,93 @@ def fetch_draft_classes() -> pd.DataFrame:
                                      "ROUND_NUMBER", "ROUND_PICK", "OVERALL_PICK"])
 
 
+# ── Draft-tier classification ─────────────────────────────────────────────
+# Used by the Contract Predictor to weight comparables by draft pedigree.
+# Lottery picks earn on pedigree even when production drops; 2nd-round /
+# undrafted developers stay on minimums until they prove out. Matching a
+# late-round developer against a lottery-pick comp (or vice versa) biases
+# the market view, so the comp-matching distance penalizes tier mismatch.
+#
+# Tiers are ordinal — adjacent tiers are penalized less than far ones.
+DRAFT_TIERS = ["Lottery", "Mid-1st", "Late-1st", "2nd", "Undrafted"]
+DRAFT_TIER_ORDINAL = {t: i for i, t in enumerate(DRAFT_TIERS)}
+
+
+def _pick_to_tier(overall_pick, round_number=None) -> str:
+    """Map an overall draft pick to one of five tiers. Returns 'Undrafted'
+    for None / NaN / 0 / negative inputs. ROUND_NUMBER is a fallback when
+    OVERALL_PICK is missing."""
+    try:
+        p = int(overall_pick) if overall_pick is not None else 0
+    except (TypeError, ValueError):
+        p = 0
+    if p <= 0:
+        # Fall back to round_number if overall pick is unknown but round is.
+        try:
+            r = int(round_number) if round_number is not None else 0
+        except (TypeError, ValueError):
+            r = 0
+        if r == 1:
+            return "Late-1st"   # conservative — no pick number, assume late
+        if r == 2:
+            return "2nd"
+        return "Undrafted"
+    if p <= 14:
+        return "Lottery"
+    if p <= 22:
+        return "Mid-1st"
+    if p <= 30:
+        return "Late-1st"
+    return "2nd"  # 31-60 (and any 61+ historical noise)
+
+
+def get_player_draft_info(player_name: str) -> dict:
+    """Return draft tier + overall pick for one player. Uses fetch_draft_classes
+    which is cached for the day. Players with no draft record (undrafted FAs,
+    international signings, etc.) return tier='Undrafted', pick=None."""
+    try:
+        df = fetch_draft_classes()
+        if df.empty:
+            return {"draft_tier": "Undrafted", "draft_pick": None, "draft_year": None}
+        name_norm = normalize(player_name)
+        mask = df["player_norm"] == name_norm
+        if not mask.any():
+            return {"draft_tier": "Undrafted", "draft_pick": None, "draft_year": None}
+        row = df[mask].iloc[0]
+        overall = row.get("OVERALL_PICK")
+        rnd     = row.get("ROUND_NUMBER")
+        try:
+            pick_int = int(overall) if overall is not None and not pd.isna(overall) else None
+        except (TypeError, ValueError):
+            pick_int = None
+        return {
+            "draft_tier": _pick_to_tier(overall, rnd),
+            "draft_pick": pick_int,
+            "draft_year": int(row["draft_year"]) if not pd.isna(row.get("draft_year")) else None,
+        }
+    except Exception:
+        return {"draft_tier": "Undrafted", "draft_pick": None, "draft_year": None}
+
+
+def build_draft_tier_lookup() -> dict:
+    """Bulk lookup: normalized name -> {tier, pick, year}. Used by
+    load_historical_signings to avoid one fetch_draft_classes per row."""
+    try:
+        df = fetch_draft_classes()
+        if df.empty:
+            return {}
+        out: dict = {}
+        for _, r in df.iterrows():
+            out[r["player_norm"]] = {
+                "draft_tier": _pick_to_tier(r.get("OVERALL_PICK"), r.get("ROUND_NUMBER")),
+                "draft_pick": int(r["OVERALL_PICK"]) if pd.notna(r.get("OVERALL_PICK")) else None,
+                "draft_year": int(r["draft_year"]) if pd.notna(r.get("draft_year")) else None,
+            }
+        return out
+    except Exception:
+        return {}
+
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_player_career_all_seasons(player_name: str, playoffs: bool = False) -> pd.DataFrame:
     """Return every season a player appears in raw data, regardless of minutes played.

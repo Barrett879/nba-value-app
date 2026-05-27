@@ -35,6 +35,10 @@ from utils import (
     CONFIDENCE_BAND_PCT_OF_CAP,
     HEALTHY_SEASON_GP, NEW_CONTRACT_PCT, SUPERMAX_CAP_PCT,
     tiered_age_multiplier, durability_multiplier,
+    # Draft tier — used to keep comparables apples-to-apples (lottery picks
+    # earn on pedigree; non-lottery developers don't).
+    DRAFT_TIERS, DRAFT_TIER_ORDINAL,
+    get_player_draft_info, build_draft_tier_lookup,
 )
 
 
@@ -67,6 +71,24 @@ def _fmt_money(v: float) -> str:
     if pd.isna(v) or v == 0:
         return "—"
     return f"${v / 1_000_000:.1f}M"
+
+
+def _fmt_draft(features: dict) -> str | None:
+    """Short draft label for the metadata line, e.g. 'Lottery (#7, 2021)' or
+    'Undrafted'. Returns None when we have no useful info to display."""
+    tier = features.get("draft_tier")
+    pick = features.get("draft_pick")
+    year = features.get("draft_year")
+    if not tier:
+        return None
+    if tier == "Undrafted" and not pick:
+        # Drop entirely if there's nothing useful — avoids clutter for
+        # players where the draft API just didn't return a record.
+        return None
+    if pick:
+        suffix = f" (#{pick}{', ' + str(year) if year else ''})"
+        return f"{tier}{suffix}"
+    return tier
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -218,6 +240,11 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         trailing_gp_total = 0
         trailing_gp_max = 0
 
+    # Draft tier — lottery picks signal earning ceiling beyond what production
+    # rank implies; 2nd-round / undrafted developers don't get that bump.
+    # Used by find_comparables to keep the comp pool apples-to-apples.
+    draft_info = get_player_draft_info(player_name)
+
     return {
         "name":               row["Player"],
         "team":               row.get("Team", ""),
@@ -235,6 +262,9 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         "durability_avail":   dur_avail,
         "trailing_gp_total":  trailing_gp_total,
         "trailing_gp_max":    trailing_gp_max,
+        "draft_tier":         draft_info["draft_tier"],
+        "draft_pick":         draft_info["draft_pick"],
+        "draft_year":         draft_info["draft_year"],
         "salary":             float(row.get("salary", 0) or 0),
         "projected_salary":   float(row.get("projected_salary", 0) or 0),
         "gp":                 int(row.get("GP", 0) or 0),
@@ -331,6 +361,9 @@ def detect_caveats(features: dict) -> list[str]:
 def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     pairs = [(SEASONS[i + 1], SEASONS[i]) for i in range(n_recent_pairs)]
     rows: list[pd.DataFrame] = []
+    # One bulk lookup outside the loop — fetch_draft_classes is cached for
+    # the day, but build_draft_tier_lookup builds a dict once and we reuse.
+    draft_lookup = build_draft_tier_lookup()
     for prev, curr in pairs:
         try:
             prev_df = build_ranked_projected(prev)
@@ -371,10 +404,22 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         m["age"] = m["PLAYER_ID"].map(age_lookup)
         m["pos"] = m["Player"].map(_resolve_pos)
         m["pos_detailed"] = m["Player"].map(_resolve_pos_detailed)
+
+        def _resolve_draft_tier(n):
+            info = draft_lookup.get(normalize(n))
+            return info["draft_tier"] if info else "Undrafted"
+
+        def _resolve_draft_pick(n):
+            info = draft_lookup.get(normalize(n))
+            return info["draft_pick"] if info else None
+
+        m["draft_tier"] = m["Player"].map(_resolve_draft_tier)
+        m["draft_pick"] = m["Player"].map(_resolve_draft_pick)
         m["signed_in"] = curr
         m["prev_season"] = prev  # needed to compute career-weighted-at-signing
         rows.append(m[[
             "Player", "age", "pos", "pos_detailed", "barrett_score",
+            "draft_tier", "draft_pick",
             "salary", "salary_curr", "signed_in", "prev_season",
         ]])
 
@@ -447,11 +492,50 @@ def _career_weighted_barrett_at(player_name: str, up_to_season: str,
         return fallback_score
 
 
+def _tier_penalty_weight(age) -> float:
+    """How much should draft tier matter for this player?
+
+    Draft pedigree is a strong predictor of *first-contract* value: lottery
+    picks get paid for being lottery picks (Jalen Green, Jordan Poole) even
+    when production rank says otherwise; 2nd-round developers (Rollins,
+    Dinwiddie) have to earn it on the floor first. But by age ~30, the
+    player has been priced by the market for years — their next deal is
+    driven by production, age, durability, and role, not by where they
+    were drafted a decade ago.
+
+    Returns a scalar in [0, 1] that multiplies the tier-distance penalty:
+      age ≤ 27  → 1.00  (full penalty, developer market)
+      age = 28  → 0.75
+      age = 29  → 0.50
+      age = 30  → 0.25
+      age ≥ 31  → 0.00  (veteran market — pedigree irrelevant)
+    """
+    if age is None:
+        # Unknown age: be conservative, apply full penalty rather than
+        # accidentally over-matching across cohorts.
+        return 1.0
+    a = float(age)
+    if a <= 27:
+        return 1.0
+    if a >= 31:
+        return 0.0
+    return (31 - a) / 4.0
+
+
 def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
     """Two-pass match:
        1. Coarse: same position, top-30 closest by walk-year Barrett + age
        2. Refine: compute career-weighted Barrett for those 30, re-sort
           using career-weighted vs. career-weighted (apples to apples)
+
+    Draft-tier mismatch is penalized in both passes, but the penalty fades
+    with age (see _tier_penalty_weight). Developer-market players (Rollins,
+    Kessler) get strong tier filtering; veterans (Harden, Curry) get none —
+    their market is driven by production + age + durability, not pedigree.
+
+    Per-tier penalty unit = 4 distance points (≈ 3 age years or 3 score
+    units), then scaled by the age weight. Not enough to override a strong
+    position+score match, but enough to break ties in the right direction.
     """
     if history.empty:
         return history
@@ -459,6 +543,9 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
     target_position = features["position"]
     target_age = features["age"] if features["age"] else 27
     target_barrett = features["career_barrett"]
+    target_tier = features.get("draft_tier", "Undrafted")
+    target_tier_idx = DRAFT_TIER_ORDINAL.get(target_tier, 4)
+    tier_weight = _tier_penalty_weight(features.get("age"))
 
     # ── Coarse pass: prefer same position, take top-30 by quick distance ─────
     same_pos = history[history["pos"] == target_position].copy()
@@ -466,10 +553,20 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
         # Not enough same-position comparables — open up to all positions
         # with a soft penalty so same-position still wins ties.
         same_pos = history.copy()
+
+    # Tier penalty. Map each row's tier to its ordinal once, then take the
+    # absolute difference from the target's ordinal. Scaled by age weight
+    # so the penalty disappears for veterans.
+    comp_tier_idx = same_pos["draft_tier"].map(
+        lambda t: DRAFT_TIER_ORDINAL.get(t, 4)
+    )
+    tier_penalty_coarse = (comp_tier_idx - target_tier_idx).abs() * 4 * tier_weight
+
     same_pos["coarse_dist"] = (
         (same_pos["barrett_score"] - target_barrett).abs()
         + (same_pos["age"] - target_age).abs() * 1.5
         + (same_pos["pos"] != target_position).astype(float) * 10
+        + tier_penalty_coarse
     )
     top30 = same_pos.nsmallest(min(30, len(same_pos)), "coarse_dist").copy()
 
@@ -484,10 +581,16 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
     pos_match = (top30["pos"] == target_position).astype(int)
     pos_penalty = (1 - pos_match) * 20
 
+    top30_tier_idx = top30["draft_tier"].map(
+        lambda t: DRAFT_TIER_ORDINAL.get(t, 4)
+    )
+    tier_penalty_refine = (top30_tier_idx - target_tier_idx).abs() * 4 * tier_weight
+
     top30["distance"] = (
         (top30["career_weighted_barrett"] - target_barrett).abs()
         + (top30["age"] - target_age).abs() * 1.5
         + pos_penalty
+        + tier_penalty_refine
     )
     return top30.nsmallest(n, "distance")
 
@@ -822,6 +925,9 @@ if _market_median is not None:
     _meta_bits.append(CURRENT_SEASON)
     if features.get("age"): _meta_bits.append(f"Age {int(features['age'])}")
     _meta_bits.append(str(features.get("position_detailed", features["position"])))
+    _draft_label = _fmt_draft(features)
+    if _draft_label:
+        _meta_bits.append(_draft_label)
     _meta_bits.append(f"Barrett {features['barrett_score']:.1f} (#{features['score_rank']})")
     if features.get("salary", 0) > 0:
         _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
@@ -882,6 +988,9 @@ else:
     _meta_bits.append(CURRENT_SEASON)
     if features.get("age"): _meta_bits.append(f"Age {int(features['age'])}")
     _meta_bits.append(str(features.get("position_detailed", features["position"])))
+    _draft_label = _fmt_draft(features)
+    if _draft_label:
+        _meta_bits.append(_draft_label)
     _meta_bits.append(f"Barrett {features['barrett_score']:.1f} (#{features['score_rank']})")
     if features.get("salary", 0) > 0:
         _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
@@ -1139,11 +1248,34 @@ else:
 
         _pos_col = comps_with_ctx.get("pos_detailed", comps_with_ctx["pos"]).fillna(
             comps_with_ctx["pos"])
+
+        # Build a draft column. Use tier alone (compact) — full pick number
+        # would crowd the table. Fall back to "—" when unknown.
+        def _comp_draft_label(t, p):
+            if not isinstance(t, str) or not t:
+                return "—"
+            if t == "Undrafted":
+                return "Undrafted"
+            try:
+                p_int = int(p) if p is not None and not pd.isna(p) else None
+            except (TypeError, ValueError):
+                p_int = None
+            return f"{t} (#{p_int})" if p_int else t
+
+        _draft_col = [
+            _comp_draft_label(t, p)
+            for t, p in zip(
+                comps_with_ctx.get("draft_tier", pd.Series([], dtype=str)),
+                comps_with_ctx.get("draft_pick", pd.Series([], dtype="object")),
+            )
+        ]
+
         comp_disp = pd.DataFrame({
             "Player":         comps_with_ctx["Player"].values,
             "Signed in":      comps_with_ctx["signed_in"].values,
             "Age then":       comps_with_ctx["age"].astype(int).values,
             "Position":       _pos_col.values,
+            "Draft":          _draft_col,
             "Context":        comps_with_ctx["context"].values,
             "Career Score":   comps_with_ctx["career_weighted_barrett"].round(1).values,
             "Sign-yr Score":  comps_with_ctx["barrett_score"].round(1).values,
@@ -1154,7 +1286,8 @@ else:
 
         st.caption(
             "Context tags: **Supermax** ≥28% cap · **Free-agent raise** ≥15% bump · "
-            "**Rookie extension** first non-rookie deal · **Paycut** took less to stay."
+            "**Rookie extension** first non-rookie deal · **Paycut** took less to stay. "
+            "Draft tiers: Lottery (1-14) · Mid-1st (15-22) · Late-1st (23-30) · 2nd (31-60) · Undrafted."
         )
 
 # ── Methodology footer (collapsed — info-after-action) ──────────────────────
