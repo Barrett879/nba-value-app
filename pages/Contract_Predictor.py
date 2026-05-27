@@ -1421,6 +1421,18 @@ elif features.get("on_rookie_scale"):
 else:
     _model_caption = ""
 
+# Pre-build the caption HTML as a single string. Inlining the conditional
+# inside the f-string template caused Streamlit's markdown parser to flip
+# into code-block mode whenever _model_caption was empty (the conditional
+# evaluated to '' and the surrounding newlines formed a blank line).
+# Building it here means the f-string interpolation site is always a
+# single string with no blank-line risk.
+_model_caption_html = (
+    f'<div style="font-size:0.7rem; color:#16d4c1; '
+    f'margin-top:0.25rem; font-weight:600;">{_model_caption}</div>'
+    if _model_caption else ''
+)
+
 # Signing-window HTML — shown only when contract has years remaining
 # (i.e. years_forward > 0). For free agents this season we skip it.
 _years_forward = int(features.get("years_forward") or 0)
@@ -1531,10 +1543,7 @@ if _market_median is not None:
             Model
           </div>
           <div style="font-size:2.2rem; font-weight:800; color:#fff;
-                      line-height:1;">
-            ${predicted_M:.1f}M
-          </div>
-          {f'<div style="font-size:0.7rem; color:#16d4c1; margin-top:0.25rem; font-weight:600;">{_model_caption}</div>' if _model_caption else ''}
+                      line-height:1;">${predicted_M:.1f}M</div>{_model_caption_html}
         </div>
         <div style="font-size:1.4rem; color:#444; padding-bottom:0.4rem;">|</div>
         <div>
@@ -1631,8 +1640,7 @@ else:
                 Model
               </div>
               <div style="font-size:2.2rem; font-weight:800; color:#fff;
-                          line-height:1;">${predicted_M:.1f}M</div>
-              {f'<div style="font-size:0.7rem; color:#16d4c1; margin-top:0.25rem; font-weight:600;">{_model_caption}</div>' if _model_caption else ''}
+                          line-height:1;">${predicted_M:.1f}M</div>{_model_caption_html}
             </div>
             <div style="font-size:1.4rem; color:#444; padding-bottom:0.4rem;">|</div>
             <div>
