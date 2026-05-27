@@ -1,6 +1,7 @@
 nba_api
 pandas
 streamlit
+streamlit-searchbox
 plotly
 requests
 beautifulsoup4

@@ -22,6 +22,7 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
+from streamlit_searchbox import st_searchbox
 
 from utils import (
     COMMON_CSS, SEASONS, normalize, season_to_espn_year,
@@ -1040,40 +1041,61 @@ active_names = [n for n in all_names if n in current_names]
 
 _PICKER_KEY = "contract_predictor_player"
 
-# Seed widget state from URL on first load only — before the widget
-# renders. After that, the widget's own state is the source of truth
-# and the on_change callback mirrors it back into the URL.
-if _PICKER_KEY not in st.session_state and "player" in st.query_params:
+# Resolve initial value from URL ?player= param (deep-link support).
+# st_searchbox manages its own state internally via the `key`; we only
+# need to seed the default on first render.
+_init_player = None
+if "player" in st.query_params:
     qp = st.query_params["player"]
-    qp_resolved = next(
+    _init_player = next(
         (n for n in active_names if normalize(n) == normalize(qp)),
         None,
     )
-    if qp_resolved:
-        st.session_state[_PICKER_KEY] = qp_resolved
 
 
-def _on_player_change():
-    """Sync the widget's current value back into ?player= when it changes.
-    Fires only on actual selection changes (not on every rerun), which
-    avoids the re-render loop the old `st.query_params[...] = selected`
-    one-liner triggered."""
-    sel = st.session_state.get(_PICKER_KEY)
-    if sel:
-        st.query_params["player"] = sel
-    elif "player" in st.query_params:
-        del st.query_params["player"]
+def _search_players(query: str) -> list[str]:
+    """Filter active-season players by case- and accent-insensitive substring.
+    Returns up to 10 matches sorted by match quality (exact → prefix → substring),
+    then alphabetical as a tiebreak."""
+    if not query or not query.strip():
+        return []
+    q = normalize(query)
+    scored: list[tuple[int, str]] = []
+    for n in active_names:
+        nn = normalize(n)
+        if nn == q:
+            scored.append((3, n))
+        elif nn.startswith(q):
+            scored.append((2, n))
+        elif q in nn:
+            scored.append((1, n))
+    scored.sort(key=lambda x: (-x[0], x[1]))
+    return [n for _, n in scored[:10]]
 
 
-selected = st.selectbox(
-    "Player",
-    options=active_names,
-    index=None,  # placeholder shows when nothing's selected
-    placeholder="Type a name…",
-    label_visibility="collapsed",
+# st_searchbox is a real text input (Cmd+A, cursor positioning, character
+# selection all work) backed by a custom dropdown of matches. Replaces the
+# old st.selectbox which displayed selected values as static label text.
+#   - edit_after_submit="current": keeps the selected value editable in
+#     place so the user can replace it without clicking the X first.
+#   - rerun_on_update=True: refreshes the page when a new player is picked
+#     so the contract details update.
+selected = st_searchbox(
+    search_function=_search_players,
+    placeholder="Type a player name…",
+    default=_init_player,
+    edit_after_submit="current",
+    rerun_on_update=True,
     key=_PICKER_KEY,
-    on_change=_on_player_change,
 )
+
+# Mirror selection into the URL for deep-linking. Skip if unchanged to
+# avoid re-triggering the URL → state seed in a loop.
+if selected:
+    if st.query_params.get("player") != selected:
+        st.query_params["player"] = selected
+elif "player" in st.query_params:
+    del st.query_params["player"]
 
 if not selected:
     st.info(
