@@ -3139,6 +3139,250 @@ def build_draft_tier_lookup() -> dict:
         return {}
 
 
+# ── All-NBA selections ─────────────────────────────────────────────────────
+# Used by the Contract Predictor for supermax / designated-vet eligibility.
+# Scraped from BBRef awards page — one row per (season × 1st/2nd/3rd team)
+# with 5 player columns each ending in a position letter (e.g. "Nikola JokićC").
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def fetch_all_nba_selections(cache_v: int = 1) -> dict:
+    """Returns {normalized_name: [{"season": "YYYY-YY", "team": 1|2|3}, ...]}.
+
+    Disk-cached for 1 day. On scrape failure returns whatever was cached
+    previously, or an empty dict if no cache exists.
+    """
+    path = _dc_path(f"all_nba_selections_v{cache_v}.pkl")
+    if _dc_fresh(path, ttl=86400):
+        try:
+            cached = _pkl_load(path)
+            if cached:
+                return cached
+        except Exception:
+            pass
+
+    out: dict = {}
+    try:
+        url = "https://www.basketball-reference.com/awards/all_league.html"
+        time.sleep(0.6)  # be polite to BBRef
+        r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        if r.status_code == 429:
+            # BBRef rate limit — wait and retry once.
+            time.sleep(15)
+            r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        # BBRef serves UTF-8 (Jokić, Dončić, etc.) but requests sometimes
+        # auto-detects latin-1 from headers. Force UTF-8 so the accented
+        # names decode correctly and our normalize() can strip diacritics.
+        r.encoding = "utf-8"
+        soup = BeautifulSoup(r.text, "html.parser")
+        table = soup.find("table", id="awards_all_league")
+        if table is None:
+            # Fall back to comment-wrapped (BBRef pattern for some pages).
+            from bs4 import Comment as _Comment
+            for c in soup.find_all(string=lambda t: isinstance(t, _Comment)):
+                if 'id="awards_all_league"' in str(c):
+                    inner = BeautifulSoup(str(c), "html.parser")
+                    table = inner.find("table", id="awards_all_league")
+                    if table:
+                        break
+
+        if table is None:
+            raise RuntimeError("awards_all_league table not found")
+
+        team_map = {"1st": 1, "2nd": 2, "3rd": 3}
+        for tr in table.find_all("tr"):
+            cells = tr.find_all(["th", "td"])
+            if not cells or len(cells) < 5:
+                continue
+            # Skip header rows (Season cell is literal "Season").
+            season_text = cells[0].get_text(strip=True)
+            if not season_text or season_text == "Season":
+                continue
+            tm_text = cells[2].get_text(strip=True) if len(cells) > 2 else ""
+            team_level = team_map.get(tm_text)
+            # Only collect All-NBA (NBA league) — skip ABA + All-Defensive.
+            lg_text = cells[1].get_text(strip=True) if len(cells) > 1 else ""
+            if lg_text != "NBA" or team_level is None:
+                continue
+            # Player cells start at index 4 (after Season/Lg/Tm/Voting).
+            for cell in cells[4:]:
+                name_with_pos = cell.get_text(strip=True)
+                if not name_with_pos:
+                    continue
+                # Trailing position letter (G/F/C). Strip it.
+                if name_with_pos[-1] in ("G", "F", "C"):
+                    name = name_with_pos[:-1]
+                else:
+                    name = name_with_pos
+                nm = normalize(name)
+                out.setdefault(nm, []).append({
+                    "season": season_text,
+                    "team": team_level,
+                })
+
+        _pkl_save(path, out)
+        return out
+    except Exception as e:
+        logger.warning("fetch_all_nba_selections scrape failed: %s", e)
+        # Try to return any older cache as fallback.
+        try:
+            return _pkl_load(path) or {}
+        except Exception:
+            return {}
+
+
+def get_all_nba_in_window(player_name: str, current_season: str,
+                          window_seasons: int = 3) -> list[dict]:
+    """Return All-NBA selections for `player_name` within the most recent
+    `window_seasons` seasons ending at `current_season`. Used by supermax
+    eligibility checks (Designated Veteran Extension requires 1 All-NBA
+    in immediately prior season OR 2 in past 3 seasons)."""
+    selections = fetch_all_nba_selections().get(normalize(player_name), [])
+    if not selections:
+        return []
+    # Build the set of allowed season strings.
+    try:
+        end_year = int(current_season.split("-")[0])
+    except Exception:
+        return selections
+    allowed = {f"{end_year - i}-{str(end_year - i + 1)[-2:]}"
+               for i in range(window_seasons)}
+    return [s for s in selections if s["season"] in allowed]
+
+
+# ── Service years + team tenure ────────────────────────────────────────────
+# Used by the Contract Predictor for max-contract tier eligibility (7+/10+
+# years of service unlock higher max % under the CBA) and for Bird-rights
+# proxy (consecutive seasons with current team).
+
+def get_player_service_info(player_name: str) -> dict:
+    """Derive service years + current-team tenure from career data.
+
+    Returns:
+        {
+            "service_years": int — count of NBA seasons appeared in,
+            "current_team": str — most recent season's team abbreviation,
+            "team_tenure":  int — consecutive most-recent seasons on current team,
+        }
+
+    Note: "service years" here counts SEASONS in NBA data, which approximates
+    the CBA definition. The CBA's "years of service" rule has nuances (a year
+    on a two-way contract counts; rookie year counts even if mid-season call-up)
+    that we don't try to model — close enough for a market signal.
+    """
+    try:
+        career = fetch_player_full_career(player_name)
+    except Exception:
+        return {"service_years": 0, "current_team": "", "team_tenure": 0}
+    if career.empty:
+        return {"service_years": 0, "current_team": "", "team_tenure": 0}
+
+    # Sort by season ascending (career data should already be sorted but be defensive).
+    career = career.sort_values("Season").reset_index(drop=True)
+    service = len(career)
+
+    # Most recent season's team. If multi-team (TOT), use that as-is.
+    last_team = str(career.iloc[-1]["Team"])
+
+    # Tenure: walk backward, count consecutive seasons on last_team.
+    tenure = 0
+    for _, row in career.iloc[::-1].iterrows():
+        if str(row["Team"]) == last_team:
+            tenure += 1
+        else:
+            break
+
+    return {
+        "service_years": int(service),
+        "current_team": last_team,
+        "team_tenure": int(tenure),
+    }
+
+
+# ── Max-contract + supermax eligibility ────────────────────────────────────
+# CBA-based max contract percentages by years of service, plus the
+# "Designated" bumps that elite players unlock via All-NBA selections.
+
+def get_max_contract_eligibility(player_name: str, current_season: str) -> dict:
+    """Compute a player's CBA max-contract percentage and supermax eligibility.
+
+    Standard max % by years of service:
+        0-6 years:   25% of cap
+        7-9 years:   30% of cap
+        10+ years:   35% of cap
+
+    Designated bumps (require qualifying All-NBA + tenure with current team):
+        Designated Rookie Extension: 25% → 30% (for players entering year 5
+            who've made All-NBA / DPOY / MVP recently AND are with the
+            team that drafted them).
+        Designated Veteran Extension (supermax): 30% → 35% (for vets with
+            7+ years service who've made All-NBA recently AND are tenured
+            with their team).
+
+    Qualifying All-NBA = 1 selection in immediately preceding season
+    OR 2 selections in the past 3 seasons.
+
+    Returns:
+        {
+            "service_years":    int,
+            "team_tenure":      int,
+            "current_team":     str,
+            "recent_all_nba":   list[dict] of selections in last 3 seasons,
+            "qualifying":       bool — has qualifying All-NBA performance,
+            "max_pct":          float — final % of cap they can earn,
+            "supermax_tier":    str — "Designated Vet (35%)" / "Designated Rookie (30%)"
+                                / "Max 35%" / "Max 30%" / "Max 25%",
+        }
+    """
+    info = get_player_service_info(player_name)
+    recent = get_all_nba_in_window(player_name, current_season, 3)
+    immediate = get_all_nba_in_window(player_name, current_season, 1)
+    qualifying = (len(immediate) >= 1) or (len(recent) >= 2)
+
+    service = info["service_years"]
+    tenure = info["team_tenure"]
+
+    # Standard max % by service tier.
+    if service <= 6:
+        base_max = 0.25
+        base_tier = "Max 25%"
+    elif service <= 9:
+        base_max = 0.30
+        base_tier = "Max 30%"
+    else:
+        base_max = 0.35
+        base_tier = "Max 35%"
+
+    # Designated bumps require qualifying All-NBA + tenure with team.
+    # Two cases to handle:
+    #   - Young player still on rookie scale (Wemby year 3, tenure 3): only
+    #     needs to have been with their drafting team since draft (tenure == service).
+    #   - Older player (7+ yrs): needs tenure ≥ 4 as proxy for "tenured
+    #     enough with current team" to qualify for Designated Vet.
+    max_pct = base_max
+    supermax_tier = base_tier
+    if qualifying:
+        # Designated Rookie path: under 7 yrs service AND with drafting team.
+        # tenure ≥ min(service, 4) catches both "drafted-team rookies" and
+        # "extension-year veterans (year 4-5) tenured with drafting team."
+        if service <= 6 and tenure >= min(service, 4):
+            max_pct = 0.30
+            supermax_tier = "Designated Rookie (30%)"
+        # Designated Vet path: 7+ yrs service AND tenured with current team.
+        elif service >= 7 and tenure >= 4:
+            max_pct = 0.35
+            supermax_tier = "Designated Vet (35%)"
+
+    return {
+        "service_years":  service,
+        "team_tenure":    tenure,
+        "current_team":   info["current_team"],
+        "recent_all_nba": recent,
+        "qualifying":     qualifying,
+        "max_pct":        max_pct,
+        "supermax_tier":  supermax_tier,
+    }
+
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_player_career_all_seasons(player_name: str, playoffs: bool = False) -> pd.DataFrame:
     """Return every season a player appears in raw data, regardless of minutes played.

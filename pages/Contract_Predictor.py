@@ -39,6 +39,9 @@ from utils import (
     # earn on pedigree; non-lottery developers don't).
     DRAFT_TIERS, DRAFT_TIER_ORDINAL,
     get_player_draft_info, build_draft_tier_lookup,
+    # CBA / contract structure
+    get_max_contract_eligibility,
+    fetch_rookie_scale_players,
 )
 
 
@@ -258,6 +261,27 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     # Used by find_comparables to keep the comp pool apples-to-apples.
     draft_info = get_player_draft_info(player_name)
 
+    # CBA max-contract eligibility — service years + team tenure + recent
+    # All-NBA. Drives the cap/floor logic in predict_contract: caps the
+    # projection at the player's CBA max %, and floors supermax-eligible
+    # stars at their Designated max (35% or 30% of cap).
+    try:
+        elig = get_max_contract_eligibility(player_name, season)
+    except Exception:
+        elig = {
+            "service_years": 0, "team_tenure": 0, "current_team": "",
+            "recent_all_nba": [], "qualifying": False,
+            "max_pct": 0.35, "supermax_tier": "Max 35%",
+        }
+
+    # Rookie scale lock — they CANNOT sign a new market deal until the
+    # rookie deal expires. This is a hard CBA constraint.
+    try:
+        rookie_scale_set = fetch_rookie_scale_players(season)
+        on_rookie_scale = name_norm in rookie_scale_set
+    except Exception:
+        on_rookie_scale = False
+
     return {
         "name":               row["Player"],
         "team":               row.get("Team", ""),
@@ -279,6 +303,16 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         "draft_tier":         draft_info["draft_tier"],
         "draft_pick":         draft_info["draft_pick"],
         "draft_year":         draft_info["draft_year"],
+        # CBA / contract structure
+        "service_years":      elig["service_years"],
+        "team_tenure":        elig["team_tenure"],
+        "current_team":       elig["current_team"],
+        "recent_all_nba":     elig["recent_all_nba"],
+        "supermax_eligible":  elig["qualifying"] and elig["supermax_tier"] in
+                              ("Designated Vet (35%)", "Designated Rookie (30%)"),
+        "max_pct":            elig["max_pct"],
+        "supermax_tier":      elig["supermax_tier"],
+        "on_rookie_scale":    on_rookie_scale,
         "salary":             float(row.get("salary", 0) or 0),
         "projected_salary":   float(row.get("projected_salary", 0) or 0),
         "gp":                 int(row.get("GP", 0) or 0),
@@ -326,7 +360,49 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     dur_mult = float(features.get("durability_mult", 1.0) or 1.0)
     dur_tier = features.get("durability_tier", "")
 
-    predicted = base * age_mult * pos_mult_applied * dur_mult
+    raw_predicted = base * age_mult * pos_mult_applied * dur_mult
+
+    # ── CBA cap-and-floor adjustments ───────────────────────────────────────
+    # 1. Cap at player's CBA max %. A 25% max player (≤6 yrs service)
+    #    cannot legally sign for more than 25% of cap, no matter what the
+    #    model says. Hard ceiling — this is CBA-binding.
+    # 2. Floor at supermax threshold IF player is Designated Vet / Designated
+    #    Rookie eligible. Elite players who qualify almost universally take
+    #    the max they're offered.
+    # 3. Rookie-scale lock: if currently on rookie scale, they CAN'T sign
+    #    a new market deal until the rookie deal expires. The model is
+    #    still projecting their NEXT contract, which is a real signal, so
+    #    we don't override the projection — but we surface this as a caveat.
+    max_pct = float(features.get("max_pct", 0.35) or 0.35)
+    cba_max_dollars = cap_dollars_val * max_pct
+    supermax_eligible = bool(features.get("supermax_eligible", False))
+    supermax_tier_label = features.get("supermax_tier", "")
+
+    predicted = raw_predicted
+    cba_cap_applied = False
+    cba_floor_applied = False
+
+    # Apply max cap.
+    if predicted > cba_max_dollars:
+        predicted = cba_max_dollars
+        cba_cap_applied = True
+
+    # Supermax floor — only for designated-eligible players IN THEIR PRIME.
+    # Floor at their eligible max (35% Vet or 30% Rookie). Without this, an
+    # All-NBA player whose Barrett rate doesn't quite peg the model at 35%
+    # would be under-projected (Jokic / SGA / Wemby pattern).
+    #
+    # Age cutoff (≤32): older "Designated Vet" players (Curry at 38, LeBron
+    # at 40) technically qualify but routinely take paycuts. The floor would
+    # over-project their next contract by 50%+. Let the model's age multiplier
+    # guide the projection for aging vets — supermax becomes a ceiling for
+    # them, not a floor.
+    target_age = features.get("age")
+    in_prime = target_age is not None and target_age <= 32
+    if supermax_eligible and in_prime and predicted < cba_max_dollars:
+        predicted = cba_max_dollars
+        cba_floor_applied = True
+
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
@@ -338,11 +414,18 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
         "pos_mult_suppressed":  pos_mult_applied != pos_mult,
         "durability_mult":      dur_mult,
         "durability_tier":      dur_tier,
+        "raw_predicted":        raw_predicted,
         "predicted":            predicted,
         "low":                  max(0, predicted - band),
         "high":                 predicted + band,
         "band":                 band,
         "cap":                  cap_dollars_val,
+        "max_pct":              max_pct,
+        "cba_max_dollars":      cba_max_dollars,
+        "cba_cap_applied":      cba_cap_applied,
+        "cba_floor_applied":    cba_floor_applied,
+        "supermax_eligible":    supermax_eligible,
+        "supermax_tier_label":  supermax_tier_label,
     }
 
 
@@ -352,17 +435,43 @@ def detect_caveats(features: dict) -> list[str]:
     salary = features.get("salary", 0)
     barrett = features.get("barrett_score", 0)
 
-    if salary > 0 and salary < 12_000_000 and age and age <= 23:
+    # Rookie scale lock — now driven by the actual rookie-scale set, not
+    # a salary heuristic. CBA-binding: they cannot sign a new market deal
+    # until the rookie scale expires.
+    if features.get("on_rookie_scale"):
+        notes.append(
+            "Currently on rookie scale (CBA-locked salary). The projection "
+            "below is for their NEXT contract — i.e. their rookie-scale "
+            "extension or first market deal."
+        )
+    elif salary > 0 and salary < 12_000_000 and age and age <= 23:
+        # Fallback heuristic for players not in our rookie-scale set.
         notes.append(
             "Possibly on rookie scale — locked salary by CBA until contract "
             "expires (usually year 4). The market price below forecasts their "
             "next contract, not their current one."
         )
-    if age and age >= 27 and barrett >= 28:
+
+    # Supermax eligibility — surface the specific tier so the user sees
+    # WHY the model floored their projection.
+    if features.get("supermax_eligible"):
+        recent = features.get("recent_all_nba", []) or []
+        tier_label = features.get("supermax_tier", "")
         notes.append(
-            "Star-tier producer — if All-NBA-eligible, may sign a supermax "
-            "(35% of cap, ~$54M in 2025-26), which would exceed this projection."
+            f"Supermax-eligible: {tier_label}. "
+            f"{len(recent)} All-NBA selection{'s' if len(recent) != 1 else ''} "
+            f"in last 3 seasons + {features.get('team_tenure', 0)} years with "
+            f"{features.get('current_team', 'current team')}. "
+            f"Projection floored at this player's CBA max."
         )
+    elif age and age >= 27 and barrett >= 28:
+        # Production warrants supermax but missing CBA-binding criteria
+        # (no All-NBA, not tenured, etc.). Still flag the possibility.
+        notes.append(
+            "Star-tier producer — supermax-track if they hit All-NBA AND stay "
+            "with their current team. Projection uses standard max ceiling."
+        )
+
     if age and age >= 33 and barrett < 20:
         notes.append(
             "Veteran end-of-career zone — may sign for the minimum "
@@ -1304,6 +1413,35 @@ with st.expander("About this prediction"):
     # avoids the issue entirely.
     _age_label = int(features['age']) if features['age'] else '?'
     _pos_label = features.get('position_detailed', features['position'])
+
+    # CBA cap/floor adjustment — show a final "→ adjusted to $X" step when
+    # the raw model was overridden by CBA rules. Math equation shows the
+    # raw model result before the override; the → arrow shows the override.
+    _raw_predicted_M = (prediction.get("raw_predicted", predicted_M * 1e6)) / 1e6
+    _cba_max_M = prediction.get("cba_max_dollars", 0) / 1e6
+    _cba_cap_applied = prediction.get("cba_cap_applied", False)
+    _cba_floor_applied = prediction.get("cba_floor_applied", False)
+    _supermax_tier_label = prediction.get("supermax_tier_label", "")
+    if _cba_cap_applied:
+        _cba_fragment = (
+            f' &nbsp;<span style="color:#666;">→</span>&nbsp; '
+            f'<b style="color:#e63946;">capped at ${_cba_max_M:.1f}M</b>'
+            f' <span style="color:#777;">(CBA max: {_supermax_tier_label})</span>'
+        )
+    elif _cba_floor_applied:
+        _cba_fragment = (
+            f' &nbsp;<span style="color:#666;">→</span>&nbsp; '
+            f'<b style="color:#16d4c1;">floored at ${_cba_max_M:.1f}M</b>'
+            f' <span style="color:#777;">(supermax: {_supermax_tier_label})</span>'
+        )
+    else:
+        _cba_fragment = ""
+
+    # When CBA applies, the equation should end at the RAW model result so
+    # the user can see what the box-score-driven model said before override.
+    # When CBA doesn't apply, the equation ends at the final prediction.
+    _equation_end_M = _raw_predicted_M if (_cba_cap_applied or _cba_floor_applied) else predicted_M
+
     _math_line = (
         '<span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;'
         ' text-transform:uppercase; margin-right:0.5rem;">Math</span>'
@@ -1318,8 +1456,9 @@ with st.expander("About this prediction"):
         f' <span style="color:#777;">({_pos_label}{_pos_factor_note})</span>'
         f'{_dur_html_fragment}'
         f' &nbsp;<span style="color:#666;">=</span>&nbsp; '
-        f'<b style="color:#16d4c1;">${predicted_M:.1f}M</b>'
+        f'<b style="color:#16d4c1;">${_equation_end_M:.1f}M</b>'
         f' <span style="color:#666;">±${prediction["band"]/1_000_000:.1f}M</span>'
+        f'{_cba_fragment}'
     )
     _breakdown_html = (
         '<div style="background:rgba(255,255,255,0.03);'
@@ -1338,7 +1477,8 @@ with st.expander("About this prediction"):
     st.markdown(
         """
         ### How the next contract is predicted
-        Four layers stack on top of the Barrett Score:
+        Layers stack on top of the Barrett Score, then CBA rules constrain
+        the final number:
 
         1. **Career-weighted Rate Score** — uses a weighted average of
            the player's last 3 **healthy seasons** (GP ≥ 40), with 50/30/20
@@ -1359,18 +1499,49 @@ with st.expander("About this prediction"):
            points). **Suppressed at the supermax tier** (base ≥28% of cap)
            since max-contract players sign at fixed CBA percentages
            regardless of position.
+        5. **Durability multiplier** — trailing-3-year availability tier
+           (Healthy / Mild / Moderate / Chronic / Severe). Embiid's chronic
+           injury history applies ~0.78× even though his rate is elite.
+        6. **CBA max cap** — derived from years of NBA service. 0-6 yrs:
+           25% of cap. 7-9 yrs: 30%. 10+ yrs: 35%. Caps the projection
+           because no player can legally earn more than their max.
+        7. **Supermax floor** — for players with recent All-NBA selections
+           AND tenure with their current team (Designated Vet at 35%,
+           Designated Rookie at 30%). Elite stars in their prime almost
+           universally take the max they're offered. Floor disabled for
+           aging vets (age >33+) who routinely take paycuts.
 
         **Confidence band:** ±$5.5M reflects out-of-sample median error.
 
-        ### Limitations
-        The model uses Barrett Score, age, and position. It **can't see**
-        contract structure (Bird rights, supermax eligibility, rookie scale
-        lock), team cap space, agent leverage, or off-court factors.
+        ### What's in the model
+        - Production (Barrett Score, healthy-season trailing average)
+        - Age (with tier-aware decline curve)
+        - Position (G/F/C bucket)
+        - Durability (last 3 yrs GP)
+        - Draft pedigree (lottery / mid-1st / late-1st / 2nd / undrafted)
+        - **All-NBA selections** (scraped from BBRef awards page)
+        - **NBA service years** (derived from career data)
+        - **Years with current team** (Bird-rights proxy via consecutive
+          seasons on the same team — derived from career data)
+        - **Rookie-scale lock** (uses our existing rookie-scale roster)
+        - **CBA max-contract tiers** (25% / 30% / 35% based on service)
+        - **Designated Rookie / Designated Vet (supermax) eligibility**
+
+        ### What's not in the model yet
+        - **Detailed Bird rights** (we approximate via team tenure; the
+          real CBA distinguishes Early-Bird / Non-Bird / Full Bird).
+        - **Team-by-team cap space** (affects which team can offer, less
+          so league-wide AAV).
+        - **Agent identity / negotiating leverage** (public but hard to
+          quantify).
+        - **Off-court marketability** (jersey sales, brand value).
+        - **Future production** — we project from recent past; nobody
+          knows next year's box score.
+
         Validated out-of-sample on 1,406 actual new contracts signed since
         2015: median error 1.8% of cap (~$2.7M), 79% of predictions land
-        within 5% of cap (~$8M), 94% within 10%. The misses are usually
-        supermax extensions, rookie-scale contracts, or veteran-minimum
-        signings — situations the box score can't predict from production
-        alone.
+        within 5% of cap (~$8M), 94% within 10%. The biggest remaining
+        misses are veteran-minimum signings and one-off paycut deals where
+        market value doesn't apply.
         """
     )
