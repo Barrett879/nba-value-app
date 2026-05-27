@@ -3324,6 +3324,266 @@ def get_all_nba_in_window(player_name: str, current_season: str,
     return [s for s in selections if s["season"] in allowed]
 
 
+# ── Contract end years (multi-year contracts) ──────────────────────────────
+# Scraped from BBRef per-team contracts pages. Each player row has y1-y6
+# columns showing salaries for next 6 seasons; empty cells indicate the
+# contract has expired. CSS class flags:
+#   class="right"           → guaranteed salary
+#   class="right salary-pl" → player option (player can opt in/out)
+#   class="right salary-tm" → team option
+#   class="right salary-et" → early termination option
+#   class="right iz"        → empty (contract has ended by this season)
+#
+# We use this to project a player's NEXT signing year (when does their
+# current deal expire?). Critical for stars locked into supermax / max
+# deals like Luka (signed through 2028-29 PO) — predicting their "next
+# contract today" with current cap is misleading.
+
+_BBREF_TEAMS = [
+    "ATL", "BOS", "BRK", "CHO", "CHI", "CLE", "DAL", "DEN", "DET", "GSW",
+    "HOU", "IND", "LAC", "LAL", "MEM", "MIA", "MIL", "MIN", "NOP", "NYK",
+    "OKC", "ORL", "PHI", "PHO", "POR", "SAC", "SAS", "TOR", "UTA", "WAS",
+]
+
+
+@st.cache_data(ttl=86400, show_spinner="Loading contract data…")
+def fetch_contract_end_years(cache_v: int = 1) -> dict:
+    """Returns {normalized_player_name: contract_info} for every player
+    with an active multi-year contract.
+
+    contract_info = {
+        "end_season":      "YYYY-YY",
+        "last_year_type":  "guaranteed" | "player_option" | "team_option" | "et_option",
+        "signing_season":  "YYYY-YY" — projected season player signs NEXT deal,
+        "years_remaining": int — how many seasons (including current) until end,
+        "current_team":    "LAL",
+    }
+
+    For free agents this season (no future salaries), the player simply
+    doesn't appear in the dict. The caller treats absence as "signing now."
+    """
+    path = _dc_path(f"contract_end_years_v{cache_v}.pkl")
+    if _dc_fresh(path, ttl=86400):
+        try:
+            cached = _pkl_load(path)
+            if cached:
+                return cached
+        except Exception:
+            pass
+
+    out: dict = {}
+    base_url = "https://www.basketball-reference.com/contracts"
+
+    # Pull the index page once to discover the season header → year mapping.
+    # We don't strictly need this (BBRef columns are always y1=current),
+    # but reading the season labels keeps the function robust if BBRef
+    # ever rearranges columns.
+    try:
+        time.sleep(0.6)
+        r = requests.get(f"{base_url}/", headers={"User-Agent": _BREF_UA}, timeout=15)
+        if r.status_code == 429:
+            time.sleep(15)
+            r = requests.get(f"{base_url}/", headers={"User-Agent": _BREF_UA}, timeout=15)
+        r.encoding = "utf-8"
+        soup = BeautifulSoup(r.text, "html.parser")
+        # Map y1, y2, etc. to season strings from the column headers.
+        year_map: dict[str, str] = {}
+        for th in soup.find_all("th", attrs={"data-stat": True}):
+            ds = th.get("data-stat", "")
+            if ds.startswith("y") and ds[1:].isdigit():
+                lbl = th.get("aria-label") or th.get_text(strip=True)
+                if lbl and "-" in lbl and len(lbl) == 7:
+                    year_map[ds] = lbl
+    except Exception as e:
+        logger.warning("fetch_contract_end_years index fetch failed: %s", e)
+        year_map = {}
+
+    if not year_map:
+        # Fall back to a hard-coded assumption: y1 is current season.
+        # Determine current season from latest known cap year.
+        cur = SEASONS[0]
+        cur_year = int(cur.split("-")[0])
+        for i in range(1, 7):
+            yr = cur_year + (i - 1)
+            year_map[f"y{i}"] = f"{yr}-{str(yr + 1)[-2:]}"
+
+    # Now iterate each team's contracts page and parse player rows.
+    for team in _BBREF_TEAMS:
+        url = f"{base_url}/{team}.html"
+        try:
+            time.sleep(0.6)
+            r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+            if r.status_code == 429:
+                time.sleep(15)
+                r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+            r.encoding = "utf-8"
+            soup = BeautifulSoup(r.text, "html.parser")
+        except Exception as e:
+            logger.warning("contracts fetch failed for %s: %s", team, e)
+            continue
+
+        # Player rows are <tr> with a <th data-stat="player"> child that
+        # contains the player's link. Skip "notes" rows (which have
+        # data-stat="notes" instead of y1-y6).
+        for tr in soup.find_all("tr"):
+            player_th = tr.find("th", attrs={"data-stat": "player"})
+            if player_th is None:
+                continue
+            # Notes rows don't have csk attribute on player_th.
+            if not player_th.get("csk"):
+                continue
+            link = player_th.find("a")
+            if link is None:
+                continue
+            name = link.get_text(strip=True)
+            if not name:
+                continue
+
+            # Walk y1 through y6 in order. Track the latest filled cell.
+            last_filled_year: str | None = None
+            last_filled_type = "guaranteed"
+            for i in range(1, 7):
+                cell = tr.find("td", attrs={"data-stat": f"y{i}"})
+                if cell is None:
+                    continue
+                cls = cell.get("class", []) or []
+                # Empty cell — "iz" class signals contract has ended.
+                if "iz" in cls:
+                    continue
+                # This cell has a salary. Update tracker.
+                year_label = year_map.get(f"y{i}", "")
+                last_filled_year = year_label
+                if "salary-pl" in cls:
+                    last_filled_type = "player_option"
+                elif "salary-tm" in cls:
+                    last_filled_type = "team_option"
+                elif "salary-et" in cls:
+                    last_filled_type = "et_option"
+                else:
+                    last_filled_type = "guaranteed"
+
+            if not last_filled_year:
+                continue
+
+            # Compute signing year. For guaranteed deals: signing season =
+            # year after the last year. For options, assume exercised
+            # (most options are taken when they're meaningful money — and
+            # for non-meaningful, the player would still rather have an
+            # extra year of guaranteed cap hit than be a FA at minimum).
+            end_year_int = int(last_filled_year.split("-")[0])
+            signing_year_int = end_year_int + 1
+            signing_season = f"{signing_year_int}-{str(signing_year_int + 1)[-2:]}"
+            years_remaining = end_year_int - int(SEASONS[0].split("-")[0]) + 1
+
+            out[normalize(name)] = {
+                "end_season":      last_filled_year,
+                "last_year_type":  last_filled_type,
+                "signing_season":  signing_season,
+                "years_remaining": max(1, years_remaining),
+                "current_team":    team,
+            }
+
+    _pkl_save(path, out)
+    return out
+
+
+def get_player_contract_info(player_name: str) -> dict | None:
+    """Single-player lookup wrapping the bulk fetch. Returns None for
+    free agents (no active multi-year contract on file)."""
+    try:
+        return fetch_contract_end_years().get(normalize(player_name))
+    except Exception:
+        return None
+
+
+# Cap growth assumption for forward projection. The 2025+ TV deal era
+# guarantees ~10% YoY for the new agreement. Older eras grew slower
+# (4-7%) but we project from current data so 10% is the right base rate.
+CAP_GROWTH_RATE = 0.10
+
+
+def project_contract_inputs(player_name: str, current_season: str,
+                            current_age: float | int | None,
+                            current_service: int, current_tenure: int,
+                            current_team: str) -> dict:
+    """Project a player's contract inputs forward to their projected
+    signing year. Returns the inputs the predictor should USE, not what
+    they are today.
+
+    For a player with a contract running through 2028-29 PO (e.g. Luka):
+      - current_season:  2025-26
+      - signing_season:  2029-30 (3 yrs out)
+      - projected_cap:   154.6M × 1.10^4 ≈ 226M
+      - projected_age:   27 + 4 = 31
+      - projected_svc:   8 + 4 = 12 (Max 35% tier)
+      - projected_tenure: 1 + 4 = 5 (Designated Vet eligible)
+
+    For a free agent / player without a contract record: returns the
+    "sign today" inputs unchanged. Same for players whose contract
+    expires this season.
+
+    Tenure projection assumes the player stays on their current team
+    through the end of their current deal — which is the default
+    assumption when GMs negotiate the next contract (they own his
+    Bird rights through the existing deal).
+    """
+    info = get_player_contract_info(player_name)
+    cur_year = int(current_season.split("-")[0])
+
+    # Default: signing today.
+    out = {
+        "signing_season":   current_season,
+        "years_forward":    0,
+        "projected_cap":    SALARY_CAP_M.get(current_season, 154.6) * 1_000_000,
+        "projected_age":    float(current_age) if current_age else None,
+        "projected_service": current_service,
+        "projected_tenure": current_tenure,
+        "contract_info":    info,
+    }
+
+    if info is None:
+        # No multi-year contract on file — signing this offseason.
+        return out
+
+    signing_season = info["signing_season"]
+    signing_year = int(signing_season.split("-")[0])
+    years_forward = signing_year - cur_year
+    if years_forward <= 0:
+        # Contract expires this season — signing now, no projection needed.
+        return out
+
+    # Cap projection: compound annual growth.
+    projected_cap = (
+        SALARY_CAP_M.get(current_season, 154.6) * 1_000_000
+        * (1 + CAP_GROWTH_RATE) ** years_forward
+    )
+
+    # Age: add years.
+    projected_age = (
+        float(current_age) + years_forward if current_age is not None else None
+    )
+
+    # Service years: add years forward.
+    projected_service = current_service + years_forward
+
+    # Tenure: assumes player stays on current team through contract end.
+    # If the contract's current_team matches our recorded current_team,
+    # extend tenure by years_forward. (If they were traded — like Luka
+    # to LAL — their tenure on the NEW team accrues during the remaining
+    # contract years.)
+    projected_tenure = current_tenure + years_forward
+
+    out.update({
+        "signing_season":   signing_season,
+        "years_forward":    years_forward,
+        "projected_cap":    projected_cap,
+        "projected_age":    projected_age,
+        "projected_service": projected_service,
+        "projected_tenure": projected_tenure,
+    })
+    return out
+
+
 # ── Service years + team tenure ────────────────────────────────────────────
 # Used by the Contract Predictor for max-contract tier eligibility (7+/10+
 # years of service unlock higher max % under the CBA) and for Bird-rights

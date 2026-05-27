@@ -44,6 +44,10 @@ from utils import (
     get_max_contract_eligibility,
     fetch_rookie_scale_players,
     fetch_all_nba_selections,
+    # Forward projection: scrape multi-year contracts and project the
+    # signing year, cap, service, tenure, and age forward.
+    get_player_contract_info, project_contract_inputs,
+    CAP_GROWTH_RATE,
 )
 
 
@@ -391,6 +395,56 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     except Exception:
         on_rookie_scale = False
 
+    # Forward projection — when does this player next sign? For multi-year
+    # contracts (Luka through 2028-29, Tatum through 2029-30, etc.) the
+    # signing year is in the future. Project cap, service, tenure, age
+    # forward so the prediction reflects what they'd actually sign for —
+    # not "what they'd sign for if signing today at current cap."
+    try:
+        projection = project_contract_inputs(
+            player_name=player_name,
+            current_season=season,
+            current_age=age,
+            current_service=elig["service_years"],
+            current_tenure=elig["team_tenure"],
+            current_team=elig["current_team"],
+        )
+    except Exception:
+        projection = {
+            "signing_season": season, "years_forward": 0,
+            "projected_cap": SALARY_CAP_M.get(season, 154.6) * 1_000_000,
+            "projected_age": age, "projected_service": elig["service_years"],
+            "projected_tenure": elig["team_tenure"], "contract_info": None,
+        }
+
+    # Re-evaluate Designated Vet / Rookie eligibility at the PROJECTED
+    # signing year — by then the player may have accrued enough tenure
+    # to unlock Designated Vet (Luka: tenure 1→5 on LAL by 2029-30) or
+    # passed out of Designated Rookie window.
+    proj_svc = projection["projected_service"]
+    proj_ten = projection["projected_tenure"]
+    proj_qualifying = elig["qualifying"]  # All-NBA history doesn't change
+
+    if proj_svc <= 6:
+        proj_base_max = 0.25
+    elif proj_svc <= 9:
+        proj_base_max = 0.30
+    else:
+        proj_base_max = 0.35
+
+    proj_max_pct = proj_base_max
+    proj_tier = (
+        "Max 25%" if proj_base_max == 0.25
+        else ("Max 30%" if proj_base_max == 0.30 else "Max 35%")
+    )
+    if proj_qualifying:
+        if proj_svc <= 6 and proj_ten >= min(proj_svc, 4):
+            proj_max_pct = 0.30
+            proj_tier = "Designated Rookie (30%)"
+        elif proj_svc >= 7 and proj_ten >= 4:
+            proj_max_pct = 0.35
+            proj_tier = "Designated Vet (35%)"
+
     return {
         "name":               row["Player"],
         "team":               row.get("Team", ""),
@@ -421,11 +475,29 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         "team_tenure":        elig["team_tenure"],
         "current_team":       elig["current_team"],
         "recent_all_nba":     elig["recent_all_nba"],
-        "supermax_eligible":  elig["qualifying"] and elig["supermax_tier"] in
+        # CBA eligibility AT the projected signing year (not today).
+        # supermax_eligible / max_pct / supermax_tier reflect what the
+        # player will qualify for by the time they actually sign.
+        "supermax_eligible":  proj_qualifying and proj_tier in
                               ("Designated Vet (35%)", "Designated Rookie (30%)"),
-        "max_pct":            elig["max_pct"],
-        "supermax_tier":      elig["supermax_tier"],
+        "max_pct":            proj_max_pct,
+        "supermax_tier":      proj_tier,
+        # Current values (kept for display: "8 yrs service" still refers
+        # to today, not the projected signing year).
+        "current_max_pct":    elig["max_pct"],
+        "current_supermax_tier": elig["supermax_tier"],
         "on_rookie_scale":    on_rookie_scale,
+        # Forward-projection inputs — used by predict_contract for the
+        # base projection (cap × Barrett rank-mapping) and by the UI for
+        # the "Signing window" display.
+        "signing_season":     projection["signing_season"],
+        "years_forward":      projection["years_forward"],
+        "projected_cap":      projection["projected_cap"],
+        "projected_age":      projection["projected_age"],
+        "projected_service":  projection["projected_service"],
+        "projected_tenure":   projection["projected_tenure"],
+        "contract_end_season": (projection["contract_info"] or {}).get("end_season"),
+        "contract_last_year_type": (projection["contract_info"] or {}).get("last_year_type"),
         "salary":             float(row.get("salary", 0) or 0),
         "projected_salary":   float(row.get("projected_salary", 0) or 0),
         "gp":                 int(row.get("GP", 0) or 0),
@@ -435,26 +507,37 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
 
 
 def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dict:
-    # Use the career-weighted projection as the base — much more stable
-    # for players in the middle of an injury/comeback season than the raw
-    # current-season Barrett rank.
-    base = features["career_base_proj"]
+    # ── Forward projection: use projected signing year inputs ─────────────
+    # Cap, age, and service all scale to the signing year (not today). A
+    # player like Luka — signed through 2028-29 PO — gets predicted against
+    # 2029-30 cap (~$226M with 10%/yr growth) and his then-age (30).
+    current_cap_dollars = SALARY_CAP_M.get(target_season, 154.6) * 1_000_000
+    proj_cap_dollars = float(
+        features.get("projected_cap") or current_cap_dollars
+    )
+    cap_scale = (
+        proj_cap_dollars / current_cap_dollars
+        if current_cap_dollars > 0 else 1.0
+    )
+    proj_age = features.get("projected_age") or features.get("age")
 
-    # Tiered age multiplier (replaces the old bucket-based version).
-    # Function of (age, career_score, current_rank) — captures the real
-    # NBA pattern that elite producers don't follow the average aging
-    # curve. See utils.tiered_age_multiplier for the three tiers and
-    # their decline rates.
+    # Use the career-weighted projection as the base, then scale by cap
+    # growth to match the projected signing year. career_base_proj is in
+    # current-year dollars; multiplying by cap_scale brings it forward.
+    base = float(features["career_base_proj"]) * cap_scale
+
+    # Tiered age multiplier — uses PROJECTED age (Luka 30 in 2029-30, not 27).
     age_mult, age_tier = tiered_age_multiplier(
-        age=features.get("age"),
+        age=proj_age,
         career_score=features.get("career_barrett", 0),
         current_rank=features.get("effective_rank"),
     )
 
     pos_mult = POSITION_MULTIPLIERS.get(features["position"], 1.0)
 
-    cap_M = SALARY_CAP_M.get(target_season, 154.6)
-    cap_dollars_val = cap_M * 1_000_000
+    # All cap-relative thresholds use the PROJECTED cap (the one the
+    # player will sign against).
+    cap_dollars_val = proj_cap_dollars
     supermax_threshold = cap_dollars_val * SUPERMAX_CAP_PCT
 
     # Position suppression at supermax tier:
@@ -466,32 +549,20 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     if base >= supermax_threshold:
         pos_mult_applied = 1.0
 
-    # Durability discount — comes from get_player_features which already
-    # computed it from the full career. Healthy players (avail ≥ 85%
-    # over 3 years): ×1.00, no penalty. Chronic injury cases (Embiid):
-    # heavy discount even when rate score is elite.
+    # Durability discount — based on past data, no forward-projection.
+    # Healthy players: ×1.00. Chronic injury cases: heavy discount.
     dur_mult = float(features.get("durability_mult", 1.0) or 1.0)
     dur_tier = features.get("durability_tier", "")
 
-    # Playoff bonus — Jokic / Tatum / SGA tier earn a premium beyond
-    # regular-season production. One-way bonus (no penalty for lottery
-    # teams) computed by playoff_bonus_multiplier in utils.
+    # Playoff bonus — based on past playoff data, no forward-projection.
     playoff_mult = float(features.get("playoff_mult", 1.0) or 1.0)
     playoff_tier = features.get("playoff_tier", "")
 
     raw_predicted = base * age_mult * pos_mult_applied * dur_mult * playoff_mult
 
     # ── CBA cap-and-floor adjustments ───────────────────────────────────────
-    # 1. Cap at player's CBA max %. A 25% max player (≤6 yrs service)
-    #    cannot legally sign for more than 25% of cap, no matter what the
-    #    model says. Hard ceiling — this is CBA-binding.
-    # 2. Floor at supermax threshold IF player is Designated Vet / Designated
-    #    Rookie eligible. Elite players who qualify almost universally take
-    #    the max they're offered.
-    # 3. Rookie-scale lock: if currently on rookie scale, they CAN'T sign
-    #    a new market deal until the rookie deal expires. The model is
-    #    still projecting their NEXT contract, which is a real signal, so
-    #    we don't override the projection — but we surface this as a caveat.
+    # max_pct already reflects the PROJECTED eligibility (computed in
+    # get_player_features by forward-projecting service + tenure).
     max_pct = float(features.get("max_pct", 0.35) or 0.35)
     cba_max_dollars = cap_dollars_val * max_pct
     supermax_eligible = bool(features.get("supermax_eligible", False))
@@ -501,23 +572,14 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
     cba_cap_applied = False
     cba_floor_applied = False
 
-    # Apply max cap.
     if predicted > cba_max_dollars:
         predicted = cba_max_dollars
         cba_cap_applied = True
 
-    # Supermax floor — only for designated-eligible players IN THEIR PRIME.
-    # Floor at their eligible max (35% Vet or 30% Rookie). Without this, an
-    # All-NBA player whose Barrett rate doesn't quite peg the model at 35%
-    # would be under-projected (Jokic / SGA / Wemby pattern).
-    #
-    # Age cutoff (≤32): older "Designated Vet" players (Curry at 38, LeBron
-    # at 40) technically qualify but routinely take paycuts. The floor would
-    # over-project their next contract by 50%+. Let the model's age multiplier
-    # guide the projection for aging vets — supermax becomes a ceiling for
-    # them, not a floor.
-    target_age = features.get("age")
-    in_prime = target_age is not None and target_age <= 32
+    # Supermax floor — uses PROJECTED age so an aging-out player (Curry
+    # in 2029 at 41) doesn't get the floor lifted even if technically
+    # supermax-eligible.
+    in_prime = proj_age is not None and proj_age <= 32
     if supermax_eligible and in_prime and predicted < cba_max_dollars:
         predicted = cba_max_dollars
         cba_floor_applied = True
@@ -638,6 +700,24 @@ def explain_prediction(features: dict, prediction: dict,
     tenure = features.get("team_tenure", 0)
     team = features.get("current_team", "current team")
     recent_nba = len(features.get("recent_all_nba", []) or [])
+    # Forward-projection context
+    years_forward = int(features.get("years_forward") or 0)
+    signing_season = features.get("signing_season") or ""
+    proj_age = features.get("projected_age")
+    proj_svc = features.get("projected_service", svc)
+    proj_ten = features.get("projected_tenure", tenure)
+    contract_end = features.get("contract_end_season") or ""
+
+    # ── Bullet 0: signing year context (only when not signing this offseason) ──
+    if years_forward > 0:
+        proj_age_str = f", age {int(proj_age)}" if proj_age else ""
+        bullets.append(
+            f"**Signing window: {signing_season}** "
+            f"({years_forward} year{'s' if years_forward != 1 else ''} out — "
+            f"current deal runs through {contract_end}). By then he'll have "
+            f"{proj_svc} years of NBA service, {proj_ten} years on {team}"
+            f"{proj_age_str}."
+        )
 
     # ── Bullet 1: what sets the dollar amount ──────────────────────────────
     if prediction.get("cba_floor_applied"):
@@ -1341,6 +1421,31 @@ elif features.get("on_rookie_scale"):
 else:
     _model_caption = ""
 
+# Signing-window HTML — shown only when contract has years remaining
+# (i.e. years_forward > 0). For free agents this season we skip it.
+_years_forward = int(features.get("years_forward") or 0)
+_signing_html = ""
+if _years_forward > 0:
+    _signing_season = features.get("signing_season", "")
+    _contract_end = features.get("contract_end_season", "")
+    _last_type = features.get("contract_last_year_type", "")
+    # Human-readable last-year-type
+    _type_blurb = {
+        "guaranteed": "guaranteed through",
+        "player_option": "player option in",
+        "team_option": "team option in",
+        "et_option": "early-termination option in",
+    }.get(_last_type, "through")
+    _yrs_word = "year" if _years_forward == 1 else "years"
+    _signing_html = (
+        f'<div style="margin-top:0.5rem; font-size:0.78rem; color:#aaa;">'
+        f'📅 <b style="color:#cdcdd5;">Signing window: '
+        f'{_signing_season}</b> '
+        f'<span style="color:#888;">({_years_forward} {_yrs_word} out · '
+        f'current deal {_type_blurb} {_contract_end})</span>'
+        f'</div>'
+    )
+
 if _market_median is not None:
     market_M = _market_median / 1_000_000
     # Honest range = min(model, market) → max(model_high, market)
@@ -1416,7 +1521,7 @@ if _market_median is not None:
       </div>
       <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
         {_player_meta_line}
-      </div>
+      </div>{_signing_html}
 
       <div style="display:flex; gap:1.6rem; margin-top:0.85rem;
                   flex-wrap:wrap; align-items:flex-end;">
@@ -1517,7 +1622,7 @@ else:
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
             {_player_meta_line}
-          </div>
+          </div>{_signing_html}
           <div style="display:flex; gap:1.6rem; margin-top:0.85rem;
                       flex-wrap:wrap; align-items:flex-end;">
             <div>
@@ -1567,7 +1672,7 @@ else:
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
             {_player_meta_line}
-          </div>
+          </div>{_signing_html}
           <div style="display:flex; align-items:baseline; gap:1rem;
                       margin-top:0.7rem; flex-wrap:wrap;">
             <div style="font-size:2.8rem; font-weight:800; color:#fff; line-height:1;">
