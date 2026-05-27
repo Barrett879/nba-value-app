@@ -109,37 +109,56 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         detailed_display = detailed_pos
     pos = pos_bucket  # use the 3-bucket for the multiplier (preserves fit)
 
-    # ── Career-weighted Barrett Score — the GM's view ────────────────────────
-    # Real front offices project contracts off a body of work, not a half
-    # season. We pull the player's full per-season career and weight the
-    # last three completed seasons (50/30/20, most recent first), skipping
-    # the current season since it's still in progress (and injuries /
-    # ramp-up artificially deflate availability-adjusted scores).
+    # ── Career-weighted RATE Score — the GM's view ──────────────────────────
+    # Two important things going on here:
+    #
+    # 1. Career-weighted, not single-season. Real front offices project
+    #    contracts off a body of work — not a half season. Weight the last
+    #    three healthy seasons 50/30/20 (most recent first).
+    #
+    # 2. RATE score (no availability multiplier). The site-wide Barrett
+    #    Score includes an availability multiplier that down-weights
+    #    players who miss games. That's correct for ranking "who provided
+    #    the most total value this season" — but WRONG for contract
+    #    projection. GMs negotiate AAV based on rate stats (what you
+    #    produce when on the floor); they treat durability as a SEPARATE
+    #    concern handled via contract length + structure, not AAV.
+    #
+    #    Concretely: Curry played 41 games in 2025-26. His Barrett Score
+    #    is ~26 (with availability multiplier ~0.83). His RATE score —
+    #    what he produces per game when healthy — is ~31. GMs project
+    #    his next AAV off ~31, not ~26.
+    #
+    # Rate score = Barrett Score / Avail multiplier. (Equivalent to
+    # base_score_pace before the availability multiplier was applied.)
     career_barrett = None
     career_basis = "current season (no prior data)"
     try:
         career = fetch_player_full_career(player_name)
         if not career.empty:
-            # Apply the same GP ≥ 40 filter to ALL seasons including the
-            # current one. Late in the season this naturally includes the
-            # current year (Luka with 70+ games gets picked up); early in
-            # the season it excludes the in-progress year (only 10-20
-            # games played, availability multiplier deflates the score).
-            # Historical injury years (e.g. Zach LaVine's 25-GP 2023-24)
-            # also drop out the same way.
+            # Derive the rate score (un-availability-adjusted) from existing
+            # career columns. Floor avail at 0.3 to avoid divide-by-zero
+            # for any edge-case row that landed at zero availability.
+            career = career.copy()
+            career["Barrett Rate"] = (
+                career["Barrett Score"]
+                / career["Avail"].clip(lower=0.30)
+            )
+
+            # Apply the GP ≥ 40 filter (still useful — keeps tiny-sample
+            # seasons out of the pool — but the avail deflation is no
+            # longer compounding on top of it).
             healthy = career[career["GP"] >= HEALTHY_SEASON_GP]
             used_healthy_filter = len(healthy) >= 1
             pool = healthy if used_healthy_filter else career
 
             if not pool.empty:
-                # Take the most recent up to 3 healthy seasons (50/30/20
-                # weighting, most recent gets the highest weight).
                 recent = pool.tail(3)
                 weights_full = [0.20, 0.30, 0.50]
                 weights = weights_full[-len(recent):]
                 w_sum = sum(weights)
                 career_barrett = float(
-                    (recent["Barrett Score"].values * weights).sum() / w_sum
+                    (recent["Barrett Rate"].values * weights).sum() / w_sum
                 )
                 seasons_used = list(recent["Season"].values)
                 skipped = (
@@ -149,24 +168,33 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
                     " · low-GP seasons (<40) skipped" if skipped else ""
                 )
                 career_basis = (
-                    f"weighted avg of {len(recent)} healthy season"
+                    f"rate-score weighted avg of {len(recent)} healthy season"
                     f"{'s' if len(recent) > 1 else ''} "
                     f"({', '.join(seasons_used)}){skip_note}"
                 )
     except Exception:
         pass
 
-    # Fall back to current-season Barrett if no career history.
+    # Fall back to current-season rate score if no career history.
     if career_barrett is None:
-        career_barrett = float(row["barrett_score"])
-        career_basis = "current season only (rookie / first appearance)"
+        cur_avail = float(row.get("avail_mult", 1.0) or 1.0)
+        cur_avail = max(cur_avail, 0.30)  # same clip as above
+        career_barrett = float(row["barrett_score"]) / cur_avail
+        career_basis = "current season rate only (rookie / first appearance)"
 
-    # Find what salary rank this career-weighted score would command in the
-    # current season's pool — gives a stable "GM-view" base projection.
-    cur_scores = ranked["barrett_score"].sort_values(ascending=False).values
+    # Effective rank: compare this player's RATE score to the rate scores
+    # of every current-season player (also un-availability-adjusted) so
+    # the rank-to-salary mapping is apples-to-apples. Using barrett_score
+    # for both would mean comparing a healthy player to availability-
+    # deflated ones, which inflates the rank artificially.
+    if "avail_mult" in ranked.columns:
+        ranked_avail = ranked["avail_mult"].clip(lower=0.30)
+        cur_rate_scores = (ranked["barrett_score"] / ranked_avail).values
+    else:
+        cur_rate_scores = ranked["barrett_score"].values
+    cur_rate_scores = np.sort(cur_rate_scores)[::-1]  # descending
     cur_salaries = ranked["salary"].sort_values(ascending=False).values
-    # Career-weighted rank = number of current players with a higher score
-    effective_rank = int((cur_scores > career_barrett).sum()) + 1
+    effective_rank = int((cur_rate_scores > career_barrett).sum()) + 1
     capped_rank = min(effective_rank, len(cur_salaries)) - 1
     career_base_proj = float(cur_salaries[capped_rank])
 
@@ -949,7 +977,7 @@ _breakdown_one_line = f"""
   <span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;
                text-transform:uppercase; margin-right:0.5rem;">Math</span>
   <b style="color:#fff;">${base_M:.1f}M</b>
-  <span style="color:#777;">(career Score {features['career_barrett']:.1f} → rank #{features['effective_rank']})</span>
+  <span style="color:#777;">(career rate score {features['career_barrett']:.1f} → rank #{features['effective_rank']})</span>
   &nbsp;<span style="color:#666;">×</span>&nbsp;
   <b>×{prediction['age_mult']:.2f}</b>
   <span style="color:#777;">(age {int(features['age']) if features['age'] else '?'}{_age_factor_note})</span>
@@ -1067,12 +1095,16 @@ with st.expander("About this prediction"):
         ### How the next contract is predicted
         Four layers stack on top of the Barrett Score:
 
-        1. **Career-weighted Barrett Score** — uses a weighted average of
+        1. **Career-weighted Rate Score** — uses a weighted average of
            the player's last 3 **healthy seasons** (GP ≥ 40), with 50/30/20
-           weighting (most recent first). The current season is included
-           once it has enough games to be representative; injury years
-           (historical or in-progress mid-season) are skipped. Matches
-           how front offices evaluate bodies of work.
+           weighting (most recent first). The **rate score** is the
+           Barrett Score with the availability multiplier divided out —
+           i.e. what the player produces per game when on the floor,
+           regardless of how many games they played. GMs negotiate AAV
+           based on rate stats; durability is handled separately via
+           contract length and structure. Without this, a 41-game Curry
+           season looks like Rotation-tier production when on rate he's
+           still Elite.
         2. **Base projection** — what the player at that career-weighted rank
            would earn based on the current season's salary distribution.
         3. **Age multiplier** — fit on 2014-22 real new contracts. A 33yo
