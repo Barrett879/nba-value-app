@@ -668,6 +668,31 @@ def render_barrett_score_explainer() -> None:
         )
 
 
+def stat_card_html(label: str, value: str, sub: str, color: str) -> str:
+    """Standard branded stat card. Returns HTML string — pass to st.markdown
+    with unsafe_allow_html=True.
+
+    Used by Track Record (accuracy summary tiles) and any page that wants a
+    consistent "label + big number + subtitle" tile. Colors come from the
+    site's accent palette (#e63946 red, #2ecc71 green, #16d4c1 teal,
+    #f39c12 orange, #9b59b6 purple, etc.). Color is also used at 40% alpha
+    for the border tint.
+    """
+    return (
+        f'<div style="background:rgba(255,255,255,0.03); '
+        f'border:1px solid {color}40; border-radius:10px; '
+        f'padding:1.2rem 1.5rem; text-align:center;">'
+        f'<div style="font-size:0.72rem; color:#888; letter-spacing:0.08em; '
+        f'text-transform:uppercase; font-weight:600; margin-bottom:0.4rem;">'
+        f'{label}</div>'
+        f'<div style="font-size:2.4rem; font-weight:700; color:{color}; '
+        f'line-height:1;">{value}</div>'
+        f'<div style="font-size:0.78rem; color:#999; margin-top:0.4rem;">'
+        f'{sub}</div>'
+        f'</div>'
+    )
+
+
 # ── Name matching ──────────────────────────────────────────────────────────────
 
 def normalize(name: str) -> str:

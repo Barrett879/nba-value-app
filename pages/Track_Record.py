@@ -22,6 +22,7 @@ from utils import (
     COMMON_CSS, SEASONS,
     build_ranked_projected,
     render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
+    stat_card_html,
 )
 
 st.set_page_config(page_title="Track Record", layout="wide")
@@ -168,18 +169,9 @@ def _fmt_pct(v) -> str:
     return f"{v * 100:+.0f}%"
 
 
-def _stat_card(label: str, value: str, sub: str, color: str) -> str:
-    return f"""
-    <div style="background:rgba(255,255,255,0.03); border:1px solid {color}40;
-                border-radius:10px; padding:1.2rem 1.5rem; text-align:center;">
-        <div style="font-size:0.72rem; color:#888; letter-spacing:0.08em;
-                    text-transform:uppercase; font-weight:600;
-                    margin-bottom:0.4rem;">{label}</div>
-        <div style="font-size:2.4rem; font-weight:700; color:{color};
-                    line-height:1;">{value}</div>
-        <div style="font-size:0.78rem; color:#999; margin-top:0.4rem;">{sub}</div>
-    </div>
-    """
+# _stat_card moved into utils.stat_card_html — single source of truth for
+# the branded "label + big number + subtitle" tile so visual style stays
+# consistent across pages.
 
 
 tab_direction, tab_dollars = st.tabs([
@@ -207,7 +199,7 @@ with tab_direction:
         else:
             body = f"{_under_acc:.0f}%"
             sub  = f"{int(_under_graded.sum())}/{len(_under_graded)} correct · {TOP_N - len(_under_graded)} non-gradeable"
-        st.markdown(_stat_card(
+        st.markdown(stat_card_html(
             f"Underpaid calls ({prev_season})", body, sub, "#2ecc71",
         ), unsafe_allow_html=True)
     with _acc_r:
@@ -217,7 +209,7 @@ with tab_direction:
         else:
             body = f"{_over_acc:.0f}%"
             sub  = f"{int(_over_graded.sum())}/{len(_over_graded)} correct · {TOP_N - len(_over_graded)} non-gradeable"
-        st.markdown(_stat_card(
+        st.markdown(stat_card_html(
             f"Overpaid calls ({prev_season})", body, sub, "#e63946",
         ), unsafe_allow_html=True)
 
@@ -322,28 +314,28 @@ with tab_dollars:
 
     _c1, _c2, _c3, _c4 = st.columns(4)
     with _c1:
-        st.markdown(_stat_card(
+        st.markdown(stat_card_html(
             "Median |error|",
             f"${_median_err / 1_000_000:.1f}M",
             f"{len(dollar_pool)} predictions in pool",
             "#3498db",
         ), unsafe_allow_html=True)
     with _c2:
-        st.markdown(_stat_card(
+        st.markdown(stat_card_html(
             "Within $5M",
             f"{_within_5:.0f}%",
             "Hit within $5M of actual",
             "#2ecc71",
         ), unsafe_allow_html=True)
     with _c3:
-        st.markdown(_stat_card(
+        st.markdown(stat_card_html(
             "Within $10M",
             f"{_within_10:.0f}%",
             "Hit within $10M of actual",
             "#16d4c1",
         ), unsafe_allow_html=True)
     with _c4:
-        st.markdown(_stat_card(
+        st.markdown(stat_card_html(
             "Median bias",
             _bias_dir.split(" ")[0],
             _bias_dir.split(" ", 1)[1].strip("()"),
