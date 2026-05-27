@@ -1407,21 +1407,11 @@ if _market_median is not None:
         f'</div>'
         if divergence >= 0.40 else ''
     )
-    # If we filtered out Paycut comparables (because the player is
-    # currently a supermax-tier earner whose true comparables don't
-    # include the "former star, took less to keep playing" cohort),
-    # surface that to the user so the higher market median isn't
-    # mysterious.
-    _filter_note = (
-        f'<div style="margin-top:0.5rem; font-size:0.74rem; color:#888;">'
-        f'Market view filters out aging stars who took big paycuts (e.g. '
-        f'Chris Paul at $10M, Westbrook at $4M). Those don\'t fit a '
-        f'currently-supermax player — the right comp group is other stars '
-        f'still earning at the top tier.'
-        f'</div>'
-        if _market_filter_applied else ''
-    )
-    diverge_note = diverge_note + _filter_note
+    # Paycut-filter note removed — user feedback found it noisy and
+    # redundant. The filter still happens behind the scenes for
+    # supermax-tier players (Curry-style "stayed at tier" peer group)
+    # but we no longer surface it as a UI line. _market_filter_applied
+    # is still tracked for potential future use / debugging.
     # Compact player metadata line — replaces the standalone Player Snapshot
     # section below by inlining age / position / current salary / current Barrett.
     _meta_bits = [features["name"]]
