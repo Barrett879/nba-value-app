@@ -1408,7 +1408,46 @@ else:
 st.markdown(_header_html, unsafe_allow_html=True)
 
 # ── Structural caveats — compact chip-style instead of full-width banners ────
-if caveats:
+# Playoff chip rendered separately (green for bonus, gray for context-only)
+# alongside the yellow caveat chips. Gives the user a way to verify playoff
+# performance was factored in.
+_playoff_chip_html = ""
+_playoff_gp = features.get("playoff_gp", 0)
+_playoff_tier_label = features.get("playoff_tier", "") or ""
+_playoff_mult_val = features.get("playoff_mult", 1.0) or 1.0
+_playoff_barrett_val_h = features.get("playoff_barrett", 0.0) or 0.0
+if _playoff_gp >= 4 and _playoff_tier_label not in ("No playoff data", ""):
+    if _playoff_mult_val > 1.0:
+        # Positive bonus — green chip
+        _playoff_chip_html = (
+            f'<div style="display:inline-block; background:rgba(22,212,193,0.10); '
+            f'border:1px solid rgba(22,212,193,0.35); border-radius:6px; '
+            f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
+            f'font-size:0.8rem; color:#16d4c1;">⭐ '
+            f'{_playoff_tier_label} ×{_playoff_mult_val:.2f} '
+            f'(Barrett {_playoff_barrett_val_h:.1f} over {_playoff_gp} GP, last 3 postseasons)'
+            f'</div>'
+        )
+    else:
+        # Neutral playoff context — gray chip (visible but not a bonus)
+        if _playoff_tier_label == "Limited playoff exposure":
+            _msg = (
+                f"Limited playoff data: {_playoff_gp} GP last 3 postseasons "
+                f"(need ≥10 for a bonus tier)"
+            )
+        else:
+            _msg = (
+                f"Playoff record: Barrett {_playoff_barrett_val_h:.1f} "
+                f"over {_playoff_gp} GP (below 20-Barrett threshold)"
+            )
+        _playoff_chip_html = (
+            f'<div style="display:inline-block; background:rgba(255,255,255,0.04); '
+            f'border:1px solid rgba(255,255,255,0.12); border-radius:6px; '
+            f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
+            f'font-size:0.8rem; color:#999;">🏀 {_msg}</div>'
+        )
+
+if caveats or _playoff_chip_html:
     _caveat_chips_html = "".join(
         f'<div style="display:inline-block; background:rgba(243,156,18,0.10); '
         f'border:1px solid rgba(243,156,18,0.30); border-radius:6px; '
@@ -1417,7 +1456,7 @@ if caveats:
         for note in caveats
     )
     st.markdown(
-        f'<div style="margin: -0.4rem 0 1rem 0;">{_caveat_chips_html}</div>',
+        f'<div style="margin: -0.4rem 0 1rem 0;">{_caveat_chips_html}{_playoff_chip_html}</div>',
         unsafe_allow_html=True,
     )
 
