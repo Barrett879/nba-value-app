@@ -1152,7 +1152,7 @@ if caveats:
 st.subheader("Comparable signings")
 st.caption(
     "Closest matches on trailing-weighted Barrett (last 3 healthy years, "
-    "50/30/20) + age + position. Real signings — the model's market sanity check."
+    "50/30/20) + age + position."
 )
 
 # Reuse the comparables we already loaded at the top for the hero card.
