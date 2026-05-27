@@ -1039,6 +1039,19 @@ current_names = (
 )
 active_names = [n for n in all_names if n in current_names]
 
+# Map each player → current-season Barrett score for ranking. The
+# searchbox dropdown sorts by Barrett descending (Jokic / SGA / Giannis
+# at the top instead of alphabetical "Aaron Holiday") so users can browse
+# the best players first. Falls back to 0 for players without a current
+# Barrett (shouldn't happen for active_names but defensive).
+_barrett_lookup: dict[str, float] = {}
+if not current_ranked.empty:
+    _barrett_lookup = dict(zip(
+        current_ranked["Player"],
+        current_ranked["barrett_score"].fillna(0.0),
+    ))
+active_names = sorted(active_names, key=lambda n: -_barrett_lookup.get(n, 0.0))
+
 _PICKER_KEY = "contract_predictor_player"
 
 # Resolve initial value from URL ?player= param (deep-link support).
@@ -1056,27 +1069,31 @@ if "player" in st.query_params:
 def _search_players(query: str) -> list[str]:
     """Filter active-season players by case- and accent-insensitive substring.
 
-    Empty query → return the full active-season roster (alphabetical) so the
-    dropdown is browsable without typing (matches the old selectbox UX).
+    Empty query → return the full active-season roster (already sorted by
+    Barrett score descending — Jokic / SGA / Giannis at the top).
 
-    With a query → return up to 10 matches sorted by match quality
-    (exact → prefix → substring), then alphabetical as a tiebreak.
+    With a query → match by quality (exact → prefix → substring), then
+    Barrett score descending within each match tier. Capped at 10.
     """
     if not query or not query.strip():
-        # Empty: show everything sorted alphabetically.
-        return sorted(active_names)
+        # Already pre-sorted by Barrett desc.
+        return active_names
     q = normalize(query)
-    scored: list[tuple[int, str]] = []
+    scored: list[tuple[int, float, str]] = []
     for n in active_names:
         nn = normalize(n)
         if nn == q:
-            scored.append((3, n))
+            quality = 3
         elif nn.startswith(q):
-            scored.append((2, n))
+            quality = 2
         elif q in nn:
-            scored.append((1, n))
-    scored.sort(key=lambda x: (-x[0], x[1]))
-    return [n for _, n in scored[:10]]
+            quality = 1
+        else:
+            continue
+        scored.append((quality, _barrett_lookup.get(n, 0.0), n))
+    # Sort: quality DESC, then Barrett DESC, then name as final tiebreak.
+    scored.sort(key=lambda x: (-x[0], -x[1], x[2]))
+    return [n for _, _, n in scored[:10]]
 
 
 # st_searchbox is a real text input (Cmd+A, cursor positioning, character
@@ -1095,7 +1112,7 @@ selected = st_searchbox(
     search_function=_search_players,
     placeholder="Type a player name…",
     default=_init_player,
-    default_options=sorted(active_names),
+    default_options=active_names,  # already sorted by Barrett desc
     edit_after_submit="option",
     rerun_on_update=True,
     key=_PICKER_KEY,
