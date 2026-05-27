@@ -664,14 +664,29 @@ if not _comps.empty:
     _comps = _comps.copy()
     _comps["context"] = _comps.apply(_classify_context, axis=1)
 
-# Currently-supermax-tier filter for the market view:
-# If the queried player is currently earning ≥28% of cap (Curry, Jokić,
-# AD, etc.) and the comparables pool is dominated by Paycut signings,
-# the market median collapses to ~$3M and becomes meaningless. Paycut
-# comps are "former stars taking less to keep playing" — a different
-# population from "stayed at tier." Filter them out for this group.
+# ── Market view logic ───────────────────────────────────────────────────────
+# Three cases, decided by what the queried player is and what the
+# comparables pool looks like:
+#
+#   1. Standard:  distance-weighted median of all 6 comps. Used for
+#                 most players (non-supermax tier, or supermax tier
+#                 with enough non-Paycut comps).
+#
+#   2. Filtered:  supermax-tier player WHERE ≥3 non-Paycut comps exist.
+#                 Drop Paycut comps and take the weighted median of the
+#                 remaining "stayed at tier" cohort. Notes the filter
+#                 to the user.
+#
+#   3. Suppressed: supermax-tier player WHERE <3 non-Paycut comps exist
+#                  (Curry-tier outliers — almost nobody has stayed at
+#                  supermax this late in their career). The pool is
+#                  dominated by Paycuts that don't represent this
+#                  player's market. Show "Limited comparable data"
+#                  instead of a misleading $3M-tier number; anchor
+#                  the honest range on current salary instead.
 _market_used_comps = _comps
 _market_filter_applied = False
+_market_suppressed = False
 if not _comps.empty:
     _player_cur_sal_pct = (
         float(features.get("salary", 0) or 0)
@@ -679,16 +694,19 @@ if not _comps.empty:
     )
     if _player_cur_sal_pct >= SUPERMAX_CAP_PCT:
         _non_paycut = _comps[_comps["context"] != "Paycut"]
-        # Only apply the filter if it leaves us with at least 2 comps
-        # (so the median is still meaningful). If everyone is a Paycut,
-        # fall back to the original pool and flag it in the UI later.
-        if len(_non_paycut) >= 2:
+        if len(_non_paycut) >= 3:
+            # Case 2: enough non-Paycut data to compute a meaningful median.
             _market_used_comps = _non_paycut
             _market_filter_applied = True
+        else:
+            # Case 3: too few good comps. Don't show the broken median.
+            _market_suppressed = True
 
 # Market view uses distance-weighted median so the closest comparables
 # count more than the farthest.
-if not _market_used_comps.empty:
+if _market_suppressed:
+    _market_median = None
+elif not _market_used_comps.empty:
     _salaries = _market_used_comps["salary_curr"].astype(float).values
     if "distance" in _market_used_comps.columns:
         _weights = _inverse_distance_weights(
@@ -811,33 +829,102 @@ else:
         _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
     _player_meta_line = " · ".join(_meta_bits)
 
-    _header_html = f"""
-    <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
-                border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-                padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
-      <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
-                  letter-spacing:0.1em; font-weight:600;">
-        Predicted next contract
-      </div>
-      <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
-        {_player_meta_line}
-      </div>
-      <div style="display:flex; align-items:baseline; gap:1rem;
-                  margin-top:0.7rem; flex-wrap:wrap;">
-        <div style="font-size:2.8rem; font-weight:800; color:#fff; line-height:1;">
-          ${predicted_M:.1f}M
+    # Two sub-cases for the no-market display:
+    #   - Suppressed: queried player is supermax-tier but the comparables
+    #     pool is too thin/biased to produce a meaningful Market number
+    #     (Curry-tier — the "stayed at supermax into late 30s" cohort
+    #     barely exists in our 3-year window). Anchor the range on
+    #     current salary instead.
+    #   - Generic: no comparables on disk at all (rookies, niche profiles).
+    if _market_suppressed and float(features.get("salary", 0) or 0) > 0:
+        cur_sal = float(features["salary"])
+        cur_sal_M = cur_sal / 1_000_000
+        # Range expands to cover both the model prediction and current
+        # salary — the player will likely land somewhere in this band.
+        anchor_low_M  = min(predicted_M, cur_sal_M)
+        anchor_high_M = max(predicted_M, cur_sal_M)
+        _explainer = (
+            'Market view unavailable — the queried player is currently '
+            'supermax-tier, but the historical comparables pool for that '
+            'cohort is too sparse (5+ Paycut signings, no "stayed at tier" '
+            'comps). Anchoring the range on current salary instead.'
+        )
+        _header_html = f"""
+        <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
+                    border:1px solid rgba(255,255,255,0.12); border-radius:14px;
+                    padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+          <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
+                      letter-spacing:0.1em; font-weight:600;">
+            Predicted next contract
+          </div>
+          <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
+            {_player_meta_line}
+          </div>
+          <div style="display:flex; gap:1.6rem; margin-top:0.85rem;
+                      flex-wrap:wrap; align-items:flex-end;">
+            <div>
+              <div style="font-size:0.65rem; color:#888;
+                          text-transform:uppercase; letter-spacing:0.08em;">
+                Model
+              </div>
+              <div style="font-size:2.2rem; font-weight:800; color:#fff;
+                          line-height:1;">${predicted_M:.1f}M</div>
+            </div>
+            <div style="font-size:1.4rem; color:#444; padding-bottom:0.4rem;">|</div>
+            <div>
+              <div style="font-size:0.65rem; color:#888;
+                          text-transform:uppercase; letter-spacing:0.08em;">
+                Current salary (anchor)
+              </div>
+              <div style="font-size:2.2rem; font-weight:800; color:#16d4c1;
+                          line-height:1;">${cur_sal_M:.1f}M</div>
+            </div>
+            <div style="margin-left:auto; text-align:right;">
+              <div style="font-size:0.65rem; color:#888;
+                          text-transform:uppercase; letter-spacing:0.08em;">
+                Honest range
+              </div>
+              <div style="font-size:1.3rem; color:#fff; font-weight:700;
+                          line-height:1.1;">
+                ${anchor_low_M:.1f}M – ${anchor_high_M:.1f}M
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:0.7rem; padding-top:0.6rem;
+                      border-top:1px solid rgba(255,255,255,0.08);
+                      font-size:0.78rem; color:#f39c12;">
+            ⚠ {_explainer}
+          </div>
         </div>
-        <div style="color:#aaa; font-size:0.9rem;">
-          ±${prediction['band']/1_000_000:.1f}M band ·
-          range <b style="color:#cdcdd5;">${low_M:.1f}M</b> –
-          <b style="color:#cdcdd5;">${high_M:.1f}M</b>
+        """
+    else:
+        _header_html = f"""
+        <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
+                    border:1px solid rgba(255,255,255,0.12); border-radius:14px;
+                    padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+          <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
+                      letter-spacing:0.1em; font-weight:600;">
+            Predicted next contract
+          </div>
+          <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
+            {_player_meta_line}
+          </div>
+          <div style="display:flex; align-items:baseline; gap:1rem;
+                      margin-top:0.7rem; flex-wrap:wrap;">
+            <div style="font-size:2.8rem; font-weight:800; color:#fff; line-height:1;">
+              ${predicted_M:.1f}M
+            </div>
+            <div style="color:#aaa; font-size:0.9rem;">
+              ±${prediction['band']/1_000_000:.1f}M band ·
+              range <b style="color:#cdcdd5;">${low_M:.1f}M</b> –
+              <b style="color:#cdcdd5;">${high_M:.1f}M</b>
+            </div>
+          </div>
+          <div style="margin-top:0.35rem; font-size:0.75rem; color:#888;">
+            Model prediction only — no comparable signings on file.
+          </div>
         </div>
-      </div>
-      <div style="margin-top:0.35rem; font-size:0.75rem; color:#888;">
-        Model prediction only — no comparable signings on file.
-      </div>
-    </div>
-    """
+        """
 st.markdown(_header_html, unsafe_allow_html=True)
 
 # ── Structural caveats — compact chip-style instead of full-width banners ────
