@@ -164,8 +164,12 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
                 skipped = (
                     used_healthy_filter and len(career) > len(pool)
                 )
+                # Use &lt; instead of literal < so the string is safe to
+                # interpolate into the math-line HTML. Streamlit's parser
+                # otherwise treats `<40` as the start of an HTML tag and
+                # corrupts everything after it.
                 skip_note = (
-                    " · low-GP seasons (<40) skipped" if skipped else ""
+                    " · low-GP seasons (&lt;40) skipped" if skipped else ""
                 )
                 career_basis = (
                     f"rate-score weighted avg of {len(recent)} healthy season"
