@@ -289,7 +289,28 @@ def main():
         print(f"  Median bias:               {bias:+5.1f}% of cap "
               f"({'market pays more' if bias > 0 else 'model overshoots'})")
 
-    # ── Modern subset (last 10 years) for marketing-defensible numbers ──────
+    # ── CBA-max era (1999+) — best methodological headline ──────────────────
+    # 1999 is when the CBA introduced max contracts. Pre-1999, Bird-rights
+    # uncapped megadeals (Jordan $30M, Ewing $20M, Garnett $14M) are
+    # structurally unpredictable from box-score production. Cutting at 1999
+    # measures the model against the CBA-constrained contracts it's actually
+    # designed to predict.
+    cba = df[df["curr"].apply(lambda s: int(s.split("-")[0])) >= 1999]
+    if len(cba):
+        c_n = int(cba["n_dollar_pool"].sum())
+        if c_n:
+            c_w5  = (cba["within_5cap"]  * cba["n_dollar_pool"]).sum() / c_n
+            c_w10 = (cba["within_10cap"] * cba["n_dollar_pool"]).sum() / c_n
+            c_med = cba["median_err_cap"].median()
+            c_medM = cba["median_err_M"].median()
+
+            print(f"\nCBA-MAX ERA (1999+) — headline metric:")
+            print(f"  Sample size:                {c_n} new-contract predictions")
+            print(f"  Median |error|:             {c_med:5.1f}% of cap  (~${c_medM:.1f}M)")
+            print(f"  Within 5%  of cap (~$8M):   {c_w5:5.1f}%")
+            print(f"  Within 10% of cap (~$15M):  {c_w10:5.1f}%")
+
+    # ── Modern subset (last 10 years) ────────────────────────────────────────
     modern = df[df["curr"].isin([s for s in SEASONS[:10]])]
     if len(modern):
         m_n = int(modern["n_dollar_pool"].sum())
@@ -301,7 +322,7 @@ def main():
             m_tuc, m_tug = modern["under_correct"].sum(), modern["under_graded"].sum()
             m_toc, m_tog = modern["over_correct"].sum(),  modern["over_graded"].sum()
 
-            print(f"\nMODERN ERA ONLY (last 10 season pairs — defensible v. cap-inflated past):")
+            print(f"\nMODERN ERA ONLY (last 10 season pairs):")
             print(f"  Directional:                under={m_tuc}/{m_tug} ({m_tuc/m_tug*100:.0f}%) "
                   f"· over={m_toc}/{m_tog} ({m_toc/m_tog*100:.0f}%)")
             print(f"  Sample size:                {m_n} new-contract predictions")

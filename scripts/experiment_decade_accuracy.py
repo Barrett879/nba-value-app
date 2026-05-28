@@ -182,6 +182,22 @@ def main() -> None:
     print(f"{'TOTAL':<8} {n:>6,} {w5:>10.1f}% {w10:>11.1f}% "
           f"{median_err:>10.2f}% {bias:>+7.2f}%")
 
+    # Post-1999 subset: when the CBA-max-contract era begins. Pre-1999
+    # there were no max contracts, so Bird-rights uncapped megadeals
+    # (Jordan $30M, Ewing $20M, Garnett $14M) are structurally
+    # unpredictable from box-score production alone. The 1999+ cut is a
+    # methodologically defensible headline for the model's real-world
+    # use case (predicting modern CBA-constrained contracts).
+    combined["start_year"] = combined["signed_in"].str.slice(0, 4).astype(int)
+    cba = combined[combined["start_year"] >= 1999]
+    n_c = len(cba)
+    w5_c  = (cba["abs_err_pct_cap"] < 5).mean()  * 100
+    w10_c = (cba["abs_err_pct_cap"] < 10).mean() * 100
+    med_c = cba["abs_err_pct_cap"].median()
+    bias_c = cba["signed_err_pct_cap"].median()
+    print(f"{'1999+':<8} {n_c:>6,} {w5_c:>10.1f}% {w10_c:>11.1f}% "
+          f"{med_c:>10.2f}% {bias_c:>+7.2f}%   ← CBA-max era only")
+
     print()
     print("Interpretation:")
     print("  - 'Within X%' = % of contracts where |predicted - actual| < X% of cap")
