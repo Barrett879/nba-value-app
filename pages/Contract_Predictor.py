@@ -1909,6 +1909,12 @@ with st.expander("About this prediction"):
         - **Rookie-scale lock** (uses our existing rookie-scale roster)
         - **CBA max-contract tiers** (25% / 30% / 35% based on service)
         - **Designated Rookie / Designated Vet (supermax) eligibility**
+        - **D-LEBRON proxy for pre-2009 seasons**. Real D-LEBRON only
+          goes back to 2009-10. For older eras we fit a regression on
+          per-game STL/BLK/DREB/PF that captures ~60% of D-LEBRON's
+          variance (R² = 0.594). Adds defensive signal to historical
+          Barrett scores so the 80s/90s validation isn't penalizing
+          defensive specialists with a zero defensive component.
 
         ### What's not in the model yet
         - **Detailed Bird rights** (we approximate via team tenure; the

@@ -2733,6 +2733,62 @@ def fetch_dlebron(season: str) -> dict:
     return {int(row["nba_id"]): float(row["D-LEBRON"]) for _, row in season_df.iterrows()}
 
 
+# ── D-LEBRON proxy for pre-2009 seasons ────────────────────────────────────
+# Real D-LEBRON (from BBall-Index) only goes back to 2009-10. For older
+# eras, the defensive component of Barrett Score would otherwise be 0 —
+# heavily penalizing defensive specialists (Olajuwon, Mutombo, Pippen,
+# Bruce Bowen, etc.) in pre-2009 contract validation.
+#
+# Coefficients fit via OLS on the 2009-2025 sample (n=9,649 player-seasons
+# with MPG ≥ 10, see scripts/experiment_dlebron_proxy.py). Inputs are
+# per-game stats from fetch_league_stats (NBA Stats API default).
+#
+# Final fit: R² = 0.594, MAE = 0.52 (D-LEBRON units).
+#
+# Tried adding per-minute stats, MPG, position dummies, and position
+# interactions — all gave ≤+0.05pp R² improvement at the cost of model
+# complexity. The simple per-game form is the right tradeoff.
+#
+# Limitations:
+#   - Per-game box stats explain ~60% of D-LEBRON variance. Real D-LEBRON
+#     uses play-by-play impact data the box score genuinely can't see
+#     (on/off splits, matchup difficulty, lineup effects).
+#   - For pre-1973 (no STL/BLK), this proxy degenerates further.
+#
+# Used by build_raw when fetch_dlebron returns 0 for a player.
+
+_DLEBRON_PROXY_COEFS = {
+    "intercept": -1.355138,
+    "STL":       +0.932316,
+    "BLK":       +1.436954,
+    "DREB":      +0.089358,
+    "PF":        -0.164789,
+}
+
+
+def dlebron_proxy(stl: float, blk: float, dreb: float, pf: float) -> float:
+    """Estimate D-LEBRON from per-game box stats (pre-2009 fallback).
+
+    Args:
+        stl, blk, dreb, pf:  per-game defensive stats (as returned by
+                             fetch_league_stats — already per-game)
+
+    Returns:
+        Proxy D-LEBRON value in roughly the real D-LEBRON scale
+        (typically -2 to +3). Falls back to 0.0 on missing input.
+    """
+    if stl is None or blk is None or dreb is None or pf is None:
+        return 0.0
+    c = _DLEBRON_PROXY_COEFS
+    return (
+        c["intercept"]
+        + c["STL"]  * stl
+        + c["BLK"]  * blk
+        + c["DREB"] * dreb
+        + c["PF"]   * pf
+    )
+
+
 # ── Build raw data ─────────────────────────────────────────────────────────────
 
 # Bump this when the Barrett Score formula changes — old parquet caches with
@@ -2751,7 +2807,7 @@ def fetch_dlebron(season: str) -> dict:
 #       build_raw so every page (Rankings, Legacy, Trades, Search, all-time
 #       lists) gets era-normalized scores by default. Old un-adjusted view
 #       still available as `barrett_score_raw` for the Search toggle.
-FORMULA_VERSION = "v6"
+FORMULA_VERSION = "v7"  # v7: D-LEBRON proxy replaces hand-tuned fallback (R²=0.59)
 
 # Separate version tag for playoff caches so playoff-formula tweaks invalidate
 # only playoff parquets, leaving the regular-season caches valid.
@@ -2892,22 +2948,20 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
         dlebron = fetch_dlebron(season)
         stats["d_lebron"] = stats["PLAYER_ID"].map(dlebron).fillna(0)
 
-    # ── Box Score Defense fallback ────────────────────────────────────────────
-    # Used for pre-2009-10 (no D-LEBRON published) AND for any playoff query.
-    # Formula: BLK*1.5 + STL*1.5 + DREB*0.15 - PF*0.4, centered on the league
-    # average among qualified players (GP >= 20 reg season; GP >= 4 playoffs).
-    if not dlebron:  # empty dict = no D-LEBRON coverage (pre-2009 or playoffs)
-        _box = (stats["BLK"] * 1.5
-                + stats["STL"] * 1.5
-                + stats["DREB"] * 0.15
-                - stats["PF"]   * 0.4)
-        gp_threshold = 4 if playoffs else 20
-        qualified_mask = stats["GP"] >= gp_threshold
-        if qualified_mask.any():
-            _league_avg_box = float(_box[qualified_mask].mean())
-        else:
-            _league_avg_box = float(_box.mean()) if len(_box) else 0.0
-        stats["d_lebron"] = (_box - _league_avg_box).clip(-5, 6)
+    # ── D-LEBRON proxy fallback ──────────────────────────────────────────────
+    # When fetch_dlebron returns no data (pre-2009-10 or playoffs), fall back
+    # to the box-score-fit proxy. Replaces the earlier hand-tuned composite
+    # (BLK*1.5 + STL*1.5 + DREB*0.15 - PF*0.4) with regression coefficients
+    # fit on the 2009-2025 sample. R² = 0.594, MAE = 0.52 (D-LEBRON units).
+    # See utils.dlebron_proxy + scripts/experiment_dlebron_proxy.py.
+    if not dlebron:
+        stats["d_lebron"] = (
+            _DLEBRON_PROXY_COEFS["intercept"]
+            + _DLEBRON_PROXY_COEFS["STL"]  * stats["STL"]
+            + _DLEBRON_PROXY_COEFS["BLK"]  * stats["BLK"]
+            + _DLEBRON_PROXY_COEFS["DREB"] * stats["DREB"]
+            + _DLEBRON_PROXY_COEFS["PF"]   * stats["PF"]
+        ).clip(-5, 6)
 
     stats["ts_pct"] = stats["PTS"] / (2 * (stats["FGA"] + 0.44 * stats["FTA"])).replace(0, float("nan"))
     league_avg_ts = (stats["ts_pct"] * stats["GP"]).sum() / stats["GP"].sum()
