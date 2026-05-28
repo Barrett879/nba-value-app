@@ -3508,92 +3508,11 @@ def get_player_contract_info(player_name: str) -> dict | None:
         return None
 
 
-# Cap growth assumption for forward projection. The 2025+ TV deal era
-# guarantees ~10% YoY for the new agreement. Older eras grew slower
-# (4-7%) but we project from current data so 10% is the right base rate.
-CAP_GROWTH_RATE = 0.10
-
-
-def project_contract_inputs(player_name: str, current_season: str,
-                            current_age: float | int | None,
-                            current_service: int, current_tenure: int,
-                            current_team: str) -> dict:
-    """Project a player's contract inputs forward to their projected
-    signing year. Returns the inputs the predictor should USE, not what
-    they are today.
-
-    For a player with a contract running through 2028-29 PO (e.g. Luka):
-      - current_season:  2025-26
-      - signing_season:  2029-30 (3 yrs out)
-      - projected_cap:   154.6M × 1.10^4 ≈ 226M
-      - projected_age:   27 + 4 = 31
-      - projected_svc:   8 + 4 = 12 (Max 35% tier)
-      - projected_tenure: 1 + 4 = 5 (Designated Vet eligible)
-
-    For a free agent / player without a contract record: returns the
-    "sign today" inputs unchanged. Same for players whose contract
-    expires this season.
-
-    Tenure projection assumes the player stays on their current team
-    through the end of their current deal — which is the default
-    assumption when GMs negotiate the next contract (they own his
-    Bird rights through the existing deal).
-    """
-    info = get_player_contract_info(player_name)
-    cur_year = int(current_season.split("-")[0])
-
-    # Default: signing today.
-    out = {
-        "signing_season":   current_season,
-        "years_forward":    0,
-        "projected_cap":    SALARY_CAP_M.get(current_season, 154.6) * 1_000_000,
-        "projected_age":    float(current_age) if current_age else None,
-        "projected_service": current_service,
-        "projected_tenure": current_tenure,
-        "contract_info":    info,
-    }
-
-    if info is None:
-        # No multi-year contract on file — signing this offseason.
-        return out
-
-    signing_season = info["signing_season"]
-    signing_year = int(signing_season.split("-")[0])
-    years_forward = signing_year - cur_year
-    if years_forward <= 0:
-        # Contract expires this season — signing now, no projection needed.
-        return out
-
-    # Cap projection: compound annual growth.
-    projected_cap = (
-        SALARY_CAP_M.get(current_season, 154.6) * 1_000_000
-        * (1 + CAP_GROWTH_RATE) ** years_forward
-    )
-
-    # Age: add years.
-    projected_age = (
-        float(current_age) + years_forward if current_age is not None else None
-    )
-
-    # Service years: add years forward.
-    projected_service = current_service + years_forward
-
-    # Tenure: assumes player stays on current team through contract end.
-    # If the contract's current_team matches our recorded current_team,
-    # extend tenure by years_forward. (If they were traded — like Luka
-    # to LAL — their tenure on the NEW team accrues during the remaining
-    # contract years.)
-    projected_tenure = current_tenure + years_forward
-
-    out.update({
-        "signing_season":   signing_season,
-        "years_forward":    years_forward,
-        "projected_cap":    projected_cap,
-        "projected_age":    projected_age,
-        "projected_service": projected_service,
-        "projected_tenure": projected_tenure,
-    })
-    return out
+# project_contract_inputs / CAP_GROWTH_RATE were removed when we reverted
+# the forward-projection experiment (see commit 76560d3). The predictor
+# now answers "what would a GM pay TODAY" — no future cap / age / tenure
+# projection. If we want to bring forward projection back as an opt-in
+# toggle, the logic is recoverable from git history.
 
 
 # ── Service years + team tenure ────────────────────────────────────────────

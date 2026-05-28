@@ -44,10 +44,10 @@ from utils import (
     get_max_contract_eligibility,
     fetch_rookie_scale_players,
     fetch_all_nba_selections,
-    # Forward projection: scrape multi-year contracts and project the
-    # signing year, cap, service, tenure, and age forward.
-    get_player_contract_info, project_contract_inputs,
-    CAP_GROWTH_RATE,
+    # Contract end-year scraper — powers the "Current deal: $X through YYYY-YY"
+    # context line under the hero (and nothing else after the forward-
+    # projection revert).
+    get_player_contract_info,
 )
 
 
@@ -80,80 +80,6 @@ def _fmt_money(v: float) -> str:
     if pd.isna(v) or v == 0:
         return "—"
     return f"${v / 1_000_000:.1f}M"
-
-
-def _confidence_label(features: dict, prediction: dict, divergence: float = 0.0
-                       ) -> tuple[str, str, list[str]]:
-    """Compute how much faith to put in the prediction.
-
-    Drivers (each adjusts a starting score of 75):
-      - Model vs Market divergence: agreement → confidence up; divergence
-        ≥ 40% → confidence down.
-      - CBA-bound predictions (max cap or supermax floor) get a bump —
-        the CBA does the math, less of a model guess.
-      - Long career (≥8 yrs service): more data, more confidence.
-      - Short career (<2 yrs service): less data, less confidence.
-      - Chronic/Severe durability: uncertainty about availability.
-      - Rookie scale: there's CBA-mandated timing uncertainty (when the
-        next deal even happens depends on whether team picks up option).
-
-    Returns (label, color_hex, reasons) where reasons is a list of
-    short strings ready to show as a tooltip / detail line.
-    """
-    score = 75
-    reasons: list[str] = []
-
-    # Model vs market agreement.
-    if divergence and divergence > 0:
-        if divergence < 0.10:
-            score += 15
-            reasons.append("model & market within 10%")
-        elif divergence < 0.20:
-            score += 5
-            reasons.append("model & market within 20%")
-        elif divergence < 0.40:
-            score -= 10
-            reasons.append("model and market disagree (20-40%)")
-        else:
-            score -= 25
-            reasons.append(f"model/market divergence {divergence*100:.0f}%")
-
-    # CBA-bound = high confidence (CBA does the math)
-    if prediction.get("cba_cap_applied"):
-        score += 15
-        reasons.append("CBA-capped at this player's max")
-    elif prediction.get("cba_floor_applied"):
-        score += 15
-        reasons.append("CBA-floored at supermax tier")
-
-    # Service depth.
-    service = features.get("service_years", 0)
-    if service < 2:
-        score -= 20
-        reasons.append("limited NBA history")
-    elif service >= 8:
-        score += 5
-        reasons.append(f"{service}+ yrs of career data")
-
-    # Durability concerns.
-    dur = features.get("durability_tier", "")
-    if dur in ("Chronic", "Severe"):
-        score -= 15
-        reasons.append(f"{dur.lower()} injury history")
-    elif dur == "Moderate":
-        score -= 5
-        reasons.append("moderate availability")
-
-    # Rookie scale = future timing uncertainty.
-    if features.get("on_rookie_scale"):
-        score -= 5
-        reasons.append("rookie-scale extension timing")
-
-    if score >= 85:
-        return "High", "#16d4c1", reasons
-    if score >= 70:
-        return "Medium", "#f6b73c", reasons
-    return "Low", "#e63946", reasons
 
 
 # Single-letter position display. The detailed BBRef scrape returns
@@ -1968,12 +1894,6 @@ with st.expander("About this prediction"):
            aging vets (age >33+) who routinely take paycuts.
 
         **Confidence band:** ±$5.5M reflects out-of-sample median error.
-
-        **Confidence indicator** (badge on hero card): High / Medium / Low
-        based on model-market agreement, CBA constraints, career depth,
-        and durability. CBA-bound predictions (max-capped / supermax-
-        floored) and long-career healthy vets get high confidence; large
-        model-market divergence + limited NBA history drags it down.
 
         ### What's in the model
         - Production (Barrett Score, healthy-season trailing average)
