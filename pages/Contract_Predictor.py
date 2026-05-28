@@ -4,11 +4,11 @@ Takes a player's current production (Barrett Score), applies age + position
 calibration multipliers learned from 2014-22 historical contracts, and returns
 a dollar projection with a confidence band and a list of comparable signings.
 
-Out-of-sample accuracy: ~78% within 5% of cap on 1,406 real new contracts
-since 2015 (modern era). Median error 1.8% of cap (~$2.7M in 2025-26 dollars).
+Out-of-sample accuracy: ~80% within 5% of cap on 1,406 real new contracts
+since 2015 (modern era). Median error 1.3% of cap (~$1.7M in 2025-26 dollars).
 
-The full validation suite — across 4,500 signings going back to 1985 — comes
-in at 74% within 5% of cap; the modern-era number is the more defensible
+The full validation suite — across 3,618 signings going back to 1985 — comes
+in at 79% within 5% of cap; the modern-era number is the more defensible
 claim because it matches the cap-era the model was tuned for.
 """
 import sys
@@ -64,7 +64,7 @@ st.title("Contract Predictor")
 st.caption(
     "Type a player's name to see their projected next contract. Based on the "
     "Barrett Score, adjusted for age and position. Out-of-sample accuracy: "
-    "78% within 5% of cap on 1,406 real new contracts since 2015 (modern era)."
+    "80% within 5% of cap on 1,406 real new contracts since 2015 (modern era)."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -1928,8 +1928,8 @@ with st.expander("About this prediction"):
           knows next year's box score.
 
         Validated out-of-sample on 1,406 actual new contracts signed since
-        2015: median error 1.3% of cap (~$1.8M), 78% of predictions land
-        within 5% of cap (~$8M), 91.5% within 10% (modern era). All-era (1984-2024): 77.8% within 5%, 91.8% within 10%. The biggest remaining
+        2015: median error 1.3% of cap (~$1.7M), 79.6% of predictions land
+        within 5% of cap (~$8M), 91.6% within 10% (modern era). All-era (1984-2024): 79.2% within 5%, 91.9% within 10%. The biggest remaining
         misses are veteran-minimum signings and one-off paycut deals where
         market value doesn't apply.
         """

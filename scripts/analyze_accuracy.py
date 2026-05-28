@@ -36,7 +36,10 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 
-from utils import SEASONS, build_ranked_projected, SALARY_CAP_M, fetch_league_stats
+from utils import (
+    SEASONS, build_ranked_projected, SALARY_CAP_M, fetch_league_stats,
+    tiered_age_multiplier,
+)
 
 
 TOP_N = 20
@@ -48,9 +51,14 @@ NEW_DEAL_PCT_THRESHOLD = 0.25  # ≥25% YoY salary change = "new contract" proxy
 # rookie-scale years aren't false misses (Luka, Lillard, Giannis on
 # their year-3/4 step-ups). Matches the live Contract Predictor's CBA
 # cap logic.
+#
+# Only applied for 1995+ seasons — the modern rookie scale system was
+# introduced by the 1995 CBA. Pre-1995 rookies signed individually
+# negotiated contracts (some big, some small), so the cap doesn't apply.
 ROOKIE_SCALE_SAL_PCT_THRESHOLD = 0.15
 ROOKIE_SCALE_MAX_AGE           = 25
 ROOKIE_SCALE_STEP_UP_CAP       = 1.5  # 50% bump cap
+ROOKIE_SCALE_FIRST_YEAR        = 1995  # CBA introduced rookie scale
 
 
 # NBA salary cap by season (in millions, applied to the "curr" side of a pair).
@@ -81,7 +89,8 @@ def analyze_pair(prev_season: str, curr_season: str) -> dict | None:
     cap_ratio = cap_curr / cap_prev
 
     prev_slim = prev_df[["PLAYER_ID", "Player", "salary",
-                         "projected_salary", "value_diff"]].rename(columns={
+                         "projected_salary", "value_diff",
+                         "barrett_score", "score_rank"]].rename(columns={
         "salary":           "salary_prev",
         "projected_salary": "proj_prev",
         "value_diff":       "value_diff_prev",
@@ -98,24 +107,47 @@ def analyze_pair(prev_season: str, curr_season: str) -> dict | None:
     # for "predicting the rank" rather than penalizing it for cap inflation.
     m["proj_capadj"] = m["proj_prev"] * cap_ratio
 
-    # Apply CBA rookie-scale cap on predictions. Pulls AGE from
-    # fetch_league_stats for the prior season so we can flag rookies.
+    # Pull AGE from fetch_league_stats (prior season).
     try:
         prev_stats = fetch_league_stats(prev_season, "Regular Season")
         age_lookup = dict(zip(prev_stats["PLAYER_ID"], prev_stats.get("AGE", [])))
         m["age"] = m["PLAYER_ID"].map(age_lookup)
     except Exception:
         m["age"] = None
-    m["sal_prev_pct"] = m["salary_prev"] / cap_prev
-    _is_rookie_scale = (
-        (m["sal_prev_pct"] < ROOKIE_SCALE_SAL_PCT_THRESHOLD)
-        & m["age"].notna()
-        & (m["age"] <= ROOKIE_SCALE_MAX_AGE)
-    )
-    _rookie_cap = m["salary_prev"] * ROOKIE_SCALE_STEP_UP_CAP
-    m.loc[_is_rookie_scale, "proj_capadj"] = m.loc[_is_rookie_scale, "proj_capadj"].clip(
-        upper=_rookie_cap[_is_rookie_scale]
-    )
+
+    # Apply tiered age multiplier (live Contract Predictor uses this on top
+    # of the base projection — bake it into the validated number so we
+    # measure what the actual model predicts, not just the rank-mapping).
+    def _age_mult_row(r) -> float:
+        age = r.get("age")
+        if age is None or pd.isna(age):
+            return 1.0
+        try:
+            mult, _ = tiered_age_multiplier(
+                age=float(age),
+                career_score=float(r.get("barrett_score", 0)),
+                current_rank=int(r.get("score_rank", 0) or 0),
+            )
+            return float(mult)
+        except Exception:
+            return 1.0
+
+    m["age_mult"] = m.apply(_age_mult_row, axis=1)
+    m["proj_capadj"] = m["proj_capadj"] * m["age_mult"]
+
+    # Apply CBA rookie-scale cap on predictions (1995+ only).
+    curr_start_year = int(curr_season.split("-")[0])
+    if curr_start_year >= ROOKIE_SCALE_FIRST_YEAR:
+        m["sal_prev_pct"] = m["salary_prev"] / cap_prev
+        _is_rookie_scale = (
+            (m["sal_prev_pct"] < ROOKIE_SCALE_SAL_PCT_THRESHOLD)
+            & m["age"].notna()
+            & (m["age"] <= ROOKIE_SCALE_MAX_AGE)
+        )
+        _rookie_cap = m["salary_prev"] * ROOKIE_SCALE_STEP_UP_CAP
+        m.loc[_is_rookie_scale, "proj_capadj"] = m.loc[_is_rookie_scale, "proj_capadj"].clip(
+            upper=_rookie_cap[_is_rookie_scale]
+        )
 
     m["abs_err"]     = (m["salary_curr"].fillna(0) - m["proj_capadj"]).abs()
     m["signed_err"]  = m["salary_curr"].fillna(0) - m["proj_capadj"]

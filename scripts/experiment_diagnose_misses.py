@@ -14,11 +14,16 @@ warnings.filterwarnings("ignore")
 import pandas as pd
 import numpy as np
 
-from utils import SEASONS, build_ranked_projected, SALARY_CAP_M
+from utils import SEASONS, build_ranked_projected, SALARY_CAP_M, fetch_league_stats
 
 
 NEW_DEAL_PCT_THRESHOLD = 0.25
 TOP_K_MISSES = 10
+# Apply same rookie-scale cap as the canonical validator.
+ROOKIE_SCALE_SAL_PCT_THRESHOLD = 0.15
+ROOKIE_SCALE_MAX_AGE           = 25
+ROOKIE_SCALE_STEP_UP_CAP       = 1.5
+ROOKIE_SCALE_FIRST_YEAR        = 1995
 
 
 def _cap(season: str) -> float:
@@ -64,6 +69,27 @@ def analyze_pair(prev_season: str, curr_season: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     pool["proj_capadj"] = pool["proj_prev"] * ratio
+
+    # Apply rookie-scale cap (1995+).
+    curr_start_year = int(curr_season.split("-")[0])
+    if curr_start_year >= ROOKIE_SCALE_FIRST_YEAR:
+        try:
+            prev_stats = fetch_league_stats(prev_season, "Regular Season")
+            age_lookup = dict(zip(prev_stats["PLAYER_ID"], prev_stats.get("AGE", [])))
+            pool["age"] = pool["PLAYER_ID"].map(age_lookup)
+        except Exception:
+            pool["age"] = None
+        pool["sal_prev_pct"] = pool["salary_prev"] / cap_prev
+        is_rs = (
+            (pool["sal_prev_pct"] < ROOKIE_SCALE_SAL_PCT_THRESHOLD)
+            & pool["age"].notna()
+            & (pool["age"] <= ROOKIE_SCALE_MAX_AGE)
+        )
+        rcap = pool["salary_prev"] * ROOKIE_SCALE_STEP_UP_CAP
+        pool.loc[is_rs, "proj_capadj"] = pool.loc[is_rs, "proj_capadj"].clip(
+            upper=rcap[is_rs]
+        )
+
     pool["pct_cap_err"] = (pool["salary_curr"] - pool["proj_capadj"]).abs() / cap_curr * 100
     pool["signed_err_pct_cap"] = (pool["salary_curr"] - pool["proj_capadj"]) / cap_curr * 100
     pool["signed_in"] = curr_season

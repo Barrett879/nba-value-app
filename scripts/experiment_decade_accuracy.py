@@ -22,7 +22,10 @@ warnings.filterwarnings("ignore")
 import pandas as pd
 import numpy as np
 
-from utils import SEASONS, build_ranked_projected, SALARY_CAP_M, fetch_league_stats
+from utils import (
+    SEASONS, build_ranked_projected, SALARY_CAP_M, fetch_league_stats,
+    tiered_age_multiplier,
+)
 
 
 NEW_DEAL_PCT_THRESHOLD = 0.25  # ≥25% YoY = "real new contract"
@@ -35,6 +38,7 @@ NEW_DEAL_PCT_THRESHOLD = 0.25  # ≥25% YoY = "real new contract"
 ROOKIE_LADDER_SAL_PCT_PREV  = 0.15
 ROOKIE_LADDER_SAL_PCT_CURR  = 0.18
 ROOKIE_LADDER_MAX_AGE       = 25
+ROOKIE_SCALE_FIRST_YEAR     = 1995  # CBA introduced rookie scale system
 
 
 def _cap(season: str) -> float:
@@ -69,7 +73,8 @@ def analyze_pair(prev_season: str, curr_season: str) -> pd.DataFrame:
     cap_ratio = cap_curr / cap_prev
 
     m = (
-        prev_df[["PLAYER_ID", "salary", "projected_salary"]]
+        prev_df[["PLAYER_ID", "salary", "projected_salary",
+                 "barrett_score", "score_rank"]]
         .rename(columns={"salary": "salary_prev", "projected_salary": "proj_prev"})
         .merge(
             curr_df[["PLAYER_ID", "salary"]].rename(columns={"salary": "salary_curr"}),
@@ -86,31 +91,47 @@ def analyze_pair(prev_season: str, curr_season: str) -> pd.DataFrame:
     if pool.empty:
         return pd.DataFrame()
 
-    # CBA rookie-scale CAP on predictions (don't filter — adjust the
-    # prediction to what's CBA-possible). For players on rookie scale
-    # (salary_prev < 15% cap, age ≤ 25), the next-year salary is
-    # CBA-mandated and ≤ ~150% of prior year. The base rank-mapping
-    # doesn't know about CBA rules; cap its prediction here to match
-    # what the live Contract Predictor does at prediction time.
+    pool["proj_capadj"] = pool["proj_prev"] * cap_ratio
+
+    # Pull AGE.
     try:
         raw_prev_stats = fetch_league_stats(prev_season, "Regular Season")
         age_lookup = dict(zip(raw_prev_stats["PLAYER_ID"], raw_prev_stats.get("AGE", [])))
         pool["age"] = pool["PLAYER_ID"].map(age_lookup)
     except Exception:
         pool["age"] = None
-    pool["sal_prev_pct"] = pool["salary_prev"] / cap_prev
-    is_rookie_scale = (
-        (pool["sal_prev_pct"] < ROOKIE_LADDER_SAL_PCT_PREV)
-        & pool["age"].notna()
-        & (pool["age"] <= ROOKIE_LADDER_MAX_AGE)
-    )
-    pool["proj_capadj"] = pool["proj_prev"] * cap_ratio
-    # Cap rookie-scale predictions at 150% of prior salary (a generous
-    # estimate of the max year-over-year rookie-scale step-up).
-    rookie_cap = pool["salary_prev"] * 1.5
-    pool.loc[is_rookie_scale, "proj_capadj"] = pool.loc[is_rookie_scale, "proj_capadj"].clip(
-        upper=rookie_cap[is_rookie_scale]
-    )
+
+    # Apply tiered age multiplier (matches live Contract Predictor).
+    def _age_mult_row(r) -> float:
+        a = r.get("age")
+        if a is None or pd.isna(a):
+            return 1.0
+        try:
+            mult, _ = tiered_age_multiplier(
+                age=float(a),
+                career_score=float(r.get("barrett_score", 0)),
+                current_rank=int(r.get("score_rank", 0) or 0),
+            )
+            return float(mult)
+        except Exception:
+            return 1.0
+
+    pool["age_mult"] = pool.apply(_age_mult_row, axis=1)
+    pool["proj_capadj"] = pool["proj_capadj"] * pool["age_mult"]
+
+    # CBA rookie-scale CAP on predictions (1995+ only).
+    curr_start_year = int(curr_season.split("-")[0])
+    if curr_start_year >= ROOKIE_SCALE_FIRST_YEAR:
+        pool["sal_prev_pct"] = pool["salary_prev"] / cap_prev
+        is_rookie_scale = (
+            (pool["sal_prev_pct"] < ROOKIE_LADDER_SAL_PCT_PREV)
+            & pool["age"].notna()
+            & (pool["age"] <= ROOKIE_LADDER_MAX_AGE)
+        )
+        rookie_cap = pool["salary_prev"] * 1.5
+        pool.loc[is_rookie_scale, "proj_capadj"] = pool.loc[is_rookie_scale, "proj_capadj"].clip(
+            upper=rookie_cap[is_rookie_scale]
+        )
     pool["abs_err_pct_cap"] = (pool["salary_curr"] - pool["proj_capadj"]).abs() / cap_curr * 100
     pool["signed_err_pct_cap"] = (pool["salary_curr"] - pool["proj_capadj"]) / cap_curr * 100
     pool["signed_in"] = curr_season
