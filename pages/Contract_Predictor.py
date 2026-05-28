@@ -1,17 +1,21 @@
 """Contract Predictor — predict a player's next contract.
 
 Powered by a HistGradientBoostingRegressor (machine-learning model) trained on
-3,134 real new contracts signed since 1999 — the post-CBA-max era. Features
+1,900+ real contracts from the modern CBA era (2012-13 onward). Features
 include trailing-weighted Barrett, prior salary, age, position, service years,
 recent All-NBA selections, and rank-based projection. The model output is
 post-processed with CBA max-contract cap and supermax floor rules.
 
-Accuracy, measured by expanding-window temporal cross-validation — the
-gold standard for a forecasting task: the model is trained only on prior
-seasons and tested on each subsequent season it has never seen, averaged
-across 2010-2025.
-  - 83% of predictions within 5% of the cap (~$8M)
-  - 95% within 10% of cap (catastrophic misses under 5% of predictions)
+Trained only on the modern era on purpose: the goal is predicting CURRENT
+contracts, and pre-2012 deals come from a different financial regime (low
+cap, old CBA). Trimming them measurably improves recent-season accuracy
+(scripts/experiment_recency_window.py).
+
+Accuracy, measured by expanding-window temporal cross-validation on recent
+seasons (2021-2025) — train only on prior seasons, predict each subsequent
+season the model has never seen:
+  - 87% of predictions within 5% of the cap (~$8M)
+  - 97% within 10% of cap (catastrophic misses under 3% of predictions)
   - Median |error|: ~2% of cap
 
 A simple regressor beat more elaborate alternatives under cross-validation:
@@ -19,7 +23,7 @@ a two-stage classify-then-snap model and a 4-learner stacked ensemble were
 both within noise (see scripts/validate_barrett_cv.py). We ship the simple
 model because the rigorous eval says the complexity doesn't earn its keep.
 
-See scripts/build_production_histgbm.py and scripts/validate_barrett_cv.py.
+See scripts/build_production_histgbm.py, experiment_recency_window.py.
 """
 import sys
 from pathlib import Path
@@ -73,10 +77,10 @@ render_nav("Contract Predictor")
 st.title("Contract Predictor")
 st.caption(
     "Type a player's name to see their projected next contract. A machine-"
-    "learning model (HistGBM) trained on 3,134 contracts since 1999, built on "
-    "the Barrett Score plus age, position, service years, and All-NBA history. "
-    "Validated by temporal cross-validation: 83% of predictions within 5% of "
-    "the cap, 95% within 10%."
+    "learning model (HistGBM) trained on 1,900+ modern-era contracts (2012+), "
+    "built on the Barrett Score plus age, position, service years, and All-NBA "
+    "history. Validated by temporal cross-validation on recent seasons: 87% of "
+    "predictions within 5% of the cap, 97% within 10%."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -416,10 +420,11 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
 
 
 # ── HistGBM contract predictor ───────────────────────────────────────────────
-# Single HistGradientBoostingRegressor trained on 1999-2024 (3,134 contracts).
-# Validated by expanding-window temporal cross-validation (train on past,
-# predict each future season):
-#   83% within 5% of cap, 95% within 10%.
+# Single HistGradientBoostingRegressor trained on the modern CBA era only
+# (2012-13 onward, ~1,900 contracts) — pre-2012 deals are a different financial
+# regime and hurt current-season prediction (experiment_recency_window.py).
+# Validated by expanding-window temporal cross-validation on recent seasons
+# (2021-2025): 87% within 5% of cap, 97% within 10%.
 # A two-stage classify-then-snap model and a stacked ensemble were tested and
 # came in within noise under CV — the simple regressor wins, so we ship it.
 # See scripts/build_production_histgbm.py and scripts/validate_barrett_cv.py.
@@ -556,8 +561,8 @@ def predict_contract_histgbm(features: dict, target_season: str = CURRENT_SEASON
 
 
 def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dict:
-    # HistGBM v2 model (machine-learning regression on 3,134 historical
-    # contracts since 1999). Falls back to the legacy rank-mapping +
+    # HistGBM model (machine-learning regression on ~1,900 modern-era
+    # contracts, 2012+). Falls back to the legacy rank-mapping +
     # multipliers formula if the model artifact isn't available.
     hist = predict_contract_histgbm(features, target_season)
     if hist is not None:
@@ -2129,21 +2134,25 @@ with st.expander("About this prediction"):
           knows next year's box score.
 
         The prediction is from a HistGradientBoosting machine-learning model
-        (sklearn) trained on 3,134 real new contracts signed between 1999 and
-        2024. The model learned from features including trailing-weighted
-        Barrett Score, prior salary, age, position, service years, recent
-        All-NBA selections, and the rank-based projection — then post-
+        (sklearn) trained on ~1,900 real contracts from the modern CBA era
+        (2012-13 onward). The model learned from features including trailing-
+        weighted Barrett Score, prior salary, age, position, service years,
+        recent All-NBA selections, and the rank-based projection — then post-
         processed with CBA max-contract cap and supermax floor rules.
 
-        **Validation — expanding-window temporal cross-validation.** This is
-        the honest way to measure a forecasting model: train only on prior
-        seasons, predict each subsequent season the model has never seen,
-        then average across 2010-2025. (A single train/test split can mislead
-        — e.g. 2016's $24M cap spike produced historically unpredictable
-        overpays that drag any single-split number down.)
+        **Why only 2012+?** The goal is predicting *current* contracts.
+        Pre-2012 deals come from a different financial regime (lower cap, the
+        old CBA), and including them measurably *hurts* recent-season accuracy.
+        Trimming to the modern era is a deliberate recency choice, validated by
+        a training-window search (scripts/experiment_recency_window.py).
 
-        - **83% of predictions within 5% of the cap** (~$8M)
-        - **95% within 10% of cap** — catastrophic misses under 5%
+        **Validation — expanding-window temporal cross-validation on recent
+        seasons (2021-2025).** The honest way to measure a forecasting model:
+        train only on prior seasons, predict each subsequent season the model
+        has never seen.
+
+        - **87% of predictions within 5% of the cap** (~$8M)
+        - **97% within 10% of cap** — catastrophic misses under 3%
         - Median |error|: ~2% of cap, ~$3M in 2025-26 dollars
 
         We tested more elaborate models — a two-stage classify-the-regime-
