@@ -1140,6 +1140,50 @@ def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.D
     return df
 
 
+@st.cache_data(ttl=3600, show_spinner="Fetching advanced stats...")
+def fetch_advanced_stats(season: str, season_type: str = "Regular Season") -> pd.DataFrame:
+    """Per-game ADVANCED player stats for one season (NBA Stats API
+    MeasureType=Advanced). Returns USG_PCT, TS_PCT, PIE, AST_PCT, REB_PCT,
+    OREB_PCT, DREB_PCT, OFF_RATING, DEF_RATING, NET_RATING, EFG_PCT, AST_TO,
+    AST_RATIO, TM_TOV_PCT, PACE alongside PLAYER_ID/PLAYER_NAME.
+
+    Available back to 1996-97. Disk-cached per season+type. These are the
+    possession- and team-context metrics that can't be derived from the
+    box score alone (usage rate, on/off ratings, impact estimate)."""
+    suffix = "_playoff" if season_type == "Playoffs" else ""
+    path = _dc_path(f"adv_stats_{season.replace('-','_')}{suffix}.parquet")
+    if _dc_fresh(path, season=season):
+        try:
+            return pd.read_parquet(path)
+        except Exception:
+            pass
+    from nba_api.stats.endpoints import leaguedashplayerstats as _ldps
+    time.sleep(0.5)
+    result = None
+    delay = 1
+    attempts = 0
+    while result is None and attempts < 8:
+        try:
+            result = _ldps.LeagueDashPlayerStats(
+                season=season,
+                per_mode_detailed="PerGame",
+                season_type_all_star=season_type,
+                measure_type_detailed_defense="Advanced",
+            )
+        except Exception:
+            attempts += 1
+            time.sleep(delay)
+            delay = min(delay * 2, 30)
+    if result is None:
+        return pd.DataFrame()
+    df = result.get_data_frames()[0]
+    try:
+        df.to_parquet(path, index=False)
+    except Exception:
+        pass
+    return df
+
+
 @st.cache_data(ttl=86400)
 def fetch_league_avg_ts(season: str) -> float:
     """Weighted league-average TS% for a given season."""
