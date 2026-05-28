@@ -1365,6 +1365,20 @@ _model_caption_html = (
     if _model_caption else ''
 )
 
+# Score chip rendered next to the player name in the hero title. Pre-built
+# here so the f-string template doesn't have any conditional logic that
+# could trigger the markdown blank-line bug.
+_score_chip_html = (
+    f'<span style="display:inline-block; margin-left:0.7rem; '
+    f'padding:0.18rem 0.6rem; border-radius:999px; '
+    f'background:rgba(22,212,193,0.10); '
+    f'border:1px solid rgba(22,212,193,0.30); '
+    f'font-size:0.72rem; font-weight:700; color:#16d4c1; '
+    f'letter-spacing:0.04em; vertical-align:4px;">'
+    f'Score {features["barrett_score"]:.1f} (#{features["score_rank"]})'
+    f'</span>'
+)
+
 # Optional "current deal" informational line — shown when we know the
 # player has a multi-year contract on file. NOT used to project the
 # prediction; just gives the user context (Luka's still locked in,
@@ -1373,17 +1387,19 @@ _contract_end = features.get("contract_end_season") or ""
 _last_type = features.get("contract_last_year_type") or ""
 _signing_html = ""
 if _contract_end and _contract_end != CURRENT_SEASON:
+    # Compact: "Current deal: $54.1M through 2028-29 (player option)".
     _type_blurb = {
-        "guaranteed":     "guaranteed",
-        "player_option":  "player option in",
-        "team_option":    "team option in",
-        "et_option":      "early-termination option in",
+        "player_option":  " (player option)",
+        "team_option":    " (team option)",
+        "et_option":      " (early termination option)",
     }.get(_last_type, "")
+    _cur_sal = float(features.get("salary") or 0)
+    _sal_str = (
+        f'{_fmt_money(_cur_sal)} ' if _cur_sal > 0 else ''
+    )
     _signing_html = (
         f'<div style="margin-top:0.35rem; font-size:0.74rem; color:#888;">'
-        f'Current deal runs through {_contract_end}'
-        + (f' ({_type_blurb})' if _type_blurb and _type_blurb != "guaranteed" else '')
-        + f' · prediction is "if signing today" based on current performance.'
+        f'Current deal: {_sal_str}through {_contract_end}{_type_blurb}'
         f'</div>'
     )
 
@@ -1397,11 +1413,6 @@ if _market_median is not None:
         abs(predicted_M - market_M) / max(predicted_M, market_M)
         if max(predicted_M, market_M) > 0 else 0
     )
-    # Confidence label — uses divergence + CBA constraints + career depth.
-    _conf_label, _conf_color, _conf_reasons = _confidence_label(
-        features, prediction, divergence,
-    )
-    _conf_tooltip = " · ".join(_conf_reasons) if _conf_reasons else "baseline"
     diverge_note = (
         f'<div style="margin-top:0.7rem; padding-top:0.6rem; '
         f'border-top:1px solid rgba(255,255,255,0.08); '
@@ -1411,15 +1422,10 @@ if _market_median is not None:
         f'</div>'
         if divergence >= 0.40 else ''
     )
-    # Paycut-filter note removed — user feedback found it noisy and
-    # redundant. The filter still happens behind the scenes for
-    # supermax-tier players (Curry-style "stayed at tier" peer group)
-    # but we no longer surface it as a UI line. _market_filter_applied
-    # is still tracked for potential future use / debugging.
-    # Compact player metadata line — replaces the standalone Player Snapshot
-    # section below by inlining age / position / current salary / current Barrett.
-    # Player name is rendered as the hero title above; meta_bits now
-    # starts with the team so the line reads "LAL · 2025-26 · Age 27…".
+    # Compact player metadata line. Player name + Score appear in the
+    # hero title above. Current salary moves to the signing-window line
+    # below (combined with the contract end year). So the meta line is
+    # just the biographic context: team · season · age · position · draft.
     _meta_bits = []
     if features.get("team"): _meta_bits.append(features["team"])
     _meta_bits.append(CURRENT_SEASON)
@@ -1428,32 +1434,17 @@ if _market_median is not None:
     _draft_label = _fmt_draft(features)
     if _draft_label:
         _meta_bits.append(_draft_label)
-    _meta_bits.append(f"Score {features['barrett_score']:.1f} (#{features['score_rank']})")
-    if features.get("salary", 0) > 0:
-        _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
     _player_meta_line = " · ".join(_meta_bits)
-
-    _conf_badge = (
-        f'<span title="{_conf_tooltip}" '
-        f'style="display:inline-block; padding:0.15rem 0.6rem; '
-        f'border-radius:999px; font-size:0.62rem; font-weight:700; '
-        f'letter-spacing:0.08em; text-transform:uppercase; '
-        f'background:{_conf_color}22; color:{_conf_color}; '
-        f'border:1px solid {_conf_color}55; margin-left:0.6rem; '
-        f'vertical-align:1px;">'
-        f'{_conf_label} Confidence'
-        f'</span>'
-    )
     _header_html = f"""
     <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
                 border:1px solid rgba(255,255,255,0.12); border-radius:14px;
                 padding:1.4rem 1.8rem 1.8rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
       <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
-        {features["name"]}
+        {features["name"]}{_score_chip_html}
       </div>
       <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
                   letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
-        Predicted next contract{_conf_badge}
+        Predicted next contract
       </div>
       <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
         {_player_meta_line}
@@ -1495,8 +1486,8 @@ if _market_median is not None:
     """
 else:
     # No comparables available — fall back to the model-only display.
-    # Player name is rendered as the hero title above; meta_bits now
-    # starts with the team so the line reads "LAL · 2025-26 · Age 27…".
+    # Player name + Score appear in the hero title; meta line has the
+    # biographic context only (matches the market-data branch above).
     _meta_bits = []
     if features.get("team"): _meta_bits.append(features["team"])
     _meta_bits.append(CURRENT_SEASON)
@@ -1505,27 +1496,7 @@ else:
     _draft_label = _fmt_draft(features)
     if _draft_label:
         _meta_bits.append(_draft_label)
-    _meta_bits.append(f"Score {features['barrett_score']:.1f} (#{features['score_rank']})")
-    if features.get("salary", 0) > 0:
-        _meta_bits.append(f"Currently {_fmt_money(features['salary'])}")
     _player_meta_line = " · ".join(_meta_bits)
-    # No market value to compare against, so divergence isn't a signal.
-    # Confidence still uses career depth + CBA constraints + durability.
-    _conf_label, _conf_color, _conf_reasons = _confidence_label(
-        features, prediction, divergence=0.0,
-    )
-    _conf_tooltip = " · ".join(_conf_reasons) if _conf_reasons else "no market data"
-    _conf_badge = (
-        f'<span title="{_conf_tooltip}" '
-        f'style="display:inline-block; padding:0.15rem 0.6rem; '
-        f'border-radius:999px; font-size:0.62rem; font-weight:700; '
-        f'letter-spacing:0.08em; text-transform:uppercase; '
-        f'background:{_conf_color}22; color:{_conf_color}; '
-        f'border:1px solid {_conf_color}55; margin-left:0.6rem; '
-        f'vertical-align:1px;">'
-        f'{_conf_label} Confidence'
-        f'</span>'
-    )
 
     # Two sub-cases for the no-market display:
     #   - Suppressed: queried player is supermax-tier but the comparables
@@ -1552,11 +1523,11 @@ else:
                     border:1px solid rgba(255,255,255,0.12); border-radius:14px;
                     padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
           <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
-            {features["name"]}
+            {features["name"]}{_score_chip_html}
           </div>
           <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
                       letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
-            Predicted next contract{_conf_badge}
+            Predicted next contract
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
             {_player_meta_line}
@@ -1604,11 +1575,11 @@ else:
                     border:1px solid rgba(255,255,255,0.12); border-radius:14px;
                     padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
           <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
-            {features["name"]}
+            {features["name"]}{_score_chip_html}
           </div>
           <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
                       letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
-            Predicted next contract{_conf_badge}
+            Predicted next contract
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
             {_player_meta_line}
