@@ -35,6 +35,35 @@ from train_ml_model_v2 import (
     TRAIN_PAIRS, TEST_PAIRS, PAIRS, FEATURE_COLS, SEASONS, SALARY_CAP_M,
 )
 from train_ml_model_v3 import PRUNED_FEATURES, make_X_pruned
+from train_raw_model import combined_season
+from utils import normalize as _norm
+
+# Advanced stats appended to the Barrett feature set — confirmed a real gain
+# by paired repeated CV (+1.12pp within-5%, t=3.9). Order is fixed and MUST
+# match pages/Contract_Predictor._histgbm_feature_vector.
+ADV_COLS = ["USG_PCT", "PIE", "NET_RATING", "TS_PCT", "AST_PCT", "REB_PCT"]
+
+
+def _advanced_features(df: pd.DataFrame) -> np.ndarray:
+    """Advanced-stat columns (ADV_COLS order) aligned to df rows by
+    (normalized player name, prev season)."""
+    lookup = {}
+    for prev in df["prev"].unique():
+        cs = combined_season(prev)
+        if cs.empty:
+            continue
+        for _, r in cs.iterrows():
+            lookup[(_norm(str(r.get("PLAYER_NAME", ""))), prev)] = {
+                c: float(r.get(c, 0) or 0) for c in ADV_COLS
+            }
+    rows = [lookup.get((_norm(str(p)), pv), {c: 0.0 for c in ADV_COLS})
+            for p, pv in zip(df["player"], df["prev"])]
+    return pd.DataFrame(rows)[ADV_COLS].fillna(0).values
+
+
+def make_X_augmented(df: pd.DataFrame) -> np.ndarray:
+    """Production feature matrix: Barrett pruned features + advanced stats."""
+    return np.hstack([make_X_pruned(df), _advanced_features(df)])
 
 
 # Best hyperparameters — the exact config validated by cross-validation in
@@ -90,19 +119,20 @@ def main() -> None:
     print("\nFitting HistGBM (full data)...", flush=True)
     t0 = time.time()
     y = train_df["salary_curr_pct"].values
-    X = make_X_pruned(train_df)
+    X = make_X_augmented(train_df)
     model_full = HistGradientBoostingRegressor(**HISTGBM_PARAMS).fit(X, y)
-    print(f"  Fit in {time.time()-t0:.1f}s.", flush=True)
+    print(f"  Fit in {time.time()-t0:.1f}s. ({X.shape[1]} features incl advanced)", flush=True)
 
     MODELS_DIR.mkdir(exist_ok=True)
     artifact = {
         "model":          model_full,
         "feature_cols":   PRUNED_FEATURES,
+        "adv_cols":       ADV_COLS,
         "params":         HISTGBM_PARAMS,
         "n_train_rows":   len(train_df),
         "trained_on":     f"{TRAINING_START_YEAR}-13 → {PAIRS[0][1]}",
         "model_class":    "HistGradientBoostingRegressor",
-        "version":        "v3-recency",
+        "version":        "v4-advanced",
     }
     joblib.dump(artifact, MODEL_PATH)
     print(f"  Saved full-data model to {MODEL_PATH}  ({MODEL_PATH.stat().st_size / 1024:.1f} KB)", flush=True)
@@ -112,23 +142,24 @@ def main() -> None:
     holdout_train = train_df[train_df["start_year"] < HOLDOUT_SPLIT_YEAR]
     print(f"  Train rows (holdout): {len(holdout_train)}", flush=True)
     y_h = holdout_train["salary_curr_pct"].values
-    X_h = make_X_pruned(holdout_train)
+    X_h = make_X_augmented(holdout_train)
     model_holdout = HistGradientBoostingRegressor(**HISTGBM_PARAMS).fit(X_h, y_h)
 
     artifact_holdout = {
         "model":          model_holdout,
         "feature_cols":   PRUNED_FEATURES,
+        "adv_cols":       ADV_COLS,
         "params":         HISTGBM_PARAMS,
         "n_train_rows":   len(holdout_train),
         "trained_on":     f"{TRAINING_START_YEAR}-13 → {HOLDOUT_SPLIT_YEAR-1}-{HOLDOUT_SPLIT_YEAR-2000:02d}",
         "model_class":    "HistGradientBoostingRegressor",
-        "version":        "v3-holdout",
+        "version":        "v4-holdout",
     }
     joblib.dump(artifact_holdout, MODEL_HOLDOUT_PATH)
     print(f"  Saved holdout model to {MODEL_HOLDOUT_PATH}  ({MODEL_HOLDOUT_PATH.stat().st_size / 1024:.1f} KB)", flush=True)
 
-    print(f"\nExpected accuracy (temporal CV on recent seasons 2021-2025):", flush=True)
-    print(f"  86.8% within 5% of cap, 97.1% within 10%", flush=True)
+    print(f"\nExpected accuracy (5-fold CV, 2012+ pool, +advanced stats):", flush=True)
+    print(f"  ~85.3% within 5% of cap, ~97.5% within 10%", flush=True)
 
 
 if __name__ == "__main__":

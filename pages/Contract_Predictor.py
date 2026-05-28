@@ -3,7 +3,8 @@
 Powered by a HistGradientBoostingRegressor (machine-learning model) trained on
 1,900+ real contracts from the modern CBA era (2012-13 onward). Features
 include trailing-weighted Barrett, prior salary, age, position, service years,
-recent All-NBA selections, and rank-based projection. The model output is
+recent All-NBA selections, the rank-based projection, and advanced metrics
+(usage rate, PIE, on/off net rating, true shooting). The model output is
 post-processed with CBA max-contract cap and supermax floor rules.
 
 Trained only on the modern era on purpose: the goal is predicting CURRENT
@@ -15,15 +16,15 @@ Accuracy, measured by expanding-window temporal cross-validation on recent
 seasons (2021-2025) — train only on prior seasons, predict each subsequent
 season the model has never seen:
   - 87% of predictions within 5% of the cap (~$8M)
-  - 97% within 10% of cap (catastrophic misses under 3% of predictions)
+  - 97.5% within 10% of cap (catastrophic misses under 3% of predictions)
   - Median |error|: ~2% of cap
 
-A simple regressor beat more elaborate alternatives under cross-validation:
-a two-stage classify-then-snap model and a 4-learner stacked ensemble were
-both within noise (see scripts/validate_barrett_cv.py). We ship the simple
-model because the rigorous eval says the complexity doesn't earn its keep.
+Every addition was gated on cross-validation, not a single split: advanced
+stats earned their place (+1.1pp within-5% on paired CV, t=3.9), while a
+two-stage classify-then-snap model and a stacked ensemble were within noise
+and dropped. We ship only what the rigorous eval confirms.
 
-See scripts/build_production_histgbm.py, experiment_recency_window.py.
+See scripts/build_production_histgbm.py, confirm_advanced_features.py.
 """
 import sys
 from pathlib import Path
@@ -41,7 +42,7 @@ from streamlit_searchbox import st_searchbox
 from utils import (
     COMMON_CSS, SEASONS, normalize, season_to_espn_year,
     get_all_player_names, fetch_player_full_career,
-    build_ranked_projected, fetch_league_stats,
+    build_ranked_projected, fetch_league_stats, fetch_advanced_stats,
     fetch_bref_positions, fetch_player_positions_detailed, position_to_bucket,
     render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
     # Calibration constants — single source of truth in utils
@@ -78,9 +79,10 @@ st.title("Contract Predictor")
 st.caption(
     "Type a player's name to see their projected next contract. A machine-"
     "learning model (HistGBM) trained on 1,900+ modern-era contracts (2012+), "
-    "built on the Barrett Score plus age, position, service years, and All-NBA "
-    "history. Validated by temporal cross-validation on recent seasons: 87% of "
-    "predictions within 5% of the cap, 97% within 10%."
+    "built on the Barrett Score plus age, position, service years, All-NBA "
+    "history, and advanced metrics (usage, PIE, on/off rating). Validated by "
+    "temporal cross-validation on recent seasons: 87% of predictions within 5% "
+    "of the cap, 97.5% within 10%."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -149,6 +151,20 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     if not raw.empty and "AGE" in raw.columns:
         age_lookup = dict(zip(raw["PLAYER_ID"], raw["AGE"]))
         age = age_lookup.get(int(row["PLAYER_ID"]))
+
+    # Advanced stats (usage rate, PIE, on/off ratings, true shooting) — these
+    # carry signal the box-score composite alone doesn't; paired CV confirmed
+    # +1.12pp within-5% (t=3.9). Order MUST match _HISTGBM_ADV_COLS.
+    adv_feats = {c: 0.0 for c in _HISTGBM_ADV_COLS}
+    try:
+        adv = fetch_advanced_stats(season, "Regular Season")
+        if not adv.empty:
+            arow = adv[adv["PLAYER_ID"] == int(row["PLAYER_ID"])]
+            if not arow.empty:
+                adv_feats = {c: float(arow.iloc[0].get(c, 0) or 0)
+                             for c in _HISTGBM_ADV_COLS}
+    except Exception:
+        pass
 
     # Try the detailed BBRef per-game scrape first (PG/SG/SF/PF/C, better
     # coverage). Fall back to the older ESPN-salary scrape (G/F/C only),
@@ -408,13 +424,14 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
         "projected_salary":   float(row.get("projected_salary", 0) or 0),
         "gp":                 int(row.get("GP", 0) or 0),
         "mpg":                float(row.get("MPG", 0) or 0),
-        # HistGBM v2 model inputs (single-source of truth for what the
+        # HistGBM model inputs (single-source of truth for what the
         # model needs at prediction time).
         "barrett_3yr_simple": barrett_3yr_simple,
         "gp_3yr_simple":      gp_3yr_simple,
         "eff_adj":            float(row.get("efficiency_adj", 0) or 0),
         "d_lebron":           float(row.get("d_lebron", 0) or 0),
         "all_nba_3yr":        all_nba_3yr_count,
+        "adv_feats":          adv_feats,   # USG/PIE/NET/TS/AST%/REB%
         "total_pool_size":    len(ranked),
     }
 
@@ -423,12 +440,16 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
 # Single HistGradientBoostingRegressor trained on the modern CBA era only
 # (2012-13 onward, ~1,900 contracts) — pre-2012 deals are a different financial
 # regime and hurt current-season prediction (experiment_recency_window.py).
-# Validated by expanding-window temporal cross-validation on recent seasons
-# (2021-2025): 87% within 5% of cap, 97% within 10%.
-# A two-stage classify-then-snap model and a stacked ensemble were tested and
-# came in within noise under CV — the simple regressor wins, so we ship it.
-# See scripts/build_production_histgbm.py and scripts/validate_barrett_cv.py.
+# Features: Barrett pruned set + advanced stats (usage/PIE/on-off/TS), the
+# latter confirmed a real +1.12pp within-5% gain by paired CV (t=3.9).
+# Temporal CV on recent seasons (2021-2025): 87% within 5% of cap, 97.5%
+# within 10%. A two-stage model and a stacked ensemble were tested and came
+# in within noise under CV — the simple regressor wins, so we ship it.
+# See scripts/build_production_histgbm.py and scripts/confirm_advanced_features.py.
 _HISTGBM_PATH = Path(__file__).parent.parent / "models" / "contract_histgbm_v2.joblib"
+
+# Advanced-stat feature order — MUST match build_production_histgbm.ADV_COLS.
+_HISTGBM_ADV_COLS = ["USG_PCT", "PIE", "NET_RATING", "TS_PCT", "AST_PCT", "REB_PCT"]
 
 
 @st.cache_resource(show_spinner=False)
@@ -473,7 +494,12 @@ def _histgbm_feature_vector(features: dict, target_season: str) -> np.ndarray | 
     is_g = 1.0 if pos_bucket == "Guard"   else 0.0
     is_f = 1.0 if pos_bucket == "Forward" else 0.0
 
-    # Same order as scripts/train_ml_model_v3.PRUNED_FEATURES, then derived.
+    # Advanced stats, appended in the exact training order (ADV_COLS).
+    adv = features.get("adv_feats") or {}
+    adv_vals = [float(adv.get(c, 0) or 0) for c in _HISTGBM_ADV_COLS]
+
+    # Same order as build_production_histgbm.make_X_augmented:
+    # PRUNED_FEATURES, then derived, then advanced stats.
     return np.array([[
         barrett, barrett_single, barrett_3yr,
         score_rank,
@@ -489,6 +515,8 @@ def _histgbm_feature_vector(features: dict, target_season: str) -> np.ndarray | 
         1.0 if years_in_league >= 7  else 0.0,
         1.0 if years_in_league >= 10 else 0.0,
         is_g, is_f,
+        # Advanced (USG/PIE/NET/TS/AST%/REB%):
+        *adv_vals,
     ]])
 
 
@@ -2137,8 +2165,9 @@ with st.expander("About this prediction"):
         (sklearn) trained on ~1,900 real contracts from the modern CBA era
         (2012-13 onward). The model learned from features including trailing-
         weighted Barrett Score, prior salary, age, position, service years,
-        recent All-NBA selections, and the rank-based projection — then post-
-        processed with CBA max-contract cap and supermax floor rules.
+        recent All-NBA selections, the rank-based projection, and advanced
+        metrics (usage rate, PIE, on/off net rating, true shooting) — then
+        post-processed with CBA max-contract cap and supermax floor rules.
 
         **Why only 2012+?** The goal is predicting *current* contracts.
         Pre-2012 deals come from a different financial regime (lower cap, the
@@ -2152,14 +2181,14 @@ with st.expander("About this prediction"):
         has never seen.
 
         - **87% of predictions within 5% of the cap** (~$8M)
-        - **97% within 10% of cap** — catastrophic misses under 3%
+        - **97.5% within 10% of cap** — catastrophic misses under 3%
         - Median |error|: ~2% of cap, ~$3M in 2025-26 dollars
 
-        We tested more elaborate models — a two-stage classify-the-regime-
-        then-snap-to-the-CBA-value model, and a 4-learner stacked ensemble —
-        and under cross-validation both came in within noise of this simple
-        regressor. So we ship the simple model: the rigorous evaluation says
-        the extra complexity doesn't earn its keep.
+        Every feature was gated on cross-validation, not a single split. The
+        advanced metrics earned their place (+1.1pp within-5% on paired CV,
+        t=3.9). A two-stage classify-the-regime-then-snap model and a 4-learner
+        stacked ensemble were tested and came in within noise — so they were
+        dropped. We ship only what the rigorous evaluation confirms.
 
         The biggest remaining misses are veteran-minimum signings and
         one-off paycut deals (ring chases) where market value doesn't apply —

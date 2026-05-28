@@ -18,7 +18,8 @@ import numpy as np
 import joblib
 
 from utils import (
-    SEASONS, SALARY_CAP_M, fetch_league_stats, build_ranked_projected,
+    SEASONS, SALARY_CAP_M, fetch_league_stats, fetch_advanced_stats,
+    build_ranked_projected,
     fetch_player_full_career, fetch_player_positions_detailed,
     position_to_bucket, normalize, HEALTHY_SEASON_GP,
     get_player_draft_info, get_max_contract_eligibility,
@@ -45,6 +46,16 @@ def get_features(player_name: str, season: str = CURRENT_SEASON) -> dict | None:
     if not raw.empty and "AGE" in raw.columns:
         age_lookup = dict(zip(raw["PLAYER_ID"], raw["AGE"]))
         age = age_lookup.get(int(row["PLAYER_ID"]))
+
+    # Advanced stats.
+    adv_feats = {c: 0.0 for c in ["USG_PCT", "PIE", "NET_RATING", "TS_PCT", "AST_PCT", "REB_PCT"]}
+    try:
+        adv = fetch_advanced_stats(season, "Regular Season")
+        arow = adv[adv["PLAYER_ID"] == int(row["PLAYER_ID"])] if not adv.empty else adv
+        if not arow.empty:
+            adv_feats = {c: float(arow.iloc[0].get(c, 0) or 0) for c in adv_feats}
+    except Exception:
+        pass
 
     # Career trailing stats.
     barrett_3yr_simple = None
@@ -113,6 +124,7 @@ def get_features(player_name: str, season: str = CURRENT_SEASON) -> dict | None:
         "eff_adj": float(row.get("efficiency_adj", 0) or 0),
         "d_lebron": float(row.get("d_lebron", 0) or 0),
         "all_nba_3yr": all_nba_3yr_count,
+        "adv_feats": adv_feats,
         "gp": int(row.get("GP", 0) or 0),
         "mpg": float(row.get("MPG", 0) or 0),
         "salary": float(row.get("salary", 0) or 0),
@@ -144,6 +156,9 @@ def predict_histgbm(features: dict, target_season: str = CURRENT_SEASON) -> dict
     all_nba_3yr = float(features.get("all_nba_3yr") or 0)
     growth = (barrett_single / barrett_3yr) if barrett_3yr > 0 else 1.0
     pos = features.get("position", "Unknown")
+    adv = features.get("adv_feats") or {}
+    adv_cols = ["USG_PCT", "PIE", "NET_RATING", "TS_PCT", "AST_PCT", "REB_PCT"]
+    adv_vals = [float(adv.get(c, 0) or 0) for c in adv_cols]
 
     X = np.array([[
         barrett, barrett_single, barrett_3yr, score_rank,
@@ -155,6 +170,7 @@ def predict_histgbm(features: dict, target_season: str = CURRENT_SEASON) -> dict
         1.0 if yrs >= 10 else 0.0,
         1.0 if pos == "Guard" else 0.0,
         1.0 if pos == "Forward" else 0.0,
+        *adv_vals,
     ]])
     pred_pct = float(np.clip(model.predict(X)[0], 0.001, 0.45))
     raw = pred_pct * cap
