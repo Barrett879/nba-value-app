@@ -36,11 +36,21 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 
-from utils import SEASONS, build_ranked_projected, SALARY_CAP_M
+from utils import SEASONS, build_ranked_projected, SALARY_CAP_M, fetch_league_stats
 
 
 TOP_N = 20
 NEW_DEAL_PCT_THRESHOLD = 0.25  # ≥25% YoY salary change = "new contract" proxy
+
+# CBA rookie-scale cap on predictions. Players on rookie scale
+# (salary < 15% of cap, age ≤ 25) are CBA-mandated and the year-over-year
+# salary can step up by at most ~50%. Cap the model's prediction here so
+# rookie-scale years aren't false misses (Luka, Lillard, Giannis on
+# their year-3/4 step-ups). Matches the live Contract Predictor's CBA
+# cap logic.
+ROOKIE_SCALE_SAL_PCT_THRESHOLD = 0.15
+ROOKIE_SCALE_MAX_AGE           = 25
+ROOKIE_SCALE_STEP_UP_CAP       = 1.5  # 50% bump cap
 
 
 # NBA salary cap by season (in millions, applied to the "curr" side of a pair).
@@ -87,6 +97,26 @@ def analyze_pair(prev_season: str, curr_season: str) -> dict | None:
     # Scale the previous projection by cap growth — gives the model credit
     # for "predicting the rank" rather than penalizing it for cap inflation.
     m["proj_capadj"] = m["proj_prev"] * cap_ratio
+
+    # Apply CBA rookie-scale cap on predictions. Pulls AGE from
+    # fetch_league_stats for the prior season so we can flag rookies.
+    try:
+        prev_stats = fetch_league_stats(prev_season, "Regular Season")
+        age_lookup = dict(zip(prev_stats["PLAYER_ID"], prev_stats.get("AGE", [])))
+        m["age"] = m["PLAYER_ID"].map(age_lookup)
+    except Exception:
+        m["age"] = None
+    m["sal_prev_pct"] = m["salary_prev"] / cap_prev
+    _is_rookie_scale = (
+        (m["sal_prev_pct"] < ROOKIE_SCALE_SAL_PCT_THRESHOLD)
+        & m["age"].notna()
+        & (m["age"] <= ROOKIE_SCALE_MAX_AGE)
+    )
+    _rookie_cap = m["salary_prev"] * ROOKIE_SCALE_STEP_UP_CAP
+    m.loc[_is_rookie_scale, "proj_capadj"] = m.loc[_is_rookie_scale, "proj_capadj"].clip(
+        upper=_rookie_cap[_is_rookie_scale]
+    )
+
     m["abs_err"]     = (m["salary_curr"].fillna(0) - m["proj_capadj"]).abs()
     m["signed_err"]  = m["salary_curr"].fillna(0) - m["proj_capadj"]
     m["pct_cap_err"] = m["abs_err"] / cap_curr * 100  # error as % of curr cap

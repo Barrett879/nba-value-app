@@ -22,10 +22,19 @@ warnings.filterwarnings("ignore")
 import pandas as pd
 import numpy as np
 
-from utils import SEASONS, build_ranked_projected, SALARY_CAP_M
+from utils import SEASONS, build_ranked_projected, SALARY_CAP_M, fetch_league_stats
 
 
 NEW_DEAL_PCT_THRESHOLD = 0.25  # ≥25% YoY = "real new contract"
+
+# Same rookie-ladder filter used in pages/Contract_Predictor.load_historical_signings.
+# CBA-mandated year-2/3/4 step-ups on a first-round rookie deal cross the
+# ≥25% YoY threshold but aren't market-rate signings — they're contractually
+# determined. The model EXPLICITLY excludes these from comp pools and caveats
+# them out of predictions, so they shouldn't count against accuracy either.
+ROOKIE_LADDER_SAL_PCT_PREV  = 0.15
+ROOKIE_LADDER_SAL_PCT_CURR  = 0.18
+ROOKIE_LADDER_MAX_AGE       = 25
 
 
 def _cap(season: str) -> float:
@@ -77,7 +86,31 @@ def analyze_pair(prev_season: str, curr_season: str) -> pd.DataFrame:
     if pool.empty:
         return pd.DataFrame()
 
+    # CBA rookie-scale CAP on predictions (don't filter — adjust the
+    # prediction to what's CBA-possible). For players on rookie scale
+    # (salary_prev < 15% cap, age ≤ 25), the next-year salary is
+    # CBA-mandated and ≤ ~150% of prior year. The base rank-mapping
+    # doesn't know about CBA rules; cap its prediction here to match
+    # what the live Contract Predictor does at prediction time.
+    try:
+        raw_prev_stats = fetch_league_stats(prev_season, "Regular Season")
+        age_lookup = dict(zip(raw_prev_stats["PLAYER_ID"], raw_prev_stats.get("AGE", [])))
+        pool["age"] = pool["PLAYER_ID"].map(age_lookup)
+    except Exception:
+        pool["age"] = None
+    pool["sal_prev_pct"] = pool["salary_prev"] / cap_prev
+    is_rookie_scale = (
+        (pool["sal_prev_pct"] < ROOKIE_LADDER_SAL_PCT_PREV)
+        & pool["age"].notna()
+        & (pool["age"] <= ROOKIE_LADDER_MAX_AGE)
+    )
     pool["proj_capadj"] = pool["proj_prev"] * cap_ratio
+    # Cap rookie-scale predictions at 150% of prior salary (a generous
+    # estimate of the max year-over-year rookie-scale step-up).
+    rookie_cap = pool["salary_prev"] * 1.5
+    pool.loc[is_rookie_scale, "proj_capadj"] = pool.loc[is_rookie_scale, "proj_capadj"].clip(
+        upper=rookie_cap[is_rookie_scale]
+    )
     pool["abs_err_pct_cap"] = (pool["salary_curr"] - pool["proj_capadj"]).abs() / cap_curr * 100
     pool["signed_err_pct_cap"] = (pool["salary_curr"] - pool["proj_capadj"]) / cap_curr * 100
     pool["signed_in"] = curr_season
