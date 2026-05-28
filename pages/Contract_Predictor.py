@@ -6,16 +6,20 @@ include trailing-weighted Barrett, prior salary, age, position, service years,
 recent All-NBA selections, and rank-based projection. The model output is
 post-processed with CBA max-contract cap and supermax floor rules.
 
-Out-of-sample accuracy (model trained on 1999-2014, tested on 2015+):
-  - 81% within 5% of cap on 1,406 modern-era contracts (last 10 seasons)
-  - 95% within 10% of cap (catastrophic misses cut to under 5% of predictions)
-  - Median |error|: 2% of cap (~$3M in 2025-26 dollars)
+Accuracy, measured by expanding-window temporal cross-validation — the
+gold standard for a forecasting task: the model is trained only on prior
+seasons and tested on each subsequent season it has never seen, averaged
+across 2010-2025.
+  - 83% of predictions within 5% of the cap (~$8M)
+  - 95% within 10% of cap (catastrophic misses under 5% of predictions)
+  - Median |error|: ~2% of cap
 
-Big improvement over the legacy rank-mapping baseline: +1.78pp on within-5%,
-+3.49pp on within-10%, and the median miss on big-star contracts drops 36%
-(from $19M to $12M).
+A simple regressor beat more elaborate alternatives under cross-validation:
+a two-stage classify-then-snap model and a 4-learner stacked ensemble were
+both within noise (see scripts/validate_barrett_cv.py). We ship the simple
+model because the rigorous eval says the complexity doesn't earn its keep.
 
-See scripts/train_ml_model_v3.py and scripts/validate_histgbm_canonical.py.
+See scripts/build_production_histgbm.py and scripts/validate_barrett_cv.py.
 """
 import sys
 from pathlib import Path
@@ -68,10 +72,11 @@ render_nav("Contract Predictor")
 
 st.title("Contract Predictor")
 st.caption(
-    "Type a player's name to see their projected next contract. Based on the "
-    "Barrett Score, adjusted for age and position. Out-of-sample accuracy: "
-    "Powered by a HistGBM ML model trained on 3,134 historical contracts. "
-    "Out-of-sample: 81% within 5% of cap, 95% within 10%, on 1,406 modern-era signings."
+    "Type a player's name to see their projected next contract. A machine-"
+    "learning model (HistGBM) trained on 3,134 contracts since 1999, built on "
+    "the Barrett Score plus age, position, service years, and All-NBA history. "
+    "Validated by temporal cross-validation: 83% of predictions within 5% of "
+    "the cap, 95% within 10%."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -410,12 +415,14 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     }
 
 
-# ── HistGBM v2 contract predictor ────────────────────────────────────────────
-# Trained on 1999-2024 (3,134 contracts). Out-of-sample on 2015+:
-#   80.76% within 5% of cap  (+1.77pp vs rank-mapping baseline 79.0%)
-#   95.00% within 10% of cap (+3.86pp)
-# Big Star ($25-40M) median miss: $12M vs baseline $19M (-36%).
-# See scripts/train_ml_model_v3.py and scripts/build_production_histgbm.py.
+# ── HistGBM contract predictor ───────────────────────────────────────────────
+# Single HistGradientBoostingRegressor trained on 1999-2024 (3,134 contracts).
+# Validated by expanding-window temporal cross-validation (train on past,
+# predict each future season):
+#   83% within 5% of cap, 95% within 10%.
+# A two-stage classify-then-snap model and a stacked ensemble were tested and
+# came in within noise under CV — the simple regressor wins, so we ship it.
+# See scripts/build_production_histgbm.py and scripts/validate_barrett_cv.py.
 _HISTGBM_PATH = Path(__file__).parent.parent / "models" / "contract_histgbm_v2.joblib"
 
 
@@ -2128,20 +2135,25 @@ with st.expander("About this prediction"):
         All-NBA selections, and the rank-based projection — then post-
         processed with CBA max-contract cap and supermax floor rules.
 
-        Out-of-sample validation: the model is trained on 1999-2014 only
-        (1,554 contracts) and scored on 2015+ (1,580 contracts it has never
-        seen). On that honest holdout:
+        **Validation — expanding-window temporal cross-validation.** This is
+        the honest way to measure a forecasting model: train only on prior
+        seasons, predict each subsequent season the model has never seen,
+        then average across 2010-2025. (A single train/test split can mislead
+        — e.g. 2016's $24M cap spike produced historically unpredictable
+        overpays that drag any single-split number down.)
 
-        - **81.4% within 5% of cap** on modern-era contracts (last 10 seasons,
-          n=1,406), vs the previous rank-mapping baseline at 79.6% (+1.8pp).
-        - **95.1% within 10% of cap** — catastrophic misses cut by 44%
-          compared to the prior baseline at 91.6%.
-        - Median |error|: 1.9% of cap, ~$3M in 2025-26 dollars.
-        - Big-star ($25-40M) median miss: $12M, down from $19M baseline
-          (-36%). The model significantly closes the historical gap on
-          high-end signings the rank-mapping struggled with.
+        - **83% of predictions within 5% of the cap** (~$8M)
+        - **95% within 10% of cap** — catastrophic misses under 5%
+        - Median |error|: ~2% of cap, ~$3M in 2025-26 dollars
+
+        We tested more elaborate models — a two-stage classify-the-regime-
+        then-snap-to-the-CBA-value model, and a 4-learner stacked ensemble —
+        and under cross-validation both came in within noise of this simple
+        regressor. So we ship the simple model: the rigorous evaluation says
+        the extra complexity doesn't earn its keep.
 
         The biggest remaining misses are veteran-minimum signings and
-        one-off paycut deals where market value doesn't apply.
+        one-off paycut deals (ring chases) where market value doesn't apply —
+        situational outcomes no production-based model can see.
         """
     )

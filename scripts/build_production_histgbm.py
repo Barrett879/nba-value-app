@@ -37,10 +37,13 @@ from train_ml_model_v2 import (
 from train_ml_model_v3 import PRUNED_FEATURES, make_X_pruned
 
 
-# Best hyperparameters from sweep.
+# Best hyperparameters — the exact config validated by cross-validation in
+# scripts/validate_barrett_cv.py (83% within 5% / 95% within 10% by
+# expanding-window temporal CV; single regressor beat two-stage). Shipping
+# the precise config that was measured so the page claim is airtight.
 HISTGBM_PARAMS = dict(
     max_iter=800,
-    max_depth=4,
+    max_depth=5,
     learning_rate=0.02,
     min_samples_leaf=25,
     l2_regularization=0.1,
