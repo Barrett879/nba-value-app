@@ -4,7 +4,7 @@ Takes a player's current production (Barrett Score), applies age + position
 calibration multipliers learned from 2014-22 historical contracts, and returns
 a dollar projection with a confidence band and a list of comparable signings.
 
-Out-of-sample accuracy: ~79% within 5% of cap on 1,406 real new contracts
+Out-of-sample accuracy: ~77% within 5% of cap on 1,406 real new contracts
 since 2015 (modern era). Median error 1.8% of cap (~$2.7M in 2025-26 dollars).
 
 The full validation suite — across 4,500 signings going back to 1985 — comes
@@ -64,7 +64,7 @@ st.title("Contract Predictor")
 st.caption(
     "Type a player's name to see their projected next contract. Based on the "
     "Barrett Score, adjusted for age and position. Out-of-sample accuracy: "
-    "79% within 5% of cap on 1,406 real new contracts since 2015 (modern era)."
+    "77% within 5% of cap on 1,406 real new contracts since 2015 (modern era)."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -1922,8 +1922,8 @@ with st.expander("About this prediction"):
           knows next year's box score.
 
         Validated out-of-sample on 1,406 actual new contracts signed since
-        2015: median error 1.8% of cap (~$2.7M), 79% of predictions land
-        within 5% of cap (~$8M), 94% within 10%. The biggest remaining
+        2015: median error 1.8% of cap (~$2.5M), 77% of predictions land
+        within 5% of cap (~$8M), 92.5% within 10%. The biggest remaining
         misses are veteran-minimum signings and one-off paycut deals where
         market value doesn't apply.
         """
