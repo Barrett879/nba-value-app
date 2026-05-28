@@ -1612,37 +1612,21 @@ _playoff_gp = features.get("playoff_gp", 0)
 _playoff_tier_label = features.get("playoff_tier", "") or ""
 _playoff_mult_val = features.get("playoff_mult", 1.0) or 1.0
 _playoff_barrett_val_h = features.get("playoff_barrett", 0.0) or 0.0
-if _playoff_gp >= 4 and _playoff_tier_label not in ("No playoff data", ""):
-    if _playoff_mult_val > 1.0:
-        # Positive bonus — green chip showing tier + multiplier only.
-        # Barrett/GP detail removed for brevity; available in the math
-        # line inside the About expander for users who want specifics.
-        _playoff_chip_html = (
-            f'<div style="display:inline-block; background:rgba(22,212,193,0.10); '
-            f'border:1px solid rgba(22,212,193,0.35); border-radius:6px; '
-            f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
-            f'font-size:0.8rem; color:#16d4c1;">⭐ '
-            f'{_playoff_tier_label} ×{_playoff_mult_val:.2f}'
-            f'</div>'
-        )
-    else:
-        # Neutral playoff context — gray chip (visible but not a bonus)
-        if _playoff_tier_label == "No qualifying playoff data":
-            _msg = (
-                f"No qualifying playoff data ({_playoff_gp} GP last postseason — "
-                f"need ≥4 for a bonus tier)"
-            )
-        else:
-            _msg = (
-                f"Last playoff: Barrett {_playoff_barrett_val_h:.1f} "
-                f"over {_playoff_gp} GP (below 16-Barrett threshold)"
-            )
-        _playoff_chip_html = (
-            f'<div style="display:inline-block; background:rgba(255,255,255,0.04); '
-            f'border:1px solid rgba(255,255,255,0.12); border-radius:6px; '
-            f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
-            f'font-size:0.8rem; color:#999;">🏀 {_msg}</div>'
-        )
+if _playoff_mult_val > 1.0 and _playoff_gp >= 4:
+    # Positive bonus — green chip showing tier + multiplier only.
+    # Barrett/GP detail removed for brevity; available in the math
+    # line inside the About expander for users who want specifics.
+    # Only render the chip when the player actually earned a bonus;
+    # players below the threshold (or with no playoff data) just see
+    # nothing — no need to call out the absence of a bonus.
+    _playoff_chip_html = (
+        f'<div style="display:inline-block; background:rgba(22,212,193,0.10); '
+        f'border:1px solid rgba(22,212,193,0.35); border-radius:6px; '
+        f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
+        f'font-size:0.8rem; color:#16d4c1;">⭐ '
+        f'{_playoff_tier_label} ×{_playoff_mult_val:.2f}'
+        f'</div>'
+    )
 
 if caveats or _playoff_chip_html:
     _caveat_chips_html = "".join(
