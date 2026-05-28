@@ -838,6 +838,22 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     mask = ~out.apply(_is_rookie_ladder, axis=1)
     out = out[mask].reset_index(drop=True)
 
+    # Filter out vet-min / training-camp signings (under 3% of cap, ~$4.6M
+    # at the 2025-26 level). These aren't market-rate deals — they're
+    # CBA-mandated minimum-salary signings + bench-filler contracts. They
+    # showed up as noisy outliers in the comp pool (e.g. Keita Bates-Diop
+    # at $2.4M for a young role-player target like Peyton Watson).
+    # Players in vet-min cohorts are still predicted correctly by the
+    # model's career-rate base + "veteran end-of-career" caveat — we
+    # just don't pollute mid-tier comp pools with their signings.
+    def _is_vet_min(row) -> bool:
+        cap_curr = SALARY_CAP_M.get(row["signed_in"], 154.6) * 1_000_000
+        if cap_curr <= 0:
+            return False
+        return float(row["salary_curr"]) < cap_curr * 0.03
+
+    out = out[~out.apply(_is_vet_min, axis=1)].reset_index(drop=True)
+
     # Precompute career-weighted Barrett (50/30/20 of last 3 healthy seasons,
     # with availability — same metric as the target's trailing_barrett) for
     # every comp in the pool. Stored on the cached frame so we don't pay
