@@ -2163,7 +2163,7 @@ def fetch_position_peer_distribution(
         # Pull the position lookup for this season; gracefully fall back
         # if the scrape failed for that year.
         try:
-            pos_lookup = fetch_player_positions_detailed(s, cache_v=2)
+            pos_lookup = fetch_player_positions_detailed(s, cache_v=3)
         except Exception:
             pos_lookup = {}
         if not pos_lookup:
@@ -2482,13 +2482,18 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
     return result
 
 
-def fetch_player_positions_detailed(season: str, cache_v: int = 2) -> dict:
+def fetch_player_positions_detailed(season: str, cache_v: int = 3) -> dict:
     """Returns {normalized_name: "PG"|"SG"|"SF"|"PF"|"C"} from BBRef
     per-game stats. Much better coverage than the ESPN-salary-page scrape
     in fetch_bref_positions, and gives 5-bucket positions instead of 3.
 
     For hyphenated positions like "PG-SG" we take the primary (first) listing.
     Disk-cached for 1 day per season.
+
+    cache_v=3: switched from the short "Mozilla/5.0" UA to _BREF_UA (the
+    same UA the other working BBRef scrapers use). Short UA was getting
+    blocked, returning empty responses → 0 players in the lookup → every
+    player falling through to the coarse Guard/Forward/Center labels.
     """
     year = season_to_espn_year(season)
     path = _dc_path(f"positions_detailed_{year}_v{cache_v}.pkl")
@@ -2503,7 +2508,14 @@ def fetch_player_positions_detailed(season: str, cache_v: int = 2) -> dict:
     result: dict = {}
     try:
         url = f"https://www.basketball-reference.com/leagues/NBA_{year}_per_game.html"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+        time.sleep(0.6)  # be polite to BBRef
+        r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        if r.status_code == 429:
+            time.sleep(15)
+            r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+        # Force UTF-8 so accented names (Dončić, Jokić) decode properly
+        # and normalize() can strip diacritics for the lookup key.
+        r.encoding = "utf-8"
         soup = BeautifulSoup(r.text, "html.parser")
 
         # Two layouts: BBRef sometimes serves the per-game table inline,

@@ -173,21 +173,22 @@ def _pos_abbrev(pos: str) -> str:
 
 
 def _fmt_draft(features: dict) -> str | None:
-    """Short draft label for the metadata line, e.g. 'Lottery (#7, 2021)' or
-    'Undrafted'. Returns None when we have no useful info to display."""
-    tier = features.get("draft_tier")
+    """Short draft label for the metadata line.
+
+    Drafted players: "Pick #3 (2018)" — the pick number already implies the
+    tier (1-14 lottery, 15-30 first-round, etc.), so we drop the tier label.
+    Undrafted players with a record: "Undrafted".
+    Players with no draft data: None (suppressed entirely).
+    """
     pick = features.get("draft_pick")
     year = features.get("draft_year")
-    if not tier:
-        return None
-    if tier == "Undrafted" and not pick:
-        # Drop entirely if there's nothing useful — avoids clutter for
-        # players where the draft API just didn't return a record.
-        return None
+    tier = features.get("draft_tier")
     if pick:
-        suffix = f" (#{pick}{', ' + str(year) if year else ''})"
-        return f"{tier}{suffix}"
-    return tier
+        year_str = f" ({year})" if year else ""
+        return f"Pick #{pick}{year_str}"
+    if tier == "Undrafted":
+        return "Undrafted"
+    return None
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -212,7 +213,7 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
     # then to Unknown.
     detailed_pos = "Unknown"
     try:
-        detailed_lookup = fetch_player_positions_detailed(season, cache_v=2)
+        detailed_lookup = fetch_player_positions_detailed(season, cache_v=3)
         detailed_pos = detailed_lookup.get(name_norm, "Unknown")
     except Exception:
         detailed_lookup = {}
@@ -743,7 +744,7 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
             raw_prev = fetch_league_stats(prev, "Regular Season")
             # Use the better BBRef detailed positions, fall back to the older
             # ESPN coarse map when a player isn't in BBRef's table.
-            detailed_lookup = fetch_player_positions_detailed(prev, cache_v=2)
+            detailed_lookup = fetch_player_positions_detailed(prev, cache_v=3)
             coarse_lookup = fetch_bref_positions(season_to_espn_year(prev), cache_v=3)
         except Exception:
             continue
