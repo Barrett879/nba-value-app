@@ -1396,27 +1396,35 @@ _score_chip_html = (
     f'</span>'
 )
 
-# Optional "current deal" informational line — shown when we know the
-# player has a multi-year contract on file. NOT used to project the
-# prediction; just gives the user context (Luka's still locked in,
-# Vassell on rookie extension, etc.). Empty for free agents this summer.
+# Informational "current deal" / "previous salary" context line.
+# Three cases:
+#   1. Multi-year contract with years remaining → "Current deal: $X through YYYY-YY (option)"
+#   2. Final year of multi-year deal or no contract on file → "Previous: $X (last season) · FA next summer"
+#   3. No current salary on file → empty (very rare — e.g. unsigned rookie)
 _contract_end = features.get("contract_end_season") or ""
 _last_type = features.get("contract_last_year_type") or ""
+_cur_sal_dollars = float(features.get("salary") or 0)
 _signing_html = ""
 if _contract_end and _contract_end != CURRENT_SEASON:
-    # Compact: "Current deal: $54.1M through 2028-29 (player option)".
+    # Case 1: multi-year deal with years remaining.
     _type_blurb = {
         "player_option":  " (player option)",
         "team_option":    " (team option)",
         "et_option":      " (early termination option)",
     }.get(_last_type, "")
-    _cur_sal = float(features.get("salary") or 0)
-    _sal_str = (
-        f'{_fmt_money(_cur_sal)} ' if _cur_sal > 0 else ''
-    )
+    _sal_str = f'{_fmt_money(_cur_sal_dollars)} ' if _cur_sal_dollars > 0 else ''
     _signing_html = (
         f'<div style="margin-top:0.35rem; font-size:0.74rem; color:#888;">'
         f'Current deal: {_sal_str}through {_contract_end}{_type_blurb}'
+        f'</div>'
+    )
+elif _cur_sal_dollars > 0:
+    # Case 2: free agent this offseason (or final year of expiring deal).
+    # Show their current/previous salary so users have a baseline.
+    _signing_html = (
+        f'<div style="margin-top:0.35rem; font-size:0.74rem; color:#888;">'
+        f'Previous: {_fmt_money(_cur_sal_dollars)} ({CURRENT_SEASON}) · '
+        f'free agent next summer'
         f'</div>'
     )
 
@@ -1620,44 +1628,41 @@ else:
 st.markdown(_header_html, unsafe_allow_html=True)
 
 # ── Structural caveats — compact chip-style instead of full-width banners ────
-# Playoff chip rendered separately (green for bonus, gray for context-only)
-# alongside the yellow caveat chips. Gives the user a way to verify playoff
-# performance was factored in.
-_playoff_chip_html = ""
-_playoff_gp = features.get("playoff_gp", 0)
-_playoff_tier_label = features.get("playoff_tier", "") or ""
-_playoff_mult_val = features.get("playoff_mult", 1.0) or 1.0
-_playoff_barrett_val_h = features.get("playoff_barrett", 0.0) or 0.0
-if _playoff_mult_val > 1.0 and _playoff_gp >= 4:
-    # Positive bonus — green chip showing tier + multiplier only.
-    # Barrett/GP detail removed for brevity; available in the math
-    # line inside the About expander for users who want specifics.
-    # Only render the chip when the player actually earned a bonus;
-    # players below the threshold (or with no playoff data) just see
-    # nothing — no need to call out the absence of a bonus.
-    _playoff_chip_html = (
-        f'<div style="display:inline-block; background:rgba(22,212,193,0.10); '
-        f'border:1px solid rgba(22,212,193,0.35); border-radius:6px; '
-        f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
-        f'font-size:0.8rem; color:#16d4c1;">⭐ '
-        f'{_playoff_tier_label} ×{_playoff_mult_val:.2f}'
-        f'</div>'
-    )
+# Playoff multiplier display moved to the About expander (visible in the
+# math line). Removed from the main view so the hero stays clean — the
+# multiplier already affects the dollar amount; redundant to show it
+# again on the front.
+#
+# Supermax-eligible caveat is special-cased: the chip just says
+# "Supermax-eligible" with the full description as a tooltip (title attr)
+# you see on hover. Other caveats render as full-text yellow chips.
+if caveats:
+    def _caveat_chip(note: str) -> str:
+        if note.startswith("Supermax-eligible:"):
+            # Split short label and full detail for hover tooltip.
+            detail = note[len("Supermax-eligible: "):].strip()
+            # Escape the quote in the detail so it survives in the
+            # HTML title attribute (no inner double quotes).
+            safe_detail = detail.replace('"', '&quot;')
+            return (
+                f'<div title="{safe_detail}" '
+                f'style="display:inline-block; cursor:help; '
+                f'background:rgba(243,156,18,0.10); '
+                f'border:1px solid rgba(243,156,18,0.30); border-radius:6px; '
+                f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
+                f'font-size:0.8rem; color:#f1c40f;">⚠ Supermax-eligible</div>'
+            )
+        return (
+            f'<div style="display:inline-block; '
+            f'background:rgba(243,156,18,0.10); '
+            f'border:1px solid rgba(243,156,18,0.30); border-radius:6px; '
+            f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
+            f'font-size:0.8rem; color:#f1c40f;">⚠ {note}</div>'
+        )
 
-if caveats or _playoff_chip_html:
-    _caveat_chips_html = "".join(
-        f'<div style="display:inline-block; background:rgba(243,156,18,0.10); '
-        f'border:1px solid rgba(243,156,18,0.30); border-radius:6px; '
-        f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
-        f'font-size:0.8rem; color:#f1c40f;">⚠ {note}</div>'
-        for note in caveats
-    )
+    _caveat_chips_html = "".join(_caveat_chip(n) for n in caveats)
     st.markdown(
-        # Positive top margin (not negative) so chips sit cleanly BELOW the
-        # hero card. The previous -0.4rem caused the chip to clip into the
-        # hero's bottom edge, especially when the "Capped at max" caption
-        # was sitting in the hero's padding-bottom area.
-        f'<div style="margin: 0.4rem 0 1rem 0;">{_caveat_chips_html}{_playoff_chip_html}</div>',
+        f'<div style="margin: 0.4rem 0 1rem 0;">{_caveat_chips_html}</div>',
         unsafe_allow_html=True,
     )
 
