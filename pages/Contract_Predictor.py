@@ -602,11 +602,9 @@ def detect_caveats(features: dict) -> list[str]:
                 "uses standard max ceiling."
             )
 
-    if age and age >= 33 and barrett < 20:
-        notes.append(
-            "Veteran end-of-career zone — may sign for the minimum "
-            "(~$2-3M) regardless of production if rosters are full."
-        )
+    # Veteran end-of-career caveat removed — the prediction itself
+    # (age multiplier + low rate score) already projects these players
+    # into the vet-min range, no need to also caveat it.
     return notes
 
 
