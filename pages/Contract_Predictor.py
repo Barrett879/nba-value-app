@@ -79,6 +79,12 @@ CURRENT_SEASON = SEASONS[0]            # latest real season — source of the pl
 _cs_start = int(CURRENT_SEASON[:4]) + 1
 CONTRACT_SEASON = f"{_cs_start}-{(_cs_start + 1) % 100:02d}"
 
+# Max-tier floor snaps eligible All-NBA stars to the EMPIRICAL eligible-star
+# level (max − 3pp of cap), not the theoretical max — corrects a measured ~2pp
+# top-tier overshoot (diag_residuals.py / test_floor_discount.py). The
+# supermax floor stays at the full max (Designated Vets sign the full supermax).
+MAX_FLOOR_DISCOUNT = 0.03
+
 
 # ── Page boilerplate ─────────────────────────────────────────────────────────
 st.set_page_config(page_title="Contract Predictor", layout="wide")
@@ -584,17 +590,19 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
         predicted = cba_max_dollars
         cba_floor_applied = True
 
-    # Max-tier floor: a recent-All-NBA star the model already rates near-max
-    # (>=20% of cap) and aged ≤33 gets snapped up to their CBA max tier. The
-    # regressor hedges below the true max (elite players got a spread of
-    # outcomes in training); this restores the categorical "eligible star →
-    # max" rule. The age gate spares aging stars (Chris Paul 36) who take
-    # discounts. Forward-validated (+1.4pp total, helps year-over-year).
+    # Max-tier floor: a recent-All-NBA star the model rates near-max (>=20% of
+    # cap) and aged ≤33 gets lifted toward their max tier — but to the EMPIRICAL
+    # eligible-star level (max − 3pp), not the theoretical max. The regressor
+    # hedges below the max (stars got a spread of training outcomes); the floor
+    # corrects that, while the 3pp discount corrects a measured ~2pp overshoot
+    # from snapping discount-takers all the way to the max. Age gate spares
+    # aging stars (Chris Paul 36). Forward-validated: All-NBA within-5% 82→86%.
+    _floor_target = cba_max_dollars - MAX_FLOOR_DISCOUNT * cap_dollars_val
     if ((features.get("all_nba_3yr", 0) or 0) >= 1
             and raw_predicted >= 0.20 * cap_dollars_val
             and (target_age is None or target_age <= 33)
-            and predicted < cba_max_dollars):
-        predicted = cba_max_dollars
+            and predicted < _floor_target):
+        predicted = _floor_target
         cba_floor_applied = True
 
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
@@ -698,17 +706,19 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
         predicted = cba_max_dollars
         cba_floor_applied = True
 
-    # Max-tier floor: a recent-All-NBA star the model already rates near-max
-    # (>=20% of cap) and aged ≤33 gets snapped up to their CBA max tier. The
-    # regressor hedges below the true max (elite players got a spread of
-    # outcomes in training); this restores the categorical "eligible star →
-    # max" rule. The age gate spares aging stars (Chris Paul 36) who take
-    # discounts. Forward-validated (+1.4pp total, helps year-over-year).
+    # Max-tier floor: a recent-All-NBA star the model rates near-max (>=20% of
+    # cap) and aged ≤33 gets lifted toward their max tier — but to the EMPIRICAL
+    # eligible-star level (max − 3pp), not the theoretical max. The regressor
+    # hedges below the max (stars got a spread of training outcomes); the floor
+    # corrects that, while the 3pp discount corrects a measured ~2pp overshoot
+    # from snapping discount-takers all the way to the max. Age gate spares
+    # aging stars (Chris Paul 36). Forward-validated: All-NBA within-5% 82→86%.
+    _floor_target = cba_max_dollars - MAX_FLOOR_DISCOUNT * cap_dollars_val
     if ((features.get("all_nba_3yr", 0) or 0) >= 1
             and raw_predicted >= 0.20 * cap_dollars_val
             and (target_age is None or target_age <= 33)
-            and predicted < cba_max_dollars):
-        predicted = cba_max_dollars
+            and predicted < _floor_target):
+        predicted = _floor_target
         cba_floor_applied = True
 
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP

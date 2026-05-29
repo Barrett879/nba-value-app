@@ -148,17 +148,25 @@ def gradeable_mask(df: pd.DataFrame) -> pd.Series:
 # ── Prediction guards + CBA max-tier floor ──────────────────────────────────
 # Floor at the CBA minimum (a player can't sign below it — kills the floor-
 # glitch where the model output ~$0.1M for Clarkson) and cap at the absolute
-# max (35%). PLUS a max-tier floor: snap a recent-All-NBA player the model
-# already rates near-max (>=22% of cap) up to their CBA max tier. The regressor
+# max (35%). PLUS a max-tier floor: lift a recent-All-NBA player the model
+# already rates near-max (>=20% of cap) toward their max tier. The regressor
 # hedges below the true max because elite players got a SPREAD of outcomes in
-# training (most max, some discounts); this restores the categorical CBA rule
-# "eligible star → max". Forward-validated (test_floor_forward.py): helps in
-# 5/8 seasons, hurts 0, +1.07pp, robust across thresholds. The cost is rare
-# discount stars (Brunson) it overshoots — net favorable every year.
+# training (most max, some discounts). Originally snapped to the full CBA max
+# (forward-validated +1.07pp), but diag_residuals.py then showed that overshot
+# the top tier by ~2pp every year, so we snap to the EMPIRICAL level (max − 3pp,
+# see MAX_FLOOR_DISCOUNT below) — All-NBA within-5% 82%→86%, 0 years hurt.
 PRED_FLOOR_PCT     = 0.015   # CBA minimum (~$2.3M)
 PRED_CEIL_PCT      = 0.35    # absolute CBA max
 MAX_FLOOR_TRIGGER  = 0.20    # model rates them ≥20% of cap → treat as max-caliber
 MAX_FLOOR_AGE_CAP  = 33      # don't floor 34+ stars — they routinely take discounts
+# Residual analysis (diag_residuals.py) found the floor OVERSHOOTS eligible
+# stars by ~2pp every year: it snapped to the THEORETICAL max, but the
+# EMPIRICAL eligible-star salary sits a touch lower (a meaningful share take
+# discounts — Brunson, Sabonis-ext, Harden). Snap to (max − 3pp) instead: the
+# delta sweep (test_floor_discount.py) shows a smooth interior optimum (cliff at
+# 5pp, where genuine-max players exit the 5% band), +0.18pp overall and All-NBA
+# within-5% 82%→86%, zero years hurt.
+MAX_FLOOR_DISCOUNT = 0.03
 
 
 def cba_max_pct(service_years: float, all_nba_3yr: float) -> float:
@@ -191,7 +199,10 @@ def apply_cba_postprocess(pred_pct: np.ndarray, df: pd.DataFrame = None) -> np.n
             a = age[i]
             age_ok = a is None or (isinstance(a, float) and np.isnan(a)) or a <= MAX_FLOOR_AGE_CAP
             if out[i] >= MAX_FLOOR_TRIGGER and (ann[i] or 0) >= 1 and age_ok:
-                out[i] = max(out[i], cba_max_pct(svc[i], ann[i]))
+                # snap to the EMPIRICAL eligible-star level (max − 3pp), not the
+                # theoretical max — corrects a measured ~2pp top-tier overshoot.
+                target = max(cba_max_pct(svc[i], ann[i]) - MAX_FLOOR_DISCOUNT, MAX_FLOOR_TRIGGER)
+                out[i] = max(out[i], target)
     return out
 
 
