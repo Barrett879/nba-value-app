@@ -145,21 +145,42 @@ def gradeable_mask(df: pd.DataFrame) -> pd.Series:
     return ~_is_rookie_lock(df) & ~_is_bad_data(df)
 
 
-# ── Prediction guards ────────────────────────────────────────────────────────
-# Floor at the CBA minimum (a player can't sign below it — kills the
-# floor-glitch where the model output ~$0.1M for Clarkson) and cap at the
-# absolute max (35% of cap). NO aggressive snap-to-max-tier: that was tested
-# and proved a wash — it fixed supermax undershoots (Jokić) but broke the
-# discount cases (Brunson signed below his market value, and snapping him to
-# the $54M supermax turned a -5% miss into -12%). You can't floor-to-max
-# without breaking the players who take a discount, so we don't.
-PRED_FLOOR_PCT = 0.015   # CBA minimum (~$2.3M)
-PRED_CEIL_PCT  = 0.35    # absolute CBA max
+# ── Prediction guards + CBA max-tier floor ──────────────────────────────────
+# Floor at the CBA minimum (a player can't sign below it — kills the floor-
+# glitch where the model output ~$0.1M for Clarkson) and cap at the absolute
+# max (35%). PLUS a max-tier floor: snap a recent-All-NBA player the model
+# already rates near-max (>=22% of cap) up to their CBA max tier. The regressor
+# hedges below the true max because elite players got a SPREAD of outcomes in
+# training (most max, some discounts); this restores the categorical CBA rule
+# "eligible star → max". Forward-validated (test_floor_forward.py): helps in
+# 5/8 seasons, hurts 0, +1.07pp, robust across thresholds. The cost is rare
+# discount stars (Brunson) it overshoots — net favorable every year.
+PRED_FLOOR_PCT     = 0.015   # CBA minimum (~$2.3M)
+PRED_CEIL_PCT      = 0.35    # absolute CBA max
+MAX_FLOOR_TRIGGER  = 0.22    # model rates them ≥22% of cap → treat as max-caliber
+
+
+def cba_max_pct(service_years: float, all_nba_3yr: float) -> float:
+    """First-year max as % of cap: 25/30/35 by service, bumped a tier for a
+    recent All-NBA selection (Rose Rule for young, supermax for vets)."""
+    elite = (all_nba_3yr or 0) >= 1
+    s = service_years or 0
+    if s <= 6:  return 0.30 if elite else 0.25   # Rose Rule
+    if s <= 9:  return 0.35 if elite else 0.30   # Designated Vet (supermax)
+    return 0.35
 
 
 def apply_cba_postprocess(pred_pct: np.ndarray, df: pd.DataFrame = None) -> np.ndarray:
-    """Clip predictions to the legal CBA range [minimum, max]."""
-    return np.clip(pred_pct, PRED_FLOOR_PCT, PRED_CEIL_PCT).astype(float)
+    """Clip to the legal CBA range, then floor clear max-caliber stars (model
+    ≥22% of cap AND recent All-NBA) up to their CBA max tier."""
+    out = np.clip(pred_pct, PRED_FLOOR_PCT, PRED_CEIL_PCT).astype(float)
+    if df is not None and "years_in_league" in df.columns and "all_nba_3yr" in df.columns:
+        svc = df["years_in_league"].values
+        ann = df["all_nba_3yr"].values
+        for i in range(len(out)):
+            if out[i] >= MAX_FLOOR_TRIGGER and (ann[i] or 0) >= 1:
+                out[i] = max(out[i], cba_max_pct(svc[i], ann[i]))
+    return out
 
 
 # Best hyperparameters — the exact config validated by cross-validation in
