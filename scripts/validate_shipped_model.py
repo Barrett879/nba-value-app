@@ -19,6 +19,7 @@ from train_ml_model_v2 import build_career_indexes, build_rows, fetch_all_nba_se
 from train_ml_model_v3 import make_X_pruned
 from build_production_histgbm import (
     make_X_augmented, HISTGBM_PARAMS, TRAINING_START_YEAR, gradeable_mask,
+    apply_cba_postprocess,
 )
 
 
@@ -37,9 +38,10 @@ def temporal(df, Xfull, test_years):
             continue
         reg = HistGradientBoostingRegressor(**HISTGBM_PARAMS).fit(
             Xfull[trm], df.loc[trm, "salary_curr_pct"].values)
-        cap = df.loc[tem, "cap_curr"].values
-        pred = np.clip(reg.predict(Xfull[tem]), 0.001, 0.45) * cap
-        actual = df.loc[tem, "salary_curr"].values
+        sub = df[tem]
+        cap = sub["cap_curr"].values
+        pred = apply_cba_postprocess(reg.predict(Xfull[tem]), sub) * cap
+        actual = sub["salary_curr"].values
         w5s.append(wcap(actual, pred, cap, 5)); w10s.append(wcap(actual, pred, cap, 10))
         ns.append(int(tem.sum()))
     ns = np.array(ns)

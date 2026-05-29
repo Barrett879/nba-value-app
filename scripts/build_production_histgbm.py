@@ -87,13 +87,21 @@ def _is_known_bad(df: pd.DataFrame) -> pd.Series:
 
 
 def _is_buyout_artifact(df: pd.DataFrame) -> pd.Series:
-    """Mid-season buyout/waiver: a player on a real contract (>10% of cap)
-    whose recorded current salary collapses to near-zero (<2% of cap). That's
-    a prorated partial figure after a trade+buyout, not a freely negotiated
-    new contract — and it misrepresents what they were actually paid that
-    season. (Westbrook $44M→$0.5M, Dinwiddie $19.5M→$1.6M, Oladipo, Oubre.)
-    A genuinely cheap player re-signing cheap (low prior) is NOT caught."""
-    return (df["salary_prev_pct"] > 0.10) & (df["salary_curr_pct"] < 0.02)
+    """Salary-data artifacts where a recorded figure misrepresents the real
+    contract — a player who was on a REAL contract showing an implausibly low
+    current salary. Two patterns, both keyed on 'substantial prior':
+      - mid-season buyout/waiver: prev > 10% of cap, current collapses < 2%
+        (Westbrook $44M→$0.5M, Dinwiddie, Oladipo, Oubre — prorated post-buyout)
+      - sub-minimum partial: a rotation player (prev > 4% of cap) showing a
+        figure below even the CBA minimum (< 1% of cap, ~$1.5M) — a 10-day /
+        prorated partial, not a full-season deal (Delon Wright $7.8M→$0.7M,
+        Reggie Jackson $10.4M→$0.6M).
+    A genuinely cheap player re-signing cheap (LOW prior) is NOT caught — real
+    minimum signings stay in the pool."""
+    prev, curr = df["salary_prev_pct"], df["salary_curr_pct"]
+    buyout  = (prev > 0.10) & (curr < 0.02)
+    partial = (prev > 0.04) & (curr < 0.01)
+    return buyout | partial
 
 
 def _is_bad_data(df: pd.DataFrame) -> pd.Series:
@@ -101,29 +109,57 @@ def _is_bad_data(df: pd.DataFrame) -> pd.Series:
     return _is_known_bad(df) | _is_buyout_artifact(df)
 
 
-def _is_rookie_stepup(df: pd.DataFrame) -> pd.Series:
-    """A rookie-scale step-up is NOT a new contract — it's the CBA-mandated
-    next-year salary of the player's EXISTING rookie deal (no signing
-    happened). Our '≥25% YoY raise = new contract' detector wrongly flags
-    these, so we drop them. Identified tightly so we don't catch young
-    players signing real second contracts: a modest raise (< 1.6x) that keeps
-    them at a low salary (< 10% of cap), off a low base (< 8% of cap),
-    age ≤ 24. (e.g. Luka 21-22: $8M→$10M, 1.3x, 9% of cap.) A real breakout
-    extension jumps well past 10% of cap, so it stays in the pool."""
+# Rookie-scale lock: a player still on their rookie deal whose salary ticks up
+# the CBA-mandated next-year amount — NOT a negotiated contract. Detected by a
+# young player (age ≤ 24) off a low base (< 8% of cap), staying low (< 10%),
+# with a MODEST raise (< 1.6x). This cleanly catches Luka 21-22, Haliburton,
+# Trae, LaMelo, Mikal, MPJ (all 1.2-1.5x) without touching real breakout deals
+# (which multiply 3-8x). One case slips through — Poole 22-23, whose year-3→4
+# scale jump was 1.77x — so it's listed explicitly below. (A broader ratio/
+# salary rule was tried and over-excluded legit cheap young deals, so we use a
+# tight heuristic + a named exception instead.)
+KNOWN_ROOKIE_LOCKS = {
+    ("Jordan Poole", "2022-23"),  # rookie 4th-year ($2.2M→$3.9M, 1.77x); extension started 2023-24
+}
+_KNOWN_LOCK_KEYS = {(_norm(p), s) for (p, s) in KNOWN_ROOKIE_LOCKS}
+
+
+def _is_rookie_lock(df: pd.DataFrame) -> pd.Series:
     age = df["age"].fillna(99)
     ratio = df["salary_curr"] / df["salary_prev"].clip(lower=1)
-    return ((age <= 24)
-            & (df["salary_prev_pct"] < 0.08)
-            & (df["salary_curr_pct"] < 0.10)
-            & (ratio < 1.6))
+    heur = ((age <= 24) & (df["salary_prev_pct"] < 0.08)
+            & (df["salary_curr_pct"] < 0.10) & (ratio < 1.6))
+    named = pd.Series(
+        [(_norm(str(p)), s) in _KNOWN_LOCK_KEYS for p, s in zip(df["player"], df["curr"])],
+        index=df.index)
+    return heur | named
 
 
 def gradeable_mask(df: pd.DataFrame) -> pd.Series:
-    """Rows to GRADE on: every REAL, correctly-labeled new contract —
-    minimums and market deals all count. Exclusions are only:
-      - rookie-scale step-ups (not new signings — see _is_rookie_stepup)
-      - corrupted salary labels / mid-season buyout artifacts (see _is_bad_data)"""
-    return ~_is_rookie_stepup(df) & ~_is_bad_data(df)
+    """Rows to GRADE on: every REAL, correctly-labeled new contract — minimum
+    signings and market deals all count (the model predicts the whole market).
+    Exclusions are only:
+      - rookie-scale locks (not new signings — see _is_rookie_lock)
+      - corrupted salary labels / buyout & sub-minimum-partial artifacts,
+        where a recorded figure misrepresents the real contract (_is_bad_data)"""
+    return ~_is_rookie_lock(df) & ~_is_bad_data(df)
+
+
+# ── Prediction guards ────────────────────────────────────────────────────────
+# Floor at the CBA minimum (a player can't sign below it — kills the
+# floor-glitch where the model output ~$0.1M for Clarkson) and cap at the
+# absolute max (35% of cap). NO aggressive snap-to-max-tier: that was tested
+# and proved a wash — it fixed supermax undershoots (Jokić) but broke the
+# discount cases (Brunson signed below his market value, and snapping him to
+# the $54M supermax turned a -5% miss into -12%). You can't floor-to-max
+# without breaking the players who take a discount, so we don't.
+PRED_FLOOR_PCT = 0.015   # CBA minimum (~$2.3M)
+PRED_CEIL_PCT  = 0.35    # absolute CBA max
+
+
+def apply_cba_postprocess(pred_pct: np.ndarray, df: pd.DataFrame = None) -> np.ndarray:
+    """Clip predictions to the legal CBA range [minimum, max]."""
+    return np.clip(pred_pct, PRED_FLOOR_PCT, PRED_CEIL_PCT).astype(float)
 
 
 # Best hyperparameters — the exact config validated by cross-validation in

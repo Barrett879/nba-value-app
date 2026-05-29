@@ -540,7 +540,10 @@ def predict_contract_histgbm(features: dict, target_season: str = CURRENT_SEASON
     if X is None:
         return None
     model = artifact["model"]
-    pred_pct = float(np.clip(model.predict(X)[0], 0.001, 0.45))
+    # Floor at the CBA minimum (~1.5% of cap) so the model can't emit a
+    # near-zero prediction for an established player whose trailing production
+    # cratered (the Clarkson floor-glitch); cap at the 35% absolute max.
+    pred_pct = float(np.clip(model.predict(X)[0], 0.015, 0.35))
 
     cap_dollars_val = SALARY_CAP_M.get(target_season, 154.6) * 1_000_000
     raw_predicted = pred_pct * cap_dollars_val

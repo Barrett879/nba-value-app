@@ -21,6 +21,7 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 from train_ml_model_v2 import build_career_indexes, build_rows, fetch_all_nba_selections, PAIRS
 from build_production_histgbm import (
     make_X_augmented, HISTGBM_PARAMS, TRAINING_START_YEAR, gradeable_mask,
+    apply_cba_postprocess,
 )
 
 TEST_YEARS = [2021, 2022, 2023, 2024, 2025]
@@ -38,6 +39,7 @@ def main():
 
     grade_ok = gradeable_mask(df).values     # all real contracts; only rookie-locks dropped
 
+    THRESH = 5.0   # show everything more than 5% of cap off
     misses = []
     n_total = 0
     for ty in TEST_YEARS:
@@ -49,12 +51,12 @@ def main():
             X[trm], df.loc[trm, "salary_curr_pct"].values)
         sub = df[tem].copy()
         cap = sub["cap_curr"].values
-        pred = np.clip(reg.predict(X[tem]), 0.001, 0.45) * cap
+        pred = apply_cba_postprocess(reg.predict(X[tem]), sub) * cap
         actual = sub["salary_curr"].values
         err_pct = (actual - pred) / cap * 100          # signed: + = model too LOW
         n_total += len(sub)
         for i, (_, r) in enumerate(sub.iterrows()):
-            if abs(err_pct[i]) > 10:
+            if abs(err_pct[i]) > THRESH:
                 misses.append({
                     "player": r["player"], "season": r["curr"],
                     "pred_M": pred[i] / 1e6, "actual_M": actual[i] / 1e6,
@@ -63,32 +65,41 @@ def main():
                     "age": r.get("age"), "all_nba": r.get("all_nba_3yr", 0),
                 })
 
+    big = [m for m in misses if abs(m["err_pct"]) > 10]
+    mod = [m for m in misses if 5 < abs(m["err_pct"]) <= 10]
     print("\n" + "=" * 92, flush=True)
-    print(f"BIG MISSES (>10% of cap)  —  {len(misses)} of {n_total} predictions "
-          f"({len(misses)/n_total*100:.1f}%)", flush=True)
+    print(f"MISSES > 5% of cap  —  {len(misses)} of {n_total} predictions "
+          f"({len(misses)/n_total*100:.1f}%)   [{len(mod)} in 5-10% band, "
+          f"{len(big)} over 10%]", flush=True)
     print("=" * 92, flush=True)
 
-    over = sorted([m for m in misses if m["err_pct"] < 0], key=lambda m: m["err_pct"])
-    under = sorted([m for m in misses if m["err_pct"] > 0], key=lambda m: -m["err_pct"])
-
     def show(group, title):
+        if not group:
+            return
         print(f"\n{title}", flush=True)
         print(f"  {'Player':<24}{'Season':<9}{'Pred':>7}{'Actual':>8}{'Prev':>7}"
               f"{'Err':>7}  context", flush=True)
-        for m in group:
-            age = f"{m['age']:.0f}" if m['age'] is not None and not np.isnan(m['age']) else "?"
-            ctx = []
-            if m["actual_M"] < m["prev_M"] * 0.7:
-                ctx.append("PAYCUT")
-            if m["all_nba"] >= 1:
-                ctx.append(f"{int(m['all_nba'])}x All-NBA")
-            ctx.append(f"age {age}")
-            print(f"  {m['player'][:23]:<24}{m['season']:<9}"
-                  f"{m['pred_M']:>6.1f}M{m['actual_M']:>7.1f}M{m['prev_M']:>6.1f}M"
-                  f"{m['err_pct']:>+6.0f}%  {', '.join(ctx)}", flush=True)
+        over = sorted([m for m in group if m["err_pct"] < 0], key=lambda m: m["err_pct"])
+        under = sorted([m for m in group if m["err_pct"] > 0], key=lambda m: -m["err_pct"])
+        for tag, grp in [("  -- overshoots (model too HIGH) --", over),
+                         ("  -- undershoots (model too LOW) --", under)]:
+            if not grp:
+                continue
+            print(tag, flush=True)
+            for m in grp:
+                age = f"{m['age']:.0f}" if m['age'] is not None and not np.isnan(m['age']) else "?"
+                ctx = []
+                if m["prev_M"] > 0 and m["actual_M"] < m["prev_M"] * 0.7:
+                    ctx.append("PAYCUT")
+                if m["all_nba"] >= 1:
+                    ctx.append(f"{int(m['all_nba'])}x All-NBA")
+                ctx.append(f"age {age}")
+                print(f"  {m['player'][:23]:<24}{m['season']:<9}"
+                      f"{m['pred_M']:>6.1f}M{m['actual_M']:>7.1f}M{m['prev_M']:>6.1f}M"
+                      f"{m['err_pct']:>+6.0f}%  {', '.join(ctx)}", flush=True)
 
-    show(over, "OVERSHOOTS — model too HIGH (actual came in well below prediction):")
-    show(under, "UNDERSHOOTS — model too LOW (player got paid well above prediction):")
+    show(big, "=== OVER 10% OF CAP (the big tail) ===")
+    show(mod, "=== 5-10% OF CAP (moderate misses) ===")
 
 
 if __name__ == "__main__":
