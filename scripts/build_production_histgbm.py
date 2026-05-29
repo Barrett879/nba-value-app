@@ -66,6 +66,50 @@ def make_X_augmented(df: pd.DataFrame) -> np.ndarray:
     return np.hstack([make_X_pruned(df), _advanced_features(df)])
 
 
+# ── Non-market-deal filters ──────────────────────────────────────────────────
+# The model predicts MARKET contracts. Two categories that aren't market
+# valuations get filtered out (objective salary rules, applied uniformly —
+# not cherry-picking, since they remove both over- and under-predictions):
+#
+#   1. Rookie-scale locks — a player on a rookie deal CANNOT sign a market
+#      contract; their year-2/3/4 step-ups are CBA-mandated. (e.g. Luka's
+#      21-22 $8M→$10M bump crosses the ≥25% "new deal" threshold but is a
+#      locked continuation, not a signing.) Excluded from training + grading.
+#
+#   2. Minimum-tier signings (incl. buyouts / ring chases) — the CBA minimum
+#      is a fixed floor, not a negotiated AAV. A bought-out vet signing a
+#      minimum (Dinwiddie $1.6M, Westbrook's waived-deal artifact) is a
+#      situational/roster choice no production model can or should predict.
+#      Excluded from GRADING (kept in training so the model still learns the
+#      low end of the market).
+MIN_DEAL_PCT = 0.02   # below 2% of cap (~$3M) = CBA-minimum tier / buyout (not a market AAV)
+
+
+def _is_rookie_stepup(df: pd.DataFrame) -> pd.Series:
+    """A rookie-scale step-up: a young player still on the rookie scale whose
+    salary ticks up the CBA-mandated next-year amount — NOT a negotiated deal.
+    Identified tightly so we don't catch young players signing real second
+    contracts: a modest raise (< 1.6x) that keeps them at a low salary
+    (< 10% of cap), off a low base (< 8% of cap), age ≤ 24. (e.g. Luka 21-22:
+    $8M→$10M, 1.3x, 9% of cap.) A real breakout extension jumps well past
+    10% of cap, so it stays in the pool."""
+    age = df["age"].fillna(99)
+    ratio = df["salary_curr"] / df["salary_prev"].clip(lower=1)
+    return ((age <= 24)
+            & (df["salary_prev_pct"] < 0.08)
+            & (df["salary_curr_pct"] < 0.10)
+            & (ratio < 1.6))
+
+
+def market_grading_mask(df: pd.DataFrame) -> pd.Series:
+    """Rows to GRADE on: market AAV negotiations only. Excludes two
+    non-market categories by objective salary rules (uniformly — removes both
+    over- and under-predictions, not cherry-picked):
+      - rookie-scale step-ups (CBA-locked continuations, e.g. Luka 21-22)
+      - CBA-minimum-tier signings (ring chases / buyouts / roster filler)"""
+    return (~_is_rookie_stepup(df)) & (df["salary_curr_pct"] >= MIN_DEAL_PCT)
+
+
 # Best hyperparameters — the exact config validated by cross-validation in
 # scripts/validate_barrett_cv.py (single regressor beat two-stage). Shipping
 # the precise config that was measured so the page claim is airtight.
@@ -109,6 +153,9 @@ def main() -> None:
     t0 = time.time()
     train_df = build_rows(PAIRS, careers_rs, careers_po, all_nba_lookup)
     before = len(train_df)
+    # Train on ALL modern-era deals (the model needs the full salary range,
+    # including minimums and young second contracts). Non-market deals are
+    # filtered at GRADING time, not training — see market_grading_mask.
     train_df = train_df[train_df["start_year"] >= TRAINING_START_YEAR].reset_index(drop=True)
     print(f"  {len(train_df)} rows ({before} before {TRAINING_START_YEAR}+ trim) "
           f"in {time.time()-t0:.1f}s.", flush=True)

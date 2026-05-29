@@ -17,7 +17,9 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 
 from train_ml_model_v2 import build_career_indexes, build_rows, fetch_all_nba_selections, PAIRS
 from train_ml_model_v3 import make_X_pruned
-from build_production_histgbm import make_X_augmented, HISTGBM_PARAMS, TRAINING_START_YEAR
+from build_production_histgbm import (
+    make_X_augmented, HISTGBM_PARAMS, TRAINING_START_YEAR, market_grading_mask,
+)
 
 
 def wcap(actual, pred, cap, t):
@@ -26,10 +28,11 @@ def wcap(actual, pred, cap, t):
 
 def temporal(df, Xfull, test_years):
     sy = df["start_year"].values
+    grade_ok = market_grading_mask(df).values
     w5s, w10s, ns = [], [], []
     for ty in test_years:
         trm = (sy >= TRAINING_START_YEAR) & (sy < ty)
-        tem = (sy == ty)
+        tem = (sy == ty) & grade_ok
         if trm.sum() < 100 or tem.sum() < 5:
             continue
         reg = HistGradientBoostingRegressor(**HISTGBM_PARAMS).fit(
