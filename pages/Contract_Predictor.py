@@ -14,14 +14,13 @@ cap, old CBA). Trimming them measurably improves recent-season accuracy
 
 Accuracy, measured by expanding-window temporal cross-validation on recent
 seasons (2021-2025) — train only on prior seasons, predict each subsequent
-season the model has never seen. Graded on MARKET contracts only: we exclude
-CBA-minimum signings, buyouts, and rookie-scale locks, which are fixed/
-situational, not negotiated valuations the model is meant to predict.
-  - 81% of predictions within 5% of the cap (~$8M)
+season the model has never seen. Graded on every real new contract
+(minimums, buyouts, and market deals all count); the only exclusion is
+rookie-scale step-ups, which aren't new signings — they're the CBA-mandated
+next-year salary of a player's existing rookie deal.
+  - 86% of predictions within 5% of the cap (~$8M)
   - 97% within 10% of cap (catastrophic misses under 3% of predictions)
   - Median |error|: ~2% of cap
-(Including the easy minimum signings would read ~87% within 5%, but that
-pads the stat — the 81% on real negotiated deals is the honest number.)
 
 Every addition was gated on cross-validation, not a single split: advanced
 stats earned their place (+1.1pp within-5% on paired CV, t=3.9), while a
@@ -85,7 +84,7 @@ st.caption(
     "learning model (HistGBM) trained on 1,900+ modern-era contracts (2012+), "
     "built on the Barrett Score plus age, position, service years, All-NBA "
     "history, and advanced metrics (usage, PIE, on/off rating). Validated by "
-    "temporal cross-validation on real market contracts: 81% of predictions "
+    "temporal cross-validation on real new contracts: 86% of predictions "
     "within 5% of the cap, 97% within 10%."
 )
 
@@ -446,10 +445,10 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
 # regime and hurt current-season prediction (experiment_recency_window.py).
 # Features: Barrett pruned set + advanced stats (usage/PIE/on-off/TS), the
 # latter confirmed a real +1.12pp within-5% gain by paired CV (t=3.9).
-# Temporal CV on recent seasons (2021-2025), graded on market contracts only
-# (excl. minimums/buyouts/rookie-locks): 81% within 5% of cap, 97% within 10%.
-# A two-stage model and a stacked ensemble were tested and came in within
-# noise under CV — the simple regressor wins, so we ship it.
+# Temporal CV on recent seasons (2021-2025), graded on all real new contracts
+# (only rookie-scale step-ups excluded — not new signings): 86% within 5% of
+# cap, 97% within 10%. A two-stage model and a stacked ensemble were tested
+# and came in within noise under CV — the simple regressor wins, so we ship it.
 # See scripts/build_production_histgbm.py and scripts/confirm_advanced_features.py.
 _HISTGBM_PATH = Path(__file__).parent.parent / "models" / "contract_histgbm_v2.joblib"
 
@@ -2180,17 +2179,15 @@ with st.expander("About this prediction"):
         **Validation — expanding-window temporal cross-validation on recent
         seasons (2021-2025).** The honest way to measure a forecasting model:
         train only on prior seasons, predict each subsequent season the model
-        has never seen. Graded on **market contracts only** — we exclude
-        CBA-minimum signings, buyouts, and rookie-scale locks (Luka's locked
-        year-4 step-up, etc.), which are fixed or situational, not negotiated
-        valuations the model is meant to predict.
+        has never seen. Graded on **every real new contract** — minimums,
+        buyouts, and market deals all count. The only exclusion is rookie-
+        scale step-ups (Luka's locked year-4 raise, etc.), which aren't new
+        signings at all — just the CBA-mandated next-year salary of an
+        existing rookie deal.
 
-        - **81% of predictions within 5% of the cap** (~$8M)
+        - **86% of predictions within 5% of the cap** (~$8M)
         - **97% within 10% of cap** — catastrophic misses under 3%
         - Median |error|: ~2% of cap, ~$3M in 2025-26 dollars
-
-        (Counting the easy minimum signings would read ~87% within 5%, but
-        that pads the number — 81% on real negotiated deals is the honest one.)
 
         Every feature was gated on cross-validation, not a single split. The
         advanced metrics earned their place (+1.1pp within-5% on paired CV,

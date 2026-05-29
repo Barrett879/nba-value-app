@@ -20,7 +20,7 @@ from sklearn.ensemble import HistGradientBoostingRegressor
 
 from train_ml_model_v2 import build_career_indexes, build_rows, fetch_all_nba_selections, PAIRS
 from build_production_histgbm import (
-    make_X_augmented, HISTGBM_PARAMS, TRAINING_START_YEAR, market_grading_mask,
+    make_X_augmented, HISTGBM_PARAMS, TRAINING_START_YEAR, gradeable_mask,
 )
 
 TEST_YEARS = [2021, 2022, 2023, 2024, 2025]
@@ -36,7 +36,7 @@ def main():
     sy = df["start_year"].values
     print(f"  {len(df)} contracts in {time.time()-t0:.1f}s", flush=True)
 
-    grade_ok = market_grading_mask(df).values     # grade on market deals only
+    grade_ok = gradeable_mask(df).values     # all real contracts; only rookie-locks dropped
 
     misses = []
     n_total = 0

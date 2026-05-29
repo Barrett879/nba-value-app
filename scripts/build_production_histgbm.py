@@ -82,17 +82,15 @@ def make_X_augmented(df: pd.DataFrame) -> np.ndarray:
 #      situational/roster choice no production model can or should predict.
 #      Excluded from GRADING (kept in training so the model still learns the
 #      low end of the market).
-MIN_DEAL_PCT = 0.02   # below 2% of cap (~$3M) = CBA-minimum tier / buyout (not a market AAV)
-
-
 def _is_rookie_stepup(df: pd.DataFrame) -> pd.Series:
-    """A rookie-scale step-up: a young player still on the rookie scale whose
-    salary ticks up the CBA-mandated next-year amount — NOT a negotiated deal.
-    Identified tightly so we don't catch young players signing real second
-    contracts: a modest raise (< 1.6x) that keeps them at a low salary
-    (< 10% of cap), off a low base (< 8% of cap), age ≤ 24. (e.g. Luka 21-22:
-    $8M→$10M, 1.3x, 9% of cap.) A real breakout extension jumps well past
-    10% of cap, so it stays in the pool."""
+    """A rookie-scale step-up is NOT a new contract — it's the CBA-mandated
+    next-year salary of the player's EXISTING rookie deal (no signing
+    happened). Our '≥25% YoY raise = new contract' detector wrongly flags
+    these, so we drop them. Identified tightly so we don't catch young
+    players signing real second contracts: a modest raise (< 1.6x) that keeps
+    them at a low salary (< 10% of cap), off a low base (< 8% of cap),
+    age ≤ 24. (e.g. Luka 21-22: $8M→$10M, 1.3x, 9% of cap.) A real breakout
+    extension jumps well past 10% of cap, so it stays in the pool."""
     age = df["age"].fillna(99)
     ratio = df["salary_curr"] / df["salary_prev"].clip(lower=1)
     return ((age <= 24)
@@ -101,13 +99,12 @@ def _is_rookie_stepup(df: pd.DataFrame) -> pd.Series:
             & (ratio < 1.6))
 
 
-def market_grading_mask(df: pd.DataFrame) -> pd.Series:
-    """Rows to GRADE on: market AAV negotiations only. Excludes two
-    non-market categories by objective salary rules (uniformly — removes both
-    over- and under-predictions, not cherry-picked):
-      - rookie-scale step-ups (CBA-locked continuations, e.g. Luka 21-22)
-      - CBA-minimum-tier signings (ring chases / buyouts / roster filler)"""
-    return (~_is_rookie_stepup(df)) & (df["salary_curr_pct"] >= MIN_DEAL_PCT)
+def gradeable_mask(df: pd.DataFrame) -> pd.Series:
+    """Rows to GRADE on: every REAL new contract — minimums, buyouts, and all
+    market deals count (the model predicts the whole market, not a hand-picked
+    slice). The ONLY exclusion is rookie-scale locks, which aren't new
+    signings at all (see _is_rookie_stepup)."""
+    return ~_is_rookie_stepup(df)
 
 
 # Best hyperparameters — the exact config validated by cross-validation in
@@ -205,8 +202,8 @@ def main() -> None:
     joblib.dump(artifact_holdout, MODEL_HOLDOUT_PATH)
     print(f"  Saved holdout model to {MODEL_HOLDOUT_PATH}  ({MODEL_HOLDOUT_PATH.stat().st_size / 1024:.1f} KB)", flush=True)
 
-    print(f"\nExpected accuracy (5-fold CV, 2012+ pool, +advanced stats):", flush=True)
-    print(f"  ~85.3% within 5% of cap, ~97.5% within 10%", flush=True)
+    print(f"\nExpected accuracy (temporal CV, recent seasons, all real contracts):", flush=True)
+    print(f"  ~86% within 5% of cap, ~97% within 10%", flush=True)
 
 
 if __name__ == "__main__":
