@@ -157,7 +157,8 @@ def gradeable_mask(df: pd.DataFrame) -> pd.Series:
 # discount stars (Brunson) it overshoots — net favorable every year.
 PRED_FLOOR_PCT     = 0.015   # CBA minimum (~$2.3M)
 PRED_CEIL_PCT      = 0.35    # absolute CBA max
-MAX_FLOOR_TRIGGER  = 0.22    # model rates them ≥22% of cap → treat as max-caliber
+MAX_FLOOR_TRIGGER  = 0.20    # model rates them ≥20% of cap → treat as max-caliber
+MAX_FLOOR_AGE_CAP  = 33      # don't floor 34+ stars — they routinely take discounts
 
 
 def cba_max_pct(service_years: float, all_nba_3yr: float) -> float:
@@ -172,13 +173,18 @@ def cba_max_pct(service_years: float, all_nba_3yr: float) -> float:
 
 def apply_cba_postprocess(pred_pct: np.ndarray, df: pd.DataFrame = None) -> np.ndarray:
     """Clip to the legal CBA range, then floor clear max-caliber stars (model
-    ≥22% of cap AND recent All-NBA) up to their CBA max tier."""
+    ≥20% of cap AND recent All-NBA AND age ≤ 33) up to their CBA max tier.
+    The age gate spares aging stars (Chris Paul 36) who take discounts;
+    forward-validated at +0.36pp over the no-age 0.22 floor."""
     out = np.clip(pred_pct, PRED_FLOOR_PCT, PRED_CEIL_PCT).astype(float)
     if df is not None and "years_in_league" in df.columns and "all_nba_3yr" in df.columns:
         svc = df["years_in_league"].values
         ann = df["all_nba_3yr"].values
+        age = df["age"].values if "age" in df.columns else np.full(len(out), 30.0)
         for i in range(len(out)):
-            if out[i] >= MAX_FLOOR_TRIGGER and (ann[i] or 0) >= 1:
+            a = age[i]
+            age_ok = a is None or (isinstance(a, float) and np.isnan(a)) or a <= MAX_FLOOR_AGE_CAP
+            if out[i] >= MAX_FLOOR_TRIGGER and (ann[i] or 0) >= 1 and age_ok:
                 out[i] = max(out[i], cba_max_pct(svc[i], ann[i]))
     return out
 

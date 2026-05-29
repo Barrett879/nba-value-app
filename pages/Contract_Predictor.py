@@ -18,8 +18,8 @@ season the model has never seen. Graded on every real new contract
 (minimums, buyouts, and market deals all count); the only exclusion is
 rookie-scale step-ups, which aren't new signings — they're the CBA-mandated
 next-year salary of a player's existing rookie deal.
-  - 88% of predictions within 5% of the cap (~$8M)
-  - 98% within 10% of cap (catastrophic misses under 2% of predictions)
+  - 89% of predictions within 5% of the cap (~$8M)
+  - 99% within 10% of cap (catastrophic misses under 2% of predictions)
   - Median |error|: ~2% of cap
 Salary data is sanity-checked: mid-season buyout/waiver artifacts (a star's
 prorated near-zero figure after a trade) and verified bad labels are
@@ -87,8 +87,8 @@ st.caption(
     "learning model (HistGBM) trained on 1,900+ modern-era contracts (2012+), "
     "built on the Barrett Score plus age, position, service years, All-NBA "
     "history, and advanced metrics (usage, PIE, on/off rating). Validated by "
-    "temporal cross-validation on real new contracts: 88% of predictions "
-    "within 5% of the cap, 98% within 10%."
+    "temporal cross-validation on real new contracts: 89% of predictions "
+    "within 5% of the cap, 99% within 10%."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -449,8 +449,8 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
 # Features: Barrett pruned set + advanced stats (usage/PIE/on-off/TS), the
 # latter confirmed a real +1.12pp within-5% gain by paired CV (t=3.9).
 # Temporal CV on recent seasons (2021-2025), graded on all real new contracts
-# (rookie-scale step-ups + buyout-artifact/bad-label rows excluded): 88%
-# within 5% of cap, 98% within 10% — incl. the All-NBA max-tier floor
+# (rookie-scale step-ups + buyout-artifact/bad-label rows excluded): 89%
+# within 5% of cap, 99% within 10% — incl. the All-NBA max-tier floor
 # (apply_cba_postprocess), forward-validated at +1.07pp. A two-stage model +
 # stacked ensemble were tested and came in within noise under CV.
 # See scripts/build_production_histgbm.py and scripts/test_floor_forward.py.
@@ -571,12 +571,14 @@ def predict_contract_histgbm(features: dict, target_season: str = CURRENT_SEASON
         cba_floor_applied = True
 
     # Max-tier floor: a recent-All-NBA star the model already rates near-max
-    # (>=22% of cap) gets snapped up to their CBA max tier. The regressor
-    # hedges below the true max (elite players got a spread of outcomes in
-    # training); this restores the categorical "eligible star → max" rule.
-    # Forward-validated (+1.07pp, helps 5/8 seasons, hurts none).
+    # (>=20% of cap) and aged ≤33 gets snapped up to their CBA max tier. The
+    # regressor hedges below the true max (elite players got a spread of
+    # outcomes in training); this restores the categorical "eligible star →
+    # max" rule. The age gate spares aging stars (Chris Paul 36) who take
+    # discounts. Forward-validated (+1.4pp total, helps year-over-year).
     if ((features.get("all_nba_3yr", 0) or 0) >= 1
-            and raw_predicted >= 0.22 * cap_dollars_val
+            and raw_predicted >= 0.20 * cap_dollars_val
+            and (target_age is None or target_age <= 33)
             and predicted < cba_max_dollars):
         predicted = cba_max_dollars
         cba_floor_applied = True
@@ -682,12 +684,14 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
         cba_floor_applied = True
 
     # Max-tier floor: a recent-All-NBA star the model already rates near-max
-    # (>=22% of cap) gets snapped up to their CBA max tier. The regressor
-    # hedges below the true max (elite players got a spread of outcomes in
-    # training); this restores the categorical "eligible star → max" rule.
-    # Forward-validated (+1.07pp, helps 5/8 seasons, hurts none).
+    # (>=20% of cap) and aged ≤33 gets snapped up to their CBA max tier. The
+    # regressor hedges below the true max (elite players got a spread of
+    # outcomes in training); this restores the categorical "eligible star →
+    # max" rule. The age gate spares aging stars (Chris Paul 36) who take
+    # discounts. Forward-validated (+1.4pp total, helps year-over-year).
     if ((features.get("all_nba_3yr", 0) or 0) >= 1
-            and raw_predicted >= 0.22 * cap_dollars_val
+            and raw_predicted >= 0.20 * cap_dollars_val
+            and (target_age is None or target_age <= 33)
             and predicted < cba_max_dollars):
         predicted = cba_max_dollars
         cba_floor_applied = True
@@ -2215,8 +2219,8 @@ with st.expander("About this prediction"):
         near-zero figure after a trade, and a handful of verified bad labels),
         which misrepresent the actual contract.
 
-        - **88% of predictions within 5% of the cap** (~$8M)
-        - **98% within 10% of cap** — catastrophic misses under 2%
+        - **89% of predictions within 5% of the cap** (~$8M)
+        - **99% within 10% of cap** — catastrophic misses under 2%
         - Median |error|: ~2% of cap, ~$3M in 2025-26 dollars
 
         Every feature was gated on cross-validation, not a single split. The
