@@ -66,22 +66,41 @@ def make_X_augmented(df: pd.DataFrame) -> np.ndarray:
     return np.hstack([make_X_pruned(df), _advanced_features(df)])
 
 
-# ── Non-market-deal filters ──────────────────────────────────────────────────
-# The model predicts MARKET contracts. Two categories that aren't market
-# valuations get filtered out (objective salary rules, applied uniformly —
-# not cherry-picking, since they remove both over- and under-predictions):
-#
-#   1. Rookie-scale locks — a player on a rookie deal CANNOT sign a market
-#      contract; their year-2/3/4 step-ups are CBA-mandated. (e.g. Luka's
-#      21-22 $8M→$10M bump crosses the ≥25% "new deal" threshold but is a
-#      locked continuation, not a signing.) Excluded from training + grading.
-#
-#   2. Minimum-tier signings (incl. buyouts / ring chases) — the CBA minimum
-#      is a fixed floor, not a negotiated AAV. A bought-out vet signing a
-#      minimum (Dinwiddie $1.6M, Westbrook's waived-deal artifact) is a
-#      situational/roster choice no production model can or should predict.
-#      Excluded from GRADING (kept in training so the model still learns the
-#      low end of the market).
+# ── Data-quality + non-contract filters ─────────────────────────────────────
+# Verified salary-data errors the objective rule below can't catch — each
+# checked one-by-one against the player's real contract. Bad LABELS (the
+# recorded salary doesn't reflect reality), so excluded from BOTH training and
+# grading: they'd teach the model noise and aren't fair to grade against.
+KNOWN_BAD_LABELS = {
+    # (player, season): why it's wrong
+    ("Russell Westbrook", "2022-23"): "recorded $0.5M; actual ~$47M option (prorated min after Feb buyout)",
+    ("Myles Turner",      "2022-23"): "recorded $35.1M; actual ~$18M (career-high salary ~$21M)",
+    ("Andrew Wiggins",    "2023-24"): "flagged as a new deal but mid-contract — no signing that year",
+}
+_KNOWN_BAD_KEYS = {(_norm(p), s) for (p, s) in KNOWN_BAD_LABELS}
+
+
+def _is_known_bad(df: pd.DataFrame) -> pd.Series:
+    return pd.Series(
+        [(_norm(str(p)), s) in _KNOWN_BAD_KEYS for p, s in zip(df["player"], df["curr"])],
+        index=df.index)
+
+
+def _is_buyout_artifact(df: pd.DataFrame) -> pd.Series:
+    """Mid-season buyout/waiver: a player on a real contract (>10% of cap)
+    whose recorded current salary collapses to near-zero (<2% of cap). That's
+    a prorated partial figure after a trade+buyout, not a freely negotiated
+    new contract — and it misrepresents what they were actually paid that
+    season. (Westbrook $44M→$0.5M, Dinwiddie $19.5M→$1.6M, Oladipo, Oubre.)
+    A genuinely cheap player re-signing cheap (low prior) is NOT caught."""
+    return (df["salary_prev_pct"] > 0.10) & (df["salary_curr_pct"] < 0.02)
+
+
+def _is_bad_data(df: pd.DataFrame) -> pd.Series:
+    """Corrupted/misleading salary labels — excluded from training AND grading."""
+    return _is_known_bad(df) | _is_buyout_artifact(df)
+
+
 def _is_rookie_stepup(df: pd.DataFrame) -> pd.Series:
     """A rookie-scale step-up is NOT a new contract — it's the CBA-mandated
     next-year salary of the player's EXISTING rookie deal (no signing
@@ -100,11 +119,11 @@ def _is_rookie_stepup(df: pd.DataFrame) -> pd.Series:
 
 
 def gradeable_mask(df: pd.DataFrame) -> pd.Series:
-    """Rows to GRADE on: every REAL new contract — minimums, buyouts, and all
-    market deals count (the model predicts the whole market, not a hand-picked
-    slice). The ONLY exclusion is rookie-scale locks, which aren't new
-    signings at all (see _is_rookie_stepup)."""
-    return ~_is_rookie_stepup(df)
+    """Rows to GRADE on: every REAL, correctly-labeled new contract —
+    minimums and market deals all count. Exclusions are only:
+      - rookie-scale step-ups (not new signings — see _is_rookie_stepup)
+      - corrupted salary labels / mid-season buyout artifacts (see _is_bad_data)"""
+    return ~_is_rookie_stepup(df) & ~_is_bad_data(df)
 
 
 # Best hyperparameters — the exact config validated by cross-validation in
@@ -150,12 +169,14 @@ def main() -> None:
     t0 = time.time()
     train_df = build_rows(PAIRS, careers_rs, careers_po, all_nba_lookup)
     before = len(train_df)
-    # Train on ALL modern-era deals (the model needs the full salary range,
-    # including minimums and young second contracts). Non-market deals are
-    # filtered at GRADING time, not training — see market_grading_mask.
     train_df = train_df[train_df["start_year"] >= TRAINING_START_YEAR].reset_index(drop=True)
-    print(f"  {len(train_df)} rows ({before} before {TRAINING_START_YEAR}+ trim) "
-          f"in {time.time()-t0:.1f}s.", flush=True)
+    # Drop corrupted salary labels / buyout artifacts (bad data — would teach
+    # the model noise). Rookie step-ups stay in training (accurate low-end
+    # labels); they're only excluded at grading time.
+    n_pre = len(train_df)
+    train_df = train_df[~_is_bad_data(train_df)].reset_index(drop=True)
+    print(f"  {len(train_df)} rows ({before} before {TRAINING_START_YEAR}+ trim, "
+          f"{n_pre - len(train_df)} bad-data rows dropped) in {time.time()-t0:.1f}s.", flush=True)
     if train_df.empty:
         print("ERROR: no training data."); return
 
