@@ -177,6 +177,10 @@ SALARY_CAP_M = {
     "2016-17":  94.1,  "2017-18":  99.1,  "2018-19": 101.9,  "2019-20": 109.1,
     "2020-21": 109.1,  "2021-22": 112.4,  "2022-23": 123.7,  "2023-24": 136.0,
     "2024-25": 140.6,  "2025-26": 154.6,
+    # 2026-27 is the season a new contract signed "today" would start —
+    # NBA projection $165M (Shams/ESPN, ~$10M rise). Used to price the
+    # Contract Predictor's output in next-season dollars.
+    "2026-27": 165.0,
 }
 
 

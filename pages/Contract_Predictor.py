@@ -63,7 +63,6 @@ from utils import (
     get_player_draft_info, build_draft_tier_lookup,
     # CBA / contract structure
     get_max_contract_eligibility,
-    is_known_buyout, cba_min_pct,
     fetch_rookie_scale_players,
     fetch_all_nba_selections, get_all_nba_in_window,
     # Contract end-year scraper — powers the "Current deal: $X through YYYY-YY"
@@ -73,7 +72,12 @@ from utils import (
 )
 
 
-CURRENT_SEASON = SEASONS[0]
+CURRENT_SEASON = SEASONS[0]            # latest real season — source of the player's stats
+# A new contract signed "today" starts NEXT season, so we price the prediction
+# in next-season cap dollars. Stats come from CURRENT_SEASON; the contract is
+# valued at CONTRACT_SEASON's cap. Auto-advances with SEASONS.
+_cs_start = int(CURRENT_SEASON[:4]) + 1
+CONTRACT_SEASON = f"{_cs_start}-{(_cs_start + 1) % 100:02d}"
 
 
 # ── Page boilerplate ─────────────────────────────────────────────────────────
@@ -84,12 +88,13 @@ render_nav("Contract Predictor")
 
 st.title("Contract Predictor")
 st.caption(
-    "Type a player's name to see their projected next contract. A machine-"
-    "learning model (HistGBM) trained on 1,900+ modern-era contracts (2012+), "
-    "built on the Barrett Score plus age, position, service years, All-NBA "
-    "history, and advanced metrics (usage, PIE, on/off rating). Validated by "
-    "temporal cross-validation on real new contracts: 89% of predictions "
-    "within 5% of the cap, 99% within 10%."
+    f"Type a player's name to see what they'd command on a NEW contract signed "
+    f"today — i.e. their {CONTRACT_SEASON} salary, priced from their {CURRENT_SEASON} "
+    "production at next season's projected cap. A machine-learning model (HistGBM) "
+    "trained on 1,900+ modern-era contracts (2012+), built on the Barrett Score plus "
+    "age, position, service years, All-NBA history, and advanced metrics (usage, PIE, "
+    "on/off rating). Validated by temporal cross-validation on real signings: 89% of "
+    "predictions within 5% of the cap, 99% within 10%."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -529,16 +534,23 @@ def _histgbm_feature_vector(features: dict, target_season: str) -> np.ndarray | 
     ]])
 
 
-def predict_contract_histgbm(features: dict, target_season: str = CURRENT_SEASON
-                              ) -> dict | None:
-    """HistGBM v2 prediction with CBA cap/floor post-processing.
-    Returns the same dict format as predict_contract. Returns None if the
-    HistGBM model isn't loadable — caller should fall back to predict_contract.
+def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASON,
+                             stats_season: str = CURRENT_SEASON) -> dict | None:
+    """Predict the contract a player would sign TODAY (a new deal starting
+    `target_season`) from their `stats_season` production.
+
+    Two different caps are in play, matching how the model was trained
+    (prior-season stats → next-season contract as % of cap):
+      - the feature vector normalizes the player's PRIOR salary by the
+        stats-season cap (CURRENT_SEASON),
+      - the predicted % of cap is converted to dollars at the CONTRACT-season
+        cap (next season — where the new deal actually starts).
+    Returns None if the HistGBM model isn't loadable (caller falls back).
     """
     artifact = _load_histgbm()
     if artifact is None:
         return None
-    X = _histgbm_feature_vector(features, target_season)
+    X = _histgbm_feature_vector(features, stats_season)   # prior salary ÷ stats-season cap
     if X is None:
         return None
     model = artifact["model"]
@@ -547,7 +559,8 @@ def predict_contract_histgbm(features: dict, target_season: str = CURRENT_SEASON
     # cratered (the Clarkson floor-glitch); cap at the 35% absolute max.
     pred_pct = float(np.clip(model.predict(X)[0], 0.015, 0.35))
 
-    cap_dollars_val = SALARY_CAP_M.get(target_season, 154.6) * 1_000_000
+    # Convert to dollars at NEXT season's cap — the deal would start then.
+    cap_dollars_val = SALARY_CAP_M.get(target_season, 165.0) * 1_000_000
     raw_predicted = pred_pct * cap_dollars_val
     base = raw_predicted  # for display compatibility with predict_contract
 
@@ -584,23 +597,10 @@ def predict_contract_histgbm(features: dict, target_season: str = CURRENT_SEASON
         predicted = cba_max_dollars
         cba_floor_applied = True
 
-    # Buyout override — dominates everything above. A bought-out player signs a
-    # minimum-type deal regardless of how the model rates him: his money is
-    # already guaranteed by the old team's residual, so he joins a contender on
-    # a CBA exception. Public transaction → known at predict time. Predicting the
-    # veteran minimum lands within 5% of cap on 105/105 historical buyout cases.
-    buyout_applied = False
-    if is_known_buyout(features.get("name", ""), target_season):
-        predicted = cba_min_pct(float(features.get("service_years") or 0)) * cap_dollars_val
-        cba_cap_applied = False
-        cba_floor_applied = False
-        buyout_applied = True
-
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
         "base":                 base,
-        "buyout_applied":       buyout_applied,
         "age_mult":             1.0,  # baked into the model
         "age_tier":             "Model-internal",
         "pos_mult":             1.0,
@@ -626,11 +626,12 @@ def predict_contract_histgbm(features: dict, target_season: str = CURRENT_SEASON
     }
 
 
-def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dict:
+def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
+                     stats_season: str = CURRENT_SEASON) -> dict:
     # HistGBM model (machine-learning regression on ~1,900 modern-era
     # contracts, 2012+). Falls back to the legacy rank-mapping +
     # multipliers formula if the model artifact isn't available.
-    hist = predict_contract_histgbm(features, target_season)
+    hist = predict_contract_histgbm(features, target_season, stats_season)
     if hist is not None:
         return hist
 
@@ -652,7 +653,7 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
 
     pos_mult = POSITION_MULTIPLIERS.get(features["position"], 1.0)
 
-    cap_dollars_val = SALARY_CAP_M.get(target_season, 154.6) * 1_000_000
+    cap_dollars_val = SALARY_CAP_M.get(target_season, 165.0) * 1_000_000
     supermax_threshold = cap_dollars_val * SUPERMAX_CAP_PCT
 
     # Position suppression at supermax tier:
@@ -710,20 +711,10 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
         predicted = cba_max_dollars
         cba_floor_applied = True
 
-    # Buyout override (see predict_contract_histgbm) — bought-out player signs a
-    # minimum-type deal; predict the veteran minimum regardless of stats.
-    buyout_applied = False
-    if is_known_buyout(features.get("name", ""), target_season):
-        predicted = cba_min_pct(float(features.get("service_years") or 0)) * cap_dollars_val
-        cba_cap_applied = False
-        cba_floor_applied = False
-        buyout_applied = True
-
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
         "base":                 base,
-        "buyout_applied":       buyout_applied,
         "age_mult":             age_mult,
         "age_tier":             age_tier,
         "pos_mult":             pos_mult_applied,
@@ -1472,7 +1463,7 @@ if features is None:
     st.warning(f"Couldn't find {selected} in {CURRENT_SEASON} data.")
     st.stop()
 
-prediction = predict_contract(features, CURRENT_SEASON)
+prediction = predict_contract(features)  # stats: CURRENT_SEASON → contract: CONTRACT_SEASON
 caveats = detect_caveats(features)
 
 # Compute comparables here too — we need their median for the hero card
@@ -1556,9 +1547,7 @@ divergence = 0.0
 # variants — with market and without). Gives a one-line "why" at a
 # glance; the full explanation lives in the About expander.
 _supermax_label = prediction.get("supermax_tier_label", "")
-if prediction.get("buyout_applied"):
-    _model_caption = "Buyout — projected at veteran minimum"
-elif prediction.get("cba_cap_applied"):
+if prediction.get("cba_cap_applied"):
     _model_caption = f"Capped at max ({_supermax_label})"
 elif prediction.get("cba_floor_applied"):
     _model_caption = f"Supermax floor ({_supermax_label})"
@@ -2255,13 +2244,12 @@ with st.expander("About this prediction"):
         stacked ensemble were tested and came in within noise — so they were
         dropped. We ship only what the rigorous evaluation confirms.
 
-        **Buyout signings** are handled by a separate CBA rule, not the stats
-        model. A bought-out player's pay isn't a function of his production —
-        his money is already guaranteed by the old team's residual, so he joins
-        a contender on a minimum-type deal. Because a buyout is a public
-        transaction, we flag those players and predict the veteran minimum:
-        across all 105 "off a big deal, signed small" cases since 2012, that
-        lands within 5% of the cap on every one (Ayton, Beal, Smart in 2025).
+        **What the number means.** It's a *new-contract* projection: the model
+        prices this season's production and reports it in NEXT season's cap
+        dollars — i.e. "what this player would command if he signed a fresh deal
+        today." It is a market-value estimate, so it ignores one-off circumstances
+        of a player's *current* deal (a buyout, a hometown discount); a bought-out
+        player is valued on his game, not his bargain.
 
         The remaining misses are almost all young breakouts landing their
         first max extension off a tiny prior salary (Porter, Simons, Suggs) —
