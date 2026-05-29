@@ -36,14 +36,18 @@ FEATURE_NAMES = (PRUNED_FEATURES
 
 # (player, season)
 TARGETS = [
-    ("Giannis Antetokounmpo", "2021-22"),
-    ("Luka Dončić",           "2022-23"),
-    ("Nikola Jokić",          "2023-24"),
-    ("Jaylen Brown",          "2024-25"),
-    ("Malik Beasley",         "2024-25"),
-    ("Anthony Edwards",       "2024-25"),
-    ("Anthony Davis",         "2025-26"),
-    ("Cade Cunningham",       "2025-26"),
+    ("Michael Porter Jr.", "2022-23"),
+    ("Jordan Clarkson",    "2023-24"),
+    ("Gary Trent Jr.",     "2021-22"),
+    ("Montrezl Harrell",   "2022-23"),
+    ("Jordan Clarkson",    "2024-25"),
+    ("Spencer Dinwiddie",  "2024-25"),
+    ("Paul Reed",          "2024-25"),
+    ("Brook Lopez",        "2025-26"),
+    ("Brook Lopez",        "2023-24"),
+    ("Jalen Brunson",      "2022-23"),
+    ("Deandre Ayton",      "2025-26"),
+    ("James Harden",       "2022-23"),
 ]
 
 
