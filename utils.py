@@ -1259,6 +1259,11 @@ def fetch_salaries(espn_year: int) -> pd.DataFrame:
         if data.empty:
             break
         rows.append(data)
+    if not rows:
+        # ESPN returned no salary tables (uncovered year / outage). Return an
+        # empty frame with the expected columns rather than crashing build_raw
+        # on pd.concat([]) — the caller tolerates a missing salary lookup.
+        return pd.DataFrame(columns=["name", "salary"])
     combined = pd.concat(rows, ignore_index=True)
     combined.columns = ["rank", "name_pos", "team", "salary"]
     combined["name"] = combined["name_pos"].str.replace(r",\s*\w+$", "", regex=True).str.strip()
@@ -2991,7 +2996,8 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
         if stats.empty:
             return pd.DataFrame()
 
-    sal_lookup = {normalize(n): s for n, s in zip(salaries["name"], salaries["salary"])}
+    sal_lookup = ({normalize(n): s for n, s in zip(salaries["name"], salaries["salary"])}
+                  if not salaries.empty and "name" in salaries.columns else {})
     stats["salary"] = stats["PLAYER_NAME"].apply(lambda n: sal_lookup.get(normalize(n)))
 
     supplement = SALARY_SUPPLEMENT.get(season, {})

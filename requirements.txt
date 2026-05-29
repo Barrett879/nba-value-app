@@ -1,10 +1,15 @@
-nba_api
-pandas
-streamlit
-streamlit-searchbox
-plotly
-requests
-beautifulsoup4
-lxml
-scikit-learn
-joblib
+# Pinned to known-good versions (Python 3.12). scikit-learn + joblib are pinned
+# to the versions the shipped models/contract_histgbm_v2.joblib was saved with —
+# a drift here would break model loading on a Render rebuild.
+nba_api==1.11.4
+numpy==2.3.5
+pandas==2.3.3
+pyarrow==21.0.0
+streamlit==1.51.0
+streamlit-searchbox==0.1.24
+plotly==6.3.0
+requests==2.32.5
+beautifulsoup4==4.13.5
+lxml==5.3.0
+scikit-learn==1.7.2
+joblib==1.5.2
