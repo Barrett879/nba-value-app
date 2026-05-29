@@ -1280,6 +1280,17 @@ def _inverse_distance_weights(distances: np.ndarray, eps: float = 1.0) -> np.nda
     return 1.0 / (np.asarray(distances, dtype=float) + eps)
 
 
+def _comp_salaries_in_contract_dollars(comps: pd.DataFrame) -> np.ndarray:
+    """Comparable signed salaries scaled to CONTRACT_SEASON (next-season) cap
+    dollars, so the market median is apples-to-apples with the model's figure.
+    Each comp signed in a different year at a different cap; a deal worth 20% of
+    the 2024-25 cap is expressed as 20% of the 2026-27 cap."""
+    contract_cap = SALARY_CAP_M.get(CONTRACT_SEASON, 165.0)
+    factor = comps["signed_in"].map(
+        lambda s: contract_cap / SALARY_CAP_M.get(s, 154.6)).astype(float).values
+    return comps["salary_curr"].astype(float).values * factor
+
+
 def _scouting_take(features: dict, comps: pd.DataFrame) -> dict:
     """Build the 'Scouting take' summary: top-3 names, weighted median deal,
     weighted IQR range, X-factor narrative.
@@ -1289,7 +1300,7 @@ def _scouting_take(features: dict, comps: pd.DataFrame) -> dict:
     if comps.empty:
         return {}
 
-    salaries = comps["salary_curr"].astype(float).values
+    salaries = _comp_salaries_in_contract_dollars(comps)  # 2026-27 dollars
     # If `distance` column is missing for some reason, fall back to equal
     # weighting so we never crash.
     if "distance" in comps.columns:
@@ -1523,7 +1534,7 @@ if not _comps.empty:
 if _market_suppressed:
     _market_median = None
 elif not _market_used_comps.empty:
-    _salaries = _market_used_comps["salary_curr"].astype(float).values
+    _salaries = _comp_salaries_in_contract_dollars(_market_used_comps)  # 2026-27 dollars
     if "distance" in _market_used_comps.columns:
         _weights = _inverse_distance_weights(
             _market_used_comps["distance"].astype(float).values
@@ -1984,6 +1995,9 @@ else:
                      height=min(400, 60 + len(comp_disp) * 35))
 
         st.caption(
+            f"\"Signed for\" shows each comp's ACTUAL deal in its signing year; the "
+            f"market median above cap-adjusts them to {CONTRACT_SEASON} dollars so it's "
+            f"comparable to the model. "
             "Context tags: **Supermax** ≥28% cap · **Free-agent raise** ≥15% bump · "
             "**Rookie extension** first non-rookie deal · **Paycut** took less to stay. "
             "Draft tiers: Lottery (1-14) · Mid-1st (15-22) · Late-1st (23-30) · 2nd (31-60) · Undrafted."
