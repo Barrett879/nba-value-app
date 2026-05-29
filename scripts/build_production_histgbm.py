@@ -36,7 +36,7 @@ from train_ml_model_v2 import (
 )
 from train_ml_model_v3 import PRUNED_FEATURES, make_X_pruned
 from train_raw_model import combined_season
-from utils import normalize as _norm
+from utils import normalize as _norm, cba_min_pct, is_known_buyout, KNOWN_BUYOUTS
 
 # Advanced stats appended to the Barrett feature set — confirmed a real gain
 # by paired repeated CV (+1.12pp within-5%, t=3.9). Order is fixed and MUST
@@ -171,21 +171,39 @@ def cba_max_pct(service_years: float, all_nba_3yr: float) -> float:
     return 0.35
 
 
-def apply_cba_postprocess(pred_pct: np.ndarray, df: pd.DataFrame = None) -> np.ndarray:
+# Buyout signings (KNOWN_BUYOUTS, cba_min_pct, is_known_buyout) live in utils.py
+# so the live app and this pipeline share one source of truth. A bought-out
+# player signs a CBA exception-level deal regardless of his stats; predicting the
+# veteran minimum lands within 5% of cap on 105/105 historical big→small cases.
+
+
+def apply_cba_postprocess(pred_pct: np.ndarray, df: pd.DataFrame = None,
+                          apply_buyout: bool = True) -> np.ndarray:
     """Clip to the legal CBA range, then floor clear max-caliber stars (model
     ≥20% of cap AND recent All-NBA AND age ≤ 33) up to their CBA max tier.
     The age gate spares aging stars (Chris Paul 36) who take discounts;
-    forward-validated at +0.36pp over the no-age 0.22 floor."""
+    forward-validated at +0.36pp over the no-age 0.22 floor.
+
+    Finally, snap any KNOWN_BUYOUT to the veteran minimum (apply_buyout=True) —
+    a bought-out player signs a minimum-type deal regardless of his stats."""
     out = np.clip(pred_pct, PRED_FLOOR_PCT, PRED_CEIL_PCT).astype(float)
     if df is not None and "years_in_league" in df.columns and "all_nba_3yr" in df.columns:
         svc = df["years_in_league"].values
         ann = df["all_nba_3yr"].values
         age = df["age"].values if "age" in df.columns else np.full(len(out), 30.0)
+        players = df["player"].values if "player" in df.columns else None
+        seasons = df["curr"].values if "curr" in df.columns else None
         for i in range(len(out)):
             a = age[i]
             age_ok = a is None or (isinstance(a, float) and np.isnan(a)) or a <= MAX_FLOOR_AGE_CAP
             if out[i] >= MAX_FLOOR_TRIGGER and (ann[i] or 0) >= 1 and age_ok:
                 out[i] = max(out[i], cba_max_pct(svc[i], ann[i]))
+            # Buyout override — dominates everything above. A bought-out player
+            # signs a minimum-type deal regardless of how good the model rates
+            # him, because his money is already guaranteed by the old team.
+            if apply_buyout and players is not None and seasons is not None and \
+                    is_known_buyout(players[i], seasons[i]):
+                out[i] = cba_min_pct(svc[i])
     return out
 
 

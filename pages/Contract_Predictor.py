@@ -63,6 +63,7 @@ from utils import (
     get_player_draft_info, build_draft_tier_lookup,
     # CBA / contract structure
     get_max_contract_eligibility,
+    is_known_buyout, cba_min_pct,
     fetch_rookie_scale_players,
     fetch_all_nba_selections, get_all_nba_in_window,
     # Contract end-year scraper — powers the "Current deal: $X through YYYY-YY"
@@ -583,10 +584,23 @@ def predict_contract_histgbm(features: dict, target_season: str = CURRENT_SEASON
         predicted = cba_max_dollars
         cba_floor_applied = True
 
+    # Buyout override — dominates everything above. A bought-out player signs a
+    # minimum-type deal regardless of how the model rates him: his money is
+    # already guaranteed by the old team's residual, so he joins a contender on
+    # a CBA exception. Public transaction → known at predict time. Predicting the
+    # veteran minimum lands within 5% of cap on 105/105 historical buyout cases.
+    buyout_applied = False
+    if is_known_buyout(features.get("name", ""), target_season):
+        predicted = cba_min_pct(float(features.get("service_years") or 0)) * cap_dollars_val
+        cba_cap_applied = False
+        cba_floor_applied = False
+        buyout_applied = True
+
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
         "base":                 base,
+        "buyout_applied":       buyout_applied,
         "age_mult":             1.0,  # baked into the model
         "age_tier":             "Model-internal",
         "pos_mult":             1.0,
@@ -696,10 +710,20 @@ def predict_contract(features: dict, target_season: str = CURRENT_SEASON) -> dic
         predicted = cba_max_dollars
         cba_floor_applied = True
 
+    # Buyout override (see predict_contract_histgbm) — bought-out player signs a
+    # minimum-type deal; predict the veteran minimum regardless of stats.
+    buyout_applied = False
+    if is_known_buyout(features.get("name", ""), target_season):
+        predicted = cba_min_pct(float(features.get("service_years") or 0)) * cap_dollars_val
+        cba_cap_applied = False
+        cba_floor_applied = False
+        buyout_applied = True
+
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
     return {
         "base":                 base,
+        "buyout_applied":       buyout_applied,
         "age_mult":             age_mult,
         "age_tier":             age_tier,
         "pos_mult":             pos_mult_applied,
@@ -1532,7 +1556,9 @@ divergence = 0.0
 # variants — with market and without). Gives a one-line "why" at a
 # glance; the full explanation lives in the About expander.
 _supermax_label = prediction.get("supermax_tier_label", "")
-if prediction.get("cba_cap_applied"):
+if prediction.get("buyout_applied"):
+    _model_caption = "Buyout — projected at veteran minimum"
+elif prediction.get("cba_cap_applied"):
     _model_caption = f"Capped at max ({_supermax_label})"
 elif prediction.get("cba_floor_applied"):
     _model_caption = f"Supermax floor ({_supermax_label})"
@@ -2228,6 +2254,14 @@ with st.expander("About this prediction"):
         t=3.9). A two-stage classify-the-regime-then-snap model and a 4-learner
         stacked ensemble were tested and came in within noise — so they were
         dropped. We ship only what the rigorous evaluation confirms.
+
+        **Buyout signings** are handled by a separate CBA rule, not the stats
+        model. A bought-out player's pay isn't a function of his production —
+        his money is already guaranteed by the old team's residual, so he joins
+        a contender on a minimum-type deal. Because a buyout is a public
+        transaction, we flag those players and predict the veteran minimum:
+        across all 105 "off a big deal, signed small" cases since 2012, that
+        lands within 5% of the cap on every one (Ayton, Beal, Smart in 2025).
 
         The remaining misses are almost all young breakouts landing their
         first max extension off a tiny prior salary (Porter, Simons, Suggs) —
