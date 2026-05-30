@@ -1569,9 +1569,12 @@ else:
 
 def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
                          secondary_color="#16d4c1", secondary_label="market",
-                         scale_min_M=None, scale_max_M=None):
+                         scale_min_M=None, scale_max_M=None,
+                         tertiary_M=None, tertiary_color="#9aa0aa",
+                         tertiary_label="current"):
     """Premium-analytics range bar: a shaded model confidence band, a bright
-    Model marker, and an optional secondary (market / anchor) dot.
+    Model marker, an optional secondary (market / anchor) dot, and an optional
+    tertiary hollow ring (the player's current salary — shows the raise).
 
     When scale_min_M / scale_max_M are supplied, the TRACK is fixed to that
     span — the veteran-minimum floor up to the player's OWN capped max — so a
@@ -1596,6 +1599,15 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
                f' background:{secondary_color}; border:2px solid #15171d; border-radius:50%;'
                f' transform:translate(-50%,-50%); z-index:2;"></div>')
         legend += f'  ·  <span style="color:{secondary_color};">●</span> {secondary_label}'
+    # Tertiary marker: the player's current salary, drawn as a hollow ring so
+    # it reads as "where they are now" vs the model/market markers (the raise).
+    ter = ""
+    if tertiary_M is not None:
+        tp = p(tertiary_M)
+        ter = (f'<div style="position:absolute; left:{tp}%; top:50%; width:11px; height:11px;'
+               f' background:#15171d; border:2px solid {tertiary_color}; border-radius:50%;'
+               f' transform:translate(-50%,-50%); z-index:1;"></div>')
+        legend += f'  ·  <span style="color:{tertiary_color};">○</span> {tertiary_label}'
     # Endpoint labels: league min/max when the scale is fixed (tagged so they
     # aren't misread as the player's own range), else the player's own band.
     if fixed:
@@ -1614,7 +1626,7 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
         f'<div style="position:absolute; left:{bl:.1f}%; width:{max(br-bl,1):.1f}%; '
         f'top:0; bottom:0; border-radius:5px; '
         f'background:linear-gradient(90deg, rgba(22,212,193,0.22), rgba(22,212,193,0.5));"></div>'
-        f'{sec}'
+        f'{ter}{sec}'
         f'<div style="position:absolute; left:{mp:.1f}%; top:-5px; width:3px; height:18px; '
         f'background:#fff; border-radius:2px; transform:translateX(-50%); '
         f'box-shadow:0 0 10px rgba(255,255,255,0.75); z-index:3;"></div>'
@@ -1645,6 +1657,11 @@ high_M = prediction["high"] / 1_000_000
 _scale_cap_M  = SALARY_CAP_M.get(CONTRACT_SEASON, 165.0)
 _scale_min_M  = 0.015 * _scale_cap_M   # mirrors the np.clip lower bound in predict_*
 _scale_max_M  = (prediction.get("cba_max_dollars") or 0.35 * _scale_cap_M * 1e6) / 1e6
+# Current (stats-season) salary, drawn on the bar as a hollow ring so the gap to
+# the model marker reads as the projected raise. None when no salary is on file.
+_prev_sal_M     = float(features.get("salary") or 0) / 1e6
+_prev_sal_M     = _prev_sal_M if _prev_sal_M > 0 else None
+_prev_sal_label = CURRENT_SEASON[2:]   # "2025-26" -> "25-26"
 
 # Initialize divergence so downstream code (confidence label, "Why this
 # prediction" explainer) can reference it whether or not market data exists.
@@ -1770,7 +1787,7 @@ if _market_median is not None:
         <span style="font-size:3.4rem; font-weight:800; color:#fff;
                      letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
       </div>
-      {_confidence_bar_html(predicted_M, low_M, high_M, market_M, "#16d4c1", scale_min_M=_scale_min_M, scale_max_M=_scale_max_M)}
+      {_confidence_bar_html(predicted_M, low_M, high_M, market_M, "#16d4c1", scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
       <div style="margin-top:0.95rem; font-size:0.82rem; color:#9a9aa3;">
         Market second opinion
         <span style="color:#6a6a72;">(median of comparable signings)</span>:
@@ -1857,7 +1874,7 @@ else:
             <span style="font-size:3.4rem; font-weight:800; color:#fff;
                          letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
           </div>
-          {_confidence_bar_html(predicted_M, low_M, high_M, scale_min_M=_scale_min_M, scale_max_M=_scale_max_M)}
+          {_confidence_bar_html(predicted_M, low_M, high_M, scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
           <div style="margin-top:0.95rem; font-size:0.78rem; color:#888;">
             Model prediction only — no comparable signings on file.
           </div>
