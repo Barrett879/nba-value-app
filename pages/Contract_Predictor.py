@@ -2101,6 +2101,48 @@ else:
             "Draft tiers: Lottery (1-14) · Mid-1st (15-22) · Late-1st (23-30) · 2nd (31-60) · Undrafted."
         )
 
+# ── Likely suitors (experimental) ───────────────────────────────────────────
+# Hidden until data/team_landscape_2026.csv has real cap data entered. "Need" is
+# computed LIVE — the player's Barrett vs each team's depth chart at his position
+# (build_rosters from current_ranked); affordability comes from the CSV. Fully
+# wrapped in try/except so a data/import hiccup can never break the page.
+try:
+    import team_suitors as _ts
+    _ts_land = _ts.load_team_landscape()
+    if _ts.landscape_is_filled(_ts_land):
+        _ts_rost = _ts.build_rosters(current_ranked)
+        _ts_pos = features.get("position_detailed") or features.get("position") or "F"
+        _ts_suitors = (
+            _ts.rank_suitors(predicted_M, float(features["barrett_score"]),
+                             _ts_pos, _ts_rost, _ts_land, n=5)
+            if not _ts_rost.empty else []
+        )
+        if _ts_suitors:
+            _ts_rows = "".join(
+                f'<div style="display:flex; align-items:baseline; gap:0.7rem; padding:0.45rem 0; '
+                f'border-top:1px solid rgba(255,255,255,0.06);">'
+                f'<span style="font-weight:800; color:#16d4c1; width:2.6rem;">{_s["team"]}</span>'
+                f'<span style="color:#cdcdd5; font-size:0.85rem;">{_s["reason"]}</span>'
+                f'<span style="margin-left:auto; color:#7a7a85; font-size:0.76rem; '
+                f'white-space:nowrap;">{_s["tool"]}</span></div>'
+                for _s in _ts_suitors
+            )
+            st.markdown(
+                '<div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, '
+                'rgba(22,212,193,0.06) 100%); border:1px solid rgba(255,255,255,0.10); '
+                'border-radius:14px; padding:1.1rem 1.4rem; margin:0.4rem 0 0.2rem;">'
+                '<div style="font-size:0.7rem; color:#16d4c1; letter-spacing:0.12em; '
+                'text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">'
+                f'Likely suitors — teams he upgrades at ~${predicted_M:.0f}M</div>{_ts_rows}</div>',
+                unsafe_allow_html=True,
+            )
+            st.caption(
+                "Experimental — “need” is his Barrett vs each team's depth chart at the "
+                "position; affordability from each team's 2026 cap room / exception."
+            )
+except Exception:
+    pass
+
 # ── Methodology footer (collapsed — info-after-action) ──────────────────────
 st.divider()
 with st.expander("About this prediction"):
