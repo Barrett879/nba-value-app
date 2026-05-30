@@ -2,6 +2,13 @@ services:
   - type: web
     name: barrett-score
     runtime: python
+    # Pin Python to 3.12 — Render's default moved to 3.14, which has no wheels
+    # for the pinned pyarrow/numpy (forces a from-source build that fails on the
+    # build image). 3.12 is the version every pinned wheel targets. Also set via
+    # .python-version + runtime.txt so the version is honored however Render reads it.
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
     buildCommand: pip install -r requirements.txt
     startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
     plan: starter          # $7/mo — always-on, no spin-down
