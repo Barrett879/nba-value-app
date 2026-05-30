@@ -320,7 +320,12 @@ def _reason(need: dict, timeline: str, target_barrett: float, is_incumbent: bool
 # team doesn't read as a good shooting team (verified: such teams correctly flag as
 # NEEDING shooting, and Jokic's Denver lands #1 in playmaking).
 SKILL_CATS = ("shooting", "rebounding", "playmaking", "defense")
-SKILL_WEIGHT = 0.5          # rank multiplier swings x(1-W/2)..x(1+W/2) by skill fit
+# LIGHT tiebreaker (rank x(1-W/2)..x(1+W/2)). Tuned DOWN from 0.5 after measuring it:
+# over 917 historical signings, FAs land on a skill-fit team only +0.9% above chance
+# (per-category corr all ~0), i.e. teams barely sign to fill specific skill gaps — they
+# do it via draft/trades. So the reorder is a faint nudge; the "fills their X need"
+# label is the real value. Raise it only if you want a normative ("should") emphasis.
+SKILL_WEIGHT = 0.15
 _SKILL_MIN_GP = 30          # rotation filter for the percentile pools
 
 
