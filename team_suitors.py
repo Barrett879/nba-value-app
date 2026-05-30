@@ -30,15 +30,28 @@ DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
 ROTATION_DEPTH = 3      # he must crack the top-3 at his position to count as a "need"
 
 
-def _pos_bucket(pos: str) -> str:
-    """Collapse any position label to a G / F / C bucket."""
-    p = (pos or "").strip().upper()
-    if "-" in p or "/" in p:                       # combos like "G-F" -> first token
-        p = p.replace("-", "/").split("/")[0]
-    if p in ("PG", "SG", "G", "GUARD"):            return "G"
-    if p in ("SF", "PF", "F", "FORWARD", "WING"):  return "F"
-    if p in ("C", "CENTER"):                       return "C"
-    return "F"
+SPECTRUM = ["PG", "SG", "SF", "PF", "C"]
+_POS_IDX = {p: i for i, p in enumerate(SPECTRUM)}
+
+
+def _norm5(pos: str) -> str:
+    """Normalize any position label to one of PG / SG / SF / PF / C."""
+    p = (pos or "").strip().upper().replace("-", "/").split("/")[0]
+    if p in _POS_IDX:                  return p
+    if p in ("G", "GUARD"):           return "SG"
+    if p in ("F", "FORWARD", "WING"): return "SF"
+    if p in ("C", "CENTER"):          return "C"
+    return "SF"                        # unknown -> generic forward
+
+
+def _eligible_positions(pos: str) -> set:
+    """A player's primary position PLUS its spectrum neighbours (±1 on the
+    PG-SG-SF-PF-C line) — the 'secondary position' flex. e.g. SG -> {PG, SG, SF};
+    PF -> {SF, PF, C}; PG -> {PG, SG}. (A real NBA-2K secondary table would prune
+    these to each player's actual second slot — Reaves to PG, not SF — but the
+    symmetric ±1 is the data-free version that captures most of the versatility.)"""
+    i = _POS_IDX[_norm5(pos)]
+    return {SPECTRUM[j] for j in (i - 1, i, i + 1) if 0 <= j < len(SPECTRUM)}
 
 
 def load_team_landscape(path: Path | str = CSV_PATH) -> pd.DataFrame:
@@ -58,8 +71,8 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
       slot 0 = would start (better than their best at the spot)
       slot 1 = backup upgrade ... slot >= ROTATION_DEPTH = no need.
     """
-    bucket = _pos_bucket(target_pos)
-    inc = (team_roster[team_roster["pos"].map(_pos_bucket) == bucket]
+    elig = _eligible_positions(target_pos)     # primary + spectrum neighbours (secondary flex)
+    inc = (team_roster[team_roster["pos"].map(_norm5).isin(elig)]
            .sort_values("barrett", ascending=False).reset_index(drop=True))
     scores = inc["barrett"].astype(float).tolist()
     slot = sum(1 for s in scores if s > target_score)   # how many incumbents are better
