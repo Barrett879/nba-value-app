@@ -37,6 +37,13 @@ DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
 ROTATION_DEPTH = 3      # starter/rotation boundary: slot 0=starter, 1=key sub, 2=depth (labels)
 INTEREST_DEPTH = 5      # in his market if he'd be ~top-5 at the position (own team gets +2 leash)
 
+# His current team's re-sign pull. Predictive backtest (1,810 signings — does the board
+# rank the ACTUAL signing team highly?): 49% of FAs re-sign with their own team, and
+# weighting the incumbent ~5x lifts top-1 accuracy 15% -> 46% and top-5 40% -> 56%. So an
+# unrestricted incumbent's rank x= this (a restricted FA's team can match any offer and is
+# pinned to #1 outright). Lower it to surface the outside market more; ~8 ≈ always re-sign.
+INCUMBENT_WEIGHT = 5.0
+
 # Fit-scaled offers: a team pays toward full value for a starter, less for a depth
 # add. Indexed by slot (how many of their incumbents out-rate him at the spot).
 _FIT_FACTOR = {0: 1.00, 1: 0.90, 2: 0.78, 3: 0.62, 4: 0.50}
@@ -286,8 +293,8 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
         sf = (skill_fit or {}).get(t["team"]) or {"fit": 0.5, "need": None}
         # skill fit nudges rank x(1-W/2)..x(1+W/2) — favours teams who lack his skill
         rank = offer * des * ((1.0 - SKILL_WEIGHT / 2.0) + SKILL_WEIGHT * float(sf["fit"]))
-        if is_inc and is_rfa:
-            rank = 1e9                                       # RFA: his team can match anything
+        if is_inc:                                           # ~half of FAs re-sign -> heavy pull
+            rank = 1e9 if is_rfa else rank * INCUMBENT_WEIGHT
         out.append({
             "team":         t["team"],
             "team_name":    t.get("team_name", t["team"]),
@@ -324,12 +331,11 @@ def _reason(need: dict, timeline: str, target_barrett: float, is_incumbent: bool
 # team doesn't read as a good shooting team (verified: such teams correctly flag as
 # NEEDING shooting, and Jokic's Denver lands #1 in playmaking).
 SKILL_CATS = ("shooting", "rebounding", "playmaking", "defense")
-# LIGHT tiebreaker (rank x(1-W/2)..x(1+W/2)). Tuned DOWN from 0.5 after measuring it:
-# over 917 historical signings, FAs land on a skill-fit team only +0.9% above chance
-# (per-category corr all ~0), i.e. teams barely sign to fill specific skill gaps — they
-# do it via draft/trades. So the reorder is a faint nudge; the "fills their X need"
-# label is the real value. Raise it only if you want a normative ("should") emphasis.
-SKILL_WEIGHT = 0.15
+# Skill-fit's RANKING weight — set to 0. The predictive backtest (1,810 signings) showed
+# adding skill HURTS accuracy: top-1 15.4% -> 13.6%, top-5 40.3% -> 37.8%. Teams don't sign
+# FAs for skill gaps, so it only adds noise to the order. Kept purely as the "fills their X
+# need" annotation; raise for a normative emphasis (the data won't back it).
+SKILL_WEIGHT = 0.0
 _SKILL_MIN_GP = 30          # rotation filter for the percentile pools
 # Per-category weight in the ranking fit. Over 917 signings, only SHOOTING carries a
 # market signal (lift 1.04) — rebounding 0.98 (slightly negative), playmaking 0.99,
