@@ -324,7 +324,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("""
 <div style="text-align:center; padding: 0 0 0.6rem 0;">
-    <div style="font-size:0.88rem; color:var(--fg-2); max-width:760px; margin:0.4rem auto 0; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
+    <div style="font-size:0.88rem; color:var(--fg-2); max-width:760px; margin:0.4rem auto 0; line-height:1.45;">
         Every NBA player since 1973, ranked by the <b style="color:var(--fg-1);">Barrett Score</b>. On-court production sized up against every paycheck.<br><span style="color:var(--fg-2);">Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</span>
     </div>
 </div>
@@ -345,7 +345,6 @@ st.markdown("""
     color: var(--fg-2);
     text-align: center;
     margin-bottom: 0.35rem;
-    text-shadow: 0 1px 6px rgba(0,0,0,0.6);
     letter-spacing: 0.04em;
 }
 </style>
