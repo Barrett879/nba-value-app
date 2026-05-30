@@ -1567,7 +1567,53 @@ elif not _market_used_comps.empty:
 else:
     _market_median = None
 
-# ── Big number header: Model + Market side-by-side ───────────────────────────
+def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
+                         secondary_color="#16d4c1", secondary_label="market"):
+    """Premium-analytics range bar: a shaded model confidence band, a bright
+    Model marker, and an optional secondary (market / anchor) dot — visualizing
+    the prediction and its uncertainty at a glance."""
+    pts = [low_M, high_M, model_M] + ([secondary_M] if secondary_M is not None else [])
+    lo, hi = min(pts), max(pts)
+    pad = max((hi - lo) * 0.16, 1.0)
+    bar_lo, span = lo - pad, max((hi + pad) - (lo - pad), 0.1)
+    p = lambda v: max(2.0, min(98.0, (v - bar_lo) / span * 100))
+    bl, br, mp = p(low_M), p(high_M), p(model_M)
+    sec, legend = "", '<span style="color:#fff;">│</span> model'
+    if secondary_M is not None:
+        sp = p(secondary_M)
+        sec = (f'<div style="position:absolute; left:{sp}%; top:50%; width:12px; height:12px;'
+               f' background:{secondary_color}; border:2px solid #15171d; border-radius:50%;'
+               f' transform:translate(-50%,-50%); z-index:2;"></div>')
+        legend += f'  ·  <span style="color:{secondary_color};">●</span> {secondary_label}'
+    # Built as a single newline-free string. A standalone {sec} line (empty
+    # when there's no secondary marker) would be a whitespace-only line, which
+    # CommonMark treats as a blank line that TERMINATES the surrounding HTML
+    # block — Streamlit would then render the rest of the hero as literal text.
+    # Concatenation keeps the whole bar on one line and sidesteps that bug.
+    track = (
+        f'<div style="position:relative; height:8px; border-radius:5px; '
+        f'background:rgba(255,255,255,0.07);">'
+        f'<div style="position:absolute; left:{bl:.1f}%; width:{max(br-bl,1):.1f}%; '
+        f'top:0; bottom:0; border-radius:5px; '
+        f'background:linear-gradient(90deg, rgba(22,212,193,0.22), rgba(22,212,193,0.5));"></div>'
+        f'{sec}'
+        f'<div style="position:absolute; left:{mp:.1f}%; top:-5px; width:3px; height:18px; '
+        f'background:#fff; border-radius:2px; transform:translateX(-50%); '
+        f'box-shadow:0 0 10px rgba(255,255,255,0.75); z-index:3;"></div>'
+        f'</div>'
+    )
+    labels = (
+        f'<div style="display:flex; justify-content:space-between; align-items:center; '
+        f'font-size:0.7rem; color:#7a7a85; margin-top:0.5rem;">'
+        f'<span>${low_M:.0f}M</span>'
+        f'<span style="color:#999;">{legend}</span>'
+        f'<span>${high_M:.0f}M</span>'
+        f'</div>'
+    )
+    return f'<div style="margin-top:1.15rem;">{track}{labels}</div>'
+
+
+# ── Big number header: dominant Model $ + confidence bar + market secondary ───
 predicted_M = prediction["predicted"] / 1_000_000
 low_M  = prediction["low"]  / 1_000_000
 high_M = prediction["high"] / 1_000_000
@@ -1591,19 +1637,12 @@ elif features.get("on_rookie_scale"):
 else:
     _model_caption = ""
 
-# Pre-build the caption HTML as a single string. Two design notes:
-#   1. Inline conditional in the f-string template caused Streamlit's
-#      markdown parser to flip into code-block mode whenever the caption
-#      was empty (blank-line bug). Building here keeps the interpolation
-#      site a single string.
-#   2. position:absolute so the caption doesn't affect the Model column's
-#      height. Without this, the caption pushed Market and Range dollars
-#      up to align with Model's caption bottom (flex-end alignment) —
-#      making the three dollar amounts sit on different vertical levels.
-_model_caption_html = (
-    f'<div style="position:absolute; top:100%; left:0; '
-    f'white-space:nowrap; font-size:0.7rem; color:#16d4c1; '
-    f'margin-top:0.25rem; font-weight:600;">{_model_caption}</div>'
+# Inline caption chip shown beside the hero number (premium layout).
+_caption_chip = (
+    f'<span style="display:inline-block; margin-left:0.65rem; padding:0.18rem 0.65rem;'
+    f' border-radius:999px; background:rgba(240,179,91,0.14); color:#f0b35b;'
+    f' font-size:0.72rem; font-weight:600; vertical-align:middle;'
+    f' white-space:nowrap;">{_model_caption}</span>'
     if _model_caption else ''
 )
 
@@ -1686,51 +1725,28 @@ if _market_median is not None:
         _meta_bits.append(_draft_label)
     _player_meta_line = " · ".join(_meta_bits)
     _header_html = f"""
-    <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
-                border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-                padding:1.4rem 1.8rem 1.8rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+    <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
+                border:1px solid rgba(255,255,255,0.10); border-radius:16px;
+                padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
       <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
         {features["name"]}{_score_chip_html}
       </div>
-      <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
-                  letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
-        Predicted next contract
+      <div style="font-size:0.7rem; color:#8a8a93; text-transform:uppercase;
+                  letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
+        Projected {CONTRACT_SEASON} contract
       </div>
       <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
         {_player_meta_line}
       </div>{_signing_html}
-
-      <div style="display:flex; gap:1.6rem; margin-top:0.85rem;
-                  flex-wrap:wrap; align-items:flex-end;">
-        <div style="position:relative;">
-          <div style="font-size:0.65rem; color:#888;
-                      text-transform:uppercase; letter-spacing:0.08em;">
-            Model
-          </div>
-          <div style="font-size:2.2rem; font-weight:800; color:#fff;
-                      line-height:1;">${predicted_M:.1f}M</div>{_model_caption_html}
-        </div>
-        <div style="font-size:1.4rem; color:#444; padding-bottom:0.4rem;">|</div>
-        <div>
-          <div style="font-size:0.65rem; color:#888;
-                      text-transform:uppercase; letter-spacing:0.08em;">
-            Market (comps median)
-          </div>
-          <div style="font-size:2.2rem; font-weight:800; color:#16d4c1;
-                      line-height:1;">
-            ${market_M:.1f}M
-          </div>
-        </div>
-        <div style="margin-left:auto; text-align:right;">
-          <div style="font-size:0.65rem; color:#888;
-                      text-transform:uppercase; letter-spacing:0.08em;">
-            Range
-          </div>
-          <div style="font-size:1.3rem; color:#fff; font-weight:700;
-                      line-height:1.1;">
-            ${honest_low_M:.1f}M – ${honest_high_M:.1f}M
-          </div>
-        </div>
+      <div style="margin-top:1.05rem; line-height:0.9;">
+        <span style="font-size:3.4rem; font-weight:800; color:#fff;
+                     letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
+      </div>
+      {_confidence_bar_html(predicted_M, low_M, high_M, market_M, "#16d4c1")}
+      <div style="margin-top:0.95rem; font-size:0.82rem; color:#9a9aa3;">
+        Market second opinion
+        <span style="color:#6a6a72;">(median of comparable signings)</span>:
+        &nbsp;<b style="color:#16d4c1; font-size:0.95rem;">${market_M:.1f}M</b>
       </div>{diverge_note}
     </div>
     """
@@ -1758,10 +1774,6 @@ else:
     if _market_suppressed and float(features.get("salary", 0) or 0) > 0:
         cur_sal = float(features["salary"])
         cur_sal_M = cur_sal / 1_000_000
-        # Range expands to cover both the model prediction and current
-        # salary — the player will likely land somewhere in this band.
-        anchor_low_M  = min(predicted_M, cur_sal_M)
-        anchor_high_M = max(predicted_M, cur_sal_M)
         _explainer = (
             'Market view unavailable — the queried player is currently '
             'supermax-tier, but the historical comparables pool for that '
@@ -1769,48 +1781,27 @@ else:
             'comps). Anchoring the range on current salary instead.'
         )
         _header_html = f"""
-        <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
-                    border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-                    padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+        <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
+                    border:1px solid rgba(255,255,255,0.10); border-radius:16px;
+                    padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
           <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
             {features["name"]}{_score_chip_html}
           </div>
-          <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
-                      letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
-            Predicted next contract
+          <div style="font-size:0.7rem; color:#8a8a93; text-transform:uppercase;
+                      letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
+            Projected {CONTRACT_SEASON} contract
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
             {_player_meta_line}
           </div>{_signing_html}
-          <div style="display:flex; gap:1.6rem; margin-top:0.85rem;
-                      flex-wrap:wrap; align-items:flex-end;">
-            <div style="position:relative;">
-              <div style="font-size:0.65rem; color:#888;
-                          text-transform:uppercase; letter-spacing:0.08em;">
-                Model
-              </div>
-              <div style="font-size:2.2rem; font-weight:800; color:#fff;
-                          line-height:1;">${predicted_M:.1f}M</div>{_model_caption_html}
-            </div>
-            <div style="font-size:1.4rem; color:#444; padding-bottom:0.4rem;">|</div>
-            <div>
-              <div style="font-size:0.65rem; color:#888;
-                          text-transform:uppercase; letter-spacing:0.08em;">
-                Current salary (anchor)
-              </div>
-              <div style="font-size:2.2rem; font-weight:800; color:#16d4c1;
-                          line-height:1;">${cur_sal_M:.1f}M</div>
-            </div>
-            <div style="margin-left:auto; text-align:right;">
-              <div style="font-size:0.65rem; color:#888;
-                          text-transform:uppercase; letter-spacing:0.08em;">
-                Range
-              </div>
-              <div style="font-size:1.3rem; color:#fff; font-weight:700;
-                          line-height:1.1;">
-                ${anchor_low_M:.1f}M – ${anchor_high_M:.1f}M
-              </div>
-            </div>
+          <div style="margin-top:1.05rem; line-height:0.9;">
+            <span style="font-size:3.4rem; font-weight:800; color:#fff;
+                         letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
+          </div>
+          {_confidence_bar_html(predicted_M, low_M, high_M, cur_sal_M, "#16d4c1", "current")}
+          <div style="margin-top:0.95rem; font-size:0.82rem; color:#9a9aa3;">
+            Current salary anchor:
+            &nbsp;<b style="color:#16d4c1; font-size:0.95rem;">${cur_sal_M:.1f}M</b>
           </div>
           <div style="margin-top:0.7rem; padding-top:0.6rem;
                       border-top:1px solid rgba(255,255,255,0.08);
@@ -1821,31 +1812,25 @@ else:
         """
     else:
         _header_html = f"""
-        <div style="background:linear-gradient(135deg, rgba(230,57,70,0.10) 0%, rgba(22,212,193,0.08) 100%);
-                    border:1px solid rgba(255,255,255,0.12); border-radius:14px;
-                    padding:1.4rem 1.8rem; margin: 0.5rem 0 1.2rem 0;">
+        <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
+                    border:1px solid rgba(255,255,255,0.10); border-radius:16px;
+                    padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
           <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
             {features["name"]}{_score_chip_html}
           </div>
-          <div style="font-size:0.72rem; color:#888; text-transform:uppercase;
-                      letter-spacing:0.1em; font-weight:600; margin-top:0.4rem;">
-            Predicted next contract
+          <div style="font-size:0.7rem; color:#8a8a93; text-transform:uppercase;
+                      letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
+            Projected {CONTRACT_SEASON} contract
           </div>
           <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
             {_player_meta_line}
           </div>{_signing_html}
-          <div style="display:flex; align-items:baseline; gap:1rem;
-                      margin-top:0.7rem; flex-wrap:wrap;">
-            <div style="font-size:2.8rem; font-weight:800; color:#fff; line-height:1;">
-              ${predicted_M:.1f}M
-            </div>
-            <div style="color:#aaa; font-size:0.9rem;">
-              ±${prediction['band']/1_000_000:.1f}M band ·
-              range <b style="color:#cdcdd5;">${low_M:.1f}M</b> –
-              <b style="color:#cdcdd5;">${high_M:.1f}M</b>
-            </div>
+          <div style="margin-top:1.05rem; line-height:0.9;">
+            <span style="font-size:3.4rem; font-weight:800; color:#fff;
+                         letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
           </div>
-          <div style="margin-top:0.35rem; font-size:0.75rem; color:#888;">
+          {_confidence_bar_html(predicted_M, low_M, high_M)}
+          <div style="margin-top:0.95rem; font-size:0.78rem; color:#888;">
             Model prediction only — no comparable signings on file.
           </div>
         </div>
@@ -1862,6 +1847,13 @@ st.markdown(_header_html, unsafe_allow_html=True)
 # "Supermax-eligible" with the full description as a tooltip (title attr)
 # you see on hover. Other caveats render as full-text yellow chips.
 if caveats:
+    _chip_base = (
+        'display:inline-block; background:rgba(240,179,91,0.12); '
+        'border:1px solid rgba(240,179,91,0.30); border-radius:999px; '
+        'padding:0.32rem 0.85rem; margin: 0 0.45rem 0.45rem 0; '
+        'font-size:0.78rem; font-weight:600; color:#f0b35b;'
+    )
+
     def _caveat_chip(note: str) -> str:
         if note.startswith("Supermax-eligible:"):
             # Split short label and full detail for hover tooltip.
@@ -1871,19 +1863,9 @@ if caveats:
             safe_detail = detail.replace('"', '&quot;')
             return (
                 f'<div title="{safe_detail}" '
-                f'style="display:inline-block; cursor:help; '
-                f'background:rgba(243,156,18,0.10); '
-                f'border:1px solid rgba(243,156,18,0.30); border-radius:6px; '
-                f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
-                f'font-size:0.8rem; color:#f1c40f;">⚠ Supermax-eligible</div>'
+                f'style="{_chip_base} cursor:help;">⚠ Supermax-eligible</div>'
             )
-        return (
-            f'<div style="display:inline-block; '
-            f'background:rgba(243,156,18,0.10); '
-            f'border:1px solid rgba(243,156,18,0.30); border-radius:6px; '
-            f'padding:0.3rem 0.7rem; margin: 0 0.4rem 0.4rem 0; '
-            f'font-size:0.8rem; color:#f1c40f;">⚠ {note}</div>'
-        )
+        return f'<div style="{_chip_base}">⚠ {note}</div>'
 
     _caveat_chips_html = "".join(_caveat_chip(n) for n in caveats)
     st.markdown(
@@ -1924,44 +1906,48 @@ else:
         if take:
             top3_str = ", ".join(take["top3"])
             scouting_html = f"""
-            <div style="background:rgba(22,212,193,0.06);
-                        border:1px solid rgba(22,212,193,0.25);
-                        border-radius:10px; padding:1rem 1.3rem; margin:0.4rem 0 1rem 0;">
-              <div style="font-size:0.74rem; color:#16d4c1; letter-spacing:0.08em;
-                          text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">
-                📋 Scouting take
+            <div style="background:linear-gradient(135deg, rgba(22,212,193,0.07) 0%, rgba(22,212,193,0.03) 100%);
+                        border:1px solid rgba(22,212,193,0.22);
+                        border-radius:14px; padding:1.2rem 1.5rem; margin:0.4rem 0 1.1rem 0;">
+              <div style="font-size:0.7rem; color:#16d4c1; letter-spacing:0.12em;
+                          text-transform:uppercase; font-weight:700; margin-bottom:0.85rem;">
+                Scouting take · market view
               </div>
-              <div style="display:flex; flex-wrap:wrap; gap:1.5rem; margin-bottom:0.6rem;">
+              <div style="display:flex; flex-wrap:wrap; gap:2rem; margin-bottom:0.7rem;
+                          align-items:flex-end;">
                 <div>
-                  <div style="font-size:0.72rem; color:#888;
-                              text-transform:uppercase; letter-spacing:0.05em;">
+                  <div style="font-size:0.66rem; color:#8a8a93;
+                              text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">
                     Median new contract
                   </div>
-                  <div style="font-size:1.6rem; color:#fff; font-weight:700;">
+                  <div style="font-size:1.7rem; color:#fff; font-weight:800;
+                              line-height:1.1; margin-top:0.15rem;">
                     ${take['median']/1e6:.1f}M
                   </div>
                 </div>
                 <div>
-                  <div style="font-size:0.72rem; color:#888;
-                              text-transform:uppercase; letter-spacing:0.05em;">
+                  <div style="font-size:0.66rem; color:#8a8a93;
+                              text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">
                     Middle 50%
                   </div>
-                  <div style="font-size:1.6rem; color:#cdcdd5; font-weight:600;">
-                    ${take['q25']/1e6:.1f}M – ${take['q75']/1e6:.1f}M
+                  <div style="font-size:1.7rem; color:#cdcdd5; font-weight:700;
+                              line-height:1.1; margin-top:0.15rem;">
+                    ${take['q25']/1e6:.1f}<span style="color:#666; font-weight:500;">–</span>${take['q75']/1e6:.1f}M
                   </div>
                 </div>
-                <div style="flex:1; min-width:260px;">
-                  <div style="font-size:0.72rem; color:#888;
-                              text-transform:uppercase; letter-spacing:0.05em;">
+                <div style="flex:1; min-width:240px;">
+                  <div style="font-size:0.66rem; color:#8a8a93;
+                              text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">
                     Closest 3 comps
                   </div>
-                  <div style="font-size:0.95rem; color:#cdcdd5;">{top3_str}</div>
+                  <div style="font-size:0.95rem; color:#cdcdd5; margin-top:0.3rem;
+                              line-height:1.4;">{top3_str}</div>
                 </div>
               </div>
-              <div style="font-size:0.85rem; color:#aaa;
-                          border-top:1px solid rgba(255,255,255,0.08);
-                          padding-top:0.5rem;">
-                <b style="color:#cdcdd5;">Note:</b> {take['x_factor']}
+              <div style="font-size:0.84rem; color:#9a9aa3;
+                          border-top:1px solid rgba(255,255,255,0.07);
+                          padding-top:0.6rem; margin-top:0.2rem;">
+                <b style="color:#16d4c1;">Note</b>&nbsp; {take['x_factor']}
               </div>
             </div>
             """
