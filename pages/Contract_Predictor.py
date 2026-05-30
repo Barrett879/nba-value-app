@@ -54,7 +54,6 @@ from utils import (
     # Calibration constants — single source of truth in utils
     SALARY_CAP_M, cap_dollars,
     CONTRACT_POSITION_MULTIPLIERS as POSITION_MULTIPLIERS,
-    CONFIDENCE_BAND_PCT_OF_CAP,
     HEALTHY_SEASON_GP, NEW_CONTRACT_PCT, SUPERMAX_CAP_PCT,
     tiered_age_multiplier, durability_multiplier, playoff_bonus_multiplier,
     # Draft tier — used to keep comparables apples-to-apples (lottery picks
@@ -100,7 +99,10 @@ st.caption(
     "trained on 1,900+ modern-era contracts (2012+), built on the Barrett Score plus "
     "age, position, service years, All-NBA history, and advanced metrics (usage, PIE, "
     "on/off rating). Validated by temporal cross-validation on real signings: 89% of "
-    "predictions within 5% of the cap, 99% within 10%."
+    "predictions within 5% of the cap, 99% within 10%. It's sharpest on star and max "
+    "deals; mid- and minimum-level numbers are noisier — the eventual salary lands "
+    "within ~30% of the projection about half the time — so read those as a range, "
+    "not a precise figure."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -538,6 +540,19 @@ def _histgbm_feature_vector(features: dict, target_season: str) -> np.ndarray | 
     ]])
 
 
+def _relative_band_dollars(predicted_dollars: float) -> float:
+    """Confidence half-width as a % of the prediction — tier-aware. The model
+    nails star/max deals (~10% typical relative error) and is noisier on mid-
+    and minimum-level deals (~25–40%), so the band scales WITH the prediction
+    rather than a flat ±X%-of-cap. (The old flat ±$6M band made a $3M projection
+    read as "anywhere from $0 to $9M".) The %s mirror the median relative error
+    by tier measured in the honest temporal CV — see the About expander."""
+    pred_M = max(predicted_dollars, 0.0) / 1e6
+    band_pct = float(np.interp(pred_M, [2.0, 8.0, 20.0, 45.0],
+                                        [0.45, 0.33, 0.24, 0.12]))
+    return predicted_dollars * band_pct
+
+
 def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASON,
                              stats_season: str = CURRENT_SEASON) -> dict | None:
     """Predict the contract a player would sign TODAY (a new deal starting
@@ -604,7 +619,7 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
         predicted = _floor_target
         max_tier_floor_applied = True
 
-    band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
+    band = _relative_band_dollars(predicted)
 
     return {
         "base":                 base,
@@ -619,8 +634,8 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
         "playoff_tier":         features.get("playoff_tier", ""),
         "raw_predicted":        raw_predicted,
         "predicted":            predicted,
-        "low":                  max(0, predicted - band),
-        "high":                 predicted + band,
+        "low":                  max(0.015 * cap_dollars_val, predicted - band),
+        "high":                 min(predicted + band, cba_max_dollars),
         "band":                 band,
         "cap":                  cap_dollars_val,
         "max_pct":              max_pct,
@@ -722,7 +737,7 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
         predicted = _floor_target
         max_tier_floor_applied = True
 
-    band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
+    band = _relative_band_dollars(predicted)
 
     return {
         "base":                 base,
@@ -737,8 +752,8 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
         "playoff_tier":         playoff_tier,
         "raw_predicted":        raw_predicted,
         "predicted":            predicted,
-        "low":                  max(0, predicted - band),
-        "high":                 predicted + band,
+        "low":                  max(0.015 * cap_dollars_val, predicted - band),
+        "high":                 min(predicted + band, cba_max_dollars),
         "band":                 band,
         "cap":                  cap_dollars_val,
         "max_pct":              max_pct,
@@ -2341,6 +2356,21 @@ with st.expander("About this prediction"):
         - **89% of predictions within 5% of the cap** (~$8M)
         - **99% within 10% of cap** — catastrophic misses under 2%
         - Median |error|: ~$1.9M (≈1.3% of cap)
+
+        Those are *absolute* (share-of-cap) figures, which are lenient on cheap
+        deals — a $7M miss is "within 5% of cap" whether the player makes $50M or
+        $3M. In **relative** terms (how close to the eventual salary), accuracy is
+        tier-dependent, because the model targets fair *market value* — which
+        stars realize but role players often sign below:
+        - **Star / max ($40M+):** typically within ~10% of the salary
+        - **Mid-tier ($15–40M):** ~20%
+        - **Rotation / minimum (under $15M):** ~30–40% — many sign below market
+          (minimums, team-friendly deals) for reasons no box score predicts
+
+        That's why the confidence band scales with the prediction and mid/min
+        figures should be read as a range. We tested a relative-loss model to
+        tighten the cheap end; it didn't survive honest grading (the apparent
+        gain was buyout artifacts the grader excludes), so we didn't ship it.
 
         Every feature was gated on cross-validation, not a single split. The
         advanced metrics earned their place (+1.1pp within-5% on paired CV,
