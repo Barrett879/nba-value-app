@@ -1143,6 +1143,17 @@ def _tier_penalty_weight(age) -> float:
     return (31 - a) / 4.0
 
 
+# Comp-pool quality gate. Elite / outlier players (Jokić, Giannis, Wemby) have
+# few true peers; rather than pad the table to a fixed 6 with far-off matches —
+# which pulls below-tier centers (Zubac, Brook Lopez) into Jokić's pool and
+# corrupts the market median — keep only comps whose sign-year score is within a
+# band of the target, but never fewer than COMP_MIN_COUNT so the market view
+# (and supermax non-suppression, which needs ≥3 non-paycut comps) still holds.
+COMP_SCORE_TOL_PCT = 0.30   # keep comps within ±30% of the target's trailing score…
+COMP_SCORE_TOL_MIN = 6.0    # …or ±6 raw Barrett points, whichever band is wider
+COMP_MIN_COUNT     = 3      # but always show at least the 3 closest
+
+
 def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
     """Match historical signings on **trailing-weighted Barrett** + age + position.
 
@@ -1218,7 +1229,24 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
         + tier_penalty
     )
 
-    return same_pos.nsmallest(n, "distance").copy()
+    # One row per player: keep each player's closest-matching signing so a
+    # single player can't fill multiple comp slots or double-count in the
+    # market median (e.g. Sabonis appearing twice in Jokić's pool).
+    same_pos = (same_pos.sort_values("distance")
+                        .drop_duplicates(subset="Player", keep="first"))
+
+    comps = same_pos.nsmallest(n, "distance").copy()
+
+    # Quality gate: don't pad to n with players who don't align on score. Keep
+    # only comps whose sign-year score is within a band of the target; if fewer
+    # than COMP_MIN_COUNT align, fall back to the closest COMP_MIN_COUNT so the
+    # market view stays stable. (Typical players keep all n — their nearest
+    # comps already fall inside the band; the gate only bites for outliers.)
+    tol = max(target_barrett * COMP_SCORE_TOL_PCT, COMP_SCORE_TOL_MIN)
+    aligned = comps[(comps["barrett_score"] - target_barrett).abs() <= tol]
+    if len(aligned) >= COMP_MIN_COUNT:
+        return aligned.copy()
+    return comps.head(COMP_MIN_COUNT).copy()
 
 
 def _signing_cap(signed_in_season: str) -> float:
