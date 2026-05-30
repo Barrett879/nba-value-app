@@ -647,8 +647,216 @@ PRE_1990_SALARY_NOTE = (
     "Salary) are best-effort estimates."
 )
 
+# ════════════════════════════════════════════════════════════════════════════
+#  THEME TOKENS  —  single source of truth for the light/dark system
+# ════════════════════════════════════════════════════════════════════════════
+# The DARK token values are chosen to *exactly equal* the colours that used to
+# be hardcoded across the app, so rewriting `#fff` -> `var(--fg-1)` is a pixel
+# no-op in dark mode. Light mode injects THEME_LIGHT_CSS, which redefines the
+# same tokens with white-surface values. Accents mostly hold; teal/green/gold/
+# value-tints nudge for legibility on white. inject_theme() (called by every
+# page's chrome) emits the base + the light override when light is active.
+
+#: When True the app boots in DARK (used while converting pages so the working
+#: dark theme stays the validated baseline). Flipped to False (light default,
+#: per the design refresh) once every page is tokenised + screenshot-checked.
+THEME_DEFAULT_DARK = True
+
+THEME_BASE_CSS = """
+<style>
+    :root {
+        /* surfaces */
+        --app-bg:      #0a0a14;                     /* .stApp base (flat)       */
+        --bg-base:     #0a0a14;
+        --bg-nav:      #0a0a0a;
+        --panel:       rgba(20, 20, 42, 0.55);      /* default card / strip     */
+        --panel-solid: #15171d;                     /* opaque card              */
+        --panel-2:     #1a1a2e;                      /* secondary dark panel     */
+        --panel-hover: rgba(30, 30, 56, 0.85);
+        --panel-line:  rgba(80, 80, 110, 0.35);     /* card hairline border     */
+        --hairline:    rgba(255, 255, 255, 0.08);   /* divider                  */
+        --hairline-soft:rgba(255, 255, 255, 0.04);  /* faint track              */
+        --nav-border:  #222;
+        --nav-divider: #333;
+        /* tinted value-card surfaces */
+        --tint-good:   #1a2e1a;
+        --tint-bad:    #2e1a1a;
+        --tint-even:   #1a1a2e;
+        /* text ramp */
+        --fg-1: #ffffff;   /* headings / primary    */
+        --fg-2: #cdcdd5;   /* body                  */
+        --fg-3: #aaaaaa;   /* secondary / nav rest  */
+        --fg-4: #8a8a93;   /* captions / eyebrows   */
+        --fg-5: #777777;   /* faint meta            */
+        --fg-6: #666666;   /* disabled / home-link  */
+        /* brand accents */
+        --accent-red:  #e63946;
+        --accent-teal: #16d4c1;
+        --value-good:  #2ecc71;
+        --value-good-s:#a8e6a8;
+        --value-bad:   #e74c3c;
+        --value-bad-s: #f1a8a8;
+        --gold:        #f1c40f;
+        --blue:        #3498db;
+        --orange:      #f39c12;
+        --purple:      #9b59b6;
+        --sky:         #7ec8e8;
+        --amber:       #f0b35b;   /* caveat / model chips */
+        /* logo metals (on dark) */
+        --logo-copper: #b06a38;
+        --logo-sage:   #4f8a68;
+        --logo-tag:    #8a8d98;
+        /* elevation */
+        --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+    }
+    /* Paint the app surface + native text from tokens so every page follows the
+       theme regardless of config.toml base (which can't flip at runtime).
+       html/body too, so the dark Streamlit default never seams through below
+       short pages or during overscroll. */
+    html, body, .stApp { background: var(--app-bg) !important; }
+    .stApp, body { color: var(--fg-2); }
+    [data-testid="stHeading"] h1,
+    [data-testid="stHeading"] h2,
+    [data-testid="stHeading"] h3 { color: var(--fg-1) !important; }
+</style>
+"""
+
+THEME_LIGHT_CSS = """
+<style>
+    :root {
+        /* surfaces -> light */
+        --app-bg:      linear-gradient(180deg, #fbfcfd 0%, #eef1f4 100%);
+        --bg-base:     #f4f6f8;
+        --bg-nav:      #ffffff;
+        --panel:       #ffffff;
+        --panel-solid: #ffffff;
+        --panel-2:     #eef1f4;
+        --panel-hover: #f1f3f6;
+        --panel-line:  #e3e6eb;
+        --hairline:    rgba(20, 22, 40, 0.10);
+        --hairline-soft:rgba(20, 22, 40, 0.05);
+        --nav-border:  #e3e6eb;
+        --nav-divider: #c9ccd3;
+        /* tinted value-card surfaces -> pale */
+        --tint-good:   #eafaf1;
+        --tint-bad:    #fdeceb;
+        --tint-even:   #eef3f8;
+        /* text ramp -> dark-on-light */
+        --fg-1: #14142a;
+        --fg-2: #3a3d48;
+        --fg-3: #585c68;
+        --fg-4: #71757f;
+        --fg-5: #9aa0ab;
+        --fg-6: #b3b8c2;
+        /* accents nudged darker for white-bg contrast */
+        --accent-teal: #0fae9d;
+        --value-good:  #16a34a;
+        --value-good-s:#2fbb6e;
+        --value-bad:   #dc3a2c;
+        --value-bad-s: #e7584b;
+        --gold:        #c08a0a;
+        --amber:       #c8941a;
+        /* logo metals (on light) */
+        --logo-copper: #985729;
+        --logo-sage:   #3d6f52;
+        --logo-tag:    #7a7d88;
+        /* elevation -> soft light card shadow */
+        --shadow-card: 0 1px 2px rgba(20,22,40,.06), 0 4px 14px rgba(20,22,40,.07);
+    }
+    /* Native Streamlit widgets — repaint for light (dark mode keeps Streamlit's
+       own dark defaults from config.toml base, which already look right). */
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
+        background: var(--panel-solid) !important;
+        border-color: var(--panel-line) !important;
+        color: var(--fg-1) !important;
+    }
+    [data-testid="stSelectbox"] div[data-baseweb="select"] svg,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] svg { fill: var(--fg-3) !important; }
+    ul[data-baseweb="menu"], div[data-baseweb="popover"] ul { background: var(--panel-solid) !important; }
+    ul[data-baseweb="menu"] li { color: var(--fg-2) !important; }
+    ul[data-baseweb="menu"] li:hover { background: var(--panel-hover) !important; }
+    [data-testid="stTextInput"] div[data-baseweb="input"],
+    [data-testid="stNumberInput"] div[data-baseweb="input"],
+    [data-testid="stTextInput"] div[data-baseweb="base-input"] {
+        background: var(--panel-solid) !important;
+        border-color: var(--panel-line) !important;
+    }
+    [data-testid="stTextInput"] input,
+    [data-testid="stNumberInput"] input { color: var(--fg-1) !important; }
+    /* slider value bubbles / ticks read on white */
+    [data-testid="stSlider"] [data-testid="stTickBarMin"],
+    [data-testid="stSlider"] [data-testid="stTickBarMax"] { color: var(--fg-4) !important; }
+    /* expander chrome */
+    [data-testid="stExpander"] details {
+        background: var(--panel) !important;
+        border-color: var(--panel-line) !important;
+    }
+</style>
+"""
+
+
+def inject_theme() -> None:
+    """Emit the theme tokens (dark base + light override when active).
+
+    Call once near the top of every page's chrome, BEFORE any CSS that
+    references the tokens. Reads st.session_state['theme_dark'] (set by the
+    nav theme toggle); falls back to THEME_DEFAULT_DARK on first load.
+    """
+    st.markdown(THEME_BASE_CSS, unsafe_allow_html=True)
+    if not st.session_state.get("theme_dark", THEME_DEFAULT_DARK):
+        st.markdown(THEME_LIGHT_CSS, unsafe_allow_html=True)
+
+
+def theme_fig(fig):
+    """Make a Plotly figure follow the active theme.
+
+    Charts render server-side and can't read CSS variables, so we set the
+    transparent canvas + the axis font/grid colours from the current mode here.
+    Call it inline at the plot site: ``st.plotly_chart(theme_fig(fig), ...)``.
+    A no-op-equivalent in dark (same white/► values the charts already used);
+    in light it swaps to dark-on-white axes + faint dark gridlines. Series and
+    on-bar label colours are left to the chart (saturated accents read on both).
+    """
+    dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
+    if dark:
+        return fig  # charts are authored for dark — leave pixel-identical
+    font, grid = "#3a3d48", "rgba(20,22,40,0.10)"
+    try:
+        fig.update_layout(
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            font_color=font,
+        )
+        # color= retints the whole axis (line+ticks+labels); tickfont_color
+        # beats any explicit light tick colour the chart baked in for dark.
+        for axis in (fig.update_xaxes, fig.update_yaxes):
+            axis(gridcolor=grid, zerolinecolor=grid, color=font,
+                 tickfont_color=font, title_font_color=font)
+    except Exception:
+        pass
+    return fig
+
+
+def render_theme_toggle() -> bool:
+    """Dark-mode toggle, backed by st.session_state['theme_dark'].
+
+    Same key on every page (Streamlit allows reusing widget keys across page
+    scripts). Returns True when dark mode is active.
+    """
+    return st.toggle(
+        "Dark mode",
+        value=st.session_state.get("theme_dark", THEME_DEFAULT_DARK),
+        key="theme_dark",
+        help="Switch between the light and dark themes.",
+    )
+
+
 COMMON_CSS = """
 <style>
+    /* Theme tokens (:root) are injected separately by inject_theme() so the
+       home page (which doesn't use this stylesheet) shares one source of
+       truth. COMMON_CSS just *references* the tokens (var(--...)). */
+
     /* Push page content below the fixed nav bar */
     .main .block-container {
         padding-left: 1.5rem;
@@ -678,8 +886,8 @@ COMMON_CSS = """
         gap: 0.25rem;
         padding: 0 1.5rem;
         height: 3rem;
-        background: #0a0a0a;
-        border-bottom: 1px solid #222;
+        background: var(--bg-nav);
+        border-bottom: 1px solid var(--nav-border);
         flex-wrap: nowrap;
     }
     .top-nav a {
@@ -688,23 +896,23 @@ COMMON_CSS = """
         border-radius: 20px;
         font-size: 0.82rem;
         font-weight: 600;
-        color: #aaa;
+        color: var(--fg-3);
         border: 1px solid transparent;
         transition: all 0.15s;
         white-space: nowrap;
     }
-    .top-nav a:hover { border-color: #e63946; color: #fff; text-decoration: none; }
-    .top-nav a.active { background: #e63946; border-color: #e63946; color: #fff; }
+    .top-nav a:hover { border-color: var(--accent-red); color: var(--fg-1); text-decoration: none; }
+    .top-nav a.active { background: var(--accent-red); border-color: var(--accent-red); color: #fff; }
     .top-nav .home-link {
-        color: #666;
+        color: var(--fg-6);
         font-size: 0.82rem;
         font-weight: 500;
         padding: 0.3rem 0.7rem;
         margin-right: 0.25rem;
         border: none;
     }
-    .top-nav .home-link:hover { color: #fff; border: none; }
-    .top-nav .divider { color: #333; font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
+    .top-nav .home-link:hover { color: var(--fg-1); border: none; }
+    .top-nav .divider { color: var(--nav-divider); font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 
     /* Pin the global playoff-mode toggle to the right edge of the nav bar.
        Streamlit assigns the wrapping div class 'st-key-playoff_nav_toggle'
@@ -725,12 +933,35 @@ COMMON_CSS = """
     }
     /* Toggle label colour to match nav text */
     .st-key-playoff_nav_toggle label p {
-        color: #aaa !important;
+        color: var(--fg-3) !important;
         font-size: 0.78rem !important;
         font-weight: 600 !important;
         margin: 0 !important;
     }
-    .st-key-playoff_nav_toggle:hover label p { color: #fff !important; }
+    .st-key-playoff_nav_toggle:hover label p { color: var(--fg-1) !important; }
+
+    /* Theme (dark-mode) toggle — pinned just left of the playoff toggle. */
+    .st-key-theme_nav_toggle {
+        position: fixed !important;
+        top: 0.45rem !important;
+        right: 10.25rem !important;
+        z-index: 10001 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        background: transparent !important;
+    }
+    .st-key-theme_nav_toggle [data-testid="stToggle"] {
+        background: transparent;
+        padding: 0;
+    }
+    .st-key-theme_nav_toggle label p {
+        color: var(--fg-3) !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+    }
+    .st-key-theme_nav_toggle:hover label p { color: var(--fg-1) !important; }
 
     /* Make the toggle's wrapper hierarchy vanish from layout entirely.
        display:contents removes an element from the box tree (its children
@@ -740,7 +971,11 @@ COMMON_CSS = """
     .element-container:has(.st-key-playoff_nav_toggle),
     [data-testid="element-container"]:has(.st-key-playoff_nav_toggle),
     [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-playoff_nav_toggle),
-    [data-testid="stVerticalBlock"]:has(.st-key-playoff_nav_toggle):not(.st-key-playoff_nav_toggle) {
+    [data-testid="stVerticalBlock"]:has(.st-key-playoff_nav_toggle):not(.st-key-playoff_nav_toggle),
+    .element-container:has(.st-key-theme_nav_toggle),
+    [data-testid="element-container"]:has(.st-key-theme_nav_toggle),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-theme_nav_toggle),
+    [data-testid="stVerticalBlock"]:has(.st-key-theme_nav_toggle):not(.st-key-theme_nav_toggle) {
         display: contents !important;
     }
 
@@ -748,7 +983,10 @@ COMMON_CSS = """
        case display:contents isn't enough on some browser. */
     .element-container:has(.st-key-playoff_nav_toggle),
     [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-playoff_nav_toggle),
-    [data-testid="stVerticalBlock"]:has(.st-key-playoff_nav_toggle):not(.st-key-playoff_nav_toggle) {
+    [data-testid="stVerticalBlock"]:has(.st-key-playoff_nav_toggle):not(.st-key-playoff_nav_toggle),
+    .element-container:has(.st-key-theme_nav_toggle),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-theme_nav_toggle),
+    [data-testid="stVerticalBlock"]:has(.st-key-theme_nav_toggle):not(.st-key-theme_nav_toggle) {
         min-height: 0 !important;
         height: 0 !important;
         margin: 0 !important;
@@ -869,6 +1107,7 @@ def render_page_chrome() -> None:
     script to copy.
     """
     import streamlit.components.v1 as _components
+    inject_theme()                       # tokens first — COMMON_CSS references them
     st.markdown(COMMON_CSS, unsafe_allow_html=True)
     _components.html(_HIDE_BADGE_SCRIPT, height=0)
 
@@ -888,7 +1127,10 @@ def render_nav(current: str) -> None:
         links += f'<a class="{css_class}" href="{url}" target="_top">{label}</a>'
     st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
 
-    # Playoff toggle — keyed container, pinned via CSS in COMMON_CSS
+    # Theme + playoff toggles — keyed containers, pinned via CSS in COMMON_CSS.
+    # Theme sits to the left of playoff at the top-right of the nav.
+    with st.container(key="theme_nav_toggle"):
+        render_theme_toggle()
     with st.container(key="playoff_nav_toggle"):
         st.toggle(
             "Playoff mode",

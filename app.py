@@ -20,6 +20,8 @@ from utils import (
     HISTORICAL_TRADES,
     trade_side_summary,
     _PLAYOFF_HELP,
+    inject_theme,
+    render_theme_toggle,
 )
 
 # Featured players for the Legacy preview overlay on the home page.
@@ -40,11 +42,15 @@ _bootstrap_warm()
 
 st.set_page_config(page_title="HoopsValue", page_icon="static/favicon.svg", layout="wide")
 
+# Theme tokens (light/dark) — home is self-contained chrome (no render_page_chrome),
+# so it injects the tokens itself. Must run right after set_page_config.
+inject_theme()
+
 # ── Page chrome (background, hide Streamlit UI) ────────────────────────────────
 st.markdown("""
 <style>
     .stApp {
-        background: #0a0a14 !important;   /* flat — court photo removed (design refresh) */
+        background: var(--app-bg) !important;   /* flat — court photo removed (design refresh) */
     }
     [data-testid="stAppViewContainer"],
     [data-testid="stMain"] { background: transparent !important; }
@@ -88,9 +94,9 @@ st.markdown("""
         display: flex;
         align-items: center;
         justify-content: space-between;
-        background: rgba(20, 20, 42, 0.55);
-        border: 1px solid rgba(80, 80, 110, 0.35);
-        border-left: 3px solid var(--accent, #e63946);
+        background: var(--panel);
+        border: 1px solid var(--panel-line);
+        border-left: 3px solid var(--accent, var(--accent-red));
         border-radius: 8px;
         padding: 0.85rem 1.2rem;
         text-decoration: none;
@@ -99,13 +105,13 @@ st.markdown("""
         backdrop-filter: blur(2px);
     }
     a.tab-strip:hover {
-        background: rgba(30, 30, 56, 0.85);
-        border-color: var(--accent, #e63946);
+        background: var(--panel-hover);
+        border-color: var(--accent, var(--accent-red));
         text-decoration: none;
         transform: translateX(2px);
     }
     .tab-strip-name {
-        color: #fff;
+        color: var(--fg-1);
         font-size: 1.05rem;
         font-weight: 700;
         letter-spacing: 0.01em;
@@ -114,13 +120,13 @@ st.markdown("""
         min-width: 165px;
     }
     .tab-strip-desc {
-        color: #aaa;
+        color: var(--fg-3);
         font-size: 0.82rem;
         flex-grow: 1;
         line-height: 1.35;
     }
     .tab-strip-arrow {
-        color: var(--accent, #e63946);
+        color: var(--accent, var(--accent-red));
         font-size: 1.2rem;
         font-weight: 600;
         margin-left: 1rem;
@@ -139,15 +145,15 @@ st.markdown("""
         background: transparent !important;
     }
     div[data-testid="stExpander"] summary {
-        color: #888 !important;
+        color: var(--fg-4) !important;
         font-size: 0.78rem !important;
         padding-left: 1.2rem !important;
         background: transparent !important;
     }
-    div[data-testid="stExpander"] summary:hover { color: #ddd !important; }
+    div[data-testid="stExpander"] summary:hover { color: var(--fg-2) !important; }
     .preview-box {
         background: rgba(0, 0, 0, 0.3);
-        border-left: 2px solid rgba(255, 255, 255, 0.1);
+        border-left: 2px solid var(--hairline);
         border-radius: 4px;
         padding: 0.8rem 1rem;
         margin-left: 1rem;
@@ -159,9 +165,9 @@ st.markdown("""
        trigger instead of a direct navigation link. CTA inside the body
        handles the actual navigation. */
     details.explore-strip {
-        background: rgba(20, 20, 42, 0.55);
-        border: 1px solid rgba(80, 80, 110, 0.35);
-        border-left: 3px solid var(--accent, #e63946);
+        background: var(--panel);
+        border: 1px solid var(--panel-line);
+        border-left: 3px solid var(--accent, var(--accent-red));
         border-radius: 8px;
         margin-bottom: 0.55rem;
         overflow: hidden;
@@ -179,13 +185,13 @@ st.markdown("""
     summary.explore-strip-summary::-webkit-details-marker { display: none; }
     summary.explore-strip-summary::marker { content: ""; }
     summary.explore-strip-summary:hover {
-        background: rgba(30, 30, 56, 0.85);
+        background: var(--panel-hover);
     }
     details[open].explore-strip > summary.explore-strip-summary {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        border-bottom: 1px solid var(--hairline);
     }
     .strip-arrow {
-        color: var(--accent, #e63946);
+        color: var(--accent, var(--accent-red));
         font-size: 1.1rem;
         font-weight: 600;
         margin-left: 1rem;
@@ -200,8 +206,8 @@ st.markdown("""
     }
     a.goto-btn {
         display: inline-block;
-        background: var(--accent, #e63946);
-        color: #fff !important;
+        background: var(--accent, var(--accent-red));
+        color: var(--fg-1) !important;
         padding: 0.45rem 1.1rem;
         border-radius: 6px;
         text-decoration: none !important;
@@ -234,12 +240,32 @@ st.markdown("""
         padding: 0;
     }
     .st-key-playoff_nav_toggle label p {
-        color: #aaa !important;
+        color: var(--fg-3) !important;
         font-size: 0.78rem !important;
         font-weight: 600 !important;
         margin: 0 !important;
     }
-    .st-key-playoff_nav_toggle:hover label p { color: #fff !important; }
+    .st-key-playoff_nav_toggle:hover label p { color: var(--fg-1) !important; }
+
+    /* Theme (dark-mode) toggle — pinned just left of the playoff toggle. */
+    .st-key-theme_nav_toggle {
+        position: fixed !important;
+        top: 0.45rem !important;
+        right: 10.25rem !important;
+        z-index: 10001 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        background: transparent !important;
+    }
+    .st-key-theme_nav_toggle [data-testid="stToggle"] { background: transparent; padding: 0; }
+    .st-key-theme_nav_toggle label p {
+        color: var(--fg-3) !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        margin: 0 !important;
+    }
+    .st-key-theme_nav_toggle:hover label p { color: var(--fg-1) !important; }
 
     /* Landing-page hero cards (Best Right Now / Biggest Steal / Most Overpaid) */
     .home-hero-card {
@@ -249,13 +275,15 @@ st.markdown("""
         height: 100%;
         backdrop-filter: blur(2px);
     }
-    .hh-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .09em; opacity: .65; margin-bottom: .25rem; color: #fff; }
-    .hh-name  { font-size: 1.15rem; font-weight: 800; line-height: 1.2; color: #fff; }
-    .hh-sub   { font-size: 0.78rem; margin-top: .35rem; opacity: .75; color: #fff; }
+    .hh-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .09em; opacity: .65; margin-bottom: .25rem; color: var(--fg-1); }
+    .hh-name  { font-size: 1.15rem; font-weight: 800; line-height: 1.2; color: var(--fg-1); }
+    .hh-sub   { font-size: 0.78rem; margin-top: .35rem; opacity: .75; color: var(--fg-1); }
 </style>
 """, unsafe_allow_html=True)
 
-# Playoff-mode toggle (pinned top-right via CSS, sticky via session_state)
+# Theme + playoff toggles (pinned top-right via CSS, sticky via session_state)
+with st.container(key="theme_nav_toggle"):
+    render_theme_toggle()
 with st.container(key="playoff_nav_toggle"):
     st.toggle(
         "Playoff mode",
@@ -274,7 +302,8 @@ with st.container(key="playoff_nav_toggle"):
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700&display=swap');
-:root{--logo-copper:#b06a38;--logo-sage:#4f8a68;--logo-tag:#8a8d98;}
+/* logo metals (--logo-copper/-sage/-tag) come from the theme tokens so they
+   retune per mode; see utils.THEME_BASE_CSS / THEME_LIGHT_CSS */
 .hv-logo-wrap{display:flex;justify-content:center;padding:0.4rem 0 0.1rem;}
 .hv-logo{display:inline-flex;flex-direction:column;align-items:center;font-size:60px;gap:3px;user-select:none}
 .hv-wm{display:inline-flex;align-items:center;font-family:"Space Grotesk",sans-serif;font-weight:700;line-height:1;letter-spacing:-.035em}
@@ -295,8 +324,8 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("""
 <div style="text-align:center; padding: 0 0 0.6rem 0;">
-    <div style="font-size:0.88rem; color:#cdcdd5; max-width:760px; margin:0.4rem auto 0; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
-        Every NBA player since 1973, ranked by the <b style="color:#fff;">Barrett Score</b>. On-court production sized up against every paycheck.<br><span style="color:#cdcdd5;">Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</span>
+    <div style="font-size:0.88rem; color:var(--fg-2); max-width:760px; margin:0.4rem auto 0; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
+        Every NBA player since 1973, ranked by the <b style="color:var(--fg-1);">Barrett Score</b>. On-court production sized up against every paycheck.<br><span style="color:var(--fg-2);">Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</span>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -305,7 +334,7 @@ st.markdown("""
 st.markdown("""
 <style>
 [data-testid="stSelectbox"][data-baseweb] div[role="combobox"] {
-    background: rgba(20, 20, 42, 0.7) !important;
+    background: var(--panel) !important;
     border: 2px solid rgba(126, 200, 232, 0.55) !important;
     border-radius: 12px !important;
     backdrop-filter: blur(6px);
@@ -313,7 +342,7 @@ st.markdown("""
 }
 .home-search-label {
     font-size: 0.78rem;
-    color: #d0d0d6;
+    color: var(--fg-2);
     text-align: center;
     margin-bottom: 0.35rem;
     text-shadow: 0 1px 6px rgba(0,0,0,0.6);
@@ -343,7 +372,7 @@ with _search_col:
             st.switch_page("pages/Search.py")
         except Exception:
             st.markdown(
-                f'<a href="/Search" target="_top" style="color:#7ec8e8; text-decoration: underline;">'
+                f'<a href="/Search" target="_top" style="color:var(--sky); text-decoration: underline;">'
                 f'Click here to view {_picked}\'s profile →</a>',
                 unsafe_allow_html=True,
             )
@@ -674,21 +703,21 @@ if _p and _p.get("best_card") and _p.get("steal_card") and _p.get("overpaid_card
     hc1, hc2, hc3 = st.columns(3, gap="medium")
     with hc1:
         st.markdown(f"""
-        <div class="home-hero-card" style="background:#1a2e1a; border:1px solid #2ecc71;">
+        <div class="home-hero-card" style="background:var(--tint-good); border:1px solid var(--value-good);">
             <div class="hh-label">Best Player Right Now</div>
             <div class="hh-name">{_bc["name"]}</div>
             <div class="hh-sub">{_bc["team"]} · Barrett Score {_bc["score"]:.1f}</div>
         </div>""", unsafe_allow_html=True)
     with hc2:
         st.markdown(f"""
-        <div class="home-hero-card" style="background:#1a2a1a; border:1px solid #27ae60;">
+        <div class="home-hero-card" style="background:var(--tint-good); border:1px solid var(--value-good);">
             <div class="hh-label">Biggest Steal</div>
             <div class="hh-name">{_sc["name"]}</div>
             <div class="hh-sub">{_sc["team"]} · ${abs(_sc["value_diff"])/1e6:.1f}M below market value</div>
         </div>""", unsafe_allow_html=True)
     with hc3:
         st.markdown(f"""
-        <div class="home-hero-card" style="background:#2e1a1a; border:1px solid #e74c3c;">
+        <div class="home-hero-card" style="background:var(--tint-bad); border:1px solid var(--value-bad);">
             <div class="hh-label">Most Overpaid</div>
             <div class="hh-name">{_oc["name"]}</div>
             <div class="hh-sub">{_oc["team"]} · ${_oc["value_diff"]/1e6:.1f}M above market value</div>
@@ -733,7 +762,7 @@ if _p:
             "color":     rank_colors[i] if i < len(rank_colors) else rank_colors[-1],
         }
         for i, (name, score) in enumerate(_p["top10"])
-    ], w=460, h=260, label_w=150) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Top 10 by Barrett Score · this season</div>'
+    ], w=460, h=260, label_w=150) + '<div style="text-align:center; font-size:0.7rem; color:var(--fg-5); margin-top:0.4rem;">Top 10 by Barrett Score · this season</div>'
 
     vis_rows = []
     for n_, vd in _p["steals_3"]:
@@ -753,8 +782,8 @@ if _p:
         team_rows.append({"label": t, "value": abs(v), "value_str": f"+${abs(v):.1f}M",
                           "color": "#e74c3c", "side": "pos"})
 
-    teams_preview = _diverging_bars(team_rows) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Net payroll efficiency · green = team is winning the value game</div>'
-    fa_preview = _fa_category_chart(_p["fa_categories"]) + '<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Free-agent class breakdown · this offseason</div>'
+    teams_preview = _diverging_bars(team_rows) + '<div style="text-align:center; font-size:0.7rem; color:var(--fg-5); margin-top:0.4rem;">Net payroll efficiency · green = team is winning the value game</div>'
+    fa_preview = _fa_category_chart(_p["fa_categories"]) + '<div style="text-align:center; font-size:0.7rem; color:var(--fg-5); margin-top:0.4rem;">Free-agent class breakdown · this offseason</div>'
     # Legacy preview is rendered specially below (needs an interactive radio
     # for the user to pick a featured player), so we just stash the data here.
     legacy_preview = None
@@ -784,7 +813,7 @@ if _p:
              "value_str": f"{b_total:.1f}",
              "color": b_color, "side": "pos"},
         ]
-        return _hbar_chart(rows, w=460, h=110, label_w=110) + f'<div style="text-align:center; font-size:0.7rem; color:#777; margin-top:0.4rem;">Featured trade · {pick["name"]}</div>'
+        return _hbar_chart(rows, w=460, h=110, label_w=110) + f'<div style="text-align:center; font-size:0.7rem; color:var(--fg-5); margin-top:0.4rem;">Featured trade · {pick["name"]}</div>'
 
     trades_preview = _build_trades_preview()
 else:
@@ -797,7 +826,7 @@ else:
 # ══════════════════════════════════════════════════════════════════════════════
 st.markdown(
     "<div style='margin-top:1.2rem; margin-bottom:0.5rem; "
-    "font-size:0.78rem; color:#aaa; letter-spacing:0.08em; "
+    "font-size:0.78rem; color:var(--fg-3); letter-spacing:0.08em; "
     "text-transform:uppercase;'>Explore deeper</div>",
     unsafe_allow_html=True,
 )
@@ -870,14 +899,14 @@ if _p:
 }}
 .lg-label {{
     display: inline-block; padding: 0.3rem 0.75rem; border-radius: 4px;
-    cursor: pointer; color: #aaa; background: rgba(255,255,255,0.05);
+    cursor: pointer; color: var(--fg-3); background: var(--hairline-soft);
     font-size: 0.82rem; transition: background 0.15s, color 0.15s;
     user-select: none;
 }}
-.lg-label:hover {{ background: rgba(255,255,255,0.12); color: #fff; }}
+.lg-label:hover {{ background: var(--hairline); color: var(--fg-1); }}
 .lg-chart {{ display: none; }}
 .lg-caption {{
-    text-align: center; font-size: 0.7rem; color: #777; margin-top: 0.4rem;
+    text-align: center; font-size: 0.7rem; color: var(--fg-5); margin-top: 0.4rem;
 }}
 {_picker_rules}
 </style>
@@ -925,7 +954,7 @@ render_strip(
 
 # ── Footer ────────────────────────────────────────────────────────────────────
 st.markdown("""
-<div style="text-align:center; margin-top:1rem; color:#888; font-size:0.7rem;">
+<div style="text-align:center; margin-top:1rem; color:var(--fg-4); font-size:0.7rem;">
     barrettscore.com &nbsp;·&nbsp; Data from NBA Stats API &nbsp;·&nbsp; Updated daily
 </div>
 """, unsafe_allow_html=True)

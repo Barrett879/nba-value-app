@@ -17,7 +17,8 @@ from utils import (
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
-    render_nav, render_page_chrome, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
+    render_nav, render_page_chrome,
+    theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
 import threading
@@ -118,13 +119,13 @@ _n_over  = int((df['value_diff'] >  5_000_000).sum())
 st.markdown(
     f"""
     <div style="margin-top:0.85rem; margin-bottom:0.35rem;
-                font-size:0.875rem; color:rgba(250,250,250,0.6);">
-        <b style="color:rgba(250,250,250,0.85);">{len(df)}</b> players ranked ·
-        <b style="color:rgba(250,250,250,0.85);">{_n_under}</b> underpaid (earning $5M+ below projection) ·
-        <b style="color:rgba(250,250,250,0.85);">{_n_over}</b> overpaid (earning $5M+ above projection)
+                font-size:0.875rem; color:var(--fg-3);">
+        <b style="color:var(--fg-1);">{len(df)}</b> players ranked ·
+        <b style="color:var(--fg-1);">{_n_under}</b> underpaid (earning $5M+ below projection) ·
+        <b style="color:var(--fg-1);">{_n_over}</b> overpaid (earning $5M+ above projection)
     </div>
     <hr style="margin-top:0.35rem; margin-bottom:1rem;
-               border:0; border-top:1px solid rgba(250,250,250,0.12);" />
+               border:0; border-top:1px solid var(--hairline);" />
     """,
     unsafe_allow_html=True,
 )
@@ -224,7 +225,7 @@ st.markdown("""
 h1, h2, h3, h4 = st.columns(4, gap="medium")
 with h1:
     st.markdown(f"""
-    <div class="hero-card" style="background:#1a2e1a; border:1px solid #2ecc71;">
+    <div class="hero-card" style="background:var(--tint-good); border:1px solid var(--value-good);">
         <div class="hero-label">Best Player Right Now</div>
         <div class="hero-name">{_best_row['Player']}</div>
         <div class="hero-sub">{_best_row['Team']} · Score {_best_row['barrett_score']:.1f}</div>
@@ -232,7 +233,7 @@ with h1:
 with h2:
     steal_diff = abs(_steal_row['value_diff'] / 1e6)
     st.markdown(f"""
-    <div class="hero-card" style="background:#1a2a1a; border:1px solid #27ae60;">
+    <div class="hero-card" style="background:var(--tint-good); border:1px solid var(--value-good);">
         <div class="hero-label">Biggest Steal</div>
         <div class="hero-name">{_steal_row['Player']}</div>
         <div class="hero-sub">{_steal_row['Team']} · ${steal_diff:.1f}M below market value</div>
@@ -240,7 +241,7 @@ with h2:
 with h3:
     over_diff = _overpaid_row['value_diff'] / 1e6
     st.markdown(f"""
-    <div class="hero-card" style="background:#2e1a1a; border:1px solid #e74c3c;">
+    <div class="hero-card" style="background:var(--tint-bad); border:1px solid var(--value-bad);">
         <div class="hero-label">Most Overpaid</div>
         <div class="hero-name">{_overpaid_row['Player']}</div>
         <div class="hero-sub">{_overpaid_row['Team']} · ${over_diff:.1f}M above market value</div>
@@ -249,14 +250,14 @@ with h4:
     if _improved_row is not None:
         _sign = "+" if _improved_delta >= 0 else ""
         st.markdown(f"""
-        <div class="hero-card" style="background:#1a1a2e; border:1px solid #4cc9f0;">
+        <div class="hero-card" style="background:var(--panel-2); border:1px solid var(--sky);">
             <div class="hero-label">Most Improved</div>
             <div class="hero-name">{_improved_row['Player']}</div>
             <div class="hero-sub">{_improved_row['Team']} · {_sign}{_improved_delta:.1f} pts vs last season</div>
         </div>""", unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div class="hero-card" style="background:#1a1a2e; border:1px solid #4cc9f0;">
+        <div class="hero-card" style="background:var(--panel-2); border:1px solid var(--sky);">
             <div class="hero-label">Most Improved</div>
             <div class="hero-name">—</div>
             <div class="hero-sub">No prior season to compare</div>
@@ -356,7 +357,7 @@ _fig_bar.update_layout(
     bargap=0.25,
 )
 
-st.plotly_chart(_fig_bar, use_container_width=True, config={"displayModeBar": False})
+st.plotly_chart(theme_fig(_fig_bar), use_container_width=True, config={"displayModeBar": False})
 st.caption("▲ / ▼ = change in Barrett Score vs prior season")
 
 st.divider()
@@ -657,7 +658,7 @@ if show_graph_mode:
     if color_axis == "Δ Market $M":
         fig_scatter.update_layout(coloraxis_colorbar=dict(title="Δ ($M)", tickformat=".1f"))
 
-    st.plotly_chart(fig_scatter, use_container_width=True,
+    st.plotly_chart(theme_fig(fig_scatter), use_container_width=True,
                     config={"displayModeBar": True, "displaylogo": False})
 
     # ── Companion table — sorted by value diff ────────────────────────────────
@@ -1024,7 +1025,7 @@ if new_selected:
                     title="",
                 ),
             )
-            st.plotly_chart(fig_trend, use_container_width=True,
+            st.plotly_chart(theme_fig(fig_trend), use_container_width=True,
                             config={"displayModeBar": False})
             no_dlebron = [s for s in selected_seasons if s < "2009-10"]
             caption = "★ = current season"
@@ -1112,7 +1113,7 @@ if new_selected:
                         ),
                         hovermode="x unified",
                     )
-                    st.plotly_chart(_mfig, use_container_width=True,
+                    st.plotly_chart(theme_fig(_mfig), use_container_width=True,
                                     config={"displayModeBar": False})
 
         for name in new_selected:

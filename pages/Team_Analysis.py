@@ -10,7 +10,8 @@ from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
     normalize, season_to_espn_year,
     build_ranked_projected,
-    fetch_bref_positions, render_nav, render_page_chrome, render_playoff_toggle,
+    fetch_bref_positions, render_nav, render_page_chrome,
+    theme_fig, render_playoff_toggle,
     render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
@@ -120,7 +121,7 @@ fig_teams.update_layout(
     yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickprefix="$", ticksuffix="M", tickformat=".1f"),
     margin=dict(t=50, b=20),
 )
-st.plotly_chart(fig_teams, use_container_width=True, config={"displayModeBar": False})
+st.plotly_chart(theme_fig(fig_teams), use_container_width=True, config={"displayModeBar": False})
 
 best_player  = df.loc[df.groupby("Team")["value_diff"].idxmin(), ["Team", "Player"]].set_index("Team")["Player"]
 worst_player = df.loc[df.groupby("Team")["value_diff"].idxmax(), ["Team", "Player"]].set_index("Team")["Player"]

@@ -1635,11 +1635,11 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     # Clamp to [1, 100] so a prediction at the player's max pegs the right edge.
     p = lambda v: max(1.0, min(100.0, (v - bar_lo) / span * 100))
     bl, br, mp = p(low_M), p(high_M), p(model_M)
-    sec, legend = "", '<span style="color:#fff;">│</span> model'
+    sec, legend = "", '<span style="color:var(--fg-1);">│</span> model'
     if secondary_M is not None:
         sp = p(secondary_M)
         sec = (f'<div style="position:absolute; left:{sp}%; top:50%; width:12px; height:12px;'
-               f' background:{secondary_color}; border:2px solid #15171d; border-radius:50%;'
+               f' background:{secondary_color}; border:2px solid var(--panel-solid); border-radius:50%;'
                f' transform:translate(-50%,-50%); z-index:2;"></div>')
         legend += f'  ·  <span style="color:{secondary_color};">●</span> {secondary_label}'
     # Tertiary marker: the player's current salary, drawn as a hollow ring so
@@ -1648,14 +1648,14 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     if tertiary_M is not None:
         tp = p(tertiary_M)
         ter = (f'<div style="position:absolute; left:{tp}%; top:50%; width:11px; height:11px;'
-               f' background:#15171d; border:2px solid {tertiary_color}; border-radius:50%;'
+               f' background:var(--panel-solid); border:2px solid {tertiary_color}; border-radius:50%;'
                f' transform:translate(-50%,-50%); z-index:1;"></div>')
         legend += f'  ·  <span style="color:{tertiary_color};">○</span> {tertiary_label}'
     # Endpoint labels: league min/max when the scale is fixed (tagged so they
     # aren't misread as the player's own range), else the player's own band.
     if fixed:
-        lab_lo = f'${scale_min_M:.0f}M <span style="color:#5a5a62;">min</span>'
-        lab_hi = f'<span style="color:#5a5a62;">max</span> ${scale_max_M:.0f}M'
+        lab_lo = f'${scale_min_M:.0f}M <span style="color:var(--fg-6);">min</span>'
+        lab_hi = f'<span style="color:var(--fg-6);">max</span> ${scale_max_M:.0f}M'
     else:
         lab_lo, lab_hi = f'${low_M:.0f}M', f'${high_M:.0f}M'
     # Built as a single newline-free string. A standalone {sec} line (empty
@@ -1665,21 +1665,21 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     # Concatenation keeps the whole bar on one line and sidesteps that bug.
     track = (
         f'<div style="position:relative; height:8px; border-radius:5px; '
-        f'background:rgba(255,255,255,0.07);">'
+        f'background:var(--hairline);">'
         f'<div style="position:absolute; left:{bl:.1f}%; width:{max(br-bl,1):.1f}%; '
         f'top:0; bottom:0; border-radius:5px; '
         f'background:linear-gradient(90deg, rgba(22,212,193,0.22), rgba(22,212,193,0.5));"></div>'
         f'{ter}{sec}'
         f'<div style="position:absolute; left:{mp:.1f}%; top:-5px; width:3px; height:18px; '
-        f'background:#fff; border-radius:2px; transform:translateX(-50%); '
+        f'background:var(--fg-1); border-radius:2px; transform:translateX(-50%); '
         f'box-shadow:0 0 10px rgba(255,255,255,0.75); z-index:3;"></div>'
         f'</div>'
     )
     labels = (
         f'<div style="display:flex; justify-content:space-between; align-items:center; '
-        f'font-size:0.7rem; color:#7a7a85; margin-top:0.5rem;">'
+        f'font-size:0.7rem; color:var(--fg-5); margin-top:0.5rem;">'
         f'<span>{lab_lo}</span>'
-        f'<span style="color:#999;">{legend}</span>'
+        f'<span style="color:var(--fg-4);">{legend}</span>'
         f'<span>{lab_hi}</span>'
         f'</div>'
     )
@@ -1728,7 +1728,7 @@ else:
 # Inline caption chip shown beside the hero number (premium layout).
 _caption_chip = (
     f'<span style="display:inline-block; margin-left:0.65rem; padding:0.18rem 0.65rem;'
-    f' border-radius:999px; background:rgba(240,179,91,0.14); color:#f0b35b;'
+    f' border-radius:999px; background:rgba(240,179,91,0.14); color:var(--amber);'
     f' font-size:0.72rem; font-weight:600; vertical-align:middle;'
     f' white-space:nowrap;">{_model_caption}</span>'
     if _model_caption else ''
@@ -1742,7 +1742,7 @@ _score_chip_html = (
     f'padding:0.18rem 0.6rem; border-radius:999px; '
     f'background:rgba(22,212,193,0.10); '
     f'border:1px solid rgba(22,212,193,0.30); '
-    f'font-size:0.72rem; font-weight:700; color:#16d4c1; '
+    f'font-size:0.72rem; font-weight:700; color:var(--accent-teal); '
     f'letter-spacing:0.04em; vertical-align:4px;">'
     f'Score {features["barrett_score"]:.1f} (#{features["score_rank"]})'
     f'</span>'
@@ -1766,7 +1766,7 @@ if _contract_end and _contract_end != CURRENT_SEASON:
     }.get(_last_type, "")
     _sal_str = f'{_fmt_money(_cur_sal_dollars)} ' if _cur_sal_dollars > 0 else ''
     _signing_html = (
-        f'<div style="margin-top:0.35rem; font-size:0.74rem; color:#888;">'
+        f'<div style="margin-top:0.35rem; font-size:0.74rem; color:var(--fg-4);">'
         f'Current deal: {_sal_str}through {_contract_end}{_type_blurb}'
         f'</div>'
     )
@@ -1774,7 +1774,7 @@ elif _cur_sal_dollars > 0:
     # Case 2: free agent this offseason (or final year of expiring deal).
     # Show their current/previous salary so users have a baseline.
     _signing_html = (
-        f'<div style="margin-top:0.35rem; font-size:0.74rem; color:#888;">'
+        f'<div style="margin-top:0.35rem; font-size:0.74rem; color:var(--fg-4);">'
         f'Previous: {_fmt_money(_cur_sal_dollars)} ({CURRENT_SEASON}) · '
         f'free agent next summer'
         f'</div>'
@@ -1792,8 +1792,8 @@ if _market_median is not None:
     )
     diverge_note = (
         f'<div style="margin-top:0.7rem; padding-top:0.6rem; '
-        f'border-top:1px solid rgba(255,255,255,0.08); '
-        f'font-size:0.78rem; color:#f39c12;">'
+        f'border-top:1px solid var(--hairline); '
+        f'font-size:0.78rem; color:var(--orange);">'
         f'⚠ Model and market diverge by {divergence*100:.0f}%. '
         f'Use as a range.'
         f'</div>'
@@ -1814,27 +1814,27 @@ if _market_median is not None:
     _player_meta_line = " · ".join(_meta_bits)
     _header_html = f"""
     <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
-                border:1px solid rgba(255,255,255,0.10); border-radius:16px;
+                border:1px solid var(--hairline); border-radius:16px;
                 padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
-      <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
+      <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
         {features["name"]}{_score_chip_html}
       </div>
-      <div style="font-size:0.7rem; color:#8a8a93; text-transform:uppercase;
+      <div style="font-size:0.7rem; color:var(--fg-4); text-transform:uppercase;
                   letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
         Projected {CONTRACT_SEASON} contract
       </div>
-      <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
+      <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
         {_player_meta_line}
       </div>{_signing_html}
       <div style="margin-top:1.05rem; line-height:0.9;">
-        <span style="font-size:3.4rem; font-weight:800; color:#fff;
+        <span style="font-size:3.4rem; font-weight:800; color:var(--fg-1);
                      letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
       </div>
       {_confidence_bar_html(predicted_M, low_M, high_M, market_M, "#16d4c1", scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
-      <div style="margin-top:0.95rem; font-size:0.82rem; color:#9a9aa3;">
+      <div style="margin-top:0.95rem; font-size:0.82rem; color:var(--fg-4);">
         Market second opinion
-        <span style="color:#6a6a72;">(median of comparable signings)</span>:
-        &nbsp;<b style="color:#16d4c1; font-size:0.95rem;">${market_M:.1f}M</b>
+        <span style="color:var(--fg-6);">(median of comparable signings)</span>:
+        &nbsp;<b style="color:var(--accent-teal); font-size:0.95rem;">${market_M:.1f}M</b>
       </div>{diverge_note}
     </div>
     """
@@ -1870,30 +1870,30 @@ else:
         )
         _header_html = f"""
         <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
-                    border:1px solid rgba(255,255,255,0.10); border-radius:16px;
+                    border:1px solid var(--hairline); border-radius:16px;
                     padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
-          <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
+          <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
             {features["name"]}{_score_chip_html}
           </div>
-          <div style="font-size:0.7rem; color:#8a8a93; text-transform:uppercase;
+          <div style="font-size:0.7rem; color:var(--fg-4); text-transform:uppercase;
                       letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
             Projected {CONTRACT_SEASON} contract
           </div>
-          <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
+          <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
             {_player_meta_line}
           </div>{_signing_html}
           <div style="margin-top:1.05rem; line-height:0.9;">
-            <span style="font-size:3.4rem; font-weight:800; color:#fff;
+            <span style="font-size:3.4rem; font-weight:800; color:var(--fg-1);
                          letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
           </div>
           {_confidence_bar_html(predicted_M, low_M, high_M, cur_sal_M, "#16d4c1", "current", scale_min_M=_scale_min_M, scale_max_M=_scale_max_M)}
-          <div style="margin-top:0.95rem; font-size:0.82rem; color:#9a9aa3;">
+          <div style="margin-top:0.95rem; font-size:0.82rem; color:var(--fg-4);">
             Current salary anchor:
-            &nbsp;<b style="color:#16d4c1; font-size:0.95rem;">${cur_sal_M:.1f}M</b>
+            &nbsp;<b style="color:var(--accent-teal); font-size:0.95rem;">${cur_sal_M:.1f}M</b>
           </div>
           <div style="margin-top:0.7rem; padding-top:0.6rem;
-                      border-top:1px solid rgba(255,255,255,0.08);
-                      font-size:0.78rem; color:#f39c12;">
+                      border-top:1px solid var(--hairline);
+                      font-size:0.78rem; color:var(--orange);">
             ⚠ {_explainer}
           </div>
         </div>
@@ -1901,24 +1901,24 @@ else:
     else:
         _header_html = f"""
         <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
-                    border:1px solid rgba(255,255,255,0.10); border-radius:16px;
+                    border:1px solid var(--hairline); border-radius:16px;
                     padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
-          <div style="font-size:1.5rem; color:#fff; font-weight:800; line-height:1.2;">
+          <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
             {features["name"]}{_score_chip_html}
           </div>
-          <div style="font-size:0.7rem; color:#8a8a93; text-transform:uppercase;
+          <div style="font-size:0.7rem; color:var(--fg-4); text-transform:uppercase;
                       letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
             Projected {CONTRACT_SEASON} contract
           </div>
-          <div style="font-size:0.78rem; color:#aaa; margin-top:0.15rem;">
+          <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
             {_player_meta_line}
           </div>{_signing_html}
           <div style="margin-top:1.05rem; line-height:0.9;">
-            <span style="font-size:3.4rem; font-weight:800; color:#fff;
+            <span style="font-size:3.4rem; font-weight:800; color:var(--fg-1);
                          letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
           </div>
           {_confidence_bar_html(predicted_M, low_M, high_M, scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
-          <div style="margin-top:0.95rem; font-size:0.78rem; color:#888;">
+          <div style="margin-top:0.95rem; font-size:0.78rem; color:var(--fg-4);">
             Model prediction only — no comparable signings on file.
           </div>
         </div>
@@ -1997,45 +1997,45 @@ else:
             <div style="background:linear-gradient(135deg, rgba(22,212,193,0.07) 0%, rgba(22,212,193,0.03) 100%);
                         border:1px solid rgba(22,212,193,0.22);
                         border-radius:14px; padding:1.2rem 1.5rem; margin:0.4rem 0 1.1rem 0;">
-              <div style="font-size:0.7rem; color:#16d4c1; letter-spacing:0.12em;
+              <div style="font-size:0.7rem; color:var(--accent-teal); letter-spacing:0.12em;
                           text-transform:uppercase; font-weight:700; margin-bottom:0.85rem;">
                 Scouting take · market view
               </div>
               <div style="display:flex; flex-wrap:wrap; gap:2rem; margin-bottom:0.7rem;
                           align-items:flex-end;">
                 <div>
-                  <div style="font-size:0.66rem; color:#8a8a93;
+                  <div style="font-size:0.66rem; color:var(--fg-4);
                               text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">
                     Median new contract
                   </div>
-                  <div style="font-size:1.7rem; color:#fff; font-weight:800;
+                  <div style="font-size:1.7rem; color:var(--fg-1); font-weight:800;
                               line-height:1.1; margin-top:0.15rem;">
                     ${take['median']/1e6:.1f}M
                   </div>
                 </div>
                 <div>
-                  <div style="font-size:0.66rem; color:#8a8a93;
+                  <div style="font-size:0.66rem; color:var(--fg-4);
                               text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">
                     Middle 50%
                   </div>
-                  <div style="font-size:1.7rem; color:#cdcdd5; font-weight:700;
+                  <div style="font-size:1.7rem; color:var(--fg-2); font-weight:700;
                               line-height:1.1; margin-top:0.15rem;">
-                    ${take['q25']/1e6:.1f}<span style="color:#666; font-weight:500;">–</span>${take['q75']/1e6:.1f}M
+                    ${take['q25']/1e6:.1f}<span style="color:var(--fg-6); font-weight:500;">–</span>${take['q75']/1e6:.1f}M
                   </div>
                 </div>
                 <div style="flex:1; min-width:240px;">
-                  <div style="font-size:0.66rem; color:#8a8a93;
+                  <div style="font-size:0.66rem; color:var(--fg-4);
                               text-transform:uppercase; letter-spacing:0.08em; font-weight:600;">
                     Closest 3 comps
                   </div>
-                  <div style="font-size:0.95rem; color:#cdcdd5; margin-top:0.3rem;
+                  <div style="font-size:0.95rem; color:var(--fg-2); margin-top:0.3rem;
                               line-height:1.4;">{top3_str}</div>
                 </div>
               </div>
-              <div style="font-size:0.84rem; color:#9a9aa3;
-                          border-top:1px solid rgba(255,255,255,0.07);
+              <div style="font-size:0.84rem; color:var(--fg-4);
+                          border-top:1px solid var(--hairline);
                           padding-top:0.6rem; margin-top:0.2rem;">
-                <b style="color:#16d4c1;">Note</b>&nbsp; {take['x_factor']}
+                <b style="color:var(--accent-teal);">Note</b>&nbsp; {take['x_factor']}
               </div>
             </div>
             """
@@ -2162,20 +2162,20 @@ try:
         if _ts_suitors:
             _ts_rows = "".join(
                 f'<div style="display:flex; align-items:baseline; gap:0.7rem; padding:0.45rem 0; '
-                f'border-top:1px solid rgba(255,255,255,0.06);">'
-                f'<span style="font-weight:800; color:#16d4c1; width:2.6rem;">{_s["team"]}</span>'
-                f'<span style="font-weight:800; color:#e8e8ee; width:3.6rem; '
+                f'border-top:1px solid var(--hairline);">'
+                f'<span style="font-weight:800; color:var(--accent-teal); width:2.6rem;">{_s["team"]}</span>'
+                f'<span style="font-weight:800; color:var(--fg-2); width:3.6rem; '
                 f'white-space:nowrap;">${_s["offer_M"]:.0f}M</span>'
-                f'<span style="color:#cdcdd5; font-size:0.85rem;">{_s["reason"]}</span>'
-                f'<span style="margin-left:auto; color:#7a7a85; font-size:0.76rem; '
+                f'<span style="color:var(--fg-2); font-size:0.85rem;">{_s["reason"]}</span>'
+                f'<span style="margin-left:auto; color:var(--fg-5); font-size:0.76rem; '
                 f'white-space:nowrap;">{_s["tool"]}</span></div>'
                 for _s in _ts_suitors
             )
             st.markdown(
                 '<div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, '
-                'rgba(22,212,193,0.06) 100%); border:1px solid rgba(255,255,255,0.10); '
+                'rgba(22,212,193,0.06) 100%); border:1px solid var(--hairline); '
                 'border-radius:14px; padding:1.1rem 1.4rem; margin:0.4rem 0 0.2rem;">'
-                '<div style="font-size:0.7rem; color:#16d4c1; letter-spacing:0.12em; '
+                '<div style="font-size:0.7rem; color:var(--accent-teal); letter-spacing:0.12em; '
                 'text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">'
                 f'Likely suitors — projected offers (model value ${predicted_M:.0f}M)</div>{_ts_rows}</div>',
                 unsafe_allow_html=True,
@@ -2229,9 +2229,9 @@ with st.expander("About this prediction"):
     _dur_tier = prediction.get("durability_tier", "") or ""
     _show_durability = _dur_mult != 1.0
     _dur_html_fragment = (
-        f'&nbsp;<span style="color:#666;">×</span>&nbsp;'
+        f'&nbsp;<span style="color:var(--fg-6);">×</span>&nbsp;'
         f'<b>×{_dur_mult:.2f}</b>'
-        f'<span style="color:#777;"> (durability: {_dur_tier} · '
+        f'<span style="color:var(--fg-5);"> (durability: {_dur_tier} · '
         f'{features.get("trailing_gp_total", 0)}/{features.get("trailing_gp_max", 246)} '
         f'GP over last 3 yrs)</span>'
         if _show_durability else ""
@@ -2243,9 +2243,9 @@ with st.expander("About this prediction"):
     _playoff_barrett_target = features.get("playoff_barrett", 0.0)
     _show_playoff = _playoff_mult != 1.0
     _playoff_html_fragment = (
-        f'&nbsp;<span style="color:#666;">×</span>&nbsp;'
+        f'&nbsp;<span style="color:var(--fg-6);">×</span>&nbsp;'
         f'<b>×{_playoff_mult:.2f}</b>'
-        f'<span style="color:#777;"> (playoff: {_playoff_tier} · '
+        f'<span style="color:var(--fg-5);"> (playoff: {_playoff_tier} · '
         f'Barrett {_playoff_barrett_target:.1f} on {_playoff_gp_target} GP last postseason)</span>'
         if _show_playoff else ""
     )
@@ -2269,21 +2269,21 @@ with st.expander("About this prediction"):
     _supermax_tier_label = prediction.get("supermax_tier_label", "")
     if _cba_cap_applied:
         _cba_fragment = (
-            f' &nbsp;<span style="color:#666;">→</span>&nbsp; '
-            f'<b style="color:#e63946;">capped at ${_cba_max_M:.1f}M</b>'
-            f' <span style="color:#777;">(CBA max: {_supermax_tier_label})</span>'
+            f' &nbsp;<span style="color:var(--fg-6);">→</span>&nbsp; '
+            f'<b style="color:var(--accent-red);">capped at ${_cba_max_M:.1f}M</b>'
+            f' <span style="color:var(--fg-5);">(CBA max: {_supermax_tier_label})</span>'
         )
     elif _cba_floor_applied:
         _cba_fragment = (
-            f' &nbsp;<span style="color:#666;">→</span>&nbsp; '
-            f'<b style="color:#16d4c1;">floored at ${_cba_max_M:.1f}M</b>'
-            f' <span style="color:#777;">(supermax: {_supermax_tier_label})</span>'
+            f' &nbsp;<span style="color:var(--fg-6);">→</span>&nbsp; '
+            f'<b style="color:var(--accent-teal);">floored at ${_cba_max_M:.1f}M</b>'
+            f' <span style="color:var(--fg-5);">(supermax: {_supermax_tier_label})</span>'
         )
     elif _max_tier_floor_applied:
         _cba_fragment = (
-            f' &nbsp;<span style="color:#666;">→</span>&nbsp; '
-            f'<b style="color:#16d4c1;">lifted to ${predicted_M:.1f}M</b>'
-            f' <span style="color:#777;">(All-NBA near-max)</span>'
+            f' &nbsp;<span style="color:var(--fg-6);">→</span>&nbsp; '
+            f'<b style="color:var(--accent-teal);">lifted to ${predicted_M:.1f}M</b>'
+            f' <span style="color:var(--fg-5);">(All-NBA near-max)</span>'
         )
     else:
         _cba_fragment = ""
@@ -2303,42 +2303,42 @@ with st.expander("About this prediction"):
             _ml_inputs += f' · All-NBA last 3yr: {features["all_nba_3yr"]}'
         _ml_inputs += f' · age {features["age"] or "?"} · {features["service_years"]} yrs service'
         _math_line = (
-            '<span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;'
+            '<span style="color:var(--fg-4); font-size:0.7rem; letter-spacing:0.08em;'
             ' text-transform:uppercase; margin-right:0.5rem;">Model</span>'
-            f'<b style="color:#fff;">${_raw_predicted_M:.1f}M</b>'
-            f' <span style="color:#777;">(HistGBM ML output from {_ml_inputs})</span>'
-            f' &nbsp;<span style="color:#666;">→</span>&nbsp; '
-            f'<b style="color:#16d4c1;">${_equation_end_M:.1f}M</b>'
-            f' <span style="color:#666;">±${prediction["band"]/1_000_000:.1f}M</span>'
+            f'<b style="color:var(--fg-1);">${_raw_predicted_M:.1f}M</b>'
+            f' <span style="color:var(--fg-5);">(HistGBM ML output from {_ml_inputs})</span>'
+            f' &nbsp;<span style="color:var(--fg-6);">→</span>&nbsp; '
+            f'<b style="color:var(--accent-teal);">${_equation_end_M:.1f}M</b>'
+            f' <span style="color:var(--fg-6);">±${prediction["band"]/1_000_000:.1f}M</span>'
             f'{_cba_fragment}'
         )
     else:
         _math_line = (
-            '<span style="color:#888; font-size:0.7rem; letter-spacing:0.08em;'
+            '<span style="color:var(--fg-4); font-size:0.7rem; letter-spacing:0.08em;'
             ' text-transform:uppercase; margin-right:0.5rem;">Math</span>'
-            f'<b style="color:#fff;">${base_M:.1f}M</b>'
-            f' <span style="color:#777;">(career rate score '
+            f'<b style="color:var(--fg-1);">${base_M:.1f}M</b>'
+            f' <span style="color:var(--fg-5);">(career rate score '
             f'{features["career_barrett"]:.1f} → rank #{features["effective_rank"]})'
-            f'</span> &nbsp;<span style="color:#666;">×</span>&nbsp; '
+            f'</span> &nbsp;<span style="color:var(--fg-6);">×</span>&nbsp; '
             f'<b>×{prediction["age_mult"]:.2f}</b>'
-            f' <span style="color:#777;">(age {_age_label}{_age_factor_note})</span>'
-            f' &nbsp;<span style="color:#666;">×</span>&nbsp; '
+            f' <span style="color:var(--fg-5);">(age {_age_label}{_age_factor_note})</span>'
+            f' &nbsp;<span style="color:var(--fg-6);">×</span>&nbsp; '
             f'<b>×{prediction["pos_mult"]:.2f}</b>'
-            f' <span style="color:#777;">({_pos_label}{_pos_factor_note})</span>'
+            f' <span style="color:var(--fg-5);">({_pos_label}{_pos_factor_note})</span>'
             f'{_dur_html_fragment}'
             f'{_playoff_html_fragment}'
-            f' &nbsp;<span style="color:#666;">=</span>&nbsp; '
-            f'<b style="color:#16d4c1;">${_equation_end_M:.1f}M</b>'
-            f' <span style="color:#666;">±${prediction["band"]/1_000_000:.1f}M</span>'
+            f' &nbsp;<span style="color:var(--fg-6);">=</span>&nbsp; '
+            f'<b style="color:var(--accent-teal);">${_equation_end_M:.1f}M</b>'
+            f' <span style="color:var(--fg-6);">±${prediction["band"]/1_000_000:.1f}M</span>'
             f'{_cba_fragment}'
         )
     _breakdown_html = (
-        '<div style="background:rgba(255,255,255,0.03);'
-        ' border:1px solid rgba(255,255,255,0.08);'
+        '<div style="background:var(--hairline-soft);'
+        ' border:1px solid var(--hairline);'
         ' border-radius:10px; padding:0.85rem 1.1rem; margin: 0 0 1rem 0;'
-        ' font-size:0.95rem; color:#cdcdd5; line-height:1.55;">'
+        ' font-size:0.95rem; color:var(--fg-2); line-height:1.55;">'
         f'{_math_line}'
-        '<div style="font-size:0.72rem; color:#777; margin-top:0.35rem;">'
+        '<div style="font-size:0.72rem; color:var(--fg-5); margin-top:0.35rem;">'
         f'Base uses {features["career_basis"]}.'
         '</div>'
         '</div>'

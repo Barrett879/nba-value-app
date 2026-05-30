@@ -13,6 +13,7 @@ from utils import (
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
+    theme_fig,
     render_barrett_score_explainer, _bootstrap_warm,
 )
 
@@ -246,4 +247,4 @@ if not fa_display.empty:
             yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat="d"),
             legend=dict(orientation="h", x=0.5, xanchor="center", y=1.1),
         )
-        st.plotly_chart(fig_fa, use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(theme_fig(fig_fa), use_container_width=True, config={"displayModeBar": False})

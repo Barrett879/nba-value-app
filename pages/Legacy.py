@@ -12,7 +12,8 @@ from utils import (
     normalize,
     build_all_seasons_combined, fetch_draft_classes,
     fetch_player_career_all_seasons,
-    render_nav, render_page_chrome, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
+    render_nav, render_page_chrome,
+    theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
 )
 
 st.set_page_config(page_title="Legacy", layout="wide")
@@ -125,14 +126,14 @@ st.markdown("""
 lh1, lh2, lh3 = st.columns(3, gap="medium")
 with lh1:
     st.markdown(f"""
-    <div class="legacy-hero" style="background:#2a1a0a; border:1px solid #f39c12;">
+    <div class="legacy-hero" style="background:var(--tint-bad); border:1px solid var(--orange);">
         <div class="hero-label">Greatest Single Season</div>
         <div class="hero-name">{_goat_row['Player']}</div>
         <div class="hero-sub">{_goat_row['Season']} · {_goat_row['Team']} · Score {_goat_row['barrett_score']:.1f}</div>
     </div>""", unsafe_allow_html=True)
 with lh2:
     st.markdown(f"""
-    <div class="legacy-hero" style="background:#0a1a2a; border:1px solid #3498db;">
+    <div class="legacy-hero" style="background:var(--panel-2); border:1px solid var(--blue);">
         <div class="hero-label">Most Consistent Career (≥5 seasons)</div>
         <div class="hero-name">{_consistent_name}</div>
         <div class="hero-sub">Avg {_consistent_avg:.1f} across {_consistent_seas} seasons</div>
@@ -140,7 +141,7 @@ with lh2:
 with lh3:
     steal_diff = abs(_steal_row["value_diff"] / 1e6)
     st.markdown(f"""
-    <div class="legacy-hero" style="background:#0a2a0a; border:1px solid #2ecc71;">
+    <div class="legacy-hero" style="background:var(--tint-good); border:1px solid var(--value-good);">
         <div class="hero-label">Most Underpaid Season Ever</div>
         <div class="hero-name">{_steal_row['Player']}</div>
         <div class="hero-sub">{_steal_row['Season']} · {_steal_row['Team']} · ${steal_diff:.1f}M below market</div>
@@ -366,7 +367,7 @@ with tab_arc:
                     yaxis=dict(gridcolor="rgba(255,255,255,0.1)", tickformat=".1f"),
                     showlegend=False,
                 )
-                st.plotly_chart(fig_arc, use_container_width=True, config={"displayModeBar": False})
+                st.plotly_chart(theme_fig(fig_arc), use_container_width=True, config={"displayModeBar": False})
 
                 # Season-by-season table
                 arc_tbl = arc_df[["Season", "barrett_score", "Team", "score_rank", "GP", "total_min", "salary"]].copy()
@@ -492,7 +493,7 @@ with tab_team:
             xaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score", tickformat=".1f"),
             yaxis=dict(gridcolor="rgba(0,0,0,0)"),
         )
-        st.plotly_chart(fig_rush, use_container_width=True, config={"displayModeBar": False})
+        st.plotly_chart(theme_fig(fig_rush), use_container_width=True, config={"displayModeBar": False})
 
         rush_tbl = rush_df[["Player", "Season", "barrett_score", "score_rank", "salary", "value_diff"]].copy()
         rush_tbl["salary"]     /= 1e6
@@ -597,7 +598,7 @@ with tab_long:
             font=dict(color="rgba(255,255,255,0.7)", size=10),
             xanchor="left",
         )
-    st.plotly_chart(fig_long, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(theme_fig(fig_long), use_container_width=True, config={"displayModeBar": False})
 
     st.dataframe(
         long_df,
@@ -731,7 +732,7 @@ with tab_rec:
                     xaxis=dict(gridcolor="rgba(255,255,255,0.07)", tickangle=-30, type="category"),
                     yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat=".1f"),
                 )
-                st.plotly_chart(fig_fall, use_container_width=True, config={"displayModeBar": False})
+                st.plotly_chart(theme_fig(fig_fall), use_container_width=True, config={"displayModeBar": False})
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -831,4 +832,4 @@ with tab_draft:
                     xaxis=dict(gridcolor="rgba(255,255,255,0.07)", tickangle=-30, type="category"),
                     yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat=".1f"),
                 )
-                st.plotly_chart(fig_class, use_container_width=True, config={"displayModeBar": False})
+                st.plotly_chart(theme_fig(fig_class), use_container_width=True, config={"displayModeBar": False})

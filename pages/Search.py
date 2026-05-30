@@ -12,7 +12,8 @@ from utils import (
     get_all_player_names, fetch_player_full_career,
     fetch_season_component_distribution, fetch_position_peer_distribution,
     fetch_player_positions_detailed, position_to_bucket,
-    render_nav, render_page_chrome, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
+    render_nav, render_page_chrome,
+    theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
 from urllib.parse import quote
@@ -117,19 +118,19 @@ _share_widget = f"""
 <div style="display:flex; align-items:center; gap:0.6rem;
             margin: 0; flex-wrap:wrap; font-family: 'Source Sans Pro',
             -apple-system, BlinkMacSystemFont, sans-serif;">
-  <span style="font-size:0.78rem; color:rgba(250,250,250,0.55);
+  <span style="font-size:0.78rem; color:var(--panel);
                letter-spacing:0.02em; text-transform:uppercase;
                font-weight:600;">Share this view</span>
-  <code id="share-url" style="background:rgba(255,255,255,0.04);
-                              border:1px solid rgba(255,255,255,0.08);
+  <code id="share-url" style="background:var(--hairline-soft);
+                              border:1px solid var(--hairline);
                               border-radius:6px; padding:0.25rem 0.6rem;
-                              font-size:0.82rem; color:#cdcdd5;
+                              font-size:0.82rem; color:var(--fg-2);
                               max-width:520px; overflow:hidden;
                               text-overflow:ellipsis; white-space:nowrap;">
     {_share_path}
   </code>
   <button id="share-btn" type="button"
-          style="background:#e63946; color:white; border:none;
+          style="background:var(--accent-red); color:white; border:none;
                  border-radius:6px; padding:0.3rem 0.85rem; font-size:0.8rem;
                  font-weight:600; cursor:pointer; transition:opacity 0.15s;
                  font-family:inherit;">
@@ -363,7 +364,7 @@ if len(selected) == 1:
                    tickformat=".1f"),
         hovermode="closest",
     )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(theme_fig(fig), use_container_width=True, config={"displayModeBar": False})
     st.caption("★ = peak career season · dot color encodes the score (red = lowest, "
                "gold = mid, green = highest of this player's career)")
 
@@ -497,7 +498,7 @@ if len(selected) == 1:
                 ),
                 yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
             )
-            st.plotly_chart(_bd_fig, use_container_width=True,
+            st.plotly_chart(theme_fig(_bd_fig), use_container_width=True,
                             config={"displayModeBar": False})
 
             # Summary strip: Base × Avail = Barrett Score for transparency.
@@ -510,26 +511,26 @@ if len(selected) == 1:
             _eq_html = f"""
             <div style="display:flex; flex-wrap:wrap; align-items:center; gap:0.5rem;
                         margin-top:0.5rem; padding:0.85rem 1rem;
-                        background:rgba(255,255,255,0.03);
-                        border:1px solid rgba(255,255,255,0.08); border-radius:8px;">
-                <span style="color:#cdcdd5; font-size:0.9rem;">
-                    <b style="color:#fff; font-size:1.05rem;">{_base_score:.1f}</b>
-                    <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                        background:var(--hairline-soft);
+                        border:1px solid var(--hairline); border-radius:8px;">
+                <span style="color:var(--fg-2); font-size:0.9rem;">
+                    <b style="color:var(--fg-1); font-size:1.05rem;">{_base_score:.1f}</b>
+                    <span style="color:var(--fg-4); font-size:0.78rem; text-transform:uppercase;
                                  letter-spacing:0.04em; margin-left:0.3rem;">Base Score</span>
                 </span>
-                <span style="color:#666;">×</span>
+                <span style="color:var(--fg-6);">×</span>
                 <span style="color:{_avail_color}; font-size:0.9rem;">
                     <b style="font-size:1.05rem;">{_av * 100:.0f}%</b>
-                    <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                    <span style="color:var(--fg-4); font-size:0.78rem; text-transform:uppercase;
                                  letter-spacing:0.04em; margin-left:0.3rem;">Availability</span>
                 </span>
-                <span style="color:#666;">=</span>
-                <span style="color:#fff; font-size:0.9rem;">
+                <span style="color:var(--fg-6);">=</span>
+                <span style="color:var(--fg-1); font-size:0.9rem;">
                     <b style="font-size:1.15rem;">{_bs:.1f}</b>
-                    <span style="color:#888; font-size:0.78rem; text-transform:uppercase;
+                    <span style="color:var(--fg-4); font-size:0.78rem; text-transform:uppercase;
                                  letter-spacing:0.04em; margin-left:0.3rem;">Barrett Score</span>
                 </span>
-                <span style="margin-left:auto; color:#888; font-size:0.75rem;">
+                <span style="margin-left:auto; color:var(--fg-4); font-size:0.75rem;">
                     {_bd_season} · {int(_bd_row['GP'])} GP · {_bd_row['MPG']:.1f} MPG
                 </span>
             </div>
@@ -647,7 +648,7 @@ if len(selected) == 1:
                 ),
                 yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
             )
-            st.plotly_chart(_peer_fig, use_container_width=True,
+            st.plotly_chart(theme_fig(_peer_fig), use_container_width=True,
                             config={"displayModeBar": False})
 
             _peer_n = len(_peer_dist)
@@ -877,7 +878,7 @@ else:
         legend=dict(orientation="h", x=0.5, xanchor="center", y=-0.18, yanchor="top",
                     bgcolor="rgba(0,0,0,0)"),
     )
-    st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
+    st.plotly_chart(theme_fig(fig), use_container_width=True, config={"displayModeBar": False})
     st.caption(
         "★ = each player's peak season. "
         "Hover any point for the actual season + raw stats."
