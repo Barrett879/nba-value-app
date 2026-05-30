@@ -11,7 +11,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected,
     fetch_bref_positions, render_nav, render_page_chrome,
-    theme_fig, render_playoff_toggle,
+    theme_fig, html_table, render_playoff_toggle,
     render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
@@ -134,35 +134,39 @@ team_tbl.columns = ["Team", "Players", "Actual $M", "Proj. $M",
 team_tbl.insert(0, "#", range(1, len(team_tbl) + 1))
 
 
-def color_net(val):
+def _sty_net(v, _row):
     try:
-        n = float(val)
+        n = float(v)
     except (ValueError, TypeError):
         return ""
-    if n < -20: return "color: #2ecc71; font-weight: bold"
-    if n < 0:   return "color: #a8e6a8"
-    if n > 20:  return "color: #e74c3c; font-weight: bold"
-    if n > 0:   return "color: #f1a8a8"
+    if n < -20: return "color:var(--value-good);font-weight:700"
+    if n < 0:   return "color:var(--value-good-s)"
+    if n > 20:  return "color:var(--value-bad);font-weight:700"
+    if n > 0:   return "color:var(--value-bad-s)"
     return ""
 
 
-st.dataframe(
-    team_tbl.style.map(color_net, subset=["Net Δ $M"]),
-    column_config={
-        "Actual $M":  st.column_config.NumberColumn(format="$%.1fM",
-            help="Sum of all qualifying players' actual salaries."),
-        "Proj. $M":   st.column_config.NumberColumn(format="$%.1fM",
-            help="Sum of what those players would earn paid by Barrett Score rank."),
-        "Net Δ $M":   st.column_config.NumberColumn(format="$%.1fM",
-            help="Actual − Projected. Negative (green) = team is getting value. Positive (red) = overpaying."),
-        "Avg Score":  st.column_config.NumberColumn(format="%.2f",
-            help="Average Barrett Score across qualifying players on the team."),
-        "Best Value": st.column_config.TextColumn(help="Most underpaid player (lowest Actual − Projected)."),
-        "Worst Value":st.column_config.TextColumn(help="Most overpaid player (highest Actual − Projected)."),
+html_table(
+    team_tbl,
+    formatters={
+        "Actual $M": lambda v: f"${v:.1f}M",
+        "Proj. $M":  lambda v: f"${v:.1f}M",
+        "Net Δ $M":  lambda v: f"${v:.1f}M",
+        "Avg Score": lambda v: f"{v:.2f}",
     },
-    use_container_width=True,
-    hide_index=True,
-    height=min(600, len(team_tbl) * 35 + 40),
+    styles={"Net Δ $M": _sty_net},
+    aligns={"#": "right", "Players": "right", "Actual $M": "right",
+            "Proj. $M": "right", "Net Δ $M": "right", "Avg Score": "right"},
+    numeric={"#", "Players", "Actual $M", "Proj. $M", "Net Δ $M", "Avg Score"},
+    helps={
+        "Actual $M": "Sum of all qualifying players' actual salaries.",
+        "Proj. $M": "Sum of what those players would earn paid by Barrett Score rank.",
+        "Net Δ $M": "Actual − Projected. Negative (green) = getting value; positive (red) = overpaying.",
+        "Avg Score": "Average Barrett Score across qualifying players on the team.",
+        "Best Value": "Most underpaid player (lowest Actual − Projected).",
+        "Worst Value": "Most overpaid player (highest Actual − Projected).",
+    },
+    height=min(640, len(team_tbl) * 38 + 46),
 )
 st.caption(
     f"Based on **{len(df)}** players with ≥ {min_threshold} total minutes. "
@@ -183,14 +187,17 @@ if drill_team:
     team_players.columns = ["Player", "Barrett Score", "Score Rank",
                               "Salary $M", "Proj. $M", "Δ $M"]
     team_players.insert(0, "#", range(1, len(team_players) + 1))
-    st.dataframe(
-        team_players.style.map(color_net, subset=["Δ $M"]),
-        column_config={
-            "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-            "Salary $M":     st.column_config.NumberColumn(format="$%.2fM"),
-            "Proj. $M":      st.column_config.NumberColumn(format="$%.2fM"),
-            "Δ $M":          st.column_config.NumberColumn(format="$%.2fM"),
+    html_table(
+        team_players,
+        formatters={
+            "Barrett Score": lambda v: f"{v:.2f}",
+            "Salary $M":     lambda v: f"${v:.2f}M",
+            "Proj. $M":      lambda v: f"${v:.2f}M",
+            "Δ $M":          lambda v: f"${v:.2f}M",
         },
-        use_container_width=True,
-        hide_index=True,
+        styles={"Δ $M": _sty_net},
+        aligns={"#": "right", "Barrett Score": "right", "Score Rank": "right",
+                "Salary $M": "right", "Proj. $M": "right", "Δ $M": "right"},
+        numeric={"#", "Barrett Score", "Score Rank", "Salary $M", "Proj. $M", "Δ $M"},
+        height=min(640, len(team_players) * 38 + 46),
     )
