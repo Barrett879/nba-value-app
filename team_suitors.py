@@ -237,7 +237,8 @@ def desire_weight(timeline: str, age, value_M: float) -> float:
 def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
                  rosters: pd.DataFrame, landscape: pd.DataFrame | None = None,
                  n: int = 6, incumbent_team: str | None = None,
-                 age: float | None = None, is_rfa: bool = False) -> list[dict]:
+                 age: float | None = None, is_rfa: bool = False,
+                 skill_fit: dict | None = None) -> list[dict]:
     """His projected free-agent market: the teams most likely to pursue him, each
     at the price THEY would realistically offer.
 
@@ -251,6 +252,8 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
 
     rosters: live per-player table [team, player, pos, barrett].
     incumbent_team / age / is_rfa: his current team, age, restricted-FA flag.
+    skill_fit: optional {team: {fit, need}} from skill_fit_scores() — nudges teams
+        toward an FA who supplies a skill (shooting / rebounding / ...) they lack.
     """
     if landscape is None:
         landscape = load_team_landscape()
@@ -276,7 +279,9 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
         else:               tool_label = "minimum"
         tl = str(t.get("timeline", "")).strip().lower()
         des = 1.0 if is_inc else desire_weight(tl, age, price_M)
-        rank = offer * des                                  # bid × how likely they'd pursue him
+        sf = (skill_fit or {}).get(t["team"]) or {"fit": 0.5, "need": None}
+        # skill fit nudges rank x(1-W/2)..x(1+W/2) — favours teams who lack his skill
+        rank = offer * des * ((1.0 - SKILL_WEIGHT / 2.0) + SKILL_WEIGHT * float(sf["fit"]))
         if is_inc and is_rfa:
             rank = 1e9                                       # RFA: his team can match anything
         out.append({
@@ -286,7 +291,7 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
             "slot":         need["slot"],
             "is_incumbent": is_inc,
             "tool":         tool_label,
-            "reason":       _reason(need, tl, target_barrett, is_inc, is_rfa),
+            "reason":       _reason(need, tl, target_barrett, is_inc, is_rfa, sf.get("need")),
             "_rank":        rank,
         })
     out.sort(key=lambda d: (-d["_rank"], d["slot"]))
@@ -295,8 +300,8 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
     return out[:n]
 
 
-def _reason(need: dict, timeline: str, target_barrett: float,
-            is_incumbent: bool = False, is_rfa: bool = False) -> str:
+def _reason(need: dict, timeline: str, target_barrett: float, is_incumbent: bool = False,
+            is_rfa: bool = False, skill_need: str | None = None) -> str:
     if is_incumbent:
         fit = "can match any offer (restricted FA)" if is_rfa else "could re-sign him (Bird rights)"
     elif need["displaces"] is not None:
@@ -305,7 +310,83 @@ def _reason(need: dict, timeline: str, target_barrett: float,
         fit = f"{role} {need['displaces']} ({need['displaces_score']:.1f} vs {target_barrett:.1f})"
     else:
         fit = "fills an open spot at the position"
-    return " · ".join(filter(None, [fit, timeline]))
+    extra = f"fills their {skill_need} need" if skill_need else ""
+    return " · ".join(filter(None, [fit, extra, timeline]))
+
+
+# ── Skill-fit layer ─────────────────────────────────────────────────────────
+# Beyond "needs a forward" — does a team need a forward who can SHOOT / REBOUND /
+# PLAYMAKE / DEFEND? Built from pace- and volume-robust rates, so a chucking tank
+# team doesn't read as a good shooting team (verified: such teams correctly flag as
+# NEEDING shooting, and Jokic's Denver lands #1 in playmaking).
+SKILL_CATS = ("shooting", "rebounding", "playmaking", "defense")
+SKILL_WEIGHT = 0.5          # rank multiplier swings x(1-W/2)..x(1+W/2) by skill fit
+_SKILL_MIN_GP = 30          # rotation filter for the percentile pools
+
+
+def build_team_skills(box: pd.DataFrame, adv: pd.DataFrame) -> pd.DataFrame:
+    """Per-team skill PERCENTILE (0 = league-worst at it = biggest need, 1 = best),
+    from rates: shooting = team 3P%, rebounding = minutes-weighted REB%, playmaking =
+    AST/TO, defense = minutes-weighted DEF_RATING (inverted so higher = better)."""
+    gb = box.groupby("TEAM_ABBREVIATION")
+    shooting = gb["FG3M"].sum() / gb["FG3A"].sum().replace(0, pd.NA)
+    playmaking = gb["AST"].sum() / gb["TOV"].sum().replace(0, pd.NA)
+    a = adv if "TEAM_ABBREVIATION" in adv.columns else adv.merge(
+        box[["PLAYER_ID", "TEAM_ABBREVIATION"]], on="PLAYER_ID", how="left")
+
+    def _wmean(col):
+        d = a.dropna(subset=[col, "MIN"]).copy()
+        d["_n"] = d[col] * d["MIN"]
+        g = d.groupby("TEAM_ABBREVIATION")
+        return g["_n"].sum() / g["MIN"].sum()
+
+    team = pd.DataFrame({"shooting": shooting, "rebounding": _wmean("REB_PCT"),
+                         "playmaking": playmaking, "defense": -_wmean("DEF_RATING")})
+    return team.rank(pct=True)
+
+
+def player_skills(player_id, box: pd.DataFrame, adv: pd.DataFrame) -> dict:
+    """The player's STRENGTH percentile (0-1) per skill among rotation players. A
+    non-shooter (low 3PA volume) gets a low shooting score, not a flattering %.
+    box/adv are PER-GAME league tables (MIN = minutes per game)."""
+    b = box[box["GP"] >= _SKILL_MIN_GP].copy()
+    vol = b[b["FG3A"] >= 2.0].copy()                        # 2+ three-attempts per game
+    vol["_sk"] = (vol["FG3M"] / vol["FG3A"]).rank(pct=True)
+    shoot = dict(zip(vol["PLAYER_ID"], vol["_sk"]))
+    a = adv[adv["MIN"] >= 15.0].copy()                      # rotation minutes (per game)
+    reb = dict(zip(a["PLAYER_ID"], a["REB_PCT"].rank(pct=True)))
+    ast = dict(zip(a["PLAYER_ID"], a["AST_PCT"].rank(pct=True)))
+    dfn = dict(zip(a["PLAYER_ID"], (-a["DEF_RATING"]).rank(pct=True)))
+    return {"shooting":   float(shoot.get(player_id, 0.25)),
+            "rebounding": float(reb.get(player_id, 0.50)),
+            "playmaking": float(ast.get(player_id, 0.50)),
+            "defense":    float(dfn.get(player_id, 0.50))}
+
+
+def skill_fit_scores(player_sk: dict, team_skills: pd.DataFrame) -> dict:
+    """{team: {'fit': 0..1, 'need': category|None}} — how well the player fills each
+    team's deficits: fit = sum(player_strength x team_deficit), deficit = 1 - percentile,
+    min-maxed 0..1 across teams. 'need' = the category he most helps, flagged only when
+    he's genuinely strong there (>= 0.6) and the team genuinely weak (deficit >= 0.45)."""
+    raw, need = {}, {}
+    for tm, row in team_skills.iterrows():
+        contribs = []
+        for c in SKILL_CATS:
+            v = row.get(c)
+            if v is None or v != v:                        # NaN guard
+                continue
+            deficit = 1.0 - float(v)
+            contribs.append((player_sk.get(c, 0.5) * deficit, c, deficit))
+        if not contribs:
+            raw[tm], need[tm] = 0.0, None
+            continue
+        raw[tm] = sum(x[0] for x in contribs)
+        best = max(contribs, key=lambda x: x[0])
+        need[tm] = best[1] if (player_sk.get(best[1], 0) >= 0.6 and best[2] >= 0.45) else None
+    vals = list(raw.values()) or [0.0]
+    lo, hi = min(vals), max(vals)
+    span = (hi - lo) or 1.0
+    return {tm: {"fit": (raw[tm] - lo) / span, "need": need[tm]} for tm in raw}
 
 
 def build_rosters(ranked: pd.DataFrame) -> pd.DataFrame:

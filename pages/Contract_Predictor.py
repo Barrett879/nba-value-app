@@ -2131,6 +2131,19 @@ try:
         _self_team = str(_self_rows.iloc[0]["Team"]) if not _self_rows.empty else None
         # restricted FA (his team can match any offer) if he's finishing a rookie-scale deal
         _is_rfa = bool(features.get("on_rookie_scale"))
+        # skill-fit layer: does a team need a guy who SHOOTS / REBOUNDS / PASSES / DEFENDS?
+        _skill_fit = None
+        try:
+            _box = fetch_league_stats(CURRENT_SEASON, "Regular Season")
+            _adv = fetch_advanced_stats(CURRENT_SEASON, "Regular Season")
+            _team_sk = _ts.build_team_skills(_box, _adv)
+            _self_pid = (int(_self_rows.iloc[0]["PLAYER_ID"])
+                         if (not _self_rows.empty and "PLAYER_ID" in _self_rows.columns) else None)
+            if _self_pid is not None:
+                _skill_fit = _ts.skill_fit_scores(
+                    _ts.player_skills(_self_pid, _box, _adv), _team_sk)
+        except Exception:
+            _skill_fit = None
         # drop the player himself so his own team isn't shown "upgrading over" him
         _cr = _cr[_cr["Player"].map(normalize) != _self_norm]
         _ts_rost = _ts.build_rosters(_cr)
@@ -2142,7 +2155,8 @@ try:
             _ts.rank_suitors(predicted_M, float(features["barrett_score"]),
                              _ts_pos, _ts_rost, _ts_land, n=6,
                              incumbent_team=_self_team,
-                             age=features.get("age"), is_rfa=_is_rfa)
+                             age=features.get("age"), is_rfa=_is_rfa,
+                             skill_fit=_skill_fit)
             if not _ts_rost.empty else []
         )
         if _ts_suitors:
@@ -2173,7 +2187,7 @@ try:
                 f"Experimental — {_fa_label}. Each team's number is the model's value "
                 "scaled by fit (starter vs depth) and capped by their cap room / exception "
                 "(or Bird rights). Ranked by who'd most likely pursue him — team timeline × "
-                "his age & value × positional need (pursuit rates from 900+ past signings)."
+                "his age & value × positional & skill need (pursuit rates from 900+ past signings)."
                 + (f" Cap data: {_asof}." if _asof else "")
             )
 except Exception:
