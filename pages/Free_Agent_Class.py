@@ -13,7 +13,7 @@ from utils import (
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
-    theme_fig,
+    theme_fig, html_table,
     render_barrett_score_explainer, _bootstrap_warm,
 )
 
@@ -164,7 +164,7 @@ fa_fmt = fa_display[[
     "barrett_score", "salary", "projected_salary", "value_diff", "next_contract",
 ]].copy()
 
-fa_fmt["salary"]           = [_fmt_salary(p, s) for p, s in zip(fa_fmt["Player"].values, fa_fmt["salary"].values)]
+fa_fmt["salary"]           = fa_fmt["salary"] / 1_000_000
 fa_fmt["projected_salary"] = fa_fmt["projected_salary"] / 1_000_000
 fa_fmt["value_diff"]       = fa_fmt["value_diff"] / 1_000_000
 
@@ -175,50 +175,67 @@ fa_fmt.columns = [
 fa_fmt.insert(0, "#", range(1, len(fa_fmt) + 1))
 
 
-def color_fa_status(val):
-    if val == "UFA":
-        return "color: #aaaaaa"
-    if val == "RFA":
-        return "color: #2ecc71; font-weight: bold"
-    if val == "Player Option":
-        return "color: #3498db; font-weight: bold"
-    if val == "Team Option":
-        return "color: #f39c12; font-weight: bold"
+# Token-based cell styles for the themed HTML table (follows light/dark; the
+# legacy color_* helpers return hardcoded hex for the remaining native grids).
+def _sty_status(v, _row):
+    return {
+        "UFA":           "color:var(--fg-3)",
+        "RFA":           "color:var(--value-good);font-weight:700",
+        "Player Option": "color:var(--blue);font-weight:700",
+        "Team Option":   "color:var(--orange);font-weight:700",
+    }.get(v, "")
+
+def _sty_delta(v, _row):
+    try:
+        n = float(v)
+    except (TypeError, ValueError):
+        return ""
+    if n > 20:  return "color:var(--value-bad);font-weight:700"
+    if n > 5:   return "color:var(--value-bad-s)"
+    if n < -20: return "color:var(--value-good);font-weight:700"
+    if n < -5:  return "color:var(--value-good-s)"
     return ""
 
+def _sty_next(v, _row):
+    s = str(v)
+    if s == "—":   return "color:var(--fg-6)"
+    if " TO" in s: return "color:var(--orange);font-weight:700"
+    if " PO" in s: return "color:var(--blue);font-weight:700"
+    return ""
 
-fa_style = (
-    fa_fmt.style
-    .map(color_fa_status,    subset=["Status"])
-    .map(color_next_contract, subset=["Next $"])
-    .apply(_style_rookie_salary, axis=1)
-    .map(color_value_diff,    subset=["Δ Market"])
-)
+def _sty_salary(_v, row):
+    if normalize(str(row.get("Player", ""))) in _rookie_scale:
+        return "color:var(--purple);font-weight:600"
+    return ""
 
-st.dataframe(
-    fa_style,
-    column_config={
-        "Barrett Score": st.column_config.NumberColumn(format="%.2f",
-            help="Base Score × Availability Multiplier. Higher = more valuable."),
-        "Salary":        st.column_config.TextColumn(width="medium",
-            help="Current season salary. Purple = rookie scale contract (1st-round pick, yrs 1–4)."),
-        "Proj. Value":   st.column_config.NumberColumn(format="$%.2fM",
-            help="What this player would earn if paid by their Barrett Score rank. "
-                 "Useful baseline for contract negotiations."),
-        "Δ Market":      st.column_config.NumberColumn(format="$%.2fM",
-            help="Actual − Projected. Negative (green) = currently underpaid, "
-                 "expect them to command a raise. Positive (red) = overpaid relative to production."),
-        "Next $":        st.column_config.TextColumn("Next $",
-            help="Option value or — for UFAs. Blue (PO) = player option. Orange (TO) = team option.",
-            width="medium"),
-        "Status":        st.column_config.TextColumn(width="medium",
-            help="UFA = unrestricted free agent. RFA = restricted (team has right of first refusal on offer sheets). "
-                 "Player Option = player controls opt-out. Team Option = team controls whether to keep player."),
-        "Pos":           st.column_config.TextColumn("Pos", width="small"),
+html_table(
+    fa_fmt,
+    formatters={
+        "Barrett Score": lambda v: f"{v:.2f}",
+        "Salary":        lambda v: f"${v:.2f}M",
+        "Proj. Value":   lambda v: f"${v:.2f}M",
+        "Δ Market":      lambda v: f"${v:.2f}M",
     },
-    use_container_width=True,
-    hide_index=True,
-    height=min(800, max(200, len(fa_fmt) * 35 + 40)),
+    styles={
+        "Status":   _sty_status,
+        "Next $":   _sty_next,
+        "Δ Market": _sty_delta,
+        "Salary":   _sty_salary,
+    },
+    aligns={
+        "#": "right", "Barrett Score": "right", "Salary": "right",
+        "Proj. Value": "right", "Δ Market": "right",
+    },
+    numeric={"#", "Barrett Score", "Salary", "Proj. Value", "Δ Market"},
+    helps={
+        "Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
+        "Salary": "Current season salary. Purple = rookie-scale contract (1st-round pick, yrs 1–4).",
+        "Proj. Value": "What this player would earn if paid by their Barrett Score rank — a market-rate anchor.",
+        "Δ Market": "Actual − Projected. Negative (green) = underpaid; positive (red) = overpaid.",
+        "Next $": "Option value, or — for UFAs. Blue = player option, orange = team option.",
+        "Status": "UFA = unrestricted · RFA = restricted (right of first refusal) · PO/TO = player/team option.",
+    },
+    height=min(820, max(220, len(fa_fmt) * 38 + 46)),
 )
 
 fa_dl_col, fa_cap_col = st.columns([1, 5])

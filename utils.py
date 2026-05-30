@@ -907,6 +907,116 @@ def render_theme_toggle() -> bool:
     )
 
 
+# ── Themed, sortable HTML table ─────────────────────────────────────────────
+# Native st.dataframe is drawn on a canvas locked to config.toml's theme, so it
+# can't follow the runtime light/dark toggle. html_table() renders a real HTML
+# table that themes via the same tokens, with delegated JS click-to-sort.
+HV_TABLE_CSS = """
+<style>
+.hv-table-wrap{overflow:auto;border:1px solid var(--panel-line);border-radius:10px;
+  background:var(--panel-solid);box-shadow:var(--shadow-card);margin:0.3rem 0 0.4rem;}
+table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+.hv-table thead th{position:sticky;top:0;z-index:1;background:var(--panel-2);
+  color:var(--fg-4);text-transform:uppercase;font-size:0.68rem;letter-spacing:0.04em;
+  font-weight:700;padding:0.6rem 0.7rem;cursor:pointer;white-space:nowrap;
+  border-bottom:1px solid var(--panel-line);user-select:none;}
+.hv-table thead th:hover{color:var(--fg-2);}
+.hv-table thead th .sort-ind{margin-left:0.15em;font-size:0.85em;color:var(--accent-red);}
+.hv-table tbody td{padding:0.5rem 0.7rem;color:var(--fg-2);
+  border-bottom:1px solid var(--hairline-soft);white-space:nowrap;}
+.hv-table tbody tr:hover td{background:var(--panel-hover);}
+.hv-table tbody tr:last-child td{border-bottom:none;}
+</style>
+"""
+
+_HV_SORT_SCRIPT = """
+<script>
+(function () {
+  var doc = window.parent.document;
+  if (doc.__hvSortInit) return;
+  doc.__hvSortInit = true;
+  doc.addEventListener('click', function (e) {
+    var th = e.target.closest ? e.target.closest('.hv-table th[data-sortable]') : null;
+    if (!th) return;
+    var tr = th.parentNode, table = th.closest('table'), tbody = table.querySelector('tbody');
+    var idx = Array.prototype.indexOf.call(tr.children, th);
+    var numeric = th.hasAttribute('data-num');
+    var asc = th.getAttribute('data-dir') !== 'asc';
+    Array.prototype.forEach.call(tr.children, function (o) {
+      o.removeAttribute('data-dir');
+      var s = o.querySelector('.sort-ind'); if (s) s.textContent = '';
+    });
+    th.setAttribute('data-dir', asc ? 'asc' : 'desc');
+    var ind = th.querySelector('.sort-ind'); if (ind) ind.textContent = asc ? ' ▲' : ' ▼';
+    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
+    rows.sort(function (a, b) {
+      var av = a.children[idx].getAttribute('data-v'), bv = b.children[idx].getAttribute('data-v');
+      if (numeric) {
+        av = parseFloat(av); bv = parseFloat(bv);
+        if (isNaN(av)) av = -Infinity; if (isNaN(bv)) bv = -Infinity;
+        return asc ? av - bv : bv - av;
+      }
+      av = (av || '').toLowerCase(); bv = (bv || '').toLowerCase();
+      return av < bv ? (asc ? -1 : 1) : av > bv ? (asc ? 1 : -1) : 0;
+    });
+    rows.forEach(function (r) { tbody.appendChild(r); });
+  });
+})();
+</script>
+"""
+
+
+def html_table(df, *, formatters=None, styles=None, aligns=None,
+               numeric=None, helps=None, height=560):
+    """Render a DataFrame as a themed, sortable HTML table (follows light/dark).
+
+    formatters: {col: value -> display str}          (default str(value))
+    styles:     {col: (value, row_dict) -> css str}  e.g. 'color:var(--value-good)'
+    aligns:     {col: 'left'|'right'|'center'}        (default left)
+    numeric:    iterable of cols sorted by raw numeric value
+    helps:      {col: tooltip text}                   (header title=)
+    """
+    import html
+    formatters = formatters or {}
+    styles = styles or {}
+    aligns = aligns or {}
+    numeric = set(numeric or [])
+    helps = helps or {}
+    cols = list(df.columns)
+
+    head = []
+    for c in cols:
+        al = aligns.get(c, "left")
+        num = ' data-num="1"' if c in numeric else ""
+        tip = f' title="{html.escape(str(helps[c]), quote=True)}"' if c in helps else ""
+        head.append(
+            f'<th data-sortable="1"{num}{tip} style="text-align:{al}">'
+            f'{html.escape(str(c))}<span class="sort-ind"></span></th>'
+        )
+    rows_html = []
+    for _, row in df.iterrows():
+        rd = row.to_dict()
+        tds = []
+        for c in cols:
+            v = rd[c]
+            disp = formatters[c](v) if c in formatters else ("" if v is None else str(v))
+            al = aligns.get(c, "left")
+            stl = styles[c](v, rd) if c in styles else ""
+            sv = v if c in numeric else disp
+            extra = f";{stl}" if stl else ""
+            tds.append(
+                f'<td data-v="{html.escape(str(sv), quote=True)}" '
+                f'style="text-align:{al}{extra}">{html.escape(disp)}</td>'
+            )
+        rows_html.append("<tr>" + "".join(tds) + "</tr>")
+    st.markdown(
+        f'<div class="hv-table-wrap" style="max-height:{height}px">'
+        f'<table class="hv-table"><thead><tr>{"".join(head)}</tr></thead>'
+        f'<tbody>{"".join(rows_html)}</tbody></table></div>',
+        unsafe_allow_html=True,
+    )
+
+
 COMMON_CSS = """
 <style>
     /* Theme tokens (:root) are injected separately by inject_theme() so the
@@ -1165,7 +1275,9 @@ def render_page_chrome() -> None:
     import streamlit.components.v1 as _components
     inject_theme()                       # tokens first — COMMON_CSS references them
     st.markdown(COMMON_CSS, unsafe_allow_html=True)
+    st.markdown(HV_TABLE_CSS, unsafe_allow_html=True)
     _components.html(_HIDE_BADGE_SCRIPT, height=0)
+    _components.html(_HV_SORT_SCRIPT, height=0)      # delegated click-to-sort
 
 
 def render_nav(current: str) -> None:
