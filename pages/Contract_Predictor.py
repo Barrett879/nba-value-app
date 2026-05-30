@@ -2118,12 +2118,20 @@ try:
             _posmap = fetch_player_positions_detailed(CURRENT_SEASON, cache_v=3) or {}
         except Exception:
             _posmap = {}
-        _cr["pos"] = _cr["Player"].map(lambda _p: _posmap.get(normalize(_p), "F"))
+        # Positions: NBA 2K26 primary/secondary (+ user overrides), with the BBRef
+        # single position as the fallback for anyone 2K doesn't list. This is what
+        # lets a SG/SF wing compete at both spots and a pure PG stay PG-only.
+        _pos2k = _ts.load_player_positions()
+        _cr["pos"] = _cr["Player"].map(
+            lambda _p: _ts.resolve_position(_p, _posmap.get(normalize(_p), ""), _pos2k))
         # drop the player himself so his own team isn't shown "upgrading over" him
         _self_norm = normalize(features.get("name", ""))
         _cr = _cr[_cr["Player"].map(normalize) != _self_norm]
         _ts_rost = _ts.build_rosters(_cr)
-        _ts_pos = features.get("position_detailed") or features.get("position") or "F"
+        _ts_pos = _ts.resolve_position(
+            features.get("name", ""),
+            features.get("position_detailed") or features.get("position") or "",
+            _pos2k)
         _ts_suitors = (
             _ts.rank_suitors(predicted_M, float(features["barrett_score"]),
                              _ts_pos, _ts_rost, _ts_land, n=5)

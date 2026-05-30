@@ -1,0 +1,14 @@
+# HoopsValue — manual position overrides.  NBA 2K26 is the base source
+# (data/player_positions_2k.csv); anything you put here WINS over it.
+#
+# To correct a player: add a row below the header  ->  name,positions
+#   positions = slash-separated from PG / SG / SF / PF / C, primary first.
+#   e.g.   Cooper Flagg,SF/PF
+#          Some Two-Way Guard,PG
+#
+# Notes:
+#   - Name should match the player (accents optional; "luka doncic" is fine).
+#   - A single position means EXACTLY that (no auto flex) — use it to pin a
+#     player to one spot (e.g. a pure PG who 2K also tags at SG).
+#   - Lines starting with # are ignored. Leave the file header-only to use 2K as-is.
+name,positions

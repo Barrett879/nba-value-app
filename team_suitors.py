@@ -18,20 +18,34 @@ A team is a suitor when it can AFFORD the price AND (he upgrades the position OR
 it has cap room to burn). Ranked by how high he slots × the upgrade gap.
 
 Rosters come from the app's live per-player table (Player / Team / pos / Barrett,
-from build_ranked_projected) — pass it in as `rosters`. The CSV only carries the
-money/context side. No Streamlit / no network: `python team_suitors.py` to demo.
+from build_ranked_projected) — pass it in as `rosters`. Positions come from NBA
+2K26's primary/secondary designations (data/player_positions_2k.csv) with user
+overrides (player_positions_override.csv) layered on top; a player with no 2K row
+falls back to a position-group default. The CSV only carries the money/context
+side. No Streamlit / no network: `python team_suitors.py` to demo.
 """
 from __future__ import annotations
 from pathlib import Path
+import unicodedata
 import pandas as pd
 
-CSV_PATH = Path(__file__).parent / "data" / "team_landscape_2026.csv"
+_DATA = Path(__file__).parent / "data"
+CSV_PATH = _DATA / "team_landscape_2026.csv"
+POS_2K_PATH = _DATA / "player_positions_2k.csv"             # NBA 2K26 primary/secondary
+POS_OVERRIDE_PATH = _DATA / "player_positions_override.csv"  # user corrections (win over 2K)
 DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
 ROTATION_DEPTH = 3      # he must crack the top-3 at his position to count as a "need"
 
 
 SPECTRUM = ["PG", "SG", "SF", "PF", "C"]
 _POS_IDX = {p: i for i, p in enumerate(SPECTRUM)}
+
+
+def _normalize(name: str) -> str:
+    """Match utils.normalize (NFKD strip-combining, lower, strip) WITHOUT importing
+    utils (which pulls in Streamlit). Keys must align with the page's normalize()."""
+    nfkd = unicodedata.normalize("NFKD", str(name))
+    return "".join(c for c in nfkd if not unicodedata.combining(c)).lower().strip()
 
 
 def _norm5(pos: str) -> str:
@@ -48,17 +62,58 @@ _GROUP_OF = {"PG": "G", "SG": "G", "SF": "F", "PF": "F", "C": "C"}
 _GROUP_POS = {"G": {"PG", "SG"}, "F": {"SF", "PF"}, "C": {"C"}}
 
 
-def _eligible_positions(pos: str) -> set:
-    """Position GROUP — guards (PG/SG), forwards (SF/PF), or center.
+def group_flex(pos: str) -> str:
+    """Data-free fallback for a player with NO 2K/override entry: expand a single
+    primary to its position GROUP — guards->PG/SG, forwards->SF/PF, center->C.
+    Returns a resolved '/'-joined string so it parses like a 2K designation."""
+    g = _GROUP_POS[_GROUP_OF[_norm5(pos)]]
+    return "/".join(sorted(g, key=lambda p: _POS_IDX[p]))
 
-    This is the best DATA-FREE default: it captures the common within-group
-    overlap (Maxey/Reaves play both guard spots; Paolo both forward spots) and a
-    PG/SG like Reaves correctly registers at PG and SG — without inventing a
-    cross-group secondary. What it CANNOT do (no clean automated source exists —
-    BBRef returns single positions): tell a PG-only (Brunson) from a PG/SG
-    (Maxey), or catch a cross-group swing (Mikal SG/SF, Chet PF/C). Those need a
-    real per-player secondary table (NBA 2K / hand-curated) layered on top."""
-    return _GROUP_POS[_GROUP_OF[_norm5(pos)]]
+
+def _eligible_positions(pos: str) -> set:
+    """Parse a RESOLVED position string ('SG/SF', 'PG', 'PF/C') into the set of
+    spectrum spots {PG,SG,SF,PF,C} the player covers. The string is already final:
+    2K designations are honored exactly (a 2K 'PG' stays PG-only) and players with
+    no 2K row are pre-expanded by group_flex() before they reach here — so this is
+    a pure parser, applying no flex of its own."""
+    parts = {_norm5(p) for p in str(pos).replace("|", "/").split("/") if p.strip()}
+    return parts or {"SF"}
+
+
+def load_player_positions(pos_path: Path | str = POS_2K_PATH,
+                          override_path: Path | str = POS_OVERRIDE_PATH) -> dict:
+    """Per-player position map {normalized_name: 'PG/SG'} from NBA 2K26's 478
+    primary/secondary designations, with manual overrides layered on top (override
+    WINS). Each value is canonicalized to spectrum order. Missing/blank files just
+    contribute nothing, so the caller falls back to group_flex(). These strings are
+    authoritative — a value of 'PG' means PG-only, no flex."""
+    out: dict = {}
+    for path in (pos_path, override_path):      # 2K first, override second -> override wins
+        try:
+            df = pd.read_csv(path, comment="#", skip_blank_lines=True)
+        except Exception:
+            continue
+        if "name" not in df.columns or "positions" not in df.columns:
+            continue
+        for nm, pos in zip(df["name"], df["positions"]):
+            nm, pos = str(nm).strip(), str(pos).strip()
+            if not nm or not pos or pos.lower() == "nan":
+                continue
+            elig = _eligible_positions(pos)
+            out[_normalize(nm)] = "/".join(sorted(elig, key=lambda p: _POS_IDX[p]))
+    return out
+
+
+def resolve_position(name: str, fallback_primary: str = "",
+                     pos_map: dict | None = None) -> str:
+    """A player's final position string. The NBA 2K / override designation if we
+    have one (used EXACTLY — a 2K PG-only stays PG-only); otherwise group_flex() of
+    the BBRef primary (the data-free default, which can't tell PG-only from PG/SG)."""
+    if pos_map:
+        s = pos_map.get(_normalize(name))
+        if s:
+            return s
+    return group_flex(fallback_primary)
 
 
 def load_team_landscape(path: Path | str = CSV_PATH) -> pd.DataFrame:
@@ -78,8 +133,10 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
       slot 0 = would start (better than their best at the spot)
       slot 1 = backup upgrade ... slot >= ROTATION_DEPTH = no need.
     """
-    elig = _eligible_positions(target_pos)     # primary + spectrum neighbours (secondary flex)
-    inc = (team_roster[team_roster["pos"].map(_norm5).isin(elig)]
+    elig = _eligible_positions(target_pos)              # the spots HE can play
+    # An incumbent competes with him when their eligible sets OVERLAP — so a 2K
+    # SG/SF wing blocks an SG or an SF target, but a pure PG never blocks a center.
+    inc = (team_roster[team_roster["pos"].map(lambda p: bool(_eligible_positions(p) & elig))]
            .sort_values("barrett", ascending=False).reset_index(drop=True))
     scores = inc["barrett"].astype(float).tolist()
     slot = sum(1 for s in scores if s > target_score)   # how many incumbents are better
@@ -190,8 +247,16 @@ def landscape_is_filled(landscape: pd.DataFrame) -> bool:
 
 
 if __name__ == "__main__":
-    # Demo with INLINE mock data (real rosters come from build_ranked_projected live).
-    # LaRavia: Barrett 9.5, PF.
+    # Position source check — NBA 2K26 (+ overrides), per-player primary/secondary.
+    pos_map = load_player_positions()
+    print(f"Loaded {len(pos_map)} player positions from NBA 2K26 (+ overrides):")
+    for nm in ["Tyrese Maxey", "Jalen Brunson", "Mikal Bridges", "Chet Holmgren",
+               "Rudy Gobert", "Austin Reaves"]:
+        print(f"  {nm:18} -> {resolve_position(nm, '', pos_map)}")
+    print("  (no 2K row falls back to group_flex: unknown PF ->",
+          f"{resolve_position('Nobody At All', 'PF', pos_map)})\n")
+
+    # Suitor demo with INLINE mock data (real rosters come from build_ranked_projected).
     landscape = pd.DataFrame([
         ["BKN", "Brooklyn Nets",   38, 38,   "rebuild"],
         ["UTA", "Utah Jazz",       25, 25,   "rebuild"],
@@ -201,18 +266,19 @@ if __name__ == "__main__":
     ], columns=["team", "team_name", "cap_space_M", "exception_M", "timeline"])
 
     rosters = pd.DataFrame([
-        # team, player, pos, barrett
-        ["BKN", "Weak SF",        "SF", 7.2], ["BKN", "Bench PF", "PF", 5.1],     # LaRavia 9.5 STARTS
-        ["UTA", "Lauri Markkanen","PF", 18.0],["UTA", "John Collins","PF",12.0],
-        ["UTA", "Taylor Hendricks","SF", 6.0],                                    # LaRavia = depth (slot 2)
-        ["DET", "Tobias Harris",  "PF", 9.0], ["DET", "Ausar Thompson","SF",8.5], # LaRavia STARTS (beats 9.0)
-        ["MIA", "Mid Wing",       "SF", 8.0], ["MIA", "Backup F", "PF", 6.5],     # LaRavia STARTS, via MLE
-        ["BOS", "Jayson Tatum",   "SF", 25.0],["BOS", "Jaylen Brown","SF",20.0],  # loaded -> no need
+        # team, player, pos (resolved 2K-style strings), barrett
+        ["BKN", "Weak SF",         "SF/PF", 7.2], ["BKN", "Bench PF",     "PF",    5.1],
+        ["UTA", "Lauri Markkanen", "PF/SF", 18.0],["UTA", "John Collins", "PF/C",  12.0],
+        ["UTA", "Taylor Hendricks","SF/PF", 6.0],
+        ["DET", "Tobias Harris",   "PF/SF", 9.0], ["DET", "Ausar Thompson","SG/SF", 8.5],
+        ["MIA", "Mid Wing",        "SF",    8.0], ["MIA", "Backup F",     "PF",    6.5],
+        ["BOS", "Jayson Tatum",    "SF/PF", 25.0],["BOS", "Jaylen Brown", "SG/SF", 20.0],
     ], columns=["team", "player", "pos", "barrett"])
 
-    print("LaRavia — model $10.3M, Barrett 9.5, PF:\n")
-    for s in rank_suitors(10.3, 9.5, "PF", rosters, landscape, n=5):
+    laravia_pos = resolve_position("Jake LaRavia", "PF", pos_map)   # 2K if known, else SF/PF
+    print(f"LaRavia — model $10.3M, Barrett 9.5, {laravia_pos}:\n")
+    for s in rank_suitors(10.3, 9.5, laravia_pos, rosters, landscape, n=5):
         print(f"  {s['team']:>3}  score {s['score']:>4}  slot {s['slot']}  — {s['reason']}")
-    print("\nMax wing — $45M, Barrett 22, SF (money gates hard):\n")
-    res = rank_suitors(45.0, 22.0, "SF", rosters, landscape, n=5)
+    print("\nMax wing — $45M, Barrett 22, SF/PF (money gates hard):\n")
+    res = rank_suitors(45.0, 22.0, "SF/PF", rosters, landscape, n=5)
     print("  " + ("\n  ".join(f"{s['team']} {s['reason']}" for s in res) if res else "(no team has $45M in room)"))
