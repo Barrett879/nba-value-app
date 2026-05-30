@@ -100,8 +100,16 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
         has_room = float(t["cap_space_M"]) + 1e-6 >= price_M
         if need["need_score"] <= 0:
             continue                                    # he doesn't upgrade their spot -> not a suitor
+        # Rank: the slot TIER dominates (would-start > backup-upgrade > depth), so
+        # all starter-upgrades sit above all backup-upgrades, etc. Within a tier,
+        # the size of the upgrade breaks ties — he beats a LOWER-rated incumbent =>
+        # bigger gap => higher rank, so the weakest backups surface first when no
+        # starter is beatable. Cap room / rebuild are small final tiebreakers.
         tl = str(t.get("timeline", "")).strip().lower()
-        score = need["need_score"] + (1.5 if has_room else 0.0) + (0.5 if tl == "rebuild" else 0.0)
+        score = ((ROTATION_DEPTH - need["slot"]) * 10.0
+                 + min(max(need["gap"], 0.0), 9.9)
+                 + (1.0 if has_room else 0.0)
+                 + (0.5 if tl == "rebuild" else 0.0))
         out.append({
             "team":        t["team"],
             "team_name":   t.get("team_name", t["team"]),
