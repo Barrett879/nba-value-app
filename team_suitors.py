@@ -34,7 +34,8 @@ CSV_PATH = _DATA / "team_landscape_2026.csv"
 POS_2K_PATH = _DATA / "player_positions_2k.csv"             # NBA 2K26 primary/secondary
 POS_OVERRIDE_PATH = _DATA / "player_positions_override.csv"  # user corrections (win over 2K)
 DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
-ROTATION_DEPTH = 3      # he must crack the top-3 at his position to count as a "need"
+ROTATION_DEPTH = 3      # starter/rotation boundary: slot 0=starter, 1=key sub, 2=depth (labels)
+INTEREST_DEPTH = 5      # in his market if he'd be ~top-5 at the position (own team gets +2 leash)
 
 
 SPECTRUM = ["PG", "SG", "SF", "PF", "C"]
@@ -126,13 +127,14 @@ def load_team_landscape(path: Path | str = CSV_PATH) -> pd.DataFrame:
 
 
 def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame) -> dict:
-    """How much does `target` upgrade ONE team at his position?
+    """Where `target` slots into ONE team's depth chart at his position.
 
     team_roster: that team's players, columns [player, pos, barrett].
-    Returns {slot, displaces, displaces_score, gap, need_score}:
-      slot 0 = would start (better than their best at the spot)
-      slot 1 = backup upgrade ... slot >= ROTATION_DEPTH = no need.
-    """
+    Returns {slot, displaces, displaces_score, gap, depth_here}:
+      slot 0 = better than their best at the spot (would start)
+      slot 1 = beats their 2nd ... slot = how many incumbents out-rate him.
+    No affordability or interest cutoff here — rank_suitors decides who's a
+    realistic suitor and at what price."""
     elig = _eligible_positions(target_pos)              # the spots HE can play
     # An incumbent competes with him when their eligible sets OVERLAP — so a 2K
     # SG/SF wing blocks an SG or an SF target, but a pure PG never blocks a center.
@@ -140,78 +142,75 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
            .sort_values("barrett", ascending=False).reset_index(drop=True))
     scores = inc["barrett"].astype(float).tolist()
     slot = sum(1 for s in scores if s > target_score)   # how many incumbents are better
-
-    if len(scores) == 0:                                # nobody mans the spot -> gaping hole
-        return {"slot": 0, "displaces": None, "displaces_score": None,
-                "gap": target_score, "need_score": 3.5}
-    if slot >= ROTATION_DEPTH:                          # doesn't crack the top 3 -> no need
-        return {"slot": slot, "displaces": None, "displaces_score": None,
-                "gap": 0.0, "need_score": 0.0}
-    if slot < len(scores):                             # he leapfrogs the incumbent at this slot
-        displaced = inc.iloc[slot]
-        gap = target_score - float(displaced["barrett"])
-        need = (ROTATION_DEPTH - slot) + min(max(gap, 0.0) / 5.0, 1.0)   # slot0≈3-4, slot1≈2-3, slot2≈1
-        return {"slot": slot, "displaces": displaced["player"],
-                "displaces_score": float(displaced["barrett"]), "gap": gap, "need_score": need}
-    # slot == len(scores) < ROTATION_DEPTH: thin at the spot — he fills an open rotation slot
-    return {"slot": slot, "displaces": None, "displaces_score": None,
-            "gap": 0.0, "need_score": float(ROTATION_DEPTH - slot)}
+    if slot < len(scores):                              # he leapfrogs the incumbent at this slot
+        d = inc.iloc[slot]
+        return {"slot": slot, "displaces": d["player"], "displaces_score": float(d["barrett"]),
+                "gap": target_score - float(d["barrett"]), "depth_here": len(scores)}
+    return {"slot": slot, "displaces": None, "displaces_score": None,   # fills an open spot
+            "gap": 0.0, "depth_here": len(scores)}
 
 
 def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
                  rosters: pd.DataFrame, landscape: pd.DataFrame | None = None,
-                 n: int = 5) -> list[dict]:
-    """Top-n suitor teams for a player at `price_M` / `target_barrett` / `target_pos`.
+                 n: int = 5, incumbent_team: str | None = None) -> list[dict]:
+    """His projected free-agent market: the teams most likely to pursue him, each
+    at the price THEY would realistically offer.
+
+    Offer = the model's value (`price_M`), capped by the biggest tool that team has
+    (cap room, or their largest exception). His current team can match any number
+    via Bird rights. A team is in the market when he'd be a ~top-INTEREST_DEPTH fit
+    at his position. Ranked by who would bid the most (likeliest to land him),
+    ties broken by who needs him most (lowest slot).
 
     rosters: live per-player table, columns [team, player, pos, barrett].
-    landscape: the money/context table (defaults to the CSV).
+    incumbent_team: his current team's abbrev — gets Bird rights + a longer leash.
     """
     if landscape is None:
         landscape = load_team_landscape()
+    inc_norm = _normalize(incumbent_team or "")
     out = []
     for _, t in landscape.iterrows():
-        afford = max(float(t["cap_space_M"]), float(t["exception_M"]))
-        if afford + 1e-6 < price_M:
-            continue                                    # literally can't pay it
+        is_inc = bool(inc_norm) and _normalize(str(t["team"])) == inc_norm
         need = roster_need(target_barrett, target_pos, rosters[rosters["team"] == t["team"]])
-        has_room = float(t["cap_space_M"]) + 1e-6 >= price_M
-        if need["need_score"] <= 0:
-            continue                                    # he doesn't upgrade their spot -> not a suitor
-        # Rank: the slot TIER dominates (would-start > backup-upgrade > depth), so
-        # all starter-upgrades sit above all backup-upgrades, etc. Within a tier,
-        # the size of the upgrade breaks ties — he beats a LOWER-rated incumbent =>
-        # bigger gap => higher rank, so the weakest backups surface first when no
-        # starter is beatable. Cap room / rebuild are small final tiebreakers.
+        # In the market only if he'd be a rotation-level fit (own team gets +2 leash).
+        if need["slot"] >= INTEREST_DEPTH + (2 if is_inc else 0):
+            continue
+        cap = float(t["cap_space_M"]); exc = float(t["exception_M"])
+        tool = max(cap, exc, price_M if is_inc else 0.0)    # incumbent: Bird rights match any $
+        offer = min(price_M, tool)                          # market value, capped by their tool
+        if offer < 1.0:
+            continue
+        has_room = cap + 1e-6 >= offer
+        if   has_room:      tool_label = "cap room"
+        elif is_inc:        tool_label = "Bird rights"
+        elif exc >= 15.0:   tool_label = "mid-level exception"
+        elif exc >= 6.0:    tool_label = "taxpayer MLE"
+        else:               tool_label = "minimum"
         tl = str(t.get("timeline", "")).strip().lower()
-        score = ((ROTATION_DEPTH - need["slot"]) * 10.0
-                 + min(max(need["gap"], 0.0), 9.9)
-                 + (1.0 if has_room else 0.0)
-                 + (0.5 if tl == "rebuild" else 0.0))
         out.append({
-            "team":        t["team"],
-            "team_name":   t.get("team_name", t["team"]),
-            "score":       round(score, 2),
-            "slot":        need["slot"],
-            "tool":        "cap room" if has_room else f"${float(t['exception_M']):.1f}M exception",
-            "reason":      _reason(need, has_room, tl, target_barrett),
+            "team":         t["team"],
+            "team_name":    t.get("team_name", t["team"]),
+            "offer_M":      round(offer, 1),
+            "slot":         need["slot"],
+            "is_incumbent": is_inc,
+            "tool":         tool_label,
+            "reason":       _reason(need, tl, target_barrett, is_inc),
         })
-    out.sort(key=lambda d: -d["score"])
+    # Highest bidder first (likeliest to land him); ties -> best fit (lowest slot).
+    out.sort(key=lambda d: (-d["offer_M"], d["slot"]))
     return out[:n]
 
 
-def _reason(need: dict, has_room: bool, timeline: str, target_barrett: float) -> str:
-    if need["displaces"] is not None:
-        role = {0: "would start over", 1: "upgrades over", 2: "adds depth over"}.get(
-            need["slot"], "upgrades over")
-        fit = f"{role} {need['displaces']} (Barrett {need['displaces_score']:.1f} vs {target_barrett:.1f})"
-    elif need["need_score"] >= 3.0:
-        fit = "fills an empty spot at the position"
-    elif need["need_score"] > 0:
-        fit = "adds depth at a thin spot"
+def _reason(need: dict, timeline: str, target_barrett: float, is_incumbent: bool = False) -> str:
+    if is_incumbent:
+        fit = "could re-sign him (Bird rights)"
+    elif need["displaces"] is not None:
+        role = {0: "would start over", 1: "upgrades over", 2: "rotation piece over"}.get(
+            need["slot"], "depth piece over")
+        fit = f"{role} {need['displaces']} ({need['displaces_score']:.1f} vs {target_barrett:.1f})"
     else:
-        fit = "no upgrade at the position"
-    money = "cap room" if has_room else "via the exception"
-    return " · ".join(filter(None, [fit, money, timeline]))
+        fit = "fills an open spot at the position"
+    return " · ".join(filter(None, [fit, timeline]))
 
 
 def build_rosters(ranked: pd.DataFrame) -> pd.DataFrame:
@@ -276,9 +275,9 @@ if __name__ == "__main__":
     ], columns=["team", "player", "pos", "barrett"])
 
     laravia_pos = resolve_position("Jake LaRavia", "PF", pos_map)   # 2K if known, else SF/PF
-    print(f"LaRavia — model $10.3M, Barrett 9.5, {laravia_pos}:\n")
-    for s in rank_suitors(10.3, 9.5, laravia_pos, rosters, landscape, n=5):
-        print(f"  {s['team']:>3}  score {s['score']:>4}  slot {s['slot']}  — {s['reason']}")
-    print("\nMax wing — $45M, Barrett 22, SF/PF (money gates hard):\n")
-    res = rank_suitors(45.0, 22.0, "SF/PF", rosters, landscape, n=5)
-    print("  " + ("\n  ".join(f"{s['team']} {s['reason']}" for s in res) if res else "(no team has $45M in room)"))
+    print(f"LaRavia — model value $10.3M, Barrett 9.5, {laravia_pos} (incumbent MIA):\n")
+    for s in rank_suitors(10.3, 9.5, laravia_pos, rosters, landscape, n=6, incumbent_team="MIA"):
+        print(f"  {s['team']:>3}  ${s['offer_M']:>4}M  slot {s['slot']}  [{s['tool']:<19}] {s['reason']}")
+    print("\nMax wing — model value $45M, Barrett 22, SF/PF (no team can reach the full number):\n")
+    for s in rank_suitors(45.0, 22.0, "SF/PF", rosters, landscape, n=6):
+        print(f"  {s['team']:>3}  ${s['offer_M']:>4}M  [{s['tool']:<19}] {s['reason']}")

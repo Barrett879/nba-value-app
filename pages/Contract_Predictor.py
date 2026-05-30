@@ -2124,8 +2124,12 @@ try:
         _pos2k = _ts.load_player_positions()
         _cr["pos"] = _cr["Player"].map(
             lambda _p: _ts.resolve_position(_p, _posmap.get(normalize(_p), ""), _pos2k))
-        # drop the player himself so his own team isn't shown "upgrading over" him
+        # his current team — captured BEFORE we drop him — so it can appear as a
+        # Bird-rights re-signer (a team can always re-sign its own free agent)
         _self_norm = normalize(features.get("name", ""))
+        _self_rows = _cr[_cr["Player"].map(normalize) == _self_norm]
+        _self_team = str(_self_rows.iloc[0]["Team"]) if not _self_rows.empty else None
+        # drop the player himself so his own team isn't shown "upgrading over" him
         _cr = _cr[_cr["Player"].map(normalize) != _self_norm]
         _ts_rost = _ts.build_rosters(_cr)
         _ts_pos = _ts.resolve_position(
@@ -2134,7 +2138,8 @@ try:
             _pos2k)
         _ts_suitors = (
             _ts.rank_suitors(predicted_M, float(features["barrett_score"]),
-                             _ts_pos, _ts_rost, _ts_land, n=5)
+                             _ts_pos, _ts_rost, _ts_land, n=6,
+                             incumbent_team=_self_team)
             if not _ts_rost.empty else []
         )
         if _ts_suitors:
@@ -2142,6 +2147,8 @@ try:
                 f'<div style="display:flex; align-items:baseline; gap:0.7rem; padding:0.45rem 0; '
                 f'border-top:1px solid rgba(255,255,255,0.06);">'
                 f'<span style="font-weight:800; color:#16d4c1; width:2.6rem;">{_s["team"]}</span>'
+                f'<span style="font-weight:800; color:#e8e8ee; width:3.6rem; '
+                f'white-space:nowrap;">${_s["offer_M"]:.0f}M</span>'
                 f'<span style="color:#cdcdd5; font-size:0.85rem;">{_s["reason"]}</span>'
                 f'<span style="margin-left:auto; color:#7a7a85; font-size:0.76rem; '
                 f'white-space:nowrap;">{_s["tool"]}</span></div>'
@@ -2153,12 +2160,13 @@ try:
                 'border-radius:14px; padding:1.1rem 1.4rem; margin:0.4rem 0 0.2rem;">'
                 '<div style="font-size:0.7rem; color:#16d4c1; letter-spacing:0.12em; '
                 'text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">'
-                f'Likely suitors — teams he upgrades at ~${predicted_M:.0f}M</div>{_ts_rows}</div>',
+                f'Likely suitors — projected offers (model value ${predicted_M:.0f}M)</div>{_ts_rows}</div>',
                 unsafe_allow_html=True,
             )
             st.caption(
-                "Experimental — “need” is his Barrett vs each team's depth chart at the "
-                "position; affordability from each team's 2026 cap room / exception."
+                "Experimental — each team's number is the model's value capped by their "
+                "2026 cap room / exception (or Bird rights to re-sign), ranked by who'd "
+                "bid highest. “Fit” is his Barrett vs their depth chart at the position."
             )
 except Exception:
     pass
