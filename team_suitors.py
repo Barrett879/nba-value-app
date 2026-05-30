@@ -98,8 +98,8 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
             continue                                    # literally can't pay it
         need = roster_need(target_barrett, target_pos, rosters[rosters["team"] == t["team"]])
         has_room = float(t["cap_space_M"]) + 1e-6 >= price_M
-        if need["need_score"] <= 0 and not has_room:
-            continue                                    # no upgrade + no room to burn -> skip
+        if need["need_score"] <= 0:
+            continue                                    # he doesn't upgrade their spot -> not a suitor
         tl = str(t.get("timeline", "")).strip().lower()
         score = need["need_score"] + (1.5 if has_room else 0.0) + (0.5 if tl == "rebuild" else 0.0)
         out.append({

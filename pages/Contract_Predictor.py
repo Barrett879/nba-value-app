@@ -2119,6 +2119,9 @@ try:
         except Exception:
             _posmap = {}
         _cr["pos"] = _cr["Player"].map(lambda _p: _posmap.get(normalize(_p), "F"))
+        # drop the player himself so his own team isn't shown "upgrading over" him
+        _self_norm = normalize(features.get("name", ""))
+        _cr = _cr[_cr["Player"].map(normalize) != _self_norm]
         _ts_rost = _ts.build_rosters(_cr)
         _ts_pos = features.get("position_detailed") or features.get("position") or "F"
         _ts_suitors = (
