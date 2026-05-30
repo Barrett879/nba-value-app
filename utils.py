@@ -799,16 +799,61 @@ THEME_LIGHT_CSS = """
 """
 
 
+# Copies the active ?theme=... URL param onto every internal <a> link, so a
+# full-reload page navigation (each tab is a fresh Streamlit session) carries
+# the chosen theme. Runs in the components iframe; reaches the app via
+# window.parent. Idempotent + re-runs on Streamlit re-renders (MutationObserver).
+_THEME_PERSIST_SCRIPT = """
+<script>
+(function () {
+    function sync() {
+        try {
+            var W = window.parent;
+            var theme = new URLSearchParams(W.location.search).get('theme');
+            if (theme !== 'dark' && theme !== 'light') return;
+            W.document.querySelectorAll('a[href]').forEach(function (a) {
+                var h = a.getAttribute('href');
+                if (!h || h.charAt(0) === '#') return;
+                var internal = h.charAt(0) === '/' || h.indexOf(W.location.origin) === 0;
+                if (!internal) return;
+                if (/[?&]theme=/.test(h)) {
+                    a.setAttribute('href', h.replace(/([?&])theme=(dark|light)/, '$1theme=' + theme));
+                } else {
+                    a.setAttribute('href', h + (h.indexOf('?') === -1 ? '?' : '&') + 'theme=' + theme);
+                }
+            });
+        } catch (e) {}
+    }
+    sync();
+    try {
+        new MutationObserver(sync).observe(
+            window.parent.document.documentElement, { childList: true, subtree: true });
+    } catch (e) {}
+})();
+</script>
+"""
+
+
 def inject_theme() -> None:
     """Emit the theme tokens (dark base + light override when active).
 
     Call once near the top of every page's chrome, BEFORE any CSS that
-    references the tokens. Reads st.session_state['theme_dark'] (set by the
-    nav theme toggle); falls back to THEME_DEFAULT_DARK on first load.
+    references the tokens. The chosen theme persists across page navigations
+    via the ?theme=... URL param: render_theme_toggle() writes it, this seeds
+    st.session_state['theme_dark'] from it on a fresh session, and
+    _THEME_PERSIST_SCRIPT copies it onto every internal link.
     """
+    # Seed from the URL only on a brand-new session (before the toggle widget
+    # claims the key) so navigating between tabs keeps the chosen theme.
+    if "theme_dark" not in st.session_state:
+        qp = st.query_params.get("theme")
+        if qp in ("dark", "light"):
+            st.session_state["theme_dark"] = (qp == "dark")
     st.markdown(THEME_BASE_CSS, unsafe_allow_html=True)
     if not st.session_state.get("theme_dark", THEME_DEFAULT_DARK):
         st.markdown(THEME_LIGHT_CSS, unsafe_allow_html=True)
+    import streamlit.components.v1 as _components
+    _components.html(_THEME_PERSIST_SCRIPT, height=0)
 
 
 def theme_fig(fig):
@@ -840,17 +885,25 @@ def theme_fig(fig):
     return fig
 
 
+def _persist_theme() -> None:
+    """Write the toggle's new value to the URL so it survives navigation."""
+    st.query_params["theme"] = "dark" if st.session_state.get("theme_dark") else "light"
+
+
 def render_theme_toggle() -> bool:
     """Dark-mode toggle, backed by st.session_state['theme_dark'].
 
     Same key on every page (Streamlit allows reusing widget keys across page
-    scripts). Returns True when dark mode is active.
+    scripts). on_change mirrors the choice into ?theme=... so it persists when
+    you navigate between tabs (each tab is a fresh full-reload session).
+    Returns True when dark mode is active.
     """
     return st.toggle(
         "Dark mode",
         value=st.session_state.get("theme_dark", THEME_DEFAULT_DARK),
         key="theme_dark",
         help="Switch between the light and dark themes.",
+        on_change=_persist_theme,
     )
 
 
