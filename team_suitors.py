@@ -44,14 +44,21 @@ def _norm5(pos: str) -> str:
     return "SF"                        # unknown -> generic forward
 
 
+_GROUP_OF = {"PG": "G", "SG": "G", "SF": "F", "PF": "F", "C": "C"}
+_GROUP_POS = {"G": {"PG", "SG"}, "F": {"SF", "PF"}, "C": {"C"}}
+
+
 def _eligible_positions(pos: str) -> set:
-    """A player's primary position PLUS its spectrum neighbours (±1 on the
-    PG-SG-SF-PF-C line) — the 'secondary position' flex. e.g. SG -> {PG, SG, SF};
-    PF -> {SF, PF, C}; PG -> {PG, SG}. (A real NBA-2K secondary table would prune
-    these to each player's actual second slot — Reaves to PG, not SF — but the
-    symmetric ±1 is the data-free version that captures most of the versatility.)"""
-    i = _POS_IDX[_norm5(pos)]
-    return {SPECTRUM[j] for j in (i - 1, i, i + 1) if 0 <= j < len(SPECTRUM)}
+    """Position GROUP — guards (PG/SG), forwards (SF/PF), or center.
+
+    This is the best DATA-FREE default: it captures the common within-group
+    overlap (Maxey/Reaves play both guard spots; Paolo both forward spots) and a
+    PG/SG like Reaves correctly registers at PG and SG — without inventing a
+    cross-group secondary. What it CANNOT do (no clean automated source exists —
+    BBRef returns single positions): tell a PG-only (Brunson) from a PG/SG
+    (Maxey), or catch a cross-group swing (Mikal SG/SF, Chet PF/C). Those need a
+    real per-player secondary table (NBA 2K / hand-curated) layered on top."""
+    return _GROUP_POS[_GROUP_OF[_norm5(pos)]]
 
 
 def load_team_landscape(path: Path | str = CSV_PATH) -> pd.DataFrame:
