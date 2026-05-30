@@ -191,19 +191,22 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
             "gap": 0.0, "depth_here": len(scores)}
 
 
-# How keen a team of each TIMELINE is to pursue a player of each ARCHETYPE (0–1),
-# applied to the ranking (not the offer). Four user-classified tiers:
-#   title   — chasing a title; pays for win-now help, hunts on the margins
-#   playoff — making / advancing the playoffs; wants help, budget-conscious
-#   bye     — gap / retool year; selective, not aggressive (esp. on aging vets)
-#   rebuild — developing youth; chases upside, passes on aging vets
-# These are tunable knobs — adjust to taste.
+# Desire = how keen a team of each TIMELINE is to PURSUE a player of each ARCHETYPE
+# (0–1), applied to the ranking (not the offer). DERIVED FROM DATA, not hand-tuned:
+# 917 "new-team" free-agent signings (2013–2025), each tiered by its signing team's
+# actual win% that season and cap-controlled via archetype-mix lift (a rebuilder's
+# cap-driven signing *volume* divides out, leaving preference). Rebuilt by
+# scripts/learn_desire_weights.py. What the data says:
+#   - Vets favor title teams HARD (1.00 vs ~0.5 elsewhere — "contenders vs the field").
+#   - Youth flows down the ladder, monotonically (rebuild 1.00 -> title 0.57).
+#   - Prime role players have ~no tier preference (they sign everywhere, ~0.85-1.0).
+#   - Star row is hand-smoothed — only 71 star signings, too thin to trust raw.
 _DESIRE = {
     #            star   young  prime   vet
-    "title":   {"star": 1.00, "young": 0.70, "prime": 1.00, "vet": 0.92},
-    "playoff": {"star": 0.95, "young": 0.80, "prime": 0.90, "vet": 0.80},
-    "bye":     {"star": 0.80, "young": 0.70, "prime": 0.55, "vet": 0.45},
-    "rebuild": {"star": 0.90, "young": 1.00, "prime": 0.50, "vet": 0.28},
+    "title":   {"star": 0.95, "young": 0.57, "prime": 0.87, "vet": 1.00},
+    "playoff": {"star": 1.00, "young": 0.74, "prime": 1.00, "vet": 0.51},
+    "bye":     {"star": 0.85, "young": 0.95, "prime": 0.89, "vet": 0.53},
+    "rebuild": {"star": 0.80, "young": 1.00, "prime": 0.85, "vet": 0.59},
 }
 _DESIRE_DEFAULT = "playoff"   # an unclassified team -> neutral win-now-ish
 

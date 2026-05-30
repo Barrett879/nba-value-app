@@ -2173,7 +2173,7 @@ try:
                 f"Experimental — {_fa_label}. Each team's number is the model's value "
                 "scaled by fit (starter vs depth) and capped by their cap room / exception "
                 "(or Bird rights). Ranked by who'd most likely pursue him — team timeline × "
-                "his age & value × positional need."
+                "his age & value × positional need (pursuit rates from 900+ past signings)."
                 + (f" Cap data: {_asof}." if _asof else "")
             )
 except Exception:
