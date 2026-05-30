@@ -202,7 +202,7 @@ st.markdown("""
 
     .explore-strip-body {
         padding: 1rem 1.2rem 1.1rem;
-        background: rgba(0, 0, 0, 0.22);
+        background: var(--panel-2);
     }
     a.goto-btn {
         display: inline-block;
@@ -589,8 +589,12 @@ def _fa_category_chart(items, w=460, h=140):
 
 
 # ══════════════════════════════════════════════════════════════════════════════
-# Compute live data for previews (runs once, cached output)
+# Compute live data for previews. Cached so reruns (theme/playoff toggles,
+# search keystrokes) don't re-run the whole assembly — that recompute was what
+# made toggling dark mode feel like a full page refresh. Depends only on the
+# current season, so a flat cache keyed on the season string is correct.
 # ══════════════════════════════════════════════════════════════════════════════
+@st.cache_data(ttl=3600, show_spinner=False)
 def _compute_charts():
     try:
         df = build_ranked_projected(SEASONS[0])
