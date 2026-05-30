@@ -2110,7 +2110,16 @@ try:
     import team_suitors as _ts
     _ts_land = _ts.load_team_landscape()
     if _ts.landscape_is_filled(_ts_land):
-        _ts_rost = _ts.build_rosters(current_ranked)
+        # current_ranked has Player/Team/barrett_score but NO position column —
+        # join the season's detailed positions (keyed by normalized name) so the
+        # roster can be bucketed by position.
+        _cr = current_ranked.copy()
+        try:
+            _posmap = fetch_player_positions_detailed(CURRENT_SEASON, cache_v=3) or {}
+        except Exception:
+            _posmap = {}
+        _cr["pos"] = _cr["Player"].map(lambda _p: _posmap.get(normalize(_p), "F"))
+        _ts_rost = _ts.build_rosters(_cr)
         _ts_pos = features.get("position_detailed") or features.get("position") or "F"
         _ts_suitors = (
             _ts.rank_suitors(predicted_M, float(features["barrett_score"]),
