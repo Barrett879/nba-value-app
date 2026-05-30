@@ -1,3 +1,8 @@
+# as_of: 2026-27 projections (May 2026)
+# To refresh: update cap_space_M + top_exception per team. top_exception is the
+# team's apron-implied tool — nt_mle / room_exc / tp_mle / bae / min / cap_room —
+# and the exception $ derives from it automatically (exception_M optional override).
+# timeline: rebuild / middle / contender — drives which players each team pursues.
 team,team_name,cap_space_M,top_exception,exception_M,timeline
 ATL,Atlanta Hawks,12,nt_mle,15.05,
 BOS,Boston Celtics,0,nt_mle,15.05,contender

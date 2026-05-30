@@ -2129,6 +2129,8 @@ try:
         _self_norm = normalize(features.get("name", ""))
         _self_rows = _cr[_cr["Player"].map(normalize) == _self_norm]
         _self_team = str(_self_rows.iloc[0]["Team"]) if not _self_rows.empty else None
+        # restricted FA (his team can match any offer) if he's finishing a rookie-scale deal
+        _is_rfa = bool(features.get("on_rookie_scale"))
         # drop the player himself so his own team isn't shown "upgrading over" him
         _cr = _cr[_cr["Player"].map(normalize) != _self_norm]
         _ts_rost = _ts.build_rosters(_cr)
@@ -2139,7 +2141,8 @@ try:
         _ts_suitors = (
             _ts.rank_suitors(predicted_M, float(features["barrett_score"]),
                              _ts_pos, _ts_rost, _ts_land, n=6,
-                             incumbent_team=_self_team)
+                             incumbent_team=_self_team,
+                             age=features.get("age"), is_rfa=_is_rfa)
             if not _ts_rost.empty else []
         )
         if _ts_suitors:
@@ -2163,10 +2166,15 @@ try:
                 f'Likely suitors — projected offers (model value ${predicted_M:.0f}M)</div>{_ts_rows}</div>',
                 unsafe_allow_html=True,
             )
+            _asof = str(getattr(_ts_land, "attrs", {}).get("as_of", "")).strip()
+            _fa_label = ("restricted FA — his team can match any offer"
+                         if _is_rfa else "unrestricted FA")
             st.caption(
-                "Experimental — each team's number is the model's value capped by their "
-                "2026 cap room / exception (or Bird rights to re-sign), ranked by who'd "
-                "bid highest. “Fit” is his Barrett vs their depth chart at the position."
+                f"Experimental — {_fa_label}. Each team's number is the model's value "
+                "scaled by fit (starter vs depth) and capped by their cap room / exception "
+                "(or Bird rights). Ranked by who'd most likely pursue him — team timeline × "
+                "his age & value × positional need."
+                + (f" Cap data: {_asof}." if _asof else "")
             )
 except Exception:
     pass

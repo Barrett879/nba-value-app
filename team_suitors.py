@@ -37,6 +37,21 @@ DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
 ROTATION_DEPTH = 3      # starter/rotation boundary: slot 0=starter, 1=key sub, 2=depth (labels)
 INTEREST_DEPTH = 5      # in his market if he'd be ~top-5 at the position (own team gets +2 leash)
 
+# Fit-scaled offers: a team pays toward full value for a starter, less for a depth
+# add. Indexed by slot (how many of their incumbents out-rate him at the spot).
+_FIT_FACTOR = {0: 1.00, 1: 0.90, 2: 0.78, 3: 0.62, 4: 0.50}
+
+# Apron-implied largest exception a team can use, $M (2026-27 CBA). Derived from
+# the CSV's `top_exception` so the file stays principled: set the TOOL, not the $.
+_EXC_BY_TOOL = {
+    "nt_mle":   15.05,   # under the first apron -> full non-taxpayer MLE
+    "room_exc":  8.78,   # cap-room team's post-room exception
+    "tp_mle":    6.07,   # over the first apron -> taxpayer MLE only
+    "bae":       5.85,   # bi-annual exception
+    "min":       2.30,   # over the SECOND apron -> minimum signings only
+    "cap_room": 15.05,   # uses cap space; nominal exception
+}
+
 
 SPECTRUM = ["PG", "SG", "SF", "PF", "C"]
 _POS_IDX = {p: i for i, p in enumerate(SPECTRUM)}
@@ -117,12 +132,38 @@ def resolve_position(name: str, fallback_primary: str = "",
     return group_flex(fallback_primary)
 
 
+def _read_as_of(path: Path | str) -> str:
+    """Pull the `# as_of:` freshness stamp from the top of the cap CSV, if present."""
+    try:
+        with open(path) as fh:
+            for line in fh:
+                if line.lower().lstrip().startswith("# as_of:"):
+                    return line.split(":", 1)[1].strip()
+                if not line.lstrip().startswith("#"):
+                    break
+    except Exception:
+        pass
+    return ""
+
+
 def load_team_landscape(path: Path | str = CSV_PATH) -> pd.DataFrame:
-    """Load the hand-curated money/context table, filling defaults for blanks."""
-    df = pd.read_csv(path)
+    """Load the cap/context table. The largest exception each team can use is
+    derived from `top_exception` (apron-implied: nt_mle $15.05M under the first
+    apron, tp_mle $6.07M over it, min $2.3M over the second apron) so the file
+    stays principled and easy to keep current — set the TOOL, not the dollar. An
+    explicit `exception_M` still overrides. A `# as_of:` line at the top stamps
+    the data's age (surfaced in the UI)."""
+    df = pd.read_csv(path, comment="#")
     df["cap_space_M"] = pd.to_numeric(df["cap_space_M"], errors="coerce").fillna(0.0)
-    df["exception_M"] = pd.to_numeric(df["exception_M"], errors="coerce").fillna(DEFAULT_NT_MLE)
+    tool = (df.get("top_exception", pd.Series(["nt_mle"] * len(df)))
+            .fillna("nt_mle").astype(str).str.strip().str.lower())
+    derived = tool.map(_EXC_BY_TOOL).fillna(DEFAULT_NT_MLE)
+    if "exception_M" in df.columns:
+        df["exception_M"] = pd.to_numeric(df["exception_M"], errors="coerce").fillna(derived)
+    else:
+        df["exception_M"] = derived
     df["timeline"] = df.get("timeline", "").fillna("").astype(str)
+    df.attrs["as_of"] = _read_as_of(path)
     return df
 
 
@@ -150,20 +191,40 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
             "gap": 0.0, "depth_here": len(scores)}
 
 
+def desire_weight(timeline: str, age, value_M: float) -> float:
+    """How badly a team of this TIMELINE would PURSUE a player of this age/value —
+    the 'do they want him', separate from 'can they pay'. Rebuilders chase youth
+    and stars and pass on aging role vets; win-now teams chase present production.
+    Returns a 0–1 multiplier applied to the ranking (not the offer)."""
+    tl = (timeline or "").lower()
+    a = float(age) if age is not None else 27.0
+    young, vet, star = a < 25, a > 31, value_M >= 22.0
+    if "rebuild" in tl:
+        if young or star: return 1.00     # cornerstone youth / a star to build around
+        if vet:           return 0.30     # a tanking team won't court a 32-yo role vet
+        return 0.55                        # prime role vet — lukewarm
+    if "conten" in tl:                     # win-now: values present production
+        return 0.75 if (young and not star) else 1.00
+    return 0.90                            # middle / play-in / unknown — pragmatic improvers
+
+
 def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
                  rosters: pd.DataFrame, landscape: pd.DataFrame | None = None,
-                 n: int = 5, incumbent_team: str | None = None) -> list[dict]:
+                 n: int = 6, incumbent_team: str | None = None,
+                 age: float | None = None, is_rfa: bool = False) -> list[dict]:
     """His projected free-agent market: the teams most likely to pursue him, each
     at the price THEY would realistically offer.
 
-    Offer = the model's value (`price_M`), capped by the biggest tool that team has
-    (cap room, or their largest exception). His current team can match any number
-    via Bird rights. A team is in the market when he'd be a ~top-INTEREST_DEPTH fit
-    at his position. Ranked by who would bid the most (likeliest to land him),
-    ties broken by who needs him most (lowest slot).
+    Offer  = model value, scaled by FIT (a starter-level need pays toward full
+             value, a depth add pays less) and capped by the team's biggest tool
+             (cap room / apron-implied exception). His current team can match any
+             number via Bird rights, and — if he's an RFA — can match ANY offer.
+    Rank   = offer × DESIRE, where desire models whether a team of that timeline
+             would actually pursue a player of his age/value (so a cap-rich tanker
+             doesn't outrank a motivated win-now team for a prime role vet).
 
-    rosters: live per-player table, columns [team, player, pos, barrett].
-    incumbent_team: his current team's abbrev — gets Bird rights + a longer leash.
+    rosters: live per-player table [team, player, pos, barrett].
+    incumbent_team / age / is_rfa: his current team, age, restricted-FA flag.
     """
     if landscape is None:
         landscape = load_team_landscape()
@@ -177,7 +238,8 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
             continue
         cap = float(t["cap_space_M"]); exc = float(t["exception_M"])
         tool = max(cap, exc, price_M if is_inc else 0.0)    # incumbent: Bird rights match any $
-        offer = min(price_M, tool)                          # market value, capped by their tool
+        fit = 1.0 if is_inc else _FIT_FACTOR.get(need["slot"], 0.45)
+        offer = min(price_M, tool, price_M * fit)           # fair value × fit, capped by tool
         if offer < 1.0:
             continue
         has_room = cap + 1e-6 >= offer
@@ -187,6 +249,10 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
         elif exc >= 6.0:    tool_label = "taxpayer MLE"
         else:               tool_label = "minimum"
         tl = str(t.get("timeline", "")).strip().lower()
+        des = 1.0 if is_inc else desire_weight(tl, age, price_M)
+        rank = offer * (0.55 + 0.45 * des)                  # bid weighted by who'd pursue him
+        if is_inc and is_rfa:
+            rank = 1e9                                       # RFA: his team can match anything
         out.append({
             "team":         t["team"],
             "team_name":    t.get("team_name", t["team"]),
@@ -194,16 +260,19 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
             "slot":         need["slot"],
             "is_incumbent": is_inc,
             "tool":         tool_label,
-            "reason":       _reason(need, tl, target_barrett, is_inc),
+            "reason":       _reason(need, tl, target_barrett, is_inc, is_rfa),
+            "_rank":        rank,
         })
-    # Highest bidder first (likeliest to land him); ties -> best fit (lowest slot).
-    out.sort(key=lambda d: (-d["offer_M"], d["slot"]))
+    out.sort(key=lambda d: (-d["_rank"], d["slot"]))
+    for d in out:
+        d.pop("_rank", None)
     return out[:n]
 
 
-def _reason(need: dict, timeline: str, target_barrett: float, is_incumbent: bool = False) -> str:
+def _reason(need: dict, timeline: str, target_barrett: float,
+            is_incumbent: bool = False, is_rfa: bool = False) -> str:
     if is_incumbent:
-        fit = "could re-sign him (Bird rights)"
+        fit = "can match any offer (restricted FA)" if is_rfa else "could re-sign him (Bird rights)"
     elif need["displaces"] is not None:
         role = {0: "would start over", 1: "upgrades over", 2: "rotation piece over"}.get(
             need["slot"], "depth piece over")
@@ -275,9 +344,18 @@ if __name__ == "__main__":
     ], columns=["team", "player", "pos", "barrett"])
 
     laravia_pos = resolve_position("Jake LaRavia", "PF", pos_map)   # 2K if known, else SF/PF
-    print(f"LaRavia — model value $10.3M, Barrett 9.5, {laravia_pos} (incumbent MIA):\n")
-    for s in rank_suitors(10.3, 9.5, laravia_pos, rosters, landscape, n=6, incumbent_team="MIA"):
-        print(f"  {s['team']:>3}  ${s['offer_M']:>4}M  slot {s['slot']}  [{s['tool']:<19}] {s['reason']}")
-    print("\nMax wing — model value $45M, Barrett 22, SF/PF (no team can reach the full number):\n")
-    for s in rank_suitors(45.0, 22.0, "SF/PF", rosters, landscape, n=6):
+    print(f"LaRavia — value $10.3M, Barrett 9.5, {laravia_pos}, age 24, UFA (incumbent MIA):\n")
+    for s in rank_suitors(10.3, 9.5, laravia_pos, rosters, landscape, n=6,
+                          incumbent_team="MIA", age=24, is_rfa=False):
+        tag = " *re-sign*" if s["is_incumbent"] else ""
+        print(f"  {s['team']:>3}  ${s['offer_M']:>4}M  slot {s['slot']}  [{s['tool']:<19}] {s['reason']}{tag}")
+
+    print("\nSame guy as a 23-yo RFA on BKN — his team can match ANY offer (jumps to #1):\n")
+    for s in rank_suitors(10.3, 9.5, laravia_pos, rosters, landscape, n=4,
+                          incumbent_team="BKN", age=23, is_rfa=True):
+        tag = " *MATCH*" if s["is_incumbent"] else ""
+        print(f"  {s['team']:>3}  ${s['offer_M']:>4}M  [{s['tool']:<19}] {s['reason']}{tag}")
+
+    print("\nAging vet — value $10.3M, age 33: rebuilders (BKN/UTA) cool off, win-now stays keen:\n")
+    for s in rank_suitors(10.3, 9.5, laravia_pos, rosters, landscape, n=6, age=33):
         print(f"  {s['team']:>3}  ${s['offer_M']:>4}M  [{s['tool']:<19}] {s['reason']}")
