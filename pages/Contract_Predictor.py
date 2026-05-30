@@ -488,8 +488,8 @@ def _load_histgbm():
 
 
 def _histgbm_feature_vector(features: dict, target_season: str) -> np.ndarray | None:
-    """Build the 22-feature input vector that the HistGBM expects, in the
-    exact order the model was trained on (PRUNED_FEATURES + 8 derived).
+    """Build the 28-feature input vector that the HistGBM expects, in the
+    exact order the model was trained on (PRUNED_FEATURES + 8 derived + 6 advanced).
     Returns None if essential features are missing."""
     cap_dollars_val = SALARY_CAP_M.get(target_season, 154.6) * 1_000_000
 
@@ -578,7 +578,8 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
 
     predicted = raw_predicted
     cba_cap_applied = False
-    cba_floor_applied = False
+    cba_floor_applied = False        # supermax floor → full max
+    max_tier_floor_applied = False   # All-NBA near-max floor → max − 3pp
 
     if predicted > cba_max_dollars:
         predicted = cba_max_dollars
@@ -603,7 +604,7 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
             and (target_age is None or target_age <= 33)
             and predicted < _floor_target):
         predicted = _floor_target
-        cba_floor_applied = True
+        max_tier_floor_applied = True
 
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
@@ -628,6 +629,7 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
         "cba_max_dollars":      cba_max_dollars,
         "cba_cap_applied":      cba_cap_applied,
         "cba_floor_applied":    cba_floor_applied,
+        "max_tier_floor_applied": max_tier_floor_applied,
         "supermax_eligible":    supermax_eligible,
         "supermax_tier_label":  supermax_tier_label,
         "model_used":           "HistGBM v2",
@@ -691,7 +693,8 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
 
     predicted = raw_predicted
     cba_cap_applied = False
-    cba_floor_applied = False
+    cba_floor_applied = False        # supermax floor → full max
+    max_tier_floor_applied = False   # All-NBA near-max floor → max − 3pp
 
     if predicted > cba_max_dollars:
         predicted = cba_max_dollars
@@ -719,7 +722,7 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
             and (target_age is None or target_age <= 33)
             and predicted < _floor_target):
         predicted = _floor_target
-        cba_floor_applied = True
+        max_tier_floor_applied = True
 
     band = cap_dollars_val * CONFIDENCE_BAND_PCT_OF_CAP
 
@@ -744,6 +747,7 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
         "cba_max_dollars":      cba_max_dollars,
         "cba_cap_applied":      cba_cap_applied,
         "cba_floor_applied":    cba_floor_applied,
+        "max_tier_floor_applied": max_tier_floor_applied,
         "supermax_eligible":    supermax_eligible,
         "supermax_tier_label":  supermax_tier_label,
     }
@@ -770,8 +774,9 @@ def detect_caveats(features: dict) -> list[str]:
     if features.get("supermax_eligible"):
         recent = features.get("recent_all_nba", []) or []
         tier_label = features.get("supermax_tier", "")
-        # Compute the dollar amount for the supermax tier.
-        cap_M = SALARY_CAP_M.get(CURRENT_SEASON, 154.6)
+        # Dollar amount for the supermax tier — at the CONTRACT-season cap
+        # (the deal starts next season), matching what the prediction floors to.
+        cap_M = SALARY_CAP_M.get(CONTRACT_SEASON, 165.0)
         max_pct = float(features.get("max_pct", 0.35) or 0.35)
         supermax_dollars_M = cap_M * max_pct
         notes.append(
@@ -858,6 +863,15 @@ def explain_prediction(features: dict, prediction: dict,
             f"on {team}. Raw production rate alone would have projected "
             f"${raw_M:.1f}M; the supermax floor lifts elite stars to their "
             f"eligible max."
+        )
+    elif prediction.get("max_tier_floor_applied"):
+        # All-NBA near-max floor — lifted to ~max−3%, NOT the full/supermax max.
+        bullets.append(
+            f"**${final_M:.1f}M — lifted to the All-NBA max tier.** {name}'s "
+            f"{recent_nba} recent All-NBA selection{'s' if recent_nba != 1 else ''} "
+            f"mark him as max-caliber; raw production projected ${raw_M:.1f}M, but "
+            f"the model hedges below the max for elite players, so we lift him to "
+            f"the empirical eligible-star level (~3% under the {max_pct_pct}% max)."
         )
     elif prediction.get("cba_cap_applied"):
         # Production exceeds the player's CBA max (capped).
@@ -1572,6 +1586,8 @@ if prediction.get("cba_cap_applied"):
     _model_caption = f"Capped at max ({_supermax_label})"
 elif prediction.get("cba_floor_applied"):
     _model_caption = f"Supermax floor ({_supermax_label})"
+elif prediction.get("max_tier_floor_applied"):
+    _model_caption = "All-NBA near-max"
 elif features.get("on_rookie_scale"):
     _model_caption = "Currently on rookie scale"
 else:
@@ -2084,6 +2100,7 @@ with st.expander("About this prediction"):
     _cba_max_M = prediction.get("cba_max_dollars", 0) / 1e6
     _cba_cap_applied = prediction.get("cba_cap_applied", False)
     _cba_floor_applied = prediction.get("cba_floor_applied", False)
+    _max_tier_floor_applied = prediction.get("max_tier_floor_applied", False)
     _supermax_tier_label = prediction.get("supermax_tier_label", "")
     if _cba_cap_applied:
         _cba_fragment = (
@@ -2096,6 +2113,12 @@ with st.expander("About this prediction"):
             f' &nbsp;<span style="color:#666;">→</span>&nbsp; '
             f'<b style="color:#16d4c1;">floored at ${_cba_max_M:.1f}M</b>'
             f' <span style="color:#777;">(supermax: {_supermax_tier_label})</span>'
+        )
+    elif _max_tier_floor_applied:
+        _cba_fragment = (
+            f' &nbsp;<span style="color:#666;">→</span>&nbsp; '
+            f'<b style="color:#16d4c1;">lifted to ${predicted_M:.1f}M</b>'
+            f' <span style="color:#777;">(All-NBA near-max)</span>'
         )
     else:
         _cba_fragment = ""
@@ -2203,7 +2226,7 @@ with st.expander("About this prediction"):
            universally take the max they're offered. Floor disabled for
            aging vets (age >33+) who routinely take paycuts.
 
-        **Confidence band:** ±$5.5M reflects out-of-sample median error.
+        **Confidence band:** ±$5.9M (≈3.6% of the 2026-27 cap).
 
         ### What's in the model
         - Production (Barrett Score, healthy-season trailing average)
@@ -2260,7 +2283,7 @@ with st.expander("About this prediction"):
 
         - **89% of predictions within 5% of the cap** (~$8M)
         - **99% within 10% of cap** — catastrophic misses under 2%
-        - Median |error|: ~2% of cap, ~$3M in 2025-26 dollars
+        - Median |error|: ~$1.9M (≈1.3% of cap)
 
         Every feature was gated on cross-validation, not a single split. The
         advanced metrics earned their place (+1.1pp within-5% on paired CV,
