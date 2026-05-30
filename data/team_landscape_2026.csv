@@ -2,35 +2,35 @@
 # To refresh: update cap_space_M + top_exception per team. top_exception is the
 # team's apron-implied tool — nt_mle / room_exc / tp_mle / bae / min / cap_room —
 # and the exception $ derives from it automatically (exception_M optional override).
-# timeline: rebuild / middle / contender — drives which players each team pursues.
+# timeline: title / playoff / bye / rebuild — drives which players each team pursues.
 team,team_name,cap_space_M,top_exception,exception_M,timeline
-ATL,Atlanta Hawks,12,nt_mle,15.05,
-BOS,Boston Celtics,0,nt_mle,15.05,contender
+ATL,Atlanta Hawks,12,nt_mle,15.05,playoff
+BOS,Boston Celtics,0,nt_mle,15.05,title
 BKN,Brooklyn Nets,42,cap_room,15.05,rebuild
-CHA,Charlotte Hornets,17,cap_room,15.05,rebuild
+CHA,Charlotte Hornets,17,cap_room,15.05,bye
 CHI,Chicago Bulls,70,cap_room,15.05,rebuild
-CLE,Cleveland Cavaliers,0,min,2.3,contender
-DAL,Dallas Mavericks,16,cap_room,15.05,middle
-DEN,Denver Nuggets,0,tp_mle,6.07,contender
-DET,Detroit Pistons,30,cap_room,15.05,middle
-GSW,Golden State Warriors,0,nt_mle,15.05,contender
-HOU,Houston Rockets,0,nt_mle,15.05,contender
-IND,Indiana Pacers,0,nt_mle,15.05,contender
-LAC,LA Clippers,3,nt_mle,15.05,contender
-LAL,Los Angeles Lakers,58,cap_room,15.05,contender
-MEM,Memphis Grizzlies,22,cap_room,15.05,middle
-MIA,Miami Heat,0,nt_mle,15.05,middle
-MIL,Milwaukee Bucks,6,nt_mle,15.05,contender
-MIN,Minnesota Timberwolves,0,nt_mle,15.05,contender
-NOP,New Orleans Pelicans,0,nt_mle,15.05,middle
-NYK,New York Knicks,0,nt_mle,15.05,contender
-OKC,Oklahoma City Thunder,0,min,2.3,contender
-ORL,Orlando Magic,0,tp_mle,6.07,middle
-PHI,Philadelphia 76ers,0,nt_mle,15.05,middle
-PHX,Phoenix Suns,3,nt_mle,15.05,middle
-POR,Portland Trail Blazers,0,nt_mle,15.05,rebuild
-SAC,Sacramento Kings,0,nt_mle,15.05,middle
-SAS,San Antonio Spurs,13,cap_room,15.05,rebuild
-TOR,Toronto Raptors,0,nt_mle,15.05,middle
-UTA,Utah Jazz,23,cap_room,15.05,rebuild
-WAS,Washington Wizards,0,nt_mle,15.05,rebuild
+CLE,Cleveland Cavaliers,0,min,2.3,title
+DAL,Dallas Mavericks,16,cap_room,15.05,bye
+DEN,Denver Nuggets,0,tp_mle,6.07,title
+DET,Detroit Pistons,30,cap_room,15.05,title
+GSW,Golden State Warriors,0,nt_mle,15.05,playoff
+HOU,Houston Rockets,0,nt_mle,15.05,title
+IND,Indiana Pacers,0,nt_mle,15.05,title
+LAC,LA Clippers,3,nt_mle,15.05,rebuild
+LAL,Los Angeles Lakers,58,cap_room,15.05,title
+MEM,Memphis Grizzlies,22,cap_room,15.05,rebuild
+MIA,Miami Heat,0,nt_mle,15.05,bye
+MIL,Milwaukee Bucks,6,nt_mle,15.05,playoff
+MIN,Minnesota Timberwolves,0,nt_mle,15.05,title
+NOP,New Orleans Pelicans,0,nt_mle,15.05,rebuild
+NYK,New York Knicks,0,nt_mle,15.05,title
+OKC,Oklahoma City Thunder,0,min,2.3,title
+ORL,Orlando Magic,0,tp_mle,6.07,playoff
+PHI,Philadelphia 76ers,0,nt_mle,15.05,title
+PHX,Phoenix Suns,3,nt_mle,15.05,playoff
+POR,Portland Trail Blazers,0,nt_mle,15.05,bye
+SAC,Sacramento Kings,0,nt_mle,15.05,rebuild
+SAS,San Antonio Spurs,13,cap_room,15.05,title
+TOR,Toronto Raptors,0,nt_mle,15.05,playoff
+UTA,Utah Jazz,23,cap_room,15.05,bye
+WAS,Washington Wizards,0,nt_mle,15.05,bye

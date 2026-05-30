@@ -191,21 +191,44 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
             "gap": 0.0, "depth_here": len(scores)}
 
 
+# How keen a team of each TIMELINE is to pursue a player of each ARCHETYPE (0–1),
+# applied to the ranking (not the offer). Four user-classified tiers:
+#   title   — chasing a title; pays for win-now help, hunts on the margins
+#   playoff — making / advancing the playoffs; wants help, budget-conscious
+#   bye     — gap / retool year; selective, not aggressive (esp. on aging vets)
+#   rebuild — developing youth; chases upside, passes on aging vets
+# These are tunable knobs — adjust to taste.
+_DESIRE = {
+    #            star   young  prime   vet
+    "title":   {"star": 1.00, "young": 0.70, "prime": 1.00, "vet": 0.92},
+    "playoff": {"star": 0.95, "young": 0.80, "prime": 0.90, "vet": 0.80},
+    "bye":     {"star": 0.80, "young": 0.70, "prime": 0.55, "vet": 0.45},
+    "rebuild": {"star": 0.90, "young": 1.00, "prime": 0.50, "vet": 0.28},
+}
+_DESIRE_DEFAULT = "playoff"   # an unclassified team -> neutral win-now-ish
+
+
+def _timeline_key(timeline: str) -> str:
+    """Map a CSV timeline label (incl. legacy contender/middle) to a desire tier."""
+    tl = (timeline or "").lower()
+    if "title" in tl or "conten" in tl:   return "title"
+    if "playoff" in tl or "middle" in tl: return "playoff"
+    if "bye" in tl:                        return "bye"
+    if "rebuild" in tl:                    return "rebuild"
+    return _DESIRE_DEFAULT
+
+
 def desire_weight(timeline: str, age, value_M: float) -> float:
     """How badly a team of this TIMELINE would PURSUE a player of this age/value —
-    the 'do they want him', separate from 'can they pay'. Rebuilders chase youth
-    and stars and pass on aging role vets; win-now teams chase present production.
-    Returns a 0–1 multiplier applied to the ranking (not the offer)."""
-    tl = (timeline or "").lower()
+    the 'do they want him', separate from 'can they pay'. Returns a 0–1 multiplier
+    on the ranking. Title teams chase win-now production; rebuilders chase youth and
+    pass on aging vets; bye-year teams are selective; playoff teams are pragmatic."""
     a = float(age) if age is not None else 27.0
-    young, vet, star = a < 25, a > 31, value_M >= 22.0
-    if "rebuild" in tl:
-        if young or star: return 1.00     # cornerstone youth / a star to build around
-        if vet:           return 0.30     # a tanking team won't court a 32-yo role vet
-        return 0.55                        # prime role vet — lukewarm
-    if "conten" in tl:                     # win-now: values present production
-        return 0.75 if (young and not star) else 1.00
-    return 0.90                            # middle / play-in / unknown — pragmatic improvers
+    if   value_M >= 22.0: arche = "star"    # a difference-maker — most teams want him
+    elif a < 25:          arche = "young"   # youth / upside
+    elif a > 31:          arche = "vet"      # aging
+    else:                 arche = "prime"    # prime role player
+    return _DESIRE[_timeline_key(timeline)][arche]
 
 
 def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
@@ -250,7 +273,7 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
         else:               tool_label = "minimum"
         tl = str(t.get("timeline", "")).strip().lower()
         des = 1.0 if is_inc else desire_weight(tl, age, price_M)
-        rank = offer * (0.55 + 0.45 * des)                  # bid weighted by who'd pursue him
+        rank = offer * des                                  # bid × how likely they'd pursue him
         if is_inc and is_rfa:
             rank = 1e9                                       # RFA: his team can match anything
         out.append({
@@ -327,10 +350,10 @@ if __name__ == "__main__":
     # Suitor demo with INLINE mock data (real rosters come from build_ranked_projected).
     landscape = pd.DataFrame([
         ["BKN", "Brooklyn Nets",   38, 38,   "rebuild"],
-        ["UTA", "Utah Jazz",       25, 25,   "rebuild"],
-        ["DET", "Detroit Pistons", 12, 12,   "middle"],
-        ["MIA", "Miami Heat",       0, 14.1, "contender"],
-        ["BOS", "Boston Celtics",   0, 5.7,  "contender"],
+        ["UTA", "Utah Jazz",       25, 25,   "bye"],
+        ["DET", "Detroit Pistons", 12, 12,   "title"],
+        ["MIA", "Miami Heat",       0, 14.1, "playoff"],
+        ["BOS", "Boston Celtics",   0, 5.7,  "title"],
     ], columns=["team", "team_name", "cap_space_M", "exception_M", "timeline"])
 
     rosters = pd.DataFrame([
