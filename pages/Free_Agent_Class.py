@@ -98,12 +98,37 @@ n_rfa = (fa_df["Status"] == "RFA").sum()
 n_po  = (fa_df["Status"] == "Player Option").sum()
 n_to  = (fa_df["Status"] == "Team Option").sum()
 
-m1, m2, m3, m4, m5 = st.columns(5)
-m1.metric("Total Free Agents", len(fa_df))
-m2.metric("Unrestricted (UFA)", n_ufa)
-m3.metric("Restricted (RFA)",   n_rfa, help="Team holds right of first refusal on any offer sheet")
-m4.metric("Player Options",     n_po,  help="Player can opt out and hit the market")
-m5.metric("Team Options",       n_to,  help="Team may decline, making player available")
+# Summary stat cards — colour-coded to the table's status language (UFA slate ·
+# RFA green · PO blue · TO orange · Total teal) so the page has a visual anchor
+# instead of a flat native-metric row. Hover shows the explainer.
+_fa_stats = [
+    ("Total Free Agents", len(fa_df),  "var(--accent-teal)", "Everyone available this offseason"),
+    ("Unrestricted · UFA", int(n_ufa), "var(--fg-3)",        "No strings — free to sign with any team"),
+    ("Restricted · RFA",   int(n_rfa), "var(--value-good)",  "Team holds right of first refusal on any offer sheet"),
+    ("Player Options",     int(n_po),  "var(--blue)",        "Player can opt out and hit the market"),
+    ("Team Options",       int(n_to),  "var(--orange)",      "Team may decline, making the player available"),
+]
+_fa_cards = ""
+for _lab, _val, _c, _tip in _fa_stats:
+    _fa_cards += (
+        f'<div class="fa-stat" style="--c:{_c};" title="{_tip}">'
+        f'<div class="fa-stat-num">{_val}</div>'
+        f'<div class="fa-stat-lab">{_lab}</div></div>'
+    )
+st.markdown(
+    "<style>"
+    ".fa-stats{display:flex;gap:0.7rem;flex-wrap:wrap;margin:0.2rem 0 0.3rem;}"
+    ".fa-stat{flex:1 1 0;min-width:118px;background:var(--panel-solid);"
+    "border:1px solid var(--panel-line);border-top:3px solid var(--c);"
+    "border-radius:10px;padding:0.85rem 0.6rem 0.75rem;text-align:center;"
+    "box-shadow:var(--shadow-card);transition:transform .12s ease;}"
+    ".fa-stat:hover{transform:translateY(-2px);}"
+    ".fa-stat-num{font-size:2rem;font-weight:800;line-height:1;color:var(--c);}"
+    ".fa-stat-lab{font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;"
+    "color:var(--fg-4);margin-top:0.45rem;font-weight:600;}"
+    f"</style><div class='fa-stats'>{_fa_cards}</div>",
+    unsafe_allow_html=True,
+)
 
 st.divider()
 
