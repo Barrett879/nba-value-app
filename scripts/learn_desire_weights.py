@@ -60,11 +60,27 @@ def team_winpct(raw):
     return med.reindex(fb.index).fillna(fb).sort_values(ascending=False)
 
 
+def _weights_from(cell):
+    """Lift-normalized desire weights from a (tier, archetype) signing counter."""
+    tot_t = {t: sum(cell[(t, a)] for a in ARCHES) for t in TIER_NAMES}
+    tot_a = {a: sum(cell[(t, a)] for t in TIER_NAMES) for a in ARCHES}
+    g = sum(tot_t.values())
+    des = {}
+    for a in ARCHES:
+        col = [(t, (cell[(t, a)] / tot_t[t]) / (tot_a[a] / g)
+                if tot_t[t] and tot_a[a] and g else 0.0) for t in TIER_NAMES]
+        mx = max(v for _, v in col) or 1.0
+        for t, v in col:
+            des[(t, a)] = v / mx
+    return des
+
+
 def main():
     yr = lambda s: int(s[:4])
     pairs = [(SEASONS[i + 1], SEASONS[i]) for i in range(len(SEASONS) - 1)
              if yr(SEASONS[i]) >= 2013 and yr(SEASONS[i + 1]) >= 2012]
     cell = collections.Counter()
+    cell_e, cell_l = collections.Counter(), collections.Counter()   # 2013-19 / 2020-25 holdout
     used = nsign = 0
     for prev, curr in pairs:
         try:
@@ -84,10 +100,12 @@ def main():
         mg = mg[mg['sc'].notna() & (mg['sc'] > 0)]
         mg['pct'] = (mg['sc'] - mg['salary']) / mg['salary']
         moved = mg[(mg['pct'].abs() >= NEW_CONTRACT_PCT) & (mg['Team'] != mg['ct'])]
+        half = cell_e if yr(prev) <= 2019 else cell_l
         for _, r in moved.iterrows():
             dt = tier.get(r['ct'])
             if dt:
-                cell[(dt, archetype(age.get(r['PLAYER_ID']), r['barrett_score']))] += 1
+                key = (dt, archetype(age.get(r['PLAYER_ID']), r['barrett_score']))
+                cell[key] += 1; half[key] += 1
                 nsign += 1
 
     tot_t = {t: sum(cell[(t, a)] for a in ARCHES) for t in TIER_NAMES}
@@ -120,6 +138,17 @@ def main():
     for t in TIER_NAMES:
         cells = ', '.join(f'"{a}": {des[(t, a)]:.2f}' for a in ARCHES)
         print(f'    "{t}":{" " * (8 - len(t))}{{{cells}}},')
+
+    print('\nHOLDOUT — does it generalize? weights on 2013-19 vs 2020-25 signings:')
+    we, wl = _weights_from(cell_e), _weights_from(cell_l)
+    ev = [we[(t, a)] for t in TIER_NAMES for a in ARCHES]
+    lv = [wl[(t, a)] for t in TIER_NAMES for a in ARCHES]
+    nn = len(ev); me, ml = sum(ev) / nn, sum(lv) / nn
+    den = (sum((e - me) ** 2 for e in ev) * sum((l - ml) ** 2 for l in lv)) ** 0.5 or 1.0
+    r = sum((e - me) * (l - ml) for e, l in zip(ev, lv)) / den
+    print(f'  early-vs-late weight correlation r = {r:.3f}  (high = generalizes)')
+    flips = [f'{t}-{a}' for t in TIER_NAMES for a in ARCHES if abs(we[(t, a)] - wl[(t, a)]) > 0.35]
+    print('  cells that FLIP (|delta|>0.35) = noise to flatten:', ', '.join(flips) or 'none')
 
 
 if __name__ == '__main__':

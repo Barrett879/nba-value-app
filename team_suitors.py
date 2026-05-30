@@ -201,12 +201,16 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
 #   - Youth flows down the ladder, monotonically (rebuild 1.00 -> title 0.57).
 #   - Prime role players have ~no tier preference (they sign everywhere, ~0.85-1.0).
 #   - Star row is hand-smoothed — only 71 star signings, too thin to trust raw.
+#   HOLDOUT (2013-19 vs 2020-25): the vet/young/prime structure is STABLE across both
+#   halves (title-vet 1.00/1.00, rebuild-young 1.00/1.00, prime ~flat) — it generalizes.
+#   The star row flips entirely between halves (title 0.85->0.39, rebuild 0.38->1.00),
+#   confirming it's noise, so it's flattened to a faint good-team prior here.
 _DESIRE = {
     #            star   young  prime   vet
     "title":   {"star": 0.95, "young": 0.57, "prime": 0.87, "vet": 1.00},
-    "playoff": {"star": 1.00, "young": 0.74, "prime": 1.00, "vet": 0.51},
-    "bye":     {"star": 0.85, "young": 0.95, "prime": 0.89, "vet": 0.53},
-    "rebuild": {"star": 0.80, "young": 1.00, "prime": 0.85, "vet": 0.59},
+    "playoff": {"star": 0.95, "young": 0.74, "prime": 1.00, "vet": 0.51},
+    "bye":     {"star": 0.88, "young": 0.95, "prime": 0.89, "vet": 0.53},
+    "rebuild": {"star": 0.85, "young": 1.00, "prime": 0.85, "vet": 0.59},
 }
 _DESIRE_DEFAULT = "playoff"   # an unclassified team -> neutral win-now-ish
 
@@ -327,6 +331,11 @@ SKILL_CATS = ("shooting", "rebounding", "playmaking", "defense")
 # label is the real value. Raise it only if you want a normative ("should") emphasis.
 SKILL_WEIGHT = 0.15
 _SKILL_MIN_GP = 30          # rotation filter for the percentile pools
+# Per-category weight in the ranking fit. Over 917 signings, only SHOOTING carries a
+# market signal (lift 1.04) — rebounding 0.98 (slightly negative), playmaking 0.99,
+# defense 1.01 are all ~chance. So the rank nudge + annotation are shooting-only;
+# raise the others for a normative "fill every gap" emphasis (the data won't back it).
+_SKILL_CAT_WEIGHT = {"shooting": 1.0, "rebounding": 0.0, "playmaking": 0.0, "defense": 0.0}
 
 
 def build_team_skills(box: pd.DataFrame, adv: pd.DataFrame) -> pd.DataFrame:
@@ -370,24 +379,25 @@ def player_skills(player_id, box: pd.DataFrame, adv: pd.DataFrame) -> dict:
 
 def skill_fit_scores(player_sk: dict, team_skills: pd.DataFrame) -> dict:
     """{team: {'fit': 0..1, 'need': category|None}} — how well the player fills each
-    team's deficits: fit = sum(player_strength x team_deficit), deficit = 1 - percentile,
-    min-maxed 0..1 across teams. 'need' = the category he most helps, flagged only when
-    he's genuinely strong there (>= 0.6) and the team genuinely weak (deficit >= 0.45)."""
+    team's deficits, weighted by _SKILL_CAT_WEIGHT (only market-relevant skills count;
+    today that's shooting). fit = sum(weight x player_strength x team_deficit), min-maxed
+    0..1 across teams. 'need' = the strongest weighted match, flagged when he's genuinely
+    strong there (>= 0.6) and the team genuinely weak (deficit >= 0.45)."""
     raw, need = {}, {}
     for tm, row in team_skills.iterrows():
-        contribs = []
+        fit, cands = 0.0, []
         for c in SKILL_CATS:
+            w = _SKILL_CAT_WEIGHT.get(c, 0.0)
             v = row.get(c)
-            if v is None or v != v:                        # NaN guard
+            if w <= 0 or v is None or v != v:              # skip zero-weight / NaN
                 continue
             deficit = 1.0 - float(v)
-            contribs.append((player_sk.get(c, 0.5) * deficit, c, deficit))
-        if not contribs:
-            raw[tm], need[tm] = 0.0, None
-            continue
-        raw[tm] = sum(x[0] for x in contribs)
-        best = max(contribs, key=lambda x: x[0])
-        need[tm] = best[1] if (player_sk.get(best[1], 0) >= 0.6 and best[2] >= 0.45) else None
+            strength = player_sk.get(c, 0.5)
+            fit += w * strength * deficit
+            if strength >= 0.6 and deficit >= 0.45:
+                cands.append((strength * deficit, c))
+        raw[tm] = fit
+        need[tm] = max(cands)[1] if cands else None
     vals = list(raw.values()) or [0.0]
     lo, hi = min(vals), max(vals)
     span = (hi - lo) or 1.0
