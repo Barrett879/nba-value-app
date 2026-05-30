@@ -1574,10 +1574,10 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     Model marker, and an optional secondary (market / anchor) dot.
 
     When scale_min_M / scale_max_M are supplied, the TRACK is fixed to that
-    league-wide span — the model's minimum-to-maximum possible contract for any
-    player (1.5%–35% of the cap) — so the marker sits at its true position on an
-    absolute scale that's directly comparable across players, and the endpoints
-    are labelled min / max. Without a scale it auto-fits the player's own band."""
+    span — the veteran-minimum floor up to the player's OWN capped max — so a
+    maxed-out player's marker pegs the right edge and everyone else reads as a
+    fraction of their own ceiling; the endpoints are labelled min / max. Without
+    a scale it auto-fits the player's own band."""
     fixed = scale_min_M is not None and scale_max_M is not None
     if fixed:
         bar_lo, span = scale_min_M, max(scale_max_M - scale_min_M, 0.1)
@@ -1586,7 +1586,8 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
         lo, hi = min(pts), max(pts)
         pad = max((hi - lo) * 0.16, 1.0)
         bar_lo, span = lo - pad, max((hi + pad) - (lo - pad), 0.1)
-    p = lambda v: max(2.0, min(98.0, (v - bar_lo) / span * 100))
+    # Clamp to [1, 100] so a prediction at the player's max pegs the right edge.
+    p = lambda v: max(1.0, min(100.0, (v - bar_lo) / span * 100))
     bl, br, mp = p(low_M), p(high_M), p(model_M)
     sec, legend = "", '<span style="color:#fff;">│</span> model'
     if secondary_M is not None:
@@ -1635,13 +1636,15 @@ predicted_M = prediction["predicted"] / 1_000_000
 low_M  = prediction["low"]  / 1_000_000
 high_M = prediction["high"] / 1_000_000
 
-# League-wide scale for the confidence bar: the model's minimum-to-maximum
-# possible contract for ANY player — it clips predictions to [1.5%, 35%] of the
-# cap (the veteran-minimum floor up to the supermax ceiling). Fixing the bar to
-# this absolute span makes a player's marker position comparable across players.
+# Confidence-bar scale: from the veteran-minimum floor (1.5% of cap) up to THIS
+# player's OWN capped max — their 25/30/35% tier (prediction["cba_max_dollars"]).
+# Anchoring the right edge to the player's personal ceiling means a maxed-out
+# player (e.g. Luka, capped at the 30% max) fills the bar to the right edge,
+# while everyone else reads as a fraction of their own max. Falls back to the
+# 35% supermax ceiling if the player's max tier is unknown.
 _scale_cap_M  = SALARY_CAP_M.get(CONTRACT_SEASON, 165.0)
 _scale_min_M  = 0.015 * _scale_cap_M   # mirrors the np.clip lower bound in predict_*
-_scale_max_M  = 0.35  * _scale_cap_M   # supermax ceiling (35% of cap)
+_scale_max_M  = (prediction.get("cba_max_dollars") or 0.35 * _scale_cap_M * 1e6) / 1e6
 
 # Initialize divergence so downstream code (confidence label, "Why this
 # prediction" explainer) can reference it whether or not market data exists.
