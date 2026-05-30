@@ -7,5 +7,13 @@ enableStaticServing = true
 [browser]
 gatherUsageStats = false
 
+# Light base so iframe components (e.g. the player searchbox) + any native bits
+# CSS can't reach render light, matching the design refresh default. Runtime
+# dark mode is handled by the token CSS (utils.inject_theme); base can't flip at
+# runtime, so opt-in dark keeps these light values for the few iframe widgets.
 [theme]
-base = "dark"
+base = "light"
+primaryColor = "#e63946"
+backgroundColor = "#f4f6f8"
+secondaryBackgroundColor = "#ffffff"
+textColor = "#14142a"

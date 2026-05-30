@@ -33,7 +33,7 @@ if st.session_state.get("playoff_mode", False):
     st.caption("All scores computed from playoff games only. Salaries reflect the regular-season contract for that year.")
 else:
     st.title("NBA Contract Value Rankings")
-    st.caption("A stat-driven ranking of every NBA player's contract value: who's underpaid, who's overpaid, and who's available.")
+    st.caption("Every qualifying player this season, ranked by Barrett Score. Green = underpaid · Red = overpaid")
 
 st.markdown("""
 <style>

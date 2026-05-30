@@ -657,10 +657,10 @@ PRE_1990_SALARY_NOTE = (
 # value-tints nudge for legibility on white. inject_theme() (called by every
 # page's chrome) emits the base + the light override when light is active.
 
-#: When True the app boots in DARK (used while converting pages so the working
-#: dark theme stays the validated baseline). Flipped to False (light default,
-#: per the design refresh) once every page is tokenised + screenshot-checked.
-THEME_DEFAULT_DARK = True
+#: Default theme. The design refresh ships LIGHT by default; dark is opt-in via
+#: the nav toggle. (config.toml base is set to "light" to match, so iframe
+#: components like the player searchbox — which CSS can't reach — render light.)
+THEME_DEFAULT_DARK = False
 
 THEME_BASE_CSS = """
 <style>
@@ -718,6 +718,38 @@ THEME_BASE_CSS = """
     [data-testid="stHeading"] h1,
     [data-testid="stHeading"] h2,
     [data-testid="stHeading"] h3 { color: var(--fg-1) !important; }
+
+    /* Native Streamlit widgets painted from tokens so they follow BOTH themes.
+       (config.toml base="light" handles iframe components like the searchbox,
+       which CSS can't reach; these token rules handle the styleable widgets in
+       light AND dark.) */
+    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
+    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div,
+    div[data-baseweb="select"] > div {
+        background: var(--panel-solid) !important;
+        border-color: var(--panel-line) !important;
+        color: var(--fg-1) !important;
+    }
+    div[data-baseweb="select"] svg { fill: var(--fg-3) !important; }
+    ul[data-baseweb="menu"], div[data-baseweb="popover"] ul { background: var(--panel-solid) !important; }
+    ul[data-baseweb="menu"] li { color: var(--fg-2) !important; }
+    ul[data-baseweb="menu"] li:hover { background: var(--panel-hover) !important; }
+    [data-testid="stTextInput"] div[data-baseweb="input"],
+    [data-testid="stNumberInput"] div[data-baseweb="input"],
+    [data-testid="stTextInput"] div[data-baseweb="base-input"],
+    div[data-baseweb="input"] {
+        background: var(--panel-solid) !important;
+        border-color: var(--panel-line) !important;
+    }
+    [data-testid="stTextInput"] input,
+    [data-testid="stNumberInput"] input,
+    div[data-baseweb="input"] input { color: var(--fg-1) !important; }
+    [data-testid="stSlider"] [data-testid="stTickBarMin"],
+    [data-testid="stSlider"] [data-testid="stTickBarMax"] { color: var(--fg-4) !important; }
+    [data-testid="stExpander"] details {
+        background: var(--panel) !important;
+        border-color: var(--panel-line) !important;
+    }
 </style>
 """
 
@@ -762,35 +794,6 @@ THEME_LIGHT_CSS = """
         --logo-tag:    #7a7d88;
         /* elevation -> soft light card shadow */
         --shadow-card: 0 1px 2px rgba(20,22,40,.06), 0 4px 14px rgba(20,22,40,.07);
-    }
-    /* Native Streamlit widgets — repaint for light (dark mode keeps Streamlit's
-       own dark defaults from config.toml base, which already look right). */
-    [data-testid="stSelectbox"] div[data-baseweb="select"] > div,
-    [data-testid="stMultiSelect"] div[data-baseweb="select"] > div {
-        background: var(--panel-solid) !important;
-        border-color: var(--panel-line) !important;
-        color: var(--fg-1) !important;
-    }
-    [data-testid="stSelectbox"] div[data-baseweb="select"] svg,
-    [data-testid="stMultiSelect"] div[data-baseweb="select"] svg { fill: var(--fg-3) !important; }
-    ul[data-baseweb="menu"], div[data-baseweb="popover"] ul { background: var(--panel-solid) !important; }
-    ul[data-baseweb="menu"] li { color: var(--fg-2) !important; }
-    ul[data-baseweb="menu"] li:hover { background: var(--panel-hover) !important; }
-    [data-testid="stTextInput"] div[data-baseweb="input"],
-    [data-testid="stNumberInput"] div[data-baseweb="input"],
-    [data-testid="stTextInput"] div[data-baseweb="base-input"] {
-        background: var(--panel-solid) !important;
-        border-color: var(--panel-line) !important;
-    }
-    [data-testid="stTextInput"] input,
-    [data-testid="stNumberInput"] input { color: var(--fg-1) !important; }
-    /* slider value bubbles / ticks read on white */
-    [data-testid="stSlider"] [data-testid="stTickBarMin"],
-    [data-testid="stSlider"] [data-testid="stTickBarMax"] { color: var(--fg-4) !important; }
-    /* expander chrome */
-    [data-testid="stExpander"] details {
-        background: var(--panel) !important;
-        border-color: var(--panel-line) !important;
     }
 </style>
 """
