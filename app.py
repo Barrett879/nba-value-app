@@ -565,16 +565,23 @@ def _compute_charts():
         if df.empty:
             return None
 
+        # Value picks (steal/overpaid) only make sense for players on a real
+        # salary — a $0/unsigned row would surface as an infinite "steal".
+        # Mirrors the salary>0 guard on the Rankings/Legacy pages.
+        df_paid = df[df["salary"] > 0] if "salary" in df.columns else df
+        if df_paid.empty:
+            df_paid = df
+
         top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score"]].values.tolist()
-        steals_3 = df.nsmallest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
-        overpaid_3 = df.nlargest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
+        steals_3 = df_paid.nsmallest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
+        overpaid_3 = df_paid.nlargest(3, "value_diff")[["Player", "value_diff"]].values.tolist()
 
         # Hero-card data (#1 in each category, with team info for the subtitle).
         # Kept separate from the 2-tuple top10/steals_3/overpaid_3 above so the
         # strip-preview consumers (which expect 2-tuples) don't need to change.
         _b = df.nsmallest(1, "score_rank").iloc[0]
-        _s = df.nsmallest(1, "value_diff").iloc[0]
-        _o = df.nlargest(1, "value_diff").iloc[0]
+        _s = df_paid.nsmallest(1, "value_diff").iloc[0]
+        _o = df_paid.nlargest(1, "value_diff").iloc[0]
         best_card = {"name": str(_b["Player"]), "team": str(_b["Team"]),
                      "score": float(_b["barrett_score"])}
         steal_card = {"name": str(_s["Player"]), "team": str(_s["Team"]),

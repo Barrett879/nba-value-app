@@ -8,7 +8,7 @@
 ║      - SALARY_CAP_M, cap_dollars()                                       ║
 ║      - Contract calibration: AGE / POSITION multipliers, thresholds      ║
 ║      - age_bucket()                                                      ║
-║      - LEAGUE_PACE, pace_factor(), pace_adjusted_barrett()               ║
+║      - LEAGUE_PACE, pace_factor()                                        ║
 ║      - SALARY_SUPPLEMENT (pre-1990 hand-curated)                         ║
 ║      - SEASON_GAMES_LOOKUP                                               ║
 ║      - FORMULA_VERSION + PLAYOFF_VERSION (cache invalidation)            ║
@@ -19,7 +19,6 @@
 ║      - _HIDE_BADGE_SCRIPT, render_page_chrome()                          ║
 ║      - render_nav(), render_playoff_toggle()                             ║
 ║      - render_barrett_score_explainer()                                  ║
-║      - stat_card_html()                                                  ║
 ║                                                                          ║
 ║  3.  Text + name normalization                                           ║
 ║      - normalize(), season_to_espn_year()                                ║
@@ -455,20 +454,6 @@ def pace_factor(season: str) -> float:
         return 1.0
     return REFERENCE_PACE / p
 
-
-def pace_adjusted_barrett(base_score: float, d_lebron: float,
-                          efficiency_adj: float, avail_mult: float,
-                          season: str) -> float:
-    """Era-adjusted Barrett Score.
-
-    The 'volume' portion of base_score (PTS + AST×1.5 + REB terms + BLK/STL/TOV
-    /PF terms) gets scaled by pace_factor. D-LEBRON and the TS%-based efficiency
-    adjustment are already era-relative (D-LEBRON is RAPM-based, efficiency is
-    measured against league-avg TS% that season) so they're left alone.
-    """
-    volume = base_score - d_lebron * 2 - efficiency_adj * 2
-    adjusted_base = volume * pace_factor(season) + d_lebron * 2 + efficiency_adj * 2
-    return adjusted_base * avail_mult
 
 # Actual games played per season (shortened seasons due to lockout/COVID)
 SEASON_GAMES_LOOKUP = {
@@ -947,31 +932,6 @@ def render_barrett_score_explainer() -> None:
         )
 
 
-def stat_card_html(label: str, value: str, sub: str, color: str) -> str:
-    """Standard branded stat card. Returns HTML string — pass to st.markdown
-    with unsafe_allow_html=True.
-
-    Used by Track Record (accuracy summary tiles) and any page that wants a
-    consistent "label + big number + subtitle" tile. Colors come from the
-    site's accent palette (#e63946 red, #2ecc71 green, #16d4c1 teal,
-    #f39c12 orange, #9b59b6 purple, etc.). Color is also used at 40% alpha
-    for the border tint.
-    """
-    return (
-        f'<div style="background:rgba(255,255,255,0.03); '
-        f'border:1px solid {color}40; border-radius:10px; '
-        f'padding:1.2rem 1.5rem; text-align:center;">'
-        f'<div style="font-size:0.72rem; color:#888; letter-spacing:0.08em; '
-        f'text-transform:uppercase; font-weight:600; margin-bottom:0.4rem;">'
-        f'{label}</div>'
-        f'<div style="font-size:2.4rem; font-weight:700; color:{color}; '
-        f'line-height:1;">{value}</div>'
-        f'<div style="font-size:0.78rem; color:#999; margin-top:0.4rem;">'
-        f'{sub}</div>'
-        f'</div>'
-    )
-
-
 # ── Name matching ──────────────────────────────────────────────────────────────
 
 def normalize(name: str) -> str:
@@ -1104,8 +1064,10 @@ def _pkl_load(path: Path):
 def _pkl_save(path: Path, obj) -> None:
     try:
         path.write_bytes(pickle.dumps(obj))
-    except Exception:
-        pass
+    except Exception as e:
+        # A full/unwritable cache disk silently degrades every scraper to
+        # "never caches" — surface it in the logs rather than failing silently.
+        logger.warning("cache write failed for %s: %s", path, e)
 
 
 @st.cache_data(ttl=3600, show_spinner="Fetching league stats...")
@@ -1189,16 +1151,6 @@ def fetch_advanced_stats(season: str, season_type: str = "Regular Season") -> pd
 
 
 @st.cache_data(ttl=86400)
-def fetch_league_avg_ts(season: str) -> float:
-    """Weighted league-average TS% for a given season."""
-    try:
-        stats = fetch_league_stats(season)
-        ts = stats["PTS"] / (2 * (stats["FGA"] + 0.44 * stats["FTA"])).replace(0, float("nan"))
-        return float((ts * stats["GP"]).sum() / stats["GP"].sum())
-    except Exception:
-        return 0.570
-
-
 @st.cache_data(ttl=3600, show_spinner="Fetching salary data...")
 def fetch_salaries(espn_year: int) -> pd.DataFrame:
     rows = []
@@ -2793,8 +2745,7 @@ def fetch_dlebron(season: str) -> dict:
 # Bruce Bowen, etc.) in pre-2009 contract validation.
 #
 # Coefficients fit via OLS on the 2009-2025 sample (n=9,649 player-seasons
-# with MPG ≥ 10, see scripts/experiment_dlebron_proxy.py). Inputs are
-# per-game stats from fetch_league_stats (NBA Stats API default).
+# with MPG ≥ 10). Inputs are per-game stats from fetch_league_stats.
 #
 # Final fit: R² = 0.594, MAE = 0.52 (D-LEBRON units).
 #
@@ -2818,28 +2769,6 @@ _DLEBRON_PROXY_COEFS = {
     "PF":        -0.164789,
 }
 
-
-def dlebron_proxy(stl: float, blk: float, dreb: float, pf: float) -> float:
-    """Estimate D-LEBRON from per-game box stats (pre-2009 fallback).
-
-    Args:
-        stl, blk, dreb, pf:  per-game defensive stats (as returned by
-                             fetch_league_stats — already per-game)
-
-    Returns:
-        Proxy D-LEBRON value in roughly the real D-LEBRON scale
-        (typically -2 to +3). Falls back to 0.0 on missing input.
-    """
-    if stl is None or blk is None or dreb is None or pf is None:
-        return 0.0
-    c = _DLEBRON_PROXY_COEFS
-    return (
-        c["intercept"]
-        + c["STL"]  * stl
-        + c["BLK"]  * blk
-        + c["DREB"] * dreb
-        + c["PF"]   * pf
-    )
 
 
 # ── Build raw data ─────────────────────────────────────────────────────────────
@@ -3007,7 +2936,7 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
     # to the box-score-fit proxy. Replaces the earlier hand-tuned composite
     # (BLK*1.5 + STL*1.5 + DREB*0.15 - PF*0.4) with regression coefficients
     # fit on the 2009-2025 sample. R² = 0.594, MAE = 0.52 (D-LEBRON units).
-    # See utils.dlebron_proxy + scripts/experiment_dlebron_proxy.py.
+    # See _DLEBRON_PROXY_COEFS above.
     if not dlebron:
         stats["d_lebron"] = (
             _DLEBRON_PROXY_COEFS["intercept"]

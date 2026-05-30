@@ -108,8 +108,6 @@ st.caption(
 
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
-# _age_bucket is imported from utils as `age_bucket` (aliased). Single source
-# of truth so the bucket boundaries stay in sync with the analyzer scripts.
 
 
 def _fmt_money(v: float) -> str:
