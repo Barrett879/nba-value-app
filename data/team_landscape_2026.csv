@@ -1,31 +1,31 @@
 team,team_name,cap_space_M,top_exception,exception_M,timeline
-ATL,Atlanta Hawks,0,nt_mle,14.1,
-BOS,Boston Celtics,0,nt_mle,14.1,
-BKN,Brooklyn Nets,0,nt_mle,14.1,
-CHA,Charlotte Hornets,0,nt_mle,14.1,
-CHI,Chicago Bulls,0,nt_mle,14.1,
-CLE,Cleveland Cavaliers,0,nt_mle,14.1,
-DAL,Dallas Mavericks,0,nt_mle,14.1,
-DEN,Denver Nuggets,0,nt_mle,14.1,
-DET,Detroit Pistons,0,nt_mle,14.1,
-GSW,Golden State Warriors,0,nt_mle,14.1,
-HOU,Houston Rockets,0,nt_mle,14.1,
-IND,Indiana Pacers,0,nt_mle,14.1,
-LAC,LA Clippers,0,nt_mle,14.1,
-LAL,Los Angeles Lakers,0,nt_mle,14.1,
-MEM,Memphis Grizzlies,0,nt_mle,14.1,
-MIA,Miami Heat,0,nt_mle,14.1,
-MIL,Milwaukee Bucks,0,nt_mle,14.1,
-MIN,Minnesota Timberwolves,0,nt_mle,14.1,
-NOP,New Orleans Pelicans,0,nt_mle,14.1,
-NYK,New York Knicks,0,nt_mle,14.1,
-OKC,Oklahoma City Thunder,0,nt_mle,14.1,
-ORL,Orlando Magic,0,nt_mle,14.1,
-PHI,Philadelphia 76ers,0,nt_mle,14.1,
-PHX,Phoenix Suns,0,nt_mle,14.1,
-POR,Portland Trail Blazers,0,nt_mle,14.1,
-SAC,Sacramento Kings,0,nt_mle,14.1,
-SAS,San Antonio Spurs,0,nt_mle,14.1,
-TOR,Toronto Raptors,0,nt_mle,14.1,
-UTA,Utah Jazz,0,nt_mle,14.1,
-WAS,Washington Wizards,0,nt_mle,14.1,
+ATL,Atlanta Hawks,12,nt_mle,15.05,
+BOS,Boston Celtics,0,nt_mle,15.05,contender
+BKN,Brooklyn Nets,42,cap_room,15.05,rebuild
+CHA,Charlotte Hornets,17,cap_room,15.05,rebuild
+CHI,Chicago Bulls,70,cap_room,15.05,rebuild
+CLE,Cleveland Cavaliers,0,min,2.3,contender
+DAL,Dallas Mavericks,16,cap_room,15.05,middle
+DEN,Denver Nuggets,0,tp_mle,6.07,contender
+DET,Detroit Pistons,30,cap_room,15.05,middle
+GSW,Golden State Warriors,0,nt_mle,15.05,contender
+HOU,Houston Rockets,0,nt_mle,15.05,contender
+IND,Indiana Pacers,0,nt_mle,15.05,contender
+LAC,LA Clippers,3,nt_mle,15.05,contender
+LAL,Los Angeles Lakers,58,cap_room,15.05,contender
+MEM,Memphis Grizzlies,22,cap_room,15.05,middle
+MIA,Miami Heat,0,nt_mle,15.05,middle
+MIL,Milwaukee Bucks,6,nt_mle,15.05,contender
+MIN,Minnesota Timberwolves,0,nt_mle,15.05,contender
+NOP,New Orleans Pelicans,0,nt_mle,15.05,middle
+NYK,New York Knicks,0,nt_mle,15.05,contender
+OKC,Oklahoma City Thunder,0,min,2.3,contender
+ORL,Orlando Magic,0,tp_mle,6.07,middle
+PHI,Philadelphia 76ers,0,nt_mle,15.05,middle
+PHX,Phoenix Suns,3,nt_mle,15.05,middle
+POR,Portland Trail Blazers,0,nt_mle,15.05,rebuild
+SAC,Sacramento Kings,0,nt_mle,15.05,middle
+SAS,San Antonio Spurs,13,cap_room,15.05,rebuild
+TOR,Toronto Raptors,0,nt_mle,15.05,middle
+UTA,Utah Jazz,23,cap_room,15.05,rebuild
+WAS,Washington Wizards,0,nt_mle,15.05,rebuild

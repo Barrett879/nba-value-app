@@ -26,7 +26,7 @@ from pathlib import Path
 import pandas as pd
 
 CSV_PATH = Path(__file__).parent / "data" / "team_landscape_2026.csv"
-DEFAULT_NT_MLE = 14.1   # 2026-27 non-taxpayer mid-level exception, $M (fallback)
+DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
 ROTATION_DEPTH = 3      # he must crack the top-3 at his position to count as a "need"
 
 
@@ -70,11 +70,15 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
     if slot >= ROTATION_DEPTH:                          # doesn't crack the top 3 -> no need
         return {"slot": slot, "displaces": None, "displaces_score": None,
                 "gap": 0.0, "need_score": 0.0}
-    displaced = inc.iloc[slot]                          # the best guy he leapfrogs
-    gap = target_score - float(displaced["barrett"])
-    need = (ROTATION_DEPTH - slot) + min(max(gap, 0.0) / 5.0, 1.0)   # slot0≈3-4, slot1≈2-3, slot2≈1
-    return {"slot": slot, "displaces": displaced["player"],
-            "displaces_score": float(displaced["barrett"]), "gap": gap, "need_score": need}
+    if slot < len(scores):                             # he leapfrogs the incumbent at this slot
+        displaced = inc.iloc[slot]
+        gap = target_score - float(displaced["barrett"])
+        need = (ROTATION_DEPTH - slot) + min(max(gap, 0.0) / 5.0, 1.0)   # slot0≈3-4, slot1≈2-3, slot2≈1
+        return {"slot": slot, "displaces": displaced["player"],
+                "displaces_score": float(displaced["barrett"]), "gap": gap, "need_score": need}
+    # slot == len(scores) < ROTATION_DEPTH: thin at the spot — he fills an open rotation slot
+    return {"slot": slot, "displaces": None, "displaces_score": None,
+            "gap": 0.0, "need_score": float(ROTATION_DEPTH - slot)}
 
 
 def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
@@ -112,10 +116,13 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
 
 def _reason(need: dict, has_room: bool, timeline: str, target_barrett: float) -> str:
     if need["displaces"] is not None:
-        role = {0: "would start over", 1: "upgrades the rotation over", 2: "adds depth over"}[need["slot"]]
+        role = {0: "would start over", 1: "upgrades over", 2: "adds depth over"}.get(
+            need["slot"], "upgrades over")
         fit = f"{role} {need['displaces']} (Barrett {need['displaces_score']:.1f} vs {target_barrett:.1f})"
-    elif need["need_score"] > 0:
+    elif need["need_score"] >= 3.0:
         fit = "fills an empty spot at the position"
+    elif need["need_score"] > 0:
+        fit = "adds depth at a thin spot"
     else:
         fit = "no upgrade at the position"
     money = "cap room" if has_room else "via the exception"

@@ -27,3 +27,6 @@ app_home_*.py
 # Original logo source files (processed final is static/hoopsvalue_logo.png)
 static/ChatGPT*.png
 static/hf_*.png
+
+# Source data PDFs (facts extracted into data/*.csv; don't commit the docs)
+*.pdf
