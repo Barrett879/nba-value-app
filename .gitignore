@@ -30,3 +30,6 @@ static/hf_*.png
 
 # Source data PDFs (facts extracted into data/*.csv; don't commit the docs)
 *.pdf
+
+# Design handoff (reference only — pull assets into static/ as needed)
+design_handoff_hoopsvalue_refresh/

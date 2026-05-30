@@ -38,20 +38,13 @@ LEGACY_FEATURED = [
 # before any user arrives, so the first visitor doesn't pay the cost.
 _bootstrap_warm()
 
-st.set_page_config(page_title="HoopsValue", layout="wide")
+st.set_page_config(page_title="HoopsValue", page_icon="static/favicon.svg", layout="wide")
 
 # ── Page chrome (background, hide Streamlit UI) ────────────────────────────────
 st.markdown("""
 <style>
     .stApp {
-        background-image:
-            linear-gradient(rgba(8, 8, 16, 0.78), rgba(8, 8, 16, 0.86)),
-            url("./app/static/LightCourt.jpeg") !important;
-        background-size: cover !important;
-        background-position: center top !important;
-        background-attachment: fixed !important;
-        background-repeat: no-repeat !important;
-        background-color: #0a0a14 !important;
+        background: #0a0a14 !important;   /* flat — court photo removed (design refresh) */
     }
     [data-testid="stAppViewContainer"],
     [data-testid="stMain"] { background: transparent !important; }
@@ -276,18 +269,30 @@ with st.container(key="playoff_nav_toggle"):
 # inline <img src="./app/static/..."> doesn't resolve cleanly inside HTML
 # markdown (CSS background-image works, <img> doesn't — different base URL
 # handling). st.image() loads the file directly and avoids the path issue.
-_hero_left, _hero_logo, _hero_right = st.columns([1, 3, 1])
-with _hero_logo:
-    _logo_path = Path(__file__).parent / "static" / "hoopsvalue_logo.png"
-    if _logo_path.exists():
-        st.image(str(_logo_path), width=640)
-    else:
-        # Fallback to the old wordmark if the logo file is missing
-        st.markdown(
-            '<div style="font-size:2.2rem; font-weight:800; text-align:center; '
-            'color:#fff; letter-spacing:0.1em;">HoopsValue</div>',
-            unsafe_allow_html=True,
-        )
+# Premium wordmark logo (design refresh) — HTML/SVG via st.markdown. The metals
+# come from CSS vars so the coming light theme can retune them per mode.
+st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700&display=swap');
+:root{--logo-copper:#b06a38;--logo-sage:#4f8a68;--logo-tag:#8a8d98;}
+.hv-logo-wrap{display:flex;justify-content:center;padding:0.4rem 0 0.1rem;}
+.hv-logo{display:inline-flex;flex-direction:column;align-items:center;font-size:60px;gap:3px;user-select:none}
+.hv-wm{display:inline-flex;align-items:center;font-family:"Space Grotesk",sans-serif;font-weight:700;line-height:1;letter-spacing:-.035em}
+.hv-wm .cu{color:var(--logo-copper)}
+.hv-wm .sg{color:var(--logo-sage)}
+.hv-ball{width:.86em;height:.86em;margin:0 -.02em;position:relative;top:.02em;color:var(--logo-copper);flex:0 0 auto}
+.hv-tag{display:flex;align-items:center;gap:.8em;font-family:"Manrope",sans-serif;font-weight:600;font-size:.185em;letter-spacing:.34em;text-transform:uppercase;color:var(--logo-tag);white-space:nowrap}
+.hv-tag::before,.hv-tag::after{content:"";height:1px;width:3.1em;background:currentColor;opacity:.45}
+</style>
+<div class="hv-logo-wrap"><div class="hv-logo">
+  <div class="hv-wm">
+    <span class="cu">HO</span>
+    <svg class="hv-ball" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><circle cx="50" cy="50" r="46"/><path d="M50 4 V96 M4 50 H96 M20 14 Q42 50 20 86 M80 14 Q58 50 80 86"/></g></svg>
+    <span class="cu">PS</span><span class="sg">VALUE</span>
+  </div>
+  <div class="hv-tag">NBA Contract Value</div>
+</div></div>
+""", unsafe_allow_html=True)
 st.markdown("""
 <div style="text-align:center; padding: 0 0 0.6rem 0;">
     <div style="font-size:0.88rem; color:#cdcdd5; max-width:760px; margin:0.4rem auto 0; line-height:1.45; text-shadow: 0 1px 6px rgba(0,0,0,0.5);">
