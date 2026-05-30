@@ -932,6 +932,25 @@ render_strip(
     preview_html=teams_preview,
 )
 
+render_strip(
+    name="Contract Predictor",
+    href="/Contract_Predictor",
+    accent="var(--accent-teal)",
+    description="What would any player command on a new deal signed today? A model prices their production against next season's cap.",
+    preview_html=(
+        '<div style="font-size:0.85rem; color:var(--fg-2); line-height:1.55;">'
+        "Type any player's name to project the contract they'd sign "
+        '<b style="color:var(--fg-1);">today</b> — their 2025-26 production valued '
+        "against next season's salary cap."
+        '<div style="margin-top:0.7rem; display:flex; gap:1.4rem; flex-wrap:wrap; '
+        'font-size:0.78rem; color:var(--fg-3);">'
+        '<span><b style="color:var(--accent-teal);">HistGBM</b> · 1,900+ modern signings</span>'
+        '<span><b style="color:var(--value-good);">89%</b> within 5% of the cap</span>'
+        '<span>supermax · vet-discount · rookie-scale aware</span>'
+        '</div></div>'
+    ),
+)
+
 # Trades strip removed — page disabled. Restore by uncommenting and adding
 # back to _NAV_PAGES in utils.py + un-disabling pages/Trades.py.
 # render_strip(
