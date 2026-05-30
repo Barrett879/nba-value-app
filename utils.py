@@ -983,51 +983,6 @@ def season_to_espn_year(season: str) -> int:
     return int(season.split("-")[0]) + 1
 
 
-# ── Buyout signings ─────────────────────────────────────────────────────────
-# A bought-out player's new salary isn't a function of his stats: his money is
-# already guaranteed by the old team's residual, so he joins a contender on a
-# CBA exception-level deal (veteran minimum / taxpayer-MLE). Empirically, across
-# every "came off a big deal, signed small" case in 2012+ (105 of them),
-# predicting the veteran minimum lands within 5% of cap on 105/105. Because a
-# buyout is a PUBLIC transaction known BEFORE the new signing, we flag these and
-# predict the minimum — something a stats model can't anticipate.
-#
-# Veteran minimum as a fraction of cap by years of service (modern scale).
-_CBA_MIN_PCT_BY_SVC = {0: 0.010, 1: 0.016, 2: 0.018, 3: 0.019, 4: 0.019,
-                       5: 0.020, 6: 0.021, 7: 0.022, 8: 0.022, 9: 0.023}
-
-
-def cba_min_pct(service_years: float) -> float:
-    """Veteran minimum as % of cap by years of service (10+ ≈ 2.6%)."""
-    return _CBA_MIN_PCT_BY_SVC.get(int(service_years or 0), 0.026)
-
-
-# Verified true buyouts: player waived/bought out from an active contract (old
-# team keeps paying a residual), then signed a NEW, smaller deal. Each is a
-# documented public transaction. NOT included: contracts that merely expired
-# (e.g. Otto Porter), or Russell Westbrook 2022-23 (finished a real $47M option
-# that year — a mislabel handled separately, not a buyout-market signing).
-KNOWN_BUYOUTS = {
-    ("Josh Smith",        "2014-15"),  # Detroit stretch-waive (Dec '14) → Houston
-    ("Andre Drummond",    "2020-21"),  # Cleveland buyout (Mar '21) → Lakers
-    ("Blake Griffin",     "2020-21"),  # Detroit buyout (Mar '21) → Brooklyn
-    ("Goran Dragic",      "2021-22"),  # Spurs buyout (Feb '22) → Brooklyn
-    ("Kevin Love",        "2022-23"),  # Cleveland buyout (Feb '23) → Miami
-    ("Kyle Lowry",        "2023-24"),  # Charlotte buyout (Feb '24) → 76ers ($2.8M)
-    ("Spencer Dinwiddie", "2023-24"),  # Toronto waive (Feb '24) → Lakers
-    ("Ben Simmons",       "2024-25"),  # Brooklyn buyout (Feb '25) → Clippers
-    ("Deandre Ayton",     "2025-26"),  # Portland buyout (Jul '25) → Lakers ($8.1M)
-    ("Bradley Beal",      "2025-26"),  # Phoenix buyout (Jul '25) → Clippers ($5.4M)
-    ("Marcus Smart",      "2025-26"),  # Washington buyout (Jul '25) → Lakers
-}
-_BUYOUT_KEYS = {(normalize(p), s) for (p, s) in KNOWN_BUYOUTS}
-
-
-def is_known_buyout(player: str, season: str) -> bool:
-    """True if (player, season) is a verified buyout-market signing."""
-    return (normalize(str(player)), season) in _BUYOUT_KEYS
-
-
 # ── Score calculation ──────────────────────────────────────────────────────────
 
 def base_score(row) -> float:

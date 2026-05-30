@@ -14,11 +14,12 @@ cache/
 *.parquet
 *.pkl
 
-# Local scratch
+# Local scratch / disabled pages (revert checkpoints — git history is the backup)
 refresh_splits.py
 app_archive_v1.py
 Trades_backup.py
 Trades_disabled.py
+Track_Record_disabled.py
 
 # Home-page layout backups (revert checkpoints — git history is the real backup)
 app_home_*.py
