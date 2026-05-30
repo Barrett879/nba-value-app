@@ -2186,8 +2186,9 @@ try:
             st.caption(
                 f"Experimental — {_fa_label}. Each team's number is the model's value "
                 "scaled by fit (starter vs depth) and capped by their cap room / exception "
-                "(or Bird rights). Ranked by who'd most likely pursue him — team timeline × "
-                "his age & value × positional & skill need (pursuit rates from 900+ past signings)."
+                "(or Bird rights). Ranked by a model trained on 1,800+ historical signings "
+                "(incumbency, cap, position, team timeline × his age & value) — it places the "
+                "actual signing team in this shortlist ~6 of 10 times; skill fit is shown as a label."
                 + (f" Cap data: {_asof}." if _asof else "")
             )
 except Exception:

@@ -245,6 +245,25 @@ def desire_weight(timeline: str, age, value_M: float) -> float:
     return _DESIRE[_timeline_key(timeline)][arche]
 
 
+# Trained destination model (scripts/train_suitor_destination.py): predicts which team an FA
+# signs with from 1,810 historical signings. Its per-board score is z-blended with the hand
+# rank (40/60) — out-of-sample that lifts top-1 48%->53% and top-5 60%->61%. Loaded lazily;
+# if the artifact is absent the board falls back to the hand rank alone.
+_TIER_RANK_MAP = {"title": 3, "playoff": 2, "bye": 1, "rebuild": 0}
+_DEST_MODEL = "unset"
+
+
+def _dest_model():
+    global _DEST_MODEL
+    if _DEST_MODEL == "unset":
+        try:
+            import joblib
+            _DEST_MODEL = joblib.load(_DATA.parent / "models" / "suitor_destination_v1.joblib")
+        except Exception:
+            _DEST_MODEL = None
+    return _DEST_MODEL
+
+
 def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
                  rosters: pd.DataFrame, landscape: pd.DataFrame | None = None,
                  n: int = 6, incumbent_team: str | None = None,
@@ -291,10 +310,19 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
         tl = str(t.get("timeline", "")).strip().lower()
         des = 1.0 if is_inc else desire_weight(tl, age, price_M)
         sf = (skill_fit or {}).get(t["team"]) or {"fit": 0.5, "need": None}
-        # skill fit nudges rank x(1-W/2)..x(1+W/2) — favours teams who lack his skill
+        # hand rank: skill-fit nudge + incumbent re-sign pull
         rank = offer * des * ((1.0 - SKILL_WEIGHT / 2.0) + SKILL_WEIGHT * float(sf["fit"]))
+        pin = False
         if is_inc:                                           # ~half of FAs re-sign -> heavy pull
-            rank = 1e9 if is_rfa else rank * INCUMBENT_WEIGHT
+            rank *= INCUMBENT_WEIGHT
+            pin = is_rfa                                     # restricted FA -> pinned to #1
+        # feature vector for the trained destination model (order = its FEATS)
+        av = float(age) if age is not None else 27.0
+        raw_offer = min(price_M, tool); ratio = raw_offer / price_M if price_M else 0.0
+        inc = float(is_inc)
+        feat = [inc, raw_offer, ratio, cap, float(min(need["slot"], 9)),
+                float(_TIER_RANK_MAP.get(_timeline_key(tl), 1)), price_M, av, target_barrett,
+                inc * av, inc * price_M, inc * target_barrett, inc * ratio]
         out.append({
             "team":         t["team"],
             "team_name":    t.get("team_name", t["team"]),
@@ -303,11 +331,26 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
             "is_incumbent": is_inc,
             "tool":         tool_label,
             "reason":       _reason(need, tl, target_barrett, is_inc, is_rfa, sf.get("need")),
-            "_rank":        rank,
+            "_rank":        rank, "_pin": pin, "_feat": feat,
         })
-    out.sort(key=lambda d: (-d["_rank"], d["slot"]))
+    # Blend the trained model's per-board score with the hand rank (z-scored, 40/60).
+    _b = _dest_model()
+    if _b and len(out) > 1:
+        try:
+            import numpy as np
+            proba = _b["model"].predict_proba(
+                np.asarray([d["_feat"] for d in out], dtype=float))[:, 1]
+            hand = np.asarray([d["_rank"] for d in out], dtype=float)
+            zsc = lambda a: (a - a.mean()) / a.std() if a.std() > 1e-9 else a * 0.0
+            w = float(_b.get("blend_w", 0.4))
+            blended = w * zsc(proba) + (1.0 - w) * zsc(hand)
+            for d, bl in zip(out, blended):
+                d["_rank"] = float(bl)
+        except Exception:
+            pass
+    out.sort(key=lambda d: (-int(d["_pin"]), -d["_rank"], d["slot"]))
     for d in out:
-        d.pop("_rank", None)
+        d.pop("_rank", None); d.pop("_pin", None); d.pop("_feat", None)
     return out[:n]
 
 
