@@ -45,24 +45,24 @@ render_page_chrome()
 _bootstrap_warm()
 render_nav("Legacy")
 
-# Playoff mode lives in the top nav bar (sticky across pages via session_state)
+# Playoff toggle sits on the title row, right-aligned (in-page, not the nav bar)
 playoff_mode = bool(st.session_state.get("playoff_mode", False))
+_tcol, _pcol = st.columns([4, 1], vertical_alignment="bottom")
+with _tcol:
+    st.title("Playoff Legacy" if playoff_mode else "Legacy")
+with _pcol:
+    render_playoff_toggle()
 if playoff_mode:
-    st.title("Playoff Legacy")
     st.caption(
         "The all-time playoff record. Every player-postseason from 1973–74 forward, "
         "ranked, compared, weighted by depth-of-run."
     )
 else:
-    st.title("Legacy")
     st.caption(
         "The historical record. Every player, every season from 1973–74 to today, "
         "ranked, compared, and put in context."
     )
 
-_pf_spacer, _pf_col = st.columns([4, 1])
-with _pf_col:
-    render_playoff_toggle()
 render_barrett_score_explainer()
 
 # ── Load combined data ─────────────────────────────────────────────────────────

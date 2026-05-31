@@ -1396,16 +1396,14 @@ COMMON_CSS = """
         gap: 0 !important;
     }
 
-    /* Page block-container top padding — fits the nav bar (3rem tall) plus
-       comfortable breathing room before the page title. Goldilocks number:
-       3.8rem was too generous (huge empty gap), 3.2rem was too tight
-       (title mashed against the nav). 4.5rem leaves a clean ~1.5rem of
-       space between nav and title, matching the bottom padding rhythm. */
+    /* Page block-container top padding — fits the fixed nav bar (3rem tall)
+       plus breathing room before the page title. 5.5rem leaves a clean ~2.5rem
+       gap between the nav and the title. */
     .main .block-container,
     section.main > .block-container,
     [data-testid="stMain"] .block-container,
     [data-testid="stMainBlockContainer"] {
-        padding-top: 4.5rem !important;
+        padding-top: 5.5rem !important;
     }
 
     /* Same trick for the components.html hide-badge iframe — height=0 in

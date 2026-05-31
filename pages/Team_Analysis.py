@@ -22,12 +22,13 @@ render_page_chrome()
 _bootstrap_warm()
 render_nav("Team Analysis")
 
-# Playoff mode lives in the top nav bar (sticky across pages via session_state)
+# Playoff toggle sits on the title row, right-aligned (in-page, not the nav bar)
 playoff_mode = bool(st.session_state.get("playoff_mode", False))
-if playoff_mode:
-    st.title("Team Analysis (Playoffs)")
-else:
-    st.title("Team Analysis")
+_tcol, _pcol = st.columns([4, 1], vertical_alignment="bottom")
+with _tcol:
+    st.title("Team Analysis (Playoffs)" if playoff_mode else "Team Analysis")
+with _pcol:
+    render_playoff_toggle()
 
 st.caption(
     "Which front offices are getting the most value? "
@@ -36,9 +37,6 @@ st.caption(
     "Positive = overpaying (inefficient)."
 )
 
-_pf_spacer, _pf_col = st.columns([4, 1])
-with _pf_col:
-    render_playoff_toggle()
 render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────

@@ -28,16 +28,16 @@ st.set_page_config(page_title="Rankings", layout="wide")
 render_page_chrome()
 render_nav("Current Rankings")
 
-if st.session_state.get("playoff_mode", False):
-    st.title("Playoff Rankings")
+_pf_on = bool(st.session_state.get("playoff_mode", False))
+_tcol, _pcol = st.columns([4, 1], vertical_alignment="bottom")
+with _tcol:
+    st.title("Playoff Rankings" if _pf_on else "NBA Contract Value Rankings")
+with _pcol:
+    render_playoff_toggle()
+if _pf_on:
     st.caption("All scores computed from playoff games only. Salaries reflect the regular-season contract for that year.")
 else:
-    st.title("NBA Contract Value Rankings")
     st.caption("Every qualifying player this season, ranked by Barrett Score. Green = underpaid · Red = overpaid")
-
-_pf_spacer, _pf_col = st.columns([4, 1])
-with _pf_col:
-    render_playoff_toggle()
 
 st.markdown("""
 <style>

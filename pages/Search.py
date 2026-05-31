@@ -24,18 +24,18 @@ render_page_chrome()
 _bootstrap_warm()
 render_nav("Search Player")
 
-# Playoff mode lives in the top nav bar (sticky across pages via session_state)
+# Playoff toggle sits on the title row, right-aligned (in-page, not the nav bar)
 playoff_mode = bool(st.session_state.get("playoff_mode", False))
+_tcol, _pcol = st.columns([4, 1], vertical_alignment="bottom")
+with _tcol:
+    st.title("Search Player (Playoff Mode)" if playoff_mode else "Search Player")
+with _pcol:
+    render_playoff_toggle()
 if playoff_mode:
-    st.title("Search Player (Playoff Mode)")
     st.caption("Career arcs and per-season stats from postseason data only. Salaries reflect regular-season contracts.")
 else:
-    st.title("Search Player")
     st.caption("Find any player who's appeared in the league: career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
 
-_pf_spacer, _pf_col = st.columns([4, 1])
-with _pf_col:
-    render_playoff_toggle()
 render_barrett_score_explainer()
 
 # ── Search box ─────────────────────────────────────────────────────────────────
