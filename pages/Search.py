@@ -33,6 +33,7 @@ else:
     st.title("Search Player")
     st.caption("Find any player who's appeared in the league: career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
 
+render_playoff_toggle()
 render_barrett_score_explainer()
 
 # ── Search box ─────────────────────────────────────────────────────────────────

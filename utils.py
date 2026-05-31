@@ -1283,25 +1283,20 @@ COMMON_CSS = """
     .top-nav .home-link:hover { color: var(--fg-1); border: none; }
     .top-nav .divider { color: var(--nav-divider); font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 
-    /* ── Responsive nav: keep the links clear of the pinned top-right toggles ──
-       The theme + playoff toggles are position:fixed, so without this the nav
-       tabs slide under them at narrower widths. Reserve the toggle width, shrink
-       the tabs as the viewport narrows, and at tight widths drop the toggle TEXT
-       labels (the switch + hover tooltip stay) so every tab stays legible. */
-    .top-nav { padding-right: 17.5rem; }
-    @media (max-width: 1200px) {
+    /* ── Responsive nav: keep the links clear of the pinned theme button ──
+       The theme button is position:fixed top-right; reserve its (narrow) width
+       so the tabs don't slide under it, and shrink the tabs as the viewport
+       narrows so every tab stays legible. (Playoff mode is no longer pinned.) */
+    .top-nav { padding-right: 3.5rem; }
+    @media (max-width: 1100px) {
         .top-nav a, .top-nav .home-link {
-            padding-left: 0.55rem; padding-right: 0.55rem; font-size: 0.78rem;
+            padding-left: 0.5rem; padding-right: 0.5rem; font-size: 0.78rem;
         }
     }
-    @media (max-width: 1040px) {
-        .st-key-theme_nav_toggle label p,
-        .st-key-playoff_nav_toggle label p { display: none !important; }
-        .st-key-theme_nav_toggle { right: 4.4rem !important; }
-        .top-nav { padding-right: 7rem; }
+    @media (max-width: 940px) {
         .top-nav .divider { display: none; }
         .top-nav a, .top-nav .home-link {
-            padding-left: 0.42rem; padding-right: 0.42rem; font-size: 0.73rem;
+            padding-left: 0.4rem; padding-right: 0.4rem; font-size: 0.73rem;
         }
     }
     @media (max-width: 870px) {
@@ -1336,11 +1331,11 @@ COMMON_CSS = """
     }
     .st-key-playoff_nav_toggle:hover label p { color: var(--fg-1) !important; }
 
-    /* Theme (dark-mode) toggle — pinned just left of the playoff toggle. */
+    /* Theme (brightness) button — pinned to the far top-right of the nav. */
     .st-key-theme_nav_toggle {
         position: fixed !important;
         top: 0.45rem !important;
-        right: 10.25rem !important;
+        right: 1rem !important;
         z-index: 10001 !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -1550,30 +1545,24 @@ def render_nav(current: str) -> None:
         links += f'<a class="{css_class}" href="{url}" target="_top">{label}</a>'
     st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
 
-    # Theme + playoff toggles — keyed containers, pinned via CSS in COMMON_CSS.
-    # Theme sits to the left of playoff at the top-right of the nav.
+    # Theme button — keyed container, pinned to the top-right via CSS. The
+    # playoff toggle is NOT pinned here: it's rendered in-page (render_playoff_
+    # toggle) only on pages where playoff mode actually changes the content.
     with st.container(key="theme_nav_toggle"):
         render_theme_toggle()
-    with st.container(key="playoff_nav_toggle"):
-        st.toggle(
-            "Playoff mode",
-            value=st.session_state.get("playoff_mode", False),
-            key="playoff_mode",
-            help=_PLAYOFF_HELP,
-        )
 
 
 def render_playoff_toggle() -> bool:
-    """Shared playoff-mode toggle, backed by st.session_state.playoff_mode.
+    """In-page playoff-mode toggle, backed by st.session_state.playoff_mode.
 
-    Same key on every page — Streamlit allows reusing widget keys across
-    different page renders since each page is its own script execution. The
-    flag persists across page navigations because session_state.playoff_mode
-    survives between scripts in the same multi-page app.
+    Rendered near the top of the pages where playoff mode affects the content
+    (Rankings, Team Analysis, Search, Legacy) — NOT on pages it doesn't touch
+    (Contract Predictor, Free Agents, Home). setdefault + no value= avoids the
+    "set via Session State" warning. Returns True when playoff mode is on.
     """
+    st.session_state.setdefault("playoff_mode", False)
     return st.toggle(
         "Playoff mode",
-        value=st.session_state.get("playoff_mode", False),
         key="playoff_mode",
         help=_PLAYOFF_HELP,
     )

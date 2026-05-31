@@ -281,16 +281,10 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Theme + playoff toggles (pinned top-right via CSS, sticky via session_state)
+# Theme button pinned top-right via CSS. Playoff mode is NOT shown here — it
+# only appears on pages where it changes the content.
 with st.container(key="theme_nav_toggle"):
     render_theme_toggle()
-with st.container(key="playoff_nav_toggle"):
-    st.toggle(
-        "Playoff mode",
-        value=st.session_state.get("playoff_mode", False),
-        key="playoff_mode",
-        help=_PLAYOFF_HELP,
-    )
 
 # ── Hero — HoopsValue logo + tagline ────────────────────────────────────────
 # Streamlit serves static files via enableStaticServing in config.toml, but

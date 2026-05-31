@@ -36,6 +36,7 @@ st.caption(
     "Positive = overpaying (inefficient)."
 )
 
+render_playoff_toggle()
 render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────
