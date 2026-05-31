@@ -14,6 +14,7 @@ from utils import (
     fetch_player_positions_detailed, position_to_bucket,
     render_nav, render_page_chrome, html_table, stat_cards,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
+    value_color, gradient_points,
     PRE_1990_SALARY_NOTE,
 )
 from urllib.parse import quote
@@ -306,59 +307,18 @@ if len(selected) == 1:
     st.subheader(f"Career arc · {SCORE_LABEL} by season")
     fig = go.Figure()
 
-    # Color points by Barrett Score (red→gold→green)
-    def _val_color(v, vmin, vmax):
-        if vmax <= vmin: return "#f1c40f"
-        t = (v - vmin) / (vmax - vmin)
-        if t < 0.5:
-            r1, g1, b1 = 0xe7, 0x4c, 0x3c
-            r2, g2, b2 = 0xf1, 0xc4, 0x0f
-            f = t * 2
-        else:
-            r1, g1, b1 = 0xf1, 0xc4, 0x0f
-            r2, g2, b2 = 0x2e, 0xcc, 0x71
-            f = (t - 0.5) * 2
-        r = int(r1 + (r2 - r1) * f)
-        g = int(g1 + (g2 - g1) * f)
-        b = int(b1 + (b2 - b1) * f)
-        return f"rgb({r},{g},{b})"
-
+    # Color points by Barrett Score (red→gold→green), relative to this career.
     vmin, vmax = career[SCORE_COL].min(), career[SCORE_COL].max()
-    dot_colors = [_val_color(v, vmin, vmax) for v in career[SCORE_COL]]
+    dot_colors = [value_color(v, vmin, vmax) for v in career[SCORE_COL]]
 
     seasons = list(career["Season"])
     x_idx = list(range(len(seasons)))
     y_vals = list(career[SCORE_COL])
 
-    def _parse_rgb(c):
-        c = str(c).strip()
-        if c.startswith("#"):
-            c = c[1:]
-            return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16))
-        inside = c[c.find("(") + 1:c.find(")")]
-        p = inside.split(",")
-        return (int(float(p[0])), int(float(p[1])), int(float(p[2])))
-
-    # Gradient connecting "line": densely interpolate position + colour between
-    # each pair of seasons so the stroke fades from one dot's colour into the
-    # next. Drawn as a single fine-grained marker trace — marker.color *arrays*
-    # are left untouched by theme_fig, so the red→gold→green value palette
-    # survives in light mode (a single-colour line would get its gold swapped).
+    # Gradient connecting "line": fades from one dot's value-colour into the
+    # next (see utils.gradient_points for why it's a marker trace, not a line).
     if len(x_idx) >= 2:
-        SUB = 60
-        gx, gy, gc = [], [], []
-        for i in range(len(x_idx) - 1):
-            c0, c1 = _parse_rgb(dot_colors[i]), _parse_rgb(dot_colors[i + 1])
-            last = i == len(x_idx) - 2
-            for s in range(SUB + (1 if last else 0)):
-                t = s / SUB
-                gx.append(x_idx[i] + t)
-                gy.append(y_vals[i] + (y_vals[i + 1] - y_vals[i]) * t)
-                gc.append("rgb(%d,%d,%d)" % (
-                    round(c0[0] + (c1[0] - c0[0]) * t),
-                    round(c0[1] + (c1[1] - c0[1]) * t),
-                    round(c0[2] + (c1[2] - c0[2]) * t),
-                ))
+        gx, gy, gc = gradient_points(x_idx, y_vals, dot_colors)
         fig.add_trace(go.Scatter(
             x=gx, y=gy, mode="markers",
             marker=dict(size=4, color=gc, line=dict(width=0)),
@@ -402,8 +362,9 @@ if len(selected) == 1:
         margin=dict(l=50, r=30, t=20, b=50),
         xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title="",
                    tickmode="array", tickvals=x_idx, ticktext=seasons),
+        # Baseline at 0 → this player's peak (a little headroom for the star).
         yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title=SCORE_LABEL,
-                   tickformat=".1f"),
+                   tickformat=".1f", range=[min(0, vmin), vmax * 1.08]),
         hovermode="closest",
     )
     st.plotly_chart(theme_fig(fig), use_container_width=True, config={"displayModeBar": False})
@@ -907,6 +868,13 @@ else:
         )
         x_kwargs = dict(categoryorder="array", categoryarray=sorted_seasons)
 
+    # Shared y-axis: 0 → the tallest peak across the compared players (with a
+    # little headroom), so the group is fairly comparable on one scale.
+    _grp_max = max((careers[n][SCORE_COL].max() for n in valid_selected
+                    if not careers[n].empty), default=1)
+    _grp_min = min((careers[n][SCORE_COL].min() for n in valid_selected
+                    if not careers[n].empty), default=0)
+
     fig.update_layout(
         paper_bgcolor="rgba(0,0,0,0)",
         plot_bgcolor="rgba(0,0,0,0.15)",
@@ -916,7 +884,7 @@ else:
         xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title=x_title,
                    type=x_type, **x_kwargs),
         yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title=SCORE_LABEL,
-                   tickformat=".1f"),
+                   tickformat=".1f", range=[min(0, _grp_min), _grp_max * 1.08]),
         hovermode="closest",
         legend=dict(orientation="h", x=0.5, xanchor="center", y=-0.18, yanchor="top",
                     bgcolor="rgba(0,0,0,0)"),

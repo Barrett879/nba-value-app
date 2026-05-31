@@ -957,6 +957,55 @@ def theme_fig(fig):
     return fig
 
 
+def value_color(v, vmin, vmax):
+    """Red (career-low) → gold (mid) → green (career-high) for a score ``v``
+    within ``[vmin, vmax]``. Returns a ``"rgb(r,g,b)"`` string."""
+    if vmax <= vmin:
+        return "#f1c40f"
+    t = (v - vmin) / (vmax - vmin)
+    if t < 0.5:
+        (r1, g1, b1), (r2, g2, b2), f = (0xe7, 0x4c, 0x3c), (0xf1, 0xc4, 0x0f), t * 2
+    else:
+        (r1, g1, b1), (r2, g2, b2), f = (0xf1, 0xc4, 0x0f), (0x2e, 0xcc, 0x71), (t - 0.5) * 2
+    return "rgb(%d,%d,%d)" % (
+        int(r1 + (r2 - r1) * f), int(g1 + (g2 - g1) * f), int(b1 + (b2 - b1) * f))
+
+
+def _rgb_tuple(c):
+    """Parse ``"#rrggbb"`` or ``"rgb(r,g,b)"`` / ``"rgba(...)"`` → (r, g, b)."""
+    c = str(c).strip()
+    if c.startswith("#"):
+        c = c[1:]
+        return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16))
+    inside = c[c.find("(") + 1:c.find(")")]
+    p = inside.split(",")
+    return (int(float(p[0])), int(float(p[1])), int(float(p[2])))
+
+
+def gradient_points(x_idx, y_vals, colors, sub=60):
+    """Dense (xs, ys, css_colours) interpolating position *and* colour between
+    each consecutive node, for drawing a gradient 'line' as a fine marker trace.
+
+    A marker trace (not a line) is used on purpose: theme_fig leaves
+    ``marker.color`` *arrays* untouched, so the value palette survives the
+    light-mode yellow-swap (a single-colour line would get its gold rewritten).
+    """
+    xs, ys, cs = [], [], []
+    n = len(x_idx)
+    for i in range(n - 1):
+        c0, c1 = _rgb_tuple(colors[i]), _rgb_tuple(colors[i + 1])
+        last = i == n - 2
+        for s in range(sub + (1 if last else 0)):
+            t = s / sub
+            xs.append(x_idx[i] + (x_idx[i + 1] - x_idx[i]) * t)
+            ys.append(y_vals[i] + (y_vals[i + 1] - y_vals[i]) * t)
+            cs.append("rgb(%d,%d,%d)" % (
+                round(c0[0] + (c1[0] - c0[0]) * t),
+                round(c0[1] + (c1[1] - c0[1]) * t),
+                round(c0[2] + (c1[2] - c0[2]) * t)))
+    return xs, ys, cs
+
+
 def _persist_theme() -> None:
     """Write the toggle's new value to the URL so it survives navigation."""
     st.query_params["theme"] = "dark" if st.session_state.get("theme_dark") else "light"

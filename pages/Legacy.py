@@ -14,6 +14,7 @@ from utils import (
     fetch_player_career_all_seasons,
     render_nav, render_page_chrome, html_table, stat_cards,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
+    value_color, gradient_points,
 )
 
 
@@ -322,35 +323,60 @@ with tab_arc:
 
                 fig_arc = go.Figure()
 
-                # Shaded area under the line
+                # Value-coloured nodes (red career-low → gold → green career-high)
+                seasons   = arc_df["Season"].tolist()
+                x_idx     = list(range(len(seasons)))
+                y_vals    = arc_df["barrett_score"].tolist()
+                vmin, vmax = min(y_vals), max(y_vals)
+                dot_colors = [value_color(v, vmin, vmax) for v in y_vals]
+
+                # Theme-aware accents (the chart renders server-side, so it can't
+                # read CSS vars — pick light/dark values here so the dashed avg
+                # line + area don't vanish against a white canvas in light mode).
+                _dark = st.session_state.get("theme_dark", False)
+                _area_fill = "rgba(255,255,255,0.05)" if _dark else "rgba(20,22,40,0.05)"
+                _avg_line  = "rgba(255,255,255,0.30)" if _dark else "rgba(20,22,40,0.28)"
+                _avg_font  = "rgba(255,255,255,0.55)" if _dark else "rgba(20,22,40,0.55)"
+
+                # Shaded area under the curve (down to the 0 baseline)
                 fig_arc.add_trace(go.Scatter(
-                    x=arc_df["Season"].tolist() + arc_df["Season"].tolist()[::-1],
-                    y=arc_df["barrett_score"].tolist() + [0] * len(arc_df),
+                    x=x_idx + x_idx[::-1],
+                    y=y_vals + [0] * len(y_vals),
                     fill="toself",
-                    fillcolor="rgba(241,196,15,0.08)",
+                    fillcolor=_area_fill,
                     line=dict(color="rgba(0,0,0,0)"),
                     showlegend=False,
                     hoverinfo="skip",
                 ))
 
-                # Main line
+                # Gradient connecting "line" (fades between the dot colours)
+                if len(x_idx) >= 2:
+                    gx, gy, gc = gradient_points(x_idx, y_vals, dot_colors)
+                    fig_arc.add_trace(go.Scatter(
+                        x=gx, y=gy, mode="markers",
+                        marker=dict(size=4, color=gc, line=dict(width=0)),
+                        hoverinfo="skip", showlegend=False,
+                    ))
+
+                # Season nodes (carry the hover)
                 fig_arc.add_trace(go.Scatter(
-                    x=arc_df["Season"],
-                    y=arc_df["barrett_score"],
-                    mode="lines+markers",
-                    line=dict(color="#f1c40f", width=3),
-                    marker=dict(size=9, color="#f1c40f", line=dict(color="#fff", width=1.5)),
-                    name=arc_player,
+                    x=x_idx, y=y_vals,
+                    mode="markers",
+                    marker=dict(size=9, color=dot_colors,
+                                line=dict(color="#14142a", width=1.5)),
+                    customdata=seasons,
                     hovertemplate=(
-                        "<b>%{x}</b><br>"
+                        "<b>%{customdata}</b><br>"
                         "Score: %{y:.2f}<br>"
                         "<extra></extra>"
                     ),
+                    name=arc_player,
                 ))
 
                 # Peak annotation
+                _peak_x = seasons.index(peak_row["Season"]) if peak_row["Season"] in seasons else 0
                 fig_arc.add_annotation(
-                    x=peak_row["Season"],
+                    x=_peak_x,
                     y=peak_row["barrett_score"],
                     text=f"  Peak: {peak_row['barrett_score']:.1f}",
                     showarrow=False,
@@ -363,10 +389,10 @@ with tab_arc:
                 fig_arc.add_hline(
                     y=avg_score,
                     line_dash="dash",
-                    line_color="rgba(255,255,255,0.3)",
+                    line_color=_avg_line,
                     annotation_text=f"Career avg {avg_score:.1f}",
                     annotation_position="right",
-                    annotation_font_color="rgba(255,255,255,0.5)",
+                    annotation_font_color=_avg_font,
                 )
 
                 n_seasons = len(arc_df)
@@ -380,15 +406,17 @@ with tab_arc:
                     height=420,
                     margin=dict(t=50, b=60, r=120),
                     xaxis=dict(
-                        type="category",                          # prevent date parsing
-                        range=[-0.5, n_seasons - 0.5],           # show every season
-                        categoryorder="array",
-                        categoryarray=arc_df["Season"].tolist(),  # preserve chron order
+                        range=[-0.5, n_seasons - 0.5],            # show every season
+                        tickmode="array",
+                        tickvals=x_idx,
+                        ticktext=seasons,                         # preserve chron order
                         gridcolor="rgba(255,255,255,0.07)",
                         tickangle=-40,
                         tickfont=dict(size=11),
                     ),
-                    yaxis=dict(gridcolor="rgba(255,255,255,0.1)", tickformat=".1f"),
+                    # Baseline 0 → this player's peak (headroom for the label).
+                    yaxis=dict(gridcolor="rgba(255,255,255,0.1)", tickformat=".1f",
+                               range=[min(0, vmin), vmax * 1.10]),
                     showlegend=False,
                 )
                 st.plotly_chart(theme_fig(fig_arc), use_container_width=True, config={"displayModeBar": False})
