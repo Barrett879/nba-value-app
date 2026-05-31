@@ -2162,6 +2162,7 @@ else:
 # computed LIVE — the player's Barrett vs each team's depth chart at his position
 # (build_rosters from current_ranked); affordability comes from the CSV. Fully
 # wrapped in try/except so a data/import hiccup can never break the page.
+_ts_about_note = None   # suitors methodology blurb → rendered in the About expander
 try:
     import team_suitors as _ts
     _ts_land = _ts.load_team_landscape()
@@ -2236,13 +2237,12 @@ try:
                 f'Likely suitors — projected offers (model value ${predicted_M:.0f}M)</div>{_ts_rows}</div>',
                 unsafe_allow_html=True,
             )
-            # Breathing room so the caption below clears the suitors box (its
-            # own 0.2rem bottom margin left them nearly touching).
-            st.markdown("<div style='height:0.7rem'></div>", unsafe_allow_html=True)
+            # Explanatory blurb is rendered in the About expander below (keeps
+            # the suitors card itself clean) — see _ts_about_note.
             _asof = str(getattr(_ts_land, "attrs", {}).get("as_of", "")).strip()
             _fa_label = ("restricted FA — his team can match any offer"
                          if _is_rfa else "unrestricted FA")
-            st.caption(
+            _ts_about_note = (
                 f"Experimental — {_fa_label}. Each team's number is the model's value "
                 "scaled by fit (starter vs depth) and capped by their cap room / exception "
                 "(or Bird rights). Ranked by a model trained on 1,800+ historical signings "
@@ -2268,6 +2268,11 @@ with st.expander("About this prediction"):
         "are noisier — the eventual salary lands within ~30% of the projection "
         "about half the time — so read those as a range, not a precise figure."
     )
+
+    # Likely-suitors methodology — only when that (experimental) section
+    # actually rendered above for this player.
+    if _ts_about_note:
+        st.markdown(f"### Likely suitors\n\n{_ts_about_note}")
 
     # ── Plain-English explanation (player-specific) ─────────────────────────
     # Tailored bullets describing what drove the dollar amount and how
