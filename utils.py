@@ -1224,6 +1224,10 @@ COMMON_CSS = """
     /* A touch more vertical breathing room between stacked elements (the
        toggle wrappers keep their own gap:0 !important and are unaffected). */
     [data-testid="stVerticalBlock"] { gap: 1.7rem; }
+    /* The expander is a bordered "box" with no margin of its own, so whatever
+       follows (e.g. the Season selector) sits flush against it. Give it clear
+       separation below. */
+    [data-testid="stExpander"] { margin-bottom: 1.6rem; }
     #MainMenu { visibility: hidden; }
     header { visibility: hidden; }
     footer { visibility: hidden; }
