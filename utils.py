@@ -1223,7 +1223,7 @@ COMMON_CSS = """
     }
     /* A touch more vertical breathing room between stacked elements (the
        toggle wrappers keep their own gap:0 !important and are unaffected). */
-    [data-testid="stVerticalBlock"] { gap: 1.35rem; }
+    [data-testid="stVerticalBlock"] { gap: 1.7rem; }
     #MainMenu { visibility: hidden; }
     header { visibility: hidden; }
     footer { visibility: hidden; }
