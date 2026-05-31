@@ -51,6 +51,7 @@ from utils import (
     build_ranked_projected, fetch_league_stats, fetch_advanced_stats,
     fetch_bref_positions, fetch_player_positions_detailed, position_to_bucket,
     render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
+    html_table,
     # Calibration constants — single source of truth in utils
     SALARY_CAP_M, cap_dollars,
     CONTRACT_POSITION_MULTIPLIERS as POSITION_MULTIPLIERS,
@@ -2089,8 +2090,24 @@ else:
             "Sign-yr Score":  comps_with_ctx["barrett_score"].round(1).values,
             "Signed for":     [_fmt_money(v) for v in comps_with_ctx["salary_curr"]],
         })
-        st.dataframe(comp_disp, use_container_width=True, hide_index=True,
-                     height=min(400, 60 + len(comp_disp) * 35))
+        html_table(
+            comp_disp,
+            formatters={
+                "Age then":      lambda v: str(int(v)),
+                "Career Score":  lambda v: f"{v:.1f}",
+                "Sign-yr Score": lambda v: f"{v:.1f}",
+            },
+            aligns={"Age then": "right", "Career Score": "right",
+                    "Sign-yr Score": "right", "Signed for": "right"},
+            numeric={"Age then", "Career Score", "Sign-yr Score"},
+            helps={
+                "Career Score": "Trailing-weighted Barrett (last 3 healthy years, 50/30/20).",
+                "Sign-yr Score": "Barrett Score in the season they signed.",
+                "Signed for": "Actual deal in its signing year (not cap-adjusted).",
+                "Context": "Supermax · Free-agent raise · Rookie extension · Paycut.",
+            },
+            height=min(440, 60 + len(comp_disp) * 38),
+        )
 
         st.caption(
             f"\"Signed for\" shows each comp's ACTUAL deal in its signing year; the "

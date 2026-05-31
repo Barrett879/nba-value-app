@@ -843,12 +843,15 @@ def inject_theme() -> None:
     st.session_state['theme_dark'] from it on a fresh session, and
     _THEME_PERSIST_SCRIPT copies it onto every internal link.
     """
-    # Seed from the URL only on a brand-new session (before the toggle widget
-    # claims the key) so navigating between tabs keeps the chosen theme.
+    # Initialise the theme once per session (before the toggle widget claims the
+    # key) from the URL ?theme=, else the default. Setting it here AND passing a
+    # widget value= would make Streamlit warn, so render_theme_toggle() relies
+    # purely on this session_state value (no value=).
     if "theme_dark" not in st.session_state:
         qp = st.query_params.get("theme")
-        if qp in ("dark", "light"):
-            st.session_state["theme_dark"] = (qp == "dark")
+        st.session_state["theme_dark"] = (
+            (qp == "dark") if qp in ("dark", "light") else THEME_DEFAULT_DARK
+        )
     st.markdown(THEME_BASE_CSS, unsafe_allow_html=True)
     if not st.session_state.get("theme_dark", THEME_DEFAULT_DARK):
         st.markdown(THEME_LIGHT_CSS, unsafe_allow_html=True)
@@ -898,9 +901,10 @@ def render_theme_toggle() -> bool:
     you navigate between tabs (each tab is a fresh full-reload session).
     Returns True when dark mode is active.
     """
+    # No value= — inject_theme() has already initialised st.session_state
+    # ['theme_dark'], and passing both would trigger a Streamlit warning.
     return st.toggle(
         "Dark mode",
-        value=st.session_state.get("theme_dark", THEME_DEFAULT_DARK),
         key="theme_dark",
         help="Switch between the light and dark themes.",
         on_change=_persist_theme,
