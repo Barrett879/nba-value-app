@@ -1221,6 +1221,9 @@ COMMON_CSS = """
         padding-top: 3.8rem !important;
         max-width: 100%;
     }
+    /* A touch more vertical breathing room between stacked elements (the
+       toggle wrappers keep their own gap:0 !important and are unaffected). */
+    [data-testid="stVerticalBlock"] { gap: 1.35rem; }
     #MainMenu { visibility: hidden; }
     header { visibility: hidden; }
     footer { visibility: hidden; }

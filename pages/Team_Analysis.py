@@ -174,7 +174,7 @@ st.caption(
 )
 
 st.divider()
-drill_team = st.selectbox("Drill into a team", [""] + sorted(df["Team"].unique().tolist()),
+drill_team = st.selectbox("Team", [""] + sorted(df["Team"].unique().tolist()),
                           key="team_drill")
 if drill_team:
     team_players = df[df["Team"] == drill_team].copy()
