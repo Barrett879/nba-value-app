@@ -16,7 +16,7 @@ from utils import (
     fetch_dlebron, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
-    color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary,
+    color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary, html_table,
     render_nav, render_page_chrome,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
@@ -365,6 +365,42 @@ st.divider()
 # ── Rookie-scale style helper (closes over _rookie_scale) ──────────────────────
 def _style_rookie_salary(row):
     return style_rookie_salary(row, _rookie_scale)
+
+
+# ── Token-based cell styles for the themed html_table (follow light/dark) ──────
+def _hsty_rankdiff(v, _row):
+    try:
+        n = float(v)
+    except (TypeError, ValueError):
+        return ""
+    if n > 20:  return "color:var(--value-good);font-weight:700"
+    if n > 0:   return "color:var(--value-good-s)"
+    if n < -20: return "color:var(--value-bad);font-weight:700"
+    if n < 0:   return "color:var(--value-bad-s)"
+    return ""
+
+def _hsty_delta(v, _row):
+    try:
+        n = float(v)
+    except (TypeError, ValueError):
+        return ""
+    if n > 20:  return "color:var(--value-bad);font-weight:700"
+    if n > 5:   return "color:var(--value-bad-s)"
+    if n < -20: return "color:var(--value-good);font-weight:700"
+    if n < -5:  return "color:var(--value-good-s)"
+    return ""
+
+def _hsty_next(v, _row):
+    s = str(v)
+    if s == "—":   return "color:var(--fg-6)"
+    if " TO" in s: return "color:var(--orange);font-weight:700"
+    if " PO" in s: return "color:var(--blue);font-weight:700"
+    return ""
+
+def _hsty_salary(_v, row):
+    if normalize(str(row.get("Player", ""))) in _rookie_scale:
+        return "color:var(--purple);font-weight:600"
+    return ""
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Rankings content
@@ -888,48 +924,48 @@ else:
     if not advanced:
         display_fmt = display_fmt[["#", "Player", "Team", "Barrett Score", "Salary", "Proj. Salary", "Δ Market", "Next $"]]
 
-    style = display_fmt.style
-    if "Rank Diff" in display_fmt.columns:
-        style = style.map(color_rank_diff, subset=["Rank Diff"])
-    if "Δ Market" in display_fmt.columns:
-        style = style.map(color_value_diff, subset=["Δ Market"])
-    if "Next $" in display_fmt.columns:
-        style = style.map(color_next_contract, subset=["Next $"])
-    style = style.apply(_style_rookie_salary, axis=1)
-
-    col_config = {
-        "Next $":        st.column_config.TextColumn("Next $",
-            help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = unrestricted free agent.",
-            width="medium"),
-        "Barrett Score": st.column_config.NumberColumn(format="%.2f",
-            help="Base Score × Availability Multiplier."),
-        "Salary":        st.column_config.NumberColumn(format="$%.2fM",
-            help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
-        "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM",
-            help="Salary earned by whoever holds the same rank by pay."),
-        "Δ Market":      st.column_config.NumberColumn(format="$%.2fM",
-            help="Actual − Projected. Positive (red) = overpaid. Negative (green) = underpaid."),
-    }
-    if advanced:
-        col_config.update({
-            "GP":         st.column_config.NumberColumn(format="%d", help="Games played this season."),
-            "MPG":        st.column_config.NumberColumn(format="%.2f", help="Minutes per game."),
-            "Base Score": st.column_config.NumberColumn(format="%.2f",
-                help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj."),
-            "Avail ×":    st.column_config.NumberColumn(format="%.3f",
-                help="0.30 + 0.70 × √(min(Total MIN / 2500, 1)). Range 0.30–1.00."),
-            "Score Rank": st.column_config.NumberColumn(help="Rank by Barrett Score."),
-            "Salary Rank":st.column_config.NumberColumn(help="Rank by actual salary."),
-            "Rank Diff":  st.column_config.NumberColumn(help="Salary Rank − Score Rank. Positive = underpaid."),
-            "D-LEBRON":   st.column_config.NumberColumn(format="%.2f",
-                help="Points prevented per game vs average. From bball-index.com."),
-            "TS%":        st.column_config.NumberColumn(format="%.1f%%",
-                help="True Shooting %. League avg ~57%."),
-        })
-
-    table_height = min(600, max(100, len(display_fmt) * 35 + 40))
-    st.dataframe(style, column_config=col_config,
-                 use_container_width=True, hide_index=True, height=table_height)
+    # Superset of formatters/styles — html_table only applies those whose column
+    # is actually present, so basic + advanced modes both work from one spec.
+    _r_num = {"#", "GP", "MPG", "Base Score", "Avail ×", "Barrett Score",
+              "Score Rank", "Salary", "Proj. Salary", "Δ Market", "Salary Rank",
+              "Rank Diff", "D-LEBRON", "TS%"}
+    html_table(
+        display_fmt,
+        formatters={
+            "GP":            lambda v: str(int(v)),
+            "MPG":           lambda v: f"{v:.2f}",
+            "Base Score":    lambda v: f"{v:.2f}",
+            "Avail ×":       lambda v: f"{v:.3f}",
+            "Barrett Score": lambda v: f"{v:.2f}",
+            "Score Rank":    lambda v: str(int(v)),
+            "Salary":        lambda v: f"${v:.2f}M",
+            "Proj. Salary":  lambda v: f"${v:.2f}M",
+            "Δ Market":      lambda v: f"${v:.2f}M",
+            "Salary Rank":   lambda v: str(int(v)),
+            "Rank Diff":     lambda v: f"{int(v):+d}",
+            "D-LEBRON":      lambda v: f"{v:.2f}",
+            "TS%":           lambda v: f"{v:.1f}%",
+        },
+        styles={
+            "Rank Diff": _hsty_rankdiff,
+            "Δ Market":  _hsty_delta,
+            "Next $":    _hsty_next,
+            "Salary":    _hsty_salary,
+        },
+        aligns={c: "right" for c in _r_num},
+        numeric=_r_num,
+        helps={
+            "Next $": "Next season salary. White = guaranteed · orange (TO) = team option · blue (PO) = player option · — = UFA.",
+            "Barrett Score": "Base Score × Availability Multiplier.",
+            "Salary": "Player's actual salary this season. Purple = rookie-scale contract.",
+            "Proj. Salary": "Salary earned by whoever holds the same rank by pay.",
+            "Δ Market": "Actual − Projected. Positive (red) = overpaid; negative (green) = underpaid.",
+            "Rank Diff": "Salary Rank − Score Rank. Positive (green) = underpaid.",
+            "D-LEBRON": "Points prevented per game vs average (bball-index.com).",
+            "TS%": "True Shooting %. League avg ~57%.",
+        },
+        height=min(620, max(140, len(display_fmt) * 38 + 46)),
+    )
     dl_col_r, cap_col_r = st.columns([1, 5])
     with dl_col_r:
         st.download_button(
