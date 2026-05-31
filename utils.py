@@ -971,7 +971,8 @@ _HV_SORT_SCRIPT = """
 
 
 def html_table(df, *, formatters=None, styles=None, aligns=None,
-               numeric=None, helps=None, height=560, row_style=None):
+               numeric=None, helps=None, height=560, row_style=None,
+               max_rows=1000):
     """Render a DataFrame as a themed, sortable HTML table (follows light/dark).
 
     formatters: {col: value -> display str}          (default str(value))
@@ -980,6 +981,8 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     numeric:    iterable of cols sorted by raw numeric value
     helps:      {col: tooltip text}                   (header title=)
     row_style:  row_dict -> css str for the <tr> (e.g. peak-season highlight)
+    max_rows:   cap rendered rows (native grids virtualise; raw HTML doesn't, so
+                very long tables would bloat the DOM). A note row flags the cap.
     """
     import html
     formatters = formatters or {}
@@ -998,8 +1001,10 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
             f'<th data-sortable="1"{num}{tip} style="text-align:{al}">'
             f'{html.escape(str(c))}<span class="sort-ind"></span></th>'
         )
+    n_total = len(df)
+    df_view = df.head(max_rows) if (max_rows and n_total > max_rows) else df
     rows_html = []
-    for _, row in df.iterrows():
+    for _, row in df_view.iterrows():
         rd = row.to_dict()
         tds = []
         for c in cols:
@@ -1026,6 +1031,12 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
         rstyle = row_style(rd) if row_style else ""
         tr_open = f'<tr style="{rstyle}">' if rstyle else "<tr>"
         rows_html.append(tr_open + "".join(tds) + "</tr>")
+    if max_rows and n_total > max_rows:
+        rows_html.append(
+            f'<tr><td colspan="{len(cols)}" style="text-align:center;'
+            f'color:var(--fg-5);font-style:italic;padding:0.6rem">'
+            f'Showing top {max_rows:,} of {n_total:,} rows</td></tr>'
+        )
     st.markdown(
         f'<div class="hv-table-wrap" style="max-height:{height}px">'
         f'<table class="hv-table"><thead><tr>{"".join(head)}</tr></thead>'
