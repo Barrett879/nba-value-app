@@ -1632,13 +1632,16 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     # Clamp to [1, 100] so a prediction at the player's max pegs the right edge.
     p = lambda v: max(1.0, min(100.0, (v - bar_lo) / span * 100))
     bl, br, mp = p(low_M), p(high_M), p(model_M)
-    sec, legend = "", '<span style="color:var(--fg-1);">│</span> model'
+    # The model's $ value is labelled directly under the white marker (see
+    # `val`), so it's no longer carried in the legend.
+    legend_parts = []
+    sec = ""
     if secondary_M is not None:
         sp = p(secondary_M)
         sec = (f'<div style="position:absolute; left:{sp}%; top:50%; width:12px; height:12px;'
                f' background:{secondary_color}; border:2px solid var(--panel-solid); border-radius:50%;'
                f' transform:translate(-50%,-50%); z-index:2;"></div>')
-        legend += f'  ·  <span style="color:{secondary_color};">●</span> {secondary_label}'
+        legend_parts.append(f'<span style="color:{secondary_color};">●</span> {secondary_label}')
     # Tertiary marker: the player's current salary, drawn as a hollow ring so
     # it reads as "where they are now" vs the model/market markers (the raise).
     ter = ""
@@ -1647,7 +1650,8 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
         ter = (f'<div style="position:absolute; left:{tp}%; top:50%; width:11px; height:11px;'
                f' background:var(--panel-solid); border:2px solid {tertiary_color}; border-radius:50%;'
                f' transform:translate(-50%,-50%); z-index:1;"></div>')
-        legend += f'  ·  <span style="color:{tertiary_color};">○</span> {tertiary_label}'
+        legend_parts.append(f'<span style="color:{tertiary_color};">○</span> {tertiary_label}')
+    legend = '  ·  '.join(legend_parts)
     # Endpoint labels: league min/max when the scale is fixed (tagged so they
     # aren't misread as the player's own range), else the player's own band.
     if fixed:
@@ -1660,6 +1664,19 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     # CommonMark treats as a blank line that TERMINATES the surrounding HTML
     # block — Streamlit would then render the rest of the hero as literal text.
     # Concatenation keeps the whole bar on one line and sidesteps that bug.
+    # Value label sitting just under the white model marker (kept inside the
+    # track even when the marker pegs an edge).
+    if mp >= 85:
+        _vx = f'right:{max(100 - mp, 0):.1f}%;'
+    elif mp <= 15:
+        _vx = f'left:{mp:.1f}%;'
+    else:
+        _vx = f'left:{mp:.1f}%; transform:translateX(-50%);'
+    val = (
+        f'<div style="position:absolute; {_vx} top:14px; white-space:nowrap; '
+        f'font-size:0.82rem; font-weight:800; color:var(--fg-1); z-index:4;">'
+        f'${model_M:.1f}M</div>'
+    )
     track = (
         f'<div style="position:relative; height:8px; border-radius:5px; '
         f'background:var(--hairline);">'
@@ -1670,11 +1687,12 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
         f'<div style="position:absolute; left:{mp:.1f}%; top:-5px; width:3px; height:18px; '
         f'background:var(--fg-1); border-radius:2px; transform:translateX(-50%); '
         f'box-shadow:0 0 10px rgba(255,255,255,0.75); z-index:3;"></div>'
+        f'{val}'
         f'</div>'
     )
     labels = (
         f'<div style="display:flex; justify-content:space-between; align-items:center; '
-        f'font-size:0.7rem; color:var(--fg-5); margin-top:0.5rem;">'
+        f'font-size:0.7rem; color:var(--fg-5); margin-top:1.6rem;">'
         f'<span>{lab_lo}</span>'
         f'<span style="color:var(--fg-4);">{legend}</span>'
         f'<span>{lab_hi}</span>'
