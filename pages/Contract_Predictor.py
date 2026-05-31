@@ -1735,6 +1735,26 @@ _caption_chip = (
     if _model_caption else ''
 )
 
+# Raise-vs-current callout (design refresh) — projected $ vs the current/last
+# deal, the headline takeaway. Green if it's a raise, red if a pay cut. Sits to
+# the right of the big projection in a split figure row.
+_raise_html = ""
+if _prev_sal_M and _prev_sal_M > 0:
+    _delta_M = predicted_M - _prev_sal_M
+    _pct = (predicted_M / _prev_sal_M - 1) * 100
+    _up = _delta_M >= 0
+    _raise_html = (
+        f'<div style="text-align:right; line-height:1.15;">'
+        f'<div style="font-size:1.25rem; font-weight:800;'
+        f' color:{"var(--value-good)" if _up else "var(--value-bad)"};">'
+        f'{"▲" if _up else "▼"} {"+" if _up else "−"}${abs(_delta_M):.1f}M'
+        f'<span style="font-size:0.7rem; color:var(--fg-4); font-weight:600;">/yr</span>'
+        f'</div>'
+        f'<div style="font-size:0.72rem; color:var(--fg-4); margin-top:0.15rem;">'
+        f'{"+" if _up else ""}{_pct:.0f}% vs current deal (${_prev_sal_M:.1f}M)'
+        f'</div></div>'
+    )
+
 # Score chip rendered next to the player name in the hero title. Pre-built
 # here so the f-string template doesn't have any conditional logic that
 # could trigger the markdown blank-line bug.
@@ -1827,9 +1847,8 @@ if _market_median is not None:
       <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
         {_player_meta_line}
       </div>{_signing_html}
-      <div style="margin-top:1.05rem; line-height:0.9;">
-        <span style="font-size:3.4rem; font-weight:800; color:var(--fg-1);
-                     letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
+      <div style="margin-top:1.05rem; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;">
+        <div style="line-height:0.9;"><span style="font-size:3.4rem; font-weight:800; color:var(--fg-1); letter-spacing:-0.02em;">${predicted_M:.1f}M</span><span style="font-size:0.95rem; color:var(--fg-4); font-weight:600;"> /yr</span>{_caption_chip}</div>{_raise_html}
       </div>
       {_confidence_bar_html(predicted_M, low_M, high_M, market_M, "#16d4c1", scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
       <div style="margin-top:0.95rem; font-size:0.82rem; color:var(--fg-4);">
@@ -1883,9 +1902,8 @@ else:
           <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
             {_player_meta_line}
           </div>{_signing_html}
-          <div style="margin-top:1.05rem; line-height:0.9;">
-            <span style="font-size:3.4rem; font-weight:800; color:var(--fg-1);
-                         letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
+          <div style="margin-top:1.05rem; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;">
+            <div style="line-height:0.9;"><span style="font-size:3.4rem; font-weight:800; color:var(--fg-1); letter-spacing:-0.02em;">${predicted_M:.1f}M</span><span style="font-size:0.95rem; color:var(--fg-4); font-weight:600;"> /yr</span>{_caption_chip}</div>{_raise_html}
           </div>
           {_confidence_bar_html(predicted_M, low_M, high_M, cur_sal_M, "#16d4c1", "current", scale_min_M=_scale_min_M, scale_max_M=_scale_max_M)}
           <div style="margin-top:0.95rem; font-size:0.82rem; color:var(--fg-4);">
@@ -1914,9 +1932,8 @@ else:
           <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
             {_player_meta_line}
           </div>{_signing_html}
-          <div style="margin-top:1.05rem; line-height:0.9;">
-            <span style="font-size:3.4rem; font-weight:800; color:var(--fg-1);
-                         letter-spacing:-0.02em;">${predicted_M:.1f}M</span>{_caption_chip}
+          <div style="margin-top:1.05rem; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;">
+            <div style="line-height:0.9;"><span style="font-size:3.4rem; font-weight:800; color:var(--fg-1); letter-spacing:-0.02em;">${predicted_M:.1f}M</span><span style="font-size:0.95rem; color:var(--fg-4); font-weight:600;"> /yr</span>{_caption_chip}</div>{_raise_html}
           </div>
           {_confidence_bar_html(predicted_M, low_M, high_M, scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
           <div style="margin-top:0.95rem; font-size:0.78rem; color:var(--fg-4);">
