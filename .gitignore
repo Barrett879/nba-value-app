@@ -33,3 +33,6 @@ static/hf_*.png
 
 # Design handoff (reference only — pull assets into static/ as needed)
 design_handoff_hoopsvalue_refresh/
+
+# Claude Code local dev config
+.claude/

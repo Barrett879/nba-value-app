@@ -897,12 +897,19 @@ def theme_fig(fig):
                  tickfont_color=font, title_font_color=font)
         # Bright golds wash out on white — swap chart line/marker/annotation
         # yellows for a dark amber that reads on a light background.
-        YELLOW = {"#f1c40f", "#ecbe1a", "#e3b121", "#f0b35b"}
+        # (includes the CSS named "yellow", not just hex.)
+        YELLOW = {"#f1c40f", "#ecbe1a", "#e3b121", "#f0b35b", "yellow"}
         GOLD_LT = "#a87400"
         # Dark marker outlines (picked for dark mode) read as black rings on
         # white — drop them to a white outline so the dots are clean.
+        # (includes the CSS named "black", not just hex.)
         DARK_OUTLINE = {"#14142a", "#1a1a2e", "#0a0a14", "#15171d", "#2a2a2a",
-                        "#000000", "#000"}
+                        "#000000", "#000", "black"}
+        # Peak-season stars are authored white-fill-on-dark; on the pale canvas
+        # a white star (whose outline we've also just whitened) disappears.
+        # Invert them — dark navy fill + white outline — mirroring dark mode.
+        WHITE_FILL = {"white", "#fff", "#ffffff"}
+        STAR_FILL_LT = "#14142a"
 
         def _fix(c):
             if not isinstance(c, str):
@@ -924,6 +931,17 @@ def theme_fig(fig):
                 if _ml is not None and getattr(_ml, "color", None):
                     if str(_ml.color).lower().replace(" ", "") in DARK_OUTLINE:
                         _ml.color = "#ffffff"
+                # A white-filled star marker would vanish on the light canvas
+                # (its outline is now white too). Flip it to a dark navy fill so
+                # the peak reads — the inverse of the dark-mode white star.
+                _sym = getattr(tr.marker, "symbol", None) if getattr(tr, "marker", None) is not None else None
+                if _sym is not None and "star" in str(_sym):
+                    if str(getattr(tr.marker, "color", "")).lower().replace(" ", "") in WHITE_FILL:
+                        tr.marker.color = STAR_FILL_LT
+                    if _ml is not None:
+                        _ml.color = "#ffffff"
+                        if not getattr(_ml, "width", None):
+                            _ml.width = 1.5
                 if getattr(tr, "textfont", None) is not None and getattr(tr.textfont, "color", None):
                     tr.textfont.color = _fix(tr.textfont.color)
             except Exception:
