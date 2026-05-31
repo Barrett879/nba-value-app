@@ -1535,13 +1535,17 @@ if not selected:
     st.stop()
 
 # ── Compute prediction ───────────────────────────────────────────────────────
-features = get_player_features(selected, CURRENT_SEASON)
-if features is None:
-    st.warning(f"Couldn't find {selected} in {CURRENT_SEASON} data.")
-    st.stop()
-
-prediction = predict_contract(features)  # stats: CURRENT_SEASON → contract: CONTRACT_SEASON
-caveats = detect_caveats(features)
+# Wrapped in a spinner: get_player_features + predict_contract are cached with
+# show_spinner=False, so on a COLD cache the page would otherwise sit blank for
+# the whole data fetch (reads as "broken"). The spinner makes it clear it's
+# working while the projection is built.
+with st.spinner(f"Projecting {selected}'s next contract…"):
+    features = get_player_features(selected, CURRENT_SEASON)
+    if features is None:
+        st.warning(f"Couldn't find {selected} in {CURRENT_SEASON} data.")
+        st.stop()
+    prediction = predict_contract(features)  # stats: CURRENT_SEASON → contract: CONTRACT_SEASON
+    caveats = detect_caveats(features)
 
 # Compute comparables here too — we need their median for the hero card
 # so the "Model vs. Market" framing is visible up top, not buried below.
