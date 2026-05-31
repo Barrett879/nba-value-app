@@ -12,7 +12,7 @@ from utils import (
     get_all_player_names, fetch_player_full_career,
     fetch_season_component_distribution, fetch_position_peer_distribution,
     fetch_player_positions_detailed, position_to_bucket,
-    render_nav, render_page_chrome, html_table,
+    render_nav, render_page_chrome, html_table, stat_cards,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
@@ -289,14 +289,13 @@ if len(selected) == 1:
     st.caption(f"**{career_yrs}** · {n_seasons} seasons · {total_games:,} games · "
                f"Teams: {' → '.join(teams)}")
 
-    c1, c2, c3, c4, c5 = st.columns(5)
-    c1.metric(f"Career Avg {SCORE_LABEL}", f"{career_avg_score:.1f}")
-    c2.metric("Career PPG",                f"{career_avg_pts:.1f}")
-    c3.metric("Career APG",                f"{career_avg_ast:.1f}")
-    c4.metric("Career RPG",                f"{career_avg_reb:.1f}")
-    c5.metric("Peak Season",
-              f"{best_season[SCORE_COL]:.1f}",
-              f"{best_season['Season']}")
+    stat_cards([
+        (f"Career Avg {SCORE_LABEL}", f"{career_avg_score:.1f}", "var(--accent-teal)"),
+        ("Career PPG", f"{career_avg_pts:.1f}", "var(--accent-red)"),
+        ("Career APG", f"{career_avg_ast:.1f}", "var(--orange)"),
+        ("Career RPG", f"{career_avg_reb:.1f}", "var(--blue)"),
+        ("Peak Season", f"{best_season[SCORE_COL]:.1f}", "var(--gold)", best_season['Season']),
+    ])
 
     st.divider()
 

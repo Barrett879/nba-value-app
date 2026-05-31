@@ -1045,6 +1045,26 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     )
 
 
+def stat_cards(items):
+    """Render a row of colour-accented summary stat cards (themed light/dark).
+
+    items: list of (label, value, color_css[, sub]) tuples, where color_css is
+    a token like 'var(--accent-teal)'. Optional 4th element is a small sub-line.
+    """
+    import html
+    out = []
+    for it in items:
+        label, value, color = it[0], it[1], it[2]
+        sub = it[3] if len(it) > 3 else ""
+        sub_html = f'<div class="hv-stat-s">{html.escape(str(sub))}</div>' if sub else ""
+        out.append(
+            f'<div class="hv-stat" style="--c:{color}">'
+            f'<div class="hv-stat-v">{html.escape(str(value))}</div>'
+            f'<div class="hv-stat-l">{html.escape(str(label))}</div>{sub_html}</div>'
+        )
+    st.markdown(f'<div class="hv-stats">{"".join(out)}</div>', unsafe_allow_html=True)
+
+
 COMMON_CSS = """
 <style>
     /* Theme tokens (:root) are injected separately by inject_theme() so the
@@ -1244,6 +1264,20 @@ COMMON_CSS = """
     [data-testid="stAlertContainer"] {
         margin-top: 0.85rem !important;
     }
+
+    /* Colour-accented stat cards (utils.stat_cards) — themed summary metrics. */
+    .hv-stats { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.3rem 0 0.5rem; }
+    .hv-stat {
+        flex:1 1 0; min-width:120px; background:var(--panel-solid);
+        border:1px solid var(--panel-line); border-top:3px solid var(--c);
+        border-radius:10px; padding:0.85rem 0.7rem 0.75rem; text-align:center;
+        box-shadow:var(--shadow-card); transition:transform .12s ease;
+    }
+    .hv-stat:hover { transform:translateY(-2px); }
+    .hv-stat-v { font-size:1.7rem; font-weight:800; line-height:1.05; color:var(--c); }
+    .hv-stat-l { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;
+                 color:var(--fg-4); margin-top:0.4rem; font-weight:600; }
+    .hv-stat-s { font-size:0.7rem; color:var(--fg-5); margin-top:0.2rem; }
 </style>
 """
 

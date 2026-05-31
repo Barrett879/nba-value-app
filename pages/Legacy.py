@@ -12,7 +12,7 @@ from utils import (
     normalize,
     build_all_seasons_combined, fetch_draft_classes,
     fetch_player_career_all_seasons,
-    render_nav, render_page_chrome, html_table,
+    render_nav, render_page_chrome, html_table, stat_cards,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
 )
 
@@ -313,11 +313,12 @@ with tab_arc:
                 avg_score = arc_df["barrett_score"].mean()
 
                 # Summary metrics
-                mc1, mc2, mc3, mc4 = st.columns(4)
-                mc1.metric("Seasons in Data", len(arc_df))
-                mc2.metric("Peak Score", f"{peak_row['barrett_score']:.1f}", f"({peak_row['Season']})")
-                mc3.metric("Career Average", f"{avg_score:.1f}")
-                mc4.metric("Peak Season Rank", f"#{peak_row['score_rank']}")
+                stat_cards([
+                    ("Seasons in Data", len(arc_df), "var(--fg-3)"),
+                    ("Peak Score", f"{peak_row['barrett_score']:.1f}", "var(--gold)", peak_row['Season']),
+                    ("Career Average", f"{avg_score:.1f}", "var(--accent-teal)"),
+                    ("Peak Season Rank", f"#{int(peak_row['score_rank'])}", "var(--accent-red)"),
+                ])
 
                 fig_arc = go.Figure()
 
