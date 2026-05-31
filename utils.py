@@ -901,7 +901,15 @@ def theme_fig(fig):
         GOLD_LT = "#a87400"
 
         def _fix(c):
-            return GOLD_LT if isinstance(c, str) and c.lower() in YELLOW else c
+            if not isinstance(c, str):
+                return c
+            cl = c.lower().replace(" ", "")
+            if cl in YELLOW:
+                return GOLD_LT
+            # rgb()/rgba() bright yellow (e.g. the translucent career-arc line)
+            if "241,196,15" in cl:
+                return "rgba(168,116,0,0.75)"
+            return c
         for tr in fig.data:
             try:
                 if getattr(tr, "line", None) is not None and getattr(tr.line, "color", None):

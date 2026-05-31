@@ -297,7 +297,7 @@ if len(selected) == 1:
         ("Career PPG", f"{career_avg_pts:.1f}", "var(--accent-red)"),
         ("Career APG", f"{career_avg_ast:.1f}", "var(--orange)"),
         ("Career RPG", f"{career_avg_reb:.1f}", "var(--blue)"),
-        ("Peak Season", f"{best_season[SCORE_COL]:.1f}", "var(--gold)", best_season['Season']),
+        (f"Peak Season · {best_season['Season']}", f"{best_season[SCORE_COL]:.1f}", "var(--gold)"),
     ])
 
     st.divider()

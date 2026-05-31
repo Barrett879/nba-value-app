@@ -315,7 +315,7 @@ with tab_arc:
                 # Summary metrics
                 stat_cards([
                     ("Seasons in Data", len(arc_df), "var(--fg-3)"),
-                    ("Peak Score", f"{peak_row['barrett_score']:.1f}", "var(--gold)", peak_row['Season']),
+                    (f"Peak Score · {peak_row['Season']}", f"{peak_row['barrett_score']:.1f}", "var(--gold)"),
                     ("Career Average", f"{avg_score:.1f}", "var(--accent-teal)"),
                     ("Peak Season Rank", f"#{int(peak_row['score_rank'])}", "var(--accent-red)"),
                 ])
