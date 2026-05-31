@@ -28,7 +28,7 @@ st.title("Free Agent Class")
 st.caption(
     "Every player whose contract situation makes them available this offseason: "
     "UFAs, RFAs (team holds right of first refusal), player options (they may opt out), "
-    "and team options (team may decline). Ranked by Barrett Score, a GM's draft board."
+    "and team options (team may decline). Ranked by Barrett Score."
 )
 
 render_barrett_score_explainer()
