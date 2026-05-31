@@ -1501,12 +1501,42 @@ def _search_players(query: str) -> list[str]:
 #   - rerun_on_update=True: refreshes the page when a new player is
 #     picked so the contract details update.
 # Softer, rounder control + menu so it reads as a search bar, not a form box.
-_SEARCHBOX_STYLE = {
-    "searchbox": {
-        "control": {"borderRadius": 24, "padding": "3px 12px"},
-        "menuList": {"borderRadius": 16},
-    },
-}
+# The component renders in an iframe locked to the light Streamlit config, so in
+# dark mode it'd be a glaring white box — make it theme-aware: dark fill + light
+# text + a dark wrapper so the (light) iframe body doesn't show in the rounded
+# corners.
+if st.session_state.get("theme_dark", False):
+    _SEARCHBOX_STYLE = {
+        "wrapper": {"backgroundColor": "#0a0a14"},
+        "searchbox": {
+            "control": {"borderRadius": 24, "padding": "3px 12px",
+                        "backgroundColor": "#16181f", "border": "1px solid #2c2c40"},
+            "menuList": {"borderRadius": 16, "backgroundColor": "#16181f"},
+            "input": {"color": "#e8e8f0"},
+            "singleValue": {"color": "#e8e8f0"},
+            "placeholder": {"color": "#8a8a9a"},
+            "option": {"color": "#dcdce6", "backgroundColor": "#16181f",
+                       "highlightColor": "#23233a"},
+        },
+        "dropdown": {"fill": "#9aa0aa"},
+        "clear": {"fill": "#9aa0aa"},
+    }
+else:
+    _SEARCHBOX_STYLE = {
+        "searchbox": {
+            "control": {"borderRadius": 24, "padding": "3px 12px"},
+            "menuList": {"borderRadius": 16},
+        },
+    }
+# Clip the searchbox iframe itself to a rounded rect. The iframe body is locked
+# to the light config bg, so without this its square corners poke out past the
+# rounded control (a light nub in dark mode). Clipping the iframe sends the
+# corners to the page behind — clean in both themes.
+st.markdown(
+    "<style>iframe[title='streamlit_searchbox.searchbox']"
+    "{border-radius:24px;overflow:hidden;}</style>",
+    unsafe_allow_html=True,
+)
 selected = st_searchbox(
     search_function=_search_players,
     placeholder="Type a player name…",
