@@ -1163,6 +1163,33 @@ COMMON_CSS = """
     .top-nav .home-link:hover { color: var(--fg-1); border: none; }
     .top-nav .divider { color: var(--nav-divider); font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 
+    /* ── Responsive nav: keep the links clear of the pinned top-right toggles ──
+       The theme + playoff toggles are position:fixed, so without this the nav
+       tabs slide under them at narrower widths. Reserve the toggle width, shrink
+       the tabs as the viewport narrows, and at tight widths drop the toggle TEXT
+       labels (the switch + hover tooltip stay) so every tab stays legible. */
+    .top-nav { padding-right: 17.5rem; }
+    @media (max-width: 1200px) {
+        .top-nav a, .top-nav .home-link {
+            padding-left: 0.55rem; padding-right: 0.55rem; font-size: 0.78rem;
+        }
+    }
+    @media (max-width: 1040px) {
+        .st-key-theme_nav_toggle label p,
+        .st-key-playoff_nav_toggle label p { display: none !important; }
+        .st-key-theme_nav_toggle { right: 4.4rem !important; }
+        .top-nav { padding-right: 7rem; }
+        .top-nav .divider { display: none; }
+        .top-nav a, .top-nav .home-link {
+            padding-left: 0.42rem; padding-right: 0.42rem; font-size: 0.73rem;
+        }
+    }
+    @media (max-width: 870px) {
+        .top-nav a, .top-nav .home-link {
+            padding-left: 0.3rem; padding-right: 0.3rem; font-size: 0.67rem;
+        }
+    }
+
     /* Pin the global playoff-mode toggle to the right edge of the nav bar.
        Streamlit assigns the wrapping div class 'st-key-playoff_nav_toggle'
        when we use st.container(key='playoff_nav_toggle'). */
