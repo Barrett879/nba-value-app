@@ -247,25 +247,36 @@ st.markdown("""
     }
     .st-key-playoff_nav_toggle:hover label p { color: var(--fg-1) !important; }
 
-    /* Theme (dark-mode) toggle — pinned just left of the playoff toggle. */
+    /* Theme (brightness) button — pinned to the far top-right (home has no nav
+       bar, but the button sits in the same slot as on the inner pages). */
     .st-key-theme_nav_toggle {
         position: fixed !important;
         top: 0.45rem !important;
-        right: 10.25rem !important;
+        right: 1rem !important;
         z-index: 10001 !important;
         margin: 0 !important;
         padding: 0 !important;
         width: auto !important;
         background: transparent !important;
     }
-    .st-key-theme_nav_toggle [data-testid="stToggle"] { background: transparent; padding: 0; }
-    .st-key-theme_nav_toggle label p {
+    .st-key-theme_nav_toggle button {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0.1rem 0.3rem !important;
+        min-height: 0 !important;
+        height: auto !important;
+        line-height: 1 !important;
+        font-size: 1.3rem !important;
         color: var(--fg-3) !important;
-        font-size: 0.78rem !important;
-        font-weight: 600 !important;
-        margin: 0 !important;
     }
-    .st-key-theme_nav_toggle:hover label p { color: var(--fg-1) !important; }
+    .st-key-theme_nav_toggle button [data-testid="stIconMaterial"] { font-size: 1.3rem !important; }
+    .st-key-theme_nav_toggle button:hover { color: var(--fg-1) !important; background: transparent !important; }
+    .st-key-theme_nav_toggle button:active,
+    .st-key-theme_nav_toggle button:focus,
+    .st-key-theme_nav_toggle button:focus-visible {
+        box-shadow: none !important; background: transparent !important; color: var(--fg-1) !important;
+    }
 
     /* Landing-page hero cards (Best Right Now / Biggest Steal / Most Overpaid) */
     .home-hero-card {

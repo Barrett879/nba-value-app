@@ -36,7 +36,8 @@ st.caption(
     "Positive = overpaying (inefficient)."
 )
 
-with st.container(key="playoff_nav_toggle"):
+_pf_spacer, _pf_col = st.columns([4, 1])
+with _pf_col:
     render_playoff_toggle()
 render_barrett_score_explainer()
 

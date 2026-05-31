@@ -1283,20 +1283,15 @@ COMMON_CSS = """
     .top-nav .home-link:hover { color: var(--fg-1); border: none; }
     .top-nav .divider { color: var(--nav-divider); font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 
-    /* ── Responsive nav: keep the links clear of the pinned top-right controls ──
-       The theme button is always pinned; on playoff-aware pages the Playoff-mode
-       toggle is pinned just left of it. Reserve room for both so the tabs don't
-       slide under them, and shrink the tabs as the viewport narrows. */
-    .top-nav { padding-right: 13rem; }
+    /* ── Responsive nav: keep the links clear of the pinned brightness button ──
+       Only the theme button is pinned (position:fixed) top-right; reserve its
+       narrow width so the tabs don't slide under it, and shrink the tabs as the
+       viewport narrows. Playoff mode is rendered in-page, not pinned here. */
+    .top-nav { padding-right: 3.5rem; }
     @media (max-width: 1100px) {
         .top-nav a, .top-nav .home-link {
             padding-left: 0.5rem; padding-right: 0.5rem; font-size: 0.78rem;
         }
-        /* Narrow: collapse the Playoff toggle to its switch (label via the hover
-           tooltip) and reclaim the reserved width so it can't crowd the tabs. */
-        .st-key-playoff_nav_toggle label p { display: none !important; }
-        .st-key-playoff_nav_toggle { right: 3.25rem !important; }
-        .top-nav { padding-right: 6rem; }
     }
     @media (max-width: 940px) {
         .top-nav .divider { display: none; }

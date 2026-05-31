@@ -33,7 +33,8 @@ else:
     st.title("Search Player")
     st.caption("Find any player who's appeared in the league: career arcs, season-by-season stats, peak years. Add up to 10 players to compare careers head-to-head.")
 
-with st.container(key="playoff_nav_toggle"):
+_pf_spacer, _pf_col = st.columns([4, 1])
+with _pf_col:
     render_playoff_toggle()
 render_barrett_score_explainer()
 

@@ -35,7 +35,8 @@ else:
     st.title("NBA Contract Value Rankings")
     st.caption("Every qualifying player this season, ranked by Barrett Score. Green = underpaid · Red = overpaid")
 
-with st.container(key="playoff_nav_toggle"):
+_pf_spacer, _pf_col = st.columns([4, 1])
+with _pf_col:
     render_playoff_toggle()
 
 st.markdown("""
