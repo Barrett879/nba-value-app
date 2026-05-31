@@ -899,6 +899,10 @@ def theme_fig(fig):
         # yellows for a dark amber that reads on a light background.
         YELLOW = {"#f1c40f", "#ecbe1a", "#e3b121", "#f0b35b"}
         GOLD_LT = "#a87400"
+        # Dark marker outlines (picked for dark mode) read as black rings on
+        # white — drop them to a white outline so the dots are clean.
+        DARK_OUTLINE = {"#14142a", "#1a1a2e", "#0a0a14", "#15171d", "#2a2a2a",
+                        "#000000", "#000"}
 
         def _fix(c):
             if not isinstance(c, str):
@@ -916,6 +920,10 @@ def theme_fig(fig):
                     tr.line.color = _fix(tr.line.color)
                 if getattr(tr, "marker", None) is not None and getattr(tr.marker, "color", None):
                     tr.marker.color = _fix(tr.marker.color)
+                _ml = getattr(tr.marker, "line", None) if getattr(tr, "marker", None) is not None else None
+                if _ml is not None and getattr(_ml, "color", None):
+                    if str(_ml.color).lower().replace(" ", "") in DARK_OUTLINE:
+                        _ml.color = "#ffffff"
                 if getattr(tr, "textfont", None) is not None and getattr(tr.textfont, "color", None):
                     tr.textfont.color = _fix(tr.textfont.color)
             except Exception:
