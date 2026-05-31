@@ -1476,6 +1476,26 @@ COMMON_CSS = """
     .hv-stat-l { font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em;
                  color:var(--fg-4); margin-top:0.4rem; font-weight:600; }
     .hv-stat-s { font-size:0.7rem; color:var(--fg-5); margin-top:0.2rem; }
+
+    /* st.tabs labels — Streamlit's default inactive colour is a faint grey that
+       disappears on the dark background. Bind to theme tokens so the inactive
+       tabs stay legible (mid-grey) and the active one takes the brand red on
+       both themes. Targets the tab buttons + their inner text node. */
+    .stTabs [data-baseweb="tab-list"] button[role="tab"],
+    .stTabs [data-baseweb="tab-list"] button[role="tab"] p {
+        color: var(--fg-3) !important;
+        font-weight: 600 !important;
+    }
+    .stTabs [data-baseweb="tab-list"] button[role="tab"]:hover,
+    .stTabs [data-baseweb="tab-list"] button[role="tab"]:hover p {
+        color: var(--fg-1) !important;
+    }
+    .stTabs [data-baseweb="tab-list"] button[role="tab"][aria-selected="true"],
+    .stTabs [data-baseweb="tab-list"] button[role="tab"][aria-selected="true"] p {
+        color: var(--accent-red) !important;
+    }
+    /* The active-tab underline highlight follows the brand red too. */
+    .stTabs [data-baseweb="tab-highlight"] { background-color: var(--accent-red) !important; }
 </style>
 """
 
