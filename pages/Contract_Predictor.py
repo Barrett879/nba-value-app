@@ -1500,6 +1500,13 @@ def _search_players(query: str) -> list[str]:
 #     with the alphabetical roster so users can browse without typing.
 #   - rerun_on_update=True: refreshes the page when a new player is
 #     picked so the contract details update.
+# Softer, rounder control + menu so it reads as a search bar, not a form box.
+_SEARCHBOX_STYLE = {
+    "searchbox": {
+        "control": {"borderRadius": 24, "padding": "3px 12px"},
+        "menuList": {"borderRadius": 16},
+    },
+}
 selected = st_searchbox(
     search_function=_search_players,
     placeholder="Type a player name…",
@@ -1507,6 +1514,7 @@ selected = st_searchbox(
     default_options=active_names,  # already sorted by Barrett desc
     edit_after_submit="option",
     rerun_on_update=True,
+    style_overrides=_SEARCHBOX_STYLE,
     key=_PICKER_KEY,
 )
 
