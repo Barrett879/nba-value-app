@@ -1957,7 +1957,7 @@ if caveats:
         'display:inline-block; background:rgba(240,179,91,0.12); '
         'border:1px solid rgba(240,179,91,0.30); border-radius:999px; '
         'padding:0.32rem 0.85rem; margin: 0 0.45rem 0.45rem 0; '
-        'font-size:0.78rem; font-weight:600; color:#f0b35b;'
+        'font-size:0.78rem; font-weight:600; color:var(--amber);'
     )
 
     def _caveat_chip(note: str) -> str:

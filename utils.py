@@ -798,8 +798,8 @@ THEME_LIGHT_CSS = """
         --value-good-s:#2fbb6e;
         --value-bad:   #dc3a2c;
         --value-bad-s: #e7584b;
-        --gold:        #c08a0a;
-        --amber:       #c8941a;
+        --gold:        #9a6a00;   /* dark amber, not yellow, on white */
+        --amber:       #a8730a;
         /* logo metals (on light) */
         --logo-copper: #985729;
         --logo-sage:   #3d6f52;
@@ -895,6 +895,29 @@ def theme_fig(fig):
         for axis in (fig.update_xaxes, fig.update_yaxes):
             axis(gridcolor=grid, zerolinecolor=grid, color=font,
                  tickfont_color=font, title_font_color=font)
+        # Bright golds wash out on white — swap chart line/marker/annotation
+        # yellows for a dark amber that reads on a light background.
+        YELLOW = {"#f1c40f", "#ecbe1a", "#e3b121", "#f0b35b"}
+        GOLD_LT = "#a87400"
+
+        def _fix(c):
+            return GOLD_LT if isinstance(c, str) and c.lower() in YELLOW else c
+        for tr in fig.data:
+            try:
+                if getattr(tr, "line", None) is not None and getattr(tr.line, "color", None):
+                    tr.line.color = _fix(tr.line.color)
+                if getattr(tr, "marker", None) is not None and getattr(tr.marker, "color", None):
+                    tr.marker.color = _fix(tr.marker.color)
+                if getattr(tr, "textfont", None) is not None and getattr(tr.textfont, "color", None):
+                    tr.textfont.color = _fix(tr.textfont.color)
+            except Exception:
+                pass
+        for ann in (fig.layout.annotations or []):
+            try:
+                if ann.font and ann.font.color:
+                    ann.font.color = _fix(ann.font.color)
+            except Exception:
+                pass
     except Exception:
         pass
     return fig

@@ -226,9 +226,12 @@ def _load_career(name: str, playoffs: bool = False) -> pd.DataFrame:
 
 # ── Color palette for multi-player overlays ──────────────────────────────────
 # 10 distinct colors so up to 10 selected players each get their own line.
-# Hand-picked for legibility on a dark background; alternates warm/cool tones.
+# Colours the chart lines AND the player-name text in the headers, so the light
+# ones (gold / sky / lime) get a darker swap on a white background — otherwise
+# they're unreadable yellow letters in light mode.
+_pal_dark = st.session_state.get("theme_dark", False)
 _PALETTE = [
-    "#f1c40f",  # gold
+    "#f1c40f" if _pal_dark else "#a87400",  # gold  -> dark gold on light
     "#e74c3c",  # red
     "#3498db",  # blue
     "#2ecc71",  # green
@@ -236,8 +239,8 @@ _PALETTE = [
     "#e67e22",  # orange
     "#1abc9c",  # teal
     "#ec407a",  # pink
-    "#7ec8e8",  # sky
-    "#c8d75e",  # lime
+    "#7ec8e8" if _pal_dark else "#2b8fc7",  # sky   -> deeper blue on light
+    "#c8d75e" if _pal_dark else "#7a8a1a",  # lime  -> olive on light
 ]
 
 
