@@ -1214,11 +1214,13 @@ COMMON_CSS = """
        home page (which doesn't use this stylesheet) shares one source of
        truth. COMMON_CSS just *references* the tokens (var(--...)). */
 
-    /* Push page content below the fixed nav bar */
-    .main .block-container {
-        padding-left: 1.5rem;
-        padding-right: 1.5rem;
-        padding-top: 3.8rem !important;
+    /* Trim the page side padding. Streamlit's default is a hefty 5rem each
+       side, which wastes width on wide screens; .main no longer matches the
+       1.51 DOM, so target the testid too. (Top padding is handled below.) */
+    .main .block-container,
+    [data-testid="stMainBlockContainer"] {
+        padding-left: 2.5rem !important;
+        padding-right: 2.5rem !important;
         max-width: 100%;
     }
     /* A touch more vertical breathing room between stacked elements (the
