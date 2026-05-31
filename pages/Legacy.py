@@ -14,7 +14,7 @@ from utils import (
     fetch_player_career_all_seasons,
     render_nav, render_page_chrome, html_table, stat_cards,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
-    value_color, gradient_points,
+    tier_color, gradient_points,
 )
 
 
@@ -323,12 +323,12 @@ with tab_arc:
 
                 fig_arc = go.Figure()
 
-                # Value-coloured nodes (red career-low → gold → green career-high)
+                # Nodes coloured by absolute Barrett-Score tier (0–10 … 50+)
                 seasons   = arc_df["Season"].tolist()
                 x_idx     = list(range(len(seasons)))
                 y_vals    = arc_df["barrett_score"].tolist()
                 vmin, vmax = min(y_vals), max(y_vals)
-                dot_colors = [value_color(v, vmin, vmax) for v in y_vals]
+                dot_colors = [tier_color(v) for v in y_vals]
 
                 # Theme-aware accents (the chart renders server-side, so it can't
                 # read CSS vars — pick light/dark values here so the dashed avg
@@ -420,6 +420,8 @@ with tab_arc:
                     showlegend=False,
                 )
                 st.plotly_chart(theme_fig(fig_arc), use_container_width=True, config={"displayModeBar": False})
+                st.caption("Color = Barrett Score tier in 10s "
+                           "(red 0–10 · orange 10–20 · amber 20–30 · lime 30–40 · green 40–50 · teal 50+)")
 
                 # Season-by-season table
                 arc_tbl = arc_df[["Season", "barrett_score", "Team", "score_rank", "GP", "total_min", "salary"]].copy()

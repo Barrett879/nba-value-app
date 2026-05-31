@@ -14,7 +14,7 @@ from utils import (
     fetch_player_positions_detailed, position_to_bucket,
     render_nav, render_page_chrome, html_table, stat_cards,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
-    value_color, gradient_points,
+    tier_color, gradient_points,
     PRE_1990_SALARY_NOTE,
 )
 from urllib.parse import quote
@@ -307,9 +307,10 @@ if len(selected) == 1:
     st.subheader(f"Career arc · {SCORE_LABEL} by season")
     fig = go.Figure()
 
-    # Color points by Barrett Score (red→gold→green), relative to this career.
+    # Color points by absolute Barrett-Score tier (0–10, 10–20, … 50+), so the
+    # same score is the same colour across players. vmin/vmax drive the y-range.
     vmin, vmax = career[SCORE_COL].min(), career[SCORE_COL].max()
-    dot_colors = [value_color(v, vmin, vmax) for v in career[SCORE_COL]]
+    dot_colors = [tier_color(v) for v in career[SCORE_COL]]
 
     seasons = list(career["Season"])
     x_idx = list(range(len(seasons)))
@@ -368,8 +369,8 @@ if len(selected) == 1:
         hovermode="closest",
     )
     st.plotly_chart(theme_fig(fig), use_container_width=True, config={"displayModeBar": False})
-    st.caption("★ = peak career season · color runs red (career-low) → gold (mid) "
-               "→ green (career-high) along the whole arc")
+    st.caption("★ = peak career season · color = Barrett Score tier in 10s "
+               "(red 0–10 · orange 10–20 · amber 20–30 · lime 30–40 · green 40–50 · teal 50+)")
 
     st.divider()
 

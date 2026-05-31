@@ -1049,6 +1049,9 @@ if new_selected:
                 )
             fig_trend.update_traces(line=dict(width=2.5), marker=dict(size=8),
                                     selector=dict(mode="lines+markers"))
+            # Baseline at 0 → tallest score in the group (with a little headroom).
+            _trend_max = trend_df["barrett_score"].max() if not trend_df.empty else 1
+            _trend_min = trend_df["barrett_score"].min() if not trend_df.empty else 0
             fig_trend.update_layout(
                 paper_bgcolor="rgba(0,0,0,0)",
                 plot_bgcolor="rgba(0,0,0,0.15)",
@@ -1058,7 +1061,8 @@ if new_selected:
                            type="category",
                            categoryorder="array",
                            categoryarray=selected_seasons),
-                yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score", tickformat=".1f"),
+                yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title="Barrett Score",
+                           tickformat=".1f", range=[min(0, _trend_min), _trend_max * 1.08]),
                 legend=dict(
                     orientation="h",
                     x=0.5, xanchor="center",

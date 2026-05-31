@@ -971,6 +971,30 @@ def value_color(v, vmin, vmax):
         int(r1 + (r2 - r1) * f), int(g1 + (g2 - g1) * f), int(b1 + (b2 - b1) * f))
 
 
+# Absolute Barrett-Score tiers, one colour per 10-point band. Unlike
+# value_color (relative to a single player's own range), these are fixed — so a
+# 45 reads the same colour on every chart, making players comparable by colour.
+_TIER_COLORS = [
+    "#e74c3c",  # 0–10   red
+    "#ef7e3b",  # 10–20  orange
+    "#f0b429",  # 20–30  amber
+    "#a3c644",  # 30–40  lime
+    "#2ecc71",  # 40–50  green
+    "#16a085",  # 50+    teal
+]
+_TIER_LABELS = ["0–10", "10–20", "20–30", "30–40", "40–50", "50+"]
+
+
+def tier_color(score):
+    """Absolute colour for a Barrett Score, bucketed into 10-point tiers
+    (0–10, 10–20, … 50+). See ``_TIER_COLORS``."""
+    try:
+        idx = int(float(score) // 10)
+    except (TypeError, ValueError):
+        return _TIER_COLORS[0]
+    return _TIER_COLORS[max(0, min(idx, len(_TIER_COLORS) - 1))]
+
+
 def _rgb_tuple(c):
     """Parse ``"#rrggbb"`` or ``"rgb(r,g,b)"`` / ``"rgba(...)"`` → (r, g, b)."""
     c = str(c).strip()
