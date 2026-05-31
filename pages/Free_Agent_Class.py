@@ -117,7 +117,7 @@ for _lab, _val, _c, _tip in _fa_stats:
     )
 st.markdown(
     "<style>"
-    ".fa-stats{display:flex;gap:0.7rem;flex-wrap:wrap;margin:0.2rem 0 0.3rem;}"
+    ".fa-stats{display:flex;gap:0.7rem;flex-wrap:wrap;margin:1.5rem 0 0.3rem;}"
     ".fa-stat{flex:1 1 0;min-width:118px;background:var(--panel-solid);"
     "border:1px solid var(--panel-line);border-top:3px solid var(--c);"
     "border-radius:10px;padding:0.85rem 0.6rem 0.75rem;text-align:center;"
