@@ -1540,6 +1540,39 @@ st.markdown(
     "{border-radius:24px;overflow:hidden;}</style>",
     unsafe_allow_html=True,
 )
+# In dark mode the react-select dropdown 'menu' container defaults to WHITE and
+# the component exposes no override for it (only menuList/option/control). It
+# also mounts only when the dropdown opens. So reach INTO the searchbox iframe
+# from a 0-height helper iframe and inject a <style> that darkens the menu;
+# a MutationObserver re-applies it each time the menu remounts.
+if st.session_state.get("theme_dark", False):
+    import streamlit.components.v1 as _c
+    _c.html(
+        """
+        <script>
+        (function () {
+          var pdoc = window.parent.document;
+          function styleSearchbox() {
+            var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
+            if (!f) return false;
+            var idoc = f.contentDocument; if (!idoc) return false;
+            if (idoc.getElementById('hv-sb-dark')) return true;
+            var s = idoc.createElement('style'); s.id = 'hv-sb-dark';
+            s.textContent =
+              "div[class$='-menu'],div[class*='-menu ']{background:#16181f!important;"
+              + "border:1px solid #2c2c40!important;border-radius:16px!important;"
+              + "box-shadow:0 8px 24px rgba(0,0,0,.45)!important;overflow:hidden!important;}";
+            idoc.head.appendChild(s);
+            return true;
+          }
+          var n = 0, t = setInterval(function () {
+            if (styleSearchbox() || ++n > 40) clearInterval(t);
+          }, 150);
+        })();
+        </script>
+        """,
+        height=0,
+    )
 selected = st_searchbox(
     search_function=_search_players,
     placeholder="Type a player name…",
