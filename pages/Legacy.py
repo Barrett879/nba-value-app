@@ -60,7 +60,8 @@ else:
         "ranked, compared, and put in context."
     )
 
-render_playoff_toggle()
+with st.container(key="playoff_nav_toggle"):
+    render_playoff_toggle()
 render_barrett_score_explainer()
 
 # ── Load combined data ─────────────────────────────────────────────────────────

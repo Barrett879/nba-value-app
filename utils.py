@@ -1283,11 +1283,11 @@ COMMON_CSS = """
     .top-nav .home-link:hover { color: var(--fg-1); border: none; }
     .top-nav .divider { color: var(--nav-divider); font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 
-    /* ── Responsive nav: keep the links clear of the pinned theme button ──
-       The theme button is position:fixed top-right; reserve its (narrow) width
-       so the tabs don't slide under it, and shrink the tabs as the viewport
-       narrows so every tab stays legible. (Playoff mode is no longer pinned.) */
-    .top-nav { padding-right: 3.5rem; }
+    /* ── Responsive nav: keep the links clear of the pinned top-right controls ──
+       The theme button is always pinned; on playoff-aware pages the Playoff-mode
+       toggle is pinned just left of it. Reserve room for both so the tabs don't
+       slide under them, and shrink the tabs as the viewport narrows. */
+    .top-nav { padding-right: 13rem; }
     @media (max-width: 1100px) {
         .top-nav a, .top-nav .home-link {
             padding-left: 0.5rem; padding-right: 0.5rem; font-size: 0.78rem;
@@ -1305,13 +1305,13 @@ COMMON_CSS = """
         }
     }
 
-    /* Pin the global playoff-mode toggle to the right edge of the nav bar.
-       Streamlit assigns the wrapping div class 'st-key-playoff_nav_toggle'
-       when we use st.container(key='playoff_nav_toggle'). */
+    /* Pin the playoff-mode toggle to the top-right of the nav, just left of the
+       brightness button. Only rendered (in an st.container(key=...)) on pages
+       where playoff mode changes the content, so it's out of the way but handy. */
     .st-key-playoff_nav_toggle {
         position: fixed !important;
-        top: 0.45rem !important;
-        right: 1rem !important;
+        top: 0.5rem !important;
+        right: 3.75rem !important;
         z-index: 10001 !important;
         margin: 0 !important;
         padding: 0 !important;
