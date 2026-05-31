@@ -1589,6 +1589,7 @@ if not _comps.empty:
 
 # Market view uses distance-weighted median so the closest comparables
 # count more than the farthest.
+_market_lo = _market_hi = None   # IQR of comp salaries → market range on the bar
 if _market_suppressed:
     _market_median = None
 elif not _market_used_comps.empty:
@@ -1600,6 +1601,12 @@ elif not _market_used_comps.empty:
     else:
         _weights = np.ones_like(_salaries)
     _market_median = _weighted_median(_salaries, _weights)
+    # Market RANGE = weighted middle-half (IQR) of where the comps actually
+    # signed — shown as a band instead of a false-precision single point. Same
+    # weighted quantile the scouting card uses, so the bar matches its "Middle 50%".
+    if len(_salaries) >= 2:
+        _market_lo = _weighted_quantile(_salaries, _weights, 0.25)
+        _market_hi = _weighted_quantile(_salaries, _weights, 0.75)
 else:
     _market_median = None
 
@@ -1607,7 +1614,8 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
                          secondary_color="#16d4c1", secondary_label="market",
                          scale_min_M=None, scale_max_M=None,
                          tertiary_M=None, tertiary_color="#9aa0aa",
-                         tertiary_label="current"):
+                         tertiary_label="current",
+                         secondary_lo_M=None, secondary_hi_M=None):
     """Premium-analytics range bar: a shaded model confidence band, a bright
     Model marker, an optional secondary (market / anchor) dot, and an optional
     tertiary hollow ring (the player's current salary — shows the raise).
@@ -1621,7 +1629,8 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     if fixed:
         bar_lo, span = scale_min_M, max(scale_max_M - scale_min_M, 0.1)
     else:
-        pts = [low_M, high_M, model_M] + ([secondary_M] if secondary_M is not None else [])
+        pts = [low_M, high_M, model_M] + [v for v in (secondary_M, secondary_lo_M, secondary_hi_M)
+                                          if v is not None]
         lo, hi = min(pts), max(pts)
         pad = max((hi - lo) * 0.16, 1.0)
         bar_lo, span = lo - pad, max((hi + pad) - (lo - pad), 0.1)
@@ -1629,7 +1638,26 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     p = lambda v: max(1.0, min(100.0, (v - bar_lo) / span * 100))
     bl, br, mp = p(low_M), p(high_M), p(model_M)
     sec, legend = "", '<span style="color:var(--fg-1);">│</span> model'
-    if secondary_M is not None:
+    if secondary_lo_M is not None and secondary_hi_M is not None:
+        # Market as a RANGE (the middle of where comparable signings landed),
+        # not a single false-precision dot — a capped bracket line.
+        _slo, _shi = sorted((p(secondary_lo_M), p(secondary_hi_M)))
+        sec = (
+            f'<div style="position:absolute; left:{_slo:.1f}%; width:{max(_shi-_slo,0.8):.1f}%;'
+            f' top:50%; transform:translateY(-50%); height:11px; z-index:2;'
+            f' border-left:2px solid {secondary_color}; border-right:2px solid {secondary_color};">'
+            f'<div style="position:absolute; top:50%; left:-1px; right:-1px; height:2px;'
+            f' transform:translateY(-50%); background:{secondary_color};"></div></div>'
+        )
+        legend += (
+            f'  ·  <span style="display:inline-block; width:12px; height:7px; vertical-align:middle;'
+            f' position:relative; border-left:2px solid {secondary_color};'
+            f' border-right:2px solid {secondary_color}; margin:0 1px;">'
+            f'<span style="position:absolute; top:50%; left:-1px; right:-1px; height:2px;'
+            f' transform:translateY(-50%); background:{secondary_color};"></span></span>'
+            f' {secondary_label}'
+        )
+    elif secondary_M is not None:
         sp = p(secondary_M)
         sec = (f'<div style="position:absolute; left:{sp}%; top:50%; width:12px; height:12px;'
                f' background:{secondary_color}; border:2px solid var(--panel-solid); border-radius:50%;'
@@ -1795,6 +1823,8 @@ elif _cur_sal_dollars > 0:
 
 if _market_median is not None:
     market_M = _market_median / 1_000_000
+    market_lo_M = _market_lo / 1_000_000 if _market_lo is not None else None
+    market_hi_M = _market_hi / 1_000_000 if _market_hi is not None else None
     # Honest range = min(model, market) → max(model_high, market)
     honest_low_M  = min(predicted_M, market_M)
     honest_high_M = max(predicted_M, market_M)
@@ -1842,7 +1872,7 @@ if _market_median is not None:
       <div style="margin-top:1.05rem; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;">
         <div style="line-height:0.9;"><span style="font-size:3.4rem; font-weight:800; color:var(--fg-1); letter-spacing:-0.02em;">${predicted_M:.1f}M</span><span style="font-size:0.95rem; color:var(--fg-4); font-weight:600;"> /yr</span>{_caption_chip}</div>{_raise_html}
       </div>
-      {_confidence_bar_html(predicted_M, low_M, high_M, market_M, "#16d4c1", scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
+      {_confidence_bar_html(predicted_M, low_M, high_M, market_M, "#16d4c1", scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label, secondary_lo_M=market_lo_M, secondary_hi_M=market_hi_M)}
       <div style="margin-top:0.95rem; font-size:0.82rem; color:var(--fg-4);">
         Market second opinion
         <span style="color:var(--fg-6);">(median of comparable signings)</span>:
