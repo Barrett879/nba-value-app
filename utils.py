@@ -719,6 +719,18 @@ THEME_BASE_CSS = """
     [data-testid="stHeading"] h2,
     [data-testid="stHeading"] h3 { color: var(--fg-1) !important; }
 
+    /* Native widget labels (selectbox / input / multiselect / slider / checkbox
+       / radio) follow the token text colour. config.toml base can't flip at
+       runtime, so without this they stay dark (black-on-dark) in dark mode. */
+    [data-testid="stWidgetLabel"],
+    [data-testid="stWidgetLabel"] p,
+    [data-testid="stCheckbox"] label,
+    [data-testid="stRadio"] label,
+    .stCheckbox label, .stRadio label,
+    [data-baseweb="form-control-label"] {
+        color: var(--fg-2) !important;
+    }
+
     /* Native Streamlit widgets painted from tokens so they follow BOTH themes.
        (config.toml base="light" handles iframe components like the searchbox,
        which CSS can't reach; these token rules handle the styleable widgets in
