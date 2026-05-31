@@ -1004,7 +1004,17 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
         tds = []
         for c in cols:
             v = rd[c]
-            disp = formatters[c](v) if c in formatters else ("" if v is None else str(v))
+            # NaN-/type-safe: a formatter raising on one cell (e.g. int(NaN) on
+            # sparse historical data) must not blow up the whole table.
+            if c in formatters:
+                try:
+                    disp = formatters[c](v)
+                except Exception:
+                    disp = ""
+            elif v is None or (isinstance(v, float) and v != v):
+                disp = ""
+            else:
+                disp = str(v)
             al = aligns.get(c, "left")
             stl = styles[c](v, rd) if c in styles else ""
             sv = v if c in numeric else disp

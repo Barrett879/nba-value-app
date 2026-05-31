@@ -475,35 +475,23 @@ def render_splits_panel(player_name, season):
 
     fmt = pd.DataFrame(rows_out)
 
-    def style_rows(row):
-        s = row_styles[row.name]
-        if s == "tot_stat":
-            return ["font-weight: bold; background-color: #2a2a2a"] * len(row)
-        return [""] * len(row)
-
-    st.dataframe(
-        fmt.style.apply(style_rows, axis=1),
-        column_config={
-            "GP":           st.column_config.TextColumn(help="Games played with this team during the season."),
-            "MPG":          st.column_config.TextColumn(help="Minutes per game with this team."),
-            "Total MIN":    st.column_config.TextColumn(help="Total minutes played with this team."),
-            "PTS":          st.column_config.NumberColumn(help="Points per game."),
-            "AST":          st.column_config.NumberColumn(help="Assists per game."),
-            "OREB":         st.column_config.NumberColumn(help="Offensive rebounds per game."),
-            "DREB":         st.column_config.NumberColumn(help="Defensive rebounds per game."),
-            "BLK":          st.column_config.NumberColumn(help="Blocks per game."),
-            "STL":          st.column_config.NumberColumn(help="Steals per game."),
-            "TOV":          st.column_config.NumberColumn(help="Turnovers per game."),
-            "PF":           st.column_config.NumberColumn(help="Personal fouls per game."),
-            "D-LEBRON":     st.column_config.NumberColumn(help="Defensive LEBRON: estimated points prevented per game vs average. Full-season metric, same across all stints."),
-            "TS%":          st.column_config.TextColumn(help="True Shooting %: scoring efficiency across 2s, 3s, and free throws. PTS / (2 × (FGA + 0.44 × FTA)). League avg ~57%."),
-            "Eff. Adj":     st.column_config.NumberColumn(help="Efficiency adjustment added to Base Score. clamp(0.15 × (TS% − League Avg TS%) × 100, −4, +4). Rewards efficient scorers, penalises inefficient ones."),
-            "Base Score":   st.column_config.NumberColumn(help="PTS + AST×2 + OREB÷2 + DREB÷3 + BLK÷2 + STL÷1.5 − TOV÷1.5 − PF÷3 + D-LEBRON×2 + Eff. Adj. Raw per-game value before the availability multiplier."),
-            "Avail ×":      st.column_config.NumberColumn(help="Availability multiplier (0.30–1.00). Rewards health and heavy minutes. 0.30 + 0.70 × √(min(Total MIN / (season games × 30.5), 1)). For traded players, season games is replaced by team games during that stint."),
-            "Barrett Score":st.column_config.NumberColumn(help="Base Score × Availability Multiplier. The final contract value rating."),
+    _split_num = ["GP", "MPG", "Total MIN", "PTS", "AST", "OREB", "DREB", "BLK",
+                  "STL", "TOV", "PF", "D-LEBRON", "TS%", "Eff. Adj", "Base Score",
+                  "Avail ×", "Barrett Score"]
+    html_table(
+        fmt,
+        aligns={c: "right" for c in _split_num},
+        helps={
+            "D-LEBRON": "Defensive LEBRON: points prevented per game vs average.",
+            "TS%": "True Shooting %. League avg ~57%.",
+            "Eff. Adj": "Efficiency adjustment added to Base Score.",
+            "Base Score": "Raw per-game value before the availability multiplier.",
+            "Avail ×": "Availability multiplier (0.30–1.00).",
+            "Barrett Score": "Base Score × Availability Multiplier.",
         },
-        use_container_width=True,
-        hide_index=True,
+        row_style=lambda rd: ("background:var(--panel-2);font-weight:700"
+                              if rd.get("Team") == "TOT" else ""),
+        height=min(420, max(120, len(fmt) * 38 + 46)),
     )
 
 
@@ -709,24 +697,21 @@ if show_graph_mode:
         ascending=(sort_mode == "Most Underpaid")).reset_index(drop=True)
     sc_tbl.insert(0, "#", range(1, len(sc_tbl) + 1))
 
-    def _delta_color(val):
-        try: n = float(val)
-        except (ValueError, TypeError): return ""
-        if n > 20:  return "color: #e74c3c; font-weight: bold"
-        if n > 5:   return "color: #f1a8a8"
-        if n < -20: return "color: #2ecc71; font-weight: bold"
-        if n < -5:  return "color: #a8e6a8"
-        return ""
-
-    st.dataframe(
-        sc_tbl.style.map(_delta_color, subset=["Δ Market $M"]),
-        column_config={
-            "Proj. Salary $M": st.column_config.NumberColumn(format="$%.2fM"),
-            "Salary $M":       st.column_config.NumberColumn(format="$%.2fM"),
-            "Δ Market $M":     st.column_config.NumberColumn(format="$%.2fM"),
-            "Barrett Score":   st.column_config.NumberColumn(format="%.2f"),
+    html_table(
+        sc_tbl,
+        formatters={
+            "Score Rank":      lambda v: str(int(v)),
+            "Barrett Score":   lambda v: f"{v:.2f}",
+            "Proj. Salary $M": lambda v: f"${v:.2f}M",
+            "Salary $M":       lambda v: f"${v:.2f}M",
+            "Δ Market $M":     lambda v: f"${v:.2f}M",
         },
-        use_container_width=True, hide_index=True, height=500,
+        styles={"Δ Market $M": _hsty_delta},
+        aligns={c: "right" for c in ["#", "Score Rank", "Barrett Score",
+                "Proj. Salary $M", "Salary $M", "Δ Market $M"]},
+        numeric={"#", "Score Rank", "Barrett Score", "Proj. Salary $M",
+                 "Salary $M", "Δ Market $M"},
+        height=500,
     )
     st.caption(
         "**Δ Market** = Actual − Projected. Positive (red) = overpaid. Negative (green) = underpaid. "
@@ -871,8 +856,28 @@ if show_splits and splits_df is not None:
             "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
         }
 
-    st.dataframe(s_style, column_config=s_col_config,
-                 use_container_width=True, hide_index=True, height=600)
+    _s_num = {"#", "GP", "MPG", "Base Score", "Avail ×", "Barrett Score",
+              "Score Rank", "Salary", "Proj. Salary", "Δ Market", "Salary Rank",
+              "Rank Diff", "D-LEBRON", "TS%"}
+    html_table(
+        sfmt,
+        formatters={
+            "GP": lambda v: str(int(v)), "MPG": lambda v: f"{v:.2f}",
+            "Base Score": lambda v: f"{v:.2f}", "Avail ×": lambda v: f"{v:.3f}",
+            "Barrett Score": lambda v: f"{v:.2f}", "Score Rank": lambda v: str(int(v)),
+            "Salary": lambda v: f"${v:.2f}M", "Proj. Salary": lambda v: f"${v:.2f}M",
+            "Δ Market": lambda v: f"${v:.2f}M", "Salary Rank": lambda v: str(int(v)),
+            "Rank Diff": lambda v: f"{int(v):+d}", "D-LEBRON": lambda v: f"{v:.2f}",
+            "TS%": lambda v: f"{v:.1f}%",
+        },
+        styles={"Rank Diff": _hsty_rankdiff, "Δ Market": _hsty_delta,
+                "Next $": _hsty_next, "Salary": _hsty_salary},
+        aligns={c: "right" for c in _s_num},
+        numeric=_s_num,
+        row_style=lambda rd: ("background:var(--panel-2);font-weight:700"
+                              if rd.get("Team") == "TOT" else ""),
+        height=600,
+    )
     dl_col, cap_col = st.columns([1, 5])
     with dl_col:
         st.download_button(
