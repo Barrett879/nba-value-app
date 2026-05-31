@@ -95,15 +95,7 @@ render_nav("Contract Predictor")
 st.title("Contract Predictor")
 st.caption(
     f"Type a player's name to see what they'd command on a NEW contract signed "
-    f"today — i.e. their {CONTRACT_SEASON} salary, priced from their {CURRENT_SEASON} "
-    "production at next season's projected cap. A machine-learning model (HistGBM) "
-    "trained on 1,900+ modern-era contracts (2012+), built on the Barrett Score plus "
-    "age, position, service years, All-NBA history, and advanced metrics (usage, PIE, "
-    "on/off rating). Validated by temporal cross-validation on real signings: 89% of "
-    "predictions within 5% of the cap, 99% within 10%. It's sharpest on star and max "
-    "deals; mid- and minimum-level numbers are noisier — the eventual salary lands "
-    "within ~30% of the projection about half the time — so read those as a range, "
-    "not a precise figure."
+    f"today, i.e. their {CONTRACT_SEASON} salary, at next season's projected cap."
 )
 
 # Methodology expanders live at the bottom of the page (after the prediction
@@ -2231,6 +2223,19 @@ except Exception:
 # ── Methodology footer (collapsed — info-after-action) ──────────────────────
 st.divider()
 with st.expander("About this prediction"):
+    # Concise model summary up top — the quick "what is this" before the
+    # player-specific reasoning and the deep methodology below.
+    st.markdown(
+        "A machine-learning model (HistGBM) trained on 1,900+ modern-era "
+        "contracts (2012+), built on the Barrett Score plus age, position, "
+        "service years, All-NBA history, and advanced metrics (usage, PIE, "
+        "on/off rating). Validated by temporal cross-validation on real "
+        "signings: 89% of predictions within 5% of the cap, 99% within 10%. "
+        "It's sharpest on star and max deals; mid- and minimum-level numbers "
+        "are noisier — the eventual salary lands within ~30% of the projection "
+        "about half the time — so read those as a range, not a precise figure."
+    )
+
     # ── Plain-English explanation (player-specific) ─────────────────────────
     # Tailored bullets describing what drove the dollar amount and how
     # model vs market compare. Sits at the top of the expander so curious
