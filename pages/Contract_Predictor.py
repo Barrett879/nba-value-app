@@ -2206,6 +2206,9 @@ try:
                 f'Likely suitors — projected offers (model value ${predicted_M:.0f}M)</div>{_ts_rows}</div>',
                 unsafe_allow_html=True,
             )
+            # Breathing room so the caption below clears the suitors box (its
+            # own 0.2rem bottom margin left them nearly touching).
+            st.markdown("<div style='height:0.7rem'></div>", unsafe_allow_html=True)
             _asof = str(getattr(_ts_land, "attrs", {}).get("as_of", "")).strip()
             _fa_label = ("restricted FA — his team can match any offer"
                          if _is_rfa else "unrestricted FA")
