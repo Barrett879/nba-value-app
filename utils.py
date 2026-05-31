@@ -1061,7 +1061,7 @@ HV_TABLE_CSS = """
 <style>
 .hv-table-wrap{overflow:auto;border:1px solid var(--panel-line);border-radius:10px;
   background:var(--panel-solid);box-shadow:var(--shadow-card);
-  margin:0.3rem 0 1.7rem;display:block;}
+  margin:0.7rem 0 1.7rem;display:block;}
 table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
 .hv-table thead th{position:sticky;top:0;z-index:1;background:var(--panel-2);
   color:var(--fg-4);text-transform:uppercase;font-size:0.68rem;letter-spacing:0.04em;
