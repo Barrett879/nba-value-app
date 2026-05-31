@@ -97,6 +97,9 @@ st.caption(
     f"Type a player's name to see what they'd command on a NEW contract signed "
     f"today, i.e. their {CONTRACT_SEASON} salary, at next season's projected cap."
 )
+# Spacer so the caption→searchbar gap matches the searchbar→info-box gap below
+# (the caption otherwise sits flush against the search box).
+st.markdown("<div style='height:21px'></div>", unsafe_allow_html=True)
 
 # Methodology expanders live at the bottom of the page (after the prediction
 # and comparables) so the page leads with the answer, not the methodology.
