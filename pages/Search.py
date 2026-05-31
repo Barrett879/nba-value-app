@@ -326,16 +326,54 @@ if len(selected) == 1:
     vmin, vmax = career[SCORE_COL].min(), career[SCORE_COL].max()
     dot_colors = [_val_color(v, vmin, vmax) for v in career[SCORE_COL]]
 
+    seasons = list(career["Season"])
+    x_idx = list(range(len(seasons)))
+    y_vals = list(career[SCORE_COL])
+
+    def _parse_rgb(c):
+        c = str(c).strip()
+        if c.startswith("#"):
+            c = c[1:]
+            return (int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16))
+        inside = c[c.find("(") + 1:c.find(")")]
+        p = inside.split(",")
+        return (int(float(p[0])), int(float(p[1])), int(float(p[2])))
+
+    # Gradient connecting "line": densely interpolate position + colour between
+    # each pair of seasons so the stroke fades from one dot's colour into the
+    # next. Drawn as a single fine-grained marker trace — marker.color *arrays*
+    # are left untouched by theme_fig, so the red→gold→green value palette
+    # survives in light mode (a single-colour line would get its gold swapped).
+    if len(x_idx) >= 2:
+        SUB = 60
+        gx, gy, gc = [], [], []
+        for i in range(len(x_idx) - 1):
+            c0, c1 = _parse_rgb(dot_colors[i]), _parse_rgb(dot_colors[i + 1])
+            last = i == len(x_idx) - 2
+            for s in range(SUB + (1 if last else 0)):
+                t = s / SUB
+                gx.append(x_idx[i] + t)
+                gy.append(y_vals[i] + (y_vals[i + 1] - y_vals[i]) * t)
+                gc.append("rgb(%d,%d,%d)" % (
+                    round(c0[0] + (c1[0] - c0[0]) * t),
+                    round(c0[1] + (c1[1] - c0[1]) * t),
+                    round(c0[2] + (c1[2] - c0[2]) * t),
+                ))
+        fig.add_trace(go.Scatter(
+            x=gx, y=gy, mode="markers",
+            marker=dict(size=4, color=gc, line=dict(width=0)),
+            hoverinfo="skip", showlegend=False,
+        ))
+
     fig.add_trace(go.Scatter(
-        x=career["Season"], y=career[SCORE_COL],
-        mode="lines+markers",
-        line=dict(color="rgba(241, 196, 15, 0.6)", width=2.5),
+        x=x_idx, y=career[SCORE_COL],
+        mode="markers",
         marker=dict(size=10, color=dot_colors,
                     line=dict(color="#14142a", width=1.5)),
-        text=career["Team"],
-        customdata=career[["PTS", "AST", "REB", "Score Rank", "Total Players"]].values,
+        customdata=career[["PTS", "AST", "REB", "Score Rank",
+                           "Total Players", "Season", "Team"]].values,
         hovertemplate=(
-            "<b>%{x}</b> · %{text}<br>"
+            "<b>%{customdata[5]}</b> · %{customdata[6]}<br>"
             f"{SCORE_LABEL}: " "%{y:.2f}<br>"
             "PTS %{customdata[0]:.1f} · AST %{customdata[1]:.1f} · REB %{customdata[2]:.1f}<br>"
             "Rank %{customdata[3]} / %{customdata[4]} that season"
@@ -345,8 +383,9 @@ if len(selected) == 1:
     ))
 
     # Mark peak season
+    _peak_x = seasons.index(best_season["Season"]) if best_season["Season"] in seasons else 0
     fig.add_trace(go.Scatter(
-        x=[best_season["Season"]], y=[best_season[SCORE_COL]],
+        x=[_peak_x], y=[best_season[SCORE_COL]],
         mode="markers",
         marker=dict(size=18, symbol="star", color="white",
                     line=dict(width=1.5, color="#1a1a2e")),
@@ -361,14 +400,15 @@ if len(selected) == 1:
         font_color="white",
         height=400,
         margin=dict(l=50, r=30, t=20, b=50),
-        xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title="", type="category"),
+        xaxis=dict(gridcolor="rgba(255,255,255,0.06)", title="",
+                   tickmode="array", tickvals=x_idx, ticktext=seasons),
         yaxis=dict(gridcolor="rgba(255,255,255,0.08)", title=SCORE_LABEL,
                    tickformat=".1f"),
         hovermode="closest",
     )
     st.plotly_chart(theme_fig(fig), use_container_width=True, config={"displayModeBar": False})
-    st.caption("★ = peak career season · dot color encodes the score (red = lowest, "
-               "gold = mid, green = highest of this player's career)")
+    st.caption("★ = peak career season · color runs red (career-low) → gold (mid) "
+               "→ green (career-high) along the whole arc")
 
     st.divider()
 
