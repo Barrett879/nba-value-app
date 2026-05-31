@@ -1030,27 +1030,30 @@ def gradient_points(x_idx, y_vals, colors, sub=60):
     return xs, ys, cs
 
 
-def _persist_theme() -> None:
-    """Write the toggle's new value to the URL so it survives navigation."""
-    st.query_params["theme"] = "dark" if st.session_state.get("theme_dark") else "light"
+def _toggle_theme() -> None:
+    """Flip the active theme and mirror it into ?theme=... (survives navigation)."""
+    new_dark = not st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
+    st.session_state["theme_dark"] = new_dark
+    st.query_params["theme"] = "dark" if new_dark else "light"
 
 
 def render_theme_toggle() -> bool:
-    """Dark-mode toggle, backed by st.session_state['theme_dark'].
+    """Brightness button in the nav, backed by st.session_state['theme_dark']:
+    a moon in light mode (click → dark) and a sun in dark mode (click → light).
 
-    Same key on every page (Streamlit allows reusing widget keys across page
-    scripts). on_change mirrors the choice into ?theme=... so it persists when
-    you navigate between tabs (each tab is a fresh full-reload session).
-    Returns True when dark mode is active.
+    on_click mirrors the choice into ?theme=... so it persists when you navigate
+    between tabs (each tab is a fresh full-reload session). inject_theme() has
+    already initialised st.session_state['theme_dark']. Returns True when dark.
     """
-    # No value= — inject_theme() has already initialised st.session_state
-    # ['theme_dark'], and passing both would trigger a Streamlit warning.
-    return st.toggle(
-        "Dark mode",
-        key="theme_dark",
+    dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
+    st.button(
+        "",
+        key="theme_btn",
         help="Switch between the light and dark themes.",
-        on_change=_persist_theme,
+        on_click=_toggle_theme,
+        icon=":material/light_mode:" if dark else ":material/dark_mode:",
     )
+    return st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
 
 
 # ── Themed, sortable HTML table ─────────────────────────────────────────────
@@ -1344,17 +1347,28 @@ COMMON_CSS = """
         width: auto !important;
         background: transparent !important;
     }
-    .st-key-theme_nav_toggle [data-testid="stToggle"] {
-        background: transparent;
-        padding: 0;
-    }
-    .st-key-theme_nav_toggle label p {
+    /* Brightness icon button (moon in light, sun in dark) — strip Streamlit's
+       button chrome down to just the icon. */
+    .st-key-theme_nav_toggle button {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0.1rem 0.3rem !important;
+        min-height: 0 !important;
+        height: auto !important;
+        line-height: 1 !important;
+        font-size: 1.3rem !important;
         color: var(--fg-3) !important;
-        font-size: 0.78rem !important;
-        font-weight: 600 !important;
-        margin: 0 !important;
     }
-    .st-key-theme_nav_toggle:hover label p { color: var(--fg-1) !important; }
+    .st-key-theme_nav_toggle button [data-testid="stIconMaterial"] {
+        font-size: 1.3rem !important;
+    }
+    .st-key-theme_nav_toggle button:hover { color: var(--fg-1) !important; background: transparent !important; }
+    .st-key-theme_nav_toggle button:active,
+    .st-key-theme_nav_toggle button:focus,
+    .st-key-theme_nav_toggle button:focus-visible {
+        box-shadow: none !important; background: transparent !important; color: var(--fg-1) !important;
+    }
 
     /* Make the toggle's wrapper hierarchy vanish from layout entirely.
        display:contents removes an element from the box tree (its children
