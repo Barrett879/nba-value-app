@@ -12,7 +12,7 @@ from utils import (
     get_all_player_names, fetch_player_full_career,
     fetch_season_component_distribution, fetch_position_peer_distribution,
     fetch_player_positions_detailed, position_to_bucket,
-    render_nav, render_page_chrome,
+    render_nav, render_page_chrome, html_table,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
@@ -675,36 +675,35 @@ if len(selected) == 1:
     tbl["Rank"] = tbl.apply(lambda r: f"{int(r['Score Rank'])}/{int(r['Total Players'])}", axis=1)
     tbl = tbl.drop(columns=["Score Rank", "Total Players"])
 
-    # Highlight peak season row (using whichever score column is active)
-    def highlight_peak(row):
-        if row["Season"] == best_season["Season"]:
-            return ["background-color: rgba(241, 196, 15, 0.18); font-weight: 600"] * len(row)
-        return [""] * len(row)
+    def _peak_row(rd):
+        if rd.get("Season") == best_season["Season"]:
+            return "background:rgba(241,196,15,0.18);font-weight:600"
+        return ""
 
-    styled = (
-        tbl.style
-        .apply(highlight_peak, axis=1)
-        .format({
-            "MPG": "{:.1f}", "PTS": "{:.1f}", "AST": "{:.1f}", "REB": "{:.1f}",
-            "STL": "{:.2f}", "BLK": "{:.2f}", "TOV": "{:.2f}",
-            "TS%": "{:.1f}%", "Barrett Score": "{:.2f}",
-            "Barrett (Raw)": "{:.2f}", "Salary $M": "${:.2f}M",
-        })
-    )
-
-    st.dataframe(
-        styled,
-        use_container_width=True,
-        hide_index=True,
-        height=min(700, max(120, len(tbl) * 35 + 40)),
-        column_config={
-            "GP":              st.column_config.NumberColumn(format="%d", help="Games played that season."),
-            "Salary $M":       st.column_config.TextColumn("Salary",     help="Salary that season ($M). Some pre-2000 rookie scale and minimum contracts may show $0."),
-            "Barrett Score":   st.column_config.NumberColumn(format="%.2f", help="Era-adjusted via pace. The canonical Barrett Score across the site."),
-            "Barrett (Raw)":   st.column_config.NumberColumn(format="%.2f", help="Un-adjusted version for that season, preserved for reference and the Score-mode toggle."),
-            "Rank":            st.column_config.TextColumn(help="Score rank that season, based on the canonical (era-adjusted) Barrett Score."),
-            "TS%":             st.column_config.TextColumn("TS%", help="True Shooting %."),
+    html_table(
+        tbl,
+        formatters={
+            "GP": lambda v: str(int(v)),
+            "MPG": lambda v: f"{v:.1f}", "PTS": lambda v: f"{v:.1f}",
+            "AST": lambda v: f"{v:.1f}", "REB": lambda v: f"{v:.1f}",
+            "STL": lambda v: f"{v:.2f}", "BLK": lambda v: f"{v:.2f}",
+            "TOV": lambda v: f"{v:.2f}", "TS%": lambda v: f"{v:.1f}%",
+            "Barrett Score": lambda v: f"{v:.2f}", "Barrett (Raw)": lambda v: f"{v:.2f}",
+            "Salary $M": lambda v: f"${v:.2f}M",
         },
+        aligns={c: "right" for c in ["GP", "MPG", "PTS", "AST", "REB", "STL", "BLK",
+                                     "TOV", "TS%", "Barrett Score", "Barrett (Raw)", "Salary $M"]},
+        numeric={"GP", "MPG", "PTS", "AST", "REB", "STL", "BLK", "TOV", "TS%",
+                 "Barrett Score", "Barrett (Raw)", "Salary $M"},
+        helps={
+            "Salary $M": "Salary that season ($M). Some pre-2000 deals may show $0.",
+            "Barrett Score": "Era-adjusted via pace. The canonical Barrett Score.",
+            "Barrett (Raw)": "Un-adjusted version for that season.",
+            "Rank": "Score rank that season (era-adjusted Barrett Score).",
+            "TS%": "True Shooting %.",
+        },
+        row_style=_peak_row,
+        height=min(700, max(140, len(tbl) * 38 + 46)),
     )
     st.caption(f"Highlighted row = peak season ({best_season['Season']}). "
                "Use the Legacy page for cross-player comparisons.")
@@ -777,18 +776,20 @@ else:
             "RPG":             _gp_weighted(c, "REB"),
         })
     summary = pd.DataFrame(rows)
-    st.dataframe(
+    html_table(
         summary,
-        use_container_width=True,
-        hide_index=True,
-        column_config={
-            f"Avg {SCORE_LABEL}":  st.column_config.NumberColumn(format="%.2f"),
-            f"Peak {SCORE_LABEL}": st.column_config.NumberColumn(format="%.2f"),
-            "PPG":          st.column_config.NumberColumn(format="%.1f"),
-            "APG":          st.column_config.NumberColumn(format="%.1f"),
-            "RPG":          st.column_config.NumberColumn(format="%.1f"),
-            "Games":        st.column_config.NumberColumn(format="%d"),
+        formatters={
+            f"Avg {SCORE_LABEL}":  lambda v: f"{v:.2f}",
+            f"Peak {SCORE_LABEL}": lambda v: f"{v:.2f}",
+            "PPG": lambda v: f"{v:.1f}", "APG": lambda v: f"{v:.1f}",
+            "RPG": lambda v: f"{v:.1f}", "Games": lambda v: str(int(v)),
+            "Seasons": lambda v: str(int(v)),
         },
+        aligns={c: "right" for c in ["Seasons", "Games", f"Avg {SCORE_LABEL}",
+                                     f"Peak {SCORE_LABEL}", "PPG", "APG", "RPG"]},
+        numeric={"Seasons", "Games", f"Avg {SCORE_LABEL}", f"Peak {SCORE_LABEL}",
+                 "PPG", "APG", "RPG"},
+        height=min(560, max(140, len(summary) * 38 + 46)),
     )
 
     st.divider()
@@ -901,28 +902,20 @@ else:
             tbl = c[["Season", "Team", "GP", "PTS", "AST", "REB", SCORE_COL]].copy()
             peak_season = c.loc[c[SCORE_COL].idxmax(), "Season"]
 
-            def _hl(row, peak_s=peak_season):
-                if row["Season"] == peak_s:
-                    return ["background-color: rgba(241, 196, 15, 0.18); "
-                            "font-weight: 600"] * len(row)
-                return [""] * len(row)
+            def _peak3(rd, _ps=peak_season):
+                return ("background:rgba(241,196,15,0.18);font-weight:600"
+                        if rd.get("Season") == _ps else "")
 
-            styled = (
-                tbl.style
-                .apply(_hl, axis=1)
-                .format({
-                    "PTS": "{:.1f}", "AST": "{:.1f}", "REB": "{:.1f}",
-                    SCORE_COL: "{:.2f}",
-                })
-            )
-            st.dataframe(
-                styled,
-                use_container_width=True,
-                hide_index=True,
-                height=min(600, max(120, len(tbl) * 35 + 40)),
-                column_config={
-                    "GP":     st.column_config.NumberColumn(format="%d"),
-                    SCORE_COL: st.column_config.NumberColumn(format="%.2f"),
+            html_table(
+                tbl,
+                formatters={
+                    "GP": lambda v: str(int(v)),
+                    "PTS": lambda v: f"{v:.1f}", "AST": lambda v: f"{v:.1f}",
+                    "REB": lambda v: f"{v:.1f}", SCORE_COL: lambda v: f"{v:.2f}",
                 },
+                aligns={c: "right" for c in ["GP", "PTS", "AST", "REB", SCORE_COL]},
+                numeric={"GP", "PTS", "AST", "REB", SCORE_COL},
+                row_style=_peak3,
+                height=min(600, max(140, len(tbl) * 38 + 46)),
             )
     st.caption("Highlighted row = each player's peak season.")

@@ -971,7 +971,7 @@ _HV_SORT_SCRIPT = """
 
 
 def html_table(df, *, formatters=None, styles=None, aligns=None,
-               numeric=None, helps=None, height=560):
+               numeric=None, helps=None, height=560, row_style=None):
     """Render a DataFrame as a themed, sortable HTML table (follows light/dark).
 
     formatters: {col: value -> display str}          (default str(value))
@@ -979,6 +979,7 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     aligns:     {col: 'left'|'right'|'center'}        (default left)
     numeric:    iterable of cols sorted by raw numeric value
     helps:      {col: tooltip text}                   (header title=)
+    row_style:  row_dict -> css str for the <tr> (e.g. peak-season highlight)
     """
     import html
     formatters = formatters or {}
@@ -1012,7 +1013,9 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
                 f'<td data-v="{html.escape(str(sv), quote=True)}" '
                 f'style="text-align:{al}{extra}">{html.escape(disp)}</td>'
             )
-        rows_html.append("<tr>" + "".join(tds) + "</tr>")
+        rstyle = row_style(rd) if row_style else ""
+        tr_open = f'<tr style="{rstyle}">' if rstyle else "<tr>"
+        rows_html.append(tr_open + "".join(tds) + "</tr>")
     st.markdown(
         f'<div class="hv-table-wrap" style="max-height:{height}px">'
         f'<table class="hv-table"><thead><tr>{"".join(head)}</tr></thead>'
