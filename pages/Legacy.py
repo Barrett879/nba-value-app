@@ -12,9 +12,31 @@ from utils import (
     normalize,
     build_all_seasons_combined, fetch_draft_classes,
     fetch_player_career_all_seasons,
-    render_nav, render_page_chrome,
+    render_nav, render_page_chrome, html_table,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
 )
+
+
+# ── Token-based cell styles for themed html_tables (follow light/dark) ─────────
+def _hl_delta(v, _row):
+    try:
+        n = float(v)
+    except (TypeError, ValueError):
+        return ""
+    if n > 20:  return "color:var(--value-bad);font-weight:700"
+    if n > 5:   return "color:var(--value-bad-s)"
+    if n < -20: return "color:var(--value-good);font-weight:700"
+    if n < -5:  return "color:var(--value-good-s)"
+    return ""
+
+def _hl_fall(v, _row):
+    try:
+        n = float(v)
+    except (TypeError, ValueError):
+        return ""
+    if n < -10: return "color:var(--value-bad);font-weight:700"
+    if n < -4:  return "color:var(--value-bad-s)"
+    return ""
 
 st.set_page_config(page_title="Legacy", layout="wide")
 
@@ -229,19 +251,20 @@ with tab_rank:
         if n > 5:   return "color: #f1a8a8"
         return ""
 
-    st.dataframe(
-        rank_tbl.style.map(_color_delta_legacy, subset=["Δ Market $M"]),
-        column_config={
-            "Barrett Score":  st.column_config.NumberColumn(format="%.2f"),
-            "Season Rank":    st.column_config.NumberColumn(help="Rank within that season's pool."),
-            "Salary $M":      st.column_config.NumberColumn(format="$%.2fM"),
-            "Δ Market $M":    st.column_config.NumberColumn(
-                format="$%.2fM",
-                help="Actual − Projected within that season. Green = underpaid. Red = overpaid."),
+    html_table(
+        rank_tbl,
+        formatters={
+            "Barrett Score": lambda v: f"{v:.2f}", "Season Rank": lambda v: str(int(v)),
+            "Salary $M": lambda v: f"${v:.2f}M", "Δ Market $M": lambda v: f"${v:.2f}M",
         },
-        use_container_width=True,
-        hide_index=True,
-        height=min(700, len(rank_tbl) * 35 + 40),
+        styles={"Δ Market $M": _hl_delta},
+        aligns={c: "right" for c in ["#", "Barrett Score", "Season Rank", "Salary $M", "Δ Market $M"]},
+        numeric={"#", "Barrett Score", "Season Rank", "Salary $M", "Δ Market $M"},
+        helps={
+            "Season Rank": "Rank within that season's pool.",
+            "Δ Market $M": "Actual − Projected within that season. Green = underpaid; red = overpaid.",
+        },
+        height=min(700, len(rank_tbl) * 38 + 46),
     )
     st.caption(f"**{len(rank_tbl):,}** player-seasons shown")
 
@@ -373,16 +396,20 @@ with tab_arc:
                 arc_tbl = arc_df[["Season", "barrett_score", "Team", "score_rank", "GP", "total_min", "salary"]].copy()
                 arc_tbl["salary"] = arc_tbl["salary"] / 1e6
                 arc_tbl.columns = ["Season", "Barrett Score", "Team", "Season Rank", "GP", "Total Min", "Salary $M"]
-                st.dataframe(
-                    arc_tbl.style.highlight_max(subset=["Barrett Score"], color="#4a3500", axis=0),
-                    column_config={
-                        "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-                        "Salary $M":     st.column_config.NumberColumn(format="$%.2fM"),
-                        "Total Min":     st.column_config.NumberColumn(help="Total minutes played that season."),
-                        "GP":            st.column_config.NumberColumn(format="%d", help="Games played."),
+                _arc_peak = arc_tbl["Barrett Score"].max()
+                html_table(
+                    arc_tbl,
+                    formatters={
+                        "Barrett Score": lambda v: f"{v:.2f}", "Salary $M": lambda v: f"${v:.2f}M",
+                        "Total Min": lambda v: str(int(v)), "GP": lambda v: str(int(v)),
+                        "Season Rank": lambda v: str(int(v)),
                     },
-                    use_container_width=True,
-                    hide_index=True,
+                    aligns={c: "right" for c in ["Barrett Score", "Season Rank", "GP", "Total Min", "Salary $M"]},
+                    numeric={"Barrett Score", "Season Rank", "GP", "Total Min", "Salary $M"},
+                    helps={"Total Min": "Total minutes played that season.", "GP": "Games played."},
+                    row_style=lambda rd: ("background:rgba(241,196,15,0.18);font-weight:600"
+                                          if rd.get("Barrett Score") == _arc_peak else ""),
+                    height=min(640, len(arc_tbl) * 38 + 46),
                 )
     else:
         st.info("Type a player name above to see their career arc.")
@@ -429,14 +456,14 @@ with tab_era:
 
             era_label = era_name.replace("\n", " ")
             st.markdown(f"**{era_label}**")
-            st.dataframe(
+            html_table(
                 era_stats.head(15),
-                column_config={
-                    "Avg Score":  st.column_config.NumberColumn(format="%.2f"),
-                    "Peak Score": st.column_config.NumberColumn(format="%.2f"),
+                formatters={
+                    "Avg Score": lambda v: f"{v:.2f}", "Peak Score": lambda v: f"{v:.2f}",
+                    "Seasons": lambda v: str(int(v)),
                 },
-                use_container_width=True,
-                hide_index=True,
+                aligns={c: "right" for c in ["#", "Avg Score", "Peak Score", "Seasons"]},
+                numeric={"#", "Avg Score", "Peak Score", "Seasons"},
                 height=560,
             )
 
@@ -501,16 +528,18 @@ with tab_team:
         rush_tbl.columns = ["Player", "Season", "Barrett Score", "League Rank That Season", "Salary $M", "Δ Market $M"]
         rush_tbl.insert(0, "#", range(1, len(rush_tbl) + 1))
 
-        st.dataframe(
-            rush_tbl.style.map(_color_delta_legacy, subset=["Δ Market $M"]),
-            column_config={
-                "Barrett Score":            st.column_config.NumberColumn(format="%.2f"),
-                "League Rank That Season":  st.column_config.NumberColumn(help="Their score rank among all players that year."),
-                "Salary $M":                st.column_config.NumberColumn(format="$%.2fM"),
-                "Δ Market $M":              st.column_config.NumberColumn(format="$%.2fM"),
+        html_table(
+            rush_tbl,
+            formatters={
+                "Barrett Score": lambda v: f"{v:.2f}",
+                "League Rank That Season": lambda v: str(int(v)),
+                "Salary $M": lambda v: f"${v:.2f}M", "Δ Market $M": lambda v: f"${v:.2f}M",
             },
-            use_container_width=True,
-            hide_index=True,
+            styles={"Δ Market $M": _hl_delta},
+            aligns={c: "right" for c in ["#", "Barrett Score", "League Rank That Season", "Salary $M", "Δ Market $M"]},
+            numeric={"#", "Barrett Score", "League Rank That Season", "Salary $M", "Δ Market $M"},
+            helps={"League Rank That Season": "Their score rank among all players that year."},
+            height=min(560, len(rush_tbl) * 38 + 46),
         )
 
         st.divider()
@@ -523,11 +552,11 @@ with tab_team:
         full_rush_tbl = full_rush[["Player", "Season", "barrett_score", "score_rank"]].copy()
         full_rush_tbl.columns = ["Player", "Season", "Barrett Score", "League Rank"]
         full_rush_tbl.insert(0, "#", range(1, len(full_rush_tbl) + 1))
-        st.dataframe(
+        html_table(
             full_rush_tbl,
-            column_config={"Barrett Score": st.column_config.NumberColumn(format="%.2f")},
-            use_container_width=True,
-            hide_index=True,
+            formatters={"Barrett Score": lambda v: f"{v:.2f}", "League Rank": lambda v: str(int(v))},
+            aligns={c: "right" for c in ["#", "Barrett Score", "League Rank"]},
+            numeric={"#", "Barrett Score", "League Rank"},
             height=400,
         )
 
@@ -600,18 +629,19 @@ with tab_long:
         )
     st.plotly_chart(theme_fig(fig_long), use_container_width=True, config={"displayModeBar": False})
 
-    st.dataframe(
+    html_table(
         long_df,
-        column_config={
-            "Avg Score":   st.column_config.NumberColumn(format="%.2f",
-                help="Average Barrett Score across all qualifying seasons."),
-            "Peak Score":  st.column_config.NumberColumn(format="%.2f"),
-            "Floor Score": st.column_config.NumberColumn(format="%.2f",
-                help="Their lowest qualifying season score: the floor of their value."),
+        formatters={
+            "Avg Score": lambda v: f"{v:.2f}", "Peak Score": lambda v: f"{v:.2f}",
+            "Floor Score": lambda v: f"{v:.2f}", "Seasons": lambda v: str(int(v)),
         },
-        use_container_width=True,
-        hide_index=True,
-        height=min(600, len(long_df) * 35 + 40),
+        aligns={c: "right" for c in ["#", "Avg Score", "Peak Score", "Floor Score", "Seasons"]},
+        numeric={"#", "Avg Score", "Peak Score", "Floor Score", "Seasons"},
+        helps={
+            "Avg Score": "Average Barrett Score across all qualifying seasons.",
+            "Floor Score": "Their lowest qualifying season score: the floor of their value.",
+        },
+        height=min(600, len(long_df) * 38 + 46),
     )
     st.caption(
         f"**{len(long_df)}** players with ≥ {min_seas} qualifying seasons shown. "
@@ -651,17 +681,17 @@ with tab_rec:
         uv_tbl.columns = ["Player", "Season", "Team", "Barrett Score", "Score Rank", "Actual $M", "Proj. $M", "Δ Market $M"]
         uv_tbl.insert(0, "#", range(1, len(uv_tbl) + 1))
 
-        st.dataframe(
-            uv_tbl.style.map(_color_delta_legacy, subset=["Δ Market $M"]),
-            column_config={
-                "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-                "Actual $M":     st.column_config.NumberColumn(format="$%.2fM"),
-                "Proj. $M":      st.column_config.NumberColumn(format="$%.2fM"),
-                "Δ Market $M":   st.column_config.NumberColumn(format="$%.2fM",
-                    help="Negative = underpaid. The more negative, the bigger the steal for the team."),
+        html_table(
+            uv_tbl,
+            formatters={
+                "Barrett Score": lambda v: f"{v:.2f}", "Score Rank": lambda v: str(int(v)),
+                "Actual $M": lambda v: f"${v:.2f}M", "Proj. $M": lambda v: f"${v:.2f}M",
+                "Δ Market $M": lambda v: f"${v:.2f}M",
             },
-            use_container_width=True,
-            hide_index=True,
+            styles={"Δ Market $M": _hl_delta},
+            aligns={c: "right" for c in ["#", "Barrett Score", "Score Rank", "Actual $M", "Proj. $M", "Δ Market $M"]},
+            numeric={"#", "Barrett Score", "Score Rank", "Actual $M", "Proj. $M", "Δ Market $M"},
+            helps={"Δ Market $M": "Negative = underpaid. The more negative, the bigger the steal."},
             height=500,
         )
 
@@ -684,25 +714,16 @@ with tab_rec:
         fall_tbl.columns = ["Player", "Season", "Score That Year", "Score Prev. Season", "Δ Score"]
         fall_tbl.insert(0, "#", range(1, len(fall_tbl) + 1))
 
-        def _color_fall(val):
-            try:
-                n = float(val)
-            except (ValueError, TypeError):
-                return ""
-            if n < -10: return "color: #e74c3c; font-weight: bold"
-            if n < -4:  return "color: #f1a8a8"
-            return ""
-
-        st.dataframe(
-            fall_tbl.style.map(_color_fall, subset=["Δ Score"]),
-            column_config={
-                "Score That Year":    st.column_config.NumberColumn(format="%.2f"),
-                "Score Prev. Season": st.column_config.NumberColumn(format="%.2f"),
-                "Δ Score":            st.column_config.NumberColumn(format="%.2f",
-                    help="Negative = score dropped vs prior season. Larger drop = bigger fall."),
+        html_table(
+            fall_tbl,
+            formatters={
+                "Score That Year": lambda v: f"{v:.2f}", "Score Prev. Season": lambda v: f"{v:.2f}",
+                "Δ Score": lambda v: f"{v:.2f}",
             },
-            use_container_width=True,
-            hide_index=True,
+            styles={"Δ Score": _hl_fall},
+            aligns={c: "right" for c in ["#", "Score That Year", "Score Prev. Season", "Δ Score"]},
+            numeric={"#", "Score That Year", "Score Prev. Season", "Δ Score"},
+            helps={"Δ Score": "Negative = score dropped vs prior season. Larger drop = bigger fall."},
             height=500,
         )
 
@@ -797,15 +818,15 @@ with tab_draft:
                 sum_tbl = class_summary[["Player", "OVERALL_PICK", "peak_score", "seasons"]].copy()
                 sum_tbl.columns = ["Player", "Pick #", "Peak Score", "Seasons"]
                 sum_tbl["Peak Score"] = sum_tbl["Peak Score"].round(2)
-                st.dataframe(
+                html_table(
                     sum_tbl,
-                    column_config={
-                        "Peak Score": st.column_config.NumberColumn(format="%.2f"),
-                        "Pick #":     st.column_config.NumberColumn(format="%d"),
+                    formatters={
+                        "Pick #": lambda v: str(int(v)), "Peak Score": lambda v: f"{v:.2f}",
+                        "Seasons": lambda v: str(int(v)),
                     },
-                    use_container_width=True,
-                    hide_index=True,
-                    height=min(500, len(sum_tbl) * 35 + 40),
+                    aligns={c: "right" for c in ["Pick #", "Peak Score", "Seasons"]},
+                    numeric={"Pick #", "Peak Score", "Seasons"},
+                    height=min(500, len(sum_tbl) * 38 + 46),
                 )
 
             with mc2:
