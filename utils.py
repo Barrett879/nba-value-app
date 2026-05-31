@@ -1331,16 +1331,20 @@ COMMON_CSS = """
     }
     .st-key-playoff_nav_toggle:hover label p { color: var(--fg-1) !important; }
 
-    /* Theme (brightness) button — pinned to the far top-right of the nav. */
+    /* Theme (brightness) button — pinned to the far top-right of the nav,
+       vertically centered within the 3rem-tall bar. */
     .st-key-theme_nav_toggle {
         position: fixed !important;
-        top: 0.45rem !important;
+        top: 0 !important;
+        height: 3rem !important;
         right: 1rem !important;
         z-index: 10001 !important;
         margin: 0 !important;
         padding: 0 !important;
         width: auto !important;
         background: transparent !important;
+        display: flex !important;
+        align-items: center !important;
     }
     /* Brightness icon button (moon in light, sun in dark) — strip Streamlit's
        button chrome down to just the icon. */
@@ -1363,6 +1367,14 @@ COMMON_CSS = """
     .st-key-theme_nav_toggle button:focus,
     .st-key-theme_nav_toggle button:focus-visible {
         box-shadow: none !important; background: transparent !important; color: var(--fg-1) !important;
+    }
+
+    /* In-page Playoff-mode toggle (on the title row): push it to the right edge
+       of its column so it lines up under the brightness button. The toggle's
+       wrapper gets class .st-key-playoff_mode from its widget key. */
+    .st-key-playoff_mode {
+        display: flex !important;
+        justify-content: flex-end !important;
     }
 
     /* Make the toggle's wrapper hierarchy vanish from layout entirely.

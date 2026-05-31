@@ -29,7 +29,7 @@ render_page_chrome()
 render_nav("Current Rankings")
 
 _pf_on = bool(st.session_state.get("playoff_mode", False))
-_tcol, _pcol = st.columns([4, 1], vertical_alignment="bottom")
+_tcol, _pcol = st.columns([5, 1], vertical_alignment="center")
 with _tcol:
     st.title("Playoff Rankings" if _pf_on else "NBA Contract Value Rankings")
 with _pcol:

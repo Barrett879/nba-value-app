@@ -26,7 +26,7 @@ render_nav("Search Player")
 
 # Playoff toggle sits on the title row, right-aligned (in-page, not the nav bar)
 playoff_mode = bool(st.session_state.get("playoff_mode", False))
-_tcol, _pcol = st.columns([4, 1], vertical_alignment="bottom")
+_tcol, _pcol = st.columns([5, 1], vertical_alignment="center")
 with _tcol:
     st.title("Search Player (Playoff Mode)" if playoff_mode else "Search Player")
 with _pcol:
