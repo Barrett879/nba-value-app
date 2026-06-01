@@ -10,7 +10,10 @@
 #   - Name should match the player (accents optional; "luka doncic" is fine).
 #   - A single position means EXACTLY that (no auto flex) — use it to pin a
 #     player to one spot (e.g. a pure PG who 2K also tags at SG).
-#   - Order is cosmetic; matching uses the position SET, so SG/PG == PG/SG.
+#   - Order MATTERS: list the PRIMARY position FIRST (e.g. SG/SF = primary SG).
+#     Eligibility still uses the full set, but a player only "competes" with
+#     another for minutes when at least one of them plays the shared spot as
+#     their PRIMARY (so a SG/SF guard no longer blocks a true SF/PF forward).
 #   - Lines starting with # are ignored. Leave the file header-only to use 2K as-is.
 name,positions
 Jake LaRavia,SF/PF
@@ -37,3 +40,4 @@ Hugo Gonzalez,SF/SG
 Cooper Flagg,SF/PF
 Austin Reaves,SG/PG
 Jaylen Brown,SF/SG
+Marcus Smart,SG/PG

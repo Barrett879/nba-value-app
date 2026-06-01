@@ -88,9 +88,20 @@ _GROUP_POS = {"G": {"PG", "SG"}, "F": {"SF", "PF"}, "C": {"C"}}
 def group_flex(pos: str) -> str:
     """Data-free fallback for a player with NO 2K/override entry: expand a single
     primary to its position GROUP — guards->PG/SG, forwards->SF/PF, center->C.
-    Returns a resolved '/'-joined string so it parses like a 2K designation."""
-    g = _GROUP_POS[_GROUP_OF[_norm5(pos)]]
-    return "/".join(sorted(g, key=lambda p: _POS_IDX[p]))
+    Returns a resolved '/'-joined string (PRIMARY first) so it parses like a 2K
+    designation and downstream can weight primary > secondary."""
+    primary = _norm5(pos)
+    rest = sorted(_GROUP_POS[_GROUP_OF[primary]] - {primary}, key=lambda p: _POS_IDX[p])
+    return "/".join([primary] + rest)
+
+
+def _primary_position(pos: str) -> str:
+    """The PRIMARY (first-listed) slot of a resolved position string —
+    'SG/SF' -> 'SG'. Position strings are kept primary-first end-to-end."""
+    for part in str(pos).replace("|", "/").split("/"):
+        if part.strip():
+            return _norm5(part)
+    return "SF"
 
 
 def _eligible_positions(pos: str) -> set:
@@ -122,8 +133,17 @@ def load_player_positions(pos_path: Path | str = POS_2K_PATH,
             nm, pos = str(nm).strip(), str(pos).strip()
             if not nm or not pos or pos.lower() == "nan":
                 continue
-            elig = _eligible_positions(pos)
-            out[_normalize(nm)] = "/".join(sorted(elig, key=lambda p: _POS_IDX[p]))
+            # Keep PRIMARY-first source order (canonicalize each label, don't
+            # reorder) so the overlap can weight primary > secondary. Eligibility
+            # is set-based downstream, so order doesn't affect who-can-play-where.
+            ordered = []
+            for part in pos.replace("|", "/").split("/"):
+                if part.strip():
+                    q = _norm5(part)
+                    if q not in ordered:
+                        ordered.append(q)
+            if ordered:
+                out[_normalize(nm)] = "/".join(ordered)
     return out
 
 
@@ -184,9 +204,14 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
     No affordability or interest cutoff here — rank_suitors decides who's a
     realistic suitor and at what price."""
     elig = _eligible_positions(target_pos)              # the spots HE can play
-    # An incumbent competes with him when their eligible sets OVERLAP — so a 2K
-    # SG/SF wing blocks an SG or an SF target, but a pure PG never blocks a center.
-    inc = (team_roster[team_roster["pos"].map(lambda p: bool(_eligible_positions(p) & elig))]
+    tgt_primary = _primary_position(target_pos)
+    # Primary-weighted overlap: an incumbent competes only when at least ONE of
+    # the two plays the shared spot as their PRIMARY. So a SG/SF combo guard
+    # (primary SG) no longer "blocks" a true SF/PF forward through his secondary
+    # SF — a secondary-only-for-both overlap doesn't count as competing for minutes.
+    def _competes(p):
+        return (_primary_position(p) in elig) or (tgt_primary in _eligible_positions(p))
+    inc = (team_roster[team_roster["pos"].map(_competes)]
            .sort_values("barrett", ascending=False).reset_index(drop=True))
     scores = inc["barrett"].astype(float).tolist()
     slot = sum(1 for s in scores if s > target_score)   # how many incumbents are better
