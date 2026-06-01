@@ -1801,6 +1801,37 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
 predicted_M = prediction["predicted"] / 1_000_000
 low_M  = prediction["low"]  / 1_000_000
 high_M = prediction["high"] / 1_000_000
+_model_only_M = predicted_M   # keep the pure model output for the explainer
+
+# Blend toward the market when model and market diverge sharply. The model is
+# noisy on mid-tier role players and tends to over-project them, while the
+# comparable-signings median is the stronger signal there. So when they disagree
+# by > 30%, pull the headline number toward the market — more for bigger gaps —
+# but never fully discard the model (cap the market weight at 0.6). Max-capped
+# players are exempt: their number is a CBA rule, not a noisy estimate.
+_blended_toward_market = False
+if (_market_median is not None
+        and not prediction.get("cba_cap_applied")
+        and not prediction.get("cba_floor_applied")):
+    _mkt_M = _market_median / 1_000_000
+    _hi = max(predicted_M, _mkt_M)
+    _gap = abs(predicted_M - _mkt_M) / _hi if _hi > 0 else 0.0
+    if _gap > 0.25 and _mkt_M > 0:
+        # Once they diverge past 25%, give the market real weight: 0.35 at the
+        # 25% threshold, ramping to 0.65 by a 60%+ gap. (A 47% Joe-style gap →
+        # ~0.5 weight, pulling $18.8M + $12.8M to ~$15.8M.)
+        _w_mkt = min(0.65, 0.35 + 0.30 * (_gap - 0.25) / 0.35)
+        _blended_M = (1 - _w_mkt) * predicted_M + _w_mkt * _mkt_M
+        if abs(_blended_M - predicted_M) > 0.05:
+            _blended_toward_market = True
+            # Recompute the band around the blended number using the same
+            # tier-aware half-width the model uses (45%→12% by size).
+            _bw = float(np.interp(_blended_M, [2.0, 8.0, 20.0, 45.0],
+                                              [0.45, 0.33, 0.24, 0.12]))
+            predicted_M = _blended_M
+            low_M  = max(0.015 * SALARY_CAP_M.get(CONTRACT_SEASON, 165.0),
+                         _blended_M * (1 - _bw))
+            high_M = _blended_M * (1 + _bw)
 
 # Confidence-bar scale: from the veteran-minimum floor (1.5% of cap) up to THIS
 # player's OWN capped max — their 25/30/35% tier (prediction["cba_max_dollars"]).
@@ -1833,6 +1864,8 @@ elif prediction.get("max_tier_floor_applied"):
     _model_caption = "All-NBA near-max"
 elif features.get("on_rookie_scale"):
     _model_caption = "Currently on rookie scale"
+elif _blended_toward_market:
+    _model_caption = "Blended w/ market"
 else:
     _model_caption = ""
 
