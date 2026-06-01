@@ -1561,7 +1561,12 @@ if st.session_state.get("theme_dark", False):
             s.textContent =
               "div[class$='-menu'],div[class*='-menu ']{background:#16181f!important;"
               + "border:1px solid #2c2c40!important;border-radius:16px!important;"
-              + "box-shadow:0 8px 24px rgba(0,0,0,.45)!important;overflow:hidden!important;}";
+              + "box-shadow:0 8px 24px rgba(0,0,0,.45)!important;overflow:hidden!important;}"
+              // The component renders a 2px white 'loading' bar via inline style
+              // (no class) between the input and the menu — recolor it dark so it
+              // doesn't read as a white strip.
+              + "div[style*='background: white'],div[style*='background:#fff']"
+              + "{background:#16181f!important;}";
             idoc.head.appendChild(s);
             return true;
           }

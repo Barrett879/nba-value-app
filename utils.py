@@ -743,9 +743,26 @@ THEME_BASE_CSS = """
         color: var(--fg-1) !important;
     }
     div[data-baseweb="select"] svg { fill: var(--fg-3) !important; }
-    ul[data-baseweb="menu"], div[data-baseweb="popover"] ul { background: var(--panel-solid) !important; }
-    ul[data-baseweb="menu"] li { color: var(--fg-2) !important; }
-    ul[data-baseweb="menu"] li:hover { background: var(--panel-hover) !important; }
+    /* Dropdown option list (selectbox / multiselect popover). Target by ROLE,
+       not just `ul li` — recent BaseWeb renders options as [role=option] that
+       don't always match the `ul[menu] li` descendant selector, which left the
+       option text near-black on the dark menu. Cover the container + the option
+       text (and its inner nodes) so it follows the theme. */
+    ul[data-baseweb="menu"], div[data-baseweb="popover"] ul,
+    div[data-baseweb="popover"] [role="listbox"] {
+        background: var(--panel-solid) !important;
+    }
+    [data-baseweb="popover"] [role="option"],
+    [data-baseweb="popover"] [role="option"] *,
+    ul[data-baseweb="menu"] [role="option"],
+    ul[data-baseweb="menu"] li {
+        color: var(--fg-2) !important;
+    }
+    [data-baseweb="popover"] [role="option"]:hover,
+    ul[data-baseweb="menu"] [role="option"]:hover,
+    ul[data-baseweb="menu"] li:hover {
+        background: var(--panel-hover) !important;
+    }
     [data-testid="stTextInput"] div[data-baseweb="input"],
     [data-testid="stNumberInput"] div[data-baseweb="input"],
     [data-testid="stTextInput"] div[data-baseweb="base-input"],
