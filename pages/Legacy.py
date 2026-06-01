@@ -454,7 +454,8 @@ with tab_arc:
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_era:
     st.subheader("Era Leaderboards")
-    st.caption("Average Barrett Score within each era. Minimum 2 qualifying seasons required.")
+    st.caption("Average Barrett Score within each era (GP-weighted), minimum 2 qualifying seasons. "
+               "The cards show each era's top 10 at a glance — pick an era below for the full table.")
 
     ERAS = {
         "Disco Era\n(1973–1979)":       [s for s in SEASONS_CHRON if _season_year(s) <= 1978],
@@ -468,46 +469,114 @@ with tab_era:
     # Drop empty eras (e.g. seasons not seeded yet)
     ERAS = {k: v for k, v in ERAS.items() if v}
 
-    era_cols = st.columns(len(ERAS) if ERAS else 1, gap="medium")
-    for col, (era_name, era_seasons) in zip(era_cols, ERAS.items()):
-        with col:
-            era_df = all_df[all_df["Season"].isin(era_seasons)]
-            era_stats = (
-                era_df.groupby("Player")
-                .apply(lambda g: pd.Series({
-                    "avg_score":  (g["barrett_score"] * g["GP"]).sum() / g["GP"].sum()
-                                  if g["GP"].sum() > 0 else g["barrett_score"].mean(),
-                    "peak_score": g["barrett_score"].max(),
-                    "seasons":    g["Season"].nunique(),
-                }))
-                .reset_index()
-            )
-            era_stats = era_stats[era_stats["seasons"] >= 2].sort_values("avg_score", ascending=False)
-            era_stats["avg_score"]  = era_stats["avg_score"].round(2)
-            era_stats["peak_score"] = era_stats["peak_score"].round(2)
-            era_stats.insert(0, "#", range(1, len(era_stats) + 1))
-            era_stats.columns = ["#", "Player", "Avg Score", "Peak Score", "Seasons"]
+    # Compute each era's leaderboard once — reused by both the cards and the
+    # pick-an-era detail table below.
+    def _era_leaderboard(era_seasons):
+        edf = all_df[all_df["Season"].isin(era_seasons)]
+        stats = (
+            edf.groupby("Player")
+            .apply(lambda g: pd.Series({
+                "avg_score":  (g["barrett_score"] * g["GP"]).sum() / g["GP"].sum()
+                              if g["GP"].sum() > 0 else g["barrett_score"].mean(),
+                "peak_score": g["barrett_score"].max(),
+                "seasons":    g["Season"].nunique(),
+            }))
+            .reset_index()
+        )
+        stats = stats[stats["seasons"] >= 2].sort_values("avg_score", ascending=False)
+        stats["avg_score"]  = stats["avg_score"].round(2)
+        stats["peak_score"] = stats["peak_score"].round(2)
+        stats.insert(0, "#", range(1, len(stats) + 1))
+        stats.columns = ["#", "Player", "Avg Score", "Peak Score", "Seasons"]
+        return stats
 
-            # Fixed-height, bottom-aligned title block so every column's table
-            # starts at the same line — long era names that wrap to two lines no
-            # longer push their table down and stagger the row of leaderboards.
+    _era_boards = {name: _era_leaderboard(seasons) for name, seasons in ERAS.items()}
+
+    def _abbrev(full_name: str) -> str:
+        """'Michael Jordan' -> 'M. Jordan' so names fit the narrow cards."""
+        parts = full_name.split(" ", 1)
+        return f"{parts[0][0]}. {parts[1]}" if len(parts) == 2 and parts[0] else full_name
+
+    # ── Compact cards: top 10 per era, avg score inline (no horizontal scroll) ──
+    st.markdown(
+        """
+        <style>
+        .era-card { background:var(--panel-solid); border:1px solid var(--panel-line);
+            border-radius:10px; padding:0.7rem 0.55rem 0.6rem; box-shadow:var(--shadow-card);
+            height:100%; }
+        .era-title { font-weight:700; font-size:0.82rem; line-height:1.15; min-height:2.4rem;
+            display:flex; align-items:flex-end; color:var(--fg-1);
+            border-bottom:1px solid var(--hairline); padding-bottom:0.4rem; margin-bottom:0.4rem; }
+        .era-row { display:flex; align-items:baseline; gap:0.4rem; padding:0.2rem 0.1rem;
+            font-size:0.8rem; border-bottom:1px solid var(--hairline-soft); }
+        .era-row:last-child { border-bottom:none; }
+        .era-rank { color:var(--fg-5); width:1.15rem; text-align:right; font-size:0.72rem;
+            flex-shrink:0; font-variant-numeric:tabular-nums; }
+        .era-name { color:var(--fg-2); flex:1; white-space:nowrap; overflow:hidden;
+            text-overflow:ellipsis; }
+        .era-score { color:var(--fg-1); font-weight:700; flex-shrink:0;
+            font-variant-numeric:tabular-nums; }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+    era_cols = st.columns(len(_era_boards), gap="small")
+    for col, (era_name, board) in zip(era_cols, _era_boards.items()):
+        with col:
             era_label = era_name.replace("\n", " ")
+            rows = ""
+            for _, r in board.head(10).iterrows():
+                rows += (
+                    f'<div class="era-row" title="{r["Player"]} · avg {r["Avg Score"]:.1f} · '
+                    f'peak {r["Peak Score"]:.1f} · {int(r["Seasons"])} seasons">'
+                    f'<span class="era-rank">{int(r["#"])}</span>'
+                    f'<span class="era-name">{_abbrev(r["Player"])}</span>'
+                    f'<span class="era-score">{r["Avg Score"]:.1f}</span></div>'
+                )
+            if not rows:
+                rows = '<div class="era-row" style="color:var(--fg-5);">No qualifying players</div>'
             st.markdown(
-                f"<div style='min-height:3rem; display:flex; align-items:flex-end; "
-                f"font-weight:700; font-size:1rem; line-height:1.2; "
-                f"margin-bottom:0.4rem;'>{era_label}</div>",
+                f'<div class="era-card"><div class="era-title">{era_label}</div>{rows}</div>',
                 unsafe_allow_html=True,
             )
-            html_table(
-                era_stats.head(15),
-                formatters={
-                    "Avg Score": lambda v: f"{v:.2f}", "Peak Score": lambda v: f"{v:.2f}",
-                    "Seasons": lambda v: str(int(v)),
-                },
-                aligns={c: "right" for c in ["#", "Avg Score", "Peak Score", "Seasons"]},
-                numeric={"#", "Avg Score", "Peak Score", "Seasons"},
-                height=560,
-            )
+
+    st.divider()
+
+    # ── Pick an era → full-width detail table (every stat, deeper) ──
+    _era_keys = list(_era_boards.keys())
+    _default_era = next((k for k in _era_keys if k.startswith("Jordan")), _era_keys[0])
+    _pick = st.selectbox(
+        "Full leaderboard for an era",
+        _era_keys,
+        index=_era_keys.index(_default_era),
+        format_func=lambda s: s.replace("\n", " "),
+    )
+    _pick_board = _era_boards[_pick]
+    _pick_label = _pick.replace("\n", " ")
+    st.markdown(
+        f"<div style='margin:0.2rem 0 0.4rem; color:var(--fg-3); font-size:0.85rem;'>"
+        f"<b style='color:var(--fg-1);'>{_pick_label}</b> · "
+        f"{len(_pick_board)} qualifying players (≥ 2 seasons)</div>",
+        unsafe_allow_html=True,
+    )
+    if _pick_board.empty:
+        st.info("No players qualified for this era yet.")
+    else:
+        html_table(
+            _pick_board.head(50),
+            formatters={
+                "Avg Score": lambda v: f"{v:.2f}", "Peak Score": lambda v: f"{v:.2f}",
+                "Seasons": lambda v: str(int(v)),
+            },
+            aligns={c: "right" for c in ["#", "Avg Score", "Peak Score", "Seasons"]},
+            numeric={"#", "Avg Score", "Peak Score", "Seasons"},
+            helps={
+                "Avg Score": "GP-weighted average Barrett Score across the era.",
+                "Peak Score": "Best single-season Barrett Score within the era.",
+                "Seasons": "Qualifying seasons played in the era.",
+            },
+            height=min(640, len(_pick_board.head(50)) * 38 + 46),
+        )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
