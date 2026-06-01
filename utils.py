@@ -920,6 +920,20 @@ def theme_fig(fig):
     on-bar label colours are left to the chart (saturated accents read on both).
     """
     dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
+    # Hover tooltip: Plotly's default is a light box with light text, which is
+    # unreadable in dark mode. Pin an explicit, theme-matched hoverlabel in BOTH
+    # modes (dark panel + light text on dark; light panel + dark text on light).
+    try:
+        if dark:
+            fig.update_layout(hoverlabel=dict(
+                bgcolor="#1a1a2e", bordercolor="#2c2c40",
+                font=dict(color="#e8e8f0")))
+        else:
+            fig.update_layout(hoverlabel=dict(
+                bgcolor="#ffffff", bordercolor="rgba(20,22,40,0.18)",
+                font=dict(color="#14142a")))
+    except Exception:
+        pass
     if dark:
         return fig  # charts are authored for dark — leave pixel-identical
     font, grid = "#3a3d48", "rgba(20,22,40,0.10)"
