@@ -1197,25 +1197,31 @@ def _tier_penalty_weight(age) -> float:
 # cannot bypass (no min-count fallback): if nobody falls in the band, we show
 # no comps and suppress the market opinion rather than invent a non-peer —
 # e.g. a -4.0 player must never be priced off +3.7 rotation centers.
-COMP_SCORE_TOL_PCT = 0.25   # keep comps within ±25% of the target's trailing score…
+COMP_SCORE_TOL_PCT = 0.25   # keep comps within ±25% of the target's current score…
 COMP_SCORE_TOL_MIN = 5.0    # …or ±5 raw Barrett points, whichever band is wider
-# Minimum-caliber targets (trailing Barrett under this) are priced against the
+# Minimum-caliber targets (current Barrett under this) are priced against the
 # minimum-salary market too — their real comps ARE minimum deals, so vet-min
 # signings stay in their pool instead of being filtered out (which would leave
 # only $5-10M rotation comps and inflate the market median). The rotation tier
-# sits at ~9+ trailing Barrett, so 5.0 catches fringe / replacement players
-# (Thanasis 2.5, Amari 1.1, Jae'Sean Tate 3.1 — all were projecting $7-11M off
-# non-peer comps) while leaving every Barrett ≥ 5 player's pool exactly as it
-# was. Verified: scrubs drop to ~$2-4M market; rotation / mid / stars unchanged.
+# sits at ~9+ Barrett, so 5.0 catches fringe / replacement players (Thanasis
+# 1.1, Amari 1.1, Jae'Sean Tate 3.1 — all were projecting $7-11M off non-peer
+# comps) while leaving every Barrett ≥ 5 player's pool exactly as it was.
+# Verified: scrubs drop to ~$2-4M market; rotation / mid / stars unchanged.
 VETMIN_COMP_TARGET_MAX = 5.0
 
 
 def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
-    """Match historical signings on **trailing-weighted Barrett** + age + position.
+    """Match historical signings on **current-season Barrett** + age + position.
 
-    The target's trailing_barrett is a 50/30/20-weighted average of the
-    player's last 3 healthy sign-year Barrett Scores (with availability) —
-    same weighting as career_barrett, but raw Barrett instead of rate.
+    The target is matched on its sign-year (current) Barrett — the same snapshot
+    the comps carry, so it's apples-to-apples. We do NOT match on the trailing
+    (last-3-healthy-years) average: it reaches back to a declined/aged player's
+    prime (Kyle Lowry, 40, current 1.0 but trailing 17.7 → Chris Paul comps,
+    $12M market). Walk-forward OOS (2021-25, minimums included) settled it —
+    matching on current form cuts declined-player market error 11.6M→4.5M and
+    minimum-signing error 6.6M→4.8M, with no loss on stable players and (unlike
+    min(current, trailing), which re-breaks them) no under-rating of breakouts.
+    See scripts/experiment_match_score.py.
 
     Score-distance weight is age-scaled (1.0 + tier_weight):
       - Young developers (≤27): 2.0× score — prevents Zion-style stretch
@@ -1225,13 +1231,7 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
         aging vets match other aging vets (Harden's paycut cohort), not
         young production-similar stars (Brunson/Booker).
 
-    Tried min(sign-yr, career-weighted) for the score term but it brought
-    back paycut comps via their pre-collapse career scores (Lonzo career
-    19.5 matched Vassell trailing 17.2 even though Lonzo signed for $10M
-    after collapsing to sign-yr 9). Sign-yr-only is the right discriminator
-    because that's the snapshot the market actually priced.
-
-    Distance = |comp_walk_yr − target_trailing| × (1 + tier_weight)
+    Distance = |comp_sign_yr_score − target_current_score| × (1 + tier_weight)
              + |age_diff| × 1.5
              + position_penalty (broad G/F/C bucket — PG/SG are pooled)
              + tier_penalty (faded by age — see _tier_penalty_weight)
@@ -1241,8 +1241,16 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
 
     target_position = features["position"]
     target_age = features["age"] if features["age"] else 27
-    # Trailing-weighted Barrett with availability — smoothed sign-yr.
-    target_barrett = features.get("trailing_barrett", features["barrett_score"])
+    # Match on CURRENT-season form, NOT the trailing (last-3-healthy-years)
+    # average. Trailing reaches back to a declined/aged player's prime — Kyle
+    # Lowry (40, current 1.0) read as trailing 17.7 and matched to Chris Paul,
+    # market $12M. Walk-forward OOS (2021-25, minimums included) decided this:
+    # matching on current form cuts declined-player market error 11.6M->4.5M and
+    # minimum-signing error 6.6M->4.8M, with no loss on stable players AND
+    # (unlike min(current,trailing), which re-breaks them) no under-rating of
+    # breakouts. It's also apples-to-apples: comps are matched on THEIR sign-year
+    # score. See scripts/experiment_match_score.py.
+    target_barrett = float(features.get("barrett_score") or 0.0)
     target_tier = features.get("draft_tier", "Undrafted")
     target_tier_idx = DRAFT_TIER_ORDINAL.get(target_tier, 4)
     tier_weight = _tier_penalty_weight(features.get("age"))
