@@ -1163,8 +1163,8 @@ def _tier_penalty_weight(age) -> float:
 # cannot bypass (no min-count fallback): if nobody falls in the band, we show
 # no comps and suppress the market opinion rather than invent a non-peer —
 # e.g. a -4.0 player must never be priced off +3.7 rotation centers.
-COMP_SCORE_TOL_PCT = 0.30   # keep comps within ±30% of the target's trailing score…
-COMP_SCORE_TOL_MIN = 6.0    # …or ±6 raw Barrett points, whichever band is wider
+COMP_SCORE_TOL_PCT = 0.25   # keep comps within ±25% of the target's trailing score…
+COMP_SCORE_TOL_MIN = 5.0    # …or ±5 raw Barrett points, whichever band is wider
 COMP_MIN_COUNT     = 3      # but always show at least the 3 closest
 # Below-replacement targets (trailing Barrett under this) are priced against
 # the minimum-salary market too — their real comps ARE minimum deals, so the
@@ -1272,15 +1272,15 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
 
     # HARD score gate (the market view cannot bypass it). Restrict to comps
     # whose sign-year score is within a hybrid band of the target's trailing
-    # score — ±30%, or ±6 raw Barrett points, whichever is wider — so it adapts
-    # to stars (Brown: ±9, keeps Tatum) without collapsing for low scorers
-    # (Broome: ±6). Gate FIRST, then take the n closest by composite distance
-    # among the in-band peers (so a score-close-but-older comp isn't lost to the
-    # composite top-n). No min-count fallback: the old code padded to
-    # COMP_MIN_COUNT with the closest names regardless of distance, which priced
-    # outliers off non-peers (Broome -4.0 vs +3.7 centers, a 7+ point swing).
-    # An empty result is allowed — downstream it renders "no close comparables"
-    # and suppresses the market opinion, so the projection stands on the model.
+    # score — COMP_SCORE_TOL_PCT of it, or COMP_SCORE_TOL_MIN raw Barrett points,
+    # whichever is wider — so it scales with stars without collapsing for low
+    # scorers. Gate FIRST, then take the n closest by composite distance among
+    # the in-band peers (so a score-close-but-older comp isn't lost to the
+    # composite top-n). No min-count fallback: the old code padded to a fixed
+    # count with the closest names regardless of distance, which priced outliers
+    # off non-peers (e.g. Broome -4.0 vs +3.7 centers, a 7-point swing). An
+    # empty result is allowed — downstream it renders "no close comparables" and
+    # suppresses the market opinion, so the projection stands on the model.
     tol = max(abs(target_barrett) * COMP_SCORE_TOL_PCT, COMP_SCORE_TOL_MIN)
     in_band = same_pos[(same_pos["barrett_score"] - target_barrett).abs() <= tol]
     return in_band.nsmallest(n, "distance").copy()
