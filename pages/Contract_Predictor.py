@@ -1061,21 +1061,22 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     mask = ~out.apply(_is_rookie_ladder, axis=1)
     out = out[mask].reset_index(drop=True)
 
-    # Filter out vet-min / training-camp signings (under 3% of cap, ~$4.6M
-    # at the 2025-26 level). These aren't market-rate deals — they're
-    # CBA-mandated minimum-salary signings + bench-filler contracts. They
-    # showed up as noisy outliers in the comp pool (e.g. Keita Bates-Diop
-    # at $2.4M for a young role-player target like Peyton Watson).
-    # Players in vet-min cohorts are still predicted correctly by the
-    # model's career-rate base + "veteran end-of-career" caveat — we
-    # just don't pollute mid-tier comp pools with their signings.
+    # Tag (don't drop) vet-min / training-camp signings (under 3% of cap,
+    # ~$4.6M at the 2025-26 level): CBA minimum + bench-filler deals, not
+    # market-rate contracts. find_comparables decides per-target whether to
+    # use them. A below-replacement target (Broome-tier, trailing Barrett < 0)
+    # SHOULD be priced against the minimum-salary market — dropping cheap deals
+    # there floors his comp median at the ~$4.6M exclusion line and inflates the
+    # projection. A mid/high target still drops them (score-far noise — the
+    # original reason for the filter, e.g. Bates-Diop polluting Peyton Watson).
     def _is_vet_min(row) -> bool:
         cap_curr = SALARY_CAP_M.get(row["signed_in"], 154.6) * 1_000_000
         if cap_curr <= 0:
             return False
         return float(row["salary_curr"]) < cap_curr * 0.03
 
-    out = out[~out.apply(_is_vet_min, axis=1)].reset_index(drop=True)
+    out["is_vet_min"] = out.apply(_is_vet_min, axis=1)
+    out = out.reset_index(drop=True)
 
     # Precompute career-weighted Barrett (50/30/20 of last 3 healthy seasons,
     # with availability — same metric as the target's trailing_barrett) for
@@ -1163,6 +1164,12 @@ def _tier_penalty_weight(age) -> float:
 COMP_SCORE_TOL_PCT = 0.30   # keep comps within ±30% of the target's trailing score…
 COMP_SCORE_TOL_MIN = 6.0    # …or ±6 raw Barrett points, whichever band is wider
 COMP_MIN_COUNT     = 3      # but always show at least the 3 closest
+# Below-replacement targets (trailing Barrett under this) are priced against
+# the minimum-salary market too — their real comps ARE minimum deals, so the
+# vet-min signings stay in their pool. Every rotation+ player (Barrett ≥ 0)
+# still drops them, exactly as before. Keeps Broome-tier players off the
+# ~$4.6M vet-min exclusion floor without touching anyone currently working.
+VETMIN_COMP_TARGET_MAX = 0.0
 
 
 def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
@@ -1210,6 +1217,21 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
     history = history[history["Player"].apply(normalize) != target_norm]
     if history.empty:
         return history
+
+    # Target-aware minimum-salary inclusion (see VETMIN_COMP_TARGET_MAX). Keep
+    # vet-min comps ONLY for below-replacement targets — their real market IS
+    # the minimum. Everyone with a valid Barrett ≥ 0 drops them, reproducing
+    # the old pool exactly (zero change for rotation+ players). Missing/NaN
+    # Barrett defaults to dropping (the safe, prior behavior).
+    _keep_vetmin = (
+        target_barrett is not None
+        and not pd.isna(target_barrett)
+        and float(target_barrett) < VETMIN_COMP_TARGET_MAX
+    )
+    if "is_vet_min" in history.columns and not _keep_vetmin:
+        history = history[~history["is_vet_min"]]
+        if history.empty:
+            return history
 
     # Match against same position bucket (Guard / Forward / Center —
     # already broad; PG and SG are both "Guard"). Fall back to all
@@ -2410,11 +2432,13 @@ with st.expander("About this prediction"):
         "A machine-learning model (HistGBM) trained on 1,900+ modern-era "
         "contracts (2012+), built on the Barrett Score plus age, position, "
         "service years, All-NBA history, and advanced metrics (usage, PIE, "
-        "on/off rating). Validated by temporal cross-validation on real "
-        "signings: 89% of predictions within 5% of the cap, 99% within 10%. "
-        "It's sharpest on star and max deals; mid- and minimum-level numbers "
-        "are noisier — the eventual salary lands within ~30% of the projection "
-        "about half the time — so read those as a range, not a precise figure."
+        "on/off rating). Validated by temporal cross-validation on five "
+        "seasons of real signings (2021-25). In dollar terms it's most "
+        "accurate for role and rotation players — typically within $2-4M — "
+        "and looser for stars, where it tends to under-shoot by ~$5M because "
+        "max-salary rules, cap space, and deal timing drive those contracts "
+        "more than on-court production. Read star and max figures as a "
+        "ballpark, not a quote."
     )
 
     # Likely-suitors methodology — only when that (experimental) section
@@ -2671,24 +2695,28 @@ with st.expander("About this prediction"):
         near-zero figure after a trade, and a handful of verified bad labels),
         which misrepresent the actual contract.
 
-        - **89% of predictions within 5% of the cap** (~$8M)
-        - **99% within 10% of cap** — catastrophic misses under 2%
-        - Median |error|: ~$1.9M (≈1.3% of cap)
+        Graded on every real new contract, in **actual dollars** (not
+        share-of-cap):
+        - **Minimum / role (under $7M):** median miss ~$1.2M — right within
+          $3M about three times in four
+        - **Rotation ($7–15M):** median miss ~$3.8M
+        - **Mid-tier ($15–25M):** median miss ~$5.5M
+        - **Stars ($25M+):** median miss ~$5–9M, and the model systematically
+          *under*-projects them by ~$5M
 
-        Those are *absolute* (share-of-cap) figures, which are lenient on cheap
-        deals — a $7M miss is "within 5% of cap" whether the player makes $50M or
-        $3M. In **relative** terms (how close to the eventual salary), accuracy is
-        tier-dependent, because the model targets fair *market value* — which
-        stars realize but role players often sign below:
-        - **Star / max ($40M+):** typically within ~10% of the salary
-        - **Mid-tier ($15–40M):** ~20%
-        - **Rotation / minimum (under $15M):** ~30–40% — many sign below market
-          (minimums, team-friendly deals) for reasons no box score predicts
+        Headline "within 5% of cap" figures (89% of predictions; 99% within
+        10%) are share-of-cap, which flatters cheap deals — a $7M miss is
+        "within 5% of cap" whether the player makes $50M or $3M. The honest
+        takeaway: trust the dollar figure most for role and rotation players;
+        for stars, read it as a ballpark, not a quote.
 
-        That's why the confidence band scales with the prediction and mid/min
-        figures should be read as a range. We tested a relative-loss model to
-        tighten the cheap end; it didn't survive honest grading (the apparent
-        gain was buyout artifacts the grader excludes), so we didn't ship it.
+        We tested four ways to tighten the star end — isotonic de-biasing, a
+        leak-free market-comp feature, max-floor retuning, and quantile-loss
+        prediction intervals — and none survived honest out-of-sample grading,
+        so none shipped. The star-contract residual is genuinely irreducible
+        from box-score inputs: those deals are set in negotiations, not on the
+        floor. (The market *blend* on the bar is a separate display-layer
+        guardrail for visible outliers.)
 
         Every feature was gated on cross-validation, not a single split. The
         advanced metrics earned their place (+1.1pp within-5% on paired CV,
