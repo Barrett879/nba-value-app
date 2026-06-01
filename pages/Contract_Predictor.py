@@ -549,6 +549,32 @@ def _relative_band_dollars(predicted_dollars: float) -> float:
     return predicted_dollars * band_pct
 
 
+# NBA minimum salary scale by years of service, as a fraction of the cap (the
+# published 2025-26 minimum table ÷ the 2025-26 cap of $154.6M). The CBA grows
+# minimums with the cap, so the fraction is stable across seasons and auto-
+# scales to any season's cap. Replaces the old flat 1.5%-of-cap floor, which
+# only matched the ~2-yr minimum — it overstated the floor for rookies (a 1-yr
+# min ≈ 1.3% of cap, not 1.5%) and understated it for vets (10+ yr ≈ 2.4%).
+_MIN_SALARY_PCT_BY_SERVICE = (
+    0.0082, 0.0133, 0.0149, 0.0154, 0.0159,   # 0–4 yrs
+    0.0173, 0.0186, 0.0199, 0.0213, 0.0214,   # 5–9 yrs
+)
+_MIN_SALARY_PCT_10PLUS = 0.0235               # 10+ yrs
+
+
+def min_salary_pct(service_years) -> float:
+    """League-minimum salary as a fraction of the cap for a player with this
+    many years of service (flat tail at 10+ yrs). Used as the model's lower
+    clip and the displayed floor so a rookie isn't floored at a vet's minimum."""
+    try:
+        s = int(service_years or 0)
+    except (TypeError, ValueError):
+        s = 0
+    if s < 0:
+        s = 0
+    return _MIN_SALARY_PCT_10PLUS if s >= 10 else _MIN_SALARY_PCT_BY_SERVICE[s]
+
+
 def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASON,
                              stats_season: str = CURRENT_SEASON) -> dict | None:
     """Predict the contract a player would sign TODAY (a new deal starting
@@ -569,10 +595,12 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
     if X is None:
         return None
     model = artifact["model"]
-    # Floor at the CBA minimum (~1.5% of cap) so the model can't emit a
-    # near-zero prediction for an established player whose trailing production
-    # cratered (the Clarkson floor-glitch); cap at the 35% absolute max.
-    pred_pct = float(np.clip(model.predict(X)[0], 0.015, 0.35))
+    # Floor at the player's service-scaled CBA minimum (a 1-yr min ≈ 1.3% of
+    # cap, a 10+-yr min ≈ 2.4%) so the model can't emit a sub-minimum figure
+    # for an established player whose trailing production cratered (the Clarkson
+    # floor-glitch), nor a vet-minimum for a rookie; cap at the 35% absolute max.
+    min_pct = min_salary_pct(features.get("service_years"))
+    pred_pct = float(np.clip(model.predict(X)[0], min_pct, 0.35))
 
     # Convert to dollars at NEXT season's cap — the deal would start then.
     cap_dollars_val = SALARY_CAP_M.get(target_season, 165.0) * 1_000_000
@@ -630,7 +658,8 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
         "playoff_tier":         features.get("playoff_tier", ""),
         "raw_predicted":        raw_predicted,
         "predicted":            predicted,
-        "low":                  max(0.015 * cap_dollars_val, predicted - band),
+        "low":                  max(min_pct * cap_dollars_val, predicted - band),
+        "min_floor_dollars":    min_pct * cap_dollars_val,
         "high":                 min(predicted + band, cba_max_dollars),
         "band":                 band,
         "cap":                  cap_dollars_val,
@@ -693,6 +722,10 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
     playoff_tier = features.get("playoff_tier", "")
 
     raw_predicted = base * age_mult * pos_mult_applied * dur_mult * playoff_mult
+    # Floor the legacy estimate at the player's service-scaled CBA minimum, to
+    # match the HistGBM path (and keep min_floor_dollars below consistent).
+    min_pct = min_salary_pct(features.get("service_years"))
+    raw_predicted = max(raw_predicted, min_pct * cap_dollars_val)
 
     # ── CBA cap-and-floor adjustments (today's eligibility) ─────────────────
     max_pct = float(features.get("max_pct", 0.35) or 0.35)
@@ -748,7 +781,8 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
         "playoff_tier":         playoff_tier,
         "raw_predicted":        raw_predicted,
         "predicted":            predicted,
-        "low":                  max(0.015 * cap_dollars_val, predicted - band),
+        "low":                  max(min_pct * cap_dollars_val, predicted - band),
+        "min_floor_dollars":    min_pct * cap_dollars_val,
         "high":                 min(predicted + band, cba_max_dollars),
         "band":                 band,
         "cap":                  cap_dollars_val,
@@ -1844,6 +1878,10 @@ _model_only_M = predicted_M   # keep the pure model output for the explainer
 # by > 30%, pull the headline number toward the market — more for bigger gaps —
 # but never fully discard the model (cap the market weight at 0.6). Max-capped
 # players are exempt: their number is a CBA rule, not a noisy estimate.
+# Service-scaled league-minimum floor (model dollars → millions): the bar's
+# left edge, the blended-band floor, and the "≈ League min" test all use it.
+_min_floor_M = prediction.get(
+    "min_floor_dollars", 0.015 * SALARY_CAP_M.get(CONTRACT_SEASON, 165.0) * 1e6) / 1e6
 _blended_toward_market = False
 if (_market_median is not None
         and not prediction.get("cba_cap_applied")
@@ -1864,18 +1902,17 @@ if (_market_median is not None
             _bw = float(np.interp(_blended_M, [2.0, 8.0, 20.0, 45.0],
                                               [0.45, 0.33, 0.24, 0.12]))
             predicted_M = _blended_M
-            low_M  = max(0.015 * SALARY_CAP_M.get(CONTRACT_SEASON, 165.0),
-                         _blended_M * (1 - _bw))
+            low_M  = max(_min_floor_M, _blended_M * (1 - _bw))
             high_M = _blended_M * (1 + _bw)
 
-# Confidence-bar scale: from the veteran-minimum floor (1.5% of cap) up to THIS
+# Confidence-bar scale: from the player's service-scaled league-min floor up to THIS
 # player's OWN capped max — their 25/30/35% tier (prediction["cba_max_dollars"]).
 # Anchoring the right edge to the player's personal ceiling means a maxed-out
 # player (e.g. Luka, capped at the 30% max) fills the bar to the right edge,
 # while everyone else reads as a fraction of their own max. Falls back to the
 # 35% supermax ceiling if the player's max tier is unknown.
 _scale_cap_M  = SALARY_CAP_M.get(CONTRACT_SEASON, 165.0)
-_scale_min_M  = 0.015 * _scale_cap_M   # mirrors the np.clip lower bound in predict_*
+_scale_min_M  = _min_floor_M   # service-scaled league minimum (see above)
 _scale_max_M  = (prediction.get("cba_max_dollars") or 0.35 * _scale_cap_M * 1e6) / 1e6
 # Current (stats-season) salary, drawn on the bar as a hollow ring so the gap to
 # the model marker reads as the projected raise. None when no salary is on file.
@@ -1923,11 +1960,9 @@ _prev_was_max = bool(
     _prev_sal_M and _max_pct and _prev_sal_M >= 0.90 * _max_pct * _cur_cap_M
 )
 _proj_is_max = bool(prediction.get("cba_cap_applied") or prediction.get("cba_floor_applied"))
-# Was the projection floored at the league minimum? The model clips at 1.5% of
-# cap (the veteran-minimum floor). A min-caliber player with no in-band comps
-# lands here, and "+X% vs current deal" is misleading — a 2nd-round rookie
-# minimum stepping up to the vet minimum is a CBA mechanic, not a market raise.
-_min_floor_M = 0.015 * SALARY_CAP_M.get(CONTRACT_SEASON, 165.0)
+# Was the projection floored at the league minimum (service-scaled — see
+# _min_floor_M above)? "+X% vs current deal" is misleading there: a 2nd-round
+# rookie minimum stepping up to the vet minimum is a CBA step-up, not a raise.
 _proj_is_min = bool(predicted_M <= _min_floor_M * 1.03)
 
 # Raise-vs-current callout — projected $ vs the current/last deal. Green if a
