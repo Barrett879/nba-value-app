@@ -1924,11 +1924,19 @@ _prev_sal_label = f"{CURRENT_SEASON[2:]} Salary"   # "2025-26" -> "25-26 Salary"
 # prediction" explainer) can reference it whether or not market data exists.
 divergence = 0.0
 
+# Was the projection floored at the league minimum (service-scaled — see
+# _min_floor_M above)? Drives the "League minimum" tag beside the number and
+# suppresses the misleading "+X% vs current deal" (rookie min → vet min is a
+# CBA step-up, not a market raise).
+_proj_is_min = bool(predicted_M <= _min_floor_M * 1.03)
+
 # Compact CBA-status caption shown under the Model dollar (both hero
 # variants — with market and without). Gives a one-line "why" at a
 # glance; the full explanation lives in the About expander.
 _supermax_label = prediction.get("supermax_tier_label", "")
-if prediction.get("cba_cap_applied"):
+if _proj_is_min:
+    _model_caption = "League minimum"
+elif prediction.get("cba_cap_applied"):
     _model_caption = f"Capped at max ({_supermax_label})"
 elif prediction.get("cba_floor_applied"):
     _model_caption = f"Supermax floor ({_supermax_label})"
@@ -1960,10 +1968,6 @@ _prev_was_max = bool(
     _prev_sal_M and _max_pct and _prev_sal_M >= 0.90 * _max_pct * _cur_cap_M
 )
 _proj_is_max = bool(prediction.get("cba_cap_applied") or prediction.get("cba_floor_applied"))
-# Was the projection floored at the league minimum (service-scaled — see
-# _min_floor_M above)? "+X% vs current deal" is misleading there: a 2nd-round
-# rookie minimum stepping up to the vet minimum is a CBA step-up, not a raise.
-_proj_is_min = bool(predicted_M <= _min_floor_M * 1.03)
 
 # Raise-vs-current callout — projected $ vs the current/last deal. Green if a
 # raise, red if a pay cut. BUT when both the current deal and the projection are
@@ -1971,17 +1975,10 @@ _proj_is_min = bool(predicted_M <= _min_floor_M * 1.03)
 # value change — show a neutral "Max ↔ Max" chip instead of a misleading cut.
 _raise_html = ""
 if _proj_is_min:
-    # Floored at the league minimum — a neutral chip, not a green "+X%" raise,
-    # since rookie-min → vet-min is a CBA step-up, not a market valuation.
-    _raise_html = (
-        '<div style="text-align:right; line-height:1.2;">'
-        '<div style="display:inline-block; padding:0.28rem 0.7rem; border-radius:999px;'
-        ' background:rgba(154,160,170,0.14); border:1px solid rgba(154,160,170,0.32);'
-        ' color:var(--fg-3); font-size:0.9rem; font-weight:800;'
-        ' white-space:nowrap;">≈ League min</div>'
-        '<div style="font-size:0.72rem; color:var(--fg-4); margin-top:0.3rem;'
-        ' max-width:15rem;">Model floor · veteran minimum</div></div>'
-    )
+    # League minimum — the tag beside the number already says it; suppress the
+    # misleading "+X% vs current deal" (rookie min → vet min is a CBA step-up,
+    # not a market raise) by leaving this callout empty.
+    _raise_html = ""
 elif _prev_was_max and _proj_is_max:
     _raise_html = (
         '<div style="text-align:right; line-height:1.2;">'
