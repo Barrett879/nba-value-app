@@ -1815,7 +1815,7 @@ _scale_max_M  = (prediction.get("cba_max_dollars") or 0.35 * _scale_cap_M * 1e6)
 # the model marker reads as the projected raise. None when no salary is on file.
 _prev_sal_M     = float(features.get("salary") or 0) / 1e6
 _prev_sal_M     = _prev_sal_M if _prev_sal_M > 0 else None
-_prev_sal_label = CURRENT_SEASON[2:]   # "2025-26" -> "25-26"
+_prev_sal_label = f"{CURRENT_SEASON[2:]} Salary"   # "2025-26" -> "25-26 Salary"
 
 # Initialize divergence so downstream code (confidence label, "Why this
 # prediction" explainer) can reference it whether or not market data exists.
