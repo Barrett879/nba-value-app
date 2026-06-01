@@ -52,15 +52,14 @@ def show(name):
     if not f:
         print(f"!! {name}: no features\n", flush=True); return
     tb = f.get("trailing_barrett", f.get("barrett_score"))
-    # NEW = the shipped find_comparables (target-aware)
     new = find_comparables(f, hist, n=6)
-    # OLD = emulate the prior pool (vet-min dropped for everyone)
-    old = find_comparables(f, hist[~hist["is_vet_min"]].reset_index(drop=True), n=6)
-    nm, om = market_median(new), market_median(old)
-    flag = "←CHANGED" if abs(nm - om) > 0.05 else "identical"
-    print(f"{name}  (trailing Barrett {tb:+.1f})", flush=True)
-    print(f"  OLD market median: ${om:.1f}M   comps: {', '.join(old['Player'].head(4))}", flush=True)
-    print(f"  NEW market median: ${nm:.1f}M   comps: {', '.join(new['Player'].head(4))}   [{flag}]\n", flush=True)
+    print(f"{name}  (trailing Barrett {tb:+.1f})   market ${market_median(new):.1f}M", flush=True)
+    print(f"  {'comp':<22} {'score':>6} {'|Δscore|':>8} {'salary$M':>9}", flush=True)
+    sal = comp_dollars(new) / 1e6
+    for i, (_, r) in enumerate(new.iterrows()):
+        d = abs(r["barrett_score"] - tb)
+        print(f"  {r['Player']:<22} {r['barrett_score']:>+6.1f} {d:>8.1f} {sal[i]:>9.1f}", flush=True)
+    print(flush=True)
 
 
 for p in ["Johni Broome", "Isaiah Joe", "Jaylen Brown"]:

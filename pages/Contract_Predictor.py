@@ -1156,11 +1156,13 @@ def _tier_penalty_weight(age) -> float:
 
 
 # Comp-pool quality gate. Elite / outlier players (Jokić, Giannis, Wemby) have
-# few true peers; rather than pad the table to a fixed 6 with far-off matches —
-# which pulls below-tier centers (Zubac, Brook Lopez) into Jokić's pool and
-# corrupts the market median — keep only comps whose sign-year score is within a
-# band of the target, but never fewer than COMP_MIN_COUNT so the market view
-# (and supermax non-suppression, which needs ≥3 non-paycut comps) still holds.
+# few true peers; rather than pad the table to a fixed count with far-off
+# matches — which pulls below-tier centers (Zubac, Brook Lopez) into Jokić's
+# pool and corrupts the market median — keep ONLY comps whose sign-year score
+# is within a band of the target. This band is a HARD cap the market view
+# cannot bypass (no min-count fallback): if nobody falls in the band, we show
+# no comps and suppress the market opinion rather than invent a non-peer —
+# e.g. a -4.0 player must never be priced off +3.7 rotation centers.
 COMP_SCORE_TOL_PCT = 0.30   # keep comps within ±30% of the target's trailing score…
 COMP_SCORE_TOL_MIN = 6.0    # …or ±6 raw Barrett points, whichever band is wider
 COMP_MIN_COUNT     = 3      # but always show at least the 3 closest
@@ -1268,18 +1270,20 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
     same_pos = (same_pos.sort_values("distance")
                         .drop_duplicates(subset="Player", keep="first"))
 
-    comps = same_pos.nsmallest(n, "distance").copy()
-
-    # Quality gate: don't pad to n with players who don't align on score. Keep
-    # only comps whose sign-year score is within a band of the target; if fewer
-    # than COMP_MIN_COUNT align, fall back to the closest COMP_MIN_COUNT so the
-    # market view stays stable. (Typical players keep all n — their nearest
-    # comps already fall inside the band; the gate only bites for outliers.)
-    tol = max(target_barrett * COMP_SCORE_TOL_PCT, COMP_SCORE_TOL_MIN)
-    aligned = comps[(comps["barrett_score"] - target_barrett).abs() <= tol]
-    if len(aligned) >= COMP_MIN_COUNT:
-        return aligned.copy()
-    return comps.head(COMP_MIN_COUNT).copy()
+    # HARD score gate (the market view cannot bypass it). Restrict to comps
+    # whose sign-year score is within a hybrid band of the target's trailing
+    # score — ±30%, or ±6 raw Barrett points, whichever is wider — so it adapts
+    # to stars (Brown: ±9, keeps Tatum) without collapsing for low scorers
+    # (Broome: ±6). Gate FIRST, then take the n closest by composite distance
+    # among the in-band peers (so a score-close-but-older comp isn't lost to the
+    # composite top-n). No min-count fallback: the old code padded to
+    # COMP_MIN_COUNT with the closest names regardless of distance, which priced
+    # outliers off non-peers (Broome -4.0 vs +3.7 centers, a 7+ point swing).
+    # An empty result is allowed — downstream it renders "no close comparables"
+    # and suppresses the market opinion, so the projection stands on the model.
+    tol = max(abs(target_barrett) * COMP_SCORE_TOL_PCT, COMP_SCORE_TOL_MIN)
+    in_band = same_pos[(same_pos["barrett_score"] - target_barrett).abs() <= tol]
+    return in_band.nsmallest(n, "distance").copy()
 
 
 def _signing_cap(signed_in_season: str) -> float:
