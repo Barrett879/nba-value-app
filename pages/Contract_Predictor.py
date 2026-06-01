@@ -1946,12 +1946,16 @@ low_M  = prediction["low"]  / 1_000_000
 high_M = prediction["high"] / 1_000_000
 _model_only_M = predicted_M   # keep the pure model output for the explainer
 
-# Blend toward the market when model and market diverge sharply. The model is
-# noisy on mid-tier role players and tends to over-project them, while the
-# comparable-signings median is the stronger signal there. So when they disagree
-# by > 30%, pull the headline number toward the market — more for bigger gaps —
-# but never fully discard the model (cap the market weight at 0.6). Max-capped
-# players are exempt: their number is a CBA rule, not a noisy estimate.
+# Blend toward the market ONLY in the mid-tier, where it earns its keep. The
+# model is noisy on mid-tier role players (the comp median is the stronger
+# signal there), but it NAILS the extremes — minimums (service floor) and stars
+# (CBA max) — where blending toward noisier comps only adds error. Walk-forward
+# OOS (scripts/experiment_blend_value.py): gating the blend to a model
+# projection of ~$7-25M cuts overall median error $2.7M -> $1.9M vs always-on,
+# killing the minimum/star over-projections while keeping the mid-tier market
+# consensus. Max-capped / supermax-floor players stay exempt (their number is a
+# CBA rule, not a noisy estimate); cap the market weight at 0.65.
+_BLEND_TIER_LO_M, _BLEND_TIER_HI_M = 7.0, 25.0
 # Service-scaled league-minimum floor (model dollars → millions): the bar's
 # left edge, the blended-band floor, and the "≈ League min" test all use it.
 _min_floor_M = prediction.get(
@@ -1959,7 +1963,8 @@ _min_floor_M = prediction.get(
 _blended_toward_market = False
 if (_market_median is not None
         and not prediction.get("cba_cap_applied")
-        and not prediction.get("cba_floor_applied")):
+        and not prediction.get("cba_floor_applied")
+        and _BLEND_TIER_LO_M <= predicted_M <= _BLEND_TIER_HI_M):
     _mkt_M = _market_median / 1_000_000
     _hi = max(predicted_M, _mkt_M)
     _gap = abs(predicted_M - _mkt_M) / _hi if _hi > 0 else 0.0

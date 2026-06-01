@@ -51,7 +51,10 @@ def market_median(f, comps):
 def blend(pred, market):
     min_floor = pred.get("min_floor_dollars", 0.015 * CAP * 1e6) / 1e6
     model_M = pred["predicted"] / 1e6
-    if market is None or pred.get("cba_cap_applied") or pred.get("cba_floor_applied"):
+    # Tier-gate: blend only in the mid-tier ($7-25M model projection); model
+    # alone at the extremes (matches pages/Contract_Predictor.py).
+    if (market is None or pred.get("cba_cap_applied") or pred.get("cba_floor_applied")
+            or not (7.0 <= model_M <= 25.0)):
         return model_M
     hi = max(model_M, market)
     gap = abs(model_M - market) / hi if hi > 0 else 0.0
