@@ -19,8 +19,12 @@ Key findings (1,810 events):
 
 Run:  python scripts/backtest_suitors.py
 """
+import os, sys
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _ROOT); os.chdir(_ROOT)   # robust to invocation cwd
+import signal
 def h(s, f): raise TimeoutError()
-signal.signal(signal.SIGALRM, h); signal.alarm(295)
+signal.signal(signal.SIGALRM, h); signal.alarm(1500)
 from utils import (build_ranked_projected, fetch_league_stats, fetch_advanced_stats,
                    fetch_player_positions_detailed, normalize, SEASONS, NEW_CONTRACT_PCT,
                    SALARY_CAP_M)
