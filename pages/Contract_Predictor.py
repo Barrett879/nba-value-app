@@ -1199,13 +1199,15 @@ def _tier_penalty_weight(age) -> float:
 # e.g. a -4.0 player must never be priced off +3.7 rotation centers.
 COMP_SCORE_TOL_PCT = 0.25   # keep comps within ±25% of the target's trailing score…
 COMP_SCORE_TOL_MIN = 5.0    # …or ±5 raw Barrett points, whichever band is wider
-COMP_MIN_COUNT     = 3      # but always show at least the 3 closest
-# Below-replacement targets (trailing Barrett under this) are priced against
-# the minimum-salary market too — their real comps ARE minimum deals, so the
-# vet-min signings stay in their pool. Every rotation+ player (Barrett ≥ 0)
-# still drops them, exactly as before. Keeps Broome-tier players off the
-# ~$4.6M vet-min exclusion floor without touching anyone currently working.
-VETMIN_COMP_TARGET_MAX = 0.0
+# Minimum-caliber targets (trailing Barrett under this) are priced against the
+# minimum-salary market too — their real comps ARE minimum deals, so vet-min
+# signings stay in their pool instead of being filtered out (which would leave
+# only $5-10M rotation comps and inflate the market median). The rotation tier
+# sits at ~9+ trailing Barrett, so 5.0 catches fringe / replacement players
+# (Thanasis 2.5, Amari 1.1, Jae'Sean Tate 3.1 — all were projecting $7-11M off
+# non-peer comps) while leaving every Barrett ≥ 5 player's pool exactly as it
+# was. Verified: scrubs drop to ~$2-4M market; rotation / mid / stars unchanged.
+VETMIN_COMP_TARGET_MAX = 5.0
 
 
 def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
@@ -1932,6 +1934,9 @@ if (_market_median is not None
         # ~0.5 weight, pulling $18.8M + $12.8M to ~$15.8M.)
         _w_mkt = min(0.65, 0.35 + 0.30 * (_gap - 0.25) / 0.35)
         _blended_M = (1 - _w_mkt) * predicted_M + _w_mkt * _mkt_M
+        # Never let a low market blend a projection BELOW the player's CBA
+        # minimum (e.g. a fringe vet whose min comps median under his vet-min).
+        _blended_M = max(_blended_M, _min_floor_M)
         if abs(_blended_M - predicted_M) > 0.05:
             _blended_toward_market = True
             # Recompute the band around the blended number using the same
