@@ -1533,41 +1533,25 @@ def _current_player() -> str | None:
     return _init_player
 
 
-def _centered_window(name: str | None, k: int = 7) -> list[str]:
-    """`k` players centered on `name` in the Barrett-ranked roster (≈3 better
-    ranked above, the player, ≈3 worse below). Clamps at the ends so it always
-    returns k names — the player just isn't dead-center near the very top/bottom.
-    Falls back to the top of the roster when there's no/unknown player."""
-    if not name:
-        return active_names[:k]
-    try:
-        i = active_names.index(name)
-    except ValueError:
-        return active_names[:k]
-    lo = max(0, i - k // 2)
-    hi = min(len(active_names), lo + k)
-    lo = max(0, hi - k)   # re-extend left if we clamped against the right edge
-    return active_names[lo:hi]
-
-
 def _search_players(query: str) -> list[str]:
     """Filter active-season players by case- and accent-insensitive substring.
 
     Empty query (or the box still holding the selected player's full name on
-    focus) → show that player CENTERED among their rank-neighbors, so you can
-    hop to a similar-value player without clearing the box. No selection yet →
-    the full roster (sorted by Barrett desc — Jokic / SGA / Giannis at the top).
+    focus) → the FULL roster (sorted by Barrett desc) so the dropdown stays
+    scrollable. An injected script auto-scrolls it to center the selected
+    player on open (see the scroll-centering helper below the searchbox).
 
     With a real query → match by quality (exact → prefix → substring), then
     Barrett score descending within each match tier. Capped at 10.
     """
     cur = _current_player()
     if not query or not query.strip():
-        return _centered_window(cur) if cur else active_names
+        return active_names
     q = normalize(query)
-    # Box untouched since selection (still the player's full name) → orbit them.
+    # Box untouched since selection (still the player's full name on focus) →
+    # the full scrollable roster, not just the lone exact match.
     if cur and q == normalize(cur):
-        return _centered_window(cur)
+        return active_names
     scored: list[tuple[int, float, str]] = []
     for n in active_names:
         nn = normalize(n)
@@ -1685,6 +1669,49 @@ if st.session_state.get("theme_dark", False):
         """,
         height=0,
     )
+# Auto-scroll the open dropdown so the selected player sits CENTERED in the
+# (scrollable) full roster instead of pinned to the top. Reaches into the
+# searchbox iframe on input focus and scrollIntoView({block:'center'}) the
+# matching option. Both themes; harmless while typing (the typed text won't
+# match a full name). Only injected when a player is already selected.
+if _init_player:
+    import json as _json
+    import streamlit.components.v1 as _sc
+    _sc.html(
+        """
+        <script>
+        (function () {
+          var pdoc = window.parent.document;
+          var TARGET = __HV_TARGET__;
+          function center(tries) {
+            tries = tries || 0;
+            var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
+            if (f && f.contentDocument) {
+              var opts = f.contentDocument.querySelectorAll("[class*='option']");
+              for (var i = 0; i < opts.length; i++) {
+                if (opts[i].textContent.trim() === TARGET) {
+                  opts[i].scrollIntoView({ block: 'center' });
+                  return;
+                }
+              }
+            }
+            if (tries < 30) setTimeout(function () { center(tries + 1); }, 80);
+          }
+          var n = 0, t = setInterval(function () {
+            var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
+            if (f && f.contentDocument && !f.contentDocument.__hvScrollHook) {
+              f.contentDocument.__hvScrollHook = true;
+              f.contentDocument.addEventListener('focusin', function (e) {
+                if (e.target && e.target.tagName === 'INPUT') center(0);
+              });
+            }
+            if (++n > 40) clearInterval(t);
+          }, 150);
+        })();
+        </script>
+        """.replace("__HV_TARGET__", _json.dumps(_init_player)),
+        height=0,
+    )
 selected = st_searchbox(
     search_function=_search_players,
     placeholder="Type a player name…",
@@ -1692,9 +1719,9 @@ selected = st_searchbox(
     # Seed the box TEXT with the selected player so the name stays put after
     # selection / on reload (not just the placeholder).
     default_searchterm=(_init_player or ""),
-    # Click-to-open list orbits the selected player (3 better above, them, 3
-    # worse below); the full roster when nobody's picked yet.
-    default_options=(_centered_window(_init_player) if _init_player else active_names),
+    # Full scrollable roster (sorted by Barrett desc); the injected script below
+    # auto-scrolls the open dropdown to center the selected player.
+    default_options=active_names,
     edit_after_submit="option",
     rerun_on_update=True,
     style_overrides=_SEARCHBOX_STYLE,
