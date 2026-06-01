@@ -1751,8 +1751,9 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
         lo, hi = min(pts), max(pts)
         pad = max((hi - lo) * 0.16, 1.0)
         bar_lo, span = lo - pad, max((hi + pad) - (lo - pad), 0.1)
-    # Clamp to [1, 100] so a prediction at the player's max pegs the right edge.
-    p = lambda v: max(1.0, min(100.0, (v - bar_lo) / span * 100))
+    # Clamp to [0, 100] so a prediction at the floor pegs the LEFT edge (flush
+    # "minimum") and one at the max pegs the right edge.
+    p = lambda v: max(0.0, min(100.0, (v - bar_lo) / span * 100))
     bl, br, mp = p(low_M), p(high_M), p(model_M)
     # The model's $ value is labelled directly under the white marker (see
     # `val`), so it's no longer carried in the legend.
@@ -1794,6 +1795,14 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
         _vx = f'left:{mp:.1f}%;'
     else:
         _vx = f'left:{mp:.1f}%; transform:translateX(-50%);'
+    # Edge-aware marker transform: flush LEFT at the floor, flush RIGHT at the
+    # max, centered in between — so a minimum projection visibly pegs the edge.
+    if mp <= 0.5:
+        _mtx = 'transform:translateX(0);'
+    elif mp >= 99.5:
+        _mtx = 'transform:translateX(-100%);'
+    else:
+        _mtx = 'transform:translateX(-50%);'
     val = (
         f'<div style="position:absolute; {_vx} top:14px; white-space:nowrap; '
         f'font-size:0.82rem; font-weight:800; color:var(--fg-1); z-index:4;">'
@@ -1807,7 +1816,7 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
         f'background:linear-gradient(90deg, rgba(22,212,193,0.22), rgba(22,212,193,0.5));"></div>'
         f'{ter}{sec}'
         f'<div style="position:absolute; left:{mp:.1f}%; top:-5px; width:3px; height:18px; '
-        f'background:var(--fg-1); border-radius:2px; transform:translateX(-50%); '
+        f'background:var(--fg-1); border-radius:2px; {_mtx} '
         f'box-shadow:0 0 10px rgba(255,255,255,0.75); z-index:3;"></div>'
         f'{val}'
         f'</div>'
@@ -1914,13 +1923,31 @@ _prev_was_max = bool(
     _prev_sal_M and _max_pct and _prev_sal_M >= 0.90 * _max_pct * _cur_cap_M
 )
 _proj_is_max = bool(prediction.get("cba_cap_applied") or prediction.get("cba_floor_applied"))
+# Was the projection floored at the league minimum? The model clips at 1.5% of
+# cap (the veteran-minimum floor). A min-caliber player with no in-band comps
+# lands here, and "+X% vs current deal" is misleading — a 2nd-round rookie
+# minimum stepping up to the vet minimum is a CBA mechanic, not a market raise.
+_min_floor_M = 0.015 * SALARY_CAP_M.get(CONTRACT_SEASON, 165.0)
+_proj_is_min = bool(predicted_M <= _min_floor_M * 1.03)
 
 # Raise-vs-current callout — projected $ vs the current/last deal. Green if a
 # raise, red if a pay cut. BUT when both the current deal and the projection are
 # the max, the year-over-year delta is just the 8% raise mechanics, not a real
 # value change — show a neutral "Max ↔ Max" chip instead of a misleading cut.
 _raise_html = ""
-if _prev_was_max and _proj_is_max:
+if _proj_is_min:
+    # Floored at the league minimum — a neutral chip, not a green "+X%" raise,
+    # since rookie-min → vet-min is a CBA step-up, not a market valuation.
+    _raise_html = (
+        '<div style="text-align:right; line-height:1.2;">'
+        '<div style="display:inline-block; padding:0.28rem 0.7rem; border-radius:999px;'
+        ' background:rgba(154,160,170,0.14); border:1px solid rgba(154,160,170,0.32);'
+        ' color:var(--fg-3); font-size:0.9rem; font-weight:800;'
+        ' white-space:nowrap;">≈ League min</div>'
+        '<div style="font-size:0.72rem; color:var(--fg-4); margin-top:0.3rem;'
+        ' max-width:15rem;">Model floor · veteran minimum</div></div>'
+    )
+elif _prev_was_max and _proj_is_max:
     _raise_html = (
         '<div style="text-align:right; line-height:1.2;">'
         '<div style="display:inline-block; padding:0.28rem 0.7rem; border-radius:999px;'
