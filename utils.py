@@ -779,6 +779,27 @@ THEME_BASE_CSS = """
         background: var(--panel) !important;
         border-color: var(--panel-line) !important;
     }
+    /* Default st.button (e.g. the ✕ remove buttons) — Streamlit's light-config
+       white doesn't follow the runtime dark theme. The brightness/theme button
+       keeps its own chrome-stripped look via a higher-specificity rule in
+       COMMON_CSS (.st-key-theme_nav_toggle button), which loads after this. */
+    [data-testid="stButton"] button, .stButton button {
+        background: var(--panel-solid) !important;
+        border-color: var(--panel-line) !important;
+        color: var(--fg-2) !important;
+    }
+    [data-testid="stButton"] button:hover, .stButton button:hover {
+        background: var(--panel-hover) !important;
+        border-color: var(--fg-5) !important;
+        color: var(--fg-1) !important;
+    }
+    /* st.spinner — the "Loading …" bar renders on a white track in light config. */
+    [data-testid="stSpinner"] {
+        color: var(--fg-3) !important;
+        background: transparent !important;
+    }
+    [data-testid="stSpinner"] > div { background: transparent !important; }
+    [data-testid="stSpinner"] i, [data-testid="stSpinner"] svg { border-color: var(--accent-teal) !important; }
 </style>
 """
 
