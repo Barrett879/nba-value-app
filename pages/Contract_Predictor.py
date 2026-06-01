@@ -1751,10 +1751,10 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
     # Endpoint labels: league min/max when the scale is fixed (tagged so they
     # aren't misread as the player's own range), else the player's own band.
     if fixed:
-        lab_lo = f'${scale_min_M:.0f}M <span style="color:var(--fg-6);">min</span>'
-        lab_hi = f'<span style="color:var(--fg-6);">max</span> ${scale_max_M:.0f}M'
+        lab_lo = f'${scale_min_M:.1f}M <span style="color:var(--fg-6);">min</span>'
+        lab_hi = f'<span style="color:var(--fg-6);">max</span> ${scale_max_M:.1f}M'
     else:
-        lab_lo, lab_hi = f'${low_M:.0f}M', f'${high_M:.0f}M'
+        lab_lo, lab_hi = f'${low_M:.1f}M', f'${high_M:.1f}M'
     # Built as a single newline-free string. A standalone {sec} line (empty
     # when there's no secondary marker) would be a whitespace-only line, which
     # CommonMark treats as a blank line that TERMINATES the surrounding HTML
