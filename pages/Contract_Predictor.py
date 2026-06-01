@@ -1531,15 +1531,16 @@ else:
             "menuList": {"borderRadius": 16},
         },
     }
-# Clip the searchbox iframe to a rounded rect. CRITICAL: also set the iframe
-# ELEMENT's own background. The iframe's intrinsic backdrop is white; with
-# border-radius + overflow:hidden the browser paints that white at the clipped
-# edge (the seam below the input), which is the persistent white strip in dark
-# mode. Painting the iframe element itself dark removes it.
+# Searchbox iframe background. The iframe's intrinsic backdrop is white, so in
+# dark mode any seam (the gap the browser composites between the input and the
+# floating menu) flashes white. Paint the iframe element dark — and do NOT round
+# / clip it (border-radius + overflow:clip on the iframe is what created the
+# white hairline at the clip edge; the control + menu inside are already rounded
+# on their own, so the iframe itself needs no rounding).
 _sb_iframe_bg = "#0a0a14" if st.session_state.get("theme_dark", False) else "#ffffff"
 st.markdown(
     "<style>iframe[title='streamlit_searchbox.searchbox']"
-    f"{{border-radius:24px;overflow:hidden;background:{_sb_iframe_bg} !important;}}</style>",
+    f"{{background:{_sb_iframe_bg} !important;border:none !important;}}</style>",
     unsafe_allow_html=True,
 )
 # In dark mode the react-select dropdown 'menu' container defaults to WHITE and
