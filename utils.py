@@ -937,7 +937,38 @@ def theme_fig(fig):
     except Exception:
         pass
     if dark:
-        return fig  # charts are authored for dark — leave pixel-identical
+        # Charts are authored for the dark canvas, but a few don't set every text
+        # colour (e.g. the Plotly title can render dark-on-dark — see the Team
+        # Analysis bar). Force all chart text to a light colour so nothing is
+        # invisible: global font, title, axis titles/ticks, legend, colorbar.
+        _LT = "#e8e8f0"
+        try:
+            fig.update_layout(font_color=_LT, title_font_color=_LT,
+                              legend_font_color=_LT, legend_title_font_color=_LT)
+            for axis in (fig.update_xaxes, fig.update_yaxes):
+                axis(color=_LT, tickfont_color=_LT, title_font_color=_LT)
+            # Colorbars live on each trace's marker (px.bar/px.scatter) — recolour
+            # their tick + title text too.
+            for tr in fig.data:
+                try:
+                    cb = getattr(getattr(tr, "marker", None), "colorbar", None)
+                    if cb is not None:
+                        cb.tickfont = dict(color=_LT)
+                        if getattr(cb, "title", None) is not None:
+                            cb.title.font = dict(color=_LT)
+                except Exception:
+                    pass
+            fig.update_coloraxes(colorbar_tickfont_color=_LT,
+                                 colorbar_title_font_color=_LT)
+            for ann in (fig.layout.annotations or []):
+                try:
+                    if ann.font is None or not ann.font.color:
+                        ann.font.color = _LT
+                except Exception:
+                    pass
+        except Exception:
+            pass
+        return fig
     font, grid = "#3a3d48", "rgba(20,22,40,0.10)"
     try:
         fig.update_layout(
