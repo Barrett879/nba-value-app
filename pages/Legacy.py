@@ -488,8 +488,16 @@ with tab_era:
             era_stats.insert(0, "#", range(1, len(era_stats) + 1))
             era_stats.columns = ["#", "Player", "Avg Score", "Peak Score", "Seasons"]
 
+            # Fixed-height, bottom-aligned title block so every column's table
+            # starts at the same line — long era names that wrap to two lines no
+            # longer push their table down and stagger the row of leaderboards.
             era_label = era_name.replace("\n", " ")
-            st.markdown(f"**{era_label}**")
+            st.markdown(
+                f"<div style='min-height:3rem; display:flex; align-items:flex-end; "
+                f"font-weight:700; font-size:1rem; line-height:1.2; "
+                f"margin-bottom:0.4rem;'>{era_label}</div>",
+                unsafe_allow_html=True,
+            )
             html_table(
                 era_stats.head(15),
                 formatters={
