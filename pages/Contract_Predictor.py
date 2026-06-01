@@ -1559,12 +1559,14 @@ if st.session_state.get("theme_dark", False):
             if (idoc.getElementById('hv-sb-dark')) return true;
             var s = idoc.createElement('style'); s.id = 'hv-sb-dark';
             s.textContent =
-              "div[class$='-menu'],div[class*='-menu ']{background:#16181f!important;"
+              // The iframe BODY is the locked light config colour (#f4f6f8); it's
+              // taller than the input, so the light shows as a strip between the
+              // input and the floating menu. Paint html/body to the page bg.
+              "html,body{background:#0a0a14!important;}"
+              + "div[class$='-menu'],div[class*='-menu ']{background:#16181f!important;"
               + "border:1px solid #2c2c40!important;border-radius:16px!important;"
               + "box-shadow:0 8px 24px rgba(0,0,0,.45)!important;overflow:hidden!important;}"
-              // The component renders a 2px white 'loading' bar via inline style
-              // (no class) between the input and the menu — recolor it dark so it
-              // doesn't read as a white strip.
+              // Any stray inline-white element (e.g. a loading bar) → dark too.
               + "div[style*='background: white'],div[style*='background:#fff']"
               + "{background:#16181f!important;}";
             idoc.head.appendChild(s);

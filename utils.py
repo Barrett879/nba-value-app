@@ -1369,9 +1369,15 @@ COMMON_CSS = """
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        padding: 0.1rem 0.3rem !important;
-        min-height: 0 !important;
-        height: auto !important;
+        padding: 0 0.3rem !important;
+        /* Full nav height + flex-center the icon, so it's vertically centered
+           regardless of the wrapper chain (container align-items alone left the
+           glyph pinned to the top). */
+        height: 3rem !important;
+        min-height: 3rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         line-height: 1 !important;
         font-size: 1.3rem !important;
         color: var(--fg-3) !important;
