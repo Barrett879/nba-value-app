@@ -1531,16 +1531,19 @@ else:
             "menuList": {"borderRadius": 16},
         },
     }
-# Searchbox iframe background. The iframe's intrinsic backdrop is white, so in
-# dark mode any seam (the gap the browser composites between the input and the
-# floating menu) flashes white. Paint the iframe element dark — and do NOT round
-# / clip it (border-radius + overflow:clip on the iframe is what created the
-# white hairline at the clip edge; the control + menu inside are already rounded
-# on their own, so the iframe itself needs no rounding).
-_sb_iframe_bg = "#0a0a14" if st.session_state.get("theme_dark", False) else "#ffffff"
+# THE white strip: a browser draws an iframe's native backing surface using its
+# `color-scheme`. The searchbox iframe is color-scheme:normal → the browser
+# paints that surface WHITE, which shows as a white line at the iframe's edge in
+# dark mode (invisible to every getComputedStyle bg/border/shadow probe because
+# it's the UA paint layer, not a styled box). Forcing color-scheme:dark makes
+# the browser paint it dark. Belt-and-suspenders: also set a dark background.
+_sb_dark = st.session_state.get("theme_dark", False)
+_sb_iframe_bg = "#0a0a14" if _sb_dark else "#ffffff"
+_sb_scheme = "dark" if _sb_dark else "light"
 st.markdown(
     "<style>iframe[title='streamlit_searchbox.searchbox']"
-    f"{{background:{_sb_iframe_bg} !important;border:none !important;}}</style>",
+    f"{{background:{_sb_iframe_bg} !important;border:none !important;"
+    f"color-scheme:{_sb_scheme} !important;}}</style>",
     unsafe_allow_html=True,
 )
 # In dark mode the react-select dropdown 'menu' container defaults to WHITE and
@@ -1560,12 +1563,17 @@ if st.session_state.get("theme_dark", False):
             if (!f) return false;
             var idoc = f.contentDocument; if (!idoc) return false;
             if (idoc.getElementById('hv-sb-dark')) return true;
+            // Force the iframe document's colour-scheme dark so the BROWSER paints
+            // its native backing surface dark (the source of the white seam),
+            // not just the styled boxes.
+            try { idoc.documentElement.style.colorScheme = 'dark'; } catch (e) {}
             var s = idoc.createElement('style'); s.id = 'hv-sb-dark';
             s.textContent =
               // The iframe BODY is the locked light config colour (#f4f6f8); it's
               // taller than the input, so the light shows as a strip between the
               // input and the floating menu. Paint html/body to the page bg.
-              "html,body{background:#0a0a14!important;}"
+              "html{color-scheme:dark!important;}"
+              + "html,body{background:#0a0a14!important;}"
               + "div[class$='-menu'],div[class*='-menu ']{background:#16181f!important;"
               + "border:1px solid #2c2c40!important;border-radius:16px!important;"
               + "box-shadow:0 8px 24px rgba(0,0,0,.45)!important;overflow:hidden!important;}"
