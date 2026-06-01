@@ -1845,11 +1845,34 @@ _caption_chip = (
     if _model_caption else ''
 )
 
-# Raise-vs-current callout (design refresh) — projected $ vs the current/last
-# deal, the headline takeaway. Green if it's a raise, red if a pay cut. Sits to
-# the right of the big projection in a split figure row.
+# Was the player ALREADY earning a max-level salary? NBA max deals carry 8%
+# annual raises, so a player re-upping at the max shows a year-1 figure BELOW a
+# raised later year of his current max — a fake "pay cut". Detect max-to-max:
+# his current salary ≥ 90% of his own max-tier dollars at THIS season's cap.
+_cur_cap_M = SALARY_CAP_M.get(CURRENT_SEASON, 154.6)
+_max_pct = float(prediction.get("max_pct", 0.30) or 0.30)
+_prev_was_max = bool(
+    _prev_sal_M and _max_pct and _prev_sal_M >= 0.90 * _max_pct * _cur_cap_M
+)
+_proj_is_max = bool(prediction.get("cba_cap_applied") or prediction.get("cba_floor_applied"))
+
+# Raise-vs-current callout — projected $ vs the current/last deal. Green if a
+# raise, red if a pay cut. BUT when both the current deal and the projection are
+# the max, the year-over-year delta is just the 8% raise mechanics, not a real
+# value change — show a neutral "Max ↔ Max" chip instead of a misleading cut.
 _raise_html = ""
-if _prev_sal_M and _prev_sal_M > 0:
+if _prev_was_max and _proj_is_max:
+    _raise_html = (
+        '<div style="text-align:right; line-height:1.2;">'
+        '<div style="display:inline-block; padding:0.28rem 0.7rem; border-radius:999px;'
+        ' background:rgba(22,212,193,0.12); border:1px solid rgba(22,212,193,0.30);'
+        ' color:var(--accent-teal); font-size:0.9rem; font-weight:800;'
+        ' white-space:nowrap;">Max&nbsp;↔&nbsp;Max</div>'
+        '<div style="font-size:0.72rem; color:var(--fg-4); margin-top:0.3rem;'
+        ' max-width:15rem;">Already at the max — a new max deal pays the same'
+        ' tier (year-over-year change is just the standard 8% raise).</div></div>'
+    )
+elif _prev_sal_M and _prev_sal_M > 0:
     _delta_M = predicted_M - _prev_sal_M
     _pct = (predicted_M / _prev_sal_M - 1) * 100
     _up = _delta_M >= 0
