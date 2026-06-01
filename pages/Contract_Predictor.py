@@ -1869,7 +1869,7 @@ if _prev_was_max and _proj_is_max:
         ' color:var(--accent-teal); font-size:0.9rem; font-weight:800;'
         ' white-space:nowrap;">Max&nbsp;↔&nbsp;Max</div>'
         '<div style="font-size:0.72rem; color:var(--fg-4); margin-top:0.3rem;'
-        ' max-width:15rem;">Already on a max deal — a new one pays the same.</div></div>'
+        ' max-width:15rem;">Last Season was Max Deal</div></div>'
     )
 elif _prev_sal_M and _prev_sal_M > 0:
     _delta_M = predicted_M - _prev_sal_M
