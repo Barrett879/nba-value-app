@@ -779,16 +779,18 @@ THEME_BASE_CSS = """
         background: var(--panel) !important;
         border-color: var(--panel-line) !important;
     }
-    /* Default st.button (e.g. the ✕ remove buttons) — Streamlit's light-config
-       white doesn't follow the runtime dark theme. The brightness/theme button
-       keeps its own chrome-stripped look via a higher-specificity rule in
-       COMMON_CSS (.st-key-theme_nav_toggle button), which loads after this. */
-    [data-testid="stButton"] button, .stButton button {
+    /* Default st.button / st.download_button (the ✕ remove buttons, Export CSV)
+       — Streamlit's light-config white doesn't follow the runtime dark theme.
+       The brightness/theme button keeps its own chrome-stripped look via a
+       higher-specificity rule in COMMON_CSS (loads after this). */
+    [data-testid="stButton"] button, .stButton button,
+    [data-testid="stDownloadButton"] button, .stDownloadButton button {
         background: var(--panel-solid) !important;
         border-color: var(--panel-line) !important;
         color: var(--fg-2) !important;
     }
-    [data-testid="stButton"] button:hover, .stButton button:hover {
+    [data-testid="stButton"] button:hover, .stButton button:hover,
+    [data-testid="stDownloadButton"] button:hover, .stDownloadButton button:hover {
         background: var(--panel-hover) !important;
         border-color: var(--fg-5) !important;
         color: var(--fg-1) !important;

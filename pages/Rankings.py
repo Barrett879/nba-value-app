@@ -882,7 +882,7 @@ if show_splits and splits_df is not None:
                               if rd.get("Team") == "TOT" else ""),
         height=600,
     )
-    dl_col, cap_col = st.columns([1, 5])
+    dl_col, cap_col = st.columns([1, 9])
     with dl_col:
         st.download_button(
             "Export CSV",
@@ -975,7 +975,7 @@ else:
         },
         height=min(620, max(140, len(display_fmt) * 38 + 46)),
     )
-    dl_col_r, cap_col_r = st.columns([1, 5])
+    dl_col_r, cap_col_r = st.columns([1, 9])
     with dl_col_r:
         st.download_button(
             "Export CSV",
