@@ -1648,6 +1648,51 @@ st.markdown(
     f"color-scheme:{_sb_scheme} !important;}}</style>",
     unsafe_allow_html=True,
 )
+# st_searchbox highlights the matched substring by building
+# `new RegExp("(" + inputValue + ")", "gi")` WITHOUT escaping the input, so any
+# value that isn't a valid regex body — a stray backslash or unbalanced paren
+# left mid-edit (e.g. "Rui Hachimura\") — throws "Invalid regular expression …
+# Unterminated group" and crashes the whole component. Guard the searchbox
+# iframe's RegExp so a bad pattern degrades to an escaped / never-match regex
+# instead of throwing. Always on; installs once per iframe, before any edit.
+import streamlit.components.v1 as _sc_guard
+_sc_guard.html(
+    r"""
+    <script>
+    (function () {
+      var pdoc = window.parent.document;
+      function install(win) {
+        if (!win || win.__hvReGuard) return true;
+        var Real = win.RegExp;
+        if (!Real) return false;
+        function esc(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+        function Guard(p, f) {
+          try { return f === undefined ? new Real(p) : new Real(p, f); }
+          catch (e) {
+            try { return new Real(esc(p), f); }            // highlight literally
+            catch (e2) { return new Real('(?!)', (f || '').replace(/[^gimsuy]/g, '')); }
+          }
+        }
+        Guard.prototype = Real.prototype;                  // realRegex instanceof RegExp stays true
+        try {
+          Object.getOwnPropertyNames(Real).forEach(function (k) {
+            try { if (!(k in Guard)) Guard[k] = Real[k]; } catch (_) {}
+          });
+        } catch (_) {}
+        win.RegExp = Guard;
+        win.__hvReGuard = true;
+        return true;
+      }
+      var n = 0, t = setInterval(function () {
+        var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
+        if (f && f.contentWindow) install(f.contentWindow);
+        if (++n > 80) clearInterval(t);
+      }, 120);
+    })();
+    </script>
+    """,
+    height=0,
+)
 # In dark mode the react-select dropdown 'menu' container defaults to WHITE and
 # the component exposes no override for it (only menuList/option/control). It
 # also mounts only when the dropdown opens. So reach INTO the searchbox iframe
