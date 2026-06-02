@@ -1197,8 +1197,8 @@ def _tier_penalty_weight(age) -> float:
 # cannot bypass (no min-count fallback): if nobody falls in the band, we show
 # no comps and suppress the market opinion rather than invent a non-peer —
 # e.g. a -4.0 player must never be priced off +3.7 rotation centers.
-COMP_SCORE_TOL_PCT = 0.25   # keep comps within ±25% of the target's current score…
-COMP_SCORE_TOL_MIN = 5.0    # …or ±5 raw Barrett points, whichever band is wider
+COMP_SCORE_TOL_PCT = 0.15   # keep comps within ±15% of the target's current score…
+COMP_SCORE_TOL_MIN = 4.0    # …or ±4 raw Barrett points, whichever band is wider
 # Minimum-caliber targets (current Barrett under this) are priced against the
 # minimum-salary market too — their real comps ARE minimum deals, so vet-min
 # signings stay in their pool instead of being filtered out (which would leave
