@@ -1749,28 +1749,45 @@ if st.session_state.get("_fa_prev") != _fa_on:
 def _toggle_fa():
     st.session_state["fa_filter"] = not st.session_state.get("fa_filter", False)
 
-# Selected-state colour for the FA button: vivid teal fill in BOTH themes when
-# ON (with a soft glow), neutral token-based outline when off (so it adapts to
-# light/dark). Streamlit tags the button kind="primary"/"secondary".
+# Unselected, the FA button mirrors the search box's fill + border so it reads as
+# part of the bar; selected stays vivid teal so the active state pops. Match the
+# searchbox control colours per theme (dark control = #16181f on a #2c2c40 edge).
+if _sb_dark:
+    _fa_off_bg, _fa_off_bd, _fa_off_fg = "#16181f", "#2c2c40", "#e8e8f0"
+else:
+    _fa_off_bg, _fa_off_bd, _fa_off_fg = "#ffffff", "#cccccc", "#31333f"
 st.markdown(
     "<style>"
+    # Hug the text (no full-width stretch), rounded rectangle.
     ".st-key-fa_btn button{white-space:nowrap;border-radius:10px;font-weight:600;}"
+    # ON (selected) — vivid teal in both themes.
     ".st-key-fa_btn button[kind='primary']{background:#16d4c1!important;"
     "border-color:#16d4c1!important;color:#08131f!important;"
     "box-shadow:0 0 0 2px rgba(22,212,193,.30)!important;}"
     ".st-key-fa_btn button[kind='primary']:hover{background:#12c0ad!important;border-color:#12c0ad!important;color:#08131f!important;}"
-    ".st-key-fa_btn button[kind='secondary']{background:transparent!important;"
-    "border:1px solid var(--hairline)!important;color:var(--fg-3)!important;}"
-    ".st-key-fa_btn button[kind='secondary']:hover{border-color:#16d4c1!important;color:var(--fg-1)!important;}"
+    # OFF (unselected) — same fill/border as the search box.
+    f".st-key-fa_btn button[kind='secondary']{{background:{_fa_off_bg}!important;"
+    f"border:1px solid {_fa_off_bd}!important;color:{_fa_off_fg}!important;}}"
+    f".st-key-fa_btn button[kind='secondary']:hover{{border-color:#16d4c1!important;color:{_fa_off_fg}!important;}}"
+    # Keep the search box and button on one row (no stacking), button shrinks to
+    # its content, search column grows from 0 to fill the freed space. flex-basis
+    # 0 on the search col is what prevents the row from wrapping at narrow widths.
+    # Scoped to this row only via :has.
+    "[data-testid='stHorizontalBlock']:has(.st-key-fa_btn){flex-wrap:nowrap!important;}"
+    "[data-testid='stHorizontalBlock']:has(.st-key-fa_btn)>[data-testid='stColumn']:has(.st-key-fa_btn)"
+    "{flex:0 0 auto!important;width:auto!important;min-width:0!important;}"
+    "[data-testid='stHorizontalBlock']:has(.st-key-fa_btn)>[data-testid='stColumn']:not(:has(.st-key-fa_btn))"
+    "{flex:1 1 0%!important;min-width:0!important;}"
+    "iframe[title='streamlit_searchbox.searchbox']{width:100%!important;}"
     "</style>",
     unsafe_allow_html=True,
 )
 _sb_col, _fa_col = st.columns([8, 2], vertical_alignment="center")
 with _fa_col:
-    # Rounded-rectangle toggle button: vivid teal fill (primary) when the FA
-    # filter is ON, neutral outline (secondary) when off. on_click flips the flag.
+    # Toggle button sized to its label: teal fill (primary) when the FA filter is
+    # ON, search-box-coloured (secondary) when off. on_click flips the flag.
     st.button("Free Agents Only", key="fa_btn", on_click=_toggle_fa,
-              type=("primary" if _fa_on else "secondary"), use_container_width=True,
+              type=("primary" if _fa_on else "secondary"),
               help="Show only free agents — UFA, RFA, and player/team options")
 with _sb_col:
     selected = st_searchbox(
