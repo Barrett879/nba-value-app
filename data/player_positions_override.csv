@@ -16,19 +16,18 @@
 #     their PRIMARY (so a SG/SF guard no longer blocks a true SF/PF forward).
 #   - Lines starting with # are ignored. Leave the file header-only to use 2K as-is.
 name,positions
-Jake LaRavia,SF/PF
-# 2K-vs-BBRef position corrections (reviewed 2026-05-30):
+Jake LaRavia,SF/SG
 Gary Payton II,SG/SF
-Tari Eason,SF/PF
+Tari Eason,SF/SG
 Derrick Jones Jr.,SF/PF
-Aaron Wiggins,SG/SF
+Aaron Wiggins,SF/SG
 Ochai Agbaji,SG/SF
 Terrence Shannon Jr.,SG/SF
 Jaylon Tyson,SG/SF
 John Konchar,SG/SF
 Nique Clifford,SG/SF
 Jalen Williams,SG/SF
-Jaylin Williams,PF/C
+Jaylin Williams,C/PF
 Quinten Post,PF/C
 Joan Beringer,PF/C
 Alex Caruso,SG/SF
@@ -41,4 +40,100 @@ Cooper Flagg,SF/PF
 Austin Reaves,SG/PG
 Jaylen Brown,SF/SG
 Marcus Smart,SG/PG
-Jaxson Hayes,C/PF
+Jaxson Hayes,C
+Zaccharie Risacher,SF/PF
+CJ McCollum,SG/PG
+Corey Kispert,SF/SG
+Ziaire Williams,SF/PF
+Nic Claxton,C
+Day'Ron Sharpe,C
+Jayson Tatum,PF/SF
+Luka Garza,C
+Nikola Vučević,C/PF
+Sion James,SG/PG
+Miles Bridges,PF/SF
+Moussa Diabaté,C
+Grant Williams,PF/SF
+Xavier Tillman,C/PF
+Jalen Smith,C/PF
+Donovan Mitchell,SG/PG
+Keon Ellis,SG/PG
+Max Strus,SF/SG
+P.J. Washington,PF/SF
+Cameron Johnson,SF/PF
+Jalen Pickett,SG
+Tobias Harris,PF/SF
+Paul Reed,C
+Isaiah Stewart,C/PF
+Will Richard,SG/PG
+Seth Curry,SG/PG
+Gui Santos,PF/SF
+De'Anthony Melton,PG/SG
+Al Horford,C/PF
+Kevin Durant,PF/SF
+Alperen Sengun,C
+Ben Sheppard,SG/PG
+Darius Garland,PG
+Bradley Beal,SG/PG
+Kawhi Leonard,PF/SF
+Nicolas Batum,PF/SF
+Cam Christie,SG/SF
+Luke Kennard,SG/PG
+LeBron James,PF/SF
+Drew Timme,PF/C
+Maxi Kleber,C/PF
+Bronny James,PG/SG
+Kobe Bufkin,SF/SG
+Santi Aldama,PF/SF
+Taj Gibson,PF/SF
+Bam Adebayo,C/PF
+Kel'el Ware,C/PF
+Taurean Prince,SF/SG
+Cam Thomas,SG
+Bobby Portis,PF/SF
+Naz Reid,C/PF
+Trey Murphy III,SF/SG
+Derik Queen,C
+Yves Missi,C
+Karl-Anthony Towns,C/PF
+Josh Hart,SF/SG
+Jordan Clarkson,PG/SG
+Jeremy Sochan,PF/SF
+Mohamed Diawara,PF/SF
+Ariel Hukporti,C
+Cason Wallace,SG/SF
+Isaiah Joe,SG/SF
+Jett Howard,SF/PF
+Wendell Carter Jr.,C
+Moritz Wagner,C
+Colin Castleton,C
+VJ Edgecombe,SG/SF
+Trendon Watford,PF/SF
+Cameron Payne,PG/SG
+Kyle Lowry,PG
+Adem Bona,C
+Eric Gordon,SF/SG
+Jalen Green,SG/PG
+Oso Ighodaro,C
+Shaedon Sharpe,SG/PG
+Toumani Camara,PF/SF
+Jerami Grant,PF/SF
+Robert Williams III,C
+Matisse Thybulle,SF/SG
+Yang Hansen,C
+DeMar DeRozan,SF/SG
+Victor Wembanyama,C/PF
+De'Aaron Fox,PG/SG
+Harrison Barnes,PF/SF
+Carter Bryant,SF/SG
+Jordan McLaughlin,PG
+Bismack Biyombo,C
+RJ Barrett,SG/SF
+Sandro Mamukelashvili,C/PF
+Trayce Jackson-Davis,C/PF
+Vince Williams Jr.,PG/SG
+Kevin Love,C/PF
+Alex Sarr,C/PF
+Kyshawn George,SF/SG
+D'Angelo Russell,PG/SG
+Cam Whitmore,SF/SG
