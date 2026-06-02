@@ -1766,6 +1766,12 @@ _fa_on = bool(st.session_state.get("fa_filter"))
 if st.session_state.get("_fa_prev") != _fa_on:
     st.session_state["_fa_prev"] = _fa_on
     st.session_state.pop(_PICKER_KEY, None)
+# Same cache caveat for the SELECTED player: st_searchbox caches default_options
+# at key creation, so when the pick changes, drop the cached state to force a
+# re-seed with the roster rotated to center the NEW player (see _center_pool).
+if st.session_state.get("_sb_centered_for") != _init_player:
+    st.session_state["_sb_centered_for"] = _init_player
+    st.session_state.pop(_PICKER_KEY, None)
 
 def _toggle_fa():
     st.session_state["fa_filter"] = not st.session_state.get("fa_filter", False)
@@ -1818,9 +1824,10 @@ with _sb_col:
         # Seed the box TEXT with the selected player so the name stays put after
         # selection / on reload (not just the placeholder).
         default_searchterm=(_init_player or ""),
-        # Scrollable pool (FA-only when the toggle is on), Barrett desc; the
-        # injected script auto-scrolls the open dropdown to center the pick.
-        default_options=(_fa_names if _fa_on else active_names),
+        # Scrollable pool (FA-only when the toggle is on), Barrett desc, rotated
+        # by _center_pool so the open dropdown CENTERS the selected player (4th)
+        # instead of pinning to the top. Re-seeds on a pick change (pop above).
+        default_options=_center_pool(_fa_names if _fa_on else active_names, _init_player),
         edit_after_submit="option",
         rerun_on_update=True,
         style_overrides=_SEARCHBOX_STYLE,
