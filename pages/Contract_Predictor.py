@@ -1555,13 +1555,28 @@ def _current_player() -> str | None:
     return _init_player
 
 
+def _center_pool(pool: list[str], cur: str | None) -> list[str]:
+    """Rotate the roster so the selected player sits 4th — CENTERED in the first
+    ~7 visible dropdown options, his Barrett neighbours around him — instead of
+    the list opening pinned to the top. Every player stays in the (rotated) list,
+    so it's still fully scrollable. Deterministic: the player lands near the top,
+    visible the instant the menu opens, with no scroll-into-view race to lose."""
+    if not cur:
+        return pool
+    try:
+        i = pool.index(cur)
+    except ValueError:                 # selected player not in this pool (e.g. FA filter)
+        return pool
+    start = max(0, i - 3)              # 3 players above him → he's the 4th option
+    return pool[start:] + pool[:start]
+
+
 def _search_players(query: str) -> list[str]:
     """Filter active-season players by case- and accent-insensitive substring.
 
     Empty query (or the box still holding the selected player's full name on
-    focus) → the FULL roster (sorted by Barrett desc) so the dropdown stays
-    scrollable. An injected script auto-scrolls it to center the selected
-    player on open (see the scroll-centering helper below the searchbox).
+    focus) → the full roster rotated by _center_pool so the selected player sits
+    4th (centered in the visible options) while staying fully scrollable.
 
     With a real query → match by quality (exact → prefix → substring), then
     Barrett score descending within each match tier. Capped at 10.
@@ -1570,12 +1585,12 @@ def _search_players(query: str) -> list[str]:
     pool = _fa_names if st.session_state.get("fa_filter") else active_names
     cur = _current_player()
     if not query or not query.strip():
-        return pool
+        return _center_pool(pool, cur)
     q = normalize(query)
     # Box untouched since selection (still the player's full name on focus) →
     # the full scrollable roster, not just the lone exact match.
     if cur and q == normalize(cur):
-        return pool
+        return _center_pool(pool, cur)
     scored: list[tuple[int, float, str]] = []
     for n in pool:
         nn = normalize(n)
@@ -1738,49 +1753,10 @@ if st.session_state.get("theme_dark", False):
         """,
         height=0,
     )
-# Auto-scroll the open dropdown so the selected player sits CENTERED in the
-# (scrollable) full roster instead of pinned to the top. Reaches into the
-# searchbox iframe on input focus and scrollIntoView({block:'center'}) the
-# matching option. Both themes; harmless while typing (the typed text won't
-# match a full name). Only injected when a player is already selected.
-if _init_player:
-    import json as _json
-    import streamlit.components.v1 as _sc
-    _sc.html(
-        """
-        <script>
-        (function () {
-          var pdoc = window.parent.document;
-          var TARGET = __HV_TARGET__;
-          function center(tries) {
-            tries = tries || 0;
-            var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
-            if (f && f.contentDocument) {
-              var opts = f.contentDocument.querySelectorAll("[class*='option']");
-              for (var i = 0; i < opts.length; i++) {
-                if (opts[i].textContent.trim() === TARGET) {
-                  opts[i].scrollIntoView({ block: 'center' });
-                  return;
-                }
-              }
-            }
-            if (tries < 30) setTimeout(function () { center(tries + 1); }, 80);
-          }
-          var n = 0, t = setInterval(function () {
-            var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
-            if (f && f.contentDocument && !f.contentDocument.__hvScrollHook) {
-              f.contentDocument.__hvScrollHook = true;
-              f.contentDocument.addEventListener('focusin', function (e) {
-                if (e.target && e.target.tagName === 'INPUT') center(0);
-              });
-            }
-            if (++n > 40) clearInterval(t);
-          }, 150);
-        })();
-        </script>
-        """.replace("__HV_TARGET__", _json.dumps(_init_player)),
-        height=0,
-    )
+# (The selected player is centered in the dropdown deterministically by
+# _center_pool() rotating the options — see _search_players above — so the old
+# scrollIntoView hack is gone: it raced react-select's own scroll and lost for
+# players deep in the roster, e.g. a low-Barrett free agent near the bottom.)
 # "Free agents" filter at the right end of the search bar. Streamlit has the
 # toggle's new value in session_state from the start of the rerun, so read it up
 # front. st_searchbox caches its dropdown options when its key is first created
