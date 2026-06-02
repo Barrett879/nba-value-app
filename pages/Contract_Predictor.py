@@ -1749,11 +1749,27 @@ if st.session_state.get("_fa_prev") != _fa_on:
 def _toggle_fa():
     st.session_state["fa_filter"] = not st.session_state.get("fa_filter", False)
 
-_sb_col, _fa_col = st.columns([9, 2], vertical_alignment="center")
+# Selected-state colour for the FA button: vivid teal fill in BOTH themes when
+# ON (with a soft glow), neutral token-based outline when off (so it adapts to
+# light/dark). Streamlit tags the button kind="primary"/"secondary".
+st.markdown(
+    "<style>"
+    ".st-key-fa_btn button{white-space:nowrap;border-radius:10px;font-weight:600;}"
+    ".st-key-fa_btn button[kind='primary']{background:#16d4c1!important;"
+    "border-color:#16d4c1!important;color:#08131f!important;"
+    "box-shadow:0 0 0 2px rgba(22,212,193,.30)!important;}"
+    ".st-key-fa_btn button[kind='primary']:hover{background:#12c0ad!important;border-color:#12c0ad!important;color:#08131f!important;}"
+    ".st-key-fa_btn button[kind='secondary']{background:transparent!important;"
+    "border:1px solid var(--hairline)!important;color:var(--fg-3)!important;}"
+    ".st-key-fa_btn button[kind='secondary']:hover{border-color:#16d4c1!important;color:var(--fg-1)!important;}"
+    "</style>",
+    unsafe_allow_html=True,
+)
+_sb_col, _fa_col = st.columns([8, 2], vertical_alignment="center")
 with _fa_col:
-    # Rounded-rectangle toggle button: filled (primary) when the FA filter is ON,
-    # outlined (secondary) when off. on_click flips the flag before the rerun.
-    st.button("Free Agents", key="fa_btn", on_click=_toggle_fa,
+    # Rounded-rectangle toggle button: vivid teal fill (primary) when the FA
+    # filter is ON, neutral outline (secondary) when off. on_click flips the flag.
+    st.button("Free Agents Only", key="fa_btn", on_click=_toggle_fa,
               type=("primary" if _fa_on else "secondary"), use_container_width=True,
               help="Show only free agents — UFA, RFA, and player/team options")
 with _sb_col:
