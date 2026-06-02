@@ -63,7 +63,7 @@ from utils import (
     get_player_draft_info, build_draft_tier_lookup,
     # CBA / contract structure
     get_max_contract_eligibility,
-    fetch_rookie_scale_players,
+    fetch_rookie_scale_players, fetch_next_year_contracts, fmt_next_contract,
     fetch_all_nba_selections, get_all_nba_in_window,
     # Contract end-year scraper — powers the "Current deal: $X through YYYY-YY"
     # context line under the hero (and nothing else after the forward-
@@ -1517,6 +1517,20 @@ if not current_ranked.empty:
     ))
 active_names = sorted(active_names, key=lambda n: -_barrett_lookup.get(n, 0.0))
 
+# Free-agent subset for the "Free agents" search toggle — SAME definition as the
+# FA Class page: a player is a FA if their next-year contract is RFA, an expiring
+# UFA ("—"), or carries a player/team option (PO/TO). A normal next-year salary
+# means they're under contract -> not a FA. Falls back to the full roster if the
+# contract data can't be fetched, so the toggle never empties the search.
+try:
+    _fa_next = fetch_next_year_contracts(season_to_espn_year(CURRENT_SEASON), cache_v=7)
+    def _is_free_agent(_n: str) -> bool:
+        s = fmt_next_contract(_n, _fa_next)
+        return s == "RFA" or s == "—" or " PO" in s or " TO" in s
+    _fa_names = [n for n in active_names if _is_free_agent(n)] or active_names
+except Exception:
+    _fa_names = active_names
+
 _PICKER_KEY = "contract_predictor_player"
 
 # Resolve initial value from URL ?player= param (deep-link support).
@@ -1552,16 +1566,18 @@ def _search_players(query: str) -> list[str]:
     With a real query → match by quality (exact → prefix → substring), then
     Barrett score descending within each match tier. Capped at 10.
     """
+    # "Free agents" toggle restricts the searchable pool to FAs only.
+    pool = _fa_names if st.session_state.get("fa_filter") else active_names
     cur = _current_player()
     if not query or not query.strip():
-        return active_names
+        return pool
     q = normalize(query)
     # Box untouched since selection (still the player's full name on focus) →
     # the full scrollable roster, not just the lone exact match.
     if cur and q == normalize(cur):
-        return active_names
+        return pool
     scored: list[tuple[int, float, str]] = []
-    for n in active_names:
+    for n in pool:
         nn = normalize(n)
         if nn == q:
             quality = 3
@@ -1720,21 +1736,28 @@ if _init_player:
         """.replace("__HV_TARGET__", _json.dumps(_init_player)),
         height=0,
     )
-selected = st_searchbox(
-    search_function=_search_players,
-    placeholder="Type a player name…",
-    default=_init_player,
-    # Seed the box TEXT with the selected player so the name stays put after
-    # selection / on reload (not just the placeholder).
-    default_searchterm=(_init_player or ""),
-    # Full scrollable roster (sorted by Barrett desc); the injected script below
-    # auto-scrolls the open dropdown to center the selected player.
-    default_options=active_names,
-    edit_after_submit="option",
-    rerun_on_update=True,
-    style_overrides=_SEARCHBOX_STYLE,
-    key=_PICKER_KEY,
-)
+# "Free agents" filter at the right end of the search bar. Render the toggle
+# FIRST so its state is fresh when the searchbox builds its option pool.
+_sb_col, _fa_col = st.columns([9, 2], vertical_alignment="center")
+with _fa_col:
+    st.toggle("Free agents", key="fa_filter",
+              help="Search only free agents — UFA, RFA, and player/team options")
+with _sb_col:
+    selected = st_searchbox(
+        search_function=_search_players,
+        placeholder="Type a player name…",
+        default=_init_player,
+        # Seed the box TEXT with the selected player so the name stays put after
+        # selection / on reload (not just the placeholder).
+        default_searchterm=(_init_player or ""),
+        # Scrollable pool (FA-only when the toggle is on), Barrett desc; the
+        # injected script auto-scrolls the open dropdown to center the pick.
+        default_options=(_fa_names if st.session_state.get("fa_filter") else active_names),
+        edit_after_submit="option",
+        rerun_on_update=True,
+        style_overrides=_SEARCHBOX_STYLE,
+        key=_PICKER_KEY,
+    )
 
 # Mirror selection into the URL for deep-linking. Skip if unchanged to
 # avoid re-triggering the URL → state seed in a loop.
