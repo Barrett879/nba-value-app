@@ -22,7 +22,7 @@ from build_production_histgbm import (
 
 # comp/blend machinery from the live page
 SRC = (ROOT / "pages" / "Contract_Predictor.py").read_text().splitlines(keepends=True)
-cut = next(i for i, l in enumerate(SRC) if l.startswith("selected = st_searchbox("))
+cut = next(i for i, l in enumerate(SRC) if l.startswith("_sb_col, _fa_col = st.columns("))
 ns = {"__name__": "p", "__file__": str(ROOT / "pages" / "Contract_Predictor.py")}
 exec(compile("".join(SRC[:cut]), "p", "exec"), ns)
 fc, lh, wm, idw = ns["find_comparables"], ns["load_historical_signings"], ns["_weighted_median"], ns["_inverse_distance_weights"]

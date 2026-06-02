@@ -22,7 +22,7 @@ import numpy as np
 import pandas as pd
 
 SRC = (ROOT / "pages" / "Contract_Predictor.py").read_text().splitlines(keepends=True)
-cut = next(i for i, l in enumerate(SRC) if l.startswith("selected = st_searchbox("))
+cut = next(i for i, l in enumerate(SRC) if l.startswith("_sb_col, _fa_col = st.columns("))
 prefix = "".join(SRC[:cut])
 ns = {"__name__": "cp_prefix", "__file__": str(ROOT / "pages" / "Contract_Predictor.py")}
 exec(compile(prefix, "Contract_Predictor_prefix", "exec"), ns)
