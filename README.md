@@ -4,7 +4,7 @@ emoji: 🏀
 colorFrom: blue
 colorTo: red
 sdk: streamlit
-sdk_version: "1.44.0"
+sdk_version: "1.51.0"
 app_file: app.py
 pinned: false
 python_version: "3.12"
