@@ -1745,10 +1745,17 @@ _fa_on = bool(st.session_state.get("fa_filter"))
 if st.session_state.get("_fa_prev") != _fa_on:
     st.session_state["_fa_prev"] = _fa_on
     st.session_state.pop(_PICKER_KEY, None)
+
+def _toggle_fa():
+    st.session_state["fa_filter"] = not st.session_state.get("fa_filter", False)
+
 _sb_col, _fa_col = st.columns([9, 2], vertical_alignment="center")
 with _fa_col:
-    st.toggle("Free agents", key="fa_filter",
-              help="Search only free agents — UFA, RFA, and player/team options")
+    # Rounded-rectangle toggle button: filled (primary) when the FA filter is ON,
+    # outlined (secondary) when off. on_click flips the flag before the rerun.
+    st.button("Free Agents", key="fa_btn", on_click=_toggle_fa,
+              type=("primary" if _fa_on else "secondary"), use_container_width=True,
+              help="Show only free agents — UFA, RFA, and player/team options")
 with _sb_col:
     selected = st_searchbox(
         search_function=_search_players,
