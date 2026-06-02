@@ -1547,7 +1547,7 @@ if "player" in st.query_params:
 
 def _current_player() -> str | None:
     """Player currently selected in the searchbox (survives reruns via the
-    component's own session state), so the empty/centered list can orbit them.
+    component's own session state), so the dropdown can open with them on top.
     Falls back to the URL deep-link seed before the first interaction."""
     state = st.session_state.get(_PICKER_KEY)
     if isinstance(state, dict) and state.get("result"):
@@ -1555,28 +1555,23 @@ def _current_player() -> str | None:
     return _init_player
 
 
-def _center_pool(pool: list[str], cur: str | None) -> list[str]:
-    """Rotate the roster so the selected player sits 4th — CENTERED in the first
-    ~7 visible dropdown options, his Barrett neighbours around him — instead of
-    the list opening pinned to the top. Every player stays in the (rotated) list,
-    so it's still fully scrollable. Deterministic: the player lands near the top,
-    visible the instant the menu opens, with no scroll-into-view race to lose."""
-    if not cur:
+def _lead_pool(pool: list[str], cur: str | None) -> list[str]:
+    """Put the selected player at the TOP of the dropdown, then the rest of the
+    roster in its natural Barrett order, so opening the box always shows the
+    current pick first. Every player is kept, so the list stays fully scrollable.
+    Returns the pool unchanged when there's no pick, or it isn't in this pool
+    (e.g. excluded by the free-agents filter)."""
+    if not cur or cur not in pool:
         return pool
-    try:
-        i = pool.index(cur)
-    except ValueError:                 # selected player not in this pool (e.g. FA filter)
-        return pool
-    start = max(0, i - 3)              # 3 players above him → he's the 4th option
-    return pool[start:] + pool[:start]
+    return [cur] + [p for p in pool if p != cur]
 
 
 def _search_players(query: str) -> list[str]:
     """Filter active-season players by case- and accent-insensitive substring.
 
     Empty query (or the box still holding the selected player's full name on
-    focus) → the full roster rotated by _center_pool so the selected player sits
-    4th (centered in the visible options) while staying fully scrollable.
+    focus) → the full roster with the selected player led to the TOP by
+    _lead_pool, the rest in Barrett order, still fully scrollable.
 
     With a real query → match by quality (exact → prefix → substring), then
     Barrett score descending within each match tier. Capped at 10.
@@ -1585,12 +1580,12 @@ def _search_players(query: str) -> list[str]:
     pool = _fa_names if st.session_state.get("fa_filter") else active_names
     cur = _current_player()
     if not query or not query.strip():
-        return _center_pool(pool, cur)
+        return _lead_pool(pool, cur)
     q = normalize(query)
     # Box untouched since selection (still the player's full name on focus) →
     # the full scrollable roster, not just the lone exact match.
     if cur and q == normalize(cur):
-        return _center_pool(pool, cur)
+        return _lead_pool(pool, cur)
     scored: list[tuple[int, float, str]] = []
     for n in pool:
         nn = normalize(n)
@@ -1753,10 +1748,10 @@ if st.session_state.get("theme_dark", False):
         """,
         height=0,
     )
-# (The selected player is centered in the dropdown deterministically by
-# _center_pool() rotating the options — see _search_players above — so the old
-# scrollIntoView hack is gone: it raced react-select's own scroll and lost for
-# players deep in the roster, e.g. a low-Barrett free agent near the bottom.)
+# (The selected player is led to the top of the dropdown deterministically by
+# _lead_pool() — see _search_players above — so the old scrollIntoView hack is
+# gone: it raced react-select's own scroll and lost for players deep in the
+# roster, e.g. a low-Barrett free agent near the bottom.)
 # "Free agents" filter at the right end of the search bar. Streamlit has the
 # toggle's new value in session_state from the start of the rerun, so read it up
 # front. st_searchbox caches its dropdown options when its key is first created
@@ -1768,9 +1763,9 @@ if st.session_state.get("_fa_prev") != _fa_on:
     st.session_state.pop(_PICKER_KEY, None)
 # Same cache caveat for the SELECTED player: st_searchbox caches default_options
 # at key creation, so when the pick changes, drop the cached state to force a
-# re-seed with the roster rotated to center the NEW player (see _center_pool).
-if st.session_state.get("_sb_centered_for") != _init_player:
-    st.session_state["_sb_centered_for"] = _init_player
+# re-seed with the roster led to the NEW player at the top (see _lead_pool).
+if st.session_state.get("_sb_lead_for") != _init_player:
+    st.session_state["_sb_lead_for"] = _init_player
     st.session_state.pop(_PICKER_KEY, None)
 
 def _toggle_fa():
@@ -1824,10 +1819,10 @@ with _sb_col:
         # Seed the box TEXT with the selected player so the name stays put after
         # selection / on reload (not just the placeholder).
         default_searchterm=(_init_player or ""),
-        # Scrollable pool (FA-only when the toggle is on), Barrett desc, rotated
-        # by _center_pool so the open dropdown CENTERS the selected player (4th)
-        # instead of pinning to the top. Re-seeds on a pick change (pop above).
-        default_options=_center_pool(_fa_names if _fa_on else active_names, _init_player),
+        # Scrollable pool (FA-only when the toggle is on), Barrett desc, with the
+        # selected player led to the TOP by _lead_pool (not natural order).
+        # Re-seeds on a pick change (pop above).
+        default_options=_lead_pool(_fa_names if _fa_on else active_names, _init_player),
         edit_after_submit="option",
         rerun_on_update=True,
         style_overrides=_SEARCHBOX_STYLE,
