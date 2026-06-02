@@ -2593,12 +2593,32 @@ try:
             features.get("name", ""),
             features.get("position_detailed") or features.get("position") or "",
             _pos2k)
+        # Ground affordability in REAL committed salary: sum each team's actual
+        # 2026-27 contracts (the same ESPN feed the FA toggle uses) and recompute
+        # cap room + apron tool, overriding the hand-typed cap column. Timeline
+        # still comes from the curated CSV. Also tag RFA / option incumbents so a
+        # "would start over X" line flags when that spot is actually opening up.
+        _fa_tags = {"rfa": "RFA", "player_option": "player option",
+                    "team_option": "team option"}
+        _status_map = {}
+        try:
+            _next_c = fetch_next_year_contracts(season_to_espn_year(CURRENT_SEASON), cache_v=7)
+            _payroll = pd.DataFrame({"team": current_ranked["Team"].astype(str).values,
+                                     "player": current_ranked["Player"].astype(str).values})
+            _ts_land = _ts.apply_real_cap(
+                _ts_land, _ts.compute_cap_space(
+                    _payroll, _next_c, SALARY_CAP_M.get(CONTRACT_SEASON, 165.0)))
+            _status_map = {nm: _fa_tags[(v or {}).get("type")]
+                           for nm, v in _next_c.items()
+                           if (v or {}).get("type") in _fa_tags}
+        except Exception:
+            pass
         _ts_suitors = (
             _ts.rank_suitors(predicted_M, float(features["barrett_score"]),
                              _ts_pos, _ts_rost, _ts_land, n=6,
                              incumbent_team=_self_team,
                              age=features.get("age"), is_rfa=_is_rfa,
-                             skill_fit=_skill_fit)
+                             skill_fit=_skill_fit, fa_status=_status_map)
             if not _ts_rost.empty else []
         )
         if _ts_suitors:
@@ -2628,12 +2648,14 @@ try:
             _fa_label = ("restricted FA — his team can match any offer"
                          if _is_rfa else "unrestricted FA")
             _ts_about_note = (
-                f"Experimental — {_fa_label}. Each team's number is the model's value "
-                "scaled by fit (starter vs depth) and capped by their cap room / exception "
-                "(or Bird rights). Ranked by a model trained on 1,800+ historical signings "
-                "(incumbency, cap, position, team timeline × his age & value) — it places the "
-                "actual signing team in this shortlist ~6 of 10 times; skill fit is shown as a label."
-                + (f" Cap data: {_asof}." if _asof else "")
+                f"Experimental — {_fa_label}. Cap room is computed from each team's actual "
+                "committed salaries for next season (real contracts, not estimates); the offer "
+                "is the model's value scaled by fit (starter vs depth), capped by that room / "
+                "exception (or Bird rights). Ranked by a model trained on 1,800+ historical "
+                "signings (incumbency, cap, position, team timeline × his age & value) — it "
+                "places the actual signing team in this shortlist ~6 of 10 times."
+                + (f" Team timeline (title / playoff / retooling / rebuild) curated as of {_asof}."
+                   if _asof else "")
             )
 except Exception:
     pass

@@ -194,6 +194,71 @@ def load_team_landscape(path: Path | str = CSV_PATH) -> pd.DataFrame:
     return df
 
 
+# ── Real cap space from actual contracts ─────────────────────────────────────
+# Rather than hand-typing each team's cap room, compute it from the salaries
+# already under contract for the season a new deal would start. League thresholds
+# derive from the cap so they self-update (2025-26 actuals: cap 154.6, first apron
+# 195.9 = 1.267x, second apron 207.8 = 1.344x).
+_APRON1_RATIO = 1.267
+_APRON2_RATIO = 1.344
+
+
+def team_payroll(rosters: pd.DataFrame, next_contracts: dict) -> dict:
+    """{team: committed $M for next season} — sum each rostered player's next-year
+    salary (guaranteed + option money already on the books). A player with no
+    next-year salary is an expiring contract / free agent and correctly adds 0
+    (his money comes off the books). rosters needs columns [team, player]."""
+    out: dict = {}
+    seen: set = set()
+    for _, r in rosters.iterrows():
+        nm = _normalize(r["player"])
+        if nm in seen:                      # count each player's contract once
+            continue
+        seen.add(nm)
+        info = next_contracts.get(nm) or {}
+        out[r["team"]] = out.get(r["team"], 0.0) + float(info.get("salary") or 0.0) / 1e6
+    return out
+
+
+def compute_cap_space(rosters: pd.DataFrame, next_contracts: dict, cap_M: float) -> dict:
+    """Real per-team {cap_space_M, top_exception, committed_M} from committed
+    salary. Under the cap -> cap_room (= the room); over it, the apron tier sets
+    the largest tool (under the first apron -> full MLE, between aprons -> taxpayer
+    MLE, over the second apron -> minimum only)."""
+    apron1, apron2 = cap_M * _APRON1_RATIO, cap_M * _APRON2_RATIO
+    out = {}
+    for team, comm in team_payroll(rosters, next_contracts).items():
+        space = cap_M - comm
+        if   space > 0.5:    tool, cs = "cap_room", space
+        elif comm < apron1:  tool, cs = "nt_mle", 0.0
+        elif comm < apron2:  tool, cs = "tp_mle", 0.0
+        else:                tool, cs = "min", 0.0
+        out[team] = {"cap_space_M": round(max(0.0, cs), 1),
+                     "top_exception": tool, "committed_M": round(comm, 1)}
+    return out
+
+
+def apply_real_cap(landscape: pd.DataFrame, cap_table: dict,
+                   min_committed_M: float = 50.0) -> pd.DataFrame:
+    """Override the hand-typed cap_space_M + top_exception (and the derived
+    exception_M) with computed-from-real-salary values, keeping team_name +
+    timeline. A team absent from cap_table — or whose computed payroll is
+    implausibly low (< min_committed_M, i.e. we're clearly missing its contracts)
+    — keeps its CSV row untouched, so a data gap degrades to the hand value rather
+    than inventing cap space."""
+    df = landscape.copy()
+    df.attrs = dict(getattr(landscape, "attrs", {}) or {})   # keep the as_of stamp
+    for i, row in df.iterrows():
+        c = cap_table.get(row["team"])
+        if not c or c.get("committed_M", 0.0) < min_committed_M:
+            continue
+        df.at[i, "cap_space_M"] = c["cap_space_M"]
+        df.at[i, "top_exception"] = c["top_exception"]
+    df["exception_M"] = (df["top_exception"].astype(str).str.strip().str.lower()
+                         .map(_EXC_BY_TOOL).fillna(DEFAULT_NT_MLE))
+    return df
+
+
 def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame) -> dict:
     """Where `target` slots into ONE team's depth chart at his position.
 
@@ -293,7 +358,7 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
                  rosters: pd.DataFrame, landscape: pd.DataFrame | None = None,
                  n: int = 6, incumbent_team: str | None = None,
                  age: float | None = None, is_rfa: bool = False,
-                 skill_fit: dict | None = None) -> list[dict]:
+                 skill_fit: dict | None = None, fa_status: dict | None = None) -> list[dict]:
     """His projected free-agent market: the teams most likely to pursue him, each
     at the price THEY would realistically offer.
 
@@ -307,8 +372,10 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
 
     rosters: live per-player table [team, player, pos, barrett].
     incumbent_team / age / is_rfa: his current team, age, restricted-FA flag.
-    skill_fit: optional {team: {fit, need}} from skill_fit_scores() — nudges teams
-        toward an FA who supplies a skill (shooting / rebounding / ...) they lack.
+    skill_fit: optional {team: {fit, need}} from skill_fit_scores() — only nudges
+        the rank (weight SKILL_WEIGHT, currently 0); no longer shown as a label.
+    fa_status: optional {normalized_name: 'RFA'|'player option'|'team option'} —
+        tags the incumbent a target would displace when that spot is opening up.
     """
     if landscape is None:
         landscape = load_team_landscape()
@@ -355,7 +422,9 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
             "slot":         need["slot"],
             "is_incumbent": is_inc,
             "tool":         tool_label,
-            "reason":       _reason(need, tl, target_barrett, is_inc, is_rfa, sf.get("need")),
+            "reason":       _reason(need, tl, target_barrett, is_inc, is_rfa,
+                                    (fa_status or {}).get(_normalize(need["displaces"]))
+                                    if need["displaces"] else None),
             "_rank":        rank, "_pin": pin, "_feat": feat,
         })
     # Blend the trained model's per-board score with the hand rank (z-scored, 40/60).
@@ -379,18 +448,27 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
     return out[:n]
 
 
+# Public-facing timeline label — "bye" (a team between contending and rebuilding)
+# reads as a placeholder, so show "retooling"; the others are already clear.
+_TL_DISPLAY = {"bye": "retooling"}
+
+
 def _reason(need: dict, timeline: str, target_barrett: float, is_incumbent: bool = False,
-            is_rfa: bool = False, skill_need: str | None = None) -> str:
+            is_rfa: bool = False, displaces_status: str | None = None) -> str:
     if is_incumbent:
         fit = "can match any offer (restricted FA)" if is_rfa else "could re-sign him (Bird rights)"
     elif need["displaces"] is not None:
         role = {0: "would start over", 1: "upgrades over", 2: "rotation piece over"}.get(
             need["slot"], "depth piece over")
-        fit = f"{role} {need['displaces']} ({need['displaces_score']:.1f} vs {target_barrett:.1f})"
+        # Tag the incumbent's status only when the spot is actually opening up
+        # (RFA / player or team option) — locked guaranteed money shows no tag.
+        tag = f"{displaces_status}, " if displaces_status else ""
+        fit = (f"{role} {need['displaces']} "
+               f"({tag}{need['displaces_score']:.1f} vs {target_barrett:.1f})")
     else:
         fit = "fills an open spot at the position"
-    extra = f"fills their {skill_need} need" if skill_need else ""
-    return " · ".join(filter(None, [fit, extra, timeline]))
+    tl = _TL_DISPLAY.get((timeline or "").strip().lower(), timeline)
+    return " · ".join(filter(None, [fit, tl]))
 
 
 # ── Skill-fit layer ─────────────────────────────────────────────────────────
