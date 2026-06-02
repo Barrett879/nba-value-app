@@ -1736,8 +1736,15 @@ if _init_player:
         """.replace("__HV_TARGET__", _json.dumps(_init_player)),
         height=0,
     )
-# "Free agents" filter at the right end of the search bar. Render the toggle
-# FIRST so its state is fresh when the searchbox builds its option pool.
+# "Free agents" filter at the right end of the search bar. Streamlit has the
+# toggle's new value in session_state from the start of the rerun, so read it up
+# front. st_searchbox caches its dropdown options when its key is first created
+# and ignores later default_options changes — so when the toggle FLIPS, drop the
+# searchbox's cached state to force it to re-seed from the new (filtered) pool.
+_fa_on = bool(st.session_state.get("fa_filter"))
+if st.session_state.get("_fa_prev") != _fa_on:
+    st.session_state["_fa_prev"] = _fa_on
+    st.session_state.pop(_PICKER_KEY, None)
 _sb_col, _fa_col = st.columns([9, 2], vertical_alignment="center")
 with _fa_col:
     st.toggle("Free agents", key="fa_filter",
@@ -1752,7 +1759,7 @@ with _sb_col:
         default_searchterm=(_init_player or ""),
         # Scrollable pool (FA-only when the toggle is on), Barrett desc; the
         # injected script auto-scrolls the open dropdown to center the pick.
-        default_options=(_fa_names if st.session_state.get("fa_filter") else active_names),
+        default_options=(_fa_names if _fa_on else active_names),
         edit_after_submit="option",
         rerun_on_update=True,
         style_overrides=_SEARCHBOX_STYLE,
