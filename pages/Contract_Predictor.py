@@ -1548,11 +1548,13 @@ def _toggle_fa():
 
 
 # Player pool: free agents only when the toggle is on, else everyone (Barrett
-# desc). Always keep the selected / deep-linked player in the list so the box can
-# show him even when the FA filter would otherwise exclude him.
+# desc). Move the selected / deep-linked player to the FRONT so he's the top
+# option the instant the dropdown opens — a native dropdown opens at the top of
+# the list, so this is what makes it "jump to" him (no scroll to depend on). It
+# also keeps him in the list when the FA filter would otherwise exclude him.
 _pool = list(_fa_names if _fa_on else active_names)
-if _init_player and _init_player not in _pool:
-    _pool = [_init_player] + _pool
+if _init_player:
+    _pool = [_init_player] + [p for p in _pool if p != _init_player]
 
 # Free-agents toggle button: vivid teal when ON, search-box-coloured when OFF.
 if _sb_dark:
