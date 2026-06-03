@@ -42,8 +42,6 @@ warnings.filterwarnings("ignore")
 import numpy as np
 import pandas as pd
 import streamlit as st
-import streamlit.components.v1 as components
-from streamlit_searchbox import st_searchbox
 
 from utils import (
     COMMON_CSS, SEASONS, normalize, season_to_espn_year,
@@ -1533,302 +1531,87 @@ except Exception:
 
 _PICKER_KEY = "contract_predictor_player"
 
-# Resolve initial value from URL ?player= param (deep-link support).
-# st_searchbox manages its own state internally via the `key`; we only
-# need to seed the default on first render.
+# Resolve the initial selection from the URL ?player= param (deep-link support).
 _init_player = None
 if "player" in st.query_params:
-    qp = st.query_params["player"]
     _init_player = next(
-        (n for n in active_names if normalize(n) == normalize(qp)),
+        (n for n in active_names if normalize(n) == normalize(st.query_params["player"])),
         None,
     )
 
-
-def _current_player() -> str | None:
-    """Player currently selected in the searchbox (survives reruns via the
-    component's own session state), so the dropdown can open with them on top.
-    Falls back to the URL deep-link seed before the first interaction."""
-    state = st.session_state.get(_PICKER_KEY)
-    if isinstance(state, dict) and state.get("result"):
-        return state["result"]
-    return _init_player
-
-
-def _lead_pool(pool: list[str], cur: str | None) -> list[str]:
-    """Put the selected player at the TOP of the dropdown, then the rest of the
-    roster in its natural Barrett order, so opening the box always shows the
-    current pick first — even when the free-agents filter would otherwise hide
-    him, so a selected player is always findable. Returns the pool unchanged
-    only when there's no pick."""
-    if not cur:
-        return pool
-    return [cur] + [p for p in pool if p != cur]
-
-
-def _search_players(query: str) -> list[str]:
-    """Filter active-season players by case- and accent-insensitive substring.
-
-    Empty query (or the box still holding the selected player's full name on
-    focus) → the full roster with the selected player led to the TOP by
-    _lead_pool, the rest in Barrett order, still fully scrollable.
-
-    With a real query → match by quality (exact → prefix → substring), then
-    Barrett score descending within each match tier. Capped at 10.
-    """
-    # "Free agents" toggle restricts the searchable pool to FAs only.
-    pool = _fa_names if st.session_state.get("fa_filter") else active_names
-    cur = _current_player()
-    if not query or not query.strip():
-        return _lead_pool(pool, cur)
-    q = normalize(query)
-    # Box untouched since selection (still the player's full name on focus) →
-    # the full scrollable roster, not just the lone exact match.
-    if cur and q == normalize(cur):
-        return _lead_pool(pool, cur)
-    scored: list[tuple[int, float, str]] = []
-    for n in pool:
-        nn = normalize(n)
-        if nn == q:
-            quality = 3
-        elif nn.startswith(q):
-            quality = 2
-        elif q in nn:
-            quality = 1
-        else:
-            continue
-        scored.append((quality, _barrett_lookup.get(n, 0.0), n))
-    # Sort: quality DESC, then Barrett DESC, then name as final tiebreak.
-    scored.sort(key=lambda x: (-x[0], -x[1], x[2]))
-    return [n for _, _, n in scored[:10]]
-
-
-# st_searchbox is a real text input (Cmd+A, cursor positioning, character
-# selection all work) backed by a custom dropdown of matches. Replaces the
-# old st.selectbox which displayed selected values as static label text.
-#   - edit_after_submit="option": after selecting a player, the input
-#     updates to show the selected player's FULL name (not the partial
-#     search term the user typed). Still editable in place — Cmd+A to
-#     replace, etc.
-#   - default_options: shown before any typing — the component does NOT
-#     call _search_players with an empty string, so we explicitly seed it
-#     with the alphabetical roster so users can browse without typing.
-#   - rerun_on_update=True: refreshes the page when a new player is
-#     picked so the contract details update.
-# Softer, rounder control + menu so it reads as a search bar, not a form box.
-# The component renders in an iframe locked to the light Streamlit config, so in
-# dark mode it'd be a glaring white box — make it theme-aware: dark fill + light
-# text + a dark wrapper so the (light) iframe body doesn't show in the rounded
-# corners.
-if st.session_state.get("theme_dark", False):
-    _SEARCHBOX_STYLE = {
-        "wrapper": {"backgroundColor": "#0a0a14"},
-        "searchbox": {
-            "control": {"borderRadius": 24, "padding": "3px 12px",
-                        "backgroundColor": "#16181f", "border": "1px solid #2c2c40"},
-            "menuList": {"borderRadius": 16, "backgroundColor": "#16181f"},
-            "input": {"color": "#e8e8f0"},
-            "singleValue": {"color": "#e8e8f0"},
-            "placeholder": {"color": "#8a8a9a"},
-            "option": {"color": "#dcdce6", "backgroundColor": "#16181f",
-                       "highlightColor": "#23233a"},
-        },
-        "dropdown": {"fill": "#9aa0aa"},
-        "clear": {"fill": "#9aa0aa"},
-    }
-else:
-    _SEARCHBOX_STYLE = {
-        "searchbox": {
-            "control": {"borderRadius": 24, "padding": "3px 12px"},
-            "menuList": {"borderRadius": 16},
-        },
-    }
-# THE white strip: a browser draws an iframe's native backing surface using its
-# `color-scheme`. The searchbox iframe is color-scheme:normal → the browser
-# paints that surface WHITE, which shows as a white line at the iframe's edge in
-# dark mode (invisible to every getComputedStyle bg/border/shadow probe because
-# it's the UA paint layer, not a styled box). Forcing color-scheme:dark makes
-# the browser paint it dark. Belt-and-suspenders: also set a dark background.
-_sb_dark = st.session_state.get("theme_dark", False)
-_sb_iframe_bg = "#0a0a14" if _sb_dark else "#ffffff"
-_sb_scheme = "dark" if _sb_dark else "light"
-st.markdown(
-    "<style>iframe[title='streamlit_searchbox.searchbox']"
-    f"{{background:{_sb_iframe_bg} !important;border:none !important;"
-    f"color-scheme:{_sb_scheme} !important;}}</style>",
-    unsafe_allow_html=True,
-)
-# st_searchbox highlights the matched substring by building
-# `new RegExp("(" + inputValue + ")", "gi")` WITHOUT escaping the input, so any
-# value that isn't a valid regex body — a stray backslash or unbalanced paren
-# left mid-edit (e.g. "Rui Hachimura\") — throws "Invalid regular expression …
-# Unterminated group" and crashes the whole component. Guard the searchbox
-# iframe's RegExp so a bad pattern degrades to an escaped / never-match regex
-# instead of throwing. Always on; installs once per iframe, before any edit.
-import streamlit.components.v1 as _sc_guard
-_sc_guard.html(
-    r"""
-    <script>
-    (function () {
-      var pdoc = window.parent.document;
-      function install(win) {
-        if (!win || win.__hvReGuard) return true;
-        var Real = win.RegExp;
-        if (!Real) return false;
-        function esc(s) { return String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
-        function Guard(p, f) {
-          try { return f === undefined ? new Real(p) : new Real(p, f); }
-          catch (e) {
-            try { return new Real(esc(p), f); }            // highlight literally
-            catch (e2) { return new Real('(?!)', (f || '').replace(/[^gimsuy]/g, '')); }
-          }
-        }
-        Guard.prototype = Real.prototype;                  // realRegex instanceof RegExp stays true
-        try {
-          Object.getOwnPropertyNames(Real).forEach(function (k) {
-            try { if (!(k in Guard)) Guard[k] = Real[k]; } catch (_) {}
-          });
-        } catch (_) {}
-        win.RegExp = Guard;
-        win.__hvReGuard = true;
-        return true;
-      }
-      var n = 0, t = setInterval(function () {
-        var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
-        if (f && f.contentWindow) install(f.contentWindow);
-        if (++n > 80) clearInterval(t);
-      }, 120);
-    })();
-    </script>
-    """,
-    height=0,
-)
-# In dark mode the react-select dropdown 'menu' container defaults to WHITE and
-# the component exposes no override for it (only menuList/option/control). It
-# also mounts only when the dropdown opens. So reach INTO the searchbox iframe
-# from a 0-height helper iframe and inject a <style> that darkens the menu;
-# a MutationObserver re-applies it each time the menu remounts.
-if st.session_state.get("theme_dark", False):
-    import streamlit.components.v1 as _c
-    _c.html(
-        """
-        <script>
-        (function () {
-          var pdoc = window.parent.document;
-          function styleSearchbox() {
-            var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
-            if (!f) return false;
-            var idoc = f.contentDocument; if (!idoc) return false;
-            if (idoc.getElementById('hv-sb-dark')) return true;
-            // Force the iframe document's colour-scheme dark so the BROWSER paints
-            // its native backing surface dark (the source of the white seam),
-            // not just the styled boxes.
-            try { idoc.documentElement.style.colorScheme = 'dark'; } catch (e) {}
-            var s = idoc.createElement('style'); s.id = 'hv-sb-dark';
-            s.textContent =
-              // The iframe BODY is the locked light config colour (#f4f6f8); it's
-              // taller than the input, so the light shows as a strip between the
-              // input and the floating menu. Paint html/body to the page bg.
-              "html{color-scheme:dark!important;}"
-              + "html,body{background:#0a0a14!important;}"
-              + "div[class$='-menu'],div[class*='-menu ']{background:#16181f!important;"
-              + "border:1px solid #2c2c40!important;border-radius:16px!important;"
-              + "box-shadow:0 8px 24px rgba(0,0,0,.45)!important;overflow:hidden!important;}"
-              // Any stray inline-white element (e.g. a loading bar) → dark too.
-              + "div[style*='background: white'],div[style*='background:#fff']"
-              + "{background:#16181f!important;}";
-            idoc.head.appendChild(s);
-            return true;
-          }
-          var n = 0, t = setInterval(function () {
-            if (styleSearchbox() || ++n > 40) clearInterval(t);
-          }, 150);
-        })();
-        </script>
-        """,
-        height=0,
-    )
-# (The selected player is led to the top of the dropdown deterministically by
-# _lead_pool() — see _search_players above — so the old scrollIntoView hack is
-# gone: it raced react-select's own scroll and lost for players deep in the
-# roster, e.g. a low-Barrett free agent near the bottom.)
-# "Free agents" filter at the right end of the search bar. Streamlit has the
-# toggle's new value in session_state from the start of the rerun, so read it up
-# front. st_searchbox caches its dropdown options when its key is first created
-# and ignores later default_options changes — so when the toggle FLIPS, drop the
-# searchbox's cached state to force it to re-seed from the new (filtered) pool.
 _fa_on = bool(st.session_state.get("fa_filter"))
-if st.session_state.get("_fa_prev") != _fa_on:
-    st.session_state["_fa_prev"] = _fa_on
-    st.session_state.pop(_PICKER_KEY, None)
-# Same cache caveat for the SELECTED player: st_searchbox caches default_options
-# at key creation, so when the pick changes, drop the cached state to force a
-# re-seed with the roster led to the NEW player at the top (see _lead_pool).
-if st.session_state.get("_sb_lead_for") != _init_player:
-    st.session_state["_sb_lead_for"] = _init_player
-    st.session_state.pop(_PICKER_KEY, None)
+_sb_dark = bool(st.session_state.get("theme_dark", False))
+
 
 def _toggle_fa():
     st.session_state["fa_filter"] = not st.session_state.get("fa_filter", False)
 
-# Unselected, the FA button mirrors the search box's fill + border so it reads as
-# part of the bar; selected stays vivid teal so the active state pops. Match the
-# searchbox control colours per theme (dark control = #16181f on a #2c2c40 edge).
+
+# Player pool: free agents only when the toggle is on, else everyone (Barrett
+# desc). Always keep the selected / deep-linked player in the list so the box can
+# show him even when the FA filter would otherwise exclude him.
+_pool = list(_fa_names if _fa_on else active_names)
+if _init_player and _init_player not in _pool:
+    _pool = [_init_player] + _pool
+
+# Free-agents toggle button: vivid teal when ON, search-box-coloured when OFF.
 if _sb_dark:
     _fa_off_bg, _fa_off_bd, _fa_off_fg = "#16181f", "#2c2c40", "#e8e8f0"
 else:
     _fa_off_bg, _fa_off_bd, _fa_off_fg = "#ffffff", "#cccccc", "#31333f"
 st.markdown(
     "<style>"
-    # Hug the text (no full-width stretch), rounded rectangle.
     ".st-key-fa_btn button{white-space:nowrap;border-radius:10px;font-weight:600;}"
-    # ON (selected) — vivid teal in both themes.
     ".st-key-fa_btn button[kind='primary']{background:#16d4c1!important;"
     "border-color:#16d4c1!important;color:#08131f!important;"
     "box-shadow:0 0 0 2px rgba(22,212,193,.30)!important;}"
     ".st-key-fa_btn button[kind='primary']:hover{background:#12c0ad!important;border-color:#12c0ad!important;color:#08131f!important;}"
-    # OFF (unselected) — same fill/border as the search box.
     f".st-key-fa_btn button[kind='secondary']{{background:{_fa_off_bg}!important;"
     f"border:1px solid {_fa_off_bd}!important;color:{_fa_off_fg}!important;}}"
     f".st-key-fa_btn button[kind='secondary']:hover{{border-color:#16d4c1!important;color:{_fa_off_fg}!important;}}"
-    # Keep the search box and button on one row (no stacking), button shrinks to
-    # its content, search column grows from 0 to fill the freed space. flex-basis
-    # 0 on the search col is what prevents the row from wrapping at narrow widths.
-    # Scoped to this row only via :has.
+    # Keep the dropdown + button on one row; dropdown column fills, button hugs.
     "[data-testid='stHorizontalBlock']:has(.st-key-fa_btn){flex-wrap:nowrap!important;}"
     "[data-testid='stHorizontalBlock']:has(.st-key-fa_btn)>[data-testid='stColumn']:has(.st-key-fa_btn)"
     "{flex:0 0 auto!important;width:auto!important;min-width:0!important;}"
     "[data-testid='stHorizontalBlock']:has(.st-key-fa_btn)>[data-testid='stColumn']:not(:has(.st-key-fa_btn))"
     "{flex:1 1 0%!important;min-width:0!important;}"
-    "iframe[title='streamlit_searchbox.searchbox']{width:100%!important;}"
     "</style>",
     unsafe_allow_html=True,
 )
-# Top-align so the button stays on the search bar's line: when the dropdown
-# opens, st_searchbox's iframe grows tall, and a centered button would float to
-# the middle of that tall row instead of staying next to the input.
-_sb_col, _fa_col = st.columns([8, 2], vertical_alignment="top")
+
+# Dark-mode theming for the native selectbox + its dropdown popover. The popover
+# renders in a portal at the document root, so these selectors are global (the
+# popover only exists while this page's box is open). Streamlit's widget keeps a
+# light border/menu otherwise, since the page's dark theme is a CSS overlay.
+if _sb_dark:
+    st.markdown(
+        "<style>"
+        '[data-testid="stSelectbox"] div[data-baseweb="select"]>div{'
+        "background:#16181f!important;border-color:#2c2c40!important;border-radius:24px!important;}"
+        '[data-testid="stSelectbox"] div[data-baseweb="select"] *{color:#e8e8f0!important;}'
+        '[data-testid="stSelectbox"] svg{fill:#9aa0aa!important;color:#9aa0aa!important;}'
+        # the dropdown menu (portal at document root)
+        'ul[role="listbox"]{background:#16181f!important;border:1px solid #2c2c40!important;}'
+        'li[role="option"]{background:#16181f!important;color:#dcdce6!important;}'
+        'li[role="option"]:hover,li[role="option"][aria-selected="true"]{background:#23233a!important;}'
+        "</style>",
+        unsafe_allow_html=True,
+    )
+_sb_col, _fa_col = st.columns([8, 2], vertical_alignment="center")
 with _fa_col:
-    # Toggle button sized to its label: teal fill (primary) when the FA filter is
-    # ON, search-box-coloured (secondary) when off. on_click flips the flag.
     st.button("Free Agents Only", key="fa_btn", on_click=_toggle_fa,
               type=("primary" if _fa_on else "secondary"),
               help="Show only free agents — UFA, RFA, and player/team options")
 with _sb_col:
-    selected = st_searchbox(
-        search_function=_search_players,
+    # Native dropdown: type to search, scrolls to the selected player on open,
+    # themes with the page — no iframe / regex / scroll hacks. (Replaces the
+    # st_searchbox component, which fought us on caching, scrolling and theming.)
+    selected = st.selectbox(
+        "Player",
+        options=_pool,
+        index=(_pool.index(_init_player) if _init_player in _pool else None),
         placeholder="Type a player name…",
-        default=_init_player,
-        # Seed the box TEXT with the selected player so the name stays put after
-        # selection / on reload (not just the placeholder).
-        default_searchterm=(_init_player or ""),
-        # Scrollable pool (FA-only when the toggle is on), Barrett desc, with the
-        # selected player led to the TOP by _lead_pool (not natural order).
-        # Re-seeds on a pick change (pop above).
-        default_options=_lead_pool(_fa_names if _fa_on else active_names, _init_player),
-        edit_after_submit="option",
-        rerun_on_update=True,
-        style_overrides=_SEARCHBOX_STYLE,
+        label_visibility="collapsed",
         key=_PICKER_KEY,
     )
 
