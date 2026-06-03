@@ -985,6 +985,31 @@ def explain_prediction(features: dict, prediction: dict,
     return bullets
 
 
+# ── Curated position groups for comparable-signing matching ──────────────────
+# Comps used to match on a coarse 3-bucket (Guard/Forward/Center) from BBRef,
+# which lumps SF with PF and ignored the curated 2K/override positions entirely
+# — so a big (Chet, PF/C → "Forward") pulled in wings (Franz/Jaylen, SF). Match
+# on the CURATED primary-position GROUP instead: backcourt {PG,SG}, wing {SF},
+# big {PF,C}. A big never matches a wing, and it's the same 2K + user-override
+# file the Suitors feature uses.
+_POS_GROUP = {"PG": "BACK", "SG": "BACK", "SF": "WING", "PF": "BIG", "C": "BIG"}
+
+
+@st.cache_data(show_spinner=False)
+def _curated_pos_map() -> dict:
+    import team_suitors as _ts
+    return _ts.load_player_positions()
+
+
+def _curated_pos(name: str, bbref_fallback: str = "") -> tuple:
+    """(primary_position, group) from the curated 2K/override map, with the
+    BBRef detailed position as the fallback for anyone the file doesn't list."""
+    import team_suitors as _ts
+    cpos = _ts.resolve_position(name, bbref_fallback, _curated_pos_map())
+    primary = _ts._primary_position(cpos)
+    return primary, _POS_GROUP.get(primary, "WING")
+
+
 @st.cache_data(ttl=3600, show_spinner="Loading comparable signings…")
 def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     pairs = [(SEASONS[i + 1], SEASONS[i]) for i in range(n_recent_pairs)]
@@ -1035,6 +1060,9 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         m["age"] = m["PLAYER_ID"].map(age_lookup)
         m["pos"] = m["Player"].map(_resolve_pos)
         m["pos_detailed"] = m["Player"].map(_resolve_pos_detailed)
+        _cur = m.apply(lambda r: _curated_pos(r["Player"], r["pos_detailed"]), axis=1)
+        m["pos_primary"] = _cur.map(lambda t: t[0])
+        m["pos_group"] = _cur.map(lambda t: t[1])
 
         def _resolve_draft_tier(n):
             info = draft_lookup.get(normalize(n))
@@ -1049,8 +1077,8 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
         m["signed_in"] = curr
         m["prev_season"] = prev  # needed to compute career-weighted-at-signing
         rows.append(m[[
-            "Player", "age", "pos", "pos_detailed", "barrett_score",
-            "draft_tier", "draft_pick",
+            "Player", "age", "pos", "pos_detailed", "pos_group", "pos_primary",
+            "barrett_score", "draft_tier", "draft_pick",
             "salary", "salary_curr", "signed_in", "prev_season",
         ]])
 
@@ -1277,18 +1305,26 @@ def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.Da
         if history.empty:
             return history
 
-    # Match against same position bucket (Guard / Forward / Center —
-    # already broad; PG and SG are both "Guard"). Fall back to all
-    # positions only when same-bucket pool is too small.
-    same_pos = history[history["pos"] == target_position].copy()
-    if len(same_pos) < n:
-        same_pos = history.copy()
+    # Match on the CURATED primary-position GROUP (the 2K + override file):
+    # backcourt {PG,SG}, wing {SF}, big {PF,C}. A big (PF/C) therefore NEVER
+    # pulls a wing (SF) and vice-versa — the bug that put SF comps on Chet. No
+    # cross-group fallback: only if a group were somehow empty do we widen to
+    # everyone (in practice each group is well-stocked).
+    target_primary, target_group = _curated_pos(
+        features.get("name", ""),
+        features.get("position_detailed") or features.get("position") or "")
+    # HARD position gate — NEVER widen across the group boundary. A big with no
+    # in-group comps gets zero comps (market opinion suppressed, model stands),
+    # which is correct; it must never borrow a wing/guard to pad the list.
+    same_pos = history[history["pos_group"] == target_group].copy()
 
     comp_tier_idx = same_pos["draft_tier"].map(
         lambda t: DRAFT_TIER_ORDINAL.get(t, 4)
     )
     tier_penalty = (comp_tier_idx - target_tier_idx).abs() * 4 * tier_weight
-    pos_penalty = (same_pos["pos"] != target_position).astype(float) * 20
+    # Within the group, gently prefer the exact primary slot (a C target leans
+    # to C comps over PF comps when score is otherwise equal).
+    pos_penalty = (same_pos["pos_primary"] != target_primary).astype(float) * 4
 
     # Score weight scales with age (uses the same tier_w curve). For young
     # developers (≤27), score is 2x — prevents Zion-style stretch matches
