@@ -1555,23 +1555,13 @@ def _current_player() -> str | None:
     return _init_player
 
 
-def _lead_pool(pool: list[str], cur: str | None) -> list[str]:
-    """Put the selected player at the TOP of the dropdown, then the rest of the
-    roster in its natural Barrett order, so opening the box always shows the
-    current pick first — even when the free-agents filter would otherwise hide
-    him, so a selected player is always findable. Returns the pool unchanged
-    only when there's no pick."""
-    if not cur:
-        return pool
-    return [cur] + [p for p in pool if p != cur]
-
-
 def _search_players(query: str) -> list[str]:
     """Filter active-season players by case- and accent-insensitive substring.
 
     Empty query (or the box still holding the selected player's full name on
-    focus) → the full roster with the selected player led to the TOP by
-    _lead_pool, the rest in Barrett order, still fully scrollable.
+    focus) → the full roster in Barrett order. The open dropdown is auto-
+    scrolled to the selected player by an injected helper (not reordered), so
+    scrolling up still reveals the higher-ranked players above him.
 
     With a real query → match by quality (exact → prefix → substring), then
     Barrett score descending within each match tier. Capped at 10.
@@ -1580,12 +1570,12 @@ def _search_players(query: str) -> list[str]:
     pool = _fa_names if st.session_state.get("fa_filter") else active_names
     cur = _current_player()
     if not query or not query.strip():
-        return _lead_pool(pool, cur)
+        return pool
     q = normalize(query)
     # Box untouched since selection (still the player's full name on focus) →
     # the full scrollable roster, not just the lone exact match.
     if cur and q == normalize(cur):
-        return _lead_pool(pool, cur)
+        return pool
     scored: list[tuple[int, float, str]] = []
     for n in pool:
         nn = normalize(n)
@@ -1748,10 +1738,65 @@ if st.session_state.get("theme_dark", False):
         """,
         height=0,
     )
-# (The selected player is led to the top of the dropdown deterministically by
-# _lead_pool() — see _search_players above — so the old scrollIntoView hack is
-# gone: it raced react-select's own scroll and lost for players deep in the
-# roster, e.g. a low-Barrett free agent near the bottom.)
+# Keep the natural Barrett order, but auto-scroll the OPEN dropdown so the
+# selected player sits at the TOP of the visible list (his lower-ranked
+# neighbours below; scrolling up reveals the higher FAs above). st_searchbox
+# renders the whole list, so this is a true scroll, not a reorder. Re-applies
+# briefly on focus to beat react-select's own scroll-to-top.
+if _init_player:
+    import json as _json_scroll
+    import streamlit.components.v1 as _sc_scroll
+    _sc_scroll.html(
+        """
+        <script>
+        (function () {
+          var pdoc = window.parent.document;
+          var TARGET = __HV_TARGET__;
+          function scrollable(el) {
+            for (var p = el.parentElement; p; p = p.parentElement) {
+              var s = window.getComputedStyle(p);
+              if (/(auto|scroll)/.test(s.overflowY) && p.scrollHeight > p.clientHeight + 4) return p;
+            }
+            return null;
+          }
+          function toTop() {
+            var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
+            if (!f || !f.contentDocument) return false;
+            var opts = f.contentDocument.querySelectorAll("[class*='option']");
+            for (var i = 0; i < opts.length; i++) {
+              if (opts[i].textContent.trim() === TARGET) {
+                var sc = scrollable(opts[i]);
+                if (sc) {
+                  sc.scrollTop += opts[i].getBoundingClientRect().top - sc.getBoundingClientRect().top;
+                } else {
+                  opts[i].scrollIntoView({ block: 'start' });
+                }
+                return true;
+              }
+            }
+            return false;
+          }
+          function burst() {
+            var n = 0, t = setInterval(function () {
+              toTop();
+              if (++n > 14) clearInterval(t);
+            }, 45);
+          }
+          var m = 0, iv = setInterval(function () {
+            var f = pdoc.querySelector("iframe[title='streamlit_searchbox.searchbox']");
+            if (f && f.contentDocument && !f.contentDocument.__hvScrollTop) {
+              f.contentDocument.__hvScrollTop = true;
+              f.contentDocument.addEventListener('focusin', function (e) {
+                if (e.target && e.target.tagName === 'INPUT') burst();
+              });
+            }
+            if (++m > 40) clearInterval(iv);
+          }, 150);
+        })();
+        </script>
+        """.replace("__HV_TARGET__", _json_scroll.dumps(_init_player)),
+        height=0,
+    )
 # "Free agents" filter at the right end of the search bar. Streamlit has the
 # toggle's new value in session_state from the start of the rerun, so read it up
 # front. st_searchbox caches its dropdown options when its key is first created
@@ -1760,12 +1805,6 @@ if st.session_state.get("theme_dark", False):
 _fa_on = bool(st.session_state.get("fa_filter"))
 if st.session_state.get("_fa_prev") != _fa_on:
     st.session_state["_fa_prev"] = _fa_on
-    st.session_state.pop(_PICKER_KEY, None)
-# Same cache caveat for the SELECTED player: st_searchbox caches default_options
-# at key creation, so when the pick changes, drop the cached state to force a
-# re-seed with the roster led to the NEW player at the top (see _lead_pool).
-if st.session_state.get("_sb_lead_for") != _init_player:
-    st.session_state["_sb_lead_for"] = _init_player
     st.session_state.pop(_PICKER_KEY, None)
 
 def _toggle_fa():
@@ -1822,10 +1861,10 @@ with _sb_col:
         # Seed the box TEXT with the selected player so the name stays put after
         # selection / on reload (not just the placeholder).
         default_searchterm=(_init_player or ""),
-        # Scrollable pool (FA-only when the toggle is on), Barrett desc, with the
-        # selected player led to the TOP by _lead_pool (not natural order).
-        # Re-seeds on a pick change (pop above).
-        default_options=_lead_pool(_fa_names if _fa_on else active_names, _init_player),
+        # Scrollable pool (FA-only when the toggle is on), Barrett desc. Natural
+        # order is kept; the helper above auto-scrolls the open dropdown to the
+        # selected player (so scrolling up still reveals the higher-ranked FAs).
+        default_options=(_fa_names if _fa_on else active_names),
         edit_after_submit="option",
         rerun_on_update=True,
         style_overrides=_SEARCHBOX_STYLE,
