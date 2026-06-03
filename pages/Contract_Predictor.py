@@ -2671,13 +2671,15 @@ try:
             _fa_label = ("restricted FA — his team can match any offer"
                          if _is_rfa else "unrestricted FA")
             _ts_about_note = (
-                f"Experimental — {_fa_label}. Cap room is computed from each team's actual "
-                "committed salaries for next season (real contracts, not estimates); the offer "
-                "is the model's value scaled by fit (starter vs depth), capped by that room / "
-                "exception (or Bird rights). Ranked by a model trained on 1,800+ historical "
-                "signings (incumbency, cap, position, team timeline × his age & value) — it "
-                "places the actual signing team in this shortlist ~6 of 10 times."
-                + (f" Team timeline (title / playoff / retooling / rebuild) curated as of {_asof}."
+                f"Experimental — {_fa_label}. Each team's spending room is taken from its "
+                "real, already-signed contracts for next season. A team's offer is this "
+                "player's projected value, nudged by how well he fits (a starter is worth "
+                "more than a bench piece) and capped by what the team can actually pay — its "
+                "cap space, salary-cap exceptions, or, for his own team, Bird rights (which "
+                "let a club re-sign its own player even when over the cap). The order comes "
+                "from a model trained on 1,800+ past free-agent signings; it lands the "
+                "player's real-life team somewhere in this top six about 6 times out of 10."
+                + (f" Team outlook (title / playoff / retooling / rebuild) is hand-set as of {_asof}."
                    if _asof else "")
             )
 except Exception:
@@ -2689,16 +2691,17 @@ with st.expander("About this prediction"):
     # Concise model summary up top — the quick "what is this" before the
     # player-specific reasoning and the deep methodology below.
     st.markdown(
-        "A machine-learning model (HistGBM) trained on 1,900+ modern-era "
-        "contracts (2012+), built on the Barrett Score plus age, position, "
-        "service years, All-NBA history, and advanced metrics (usage, PIE, "
-        "on/off rating). Validated by temporal cross-validation on five "
-        "seasons of real signings (2021-25). In dollar terms it's most "
-        "accurate for role and rotation players — typically within $2-4M — "
-        "and looser for stars, where it tends to under-shoot by ~$5M because "
-        "max-salary rules, cap space, and deal timing drive those contracts "
-        "more than on-court production. Read star and max figures as a "
-        "ballpark, not a quote."
+        "This estimate comes from a computer model that studied 1,900+ real "
+        "NBA contracts signed since 2012. It weighs how a player has performed "
+        "(his Barrett Score) along with his age, position, years in the league, "
+        "All-NBA honors, and deeper analytics, then estimates what a team would "
+        "pay him on a new deal today.\n\n"
+        "**How accurate is it?** We tested it the fair way — on real signings "
+        "it had never seen. It's most reliable for role and rotation players "
+        "(usually within \\$2–4M of the actual deal). For stars it's looser and "
+        "tends to land about \\$5M low, because superstar contracts are shaped "
+        "by salary-cap rules and negotiations more than by on-court stats — so "
+        "read star and max figures as a ballpark, not an exact quote."
     )
 
     # Likely-suitors methodology — only when that (experimental) section
@@ -2711,7 +2714,9 @@ with st.expander("About this prediction"):
     # model vs market compare. Sits at the top of the expander so curious
     # users see the "why" before the math.
     if _explain_bullets:
-        _explain_md = "\n\n".join(_explain_bullets)
+        # Escape $ so dollar amounts render literally (Streamlit markdown would
+        # otherwise read "$…$" as LaTeX math and garble the figures).
+        _explain_md = "\n\n".join(_explain_bullets).replace("$", "\\$")
         st.markdown(
             f"### Why this prediction\n\n{_explain_md}\n\n---"
         )
@@ -2857,142 +2862,99 @@ with st.expander("About this prediction"):
     render_barrett_score_explainer()
     st.markdown(
         """
-        ### How the next contract is predicted
-        Layers stack on top of the Barrett Score, then CBA rules constrain
-        the final number:
+        ### How the number is built
+        We start with the player's on-court value (his Barrett Score), adjust
+        it step by step, then apply the NBA's salary rules:
 
-        1. **Career-weighted Rate Score** — uses a weighted average of
-           the player's last 3 **healthy seasons** (GP ≥ 40), with 50/30/20
-           weighting (most recent first). The **rate score** is the
-           Barrett Score with the availability multiplier divided out —
-           i.e. what the player produces per game when on the floor,
-           regardless of how many games they played. GMs negotiate AAV
-           based on rate stats; durability is handled separately via
-           contract length and structure. Without this, a 41-game Curry
-           season looks like Rotation-tier production when on rate he's
-           still Elite.
-        2. **Base projection** — what the player at that career-weighted rank
-           would earn based on the current season's salary distribution.
-        3. **Age multiplier** — fit on 2014-22 real new contracts. A 33yo
-           signs for ~28% less than a 27yo at the same Barrett Score.
-        4. **Position multiplier** — Centers are systematically overprojected
-           by the box-score-heavy Barrett Score (rebounds aren't paid like
-           points). **Suppressed at the supermax tier** (base ≥28% of cap)
-           since max-contract players sign at fixed CBA percentages
-           regardless of position.
-        5. **Durability multiplier** — trailing-3-year availability tier
-           (Healthy / Mild / Moderate / Chronic / Severe). Embiid's chronic
-           injury history applies ~0.78× even though his rate is elite.
-        6. **Playoff bonus** — based on the player's **most recent
-           qualifying playoff appearance** (≥4 GP filters out cameos).
-           GMs negotiate off the freshest playoff impression, not a
-           multi-year average — Bruce Brown after BKN, Wiggins after the
-           GSW title, Rui after the LAL WCF run all got paid off ONE
-           playoff run. Tiers: Elite ≥31 Barrett (×1.15), Strong ≥24
-           (×1.10), Solid ≥16 (×1.05). One-way bonus — no penalty for
-           lottery-team players who can't earn postseason reps.
-        7. **CBA max cap** — derived from years of NBA service. 0-6 yrs:
-           25% of cap. 7-9 yrs: 30%. 10+ yrs: 35%. Caps the projection
-           because no player can legally earn more than their max.
-        8. **Supermax floor** — for players with recent All-NBA selections
-           AND tenure with their current team (Designated Vet at 35%,
-           Designated Rookie at 30%). Elite stars in their prime almost
-           universally take the max they're offered. Floor disabled for
-           aging vets (age >33+) who routinely take paycuts.
+        1. **Recent form, per game** — we average his last three healthy
+           seasons (40+ games), leaning on the most recent. We use *per-game*
+           production, not season totals, because teams pay for how good a
+           player is when he's on the floor — missed games are handled
+           separately, through deal length. (Otherwise an injury-shortened
+           Curry season would look like a role player instead of the star
+           he is.)
+        2. **Starting price** — what a player of that caliber typically earns,
+           based on this season's salaries.
+        3. **Age** — older players are paid less for the same production: a
+           33-year-old signs for about 28% less than a 27-year-old with
+           identical stats.
+        4. **Position** — the Barrett Score slightly overrates centers
+           (rebounds don't pay like points), so we trim that — except for
+           max-level stars, who are paid by fixed rules regardless of
+           position.
+        5. **Injury history** — players who miss a lot of games get marked
+           down. Joel Embiid's history takes off about 22%, even though he's
+           elite when healthy.
+        6. **Playoff boost** — a strong recent playoff run raises the number;
+           teams pay off the freshest postseason memory (Bruce Brown, Andrew
+           Wiggins, and Rui Hachimura all cashed in after one good run). It
+           only ever helps — players on non-playoff teams aren't penalized.
+        7. **The max salary** — by rule, no one can earn more than a set share
+           of the cap (25%, 30%, or 35%, depending on years in the league), so
+           we cap the projection there.
+        8. **The supermax floor** — recent All-NBA stars who've stayed with
+           their team can command the very top of the scale, so we make sure
+           the number reflects that (unless they're older veterans, who often
+           take less).
 
-        **Confidence band:** ±$5.9M (≈3.6% of the 2026-27 cap).
+        Every projection also comes with a give-or-take range (shown above
+        the layers), usually around ±$5–6M.
 
-        ### What's in the model
-        - Production (Barrett Score, healthy-season trailing average)
-        - Age (with tier-aware decline curve)
-        - Position (G/F/C bucket)
-        - Durability (last 3 yrs GP)
-        - **Playoff performance** (trailing-3-postseason Barrett tier bonus)
-        - Draft pedigree (lottery / mid-1st / late-1st / 2nd / undrafted)
-        - **All-NBA selections** (scraped from BBRef awards page)
-        - **NBA service years** (derived from career data)
-        - **Years with current team** (Bird-rights proxy via consecutive
-          seasons on the same team — derived from career data)
-        - **Rookie-scale lock** (uses our existing rookie-scale roster)
-        - **CBA max-contract tiers** (25% / 30% / 35% based on service)
-        - **Designated Rookie / Designated Vet (supermax) eligibility**
-        - **Advanced metrics** (usage rate, PIE, on/off net rating, true
-          shooting) — possession- and impact-level signal the box score
-          alone misses.
+        ### What the model looks at
+        On-court production, age, position, injury history, playoff
+        performance, draft pedigree (lottery pick down to undrafted), All-NBA
+        selections, years in the league, years with his current team, whether
+        he's still on a rookie deal, the NBA's max-salary tiers, supermax
+        eligibility, and advanced stats (efficiency, usage, on/off impact,
+        shooting) that the box score alone misses.
 
-        ### What's not in the model yet
-        - **Detailed Bird rights** (we approximate via team tenure; the
-          real CBA distinguishes Early-Bird / Non-Bird / Full Bird).
-        - **Team-by-team cap space** (affects which team can offer, less
-          so league-wide AAV).
-        - **Agent identity / negotiating leverage** (public but hard to
-          quantify).
-        - **Off-court marketability** (jersey sales, brand value).
-        - **Future production** — we project from recent past; nobody
-          knows next year's box score.
+        ### What it doesn't know yet
+        - The fine print of re-signing rights ("Bird rights") — we approximate
+          it from how long he's been with the team
+        - Each team's exact cap space (it affects *which* team can pay, less so
+          the overall value)
+        - The player's agent and negotiating leverage
+        - Off-court value (jersey sales, marketability)
+        - The future — we price recent play; nobody knows next year's stats
 
-        The prediction is from a HistGradientBoosting machine-learning model
-        (sklearn) trained on ~1,900 real contracts from the modern CBA era
-        (2012-13 onward). The model learned from features including trailing-
-        weighted Barrett Score, prior salary, age, position, service years,
-        recent All-NBA selections, the rank-based projection, and advanced
-        metrics (usage rate, PIE, on/off net rating, true shooting) — then
-        post-processed with CBA max-contract cap and supermax floor rules.
+        We only use contracts from 2012 on. Older deals came from an era with a
+        much lower salary cap and different rules, and we found that including
+        them actually made predictions for *today's* contracts worse.
 
-        **Why only 2012+?** The goal is predicting *current* contracts.
-        Pre-2012 deals come from a different financial regime (lower cap, the
-        old CBA), and including them measurably *hurts* recent-season accuracy.
-        Trimming to the modern era is a deliberate recency choice, validated by
-        a training-window search (scripts/experiment_recency_window.py).
+        ### How we know it works
+        We graded it the honest way: train the model only on past seasons, then
+        have it predict each later season it had never seen (2021–2025), and
+        compare to what players actually signed for. Every real new contract
+        counts — minimum deals and max deals alike. Here's the typical miss, in
+        real dollars:
 
-        **Validation — expanding-window temporal cross-validation on recent
-        seasons (2021-2025).** The honest way to measure a forecasting model:
-        train only on prior seasons, predict each subsequent season the model
-        has never seen. Graded on **every real new contract** — minimum
-        signings and market deals all count. Exclusions are only: rookie-scale
-        step-ups (Luka's locked year-4 raise — not a signing) and salary-data
-        errors (mid-season buyout/waiver artifacts like a star's prorated
-        near-zero figure after a trade, and a handful of verified bad labels),
-        which misrepresent the actual contract.
+        - **Role players (under $7M):** about $1.2M off — within $3M roughly
+          three times out of four
+        - **Rotation players ($7–15M):** about $3.8M off
+        - **Mid-tier ($15–25M):** about $5.5M off
+        - **Stars ($25M+):** about $5–9M off, and usually a little *low*
 
-        Graded on every real new contract, in **actual dollars** (not
-        share-of-cap):
-        - **Minimum / role (under $7M):** median miss ~$1.2M — right within
-          $3M about three times in four
-        - **Rotation ($7–15M):** median miss ~$3.8M
-        - **Mid-tier ($15–25M):** median miss ~$5.5M
-        - **Stars ($25M+):** median miss ~$5–9M, and the model systematically
-          *under*-projects them by ~$5M
+        You may see a headline like "89% within 5% of the cap." It sounds
+        great, but measuring as a share of the cap flatters cheap deals — a $7M
+        miss counts as "within 5%" whether the player makes $50M or $3M. Bottom
+        line: trust the dollar figure most for role and rotation players; for
+        stars, treat it as a ballpark.
 
-        Headline "within 5% of cap" figures (89% of predictions; 99% within
-        10%) are share-of-cap, which flatters cheap deals — a $7M miss is
-        "within 5% of cap" whether the player makes $50M or $3M. The honest
-        takeaway: trust the dollar figure most for role and rotation players;
-        for stars, read it as a ballpark, not a quote.
+        We also tried several ways to sharpen the star estimates, but none held
+        up under fair testing, so we left them out — superstar money is settled
+        in negotiations, not on the stat sheet. As a rule, we only add something
+        to the model if it provably improves accuracy in testing.
 
-        We tested four ways to tighten the star end — isotonic de-biasing, a
-        leak-free market-comp feature, max-floor retuning, and quantile-loss
-        prediction intervals — and none survived honest out-of-sample grading,
-        so none shipped. The star-contract residual is genuinely irreducible
-        from box-score inputs: those deals are set in negotiations, not on the
-        floor. (The market *blend* on the bar is a separate display-layer
-        guardrail for visible outliers.)
+        ### What the number really means
+        It's a *fresh-deal* estimate — "what would this player command if he
+        signed a brand-new contract today" — priced in next season's
+        salary-cap dollars. Because it's a market value, it ignores quirks of
+        his *current* deal (a buyout, a hometown discount): a bought-out player
+        is valued on how he plays, not on the bargain his old team got.
 
-        Every feature was gated on cross-validation, not a single split. The
-        advanced metrics earned their place (+1.1pp within-5% on paired CV,
-        t=3.9). A two-stage classify-the-regime-then-snap model and a 4-learner
-        stacked ensemble were tested and came in within noise — so they were
-        dropped. We ship only what the rigorous evaluation confirms.
-
-        **What the number means.** It's a *new-contract* projection: the model
-        prices this season's production and reports it in NEXT season's cap
-        dollars — i.e. "what this player would command if he signed a fresh deal
-        today." It is a market-value estimate, so it ignores one-off circumstances
-        of a player's *current* deal (a buyout, a hometown discount); a bought-out
-        player is valued on his game, not his bargain.
-
-        The remaining misses are almost all young breakouts landing their
-        first max extension off a tiny prior salary (Porter, Simons, Suggs) —
-        the genuinely hard call no production model nails ahead of time.
-        """
+        The toughest misses are young players who break out and land a surprise
+        max extension off a tiny prior salary (think Michael Porter Jr.,
+        Anfernee Simons, Jalen Suggs) — a call no stats model nails ahead of
+        time.
+        """.replace("$", "\\$")
     )
