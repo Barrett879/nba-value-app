@@ -1558,10 +1558,10 @@ def _current_player() -> str | None:
 def _lead_pool(pool: list[str], cur: str | None) -> list[str]:
     """Put the selected player at the TOP of the dropdown, then the rest of the
     roster in its natural Barrett order, so opening the box always shows the
-    current pick first. Every player is kept, so the list stays fully scrollable.
-    Returns the pool unchanged when there's no pick, or it isn't in this pool
-    (e.g. excluded by the free-agents filter)."""
-    if not cur or cur not in pool:
+    current pick first — even when the free-agents filter would otherwise hide
+    him, so a selected player is always findable. Returns the pool unchanged
+    only when there's no pick."""
+    if not cur:
         return pool
     return [cur] + [p for p in pool if p != cur]
 
@@ -1804,7 +1804,10 @@ st.markdown(
     "</style>",
     unsafe_allow_html=True,
 )
-_sb_col, _fa_col = st.columns([8, 2], vertical_alignment="center")
+# Top-align so the button stays on the search bar's line: when the dropdown
+# opens, st_searchbox's iframe grows tall, and a centered button would float to
+# the middle of that tall row instead of staying next to the input.
+_sb_col, _fa_col = st.columns([8, 2], vertical_alignment="top")
 with _fa_col:
     # Toggle button sized to its label: teal fill (primary) when the FA filter is
     # ON, search-box-coloured (secondary) when off. on_click flips the flag.
