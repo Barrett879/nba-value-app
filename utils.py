@@ -3869,14 +3869,15 @@ def warm_all_seasons() -> None:
             pass
 
     def _run_pool() -> None:
-        if os.environ.get("HOOPSVALUE_NO_WARM") == "1":
-            return  # escape hatch to disable background warming entirely
-        # Let the first page render finish before warming the OTHER pages' seasons.
-        # On Render's 0.5-CPU instance, 5 parallel build_raw threads saturated the
-        # core and ~2x-ed the first visitor's cold render (measured 38s -> 20s with
-        # this disabled). The season parquets now ship on disk, so this warm is a
-        # nicety, not a necessity: defer it past the first render and throttle to
-        # 2 workers so it stays in the background instead of fighting the request.
+        # Eager historical warming is OFF by default. This background build_raw
+        # barrage across 52 seasons contended badly with real page loads on
+        # Render's 0.5-CPU box: a cold Contract Predictor view measured ~11s with
+        # it off vs ~43s with it on (GIL + CPU contention with the page's own
+        # build_raw calls). Season parquets now ship on disk, so each page warms
+        # lazily from disk on first visit instead — no background thread fighting
+        # the request. Set HOOPSVALUE_WARM=1 to opt back into eager warming.
+        if os.environ.get("HOOPSVALUE_WARM") != "1":
+            return
         time.sleep(float(os.environ.get("HOOPSVALUE_WARM_DELAY", "20")))
         historical = SEASONS[1:]  # current season already warm
         with ThreadPoolExecutor(max_workers=2) as pool:

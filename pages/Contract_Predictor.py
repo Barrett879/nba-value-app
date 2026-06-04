@@ -1008,6 +1008,30 @@ def _curated_pos(name: str, bbref_fallback: str = "") -> str:
 
 @st.cache_data(ttl=3600, show_spinner="Loading comparable signings…")
 def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
+    """Comp pool, disk-persisted. Rebuilding it from ~6 seasons of
+    build_ranked_projected costs ~7-8s on a cold process (the single biggest
+    chunk of a cold Contract Predictor load); reading the cached parquet is
+    ~0.1s. The file lands in CACHE_DIR, ships in the committed cache, and
+    auto-seeds onto Render's persistent disk like every other cache parquet.
+    Rebuilt when stale (1-day TTL) or when the v-tag below is bumped."""
+    from utils import CACHE_DIR, _dc_fresh
+    _path = CACHE_DIR / f"comp_pool_p{n_recent_pairs}_v1.parquet"
+    if _dc_fresh(_path, ttl=86_400):
+        try:
+            return pd.read_parquet(_path)
+        except Exception:
+            pass
+    out = _load_historical_signings_build(n_recent_pairs)
+    if not out.empty:
+        try:
+            CACHE_DIR.mkdir(parents=True, exist_ok=True)
+            out.to_parquet(_path, index=False)
+        except Exception:
+            pass
+    return out
+
+
+def _load_historical_signings_build(n_recent_pairs: int = 3) -> pd.DataFrame:
     pairs = [(SEASONS[i + 1], SEASONS[i]) for i in range(n_recent_pairs)]
     rows: list[pd.DataFrame] = []
     # One bulk lookup outside the loop — fetch_draft_classes is cached for
