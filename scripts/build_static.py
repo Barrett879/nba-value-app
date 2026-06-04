@@ -8,9 +8,9 @@ Phase 1: site/data/home.json (hero cards) + site/data/players.json
 Usage:  python -u scripts/build_static.py
 """
 import sys
+import os
 import json
 import re
-import shutil
 import unicodedata
 import warnings
 from pathlib import Path
@@ -139,6 +139,188 @@ INDEX = f"""<!doctype html>
 </html>
 """
 (SITE / "index.html").write_text(INDEX)
+
+
+# ── Phase 2: one static HTML per player (contract prediction + comps) ─────────
+# Reuse the Contract Predictor page's OWN functions (headless, via prefix-exec)
+# so the numbers are identical to the app — no reimplementation, no drift.
+import html as _html  # noqa: E402
+
+_SRC = (ROOT / "pages" / "Contract_Predictor.py").read_text().splitlines(keepends=True)
+_cut = next(i for i, l in enumerate(_SRC) if l.startswith("_sb_col, _fa_col = st.columns("))
+_ns = {"__name__": "cp", "__file__": str((ROOT / "pages" / "Contract_Predictor.py").resolve())}
+exec(compile("".join(_SRC[:_cut]), "cp", "exec"), _ns)
+
+_gpf = _ns["get_player_features"]
+_pc = _ns["predict_contract"]
+_fc = _ns["find_comparables"]
+_scout = _ns["_scouting_take"]
+_hist = _ns["load_historical_signings"](n_recent_pairs=3)
+CONTRACT = _ns.get("CONTRACT_SEASON", CUR)
+_MODEL = "HistGBM v2"
+
+PLAYER_DIR = SITE / "player"
+PLAYER_DIR.mkdir(parents=True, exist_ok=True)
+
+
+def _m(x: float) -> str:
+    return f"${x / 1e6:.1f}M"
+
+
+def render_player(p: dict) -> bool:
+    name = p["name"]
+    try:
+        f = _gpf(name, CUR)
+        if not f:
+            return False
+        pred = _pc(f)
+        comps = _fc(f, _hist, n=6) if not _hist.empty else None
+    except Exception:
+        return False
+
+    predicted = float(pred["predicted"])
+    cur_sal = float(f.get("salary") or 0)
+    if cur_sal > 0:
+        d = predicted - cur_sal
+        pct = d / cur_sal * 100
+        cls = "up" if d >= 0 else "down"
+        vs = (f'<span class="{cls}">{"+" if d >= 0 else "−"}{_m(abs(d))}/yr</span>'
+              f'<span class="vs-pct">{"+" if pct >= 0 else ""}{pct:.0f}% vs current deal ({_m(cur_sal)})</span>')
+        cur_deal = f'<div class="cur-deal">Current deal: {_m(cur_sal)}</div>'
+    else:
+        vs = '<span class="vs-pct">No current salary on file</span>'
+        cur_deal = ""
+
+    floor = pred.get("supermax_tier_label") if pred.get("cba_floor_applied") else None
+    floor_html = f'<div class="pred-floor">{_html.escape(str(floor))} floor</div>' if floor else ""
+
+    median_html, comps_html = "", ""
+    if comps is not None and not comps.empty:
+        take = _scout(f, comps)
+        median_html = (f'<div class="market">Market second opinion '
+                       f'<span class="muted">(weighted median of comparable signings)</span> '
+                       f'<b>{_m(float(take["median"]))}</b></div>')
+        rows = "".join(
+            f'<tr><td class="cn"><a href="/player/{slugify(str(r["Player"]))}.html">'
+            f'{_html.escape(str(r["Player"]))}</a></td>'
+            f'<td>{_html.escape(str(r.get("pos_primary", "")))}</td>'
+            f'<td>{_html.escape(str(r.get("signed_in", "")))}</td>'
+            f'<td class="cd">{_m(float(r["salary_curr"]))}</td></tr>'
+            for _, r in comps.iterrows())
+        comps_html = (f'<section class="comps"><h2>Comparable signings</h2>'
+                      f'<p class="comps-sub">Closest matches on trailing Barrett + age + position.</p>'
+                      f'<table class="comps-table"><thead><tr><th>Player</th><th>Pos</th>'
+                      f'<th>Signed</th><th>Deal</th></tr></thead><tbody>{rows}</tbody></table></section>')
+
+    pos = _pos(name)
+    draft = ""
+    if f.get("draft_pick"):
+        draft = f' · Pick #{int(f["draft_pick"])}'
+        if f.get("draft_year"):
+            draft += f' ({int(f["draft_year"])})'
+    age = f' · Age {int(f["age"])}' if f.get("age") else ""
+    nm = _html.escape(name)
+    page = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{nm} — Next Contract Prediction · HoopsValue</title>
+<meta name="description" content="{nm}'s projected {CONTRACT} contract: {_m(predicted)}/yr at next season's cap, with comparable signings and market value.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="subhead">
+  <a class="brand" href="/"><span class="h">HO</span><span class="ball"></span><span class="h">PS</span><span class="v">VALUE</span></a>
+  <nav class="topnav"><a href="/rankings.html">Rankings</a></nav>
+</header>
+<main class="wrap player">
+  <div class="eyebrow">Projected {CONTRACT} contract</div>
+  <h1 class="pname">{nm}<span class="chip">Score {p['score']} · #{p['rank']}</span></h1>
+  <div class="pmeta">{_html.escape(str(f.get('current_team') or p['team']))} · {CUR}{age} · {pos}{draft}</div>
+  {cur_deal}
+  <div class="pred-number">{_m(predicted)}<span class="yr">/yr</span></div>
+  {floor_html}
+  <div class="pred-vs">{vs}</div>
+  {median_html}
+  {comps_html}
+  <p class="disclaimer">Model: {_MODEL}. Projection is for the player's next contract priced at the {CONTRACT} cap. Informational only — not financial advice.</p>
+</main>
+<footer>hoopsvalue.com · Barrett Score · {CUR}</footer>
+</body>
+</html>
+"""
+    (PLAYER_DIR / f"{p['slug']}.html").write_text(page)
+    return True
+
+
+if os.environ.get("SKIP_PLAYERS") == "1":
+    print("player pages: SKIPPED (SKIP_PLAYERS=1)")
+else:
+    _built = sum(render_player(p) for p in players)
+    print(f"player pages: {_built}/{len(players)} -> {PLAYER_DIR}")
+
+
+# ── Phase 3: rankings page (pre-rendered rows + client sort/filter) ───────────
+def _valcell(v: float) -> str:
+    cls, sign = ("over", "+") if v > 0 else (("steal", "−") if v < 0 else ("", ""))
+    return f'<td class="num val {cls}" data-v="{v}">{sign}${abs(v):.1f}M</td>'
+
+
+_rrows = "".join(
+    "<tr>"
+    f'<td class="rk num" data-v="{p["rank"]}">{p["rank"]}</td>'
+    f'<td class="pn"><a href="/player/{p["slug"]}.html">{_html.escape(p["name"])}</a></td>'
+    f'<td class="hide-sm" data-t="{_html.escape(p["team"])}">{_html.escape(p["team"])}</td>'
+    f'<td data-t="{p["pos"]}">{p["pos"]}</td>'
+    f'<td class="sc num" data-v="{p["score"]}">{p["score"]}</td>'
+    f'<td class="num hide-sm" data-v="{p["salary_m"]}">${p["salary_m"]:.1f}M</td>'
+    f"{_valcell(p['value_m'])}"
+    "</tr>"
+    for p in players)
+
+RANK = f"""<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Current NBA Rankings by Barrett Score · HoopsValue</title>
+<meta name="description" content="Every qualified NBA player this season ranked by the Barrett Score — production vs pay, the steals and the overpays.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header class="subhead">
+  <a class="brand" href="/"><span class="h">HO</span><span class="ball"></span><span class="h">PS</span><span class="v">VALUE</span></a>
+  <nav class="topnav"><a href="/">Home</a></nav>
+</header>
+<main class="wrap rankings">
+  <h1>Current Rankings</h1>
+  <p class="sub">All {len(players)} qualified players, {CUR} — ranked by Barrett Score. Tap a column to sort.</p>
+  <input id="rankfilter" class="rank-filter" type="text" placeholder="Filter players…" autocomplete="off" spellcheck="false">
+  <table class="rank-table" id="ranktable">
+    <thead><tr>
+      <th class="num" data-k="num">#</th>
+      <th data-k="text">Player</th>
+      <th class="hide-sm" data-k="text">Team</th>
+      <th data-k="text">Pos</th>
+      <th class="num" data-k="num">Score</th>
+      <th class="num hide-sm" data-k="num">Salary</th>
+      <th class="num" data-k="num">Value vs Pay</th>
+    </tr></thead>
+    <tbody>{_rrows}</tbody>
+  </table>
+</main>
+<footer>hoopsvalue.com · Barrett Score · {CUR}</footer>
+<script src="/assets/rankings.js"></script>
+</body>
+</html>
+"""
+(SITE / "rankings.html").write_text(RANK)
+print(f"rankings : {len(players)} rows -> rankings.html")
 
 print(f"season   : {CUR}")
 print(f"best     : {home['best']['name']:<24} score {home['best']['score']}")
