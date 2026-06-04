@@ -32,6 +32,17 @@ def slugify(name: str) -> str:
     return re.sub(r"[^a-zA-Z0-9]+", "-", s).strip("-").lower()
 
 
+def _relativize(s: str, depth: int) -> str:
+    """Rewrite root-absolute refs ("/assets/…", "/player/…") to relative so the
+    site works at any base path — a GitHub Pages project subpath now, the domain
+    root (hoopsvalue.com) later. depth = directory levels below the site root."""
+    pre = "../" * depth
+    s = s.replace('href="/"', f'href="{pre or "./"}"')
+    for seg in ("assets/", "player/", "rankings.html"):
+        s = s.replace(f'"/{seg}', f'"{pre}{seg}')
+    return s
+
+
 CUR = SEASONS[0]
 df = build_ranked_projected(CUR)
 df = df[df["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
@@ -138,7 +149,7 @@ INDEX = f"""<!doctype html>
 </body>
 </html>
 """
-(SITE / "index.html").write_text(INDEX)
+(SITE / "index.html").write_text(_relativize(INDEX, 0))
 
 
 # ── Phase 2: one static HTML per player (contract prediction + comps) ─────────
@@ -252,7 +263,7 @@ def render_player(p: dict) -> bool:
 </body>
 </html>
 """
-    (PLAYER_DIR / f"{p['slug']}.html").write_text(page)
+    (PLAYER_DIR / f"{p['slug']}.html").write_text(_relativize(page, 1))
     return True
 
 
@@ -319,7 +330,7 @@ RANK = f"""<!doctype html>
 </body>
 </html>
 """
-(SITE / "rankings.html").write_text(RANK)
+(SITE / "rankings.html").write_text(_relativize(RANK, 0))
 print(f"rankings : {len(players)} rows -> rankings.html")
 
 print(f"season   : {CUR}")
