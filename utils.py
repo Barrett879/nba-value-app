@@ -132,6 +132,38 @@ if not logger.handlers:
 _RENDER_DISK = Path("/data/cache")
 CACHE_DIR = _RENDER_DISK if _RENDER_DISK.parent.exists() else Path(__file__).parent / "cache"
 
+
+def _seed_disk_cache_from_repo() -> None:
+    """Copy the cache committed in the repo (./cache, shipped in the deploy image)
+    into the persistent disk for any files the disk doesn't already have.
+
+    On Render CACHE_DIR is /data/cache; a fresh/empty disk would otherwise force
+    the app to cold-fetch the entire NBA API on first load. Seeding it from the
+    committed snapshot means it serves from local disk instead — seconds, not
+    minutes. Gap-fill only (never clobbers fresher data the disk accumulated),
+    runs once per process at import, and can never break the app: any failure
+    just logs and the normal network fallback still works.
+    """
+    import shutil
+    repo_cache = Path(__file__).parent / "cache"
+    if CACHE_DIR == repo_cache or not repo_cache.is_dir():
+        return  # local/dev already reads the repo cache directly — nothing to seed
+    try:
+        CACHE_DIR.mkdir(parents=True, exist_ok=True)
+        have = set(os.listdir(CACHE_DIR))
+        copied = 0
+        for src in repo_cache.iterdir():
+            if src.is_file() and src.name not in have:
+                shutil.copy2(src, CACHE_DIR / src.name)
+                copied += 1
+        if copied:
+            logger.info("seeded %d cache files from repo -> %s", copied, CACHE_DIR)
+    except Exception as e:  # noqa: BLE001 — seeding is best-effort, never fatal
+        logger.warning("disk-cache seed skipped: %s", e)
+
+
+_seed_disk_cache_from_repo()
+
 SEASONS = [
     "2025-26", "2024-25", "2023-24", "2022-23", "2021-22", "2020-21", "2019-20",
     "2018-19", "2017-18", "2016-17", "2015-16", "2014-15", "2013-14", "2012-13",
