@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HoopsValue — NBA Contract Value, Every Player Ranked</title>
+<meta name="description" content="Every NBA player since 1973 ranked by the Barrett Score — on-court production sized up against every paycheck. Find the steals, expose the overpays, predict any contract.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="/assets/style.css">
+</head>
+<body>
+<header>
+  <div class="wordmark"><span class="h">HO</span><span class="ball"></span><span class="h">PS</span><span class="v">VALUE</span></div>
+  <div class="eyebrow">NBA Contract Value</div>
+</header>
+<div class="wrap">
+  <p class="tagline">Every NBA player since 1973, ranked by the <b>Barrett Score</b>. On-court production sized up against every paycheck — find the steals, expose the overpays, settle the GOAT debate.</p>
+
+  <div class="search">
+    <input id="search" type="text" autocomplete="off" spellcheck="false"
+           placeholder="Search any player — LeBron, Jokić, Wembanyama…">
+    <div id="results" class="results"></div>
+  </div>
+
+  <div class="heroes">
+    <a class="card best" href="/player/nikola-jokic.html">
+      <div class="label">Best Player Right Now</div>
+      <div class="name">Nikola Jokić</div>
+      <div class="sub">DEN · Barrett Score <b>48.4</b></div>
+    </a>
+    <a class="card steal" href="/player/victor-wembanyama.html">
+      <div class="label">Biggest Steal</div>
+      <div class="name">Victor Wembanyama</div>
+      <div class="sub">SAS · <span class="pos">$41.3M</span> below market</div>
+    </a>
+    <a class="card over" href="/player/anthony-davis.html">
+      <div class="label">Most Overpaid</div>
+      <div class="name">Anthony Davis</div>
+      <div class="sub">WAS · <span class="red">$35.1M</span> above market</div>
+    </a>
+  </div>
+
+  <div class="explore-label">Explore deeper</div>
+  <div class="nav">
+    <a class="navcard" href="/rankings.html" style="--accent:#d13b46"><div><h3>Current Rankings</h3><p>All 365 qualified players ranked by Barrett Score this season.</p></div></a>
+    <div class="navcard soon" style="--accent:#c79a3a"><div><h3>Legacy</h3><p>53 seasons of history: all-time greats, era leaderboards, draft classes.</p></div></div>
+    <div class="navcard soon" style="--accent:#3b82c7"><div><h3>Team Analysis</h3><p>Which front offices get the most for their money? Payroll efficiency by team.</p></div></div>
+    <div class="navcard soon" style="--accent:#3d6f52"><div><h3>Free Agents</h3><p>Everyone hitting the market this offseason — UFAs, RFAs, options.</p></div></div>
+  </div>
+</div>
+<footer>hoopsvalue.com · Barrett Score · 2025-26 · data from NBA Stats API</footer>
+<script src="/assets/app.js"></script>
+</body>
+</html>
