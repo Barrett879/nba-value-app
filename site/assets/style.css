@@ -1,0 +1,122 @@
+/* HoopsValue — static site styles. Brand palette pulled from the app's theme
+   tokens so the static site is pixel-consistent with the Streamlit original. */
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap');
+
+:root {
+  --app-bg-1: #fbfcfd;
+  --app-bg-2: #eef1f4;
+  --fg-1: #14142a;   /* headings  */
+  --fg-2: #3a3d48;   /* body      */
+  --fg-3: #585c68;   /* secondary */
+  --fg-4: #71757f;   /* eyebrows  */
+  --fg-5: #9aa0ab;   /* faint     */
+  --copper: #985729; /* HOOPS     */
+  --sage:   #3d6f52; /* VALUE     */
+  --tag:    #7a7d88;
+  --teal:   #16956f;
+  --red:    #d13b46;
+  --surface: #ffffff;
+  --border:  #e2e6ea;
+  --shadow: 0 1px 2px rgba(20,20,42,.04), 0 8px 24px rgba(20,20,42,.06);
+  --shadow-hover: 0 2px 4px rgba(20,20,42,.06), 0 16px 40px rgba(20,20,42,.10);
+}
+
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, var(--app-bg-1) 0%, var(--app-bg-2) 100%);
+  background-attachment: fixed;
+  color: var(--fg-2);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  line-height: 1.5;
+}
+a { color: inherit; text-decoration: none; }
+.wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+/* ── Header / wordmark ─────────────────────────────────────────────── */
+header { padding: 56px 0 8px; text-align: center; }
+.wordmark { font-family: 'Space Grotesk', sans-serif; font-weight: 700;
+  font-size: clamp(38px, 7vw, 64px); letter-spacing: -.02em; line-height: 1; }
+.wordmark .h { color: var(--copper); }
+.wordmark .v { color: var(--sage); }
+.wordmark .ball {
+  display: inline-block; width: .82em; height: .82em; margin: 0 .02em -.06em;
+  border-radius: 50%; vertical-align: baseline;
+  background: radial-gradient(circle at 35% 30%, #f0a05a, #d9772e 70%);
+  position: relative;
+}
+.wordmark .ball::before, .wordmark .ball::after {
+  content: ""; position: absolute; inset: 0; border-radius: 50%;
+  border: 1.5px solid rgba(120,60,20,.55);
+}
+.wordmark .ball::before { border-top: none; border-bottom: none; margin: 0 .28em; }
+.wordmark .ball::after  { border-left: none; border-right: none; margin: .28em 0; }
+.eyebrow { font-family: 'Space Grotesk', sans-serif; font-weight: 600;
+  letter-spacing: .34em; font-size: 12px; color: var(--tag);
+  text-transform: uppercase; margin-top: 14px; }
+.tagline { color: var(--fg-3); max-width: 620px; margin: 18px auto 0; font-size: 17px; }
+.tagline b { color: var(--fg-1); font-weight: 600; }
+
+/* ── Search ────────────────────────────────────────────────────────── */
+.search { position: relative; max-width: 560px; margin: 30px auto 4px; }
+.search input {
+  width: 100%; padding: 15px 18px; font-size: 16px;
+  border: 1px solid var(--border); border-radius: 14px; background: var(--surface);
+  color: var(--fg-1); box-shadow: var(--shadow); transition: border-color .15s, box-shadow .15s;
+}
+.search input:focus { outline: none; border-color: var(--sage); box-shadow: 0 0 0 3px rgba(61,111,82,.12); }
+.results {
+  position: absolute; left: 0; right: 0; top: calc(100% + 8px); z-index: 20;
+  background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  box-shadow: var(--shadow-hover); overflow: hidden; display: none; max-height: 360px; overflow-y: auto;
+}
+.results.show { display: block; }
+.results a { display: flex; align-items: center; justify-content: space-between;
+  gap: 12px; padding: 11px 16px; border-bottom: 1px solid var(--border); cursor: pointer; }
+.results a:last-child { border-bottom: none; }
+.results a:hover, .results a.active { background: #f4f7f9; }
+.results .nm { font-weight: 600; color: var(--fg-1); }
+.results .meta { font-size: 13px; color: var(--fg-4); white-space: nowrap; }
+.results .sc { font-family: 'Space Grotesk', sans-serif; font-weight: 700; color: var(--sage); }
+
+/* ── Hero cards ────────────────────────────────────────────────────── */
+.heroes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 34px 0 8px; }
+.card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 16px;
+  padding: 22px 22px 24px; box-shadow: var(--shadow); transition: transform .15s, box-shadow .15s;
+  border-top: 3px solid var(--border); display: block;
+}
+.card:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.card.best  { border-top-color: var(--sage); }
+.card.steal { border-top-color: var(--teal); }
+.card.over  { border-top-color: var(--red); }
+.card .label { font-size: 11px; font-weight: 600; letter-spacing: .14em; text-transform: uppercase; color: var(--fg-4); }
+.card .name { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; color: var(--fg-1); margin: 8px 0 2px; }
+.card .sub { font-size: 14px; color: var(--fg-3); }
+.card .sub .pos { color: var(--teal); font-weight: 600; }
+.card .sub .red { color: var(--red); font-weight: 600; }
+
+/* ── Explore nav ───────────────────────────────────────────────────── */
+.explore-label { font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--fg-4); margin: 36px 0 14px; }
+.nav { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+.navcard { background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
+  padding: 18px 20px; box-shadow: var(--shadow); display: flex; gap: 16px; align-items: flex-start;
+  transition: transform .15s, box-shadow .15s; border-left: 3px solid var(--accent, var(--sage)); }
+.navcard:hover { transform: translateY(-2px); box-shadow: var(--shadow-hover); }
+.navcard h3 { font-family: 'Space Grotesk', sans-serif; margin: 0 0 4px; font-size: 17px; color: var(--fg-1); }
+.navcard p { margin: 0; font-size: 13.5px; color: var(--fg-3); }
+.navcard.soon { opacity: .55; }
+.navcard.soon::after { content: "soon"; margin-left: auto; font-size: 10px; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--fg-5); align-self: center; }
+
+footer { text-align: center; color: var(--fg-5); font-size: 12px; padding: 40px 0 48px; }
+
+@media (max-width: 720px) {
+  .heroes { grid-template-columns: 1fr; }
+  .nav { grid-template-columns: 1fr; }
+  header { padding: 36px 0 4px; }
+}

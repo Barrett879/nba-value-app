@@ -1,0 +1,22 @@
+{
+"season": "2025-26",
+"n_players": 365,
+"best": {
+"name": "Nikola Joki\u0107",
+"slug": "nikola-jokic",
+"team": "DEN",
+"score": 48.4
+},
+"steal": {
+"name": "Victor Wembanyama",
+"slug": "victor-wembanyama",
+"team": "SAS",
+"below_m": 41.3
+},
+"overpaid": {
+"name": "Anthony Davis",
+"slug": "anthony-davis",
+"team": "WAS",
+"above_m": 35.1
+}
+}
