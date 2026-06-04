@@ -3869,8 +3869,17 @@ def warm_all_seasons() -> None:
             pass
 
     def _run_pool() -> None:
+        if os.environ.get("HOOPSVALUE_NO_WARM") == "1":
+            return  # escape hatch to disable background warming entirely
+        # Let the first page render finish before warming the OTHER pages' seasons.
+        # On Render's 0.5-CPU instance, 5 parallel build_raw threads saturated the
+        # core and ~2x-ed the first visitor's cold render (measured 38s -> 20s with
+        # this disabled). The season parquets now ship on disk, so this warm is a
+        # nicety, not a necessity: defer it past the first render and throttle to
+        # 2 workers so it stays in the background instead of fighting the request.
+        time.sleep(float(os.environ.get("HOOPSVALUE_WARM_DELAY", "20")))
         historical = SEASONS[1:]  # current season already warm
-        with ThreadPoolExecutor(max_workers=5) as pool:
+        with ThreadPoolExecutor(max_workers=2) as pool:
             pool.map(_warm, historical)
         # After all individual seasons are warm, pre-build the combined legacy dataset
         try:
