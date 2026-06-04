@@ -19,8 +19,11 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 warnings.filterwarnings("ignore")
 
-from utils import build_ranked_projected, SEASONS, DEFAULT_MIN_THRESHOLD  # noqa: E402
+import pandas as pd  # noqa: E402
+from utils import build_ranked_projected, SEASONS, DEFAULT_MIN_THRESHOLD, normalize  # noqa: E402
 import team_suitors as _ts  # noqa: E402
+
+ONLY = os.environ.get("ONLY", "")  # build just this slug (fast template iteration)
 
 SITE = ROOT / "site"
 DATA = SITE / "data"
@@ -169,6 +172,28 @@ _scout = _ns["_scouting_take"]
 _hist = _ns["load_historical_signings"](n_recent_pairs=3)
 CONTRACT = _ns.get("CONTRACT_SEASON", CUR)
 _MODEL = "HistGBM v2"
+_detect = _ns["detect_caveats"]
+
+# Likely-suitors landscape (computed ONCE): real committed-salary cap room +
+# league rosters + RFA/option tags — the same pipeline the Contract Predictor
+# uses, so the suitor list matches the app.
+_full = _ns["build_ranked_projected"](CUR).copy()
+# build_rosters needs a position column on the ranked frame; add the curated one.
+_full["pos"] = _full["Player"].map(lambda n: _ts.resolve_position(str(n), "", _pos_map))
+try:
+    _next_c = _ns["fetch_next_year_contracts"](_ns["season_to_espn_year"](CUR), cache_v=7)
+    _payroll = pd.DataFrame({"team": _full["Team"].astype(str).values,
+                             "player": _full["Player"].astype(str).values})
+    _LAND = _ts.apply_real_cap(
+        _ts.load_team_landscape(),
+        _ts.compute_cap_space(_payroll, _next_c, _ns["SALARY_CAP_M"].get(CONTRACT, 165.0)))
+    _ROST = _ts.build_rosters(_full)
+    _fa_tags = {"rfa": "RFA", "player_option": "player option", "team_option": "team option"}
+    _status_map = {nm: _fa_tags[(v or {}).get("type")] for nm, v in _next_c.items()
+                   if (v or {}).get("type") in _fa_tags}
+    _SUIT = not _ROST.empty
+except Exception:
+    _SUIT, _LAND, _ROST, _status_map = False, None, None, {}
 
 PLAYER_DIR = SITE / "player"
 PLAYER_DIR.mkdir(parents=True, exist_ok=True)
@@ -205,12 +230,47 @@ def render_player(p: dict) -> bool:
     floor = pred.get("supermax_tier_label") if pred.get("cba_floor_applied") else None
     floor_html = f'<div class="pred-floor">{_html.escape(str(floor))} floor</div>' if floor else ""
 
-    median_html, comps_html = "", ""
+    # Confidence band (low–high) over [min floor … max].
+    lo, hi = float(pred.get("low", predicted)), float(pred.get("high", predicted))
+    fmin = float(pred.get("min_floor_dollars", 0.0))
+    fmax = max(hi, float(pred.get("cba_max_dollars", hi)), predicted)
+    _span = max(fmax - fmin, 1.0)
+    _lp = max(0.0, min(100.0, (lo - fmin) / _span * 100))
+    _hp = max(0.0, min(100.0, (hi - fmin) / _span * 100))
+    _pp = max(0.0, min(100.0, (predicted - fmin) / _span * 100))
+    band_html = (
+        f'<div class="band"><div class="band-head"><span>Likely range</span>'
+        f'<b>{_m(lo)} – {_m(hi)}</b></div>'
+        f'<div class="band-track"><div class="band-fill" style="left:{_lp:.1f}%;width:{max(_hp - _lp, 1.5):.1f}%"></div>'
+        f'<div class="band-dot" style="left:{_pp:.1f}%"></div></div>'
+        f'<div class="band-ends"><span>{_m(fmin)} min</span><span>{_m(fmax)} max</span></div></div>')
+
+    # Caveats (rookie-scale lock, supermax eligibility, …).
+    try:
+        _cav = _detect(f) or []
+    except Exception:
+        _cav = []
+    caveats_html = ('<ul class="caveats">'
+                    + "".join(f'<li>{_html.escape(str(c))}</li>' for c in _cav)
+                    + '</ul>') if _cav else ""
+
+    # Scouting take + comparable signings.
+    median_html, scout_html, comps_html = "", "", ""
     if comps is not None and not comps.empty:
         take = _scout(f, comps)
         median_html = (f'<div class="market">Market second opinion '
                        f'<span class="muted">(weighted median of comparable signings)</span> '
                        f'<b>{_m(float(take["median"]))}</b></div>')
+        _xf = _html.escape(str(take.get("x_factor", "")))
+        _rng = f'{_m(float(take["q25"]))} – {_m(float(take["q75"]))}'
+        _top3 = _html.escape(", ".join(take.get("top3", []) or []))
+        scout_html = (
+            f'<section class="scout"><h2>Scouting take</h2>'
+            f'<p class="scout-x">{_xf}</p>'
+            f'<div class="scout-grid">'
+            f'<div><div class="sk">Market middle 50%</div><div class="sv">{_rng}</div></div>'
+            f'<div><div class="sk">Closest comps</div><div class="sv">{_top3}</div></div>'
+            f'</div></section>')
         rows = "".join(
             f'<tr><td class="cn"><a href="/player/{slugify(str(r["Player"]))}.html">'
             f'{_html.escape(str(r["Player"]))}</a></td>'
@@ -222,6 +282,32 @@ def render_player(p: dict) -> bool:
                       f'<p class="comps-sub">Closest matches on trailing Barrett + age + position.</p>'
                       f'<table class="comps-table"><thead><tr><th>Player</th><th>Pos</th>'
                       f'<th>Signed</th><th>Deal</th></tr></thead><tbody>{rows}</tbody></table></section>')
+
+    # Likely suitors — same engine as the app (real cap room + roster fit).
+    suitors_html = ""
+    if _SUIT:
+        try:
+            _rost = _ROST[_ROST["player"].map(normalize) != normalize(name)]
+            _pos_ts = _ts.resolve_position(
+                name, f.get("position_detailed") or f.get("position") or "", _pos_map)
+            _sui = _ts.rank_suitors(
+                predicted / 1e6, float(f["barrett_score"]), _pos_ts, _rost, _LAND, n=6,
+                incumbent_team=f.get("current_team"), age=f.get("age"),
+                is_rfa=(_status_map.get(normalize(name)) == "RFA"),
+                skill_fit=None, fa_status=_status_map)
+        except Exception:
+            _sui = []
+        if _sui:
+            _sr = "".join(
+                f'<tr><td class="st">{_html.escape(str(s["team"]))}</td>'
+                f'<td class="so">${float(s["offer_M"]):.0f}M</td>'
+                f'<td class="sr">{_html.escape(str(s.get("reason", "")))}</td>'
+                f'<td class="stool">{_html.escape(str(s.get("tool", "")))}</td></tr>'
+                for s in _sui)
+            suitors_html = (
+                f'<section class="suitors"><h2>Likely suitors</h2>'
+                f'<p class="comps-sub">Teams most likely to pursue him — each at the price they\'d realistically offer.</p>'
+                f'<table class="suitors-table"><tbody>{_sr}</tbody></table></section>')
 
     pos = _pos(name)
     draft = ""
@@ -255,8 +341,12 @@ def render_player(p: dict) -> bool:
   <div class="pred-number">{_m(predicted)}<span class="yr">/yr</span></div>
   {floor_html}
   <div class="pred-vs">{vs}</div>
+  {band_html}
+  {caveats_html}
   {median_html}
+  {scout_html}
   {comps_html}
+  {suitors_html}
   <p class="disclaimer">Model: {_MODEL}. Projection is for the player's next contract priced at the {CONTRACT} cap. Informational only — not financial advice.</p>
 </main>
 <footer>hoopsvalue.com · Barrett Score · {CUR}</footer>
@@ -270,8 +360,9 @@ def render_player(p: dict) -> bool:
 if os.environ.get("SKIP_PLAYERS") == "1":
     print("player pages: SKIPPED (SKIP_PLAYERS=1)")
 else:
-    _built = sum(render_player(p) for p in players)
-    print(f"player pages: {_built}/{len(players)} -> {PLAYER_DIR}")
+    _pl = [p for p in players if not ONLY or p["slug"] == ONLY]
+    _built = sum(render_player(p) for p in _pl)
+    print(f"player pages: {_built}/{len(_pl)} -> {PLAYER_DIR}")
 
 
 # ── Phase 3: rankings page (pre-rendered rows + client sort/filter) ───────────
