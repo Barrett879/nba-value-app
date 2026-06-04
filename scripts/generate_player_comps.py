@@ -1,7 +1,8 @@
-"""Generate every active player's comparable signings under the fixed
-curated-position-group matcher, and assert NO cross-group comps (a big never
-gets a wing, etc.). Writes player_comps.csv (Player, Pos, Group, Comp 1..6) and
-prints any violations — proof the Chet-style SF-on-a-big bug is gone league-wide.
+"""Generate every active player's comparable signings under the curated
+PRIMARY-position matcher (no coarse G/F/C groups — a PF matches PFs, a C matches
+Cs, etc.) and assert NO off-position comps. Writes player_comps.csv (Player,
+Position, Comp 1..6) and prints any violations — proof the Chet-style SF-on-a-PF
+bug is gone league-wide.
 
 Usage:  python -u scripts/generate_player_comps.py
 """
@@ -38,29 +39,28 @@ def feats(name):
 rows, violations = [], []
 for name in sorted(active, key=lambda n: -barr.get(n, 0.0)):
     f = feats(name)
-    primary, group = cp(f["name"], f["position_detailed"])
+    primary = cp(f["name"], f["position_detailed"])
     comps = fc(f, hist, n=6)
     comp_names = list(comps["Player"]) if not comps.empty else []
-    # cross-group audit
     if not comps.empty:
         for _, r in comps.iterrows():
-            if r["pos_group"] != group:
-                violations.append(f"{name} ({group}) -> {r['Player']} ({r['pos_group']})")
-    rows.append([name, primary, group, *comp_names, *[""] * (6 - len(comp_names))])
+            if r["pos_primary"] != primary:
+                violations.append(f"{name} ({primary}) -> {r['Player']} ({r['pos_primary']})")
+    rows.append([name, primary, *comp_names, *[""] * (6 - len(comp_names))])
 
 out = ROOT / "player_comps.csv"
 with open(out, "w", newline="") as fh:
     w = csv.writer(fh)
-    w.writerow(["Player", "Position", "Group", "Comp 1", "Comp 2", "Comp 3",
+    w.writerow(["Player", "Position", "Comp 1", "Comp 2", "Comp 3",
                 "Comp 4", "Comp 5", "Comp 6"])
     w.writerows(rows)
 
 print(f"Wrote {len(rows)} players -> {out}")
-print(f"Players with >=1 comp: {sum(1 for r in rows if r[3])}  |  "
-      f"no-comp (suppressed): {sum(1 for r in rows if not r[3])}")
-print(f"\nCROSS-GROUP VIOLATIONS (a big with a wing comp, etc.): {len(violations)}")
+print(f"Players with >=1 comp: {sum(1 for r in rows if r[2])}  |  "
+      f"no-comp (suppressed): {sum(1 for r in rows if not r[2])}")
+print(f"\nOFF-POSITION VIOLATIONS (a PF with a non-PF comp, etc.): {len(violations)}")
 for v in violations[:40]:
     print("  ", v)
 print("\nSample (top 12 by Barrett):")
 for r in rows[:12]:
-    print(f"  {r[0]:<22}{r[1]:<4}{r[2]:<5}  ::  {', '.join(c for c in r[3:] if c)}")
+    print(f"  {r[0]:<24}{r[1]:<4}  ::  {', '.join(c for c in r[2:] if c)}")
