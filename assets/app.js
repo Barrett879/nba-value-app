@@ -12,7 +12,7 @@
 
   const norm = (s) => s.normalize('NFKD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-  fetch('/data/players.json')
+  fetch('data/players.json')
     .then((r) => r.json())
     .then((data) => { players = data; })
     .catch(() => {});
@@ -40,7 +40,7 @@
     if (!matches.length) return;
     if (e.key === 'ArrowDown') { e.preventDefault(); active = (active + 1) % matches.length; render(); }
     else if (e.key === 'ArrowUp') { e.preventDefault(); active = (active - 1 + matches.length) % matches.length; render(); }
-    else if (e.key === 'Enter') { e.preventDefault(); if (matches[active]) location.href = `/player/${matches[active].slug}.html`; }
+    else if (e.key === 'Enter') { e.preventDefault(); if (matches[active]) location.href = `player/${matches[active].slug}.html`; }
     else if (e.key === 'Escape') { matches = []; render(); input.blur(); }
   });
   document.addEventListener('click', (e) => {
