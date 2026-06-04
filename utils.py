@@ -1830,7 +1830,11 @@ def _dc_path(name: str) -> Path:
 def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> bool:
     if not path.exists():
         return False
-    effective_ttl = ttl if ttl is not None else (3600 if season == SEASONS[0] else 86400)
+    # Historical seasons are immutable — trust the committed disk cache for a
+    # month so the live site never re-scrapes old Basketball-Reference pages
+    # (a version bump changes the filename, so it still busts when data changes).
+    # Current season auto-refreshes hourly; a fresh deploy resets every mtime.
+    effective_ttl = ttl if ttl is not None else (3600 if season == SEASONS[0] else 2_592_000)
     return (time.time() - path.stat().st_mtime) < effective_ttl
 
 def _pkl_load(path: Path):

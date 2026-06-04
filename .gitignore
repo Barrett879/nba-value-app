@@ -9,10 +9,15 @@ __pycache__/
 .venv/
 venv/
 
-# Local-only cache (Render uses /data/cache, repo cache/ is dev-only)
-cache/
+# The precomputed cache IS committed so every deploy serves it from local disk
+# instead of rebuilding from the NBA API on each restart (Hugging Face wipes
+# storage on every rebuild, so an empty cache there = a full re-scrape per push).
+# Refresh it deliberately by re-running seed_cache.py and committing.
+# parquet/pkl are still ignored everywhere EXCEPT cache/ (keeps training scratch out).
 *.parquet
 *.pkl
+!cache/*.parquet
+!cache/*.pkl
 
 # Local scratch / disabled pages (revert checkpoints — git history is the backup)
 refresh_splits.py
