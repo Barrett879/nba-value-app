@@ -334,19 +334,29 @@ def render_player(p: dict) -> bool:
   <nav class="topnav"><a href="/rankings.html">Rankings</a></nav>
 </header>
 <main class="wrap player">
-  <div class="eyebrow">Projected {CONTRACT} contract</div>
-  <h1 class="pname">{nm}<span class="chip">Score {p['score']} · #{p['rank']}</span></h1>
-  <div class="pmeta">{_html.escape(str(f.get('current_team') or p['team']))} · {CUR}{age} · {pos}{draft}</div>
-  {cur_deal}
-  <div class="pred-number">{_m(predicted)}<span class="yr">/yr</span></div>
-  {floor_html}
-  <div class="pred-vs">{vs}</div>
-  {band_html}
-  {caveats_html}
-  {median_html}
+  <div class="phead">
+    <div class="eyebrow">Projected {CONTRACT} contract</div>
+    <h1 class="pname">{nm}<span class="chip">Score {p['score']} · #{p['rank']}</span></h1>
+    <div class="pmeta">{_html.escape(str(f.get('current_team') or p['team']))} · {CUR}{age} · {pos}{draft}</div>
+    {cur_deal}
+  </div>
+  <div class="hero-grid">
+    <div class="hero-main">
+      <div class="pred-number">{_m(predicted)}<span class="yr">/yr</span></div>
+      {floor_html}
+      <div class="pred-vs">{vs}</div>
+      {band_html}
+    </div>
+    <div class="hero-side">
+      {median_html}
+      {caveats_html}
+    </div>
+  </div>
   {scout_html}
-  {comps_html}
-  {suitors_html}
+  <div class="two-col">
+    {comps_html}
+    {suitors_html}
+  </div>
   <p class="disclaimer">Model: {_MODEL}. Projection is for the player's next contract priced at the {CONTRACT} cap. Informational only — not financial advice.</p>
 </main>
 <footer>hoopsvalue.com · Barrett Score · {CUR}</footer>
