@@ -110,35 +110,41 @@ if _get_ctx() is not None:
         _lc, _rc = st.columns(2, gap="large")
         with _lc, st.container(border=True):
             st.markdown(
-                "<div style='padding:20px 8px 8px'>"
-                "<div style='font-size:2.6rem;line-height:1'>🏀</div>"
-                "<div style='font-size:1.55rem;font-weight:800;margin:.45rem 0 .3rem'>Predict a Player</div>"
-                "<div style='color:var(--fg-2);min-height:72px'>What will any player command on his next "
+                "<div style='padding:12px 10px 8px'>"
+                "<div style='font-size:1.6rem;font-weight:800;margin:0 0 .5rem'>Predict a Player</div>"
+                "<div style='color:var(--fg-2);min-height:64px'>What will any player command on his next "
                 "contract? A market value, a confidence band, comparable signings, and the teams most likely "
                 "to chase him.</div></div>", unsafe_allow_html=True)
-            if st.button("Predict a Player  →", use_container_width=True, type="primary", key="cp_go_player"):
+            if st.button("Predict a Player", use_container_width=True, type="primary", key="cp_go_player"):
                 st.session_state.cp_mode = "player"
                 st.rerun()
         with _rc, st.container(border=True):
             st.markdown(
-                "<div style='padding:20px 8px 8px'>"
-                "<div style='font-size:2.6rem;line-height:1'>🏢</div>"
-                "<div style='font-size:1.55rem;font-weight:800;margin:.45rem 0 .3rem'>Build a Team</div>"
-                "<div style='color:var(--fg-2);min-height:72px'>Step into the front office. Pick a team and "
+                "<div style='padding:12px 10px 8px'>"
+                "<div style='font-size:1.6rem;font-weight:800;margin:0 0 .5rem'>Build a Team</div>"
+                "<div style='color:var(--fg-2);min-height:64px'>Step into the front office. Pick a team and "
                 "see its whole offseason board — who to re-sign, who to pursue, and the contract it would "
                 "realistically offer.</div></div>", unsafe_allow_html=True)
-            if st.button("Build a Team  →", use_container_width=True, type="primary", key="cp_go_team"):
+            if st.button("Build a Team", use_container_width=True, type="primary", key="cp_go_team"):
                 st.session_state.cp_mode = "team"
                 st.rerun()
         st.stop()
 
-    # Persistent pill toggle to flip sides.
-    _SEG = {"🏀 Predict a Player": "player", "🏢 Build a Team": "team"}
+    # Persistent full-width toggle to flip sides (spans the page like the search bar).
+    _SEG = {"Predict a Player": "player", "Build a Team": "team"}
     _seg_labels = list(_SEG)
     if "cp_view_seg" not in st.session_state:
         st.session_state.cp_view_seg = _seg_labels[0] if _MODE == "player" else _seg_labels[1]
+    st.markdown(
+        "<style>"
+        "div[data-testid='stSegmentedControl']{width:100%}"
+        "div[data-testid='stSegmentedControl']>div{display:flex !important;width:100%;gap:6px}"
+        "div[data-testid='stSegmentedControl']>div>*{flex:1 1 0 !important}"
+        "div[data-testid='stSegmentedControl'] label{flex:1 1 0 !important}"
+        "div[data-testid='stSegmentedControl'] button{width:100% !important;justify-content:center}"
+        "</style>", unsafe_allow_html=True)
     _picked = st.segmented_control("View", _seg_labels, key="cp_view_seg",
-                                   label_visibility="collapsed")
+                                   label_visibility="collapsed", width="stretch")
     if _picked and _SEG[_picked] != _MODE:
         st.session_state.cp_mode = _SEG[_picked]
         st.rerun()
