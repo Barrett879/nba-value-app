@@ -1702,6 +1702,13 @@ _comps = (
     if not _history.empty else pd.DataFrame()
 )
 
+# The curated 2K primary position — the single source the comps are matched on.
+# Use it for EVERY position label on the page so the hero never contradicts the
+# comp list (e.g. a combo guard reading "SG" up top but "PG" among his comps).
+_pos_display = _curated_pos(
+    features.get("name", ""),
+    features.get("position_detailed") or features.get("position") or "")
+
 # Tag context up front so we can filter the market-median pool. We'll
 # carry this through to the table render below (no double computation).
 if not _comps.empty:
@@ -2094,7 +2101,7 @@ if _market_median is not None:
     if features.get("team"): _meta_bits.append(features["team"])
     _meta_bits.append(CURRENT_SEASON)
     if features.get("age"): _meta_bits.append(f"Age {int(features['age'])}")
-    _meta_bits.append(str(features.get("position_detailed", features["position"])))
+    _meta_bits.append(str(_pos_display))
     _draft_label = _fmt_draft(features)
     if _draft_label:
         _meta_bits.append(_draft_label)
@@ -2132,7 +2139,7 @@ else:
     if features.get("team"): _meta_bits.append(features["team"])
     _meta_bits.append(CURRENT_SEASON)
     if features.get("age"): _meta_bits.append(f"Age {int(features['age'])}")
-    _meta_bits.append(str(features.get("position_detailed", features["position"])))
+    _meta_bits.append(str(_pos_display))
     _draft_label = _fmt_draft(features)
     if _draft_label:
         _meta_bits.append(_draft_label)
@@ -2611,7 +2618,7 @@ with st.expander("About this prediction"):
     # into code-block mode for everything after it). Single-line construction
     # avoids the issue entirely.
     _age_label = int(features['age']) if features['age'] else '?'
-    _pos_label = features.get('position_detailed', features['position'])
+    _pos_label = _pos_display
 
     # CBA cap/floor adjustment — show a final "→ adjusted to $X" step when
     # the raw model was overridden by CBA rules. Math equation shows the
