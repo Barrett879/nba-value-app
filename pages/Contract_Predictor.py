@@ -99,6 +99,7 @@ st.title("Contract Predictor")
 # exec this file's prefix to grab the prediction functions — never run the
 # Streamlit-only mode logic or trip st.stop()/st.rerun().
 from streamlit.runtime.scriptrunner import get_script_run_ctx as _get_ctx  # noqa: E402
+from utils import render_footer  # noqa: E402
 if _get_ctx() is not None:
     from front_office import render_front_office  # noqa: E402
     _MODE = st.session_state.get("cp_mode")
@@ -128,6 +129,7 @@ if _get_ctx() is not None:
             if st.button("Build a Team", use_container_width=True, type="primary", key="cp_go_team"):
                 st.session_state.cp_mode = "team"
                 st.rerun()
+        render_footer()
         st.stop()
 
     # Persistent full-width toggle to flip sides (spans the page like the search bar).
@@ -151,6 +153,7 @@ if _get_ctx() is not None:
 
     if _MODE == "team":
         render_front_office()
+        render_footer()
         st.stop()
     # _MODE == "player" → fall through to the player predictor below.
 
@@ -1751,6 +1754,7 @@ if not selected:
         "a supermax-eligible note, a veteran for the age discount, or a young "
         "rising player for the rookie-scale caveat."
     )
+    render_footer()
     st.stop()
 
 # ── Compute prediction ───────────────────────────────────────────────────────
@@ -2880,3 +2884,6 @@ with st.expander("About this prediction"):
         time.
         """.replace("$", "\\$")
     )
+
+
+render_footer()

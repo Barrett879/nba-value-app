@@ -980,8 +980,5 @@ render_strip(
 
 
 # ── Footer ────────────────────────────────────────────────────────────────────
-st.markdown("""
-<div style="text-align:center; margin-top:1rem; color:var(--fg-4); font-size:0.7rem;">
-    barrettscore.com &nbsp;·&nbsp; Data from NBA Stats API &nbsp;·&nbsp; Updated daily
-</div>
-""", unsafe_allow_html=True)
+from utils import render_footer
+render_footer()

@@ -1181,3 +1181,7 @@ if new_selected:
             render_splits_panel(name, season)
         st.caption("**TOT** = full season combined (bold).")
         st.divider()
+
+
+from utils import render_footer
+render_footer()

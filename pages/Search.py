@@ -933,3 +933,7 @@ else:
                 height=min(600, max(140, len(tbl) * 38 + 46)),
             )
     st.caption("Highlighted row = each player's peak season.")
+
+
+from utils import render_footer
+render_footer()

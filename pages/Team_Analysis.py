@@ -204,3 +204,7 @@ if drill_team:
         numeric={"#", "Barrett Score", "Score Rank", "Salary $M", "Proj. $M", "Δ $M"},
         height=min(640, len(team_players) * 38 + 46),
     )
+
+
+from utils import render_footer
+render_footer()

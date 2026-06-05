@@ -970,3 +970,7 @@ with tab_draft:
                     yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickformat=".1f"),
                 )
                 st.plotly_chart(theme_fig(fig_class), use_container_width=True, config={"displayModeBar": False})
+
+
+from utils import render_footer
+render_footer()

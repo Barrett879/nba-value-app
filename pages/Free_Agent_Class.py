@@ -292,3 +292,7 @@ if not fa_display.empty:
             legend=dict(orientation="h", x=0.5, xanchor="center", y=1.1),
         )
         st.plotly_chart(theme_fig(fig_fa), use_container_width=True, config={"displayModeBar": False})
+
+
+from utils import render_footer
+render_footer()
