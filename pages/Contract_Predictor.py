@@ -91,6 +91,63 @@ _bootstrap_warm()
 render_nav("Contract Predictor")
 
 st.title("Contract Predictor")
+
+# ── Dual view: player-side predictor  +  team-side Front Office ───────────────
+# The page opens on a split chooser; picking a side takes the full screen, and a
+# pill toggle flips between them (the choice persists for the session). Guarded
+# by the script-run-context check so the headless build/audit scripts — which
+# exec this file's prefix to grab the prediction functions — never run the
+# Streamlit-only mode logic or trip st.stop()/st.rerun().
+from streamlit.runtime.scriptrunner import get_script_run_ctx as _get_ctx  # noqa: E402
+if _get_ctx() is not None:
+    from front_office import render_front_office  # noqa: E402
+    _MODE = st.session_state.get("cp_mode")
+
+    if _MODE not in ("player", "team"):
+        # Landing: two halves, pick one to take over the screen.
+        st.caption("Two ways in — predict one player's next contract, or run a whole team's offseason.")
+        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
+        _lc, _rc = st.columns(2, gap="large")
+        with _lc, st.container(border=True):
+            st.markdown(
+                "<div style='padding:20px 8px 8px'>"
+                "<div style='font-size:2.6rem;line-height:1'>🏀</div>"
+                "<div style='font-size:1.55rem;font-weight:800;margin:.45rem 0 .3rem'>Predict a Player</div>"
+                "<div style='color:var(--fg-2);min-height:72px'>What will any player command on his next "
+                "contract? A market value, a confidence band, comparable signings, and the teams most likely "
+                "to chase him.</div></div>", unsafe_allow_html=True)
+            if st.button("Predict a Player  →", use_container_width=True, type="primary", key="cp_go_player"):
+                st.session_state.cp_mode = "player"
+                st.rerun()
+        with _rc, st.container(border=True):
+            st.markdown(
+                "<div style='padding:20px 8px 8px'>"
+                "<div style='font-size:2.6rem;line-height:1'>🏢</div>"
+                "<div style='font-size:1.55rem;font-weight:800;margin:.45rem 0 .3rem'>Build a Team</div>"
+                "<div style='color:var(--fg-2);min-height:72px'>Step into the front office. Pick a team and "
+                "see its whole offseason board — who to re-sign, who to pursue, and the contract it would "
+                "realistically offer.</div></div>", unsafe_allow_html=True)
+            if st.button("Build a Team  →", use_container_width=True, type="primary", key="cp_go_team"):
+                st.session_state.cp_mode = "team"
+                st.rerun()
+        st.stop()
+
+    # Persistent pill toggle to flip sides.
+    _SEG = {"🏀 Predict a Player": "player", "🏢 Build a Team": "team"}
+    _seg_labels = list(_SEG)
+    if "cp_view_seg" not in st.session_state:
+        st.session_state.cp_view_seg = _seg_labels[0] if _MODE == "player" else _seg_labels[1]
+    _picked = st.segmented_control("View", _seg_labels, key="cp_view_seg",
+                                   label_visibility="collapsed")
+    if _picked and _SEG[_picked] != _MODE:
+        st.session_state.cp_mode = _SEG[_picked]
+        st.rerun()
+
+    if _MODE == "team":
+        render_front_office()
+        st.stop()
+    # _MODE == "player" → fall through to the player predictor below.
+
 st.caption(
     f"Type a player's name to see what they'd command on a NEW contract signed "
     f"today, i.e. their {CONTRACT_SEASON} salary, at next season's projected cap."
