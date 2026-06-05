@@ -37,6 +37,39 @@ def _sty_offer(v, _row):
     return "color:var(--accent-teal);font-weight:700"
 
 
+_GRADE_COLOR = {"A+": "var(--value-good)", "A": "var(--accent-teal)",
+                "A-": "var(--blue)", "B+": "var(--orange)", "B": "var(--fg-3)"}
+
+_FIT_CSS = """
+<style>
+.hv-fits { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.2rem 0 0.4rem; }
+.hv-fit { flex:1 1 0; min-width:210px; background:var(--panel-solid);
+    border:1px solid var(--panel-line); border-top:3px solid var(--c);
+    border-radius:10px; padding:0.95rem 1rem 0.9rem; position:relative; box-shadow:var(--shadow-card); }
+.hv-fit-grade { position:absolute; top:0.7rem; right:0.95rem; font-size:1.55rem; font-weight:800;
+    line-height:1; color:var(--c); }
+.hv-fit-name { font-size:1.1rem; font-weight:800; line-height:1.15; padding-right:2.6rem; }
+.hv-fit-sub { font-size:0.74rem; font-weight:600; color:var(--fg-4); margin-top:0.15rem;
+    text-transform:uppercase; letter-spacing:0.03em; }
+.hv-fit-money { font-size:0.86rem; color:var(--fg-3); margin:0.5rem 0 0.45rem; }
+.hv-fit-money b { color:var(--accent-teal); }
+.hv-fit-why { font-size:0.9rem; color:var(--fg-2); line-height:1.36; }
+</style>
+"""
+
+
+def _fit_card(f):
+    import html as _h
+    c = _GRADE_COLOR.get(f["grade"], "var(--accent-teal)")
+    return (f"<div class='hv-fit' style='--c:{c}'>"
+            f"<div class='hv-fit-grade'>{_h.escape(str(f['grade']))}</div>"
+            f"<div class='hv-fit-name'>{_h.escape(str(f['name']))}</div>"
+            f"<div class='hv-fit-sub'>{_h.escape(str(f['pos']))} &middot; from {_h.escape(str(f['from']))} "
+            f"&middot; {_h.escape(str(f['status']))}</div>"
+            f"<div class='hv-fit-money'>${f['value_M']:.0f}M market &rarr; <b>${f['offer_M']:.0f}M offer</b></div>"
+            f"<div class='hv-fit-why'>{_h.escape(str(f['why']))}</div></div>")
+
+
 def render_front_office():
     """Render the team-side board into the current page (no page chrome/nav)."""
     if not _BOARD.exists():
@@ -81,8 +114,21 @@ def render_front_office():
 
     st.divider()
 
+    # ── Best fits (the featured suggestion) ─────────────────────────────────────
+    _short = B["name"].split()[-1]
+    fits = B.get("best_fits", [])
+    if fits:
+        st.markdown(f"#### Best fits for the {_short}")
+        st.caption(
+            "Our top matches — roster need, the team's timeline, and value fused into one fit grade. "
+            "The standouts on the board, not just the priciest names a team could sign.")
+        st.markdown(_FIT_CSS, unsafe_allow_html=True)
+        st.markdown(f"<div class='hv-fits'>{''.join(_fit_card(f) for f in fits)}</div>",
+                    unsafe_allow_html=True)
+        st.divider()
+
     # ── Pursue (external targets) ───────────────────────────────────────────────
-    st.subheader(f"Who {B['name'].split()[-1]} should pursue")
+    st.subheader(f"Who {_short} should pursue")
     st.caption(
         "External free agents ranked by how keenly a team of this timeline would chase them, "
         "gated for affordability — no banking on a star taking a massive paycut (an aging vet "

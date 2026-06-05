@@ -115,6 +115,54 @@ def why(x, exc):
     return "Rotation depth"
 
 
+def _grade(s):
+    return "A+" if s >= 82 else "A" if s >= 74 else "A-" if s >= 66 else "B+" if s >= 58 else "B"
+
+
+def best_fits_for(rows, needs, thin):
+    """The free agents who best MATCH this team — roster need + the team's positions
+    of need + timeline desire + value, fused into one fit score. Deliberately distinct
+    from the keenness-ranked board: it rewards genuine need-fillers and bargains over
+    the most expensive name a team could sign, deduped to one pick per position."""
+    scored = []
+    for x in rows:
+        if x["is_inc"]:
+            continue
+        slot = x["slot"]
+        # Depth-chart slot: a starter-level fit dominates; deep depth is heavily discounted.
+        need = (1.0 if slot == 0 and not x["displaces"] else 0.82 if slot == 0
+                else 0.45 if slot == 1 else 0.15)
+        val, off = x["value_M"], x["offer_M"]
+        value_score = max(0.5, min(1.0, 0.5 + (val - off) / max(val, 1.0)))
+        p = primary(x["pos"])
+        # Bonus for actually plugging a position the team has no/thin starter at.
+        pos_bonus = 0.12 if p in needs else 0.06 if p in thin else 0.0
+        score = round(min(1.0, 0.45 * need + 0.30 * x["des"] + 0.25 * value_score + pos_bonus) * 100)
+        if slot == 0 and not x["displaces"]:
+            need_txt = f"Fills the opening at {p}"
+        elif slot == 0:
+            need_txt = f"Upgrades on {x['displaces']} at {p}"
+        elif slot == 1:
+            need_txt = f"Adds a needed second body at {p}"
+        else:
+            need_txt = f"Rotation depth at {p}"
+        val_txt = (f"a bargain at ${off}M against his ${val}M market" if off < val * 0.9
+                   else f"fair value at ${off}M")
+        scored.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
+                       "status": x["status"], "value_M": val, "offer_M": off,
+                       "fit": score, "grade": _grade(score), "ppos": p, "slot": slot,
+                       "why": f"{need_txt} — {val_txt}."})
+    # One pick per position so the three fits diversify (no two C upgrades for the same hole).
+    scored.sort(key=lambda s: -s["fit"])
+    seen, out = set(), []
+    for s in scored:
+        if s["ppos"] in seen:
+            continue
+        seen.add(s["ppos"])
+        out.append(s)
+    return out[:3]
+
+
 def board_for(team):
     row = LAND[LAND["team"].astype(str) == team]
     if row.empty:
@@ -143,7 +191,7 @@ def board_for(team):
         des = 1.0 if is_inc else ts.desire_weight(tl, c["age"], c["value_M"])
         rows.append({**c, "offer_M": round(offer), "slot": need["slot"],
                      "displaces": need["displaces"], "is_inc": is_inc,
-                     "keen": offer * des,
+                     "keen": offer * des, "des": des,
                      "tool": ("Bird rights" if is_inc
                               else "Cap room" if cap + 1e-6 >= offer
                               else "Mid-level exception" if exc >= 12
@@ -163,6 +211,7 @@ def board_for(team):
         "cap_room_M": round(cap), "exception_M": round(exc),
         "timeline": ts._TL_DISPLAY.get(tl, tl) or "—",
         "needs": need, "thin": thin,
+        "best_fits": best_fits_for(rows, need, thin),
         "resign": [pack(x) for x in rows if x["is_inc"]],
         "pursue": [pack(x) for x in rows if not x["is_inc"]][:18],
     }

@@ -16,6 +16,47 @@
    "thin": [
     "SG"
    ],
+   "best_fits": [
+    {
+     "name": "Micah Potter",
+     "pos": "PF/C",
+     "from": "IND",
+     "status": "Team Option",
+     "value_M": 3.4,
+     "offer_M": 2,
+     "fit": 72,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF \u2014 a bargain at $2M against his $3.4M market."
+    },
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "Andrew Wiggins",
+     "pos": "SF/PF",
+     "from": "MIA",
+     "status": "Player Option",
+     "value_M": 19.3,
+     "offer_M": 15,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "SF",
+     "slot": 1,
+     "why": "Adds a needed second body at SF \u2014 a bargain at $15M against his $19.3M market."
+    }
+   ],
    "resign": [
     {
      "name": "CJ McCollum",
@@ -321,6 +362,47 @@
     "PF"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Coby White",
+     "pos": "PG/SG",
+     "from": "CHA",
+     "status": "UFA",
+     "value_M": 16.4,
+     "offer_M": 16,
+     "fit": 88,
+     "grade": "A+",
+     "ppos": "PG",
+     "slot": 0,
+     "why": "Upgrades on Egor D\u00ebmin at PG \u2014 fair value at $16M."
+    },
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 41.2,
+     "offer_M": 41,
+     "fit": 87,
+     "grade": "A+",
+     "ppos": "SG",
+     "slot": 0,
+     "why": "Upgrades on Egor D\u00ebmin at SG \u2014 fair value at $41M."
+    },
+    {
+     "name": "Jalen Duren",
+     "pos": "C",
+     "from": "DET",
+     "status": "RFA",
+     "value_M": 49.5,
+     "offer_M": 44,
+     "fit": 78,
+     "grade": "A",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Nic Claxton at C \u2014 a bargain at $44M against his $49.5M market."
+    }
+   ],
    "resign": [
     {
      "name": "Day'Ron Sharpe",
@@ -590,6 +672,47 @@
    "thin": [
     "PF"
    ],
+   "best_fits": [
+    {
+     "name": "Javonte Green",
+     "pos": "SG/SF",
+     "from": "DET",
+     "status": "UFA",
+     "value_M": 5.6,
+     "offer_M": 3,
+     "fit": 73,
+     "grade": "A-",
+     "ppos": "SG",
+     "slot": 3,
+     "why": "Rotation depth at SG \u2014 a bargain at $3M against his $5.6M market."
+    },
+    {
+     "name": "Draymond Green",
+     "pos": "PF/C",
+     "from": "GSW",
+     "status": "Player Option",
+     "value_M": 4.0,
+     "offer_M": 2,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF \u2014 a bargain at $2M against his $4.0M market."
+    },
+    {
+     "name": "Andre Drummond",
+     "pos": "C",
+     "from": "PHI",
+     "status": "UFA",
+     "value_M": 3.9,
+     "offer_M": 2,
+     "fit": 61,
+     "grade": "B+",
+     "ppos": "C",
+     "slot": 3,
+     "why": "Rotation depth at C \u2014 a bargain at $2M against his $3.9M market."
+    }
+   ],
    "resign": [
     {
      "name": "Neemias Queta",
@@ -857,6 +980,47 @@
     "SF"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 17,
+     "fit": 83,
+     "grade": "A+",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Moussa Diabat\u00e9 at C \u2014 a bargain at $17M against his $23.3M market."
+    },
+    {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "from": "LAC",
+     "status": "RFA",
+     "value_M": 19.7,
+     "offer_M": 12,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "SF",
+     "slot": 3,
+     "why": "Rotation depth at SF \u2014 a bargain at $12M against his $19.7M market."
+    },
+    {
+     "name": "Collin Gillespie",
+     "pos": "PG",
+     "from": "PHX",
+     "status": "UFA",
+     "value_M": 14.6,
+     "offer_M": 13,
+     "fit": 62,
+     "grade": "B+",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $13M against his $14.6M market."
+    }
+   ],
    "resign": [
     {
      "name": "Coby White",
@@ -1103,6 +1267,47 @@
    ],
    "thin": [
     "SF"
+   ],
+   "best_fits": [
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 19.1,
+     "offer_M": 19,
+     "fit": 92,
+     "grade": "A+",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Jalen Smith at C \u2014 fair value at $19M."
+    },
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 41.2,
+     "offer_M": 41,
+     "fit": 87,
+     "grade": "A+",
+     "ppos": "SG",
+     "slot": 0,
+     "why": "Upgrades on Anfernee Simons at SG \u2014 fair value at $41M."
+    },
+    {
+     "name": "Andrew Wiggins",
+     "pos": "SF/PF",
+     "from": "MIA",
+     "status": "Player Option",
+     "value_M": 19.3,
+     "offer_M": 19,
+     "fit": 81,
+     "grade": "A",
+     "ppos": "SF",
+     "slot": 0,
+     "why": "Upgrades on Matas Buzelis at SF \u2014 fair value at $19M."
+    }
    ],
    "resign": [
     {
@@ -1410,6 +1615,47 @@
     "PF",
     "C"
    ],
+   "best_fits": [
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "status": "UFA",
+     "value_M": 16.0,
+     "offer_M": 2,
+     "fit": 81,
+     "grade": "A",
+     "ppos": "PF",
+     "slot": 1,
+     "why": "Adds a needed second body at PF \u2014 a bargain at $2M against his $16.0M market."
+    },
+    {
+     "name": "Khris Middleton",
+     "pos": "SF/PF",
+     "from": "DAL",
+     "status": "UFA",
+     "value_M": 7.5,
+     "offer_M": 2,
+     "fit": 74,
+     "grade": "A",
+     "ppos": "SF",
+     "slot": 4,
+     "why": "Rotation depth at SF \u2014 a bargain at $2M against his $7.5M market."
+    },
+    {
+     "name": "Al Horford",
+     "pos": "C/PF",
+     "from": "GSW",
+     "status": "Player Option",
+     "value_M": 6.4,
+     "offer_M": 2,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 2,
+     "why": "Rotation depth at C \u2014 a bargain at $2M against his $6.4M market."
+    }
+   ],
    "resign": [
     {
      "name": "James Harden",
@@ -1704,6 +1950,47 @@
     "PG",
     "C"
    ],
+   "best_fits": [
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 41.2,
+     "offer_M": 41,
+     "fit": 88,
+     "grade": "A+",
+     "ppos": "SG",
+     "slot": 0,
+     "why": "Upgrades on Brandon Williams at SG \u2014 fair value at $41M."
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 19.1,
+     "offer_M": 19,
+     "fit": 84,
+     "grade": "A+",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Daniel Gafford at C \u2014 fair value at $19M."
+    },
+    {
+     "name": "Ayo Dosunmu",
+     "pos": "PG/SG",
+     "from": "MIN",
+     "status": "UFA",
+     "value_M": 18.3,
+     "offer_M": 18,
+     "fit": 83,
+     "grade": "A+",
+     "ppos": "PG",
+     "slot": 0,
+     "why": "Upgrades on Brandon Williams at PG \u2014 fair value at $18M."
+    }
+   ],
    "resign": [
     {
      "name": "Brandon Williams",
@@ -1996,6 +2283,47 @@
    ],
    "thin": [
     "PF"
+   ],
+   "best_fits": [
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "from": "DET",
+     "status": "UFA",
+     "value_M": 14.4,
+     "offer_M": 6,
+     "fit": 98,
+     "grade": "A+",
+     "ppos": "PF",
+     "slot": 0,
+     "why": "Upgrades on Peyton Watson at PF \u2014 a bargain at $6M against his $14.4M market."
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "from": "ATL",
+     "status": "UFA",
+     "value_M": 15.2,
+     "offer_M": 6,
+     "fit": 87,
+     "grade": "A+",
+     "ppos": "SG",
+     "slot": 1,
+     "why": "Adds a needed second body at SG \u2014 a bargain at $6M against his $15.2M market."
+    },
+    {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "from": "SAS",
+     "status": "Team Option",
+     "value_M": 8.9,
+     "offer_M": 6,
+     "fit": 75,
+     "grade": "A",
+     "ppos": "SF",
+     "slot": 0,
+     "why": "Upgrades on Peyton Watson at SF \u2014 a bargain at $6M against his $8.9M market."
+    }
    ],
    "resign": [
     {
@@ -2299,6 +2627,47 @@
    "needs": [],
    "thin": [
     "PF"
+   ],
+   "best_fits": [
+    {
+     "name": "LeBron James",
+     "pos": "PF/SF",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 39.8,
+     "offer_M": 35,
+     "fit": 86,
+     "grade": "A+",
+     "ppos": "PF",
+     "slot": 0,
+     "why": "Upgrades on Tobias Harris at PF \u2014 a bargain at $35M against his $39.8M market."
+    },
+    {
+     "name": "James Harden",
+     "pos": "PG/SG",
+     "from": "CLE",
+     "status": "Player Option",
+     "value_M": 47.1,
+     "offer_M": 35,
+     "fit": 67,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $35M against his $47.1M market."
+    },
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 41.2,
+     "offer_M": 35,
+     "fit": 65,
+     "grade": "B+",
+     "ppos": "SG",
+     "slot": 1,
+     "why": "Adds a needed second body at SG \u2014 a bargain at $35M against his $41.2M market."
+    }
    ],
    "resign": [
     {
@@ -2605,6 +2974,47 @@
    ],
    "thin": [
     "SF"
+   ],
+   "best_fits": [
+    {
+     "name": "Zach LaVine",
+     "pos": "SG/SF",
+     "from": "SAC",
+     "status": "Player Option",
+     "value_M": 11.9,
+     "offer_M": 7,
+     "fit": 72,
+     "grade": "A-",
+     "ppos": "SG",
+     "slot": 3,
+     "why": "Rotation depth at SG \u2014 a bargain at $7M against his $11.9M market."
+    },
+    {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 20.7,
+     "offer_M": 15,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $15M against his $20.7M market."
+    },
+    {
+     "name": "Jericho Sims",
+     "pos": "C",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 3.1,
+     "offer_M": 2,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 3,
+     "why": "Rotation depth at C \u2014 a bargain at $2M against his $3.1M market."
+    }
    ],
    "resign": [
     {
@@ -2936,6 +3346,47 @@
     "PF",
     "C"
    ],
+   "best_fits": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "status": "UFA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "fit": 80,
+     "grade": "A",
+     "ppos": "SG",
+     "slot": 1,
+     "why": "Adds a needed second body at SG \u2014 a bargain at $15M against his $18.7M market."
+    },
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 76,
+     "grade": "A",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "Draymond Green",
+     "pos": "PF/C",
+     "from": "GSW",
+     "status": "Player Option",
+     "value_M": 4.0,
+     "offer_M": 2,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF \u2014 a bargain at $2M against his $4.0M market."
+    }
+   ],
    "resign": [
     {
      "name": "Tari Eason",
@@ -3192,6 +3643,47 @@
     "SF"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 20.7,
+     "offer_M": 15,
+     "fit": 82,
+     "grade": "A+",
+     "ppos": "PG",
+     "slot": 0,
+     "why": "Upgrades on Andrew Nembhard at PG \u2014 a bargain at $15M against his $20.7M market."
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "status": "UFA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "fit": 80,
+     "grade": "A",
+     "ppos": "SG",
+     "slot": 1,
+     "why": "Adds a needed second body at SG \u2014 a bargain at $15M against his $18.7M market."
+    },
+    {
+     "name": "Andrew Wiggins",
+     "pos": "SF/PF",
+     "from": "MIA",
+     "status": "Player Option",
+     "value_M": 19.3,
+     "offer_M": 15,
+     "fit": 76,
+     "grade": "A",
+     "ppos": "SF",
+     "slot": 1,
+     "why": "Adds a needed second body at SF \u2014 a bargain at $15M against his $19.3M market."
+    }
+   ],
    "resign": [
     {
      "name": "Micah Potter",
@@ -3448,6 +3940,47 @@
     "C"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "status": "UFA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "fit": 84,
+     "grade": "A+",
+     "ppos": "SG",
+     "slot": 0,
+     "why": "Upgrades on Bennedict Mathurin at SG \u2014 a bargain at $15M against his $18.7M market."
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 19.1,
+     "offer_M": 15,
+     "fit": 80,
+     "grade": "A",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $19.1M market."
+    },
+    {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 20.7,
+     "offer_M": 15,
+     "fit": 65,
+     "grade": "B+",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $15M against his $20.7M market."
+    }
+   ],
    "resign": [
     {
      "name": "Bennedict Mathurin",
@@ -3741,6 +4274,47 @@
    "thin": [
     "PG",
     "PF"
+   ],
+   "best_fits": [
+    {
+     "name": "Jalen Duren",
+     "pos": "C",
+     "from": "DET",
+     "status": "RFA",
+     "value_M": 49.5,
+     "offer_M": 50,
+     "fit": 78,
+     "grade": "A",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Deandre Ayton at C \u2014 fair value at $50M."
+    },
+    {
+     "name": "Andrew Wiggins",
+     "pos": "SF/PF",
+     "from": "MIA",
+     "status": "Player Option",
+     "value_M": 19.3,
+     "offer_M": 17,
+     "fit": 74,
+     "grade": "A",
+     "ppos": "SF",
+     "slot": 1,
+     "why": "Adds a needed second body at SF \u2014 a bargain at $17M against his $19.3M market."
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "status": "UFA",
+     "value_M": 16.0,
+     "offer_M": 14,
+     "fit": 72,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 1,
+     "why": "Adds a needed second body at PF \u2014 a bargain at $14M against his $16.0M market."
+    }
    ],
    "resign": [
     {
@@ -4060,6 +4634,47 @@
     "C"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 19.1,
+     "offer_M": 19,
+     "fit": 92,
+     "grade": "A+",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Zach Edey at C \u2014 fair value at $19M."
+    },
+    {
+     "name": "Peyton Watson",
+     "pos": "SF/PF",
+     "from": "DEN",
+     "status": "RFA",
+     "value_M": 15.2,
+     "offer_M": 15,
+     "fit": 92,
+     "grade": "A+",
+     "ppos": "SF",
+     "slot": 0,
+     "why": "Upgrades on Cedric Coward at SF \u2014 fair value at $15M."
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "status": "UFA",
+     "value_M": 19.5,
+     "offer_M": 20,
+     "fit": 87,
+     "grade": "A+",
+     "ppos": "PF",
+     "slot": 0,
+     "why": "Upgrades on Santi Aldama at PF \u2014 fair value at $20M."
+    }
+   ],
    "resign": [
     {
      "name": "Olivier-Maxence Prosper",
@@ -4303,6 +4918,47 @@
     "PF"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "status": "UFA",
+     "value_M": 19.5,
+     "offer_M": 12,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF \u2014 a bargain at $12M against his $19.5M market."
+    },
+    {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 20.7,
+     "offer_M": 15,
+     "fit": 66,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $15M against his $20.7M market."
+    }
+   ],
    "resign": [
     {
      "name": "Andrew Wiggins",
@@ -4583,6 +5239,47 @@
     "SF"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 41.2,
+     "offer_M": 27,
+     "fit": 99,
+     "grade": "A+",
+     "ppos": "SG",
+     "slot": 0,
+     "why": "Upgrades on Ryan Rollins at SG \u2014 a bargain at $27M against his $41.2M market."
+    },
+    {
+     "name": "Andrew Wiggins",
+     "pos": "SF/PF",
+     "from": "MIA",
+     "status": "Player Option",
+     "value_M": 19.3,
+     "offer_M": 17,
+     "fit": 78,
+     "grade": "A",
+     "ppos": "SF",
+     "slot": 1,
+     "why": "Adds a needed second body at SF \u2014 a bargain at $17M against his $19.3M market."
+    },
+    {
+     "name": "LeBron James",
+     "pos": "PF/SF",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 39.8,
+     "offer_M": 27,
+     "fit": 76,
+     "grade": "A",
+     "ppos": "PF",
+     "slot": 0,
+     "why": "Upgrades on Giannis Antetokounmpo at PF \u2014 a bargain at $27M against his $39.8M market."
+    }
+   ],
    "resign": [
     {
      "name": "Kevin Porter Jr.",
@@ -4887,6 +5584,47 @@
     "SG",
     "PF"
    ],
+   "best_fits": [
+    {
+     "name": "Collin Gillespie",
+     "pos": "PG",
+     "from": "PHX",
+     "status": "UFA",
+     "value_M": 14.6,
+     "offer_M": 15,
+     "fit": 76,
+     "grade": "A",
+     "ppos": "PG",
+     "slot": 0,
+     "why": "Upgrades on Donte DiVincenzo at PG \u2014 fair value at $15M."
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "status": "UFA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "fit": 74,
+     "grade": "A",
+     "ppos": "SG",
+     "slot": 1,
+     "why": "Adds a needed second body at SG \u2014 a bargain at $15M against his $18.7M market."
+    },
+    {
+     "name": "Nicolas Batum",
+     "pos": "PF/SF",
+     "from": "LAC",
+     "status": "Team Option",
+     "value_M": 4.1,
+     "offer_M": 2,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 4,
+     "why": "Rotation depth at PF \u2014 a bargain at $2M against his $4.1M market."
+    }
+   ],
    "resign": [
     {
      "name": "Ayo Dosunmu",
@@ -5179,6 +5917,47 @@
     "SG"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 19.1,
+     "offer_M": 15,
+     "fit": 85,
+     "grade": "A+",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Derik Queen at C \u2014 a bargain at $15M against his $19.1M market."
+    },
+    {
+     "name": "Jamal Shead",
+     "pos": "PG/SG",
+     "from": "TOR",
+     "status": "Team Option",
+     "value_M": 5.5,
+     "offer_M": 3,
+     "fit": 73,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 3,
+     "why": "Rotation depth at PG \u2014 a bargain at $3M against his $5.5M market."
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "status": "Player Option",
+     "value_M": 7.9,
+     "offer_M": 4,
+     "fit": 61,
+     "grade": "B+",
+     "ppos": "SG",
+     "slot": 4,
+     "why": "Rotation depth at SG \u2014 a bargain at $4M against his $7.9M market."
+    }
+   ],
    "resign": [
     {
      "name": "Karlo Matkovi\u0107",
@@ -5422,6 +6201,47 @@
     "PF"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "status": "UFA",
+     "value_M": 16.0,
+     "offer_M": 10,
+     "fit": 71,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF \u2014 a bargain at $10M against his $16.0M market."
+    },
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 20.7,
+     "offer_M": 15,
+     "fit": 66,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $15M against his $20.7M market."
+    }
+   ],
    "resign": [
     {
      "name": "Mitchell Robinson",
@@ -5715,6 +6535,47 @@
    "thin": [
     "PF"
    ],
+   "best_fits": [
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "from": "DET",
+     "status": "UFA",
+     "value_M": 14.4,
+     "offer_M": 2,
+     "fit": 81,
+     "grade": "A",
+     "ppos": "PF",
+     "slot": 1,
+     "why": "Adds a needed second body at PF \u2014 a bargain at $2M against his $14.4M market."
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "from": "ATL",
+     "status": "UFA",
+     "value_M": 15.2,
+     "offer_M": 2,
+     "fit": 75,
+     "grade": "A",
+     "ppos": "SG",
+     "slot": 1,
+     "why": "Adds a needed second body at SG \u2014 a bargain at $2M against his $15.2M market."
+    },
+    {
+     "name": "Russell Westbrook",
+     "pos": "PG/SG",
+     "from": "SAC",
+     "status": "UFA",
+     "value_M": 5.4,
+     "offer_M": 2,
+     "fit": 75,
+     "grade": "A",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $2M against his $5.4M market."
+    }
+   ],
    "resign": [
     {
      "name": "Isaiah Hartenstein",
@@ -5984,6 +6845,47 @@
    "thin": [
     "SG"
    ],
+   "best_fits": [
+    {
+     "name": "Nikola Vu\u010devi\u0107",
+     "pos": "C/PF",
+     "from": "BOS",
+     "status": "UFA",
+     "value_M": 10.4,
+     "offer_M": 6,
+     "fit": 75,
+     "grade": "A",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Wendell Carter Jr. at C \u2014 a bargain at $6M against his $10.4M market."
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "from": "SAC",
+     "status": "UFA",
+     "value_M": 9.8,
+     "offer_M": 6,
+     "fit": 71,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF \u2014 a bargain at $6M against his $9.8M market."
+    },
+    {
+     "name": "Keon Ellis",
+     "pos": "SG/PG",
+     "from": "CLE",
+     "status": "UFA",
+     "value_M": 6.8,
+     "offer_M": 4,
+     "fit": 66,
+     "grade": "A-",
+     "ppos": "SG",
+     "slot": 3,
+     "why": "Rotation depth at SG \u2014 a bargain at $4M against his $6.8M market."
+    }
+   ],
    "resign": [
     {
      "name": "Jett Howard",
@@ -6240,6 +7142,47 @@
    ],
    "thin": [
     "PG"
+   ],
+   "best_fits": [
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "from": "DET",
+     "status": "UFA",
+     "value_M": 14.4,
+     "offer_M": 13,
+     "fit": 77,
+     "grade": "A",
+     "ppos": "PF",
+     "slot": 1,
+     "why": "Adds a needed second body at PF \u2014 fair value at $13M."
+    },
+    {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 20.7,
+     "offer_M": 15,
+     "fit": 72,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $15M against his $20.7M market."
+    },
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
+    }
    ],
    "resign": [
     {
@@ -6532,6 +7475,47 @@
     "PF"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 87,
+     "grade": "A+",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Mark Williams at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "Andrew Wiggins",
+     "pos": "SF/PF",
+     "from": "MIA",
+     "status": "Player Option",
+     "value_M": 19.3,
+     "offer_M": 15,
+     "fit": 85,
+     "grade": "A+",
+     "ppos": "SF",
+     "slot": 0,
+     "why": "Upgrades on Dillon Brooks at SF \u2014 a bargain at $15M against his $19.3M market."
+    },
+    {
+     "name": "Trendon Watford",
+     "pos": "PF/SF",
+     "from": "PHI",
+     "status": "Team Option",
+     "value_M": 2.9,
+     "offer_M": 2,
+     "fit": 69,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF \u2014 a bargain at $2M against his $2.9M market."
+    }
+   ],
    "resign": [
     {
      "name": "Mark Williams",
@@ -6824,6 +7808,47 @@
     "SG",
     "SF"
    ],
+   "best_fits": [
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 20.7,
+     "offer_M": 15,
+     "fit": 66,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $15M against his $20.7M market."
+    },
+    {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "from": "LAC",
+     "status": "RFA",
+     "value_M": 19.7,
+     "offer_M": 12,
+     "fit": 64,
+     "grade": "B+",
+     "ppos": "SF",
+     "slot": 3,
+     "why": "Rotation depth at SF \u2014 a bargain at $12M against his $19.7M market."
+    }
+   ],
    "resign": [
     {
      "name": "Robert Williams III",
@@ -7067,6 +8092,47 @@
     "PF"
    ],
    "thin": [],
+   "best_fits": [
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "status": "UFA",
+     "value_M": 19.5,
+     "offer_M": 15,
+     "fit": 76,
+     "grade": "A",
+     "ppos": "PF",
+     "slot": 1,
+     "why": "Adds a needed second body at PF \u2014 a bargain at $15M against his $19.5M market."
+    },
+    {
+     "name": "Collin Gillespie",
+     "pos": "PG",
+     "from": "PHX",
+     "status": "UFA",
+     "value_M": 14.6,
+     "offer_M": 15,
+     "fit": 75,
+     "grade": "A",
+     "ppos": "PG",
+     "slot": 0,
+     "why": "Upgrades on Russell Westbrook at PG \u2014 fair value at $15M."
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 19.1,
+     "offer_M": 15,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $19.1M market."
+    }
+   ],
    "resign": [
     {
      "name": "Zach LaVine",
@@ -7348,6 +8414,47 @@
    "thin": [
     "SF"
    ],
+   "best_fits": [
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "Andrew Wiggins",
+     "pos": "SF/PF",
+     "from": "MIA",
+     "status": "Player Option",
+     "value_M": 19.3,
+     "offer_M": 15,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "SF",
+     "slot": 1,
+     "why": "Adds a needed second body at SF \u2014 a bargain at $15M against his $19.3M market."
+    },
+    {
+     "name": "Anthony Gill",
+     "pos": "PF/C",
+     "from": "WAS",
+     "status": "UFA",
+     "value_M": 3.1,
+     "offer_M": 2,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 4,
+     "why": "Rotation depth at PF \u2014 a bargain at $2M against his $3.1M market."
+    }
+   ],
    "resign": [
     {
      "name": "Harrison Barnes",
@@ -7602,6 +8709,47 @@
    "needs": [],
    "thin": [
     "SG"
+   ],
+   "best_fits": [
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 87,
+     "grade": "A+",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Jakob Poeltl at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "Zach LaVine",
+     "pos": "SG/SF",
+     "from": "SAC",
+     "status": "Player Option",
+     "value_M": 11.9,
+     "offer_M": 7,
+     "fit": 66,
+     "grade": "A-",
+     "ppos": "SG",
+     "slot": 3,
+     "why": "Rotation depth at SG \u2014 a bargain at $7M against his $11.9M market."
+    },
+    {
+     "name": "Collin Gillespie",
+     "pos": "PG",
+     "from": "PHX",
+     "status": "UFA",
+     "value_M": 14.6,
+     "offer_M": 13,
+     "fit": 65,
+     "grade": "B+",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $13M against his $14.6M market."
+    }
    ],
    "resign": [
     {
@@ -7860,6 +9008,47 @@
    "thin": [
     "SF"
    ],
+   "best_fits": [
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 41.2,
+     "offer_M": 27,
+     "fit": 96,
+     "grade": "A+",
+     "ppos": "SG",
+     "slot": 0,
+     "why": "Upgrades on Keyonte George at SG \u2014 a bargain at $27M against his $41.2M market."
+    },
+    {
+     "name": "LeBron James",
+     "pos": "PF/SF",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 39.8,
+     "offer_M": 27,
+     "fit": 69,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 0,
+     "why": "Upgrades on Jaren Jackson Jr. at PF \u2014 a bargain at $27M against his $39.8M market."
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 19.1,
+     "offer_M": 17,
+     "fit": 64,
+     "grade": "B+",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $17M against his $19.1M market."
+    }
+   ],
    "resign": [
     {
      "name": "Jusuf Nurki\u0107",
@@ -8117,6 +9306,47 @@
    "thin": [
     "PF",
     "C"
+   ],
+   "best_fits": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "status": "UFA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "fit": 82,
+     "grade": "A+",
+     "ppos": "SG",
+     "slot": 0,
+     "why": "Upgrades on Kyshawn George at SG \u2014 a bargain at $15M against his $18.7M market."
+    },
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "status": "Team Option",
+     "value_M": 23.3,
+     "offer_M": 15,
+     "fit": 74,
+     "grade": "A",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
+    },
+    {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "from": "LAC",
+     "status": "RFA",
+     "value_M": 19.7,
+     "offer_M": 15,
+     "fit": 67,
+     "grade": "A-",
+     "ppos": "SF",
+     "slot": 1,
+     "why": "Adds a needed second body at SF \u2014 a bargain at $15M against his $19.7M market."
+    }
    ],
    "resign": [
     {
