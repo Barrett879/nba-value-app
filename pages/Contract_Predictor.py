@@ -2333,7 +2333,12 @@ else:
             else comps.assign(context=comps.apply(_classify_context, axis=1))
         )
 
-        _pos_col = comps_with_ctx.get("pos_detailed", comps_with_ctx["pos"]).fillna(
+        # Display the CURATED primary position the engine actually matched on
+        # (pos_primary), NOT the BBRef detailed one. Otherwise a correct
+        # same-position comp — e.g. Dejounte Murray, curated PG — shows as "SG"
+        # and reads like an off-position match the position gate is supposed to
+        # prevent. Keep them consistent: the column shows what we matched on.
+        _pos_col = comps_with_ctx.get("pos_primary", comps_with_ctx["pos"]).fillna(
             comps_with_ctx["pos"])
         # Final normalize: any remaining "Guard"/"Forward"/"Center" → G/F/C.
         # Belt-and-suspenders — the resolvers in load_historical_signings
