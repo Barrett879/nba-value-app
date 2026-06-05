@@ -2302,18 +2302,21 @@ st.markdown(_header_html, unsafe_allow_html=True)
 _po_info = (globals().get("_fa_next") or {}).get(normalize(selected))
 if _po_info and _po_info.get("type") == "player_option":
     _opt_M = float(_po_info.get("salary") or 0) / 1_000_000
+    # Use the raw model market value (not the blended hero number) for the opt-in
+    # gap — it reflects the open market and matches the Front Office board's filter.
+    _po_market_M = prediction["predicted"] / 1_000_000
     if _opt_M > 0:
-        _p_in = option_opt_in_prob(_opt_M, predicted_M, features.get("age"))
-        _gap = _opt_M - predicted_M
+        _p_in = option_opt_in_prob(_opt_M, _po_market_M, features.get("age"))
+        _gap = _opt_M - _po_market_M
         if _p_in >= 0.5:
             _ov, _oc = (
                 f"<b>Likely to opt in</b> ({_p_in*100:.0f}%), his <b>${_opt_M:.0f}M</b> player "
-                f"option beats this ${predicted_M:.0f}M market projection by ${_gap:.0f}M, so he keeps "
+                f"option beats his ${_po_market_M:.0f}M market value by ${_gap:.0f}M, so he keeps "
                 f"the guaranteed money rather than signing a new deal.",
                 "var(--amber)")
         else:
             _ov, _oc = (
-                f"<b>Likely to opt out</b> ({(1 - _p_in)*100:.0f}%), the market (${predicted_M:.0f}M) "
+                f"<b>Likely to opt out</b> ({(1 - _p_in)*100:.0f}%), the market (${_po_market_M:.0f}M) "
                 f"projects ${-_gap:.0f}M above his <b>${_opt_M:.0f}M</b> player option, so he'd decline "
                 f"it to sign for more.",
                 "var(--accent-teal)")
