@@ -1587,7 +1587,7 @@ COMMON_CSS = """
     }
 
     /* Colour-accented stat cards (utils.stat_cards), themed summary metrics. */
-    .hv-stats { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.3rem 0 0; padding-bottom:1.7rem; }
+    .hv-stats { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.3rem 0 0; padding:1rem 0 1.7rem; }
     .hv-stat {
         flex:1 1 0; min-width:120px; background:var(--panel-solid);
         border:1px solid var(--panel-line); border-top:3px solid var(--c);

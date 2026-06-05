@@ -42,7 +42,7 @@ _GRADE_COLOR = {"A+": "var(--value-good)", "A": "var(--accent-teal)",
 
 _FIT_CSS = """
 <style>
-.hv-fits { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.2rem 0 1rem; }
+.hv-fits { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.2rem 0 1rem; padding-top:1rem; }
 .hv-fit { flex:1 1 0; min-width:210px; background:var(--panel-solid);
     border:1px solid var(--panel-line); border-top:3px solid var(--c);
     border-radius:10px; padding:0.95rem 1rem 0.9rem; position:relative; box-shadow:var(--shadow-card); }
