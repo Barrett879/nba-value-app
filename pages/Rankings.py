@@ -96,9 +96,12 @@ salary_lookup = tuple(
 )
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
+import team_suitors as _ts
+_pos2k = _ts.load_player_positions()
+# Curated 2K position (primary + secondary, e.g. "PG/SG") — the same source the
+# Contract Predictor matches comps on — with BBRef coarse as the fallback.
 df["position"] = df["Player"].map(
-    lambda n: _bref_positions.get(normalize(n), "")
-)
+    lambda n: _ts.resolve_position(n, _bref_positions.get(normalize(n), ""), _pos2k))
 
 _next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v=7)
 _rookie_scale   = fetch_rookie_scale_players(season)
@@ -540,7 +543,7 @@ with col_c:
     team_options = ["All"] + sorted(df["Team"].unique().tolist())
     team_filter = st.selectbox("Team", team_options)
 with col_d:
-    pos_options = ["All", "Guard", "Forward", "Center"]
+    pos_options = ["All", "PG", "SG", "SF", "PF", "C"]
     pos_filter = st.selectbox("Position", pos_options)
 
 display = df.copy()
@@ -549,7 +552,7 @@ if search:
 if team_filter != "All":
     display = display[display["Team"] == team_filter]
 if pos_filter != "All":
-    display = display[display["position"] == pos_filter]
+    display = display[display["position"].str.contains(pos_filter, regex=False, na=False)]
 
 sort_map = {
     "Barrett Score (best first)": ("score_rank", True),
@@ -741,7 +744,7 @@ if show_splits and splits_df is not None:
             ((sdisplay["Player"].isin(team_players)) & (sdisplay["Team"] == "TOT"))
         ]
     if pos_filter != "All":
-        pos_players = set(df[df["position"] == pos_filter]["Player"])
+        pos_players = set(df[df["position"].str.contains(pos_filter, regex=False, na=False)]["Player"])
         sdisplay = sdisplay[sdisplay["Player"].isin(pos_players)]
 
     # Use base_score_pace as the displayed "Base Score" so Base × Avail

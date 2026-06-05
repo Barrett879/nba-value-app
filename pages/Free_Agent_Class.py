@@ -55,9 +55,11 @@ df = build_ranked_projected(season)
 df = df[df["total_min"] >= min_threshold].copy()
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
+import team_suitors as _ts
+_pos2k = _ts.load_player_positions()
+# Curated 2K position (primary + secondary, e.g. "PG/SG"), BBRef coarse fallback.
 df["position"] = df["Player"].map(
-    lambda n: _bref_positions.get(normalize(n), "")
-)
+    lambda n: _ts.resolve_position(n, _bref_positions.get(normalize(n), ""), _pos2k))
 
 _next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v=7)
 _rookie_scale   = fetch_rookie_scale_players(season)
@@ -141,7 +143,7 @@ with fa_col_b:
     )
 with fa_col_c:
     fa_pos_filter = st.selectbox(
-        "Position", ["All", "Guard", "Forward", "Center"], key="fa_pos"
+        "Position", ["All", "PG", "SG", "SF", "PF", "C"], key="fa_pos"
     )
 with fa_col_d:
     fa_team_opts = ["All"] + sorted(fa_df["Team"].unique().tolist())
@@ -153,7 +155,7 @@ if fa_search:
 if fa_status_filter != "All":
     fa_display = fa_display[fa_display["Status"] == fa_status_filter]
 if fa_pos_filter != "All":
-    fa_display = fa_display[fa_display["position"] == fa_pos_filter]
+    fa_display = fa_display[fa_display["position"].str.contains(fa_pos_filter, regex=False, na=False)]
 if fa_team_filter != "All":
     fa_display = fa_display[fa_display["Team"] == fa_team_filter]
 

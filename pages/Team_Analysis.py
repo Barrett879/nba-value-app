@@ -65,9 +65,11 @@ if df.empty:
 df = df[df["total_min"] >= min_threshold].copy()
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
+import team_suitors as _ts
+_pos2k = _ts.load_player_positions()
+# Curated 2K position (primary + secondary, e.g. "PG/SG"), BBRef coarse fallback.
 df["position"] = df["Player"].map(
-    lambda n: _bref_positions.get(normalize(n), "")
-)
+    lambda n: _ts.resolve_position(n, _bref_positions.get(normalize(n), ""), _pos2k))
 
 # Warn when salary coverage is too sparse to make team-level totals meaningful
 # (pre-1996 BBRef team pages miss most players, leaving many at $0).
