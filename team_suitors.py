@@ -315,12 +315,17 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
 #   halves (title-vet 1.00/1.00, rebuild-young 1.00/1.00, prime ~flat) — it generalizes.
 #   The star row flips entirely between halves (title 0.85->0.39, rebuild 0.38->1.00),
 #   confirming it's noise, so it's flattened to a faint good-team prior here.
+# aging_star (value-of-a-star but age 32+) is a hand split of the star row by age:
+# the raw star data was already too thin to trust (71 signings, smoothed to a faint
+# good-team prior), and it conflated a prime 28-y/o difference-maker with a 38-y/o on
+# his last deal. A rebuild would love the former and pass on the latter, so the split
+# keeps contenders hot on a ring-chasing aging star while cooling rebuilds/retools hard.
 _DESIRE = {
-    #            star   young  prime   vet
-    "title":   {"star": 0.95, "young": 0.57, "prime": 0.87, "vet": 1.00},
-    "playoff": {"star": 0.95, "young": 0.74, "prime": 1.00, "vet": 0.51},
-    "bye":     {"star": 0.88, "young": 0.95, "prime": 0.89, "vet": 0.53},
-    "rebuild": {"star": 0.85, "young": 1.00, "prime": 0.85, "vet": 0.59},
+    #            star   young  prime   vet    aging_star
+    "title":   {"star": 0.95, "young": 0.57, "prime": 0.87, "vet": 1.00, "aging_star": 0.92},
+    "playoff": {"star": 0.95, "young": 0.74, "prime": 1.00, "vet": 0.51, "aging_star": 0.62},
+    "bye":     {"star": 0.88, "young": 0.95, "prime": 0.89, "vet": 0.53, "aging_star": 0.40},
+    "rebuild": {"star": 0.85, "young": 1.00, "prime": 0.85, "vet": 0.59, "aging_star": 0.20},
 }
 _DESIRE_DEFAULT = "playoff"   # an unclassified team -> neutral win-now-ish
 
@@ -341,9 +346,9 @@ def desire_weight(timeline: str, age, value_M: float) -> float:
     on the ranking. Title teams chase win-now production; rebuilders chase youth and
     pass on aging vets; bye-year teams are selective; playoff teams are pragmatic."""
     a = float(age) if age is not None else 27.0
-    if   value_M >= 22.0: arche = "star"    # a difference-maker — most teams want him
+    if   value_M >= 22.0: arche = "star" if a <= 31 else "aging_star"  # prime vs aging difference-maker
     elif a < 25:          arche = "young"   # youth / upside
-    elif a > 31:          arche = "vet"      # aging
+    elif a > 31:          arche = "vet"      # aging role player
     else:                 arche = "prime"    # prime role player
     return _DESIRE[_timeline_key(timeline)][arche]
 

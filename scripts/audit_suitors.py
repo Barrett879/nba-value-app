@@ -40,6 +40,11 @@ status = {n: tags[(v or {}).get("type")] for n, v in nc.items() if (v or {}).get
 qualified = full[full["total_min"] >= DEFAULT_MIN].sort_values("score_rank")
 flags = {k: [] for k in ["OFFER_OVER_VALUE", "DUP_TEAM", "EMPTY_MARKET",
                          "INCUMBENT_MISSING", "BAD_DISPLACE"]}
+# Aging-star spot-check: their suitors should skew title/playoff, not rebuild.
+WATCH = {"LeBron James", "Kevin Durant", "James Harden", "Chris Paul",
+         "Stephen Curry", "Jimmy Butler"}
+tl_of = dict(zip(LAND["team"].astype(str), LAND["timeline"].astype(str)))
+watch_out = {}
 n_done = n_with = 0
 for rank, (_, row) in enumerate(qualified.iterrows(), 1):
     name = str(row["Player"])
@@ -63,6 +68,9 @@ for rank, (_, row) in enumerate(qualified.iterrows(), 1):
     teams = [x["team"] for x in s]
     if s:
         n_with += 1
+    if name in WATCH:
+        watch_out[name] = (int(f.get("age") or 0),
+                           [(x["team"], tl_of.get(x["team"], "?"), round(x["offer_M"])) for x in s])
     for x in s:
         if x["offer_M"] > pm + 1.0:
             flags["OFFER_OVER_VALUE"].append(f"{name}: {x['team']} ${x['offer_M']:.0f}M > value ${pm:.0f}M")
@@ -81,3 +89,8 @@ for k, v in flags.items():
     print(f"=== {k}: {len(v)} ===")
     for line in v[:25]:
         print("  ", line)
+
+print("\n=== aging-star suitor spot-check (age 32+ should skew title/playoff) ===")
+for k in sorted(watch_out):
+    age, brd = watch_out[k]
+    print(f"  {k} (age {age}): " + ", ".join(f"{t}[{tl}] ${o}M" for t, tl, o in brd))
