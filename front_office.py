@@ -80,6 +80,15 @@ def render_front_office():
     DATA = json.loads(_BOARD.read_text())
     TEAMS = DATA["teams"]
 
+    # Even out the vertical rhythm: Streamlit's per-element caption/divider margins
+    # stack on top of the block gap and make the spacing lumpy. Normalise them.
+    st.markdown(
+        "<style>"
+        "section[data-testid='stMain'] [data-testid='stCaptionContainer']"
+        "{margin-top:0.3rem !important;margin-bottom:0.2rem !important}"
+        "section[data-testid='stMain'] hr{margin:0.6rem 0 0.9rem !important}"
+        "</style>", unsafe_allow_html=True)
+
     st.caption(
         "The contract predictor from the team's side of the table. Pick a club and see the free "
         "agents it should chase this offseason, who to re-sign, who to pursue, the contract it "

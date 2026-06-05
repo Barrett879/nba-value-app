@@ -148,6 +148,9 @@ if _get_ctx() is not None:
         "div[data-testid='stSegmentedControl']>div>*{flex:1 1 0 !important}"
         "div[data-testid='stSegmentedControl'] label{flex:1 1 0 !important}"
         "div[data-testid='stSegmentedControl'] button{width:100% !important;justify-content:center}"
+        # Inactive option: theme it (Streamlit hardcodes a light bg -> glaring white in dark mode).
+        "button[data-testid='stBaseButton-segmented_control']{background:var(--panel) !important;"
+        "color:var(--fg-2) !important;border-color:var(--panel-line) !important}"
         "</style>", unsafe_allow_html=True)
     _picked = st.segmented_control("View", _seg_labels, key="cp_view_seg",
                                    label_visibility="collapsed", width="stretch")
