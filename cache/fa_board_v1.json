@@ -131,6 +131,62 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 153,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 199,
+    "keeps": [
+     {
+      "name": "CJ McCollum",
+      "pos": "SG/PG",
+      "cost_M": 15,
+      "running_M": 168,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Jock Landale",
+      "pos": "C",
+      "cost_M": 6,
+      "running_M": 174,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Jonathan Kuminga",
+      "pos": "SF/PF",
+      "cost_M": 12,
+      "running_M": 186,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Mouhamed Gueye",
+      "pos": "PF/C",
+      "cost_M": 7,
+      "running_M": 193,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Keaton Wallace",
+      "pos": "PG/SG",
+      "cost_M": 3,
+      "running_M": 196,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Gabe Vincent",
+      "pos": "PG/SG",
+      "cost_M": 3,
+      "running_M": 199,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Deandre Ayton",
@@ -441,6 +497,38 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 121,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 145,
+    "keeps": [
+     {
+      "name": "Day'Ron Sharpe",
+      "pos": "C",
+      "cost_M": 13,
+      "running_M": 134,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Ziaire Williams",
+      "pos": "SF/PF",
+      "cost_M": 6,
+      "running_M": 140,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Josh Minott",
+      "pos": "PF/SF",
+      "cost_M": 5,
+      "running_M": 145,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Jalen Duren",
@@ -751,6 +839,38 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 178,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 212,
+    "keeps": [
+     {
+      "name": "Neemias Queta",
+      "pos": "C",
+      "cost_M": 19,
+      "running_M": 197,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Nikola Vu\u010devi\u0107",
+      "pos": "C/PF",
+      "cost_M": 10,
+      "running_M": 207,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Jordan Walsh",
+      "pos": "SF/PF",
+      "cost_M": 5,
+      "running_M": 212,
+      "zone": "tax",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Norman Powell",
@@ -1035,6 +1155,22 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 148,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 164,
+    "keeps": [
+     {
+      "name": "Coby White",
+      "pos": "PG/SG",
+      "cost_M": 16,
+      "running_M": 164,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Mark Williams",
@@ -1383,6 +1519,62 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 93,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 149,
+    "keeps": [
+     {
+      "name": "Collin Sexton",
+      "pos": "PG/SG",
+      "cost_M": 14,
+      "running_M": 107,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Anfernee Simons",
+      "pos": "PG/SG",
+      "cost_M": 15,
+      "running_M": 122,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Jaden Ivey",
+      "pos": "PG/SG",
+      "cost_M": 14,
+      "running_M": 136,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Leonard Miller",
+      "pos": "SF/PF",
+      "cost_M": 3,
+      "running_M": 139,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Nick Richards",
+      "pos": "C",
+      "cost_M": 6,
+      "running_M": 145,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Guerschon Yabusele",
+      "pos": "PF/C",
+      "cost_M": 4,
+      "running_M": 149,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Jalen Duren",
@@ -1706,6 +1898,46 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 222,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 246,
+    "keeps": [
+     {
+      "name": "Keon Ellis",
+      "pos": "SG/PG",
+      "cost_M": 7,
+      "running_M": 229,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Dean Wade",
+      "pos": "SF/PF",
+      "cost_M": 7,
+      "running_M": 236,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Craig Porter Jr.",
+      "pos": "PG",
+      "cost_M": 6,
+      "running_M": 242,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Thomas Bryant",
+      "pos": "C",
+      "cost_M": 4,
+      "running_M": 246,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Andre Drummond",
@@ -2041,6 +2273,54 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 107,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 133,
+    "keeps": [
+     {
+      "name": "Brandon Williams",
+      "pos": "PG/SG",
+      "cost_M": 8,
+      "running_M": 115,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Marvin Bagley III",
+      "pos": "PF/C",
+      "cost_M": 4,
+      "running_M": 119,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Khris Middleton",
+      "pos": "SF/PF",
+      "cost_M": 8,
+      "running_M": 127,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Ryan Nembhard",
+      "pos": "PG",
+      "cost_M": 2,
+      "running_M": 129,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Dwight Powell",
+      "pos": "C",
+      "cost_M": 4,
+      "running_M": 133,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Jalen Duren",
@@ -2387,6 +2667,62 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 216,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 252,
+    "keeps": [
+     {
+      "name": "Peyton Watson",
+      "pos": "SF/PF",
+      "cost_M": 15,
+      "running_M": 230,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Tim Hardaway Jr.",
+      "pos": "SG/SF",
+      "cost_M": 7,
+      "running_M": 238,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Bruce Brown",
+      "pos": "PG/SG",
+      "cost_M": 4,
+      "running_M": 242,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Spencer Jones",
+      "pos": "SF/PF",
+      "cost_M": 4,
+      "running_M": 246,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Jalen Pickett",
+      "pos": "SG",
+      "cost_M": 3,
+      "running_M": 248,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Tyus Jones",
+      "pos": "PG",
+      "cost_M": 4,
+      "running_M": 252,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Brook Lopez",
@@ -2731,6 +3067,62 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 130,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 224,
+    "keeps": [
+     {
+      "name": "Jalen Duren",
+      "pos": "C",
+      "cost_M": 50,
+      "running_M": 180,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Tobias Harris",
+      "pos": "PF/SF",
+      "cost_M": 14,
+      "running_M": 194,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Paul Reed",
+      "pos": "C",
+      "cost_M": 6,
+      "running_M": 200,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Javonte Green",
+      "pos": "SG/SF",
+      "cost_M": 6,
+      "running_M": 206,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Daniss Jenkins",
+      "pos": "PG/SG",
+      "cost_M": 8,
+      "running_M": 214,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Kevin Huerter",
+      "pos": "SG/SF",
+      "cost_M": 10,
+      "running_M": 224,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Austin Reaves",
@@ -3078,6 +3470,62 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 176,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 214,
+    "keeps": [
+     {
+      "name": "Kristaps Porzi\u0146\u0123is",
+      "pos": "PF/C",
+      "cost_M": 16,
+      "running_M": 192,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "De'Anthony Melton",
+      "pos": "PG/SG",
+      "cost_M": 8,
+      "running_M": 200,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Gary Payton II",
+      "pos": "SG/SF",
+      "cost_M": 5,
+      "running_M": 205,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Will Richard",
+      "pos": "SG/PG",
+      "cost_M": 3,
+      "running_M": 208,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Quinten Post",
+      "pos": "PF/C",
+      "cost_M": 4,
+      "running_M": 212,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Pat Spencer",
+      "pos": "PG/SG",
+      "cost_M": 2,
+      "running_M": 214,
+      "zone": "tax",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Kevin Porter Jr.",
@@ -3377,6 +3825,30 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 160,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 174,
+    "keeps": [
+     {
+      "name": "Tari Eason",
+      "pos": "SF/SG",
+      "cost_M": 10,
+      "running_M": 170,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Josh Okogie",
+      "pos": "SG/SF",
+      "cost_M": 4,
+      "running_M": 174,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Norman Powell",
@@ -3674,6 +4146,30 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 152,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 158,
+    "keeps": [
+     {
+      "name": "Micah Potter",
+      "pos": "PF/C",
+      "cost_M": 3,
+      "running_M": 155,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Kobe Brown",
+      "pos": "SF/PF",
+      "cost_M": 3,
+      "running_M": 158,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Norman Powell",
@@ -4007,6 +4503,54 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 160,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 217,
+    "keeps": [
+     {
+      "name": "Bennedict Mathurin",
+      "pos": "SF/PF",
+      "cost_M": 20,
+      "running_M": 180,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "John Collins",
+      "pos": "PF/C",
+      "cost_M": 20,
+      "running_M": 200,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Brook Lopez",
+      "pos": "C",
+      "cost_M": 9,
+      "running_M": 209,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Jordan Miller",
+      "pos": "SG/SF",
+      "cost_M": 4,
+      "running_M": 213,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Nicolas Batum",
+      "pos": "PF/SF",
+      "cost_M": 4,
+      "running_M": 217,
+      "zone": "tax",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Mark Williams",
@@ -4366,6 +4910,70 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 93,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 229,
+    "keeps": [
+     {
+      "name": "LeBron James",
+      "pos": "PF/SF",
+      "cost_M": 40,
+      "running_M": 133,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Austin Reaves",
+      "pos": "SG/PG",
+      "cost_M": 41,
+      "running_M": 174,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Deandre Ayton",
+      "pos": "C",
+      "cost_M": 18,
+      "running_M": 192,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Marcus Smart",
+      "pos": "SG/PG",
+      "cost_M": 8,
+      "running_M": 200,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Jaxson Hayes",
+      "pos": "C",
+      "cost_M": 6,
+      "running_M": 206,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Rui Hachimura",
+      "pos": "SF/PF",
+      "cost_M": 16,
+      "running_M": 222,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Luke Kennard",
+      "pos": "SG/PG",
+      "cost_M": 7,
+      "running_M": 229,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Jalen Duren",
@@ -4653,6 +5261,22 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 142,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 145,
+    "keeps": [
+     {
+      "name": "Olivier-Maxence Prosper",
+      "pos": "PF/C",
+      "cost_M": 3,
+      "running_M": 145,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Bennedict Mathurin",
@@ -4961,6 +5585,38 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 163,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 201,
+    "keeps": [
+     {
+      "name": "Norman Powell",
+      "pos": "SG/SF",
+      "cost_M": 19,
+      "running_M": 182,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Pelle Larsson",
+      "pos": "SG/SF",
+      "cost_M": 13,
+      "running_M": 195,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Simone Fontecchio",
+      "pos": "SF/PF",
+      "cost_M": 6,
+      "running_M": 201,
+      "zone": "tax",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Mark Williams",
@@ -5306,6 +5962,62 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 138,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 178,
+    "keeps": [
+     {
+      "name": "Kevin Porter Jr.",
+      "pos": "PG/SG",
+      "cost_M": 21,
+      "running_M": 159,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Jericho Sims",
+      "pos": "C",
+      "cost_M": 3,
+      "running_M": 162,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Taurean Prince",
+      "pos": "SF/SG",
+      "cost_M": 4,
+      "running_M": 166,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Cam Thomas",
+      "pos": "SG",
+      "cost_M": 3,
+      "running_M": 169,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Ousmane Dieng",
+      "pos": "PF/C",
+      "cost_M": 6,
+      "running_M": 175,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Cole Anthony",
+      "pos": "PG/SG",
+      "cost_M": 3,
+      "running_M": 178,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Austin Reaves",
@@ -5639,6 +6351,54 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 175,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 224,
+    "keeps": [
+     {
+      "name": "Donte DiVincenzo",
+      "pos": "PG/SG",
+      "cost_M": 17,
+      "running_M": 192,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Ayo Dosunmu",
+      "pos": "PG/SG",
+      "cost_M": 18,
+      "running_M": 210,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Bones Hyland",
+      "pos": "PG/SG",
+      "cost_M": 6,
+      "running_M": 216,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Kyle Anderson",
+      "pos": "SF/PF",
+      "cost_M": 4,
+      "running_M": 220,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Mike Conley",
+      "pos": "PG",
+      "cost_M": 4,
+      "running_M": 224,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Norman Powell",
@@ -5924,6 +6684,22 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 196,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 200,
+    "keeps": [
+     {
+      "name": "Karlo Matkovi\u0107",
+      "pos": "PF/C",
+      "cost_M": 4,
+      "running_M": 200,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Mark Williams",
@@ -6244,6 +7020,46 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 206,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 234,
+    "keeps": [
+     {
+      "name": "Mitchell Robinson",
+      "pos": "C",
+      "cost_M": 15,
+      "running_M": 220,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Landry Shamet",
+      "pos": "SG/SF",
+      "cost_M": 5,
+      "running_M": 226,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Jordan Clarkson",
+      "pos": "PG/SG",
+      "cost_M": 4,
+      "running_M": 230,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Mohamed Diawara",
+      "pos": "PF/SF",
+      "cost_M": 4,
+      "running_M": 234,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Norman Powell",
@@ -6554,6 +7370,38 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 246,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 285,
+    "keeps": [
+     {
+      "name": "Isaiah Hartenstein",
+      "pos": "C",
+      "cost_M": 23,
+      "running_M": 269,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Luguentz Dort",
+      "pos": "SF/PF",
+      "cost_M": 12,
+      "running_M": 281,
+      "zone": "over",
+      "keep": false
+     },
+     {
+      "name": "Kenrich Williams",
+      "pos": "PF/C",
+      "cost_M": 4,
+      "running_M": 285,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Andre Drummond",
@@ -6828,6 +7676,30 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 215,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 223,
+    "keeps": [
+     {
+      "name": "Jevon Carter",
+      "pos": "PG/SG",
+      "cost_M": 4,
+      "running_M": 219,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Jett Howard",
+      "pos": "SF/PF",
+      "cost_M": 4,
+      "running_M": 223,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Jusuf Nurki\u0107",
@@ -7162,6 +8034,54 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 180,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 222,
+    "keeps": [
+     {
+      "name": "Quentin Grimes",
+      "pos": "SG/SF",
+      "cost_M": 16,
+      "running_M": 196,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Kelly Oubre Jr.",
+      "pos": "SF/PF",
+      "cost_M": 12,
+      "running_M": 208,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Dominick Barlow",
+      "pos": "PF/C",
+      "cost_M": 7,
+      "running_M": 215,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Andre Drummond",
+      "pos": "C",
+      "cost_M": 4,
+      "running_M": 219,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Trendon Watford",
+      "pos": "PF/SF",
+      "cost_M": 3,
+      "running_M": 222,
+      "zone": "over",
+      "keep": false
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Norman Powell",
@@ -7494,6 +8414,54 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 160,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 211,
+    "keeps": [
+     {
+      "name": "Collin Gillespie",
+      "pos": "PG",
+      "cost_M": 15,
+      "running_M": 175,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Mark Williams",
+      "pos": "C",
+      "cost_M": 19,
+      "running_M": 194,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Oso Ighodaro",
+      "pos": "C",
+      "cost_M": 6,
+      "running_M": 200,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Jordan Goodwin",
+      "pos": "SG/SF",
+      "cost_M": 9,
+      "running_M": 209,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Jamaree Bouyea",
+      "pos": "PG/SG",
+      "cost_M": 2,
+      "running_M": 211,
+      "zone": "tax",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Deandre Ayton",
@@ -7779,6 +8747,22 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 156,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 170,
+    "keeps": [
+     {
+      "name": "Robert Williams III",
+      "pos": "C",
+      "cost_M": 13,
+      "running_M": 170,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Mark Williams",
@@ -8087,6 +9071,38 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 203,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 221,
+    "keeps": [
+     {
+      "name": "Russell Westbrook",
+      "pos": "PG/SG",
+      "cost_M": 5,
+      "running_M": 208,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Precious Achiuwa",
+      "pos": "PF/C",
+      "cost_M": 10,
+      "running_M": 218,
+      "zone": "tax",
+      "keep": true
+     },
+     {
+      "name": "Drew Eubanks",
+      "pos": "C",
+      "cost_M": 3,
+      "running_M": 221,
+      "zone": "tax",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Bennedict Mathurin",
@@ -8385,6 +9401,30 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 153,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 178,
+    "keeps": [
+     {
+      "name": "Julian Champagnie",
+      "pos": "SF/PF",
+      "cost_M": 9,
+      "running_M": 162,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Harrison Barnes",
+      "pos": "PF/SF",
+      "cost_M": 16,
+      "running_M": 178,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Isaiah Hartenstein",
@@ -8681,6 +9721,30 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 190,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 205,
+    "keeps": [
+     {
+      "name": "Sandro Mamukelashvili",
+      "pos": "C/PF",
+      "cost_M": 9,
+      "running_M": 199,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Jamal Shead",
+      "pos": "PG/SG",
+      "cost_M": 6,
+      "running_M": 205,
+      "zone": "tax",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Deandre Ayton",
@@ -8979,6 +10043,30 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 138,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 150,
+    "keeps": [
+     {
+      "name": "Jusuf Nurki\u0107",
+      "pos": "C",
+      "cost_M": 8,
+      "running_M": 146,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Kevin Love",
+      "pos": "C/PF",
+      "cost_M": 4,
+      "running_M": 150,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Austin Reaves",
@@ -9278,6 +10366,30 @@
      "why": "Re-sign \u00b7 Bird rights"
     }
    ],
+   "resign_plan": {
+    "committed_M": 175,
+    "tax_M": 200,
+    "apron2_M": 222,
+    "all_in_M": 180,
+    "keeps": [
+     {
+      "name": "Jamir Watkins",
+      "pos": "SG/SF",
+      "cost_M": 2,
+      "running_M": 177,
+      "zone": "ok",
+      "keep": true
+     },
+     {
+      "name": "Anthony Gill",
+      "pos": "PF/C",
+      "cost_M": 3,
+      "running_M": 180,
+      "zone": "ok",
+      "keep": true
+     }
+    ]
+   },
    "pursue": [
     {
      "name": "Bennedict Mathurin",

@@ -1852,7 +1852,7 @@ def _fmt_salary(player_name: str, salary_dollars: float) -> str:
 def fmt_next_contract(player_name: str, next_contracts: dict) -> str:
     info = next_contracts.get(normalize(player_name))
     if info is None:
-        return ", "
+        return "—"
     if info["type"] == "rfa":
         return "RFA"
     sal_m = info["salary"] / 1_000_000
@@ -1914,7 +1914,7 @@ def color_value_diff(val):
 
 def color_next_contract(val):
     s = str(val)
-    if s == ", ":
+    if s == "—":
         return "color: #555555"
     if " TO" in s:
         return "color: #f39c12; font-weight: bold"
@@ -2713,7 +2713,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["James Harden", "Cole Aldrich", "Daequan Cook", "Lazar Hayward"],
         "side_b_team": "Oklahoma City Thunder",
         "side_b":      ["Kevin Martin", "Jeremy Lamb"],
-        "side_a_picks": ", ",
+        "side_a_picks": "—",
         "side_b_picks": "Two firsts + a second from Houston (landed Steven Adams, Mitch McGary, Alex Abrines)",
         "winner":      "side_a",
         "verdict":     "Houston, by a mile. Harden became MVP and the franchise centerpiece for nearly a decade. Adams was nice; not nearly enough.",
@@ -2731,7 +2731,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["Kawhi Leonard", "Danny Green"],
         "side_b_team": "San Antonio Spurs",
         "side_b":      ["DeMar DeRozan", "Jakob Poeltl"],
-        "side_a_picks": ", ",
+        "side_a_picks": "—",
         "side_b_picks": "Protected 2019 Raptors first (landed at #29, Keldon Johnson)",
         "winner":      "side_a",
         "verdict":     "Toronto. Won the 2019 title, the only championship in franchise history, even though Kawhi left in free agency that summer. Worth it any day.",
@@ -2749,7 +2749,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["Anthony Davis"],
         "side_b_team": "New Orleans Pelicans",
         "side_b":      ["Lonzo Ball", "Brandon Ingram", "Josh Hart"],
-        "side_a_picks": ", ",
+        "side_a_picks": "—",
         "side_b_picks": "Three firsts (became Trey Murphy III, Dyson Daniels) + pick swaps",
         "winner":      "side_a",
         "verdict":     "Lakers. Won the 2020 title in year one with AD as Finals co-MVP-caliber force. Picks may bear long-term fruit for NOP, but a ring beats potential.",
@@ -2767,7 +2767,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["Kyrie Irving"],
         "side_b_team": "Cleveland Cavaliers",
         "side_b":      ["Isaiah Thomas", "Jae Crowder", "Ante Zizic"],
-        "side_a_picks": ", ",
+        "side_a_picks": "—",
         "side_b_picks": "Unprotected 2018 Nets pick (became Collin Sexton, #8)",
         "winner":      "wash",
         "verdict":     "Wash. Boston got two seasons of Kyrie (no Finals, weird locker room). Cleveland got Sexton from the Nets pick but made the Finals once more before LeBron left and the wheels came off.",
@@ -2785,7 +2785,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["Paul Pierce", "Kevin Garnett", "Jason Terry"],
         "side_b_team": "Boston Celtics",
         "side_b":      ["Gerald Wallace", "Kris Humphries", "Marshon Brooks", "Keith Bogans"],
-        "side_a_picks": ", ",
+        "side_a_picks": "—",
         "side_b_picks": "Three unprotected firsts + pick swap (became Jaylen Brown, Jayson Tatum via swap, others)",
         "winner":      "side_b",
         "verdict":     "Celtics. Possibly the worst trade of the modern era for the receiving star team. Nets cratered for half a decade and handed Boston their next dynasty's foundation (Brown + Tatum).",
@@ -2803,7 +2803,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["Jimmy Butler", "Justin Patton"],
         "side_b_team": "Minnesota Timberwolves",
         "side_b":      ["Robert Covington", "Dario Šarić", "Jerryd Bayless"],
-        "side_a_picks": ", ",
+        "side_a_picks": "—",
         "side_b_picks": "Protected 2022 Sixers first",
         "winner":      "wash",
         "verdict":     "Wash, leaning Philly. Sixers got a heroic Kawhi-game-7 playoff run from Butler before he bolted to Miami. Wolves got rotation pieces who left within a year.",
@@ -2821,8 +2821,8 @@ HISTORICAL_TRADES = [
         "side_a":      ["Allen Iverson"],
         "side_b_team": "Denver Nuggets",
         "side_b":      ["Chauncey Billups", "Antonio McDyess", "Cheikh Samb"],
-        "side_a_picks": ", ",
-        "side_b_picks": ", ",
+        "side_a_picks": "—",
+        "side_b_picks": "—",
         "winner":      "side_b",
         "verdict":     "Denver, decisively. Billups led Nuggets to their first Western Finals in 24 years. Detroit's veteran core fell apart immediately; AI played 54 games and was waived.",
         "key_points": [

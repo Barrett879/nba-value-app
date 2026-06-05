@@ -44,8 +44,12 @@ full["pos"] = full["Player"].map(lambda n: ts.resolve_position(n, "", pos2k))
 nc = ns["fetch_next_year_contracts"](ns["season_to_espn_year"](CUR), cache_v=7)
 rookie = ns["fetch_rookie_scale_players"](CUR)
 payroll = pd.DataFrame({"team": full["Team"].astype(str), "player": full["Player"].astype(str)})
-LAND = ts.apply_real_cap(ts.load_team_landscape(),
-                         ts.compute_cap_space(payroll, nc, ns["SALARY_CAP_M"].get(CONTRACT, 165.0)))
+CAP_M = ns["SALARY_CAP_M"].get(CONTRACT, 165.0)
+CAP_TABLE = ts.compute_cap_space(payroll, nc, CAP_M)
+LAND = ts.apply_real_cap(ts.load_team_landscape(), CAP_TABLE)
+# League pay lines, derived from the cap like team_suitors: luxury tax ~1.215x,
+# second apron ~1.344x. The 2nd apron is the practical ceiling for re-signings.
+TAX_M, APRON2_M = round(CAP_M * 1.215, 1), round(CAP_M * ts._APRON2_RATIO, 1)
 ROST = ts.build_rosters(full)
 
 
@@ -53,7 +57,7 @@ def fa_status(name):
     s = fmt_nc(name, nc)
     if s == "RFA":
         return "RFA"
-    if s == ", ":
+    if s == "—":
         return "RFA" if normalize(name) in rookie else "UFA"
     if " PO" in s:
         return "Player Option"
@@ -175,6 +179,25 @@ def best_fits_for(rows, needs, thin):
     return out[:3]
 
 
+def resign_plan(team, resign_rows):
+    """Rank a team's own free agents by quality, run a cumulative payroll total
+    from its committed salary, and flag who pushes it past the second apron (the
+    practical ceiling) — i.e. who it realistically can't afford to keep. Skipped
+    when we don't have a plausible committed payroll for the team."""
+    committed = float((CAP_TABLE.get(team) or {}).get("committed_M") or 0.0)
+    if committed < 50.0 or not resign_rows:
+        return None
+    running = committed
+    keeps = []
+    for x in sorted(resign_rows, key=lambda r: -r["barrett"]):
+        running += x["offer_M"]
+        zone = "ok" if running < TAX_M else "tax" if running < APRON2_M else "over"
+        keeps.append({"name": x["name"], "pos": x["pos"], "cost_M": x["offer_M"],
+                      "running_M": round(running), "zone": zone, "keep": running < APRON2_M})
+    return {"committed_M": round(committed), "tax_M": round(TAX_M),
+            "apron2_M": round(APRON2_M), "all_in_M": round(running), "keeps": keeps}
+
+
 def board_for(team):
     row = LAND[LAND["team"].astype(str) == team]
     if row.empty:
@@ -221,10 +244,11 @@ def board_for(team):
         "team": team,
         "name": str(t.get("team_name", team)),
         "cap_room_M": round(cap), "exception_M": round(exc),
-        "timeline": ts._TL_DISPLAY.get(tl, tl) or ", ",
+        "timeline": ts._TL_DISPLAY.get(tl, tl) or "—",
         "needs": need, "thin": thin,
         "best_fits": best_fits_for(rows, need, thin),
         "resign": [pack(x) for x in rows if x["is_inc"]],
+        "resign_plan": resign_plan(team, [x for x in rows if x["is_inc"]]),
         "pursue": [pack(x) for x in rows if not x["is_inc"]][:18],
     }
 
@@ -236,7 +260,7 @@ for tm in teams:
     if b:
         boards[tm] = b
         print(f"  {tm:4} {b['timeline']:11} cap ${b['cap_room_M']:>3}M  "
-              f"resign {len(b['resign']):>2}  pursue {len(b['pursue']):>2}  needs {','.join(b['needs']) or ', '}")
+              f"resign {len(b['resign']):>2}  pursue {len(b['pursue']):>2}  needs {','.join(b['needs']) or '—'}")
 
 OUT.parent.mkdir(exist_ok=True)
 OUT.write_text(json.dumps({

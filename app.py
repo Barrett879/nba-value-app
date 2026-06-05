@@ -649,7 +649,7 @@ def _compute_charts():
             nc = fmt_next_contract(name, next_contracts)
             if nc == "RFA":
                 rfa.append(score)
-            elif nc == ", ":
+            elif nc == "—":
                 if normalize(name) in rookie_scale:
                     rfa.append(score)
                 else:

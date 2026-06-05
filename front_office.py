@@ -158,12 +158,51 @@ def render_front_office():
 
     st.divider()
 
-    # ── Re-sign your own ────────────────────────────────────────────────────────
+    # ── Re-sign your own (cap-aware: who can they actually afford to keep?) ──────
     st.subheader("Re-sign their own free agents")
-    st.caption("Players already on the roster who can be kept via Bird rights, no cap room required.")
-    if B["resign"]:
-        res = pd.DataFrame(B["resign"])
-        res = res[["name", "pos", "status", "value_M", "offer_M"]]
+    _plan = B.get("resign_plan")
+    if _plan:
+        st.caption((
+            f"Committed payroll is **${_plan['committed_M']}M**. The luxury tax starts at "
+            f"${_plan['tax_M']}M and the second apron (the practical ceiling) at "
+            f"**${_plan['apron2_M']}M**. Re-signing every one of these via Bird rights would run "
+            f"**${_plan['all_in_M']}M**, so they can't all stay. Ranked by quality, here's who fits "
+            f"under the line and who gets squeezed out:").replace("$", "\\$"))
+        _status_by = {x["name"]: x["status"] for x in B["resign"]}
+        rp = pd.DataFrame(_plan["keeps"])
+        rp["status"] = rp["name"].map(_status_by).fillna("UFA")
+        rp["verdict"] = rp["keep"].map(lambda k: "Keep" if k else "Likely walks")
+        rp = rp[["name", "pos", "status", "cost_M", "running_M", "verdict"]]
+        rp.columns = ["Player", "Pos", "Status", "Keep $", "Running Payroll", "Verdict"]
+        rp.insert(0, "#", range(1, len(rp) + 1))
+        _ap2, _tax = _plan["apron2_M"], _plan["tax_M"]
+
+        def _sty_run(v, _r):
+            try:
+                n = float(v)
+            except (ValueError, TypeError):
+                return ""
+            if n >= _ap2:
+                return "color:var(--value-bad);font-weight:700"
+            return "color:var(--orange)" if n >= _tax else ""
+
+        def _sty_verdict(v, _r):
+            return ("color:var(--value-bad);font-weight:700" if v == "Likely walks"
+                    else "color:var(--value-good);font-weight:600")
+
+        html_table(
+            rp,
+            formatters={"Keep $": lambda v: f"${v:.0f}M", "Running Payroll": lambda v: f"${v:.0f}M"},
+            styles={"Status": _sty_status, "Running Payroll": _sty_run, "Verdict": _sty_verdict},
+            aligns={"#": "right", "Keep $": "right", "Running Payroll": "right"},
+            numeric={"#", "Keep $", "Running Payroll"},
+            helps={"Running Payroll": "Cumulative payroll if you keep this player plus everyone above him.",
+                   "Verdict": "Keep = stays under the second apron; likely walks = the keep that tips the team over it."},
+            height=min(560, len(rp) * 38 + 46),
+        )
+    elif B["resign"]:
+        st.caption("Players already on the roster who can be kept via Bird rights, no cap room required.")
+        res = pd.DataFrame(B["resign"])[["name", "pos", "status", "value_M", "offer_M"]]
         res.columns = ["Player", "Pos", "Status", "Market Value", "Re-sign Cost"]
         res.insert(0, "#", range(1, len(res) + 1))
         html_table(
@@ -172,7 +211,6 @@ def render_front_office():
             styles={"Status": _sty_status, "Re-sign Cost": _sty_offer},
             aligns={"#": "right", "Market Value": "right", "Re-sign Cost": "right"},
             numeric={"#", "Market Value", "Re-sign Cost"},
-            helps={"Re-sign Cost": "What it would cost to keep him, his projected market value via Bird rights."},
             height=min(520, len(res) * 38 + 46),
         )
     else:

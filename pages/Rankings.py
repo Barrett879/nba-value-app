@@ -330,7 +330,7 @@ _fig_bar.add_trace(go.Bar(
     # [0] index return nothing — which was the actual bug behind every
     # 'vs last season: -' tooltip, NOT a merge failure).
     customdata=[[d] for d in _top10["delta"].apply(
-        lambda v: f"{v:+.1f}" if not pd.isna(v) else ", "
+        lambda v: f"{v:+.1f}" if not pd.isna(v) else "—"
     )],
     hovertemplate=(
         "<b>%{y}</b><br>"
@@ -399,7 +399,7 @@ def _hsty_delta(v, _row):
 
 def _hsty_next(v, _row):
     s = str(v)
-    if s == ", ":   return "color:var(--fg-6)"
+    if s == "—":   return "color:var(--fg-6)"
     if " TO" in s: return "color:var(--orange);font-weight:700"
     if " PO" in s: return "color:var(--blue);font-weight:700"
     return ""
@@ -464,7 +464,7 @@ def render_splits_panel(player_name, season):
             r["barrett_score"]  = main["barrett_score"]
             r["MPG"]            = main["MPG"]
 
-        ts_str = f"{r['ts_pct']*100:.1f}%" if not pd.isna(r["ts_pct"]) else ", "
+        ts_str = f"{r['ts_pct']*100:.1f}%" if not pd.isna(r["ts_pct"]) else "—"
         rows_out.append({
             "#": i + 1, "Team": r["Team"],
             "GP": str(int(r["GP"])), "MPG": f"{r['MPG']:.2f}", "Total MIN": str(int(r["total_min"])),
@@ -804,7 +804,7 @@ if show_splits and splits_df is not None:
         return [""] * len(row)
 
     _nc_lookup = df.set_index("Player")["next_contract"]
-    sdisplay["Next $"] = sdisplay["Player"].map(_nc_lookup).fillna(", ")
+    sdisplay["Next $"] = sdisplay["Player"].map(_nc_lookup).fillna("—")
 
     if advanced:
         sfmt = sdisplay[["Player", "Team", "GP", "MPG",

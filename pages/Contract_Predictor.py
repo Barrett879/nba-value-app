@@ -178,7 +178,7 @@ st.markdown("<div style='height:21px'></div>", unsafe_allow_html=True)
 
 def _fmt_money(v: float) -> str:
     if pd.isna(v) or v == 0:
-        return ", "
+        return "—"
     return f"${v / 1_000_000:.1f}M"
 
 
@@ -194,7 +194,7 @@ def _pos_abbrev(pos: str) -> str:
     """Return the abbreviated position. PG/SG/SF/PF/C pass through; the
     coarse 'Guard'/'Forward'/'Center' fallback maps to G/F/C."""
     if not pos:
-        return ", "
+        return "—"
     return _COARSE_TO_LETTER.get(pos, pos)
 
 
@@ -1651,7 +1651,7 @@ try:
     _fa_next = fetch_next_year_contracts(season_to_espn_year(CURRENT_SEASON), cache_v=7)
     def _is_free_agent(_n: str) -> bool:
         s = fmt_next_contract(_n, _fa_next)
-        return s == "RFA" or s == ", " or " PO" in s or " TO" in s
+        return s == "RFA" or s == "—" or " PO" in s or " TO" in s
     _fa_names = [n for n in active_names if _is_free_agent(n)] or active_names
 except Exception:
     _fa_names = active_names
@@ -2467,7 +2467,7 @@ else:
         # would crowd the table. Fall back to "—" when unknown.
         def _comp_draft_label(t, p):
             if not isinstance(t, str) or not t:
-                return ", "
+                return "—"
             if t == "Undrafted":
                 return "Undrafted"
             try:

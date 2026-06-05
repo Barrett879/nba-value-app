@@ -81,7 +81,7 @@ def _fa_status(row) -> str | None:
     name = row["Player"]
     if nc == "RFA":
         return "RFA"
-    if nc == ", ":
+    if nc == "—":
         if normalize(name) in _rookie_scale:
             return "RFA"
         return "UFA"
@@ -200,7 +200,7 @@ def _sty_delta(v, _row):
 
 def _sty_next(v, _row):
     s = str(v)
-    if s == ", ":   return "color:var(--fg-6)"
+    if s == "—":   return "color:var(--fg-6)"
     if " TO" in s: return "color:var(--orange);font-weight:700"
     if " PO" in s: return "color:var(--blue);font-weight:700"
     return ""
@@ -234,7 +234,7 @@ html_table(
         "Salary": "Current season salary. Purple = rookie-scale contract (1st-round pick, yrs 1–4).",
         "Proj. Value": "What this player would earn if paid by their Barrett Score rank, a market-rate anchor.",
         "Δ Market": "Actual − Projected. Negative (green) = underpaid; positive (red) = overpaid.",
-        "Next $": "Option value, or, for UFAs. Blue = player option, orange = team option.",
+        "Next $": "Next-year option salary; UFAs have no set figure. Blue = player option, orange = team option.",
         "Status": "UFA = unrestricted · RFA = restricted (right of first refusal) · PO/TO = player/team option.",
     },
     height=min(820, max(220, len(fa_fmt) * 38 + 46)),
