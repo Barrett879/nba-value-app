@@ -43,9 +43,9 @@
 ║      - ESPN: fetch_bref_positions() (legacy coarse positions)            ║
 ║                                                                          ║
 ║  8.  Ranking pipeline                                                    ║
-║      - build_raw() — raw per-season stats + Barrett Score                ║
+║      - build_raw(), raw per-season stats + Barrett Score                ║
 ║      - apply_rankings(), apply_projections()                             ║
-║      - build_ranked_projected() — entry point used by every page         ║
+║      - build_ranked_projected(), entry point used by every page         ║
 ║      - warm_all_seasons(), _bootstrap_warm()                             ║
 ║      - build_all_seasons_combined() (Legacy page)                        ║
 ║                                                                          ║
@@ -70,17 +70,17 @@
 ║                                                                          ║
 ║  Three layers of caching, in order from fastest to slowest:              ║
 ║                                                                          ║
-║  a. @st.cache_data — in-memory per Streamlit session. Keyed by all       ║
+║  a. @st.cache_data, in-memory per Streamlit session. Keyed by all       ║
 ║     function arguments. Use TTL for data that ages (current-season       ║
 ║     stats: 1h; historical: 24h+; truly static: no TTL).                  ║
 ║                                                                          ║
-║  b. Disk cache (CACHE_DIR/*.{parquet,pkl}) — survives process restart.   ║
+║  b. Disk cache (CACHE_DIR/*.{parquet,pkl}), survives process restart.   ║
 ║     Filenames carry a version suffix to invalidate on schema changes.    ║
 ║     Conventions:                                                         ║
-║       raw_<season>_<FORMULA_VERSION>.parquet     — main ranking output   ║
+║       raw_<season>_<FORMULA_VERSION>.parquet, main ranking output   ║
 ║       raw_<season>_playoff_<PLAYOFF_VERSION>_<FORMULA_VERSION>.parquet   ║
 ║       splits_<season>_<FORMULA_VERSION>.pkl                              ║
-║       bref_positions_<year>_v<cache_v>.pkl       — per-scraper cache_v   ║
+║       bref_positions_<year>_v<cache_v>.pkl, per-scraper cache_v   ║
 ║       positions_detailed_<year>_v<cache_v>.pkl                           ║
 ║       bref_salaries_<season>.pkl                                         ║
 ║                                                                          ║
@@ -139,7 +139,7 @@ def _seed_disk_cache_from_repo() -> None:
 
     On Render CACHE_DIR is /data/cache; a fresh/empty disk would otherwise force
     the app to cold-fetch the entire NBA API on first load. Seeding it from the
-    committed snapshot means it serves from local disk instead — seconds, not
+    committed snapshot means it serves from local disk instead, seconds, not
     minutes. Gap-fill only (never clobbers fresher data the disk accumulated),
     runs once per process at import, and can never break the app: any failure
     just logs and the normal network fallback still works.
@@ -282,20 +282,20 @@ def tiered_age_multiplier(age, career_score: float,
 
     Three populations age very differently in real NBA contracts:
 
-      ELITE     — Top 30 by career-weighted score, OR career_score ≥ 28.
+      ELITE, Top 30 by career-weighted score, OR career_score ≥ 28.
                   These guys (LeBron, Curry, KD, Harden) hold their
                   contract value until ~37 then decline slowly (1.5% / yr).
                   Their body fails before the market does.
 
-      ROTATION  — Top 100, OR career_score ≥ 18. Real NBA starters who
+      ROTATION, Top 100, OR career_score ≥ 18. Real NBA starters who
                   take moderate age discounts (~3% / yr past 28).
 
-      DEPTH     — Everyone else. Bench / role guys who get steeply
-                  discounted past 28 (6% / yr) — flooded out by younger
+      DEPTH, Everyone else. Bench / role guys who get steeply
+                  discounted past 28 (6% / yr), flooded out by younger
                   options at similar production.
 
     All tiers get an additional decline past age 35 (body fails). The
-    floor is 0.40 — a 40+ year-old depth player isn't completely
+    floor is 0.40, a 40+ year-old depth player isn't completely
     worthless but is signing at vet-minimum tier.
 
     Replaces the bucket-based age multiplier (CONTRACT_AGE_MULTIPLIERS).
@@ -348,12 +348,12 @@ def durability_multiplier(career_df, lookback_seasons: int = 3
 
     The rate-score input to the model treats Curry's one-anomaly 41-GP
     season the same as a healthy 75-GP year (he's elite either way).
-    But the durability question is real for chronic cases — Embiid
+    But the durability question is real for chronic cases, Embiid
     averaging 30 GP/yr over 3 years signals teams can't bank on him.
     That deserves its own multiplier separate from production.
 
     Computed on trailing N seasons (default 3). All seasons count toward
-    the GP sum, including ones below the GP ≥ 40 "healthy" filter — we
+    the GP sum, including ones below the GP ≥ 40 "healthy" filter, we
     explicitly want to PENALIZE missing games here, not exclude them.
 
     Returns: (multiplier, tier_label, trailing_gp_ratio).
@@ -401,7 +401,7 @@ def playoff_bonus_multiplier(playoff_career_df, lookback_seasons: int = 3
     Why MOST RECENT (not 3-year trailing average):
       - GMs price the next contract off the freshest playoff impression.
         Bruce Brown after the 2023 BKN run, Wiggins after the 2022 title,
-        Rui after the 2023 WCF run — all got paid off ONE playoff
+        Rui after the 2023 WCF run, all got paid off ONE playoff
         performance, not a smoothed multi-year average.
       - 3-year trailing dilutes a strong recent run with weak earlier
         cameos. Rui's 2024-25 playoff Barrett ~20 gets dragged toward
@@ -776,7 +776,7 @@ THEME_BASE_CSS = """
     }
     div[data-baseweb="select"] svg { fill: var(--fg-3) !important; }
     /* Dropdown option list (selectbox / multiselect popover). Target by ROLE,
-       not just `ul li` — recent BaseWeb renders options as [role=option] that
+       not just `ul li`, recent BaseWeb renders options as [role=option] that
        don't always match the `ul[menu] li` descendant selector, which left the
        option text near-black on the dark menu. Cover the container + the option
        text (and its inner nodes) so it follows the theme. */
@@ -812,7 +812,7 @@ THEME_BASE_CSS = """
         border-color: var(--panel-line) !important;
     }
     /* Default st.button / st.download_button (the ✕ remove buttons, Export CSV)
-       — Streamlit's light-config white doesn't follow the runtime dark theme.
+, Streamlit's light-config white doesn't follow the runtime dark theme.
        The brightness/theme button keeps its own chrome-stripped look via a
        higher-specificity rule in COMMON_CSS (loads after this). */
     [data-testid="stButton"] button, .stButton button,
@@ -827,7 +827,7 @@ THEME_BASE_CSS = """
         border-color: var(--fg-5) !important;
         color: var(--fg-1) !important;
     }
-    /* st.spinner — the "Loading …" bar renders on a white track in light config. */
+    /* st.spinner, the "Loading …" bar renders on a white track in light config. */
     [data-testid="stSpinner"] {
         color: var(--fg-3) !important;
         background: transparent !important;
@@ -1448,7 +1448,7 @@ COMMON_CSS = """
     }
     .st-key-playoff_nav_toggle:hover label p { color: var(--fg-1) !important; }
 
-    /* Theme (brightness) button — pinned to the far top-right of the nav,
+    /* Theme (brightness) button, pinned to the far top-right of the nav,
        vertically centered within the 3rem-tall bar. */
     .st-key-theme_nav_toggle {
         position: fixed !important;
@@ -1463,7 +1463,7 @@ COMMON_CSS = """
         display: flex !important;
         align-items: center !important;
     }
-    /* Brightness icon button (moon in light, sun in dark) — strip Streamlit's
+    /* Brightness icon button (moon in light, sun in dark), strip Streamlit's
        button chrome down to just the icon. */
     .st-key-theme_nav_toggle button {
         background: transparent !important;
@@ -1531,7 +1531,7 @@ COMMON_CSS = """
         gap: 0 !important;
     }
 
-    /* Page block-container top padding — fits the fixed nav bar (3rem tall)
+    /* Page block-container top padding, fits the fixed nav bar (3rem tall)
        plus breathing room before the page title. 5.5rem leaves a clean ~2.5rem
        gap between the nav and the title. */
     .main .block-container,
@@ -1541,7 +1541,7 @@ COMMON_CSS = """
         padding-top: 5.5rem !important;
     }
 
-    /* Same trick for the components.html hide-badge iframe — height=0 in
+    /* Same trick for the components.html hide-badge iframe, height=0 in
        the call but Streamlit's component wrapper still claims default
        space. Narrow these selectors to height="0" iframes only so other
        components.html embeds (like the Search "Share this view" widget)
@@ -1586,8 +1586,8 @@ COMMON_CSS = """
         margin-top: 0.85rem !important;
     }
 
-    /* Colour-accented stat cards (utils.stat_cards) — themed summary metrics. */
-    .hv-stats { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.3rem 0 0.5rem; }
+    /* Colour-accented stat cards (utils.stat_cards), themed summary metrics. */
+    .hv-stats { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.3rem 0 0; padding-bottom:1.25rem; }
     .hv-stat {
         flex:1 1 0; min-width:120px; background:var(--panel-solid);
         border:1px solid var(--panel-line); border-top:3px solid var(--c);
@@ -1600,7 +1600,7 @@ COMMON_CSS = """
                  color:var(--fg-4); margin-top:0.4rem; font-weight:600; }
     .hv-stat-s { font-size:0.7rem; color:var(--fg-5); margin-top:0.2rem; }
 
-    /* st.tabs labels — Streamlit's default inactive colour is a faint grey that
+    /* st.tabs labels, Streamlit's default inactive colour is a faint grey that
        disappears on the dark background. Bind to theme tokens so the inactive
        tabs stay legible (mid-grey) and the active one takes the brand red on
        both themes. Targets the tab buttons + their inner text node. */
@@ -1672,7 +1672,7 @@ def render_page_chrome() -> None:
     Call this once near the top of every page right after st.set_page_config.
     Replaces ~20 lines of identical components.html + st.markdown boilerplate
     that used to be copy-pasted into every page. Adding new pages? Just call
-    render_page_chrome() and you're done — no need to remember which iframe
+    render_page_chrome() and you're done, no need to remember which iframe
     script to copy.
     """
     import streamlit.components.v1 as _components
@@ -1757,7 +1757,7 @@ _FOOTER_HTML = f"""
 
 
 def render_footer() -> None:
-    """Site-wide footer — call once at the very bottom of every page (and before
+    """Site-wide footer, call once at the very bottom of every page (and before
     any st.stop() that ends a normal page state, e.g. the Contract Predictor modes)."""
     st.markdown(_FOOTER_HTML, unsafe_allow_html=True)
 
@@ -1766,7 +1766,7 @@ def render_playoff_toggle() -> bool:
     """In-page playoff-mode toggle, backed by st.session_state.playoff_mode.
 
     Rendered near the top of the pages where playoff mode affects the content
-    (Rankings, Team Analysis, Search, Legacy) — NOT on pages it doesn't touch
+    (Rankings, Team Analysis, Search, Legacy), NOT on pages it doesn't touch
     (Contract Predictor, Free Agents, Home). setdefault + no value= avoids the
     "set via Session State" warning. Returns True when playoff mode is on.
     """
@@ -1825,7 +1825,7 @@ def base_score(row) -> float:
 
 
 def availability_multiplier(gp: float, total_min: float, season_games: int = 82) -> float:
-    """Availability multiplier — punishes missed games + light minutes.
+    """Availability multiplier, punishes missed games + light minutes.
 
     Range: 0.30 → 1.00. Sqrt curve so missing 20% of the season costs ~10%
     rather than a linear 20%, but missing 80% costs much more than the
@@ -1852,7 +1852,7 @@ def _fmt_salary(player_name: str, salary_dollars: float) -> str:
 def fmt_next_contract(player_name: str, next_contracts: dict) -> str:
     info = next_contracts.get(normalize(player_name))
     if info is None:
-        return "—"
+        return ", "
     if info["type"] == "rfa":
         return "RFA"
     sal_m = info["salary"] / 1_000_000
@@ -1870,8 +1870,8 @@ OPTION_OPT_IN_THRESHOLD = 0.5
 def option_opt_in_prob(option_M: float, market_M: float, age) -> float:
     """Probability a player EXERCISES (opts into) his player option instead of
     declining it to sign a new deal. The dominant driver is how much more the
-    option pays than his projected market value — a player keeps a $30M option
-    rather than sign for $17M — with age breaking gray-zone ties (older players
+    option pays than his projected market value, a player keeps a $30M option
+    rather than sign for $17M, with age breaking gray-zone ties (older players
     take the guaranteed money; younger ones bet on a longer deal). Returns 0–1.
 
     Rule-based / economic, not a trained classifier: there's no labelled history
@@ -1914,7 +1914,7 @@ def color_value_diff(val):
 
 def color_next_contract(val):
     s = str(val)
-    if s == "—":
+    if s == ", ":
         return "color: #555555"
     if " TO" in s:
         return "color: #f39c12; font-weight: bold"
@@ -1965,7 +1965,7 @@ def _pkl_save(path: Path, obj) -> None:
 def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.DataFrame:
     """Per-game player stats for one season.
 
-    season_type controls regular season vs playoffs — accepts NBA Stats API's
+    season_type controls regular season vs playoffs, accepts NBA Stats API's
     own values: "Regular Season" (default) or "Playoffs". Each variant gets
     its own disk cache so the two modes don't clobber each other.
     """
@@ -2339,7 +2339,7 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
     FGA, FTA). Used as a fallback when NBA API has no data.
 
     playoffs=True pulls postseason per-game stats from BBRef's playoff
-    page — used for pre-1996 playoff seasons since the NBA Stats API
+    page, used for pre-1996 playoff seasons since the NBA Stats API
     doesn't return playoff data either for those years.
     """
     end_year = season_to_espn_year(season)
@@ -2506,7 +2506,7 @@ def fetch_monthly_scores(player_id: int, season: str,
     """Cumulative season-to-date Barrett Score at the end of each calendar month.
 
     Each row represents all games played from opening night through the last
-    game of that month — so January's score includes Oct + Nov + Dec + Jan.
+    game of that month, so January's score includes Oct + Nov + Dec + Jan.
     Availability multiplier uses team games played through that month (not 82)
     so a player who misses no games in the first 30 gets full credit.
     """
@@ -2628,7 +2628,7 @@ def fetch_monthly_scores(player_id: int, season: str,
 @st.cache_data(ttl=3600, show_spinner=False)
 def trade_side_summary(player_names: tuple[str, ...], season: str,
                        playoffs: bool = False) -> dict:
-    """Summarize a list of players in a given season — their Barrett Scores
+    """Summarize a list of players in a given season, their Barrett Scores
     and salaries. Used by the Trades page. Player names matched by normalize().
     Returns dict with: rows (DataFrame), found (list), missing (list),
     barrett_total (float), salary_total (float).
@@ -2695,14 +2695,14 @@ HISTORICAL_TRADES = [
         "side_a":      ["Pau Gasol"],
         "side_b_team": "Memphis Grizzlies",
         "side_b":      ["Kwame Brown", "Javaris Crittenton", "Aaron McKie"],
-        "side_a_picks": "Plus Marc Gasol's draft rights — became multi-time All-Star",
+        "side_a_picks": "Plus Marc Gasol's draft rights, became multi-time All-Star",
         "side_b_picks": "Lakers 2008 + 2010 first-round picks",
         "winner":      "side_a",
         "verdict":     "Lakers. Three Finals in three years, two titles, generational frontcourt. One of the most lopsided trades in NBA history at the time it was made.",
         "key_points": [
             "Lakers made the Finals 3 straight years (2008, 2009, 2010)",
             "Won championships in 2008-09 and 2009-10",
-            "Memphis eventually got Marc Gasol back too — but won zero playoff series with the original return",
+            "Memphis eventually got Marc Gasol back too, but won zero playoff series with the original return",
         ],
     },
     {
@@ -2713,7 +2713,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["James Harden", "Cole Aldrich", "Daequan Cook", "Lazar Hayward"],
         "side_b_team": "Oklahoma City Thunder",
         "side_b":      ["Kevin Martin", "Jeremy Lamb"],
-        "side_a_picks": "—",
+        "side_a_picks": ", ",
         "side_b_picks": "Two firsts + a second from Houston (landed Steven Adams, Mitch McGary, Alex Abrines)",
         "winner":      "side_a",
         "verdict":     "Houston, by a mile. Harden became MVP and the franchise centerpiece for nearly a decade. Adams was nice; not nearly enough.",
@@ -2731,10 +2731,10 @@ HISTORICAL_TRADES = [
         "side_a":      ["Kawhi Leonard", "Danny Green"],
         "side_b_team": "San Antonio Spurs",
         "side_b":      ["DeMar DeRozan", "Jakob Poeltl"],
-        "side_a_picks": "—",
+        "side_a_picks": ", ",
         "side_b_picks": "Protected 2019 Raptors first (landed at #29, Keldon Johnson)",
         "winner":      "side_a",
-        "verdict":     "Toronto. Won the 2019 title — the only championship in franchise history — even though Kawhi left in free agency that summer. Worth it any day.",
+        "verdict":     "Toronto. Won the 2019 title, the only championship in franchise history, even though Kawhi left in free agency that summer. Worth it any day.",
         "key_points": [
             "Raptors won the 2018-19 championship in Kawhi's only season",
             "Kawhi was Finals MVP",
@@ -2749,12 +2749,12 @@ HISTORICAL_TRADES = [
         "side_a":      ["Anthony Davis"],
         "side_b_team": "New Orleans Pelicans",
         "side_b":      ["Lonzo Ball", "Brandon Ingram", "Josh Hart"],
-        "side_a_picks": "—",
+        "side_a_picks": ", ",
         "side_b_picks": "Three firsts (became Trey Murphy III, Dyson Daniels) + pick swaps",
         "winner":      "side_a",
         "verdict":     "Lakers. Won the 2020 title in year one with AD as Finals co-MVP-caliber force. Picks may bear long-term fruit for NOP, but a ring beats potential.",
         "key_points": [
-            "Lakers won the 2019-20 championship — Bubble title",
+            "Lakers won the 2019-20 championship, Bubble title",
             "AD was a top-3 player on a Finals team alongside prime LeBron",
             "Pelicans rebuild produced Murphy + Daniels but zero playoff series wins from this haul",
         ],
@@ -2767,12 +2767,12 @@ HISTORICAL_TRADES = [
         "side_a":      ["Kyrie Irving"],
         "side_b_team": "Cleveland Cavaliers",
         "side_b":      ["Isaiah Thomas", "Jae Crowder", "Ante Zizic"],
-        "side_a_picks": "—",
+        "side_a_picks": ", ",
         "side_b_picks": "Unprotected 2018 Nets pick (became Collin Sexton, #8)",
         "winner":      "wash",
         "verdict":     "Wash. Boston got two seasons of Kyrie (no Finals, weird locker room). Cleveland got Sexton from the Nets pick but made the Finals once more before LeBron left and the wheels came off.",
         "key_points": [
-            "Cavaliers made the 2018 Finals (lost to GSW) — final LeBron Finals run",
+            "Cavaliers made the 2018 Finals (lost to GSW), final LeBron Finals run",
             "Boston went to the Eastern Finals in 2018 (Kyrie injured) and 2019 (Kyrie disgruntled), no Finals",
             "Kyrie left for Brooklyn in 2019; Sexton was traded to Utah in 2022",
         ],
@@ -2785,7 +2785,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["Paul Pierce", "Kevin Garnett", "Jason Terry"],
         "side_b_team": "Boston Celtics",
         "side_b":      ["Gerald Wallace", "Kris Humphries", "Marshon Brooks", "Keith Bogans"],
-        "side_a_picks": "—",
+        "side_a_picks": ", ",
         "side_b_picks": "Three unprotected firsts + pick swap (became Jaylen Brown, Jayson Tatum via swap, others)",
         "winner":      "side_b",
         "verdict":     "Celtics. Possibly the worst trade of the modern era for the receiving star team. Nets cratered for half a decade and handed Boston their next dynasty's foundation (Brown + Tatum).",
@@ -2803,7 +2803,7 @@ HISTORICAL_TRADES = [
         "side_a":      ["Jimmy Butler", "Justin Patton"],
         "side_b_team": "Minnesota Timberwolves",
         "side_b":      ["Robert Covington", "Dario Šarić", "Jerryd Bayless"],
-        "side_a_picks": "—",
+        "side_a_picks": ", ",
         "side_b_picks": "Protected 2022 Sixers first",
         "winner":      "wash",
         "verdict":     "Wash, leaning Philly. Sixers got a heroic Kawhi-game-7 playoff run from Butler before he bolted to Miami. Wolves got rotation pieces who left within a year.",
@@ -2821,13 +2821,13 @@ HISTORICAL_TRADES = [
         "side_a":      ["Allen Iverson"],
         "side_b_team": "Denver Nuggets",
         "side_b":      ["Chauncey Billups", "Antonio McDyess", "Cheikh Samb"],
-        "side_a_picks": "—",
-        "side_b_picks": "—",
+        "side_a_picks": ", ",
+        "side_b_picks": ", ",
         "winner":      "side_b",
         "verdict":     "Denver, decisively. Billups led Nuggets to their first Western Finals in 24 years. Detroit's veteran core fell apart immediately; AI played 54 games and was waived.",
         "key_points": [
             "Denver made the 2008-09 Western Conference Finals (lost to Lakers)",
-            "Iverson lasted 54 games in Detroit — fit was a disaster",
+            "Iverson lasted 54 games in Detroit, fit was a disaster",
             "Pistons missed the playoffs the following year for the first time in 8 seasons",
         ],
     },
@@ -2838,7 +2838,7 @@ HISTORICAL_TRADES = [
 def get_all_player_names(min_seasons: int = 1) -> list[str]:
     """All player names that appear in any season, sorted by career-average
     Barrett Score (highest first, GP-weighted). Used to populate autocomplete
-    dropdowns. Includes EVERY player who appeared in a game — including
+    dropdowns. Includes EVERY player who appeared in a game, including
     bench players, two-way contracts, and cameo seasons (Bronny, etc.)."""
     try:
         # Pass min_threshold=0 so even players with <500 total minutes show up.
@@ -2871,11 +2871,11 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
     fetch_league_stats joined with Barrett Score / rank from build_raw +
     apply_rankings. One row per season the player appeared in.
 
-    playoffs=True uses postseason data — pulls from the playoff-cached
+    playoffs=True uses postseason data, pulls from the playoff-cached
     league_stats and raw parquets. Pre-1996 playoff data isn't seeded yet
     (different BBRef URL), so those seasons just won't appear.
 
-    Only reads seasons that are already on disk — view-time requests must
+    Only reads seasons that are already on disk, view-time requests must
     NEVER trigger fresh BBRef scrapes. seed_cache.py populates the disk."""
     name_norm = normalize(player_name)
     season_type = "Playoffs" if playoffs else "Regular Season"
@@ -3082,7 +3082,7 @@ def fetch_position_peer_distribution(
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_career_trend(player_id: int, num_seasons: int = 5,
                        playoffs: bool = False) -> pd.DataFrame:
-    """Barrett Score per season pulled directly from build_raw — guaranteed to
+    """Barrett Score per season pulled directly from build_raw, guaranteed to
     match the stat panel since both use the same LeagueDashPlayerStats source.
 
     Pass playoffs=True for postseason scores (uses the separate playoff
@@ -3137,7 +3137,7 @@ def fetch_player_career_with_rank(player_id: int, playoffs: bool = False) -> lis
     """Career trajectory with score + season-rank for SVG hover tooltips.
 
     Returns sorted list of {'season', 'score', 'rank', 'total'} for every
-    season on disk where the player appears. Disk-only — never triggers a
+    season on disk where the player appears. Disk-only, never triggers a
     fresh API hit at view time. playoffs=True reads postseason caches.
     """
     info = nba_players_static.find_player_by_id(player_id)
@@ -3227,7 +3227,7 @@ def _player_season_splits_raw(player_id: int, season: str,
     })
 
 
-@st.cache_data(ttl=3600, show_spinner="Building splits table — loading once, fast for everyone after…")
+@st.cache_data(ttl=3600, show_spinner="Building splits table, loading once, fast for everyone after…")
 def build_splits_data_live(season: str, salary_lookup: tuple) -> pd.DataFrame:
     sal_dict = dict(salary_lookup)
 
@@ -3493,7 +3493,7 @@ def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
     Year-4 players were drafted Summer 2022. Range: 2022-2025.
 
     cache_v=2: fixes a year-range bug in v1 that missed year-4 rookies
-    (e.g. 2022 draftees in the 2025-26 season — Jalen Duren, Tari Eason).
+    (e.g. 2022 draftees in the 2025-26 season, Jalen Duren, Tari Eason).
     """
     path = _dc_path(f"rookie_scale_{season.replace('-','_')}_v{cache_v}.pkl")
     if _dc_fresh(path, ttl=86400):
@@ -3591,7 +3591,7 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
 
 @st.cache_data(ttl=3600, show_spinner="Fetching D-LEBRON defensive ratings...")
 def fetch_dlebron_all() -> pd.DataFrame:
-    """Fetches all D-LEBRON data in one call — every player, every season back to 2009-10."""
+    """Fetches all D-LEBRON data in one call, every player, every season back to 2009-10."""
     path = _dc_path("dlebron_all.parquet")
     if _dc_fresh(path, ttl=3600):
         try:
@@ -3705,10 +3705,10 @@ def _raw_disk_fresh(season: str, playoffs: bool = False) -> bool:
 
     Used by **write-side** decisions: `build_raw` calls this to decide
     whether to load the cached parquet or rebuild from APIs. Returning
-    False here triggers a network rebuild, which is expensive — so we
+    False here triggers a network rebuild, which is expensive, so we
     only do it when the cache is genuinely stale.
 
-    Use `_raw_disk_exists()` for view-time reads instead — those should
+    Use `_raw_disk_exists()` for view-time reads instead, those should
     serve cached data even when slightly stale (don't drop a season from
     a player's career arc just because the cache hasn't been touched in
     a few hours).
@@ -4304,8 +4304,8 @@ def fetch_contract_end_years(cache_v: int = 1) -> dict:
     contract_info = {
         "end_season":      "YYYY-YY",
         "last_year_type":  "guaranteed" | "player_option" | "team_option" | "et_option",
-        "signing_season":  "YYYY-YY" — projected season player signs NEXT deal,
-        "years_remaining": int — how many seasons (including current) until end,
+        "signing_season":  "YYYY-YY", projected season player signs NEXT deal,
+        "years_remaining": int, how many seasons (including current) until end,
         "current_team":    "LAL",
     }
 
@@ -4463,15 +4463,15 @@ def get_player_service_info(player_name: str) -> dict:
 
     Returns:
         {
-            "service_years": int — count of NBA seasons appeared in,
-            "current_team": str — most recent season's team abbreviation,
-            "team_tenure":  int — consecutive most-recent seasons on current team,
+            "service_years": int, count of NBA seasons appeared in,
+            "current_team": str, most recent season's team abbreviation,
+            "team_tenure":  int, consecutive most-recent seasons on current team,
         }
 
     Note: "service years" here counts SEASONS in NBA data, which approximates
     the CBA definition. The CBA's "years of service" rule has nuances (a year
     on a two-way contract counts; rookie year counts even if mid-season call-up)
-    that we don't try to model — close enough for a market signal.
+    that we don't try to model, close enough for a market signal.
     """
     try:
         career = fetch_player_full_career(player_name)
@@ -4531,9 +4531,9 @@ def get_max_contract_eligibility(player_name: str, current_season: str) -> dict:
             "team_tenure":      int,
             "current_team":     str,
             "recent_all_nba":   list[dict] of selections in last 3 seasons,
-            "qualifying":       bool — has qualifying All-NBA performance,
-            "max_pct":          float — final % of cap they can earn,
-            "supermax_tier":    str — "Designated Vet (35%)" / "Designated Rookie (30%)"
+            "qualifying":       bool, has qualifying All-NBA performance,
+            "max_pct":          float, final % of cap they can earn,
+            "supermax_tier":    str, "Designated Vet (35%)" / "Designated Rookie (30%)"
                                 / "Max 35%" / "Max 30%" / "Max 25%",
         }
     """
@@ -4592,7 +4592,7 @@ def fetch_player_career_all_seasons(player_name: str, playoffs: bool = False) ->
     """Return every season a player appears in raw data, regardless of minutes played.
 
     Uses per-season apply_rankings so score_rank reflects their true league rank
-    that year.  No minutes threshold — injury years, cameo seasons all included.
+    that year.  No minutes threshold, injury years, cameo seasons all included.
     playoffs=True reads postseason caches instead of regular season.
     """
     name_norm = normalize(player_name)
@@ -4621,7 +4621,7 @@ def fetch_player_career_all_seasons(player_name: str, playoffs: bool = False) ->
 
 @st.cache_resource(ttl=3600, show_spinner=False)
 def build_ranked_projected(season: str, playoffs: bool = False) -> pd.DataFrame:
-    """Full pipeline — build_raw + apply_rankings + apply_projections — cached.
+    """Full pipeline, build_raw + apply_rankings + apply_projections, cached.
 
     Pass playoffs=True for postseason data (separate cache entry, separate
     on-disk parquet).

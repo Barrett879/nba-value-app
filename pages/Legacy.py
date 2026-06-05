@@ -126,7 +126,7 @@ _career_avg = (
     .reset_index()
 )
 _consistent = _career_avg[_career_avg["seasons"] >= 5].sort_values("avg_score", ascending=False)
-_consistent_name  = _consistent.iloc[0]["Player"]  if not _consistent.empty else "—"
+_consistent_name  = _consistent.iloc[0]["Player"]  if not _consistent.empty else ", "
 _consistent_avg   = _consistent.iloc[0]["avg_score"] if not _consistent.empty else 0
 _consistent_seas  = int(_consistent.iloc[0]["seasons"]) if not _consistent.empty else 0
 
@@ -459,7 +459,7 @@ with tab_arc:
 with tab_era:
     st.subheader("Era Leaderboards")
     st.caption("Average Barrett Score within each era (GP-weighted), minimum 2 qualifying seasons. "
-               "The cards show each era's top 10 at a glance — pick an era below for the full table.")
+               "The cards show each era's top 10 at a glance, pick an era below for the full table.")
 
     ERAS = {
         "Disco Era\n(1973–1979)":       [s for s in SEASONS_CHRON if _season_year(s) <= 1978],

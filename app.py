@@ -50,7 +50,7 @@ inject_theme()
 st.markdown("""
 <style>
     .stApp {
-        background: var(--app-bg) !important;   /* flat — court photo removed (design refresh) */
+        background: var(--app-bg) !important;   /* flat, court photo removed (design refresh) */
     }
     [data-testid="stAppViewContainer"],
     [data-testid="stMain"] { background: transparent !important; }
@@ -89,7 +89,7 @@ st.markdown("""
     }
     .stApp { padding-top: 0 !important; }
 
-    /* Horizontal tab strips — one per nav page */
+    /* Horizontal tab strips, one per nav page */
     a.tab-strip {
         display: flex;
         align-items: center;
@@ -133,7 +133,7 @@ st.markdown("""
         flex-shrink: 0;
     }
 
-    /* Streamlit expander styling — make it sit tight under each strip */
+    /* Streamlit expander styling, make it sit tight under each strip */
     div[data-testid="stExpander"] {
         border: none !important;
         background: transparent !important;
@@ -160,7 +160,7 @@ st.markdown("""
         margin-top: 0.3rem;
     }
 
-    /* Expandable Explore-Deeper strips (raw HTML <details>) — same visual
+    /* Expandable Explore-Deeper strips (raw HTML <details>), same visual
        treatment as the old tab-strip header but the strip is the expand
        trigger instead of a direct navigation link. CTA inside the body
        handles the actual navigation. */
@@ -223,7 +223,7 @@ st.markdown("""
     }
 
     /* Playoff-mode toggle pinned to the top-right (same CSS as the
-       inner pages — the home page doesn't have the nav bar but still
+       inner pages, the home page doesn't have the nav bar but still
        needs the toggle in the same visual slot). */
     .st-key-playoff_nav_toggle {
         position: fixed !important;
@@ -247,7 +247,7 @@ st.markdown("""
     }
     .st-key-playoff_nav_toggle:hover label p { color: var(--fg-1) !important; }
 
-    /* Theme (brightness) button — pinned to the far top-right (home has no nav
+    /* Theme (brightness) button, pinned to the far top-right (home has no nav
        bar, but the button sits in the same slot as on the inner pages). */
     .st-key-theme_nav_toggle {
         position: fixed !important;
@@ -649,7 +649,7 @@ def _compute_charts():
             nc = fmt_next_contract(name, next_contracts)
             if nc == "RFA":
                 rfa.append(score)
-            elif nc == "—":
+            elif nc == ", ":
                 if normalize(name) in rookie_scale:
                     rfa.append(score)
                 else:
@@ -949,7 +949,7 @@ render_strip(
     preview_html=(
         '<div style="font-size:0.85rem; color:var(--fg-2); line-height:1.55;">'
         "Type any player's name to project the contract they'd sign "
-        '<b style="color:var(--fg-1);">today</b> — their 2025-26 production valued '
+        '<b style="color:var(--fg-1);">today</b>, their 2025-26 production valued '
         "against next season's salary cap."
         '<div style="margin-top:0.7rem; display:flex; gap:1.4rem; flex-wrap:wrap; '
         'font-size:0.78rem; color:var(--fg-3);">'

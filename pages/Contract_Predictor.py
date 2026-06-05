@@ -1,4 +1,4 @@
-"""Contract Predictor — predict a player's next contract.
+"""Contract Predictor, predict a player's next contract.
 
 Powered by a HistGradientBoostingRegressor (machine-learning model) trained on
 1,900+ real contracts from the modern CBA era (2012-13 onward). Features
@@ -13,10 +13,10 @@ cap, old CBA). Trimming them measurably improves recent-season accuracy
 (scripts/experiment_recency_window.py).
 
 Accuracy, measured by expanding-window temporal cross-validation on recent
-seasons (2021-2025) — train only on prior seasons, predict each subsequent
+seasons (2021-2025), train only on prior seasons, predict each subsequent
 season the model has never seen. Graded on every real new contract
 (minimums, buyouts, and market deals all count); the only exclusion is
-rookie-scale step-ups, which aren't new signings — they're the CBA-mandated
+rookie-scale step-ups, which aren't new signings, they're the CBA-mandated
 next-year salary of a player's existing rookie deal.
   - 89% of predictions within 5% of the cap (~$8M)
   - 99% within 10% of cap (catastrophic misses under 2% of predictions)
@@ -110,7 +110,7 @@ if _get_ctx() is not None:
 
     if _MODE not in ("player", "team"):
         # Landing: two halves, pick one to take over the screen.
-        st.caption("Two ways in — predict one player's next contract, or run a whole team's offseason.")
+        st.caption("Two ways in, predict one player's next contract, or run a whole team's offseason.")
         st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
         _lc, _rc = st.columns(2, gap="large")
         with _lc, st.container(border=True):
@@ -128,7 +128,7 @@ if _get_ctx() is not None:
                 "<div style='padding:12px 10px 8px'>"
                 "<div style='font-size:1.6rem;font-weight:800;margin:0 0 .5rem'>Build a Team</div>"
                 "<div style='color:var(--fg-2);min-height:64px'>Step into the front office. Pick a team and "
-                "see its whole offseason board — who to re-sign, who to pursue, and the contract it would "
+                "see its whole offseason board, who to re-sign, who to pursue, and the contract it would "
                 "realistically offer.</div></div>", unsafe_allow_html=True)
             if st.button("Build a Team", use_container_width=True, type="primary", key="cp_go_team"):
                 st.session_state.cp_mode = "team"
@@ -178,7 +178,7 @@ st.markdown("<div style='height:21px'></div>", unsafe_allow_html=True)
 
 def _fmt_money(v: float) -> str:
     if pd.isna(v) or v == 0:
-        return "—"
+        return ", "
     return f"${v / 1_000_000:.1f}M"
 
 
@@ -194,14 +194,14 @@ def _pos_abbrev(pos: str) -> str:
     """Return the abbreviated position. PG/SG/SF/PF/C pass through; the
     coarse 'Guard'/'Forward'/'Center' fallback maps to G/F/C."""
     if not pos:
-        return "—"
+        return ", "
     return _COARSE_TO_LETTER.get(pos, pos)
 
 
 def _fmt_draft(features: dict) -> str | None:
     """Short draft label for the metadata line.
 
-    Drafted players: "Pick #3 (2018)" — the pick number already implies the
+    Drafted players: "Pick #3 (2018)", the pick number already implies the
     tier (1-14 lottery, 15-30 first-round, etc.), so we drop the tier label.
     Undrafted players with a record: "Undrafted".
     Players with no draft data: None (suppressed entirely).
@@ -540,7 +540,7 @@ _HISTGBM_ADV_COLS = ["USG_PCT", "PIE", "NET_RATING", "TS_PCT", "AST_PCT", "REB_P
 def _load_histgbm():
     """Load the production HistGBM artifact once and cache it for the session.
     Returns the artifact dict {'model', 'feature_cols', ...} or None if the
-    file is missing — in which case predict_contract falls back to the old
+    file is missing, in which case predict_contract falls back to the old
     rank-mapping formula."""
     try:
         import joblib
@@ -605,12 +605,12 @@ def _histgbm_feature_vector(features: dict, target_season: str) -> np.ndarray | 
 
 
 def _relative_band_dollars(predicted_dollars: float) -> float:
-    """Confidence half-width as a % of the prediction — tier-aware. The model
+    """Confidence half-width as a % of the prediction, tier-aware. The model
     nails star/max deals (~10% typical relative error) and is noisier on mid-
     and minimum-level deals (~25–40%), so the band scales WITH the prediction
     rather than a flat ±X%-of-cap. (The old flat ±$6M band made a $3M projection
     read as "anywhere from $0 to $9M".) The %s mirror the median relative error
-    by tier measured in the honest temporal CV — see the About expander."""
+    by tier measured in the honest temporal CV, see the About expander."""
     pred_M = max(predicted_dollars, 0.0) / 1e6
     band_pct = float(np.interp(pred_M, [2.0, 8.0, 20.0, 45.0],
                                         [0.45, 0.33, 0.24, 0.12]))
@@ -653,7 +653,7 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
       - the feature vector normalizes the player's PRIOR salary by the
         stats-season cap (CURRENT_SEASON),
       - the predicted % of cap is converted to dollars at the CONTRACT-season
-        cap (next season — where the new deal actually starts).
+        cap (next season, where the new deal actually starts).
     Returns None if the HistGBM model isn't loadable (caller falls back).
     """
     artifact = _load_histgbm()
@@ -876,7 +876,7 @@ def detect_caveats(features: dict) -> list[str]:
     if features.get("on_rookie_scale"):
         notes.append(
             "Currently on rookie scale (CBA-locked salary). The projection "
-            "below is for their NEXT contract — i.e. their rookie-scale "
+            "below is for their NEXT contract, i.e. their rookie-scale "
             "extension or first market deal."
         )
 
@@ -915,7 +915,7 @@ def detect_caveats(features: dict) -> list[str]:
             all_nba_decided = False
         if not all_nba_decided:
             notes.append(
-                "Star-tier producer — supermax-track if they hit All-NBA "
+                "Star-tier producer, supermax-track if they hit All-NBA "
                 "this season AND stay with their current team. Projection "
                 "uses standard max ceiling."
             )
@@ -935,7 +935,7 @@ def explain_prediction(features: dict, prediction: dict,
       - What sets the dollar amount (CBA cap, supermax floor, normal projection)
       - How the market view compares (agreement, divergence, paycut filter)
 
-    Tailored per player — the bullets for Luka (CBA-capped, lost supermax
+    Tailored per player, the bullets for Luka (CBA-capped, lost supermax
     after trade) read differently than the bullets for Rui (model/market
     diverge because box score undersells role-player value).
     """
@@ -960,7 +960,7 @@ def explain_prediction(features: dict, prediction: dict,
         bullets.append(
             f"**Note:** {name}'s current contract runs through {contract_end}. "
             f"This projection answers \"what would a GM pay him *today* based "
-            f"on his current performance?\" — not what he'll actually sign "
+            f"on his current performance?\", not what he'll actually sign "
             f"for when the current deal ends."
         )
 
@@ -978,7 +978,7 @@ def explain_prediction(features: dict, prediction: dict,
     elif prediction.get("max_tier_floor_applied"):
         # All-NBA near-max floor — lifted to ~max−3%, NOT the full/supermax max.
         bullets.append(
-            f"**${final_M:.1f}M — lifted to the All-NBA max tier.** {name}'s "
+            f"**${final_M:.1f}M, lifted to the All-NBA max tier.** {name}'s "
             f"{recent_nba} recent All-NBA selection{'s' if recent_nba != 1 else ''} "
             f"mark him as max-caliber; raw production projected ${raw_M:.1f}M, but "
             f"the model hedges below the max for elite players, so we lift him to "
@@ -1007,7 +1007,7 @@ def explain_prediction(features: dict, prediction: dict,
     elif features.get("on_rookie_scale"):
         bullets.append(
             f"**Currently on rookie scale** (CBA-locked salary). The projection "
-            f"of ${final_M:.1f}M is for his **next** deal — typically a rookie-"
+            f"of ${final_M:.1f}M is for his **next** deal, typically a rookie-"
             f"scale extension after year 4."
         )
     else:
@@ -1025,13 +1025,13 @@ def explain_prediction(features: dict, prediction: dict,
         market_M = market_median / 1e6
         if divergence < 0.05:
             bullets.append(
-                f"**Model and market agree** at ~${final_M:.1f}M — "
+                f"**Model and market agree** at ~${final_M:.1f}M, "
                 f"comparable signings cluster right at this number."
             )
         elif divergence < 0.15:
             bullets.append(
                 f"**Model and market are close** "
-                f"(${final_M:.1f}M model, ${market_M:.1f}M market) — "
+                f"(${final_M:.1f}M model, ${market_M:.1f}M market), "
                 f"strong agreement on this profile's value."
             )
         elif divergence < 0.30:
@@ -1039,7 +1039,7 @@ def explain_prediction(features: dict, prediction: dict,
             bullets.append(
                 f"**Model and market disagree somewhat** "
                 f"(${final_M:.1f}M model vs ${market_M:.1f}M market). The "
-                f"{higher} view is higher — use the range, not a point."
+                f"{higher} view is higher, use the range, not a point."
             )
         else:
             higher = "market" if market_M > final_M else "model"
@@ -1047,7 +1047,7 @@ def explain_prediction(features: dict, prediction: dict,
             bullets.append(
                 f"**Big {gap_pct}% gap** between model (${final_M:.1f}M) and "
                 f"market (${market_M:.1f}M). The {higher} captures something "
-                f"the other doesn't — the box-score model sometimes underweights "
+                f"the other doesn't, the box-score model sometimes underweights "
                 f"intangibles like defense, fit, and locker-room value that GMs "
                 f"actually pay for. Treat as a range."
             )
@@ -1078,7 +1078,7 @@ def _curated_pos(name: str, bbref_fallback: str = "") -> str:
 
 
 def _curated_pos_full(name: str, bbref_fallback: str = "") -> str:
-    """The FULL curated 2K position incl. secondary (e.g. 'PG/SG') — for DISPLAY.
+    """The FULL curated 2K position incl. secondary (e.g. 'PG/SG'), for DISPLAY.
     Shows a player's real two-way versatility; still contains the primary the
     comp gate matched on, so it never reads like an off-position comp."""
     import team_suitors as _ts
@@ -1259,7 +1259,7 @@ def _career_weighted_barrett_at(player_name: str, up_to_season: str,
                                 fallback_score: float) -> float:
     """Weighted avg of a player's last 3 healthy seasons (GP ≥ 40) BEFORE
     signing. Same 50/30/20 weighting we use for the live player.
-    Skipping injury years keeps the comparables apples-to-apples — we don't
+    Skipping injury years keeps the comparables apples-to-apples, we don't
     want to match Zach LaVine's healthy-Score against a comparable's
     injury-deflated walk year."""
     try:
@@ -1290,7 +1290,7 @@ def _tier_penalty_weight(age) -> float:
     picks get paid for being lottery picks (Jalen Green, Jordan Poole) even
     when production rank says otherwise; 2nd-round developers (Rollins,
     Dinwiddie) have to earn it on the floor first. But by age ~30, the
-    player has been priced by the market for years — their next deal is
+    player has been priced by the market for years, their next deal is
     driven by production, age, durability, and role, not by where they
     were drafted a decade ago.
 
@@ -1299,7 +1299,7 @@ def _tier_penalty_weight(age) -> float:
       age = 28  → 0.75
       age = 29  → 0.50
       age = 30  → 0.25
-      age ≥ 31  → 0.00  (veteran market — pedigree irrelevant)
+      age ≥ 31  → 0.00  (veteran market, pedigree irrelevant)
     """
     if age is None:
         # Unknown age: be conservative, apply full penalty rather than
@@ -1337,28 +1337,28 @@ VETMIN_COMP_TARGET_MAX = 5.0
 def find_comparables(features: dict, history: pd.DataFrame, n: int = 6) -> pd.DataFrame:
     """Match historical signings on **current-season Barrett** + age + position.
 
-    The target is matched on its sign-year (current) Barrett — the same snapshot
+    The target is matched on its sign-year (current) Barrett, the same snapshot
     the comps carry, so it's apples-to-apples. We do NOT match on the trailing
     (last-3-healthy-years) average: it reaches back to a declined/aged player's
     prime (Kyle Lowry, 40, current 1.0 but trailing 17.7 → Chris Paul comps,
-    $12M market). Walk-forward OOS (2021-25, minimums included) settled it —
+    $12M market). Walk-forward OOS (2021-25, minimums included) settled it, 
     matching on current form cuts declined-player market error 11.6M→4.5M and
     minimum-signing error 6.6M→4.8M, with no loss on stable players and (unlike
     min(current, trailing), which re-breaks them) no under-rating of breakouts.
     See scripts/experiment_match_score.py.
 
     Score-distance weight is age-scaled (1.0 + tier_weight):
-      - Young developers (≤27): 2.0× score — prevents Zion-style stretch
+      - Young developers (≤27): 2.0× score, prevents Zion-style stretch
         matches where a far-off score sneaks in via perfect age/position/
         tier alignment. Forces the pool to favor score-close comps.
-      - Veterans (≥31): 1.0× score — keeps age relatively important so
+      - Veterans (≥31): 1.0× score, keeps age relatively important so
         aging vets match other aging vets (Harden's paycut cohort), not
         young production-similar stars (Brunson/Booker).
 
     Distance = |comp_sign_yr_score − target_current_score| × (1 + tier_weight)
              + |age_diff| × 1.5
-             + position_penalty (broad G/F/C bucket — PG/SG are pooled)
-             + tier_penalty (faded by age — see _tier_penalty_weight)
+             + position_penalty (broad G/F/C bucket, PG/SG are pooled)
+             + tier_penalty (faded by age, see _tier_penalty_weight)
     """
     if history.empty:
         return history
@@ -1461,7 +1461,7 @@ def _signing_cap(signed_in_season: str) -> float:
 
 
 def _classify_context(row) -> str:
-    """Classify what KIND of signing this was — context the model can't see.
+    """Classify what KIND of signing this was, context the model can't see.
     Returns one of: 'Supermax', 'Free-agent raise', 'Rookie extension',
     'Paycut to stay', 'Standard new deal'."""
     cap = _signing_cap(str(row["signed_in"]))
@@ -1552,7 +1552,7 @@ def _scouting_take(features: dict, comps: pd.DataFrame) -> dict:
     weighted IQR range, X-factor narrative.
 
     Uses inverse-distance weights so the closest comparables count more
-    than the farthest — a tighter, more market-grounded second opinion."""
+    than the farthest, a tighter, more market-grounded second opinion."""
     if comps.empty:
         return {}
 
@@ -1651,7 +1651,7 @@ try:
     _fa_next = fetch_next_year_contracts(season_to_espn_year(CURRENT_SEASON), cache_v=7)
     def _is_free_agent(_n: str) -> bool:
         s = fmt_next_contract(_n, _fa_next)
-        return s == "RFA" or s == "—" or " PO" in s or " TO" in s
+        return s == "RFA" or s == ", " or " PO" in s or " TO" in s
     _fa_names = [n for n in active_names if _is_free_agent(n)] or active_names
 except Exception:
     _fa_names = active_names
@@ -1730,7 +1730,7 @@ _sb_col, _fa_col = st.columns([8, 2], vertical_alignment="center")
 with _fa_col:
     st.button("Free Agents Only", key="fa_btn", on_click=_toggle_fa,
               type=("primary" if _fa_on else "secondary"),
-              help="Show only free agents — UFA, RFA, and player/team options")
+              help="Show only free agents, UFA, RFA, and player/team options")
 with _sb_col:
     # Native dropdown: type to search, scrolls to the selected player on open,
     # themes with the page — no iframe / regex / scroll hacks. (Replaces the
@@ -1856,14 +1856,14 @@ def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
                          tertiary_label="current"):
     """Premium-analytics range bar: a shaded confidence band, a bright Model
     marker, an optional secondary (anchor) dot, and an optional tertiary hollow
-    ring (the player's current salary — shows the raise).
+    ring (the player's current salary, shows the raise).
 
     The band passed in already folds in the market second opinion (it spans
-    model ∪ market), so model-vs-market divergence reads as band width — there
+    model ∪ market), so model-vs-market divergence reads as band width, there
     is no separate market marker on the line.
 
     When scale_min_M / scale_max_M are supplied, the TRACK is fixed to that
-    span — the veteran-minimum floor up to the player's OWN capped max — so a
+    span, the veteran-minimum floor up to the player's OWN capped max, so a
     maxed-out player's marker pegs the right edge and everyone else reads as a
     fraction of their own ceiling; the endpoints are labelled min / max. Without
     a scale it auto-fits the player's own band."""
@@ -2236,7 +2236,7 @@ else:
         cur_sal = float(features["salary"])
         cur_sal_M = cur_sal / 1_000_000
         _explainer = (
-            'Market view unavailable — the queried player is currently '
+            'Market view unavailable, the queried player is currently '
             'supermax-tier, but the historical comparables pool for that '
             'cohort is too sparse (5+ Paycut signings, no "stayed at tier" '
             'comps). Anchoring the range on current salary instead.'
@@ -2290,7 +2290,7 @@ else:
           </div>
           {_confidence_bar_html(predicted_M, low_M, high_M, scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
           <div style="margin-top:0.95rem; font-size:0.78rem; color:var(--fg-4);">
-            Model prediction only — no comparable signings on file.
+            Model prediction only, no comparable signings on file.
           </div>
         </div>
         """
@@ -2307,13 +2307,13 @@ if _po_info and _po_info.get("type") == "player_option":
         _gap = _opt_M - predicted_M
         if _p_in >= 0.5:
             _ov, _oc = (
-                f"<b>Likely to opt in</b> ({_p_in*100:.0f}%) — his <b>${_opt_M:.0f}M</b> player "
+                f"<b>Likely to opt in</b> ({_p_in*100:.0f}%), his <b>${_opt_M:.0f}M</b> player "
                 f"option beats this ${predicted_M:.0f}M market projection by ${_gap:.0f}M, so he keeps "
                 f"the guaranteed money rather than signing a new deal.",
                 "var(--amber)")
         else:
             _ov, _oc = (
-                f"<b>Likely to opt out</b> ({(1 - _p_in)*100:.0f}%) — the market (${predicted_M:.0f}M) "
+                f"<b>Likely to opt out</b> ({(1 - _p_in)*100:.0f}%), the market (${predicted_M:.0f}M) "
                 f"projects ${-_gap:.0f}M above his <b>${_opt_M:.0f}M</b> player option, so he'd decline "
                 f"it to sign for more.",
                 "var(--accent-teal)")
@@ -2467,7 +2467,7 @@ else:
         # would crowd the table. Fall back to "—" when unknown.
         def _comp_draft_label(t, p):
             if not isinstance(t, str) or not t:
-                return "—"
+                return ", "
             if t == "Undrafted":
                 return "Undrafted"
             try:
@@ -2620,19 +2620,19 @@ try:
                 'border-radius:14px; padding:1.1rem 1.4rem; margin:0.4rem 0 0.2rem;">'
                 '<div style="font-size:0.7rem; color:var(--accent-teal); letter-spacing:0.12em; '
                 'text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">'
-                f'Likely suitors — projected offers (model value ${predicted_M:.0f}M)</div>{_ts_rows}</div>',
+                f'Likely suitors, projected offers (model value ${predicted_M:.0f}M)</div>{_ts_rows}</div>',
                 unsafe_allow_html=True,
             )
             # Explanatory blurb is rendered in the About expander below (keeps
             # the suitors card itself clean) — see _ts_about_note.
             _asof = str(getattr(_ts_land, "attrs", {}).get("as_of", "")).strip()
-            _fa_label = ("restricted FA — his team can match any offer"
+            _fa_label = ("restricted FA, his team can match any offer"
                          if _is_rfa else "unrestricted FA")
             _ts_about_note = (
-                f"Experimental — {_fa_label}. Each team's spending room is taken from its "
+                f"Experimental, {_fa_label}. Each team's spending room is taken from its "
                 "real, already-signed contracts for next season. A team's offer is this "
                 "player's projected value, nudged by how well he fits (a starter is worth "
-                "more than a bench piece) and capped by what the team can actually pay — its "
+                "more than a bench piece) and capped by what the team can actually pay, its "
                 "cap space, salary-cap exceptions, or, for his own team, Bird rights (which "
                 "let a club re-sign its own player even when over the cap). The order comes "
                 "from a model trained on 1,800+ past free-agent signings; it lands the "
@@ -2654,11 +2654,11 @@ with st.expander("About this prediction"):
         "(his Barrett Score) along with his age, position, years in the league, "
         "All-NBA honors, and deeper analytics, then estimates what a team would "
         "pay him on a new deal today.\n\n"
-        "**How accurate is it?** We tested it the fair way — on real signings "
+        "**How accurate is it?** We tested it the fair way, on real signings "
         "it had never seen. It's most reliable for role and rotation players "
         "(usually within \\$2–4M of the actual deal). For stars it's looser and "
         "tends to land about \\$5M low, because superstar contracts are shaped "
-        "by salary-cap rules and negotiations more than by on-court stats — so "
+        "by salary-cap rules and negotiations more than by on-court stats, so "
         "read star and max figures as a ballpark, not an exact quote."
     )
 
@@ -2685,7 +2685,7 @@ with st.expander("About this prediction"):
     # math is for curious users who want to see how the number was built.
     base_M = prediction["base"] / 1_000_000
     _pos_factor_note = (
-        f" (suppressed from ×{prediction['pos_mult_raw']:.2f} — base ≥28% of cap)"
+        f" (suppressed from ×{prediction['pos_mult_raw']:.2f}, base ≥28% of cap)"
         if prediction.get("pos_mult_suppressed") else ""
     )
     # Annotate the age multiplier with the tier label so the user sees WHY
@@ -2824,33 +2824,33 @@ with st.expander("About this prediction"):
         We start with the player's on-court value (his Barrett Score), adjust
         it step by step, then apply the NBA's salary rules:
 
-        1. **Recent form, per game** — we average his last three healthy
+        1. **Recent form, per game**, we average his last three healthy
            seasons (40+ games), leaning on the most recent. We use *per-game*
            production, not season totals, because teams pay for how good a
-           player is when he's on the floor — missed games are handled
+           player is when he's on the floor, missed games are handled
            separately, through deal length. (Otherwise an injury-shortened
            Curry season would look like a role player instead of the star
            he is.)
-        2. **Starting price** — what a player of that caliber typically earns,
+        2. **Starting price**, what a player of that caliber typically earns,
            based on this season's salaries.
-        3. **Age** — older players are paid less for the same production: a
+        3. **Age**, older players are paid less for the same production: a
            33-year-old signs for about 28% less than a 27-year-old with
            identical stats.
-        4. **Position** — the Barrett Score slightly overrates centers
-           (rebounds don't pay like points), so we trim that — except for
+        4. **Position**, the Barrett Score slightly overrates centers
+           (rebounds don't pay like points), so we trim that, except for
            max-level stars, who are paid by fixed rules regardless of
            position.
-        5. **Injury history** — players who miss a lot of games get marked
+        5. **Injury history**, players who miss a lot of games get marked
            down. Joel Embiid's history takes off about 22%, even though he's
            elite when healthy.
-        6. **Playoff boost** — a strong recent playoff run raises the number;
+        6. **Playoff boost**, a strong recent playoff run raises the number;
            teams pay off the freshest postseason memory (Bruce Brown, Andrew
            Wiggins, and Rui Hachimura all cashed in after one good run). It
-           only ever helps — players on non-playoff teams aren't penalized.
-        7. **The max salary** — by rule, no one can earn more than a set share
+           only ever helps, players on non-playoff teams aren't penalized.
+        7. **The max salary**, by rule, no one can earn more than a set share
            of the cap (25%, 30%, or 35%, depending on years in the league), so
            we cap the projection there.
-        8. **The supermax floor** — recent All-NBA stars who've stayed with
+        8. **The supermax floor**, recent All-NBA stars who've stayed with
            their team can command the very top of the scale, so we make sure
            the number reflects that (unless they're older veterans, who often
            take less).
@@ -2867,13 +2867,13 @@ with st.expander("About this prediction"):
         shooting) that the box score alone misses.
 
         ### What it doesn't know yet
-        - The fine print of re-signing rights ("Bird rights") — we approximate
+        - The fine print of re-signing rights ("Bird rights"), we approximate
           it from how long he's been with the team
         - Each team's exact cap space (it affects *which* team can pay, less so
           the overall value)
         - The player's agent and negotiating leverage
         - Off-court value (jersey sales, marketability)
-        - The future — we price recent play; nobody knows next year's stats
+        - The future, we price recent play; nobody knows next year's stats
 
         We only use contracts from 2012 on. Older deals came from an era with a
         much lower salary cap and different rules, and we found that including
@@ -2883,36 +2883,36 @@ with st.expander("About this prediction"):
         We graded it the honest way: train the model only on past seasons, then
         have it predict each later season it had never seen (2021–2025), and
         compare to what players actually signed for. Every real new contract
-        counts — minimum deals and max deals alike. Here's the typical miss, in
+        counts, minimum deals and max deals alike. Here's the typical miss, in
         real dollars:
 
-        - **Role players (under $7M):** about $1.2M off — within $3M roughly
+        - **Role players (under $7M):** about $1.2M off, within $3M roughly
           three times out of four
         - **Rotation players ($7–15M):** about $3.8M off
         - **Mid-tier ($15–25M):** about $5.5M off
         - **Stars ($25M+):** about $5–9M off, and usually a little *low*
 
         You may see a headline like "89% within 5% of the cap." It sounds
-        great, but measuring as a share of the cap flatters cheap deals — a $7M
+        great, but measuring as a share of the cap flatters cheap deals, a $7M
         miss counts as "within 5%" whether the player makes $50M or $3M. Bottom
         line: trust the dollar figure most for role and rotation players; for
         stars, treat it as a ballpark.
 
         We also tried several ways to sharpen the star estimates, but none held
-        up under fair testing, so we left them out — superstar money is settled
+        up under fair testing, so we left them out, superstar money is settled
         in negotiations, not on the stat sheet. As a rule, we only add something
         to the model if it provably improves accuracy in testing.
 
         ### What the number really means
-        It's a *fresh-deal* estimate — "what would this player command if he
-        signed a brand-new contract today" — priced in next season's
+        It's a *fresh-deal* estimate, "what would this player command if he
+        signed a brand-new contract today", priced in next season's
         salary-cap dollars. Because it's a market value, it ignores quirks of
         his *current* deal (a buyout, a hometown discount): a bought-out player
         is valued on how he plays, not on the bargain his old team got.
 
         The toughest misses are young players who break out and land a surprise
         max extension off a tiny prior salary (think Michael Porter Jr.,
-        Anfernee Simons, Jalen Suggs) — a call no stats model nails ahead of
+        Anfernee Simons, Jalen Suggs), a call no stats model nails ahead of
         time.
         """.replace("$", "\\$")
     )

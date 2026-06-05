@@ -2,8 +2,8 @@
 cache/fa_board_v1.json so the page loads instantly (no live prediction).
 
 The inverse of Likely Suitors: for each team, the free agents it should target
-this offseason — split into re-signing its own (Bird rights) and pursuing
-external players — each with the contract the team would realistically offer and
+this offseason, split into re-signing its own (Bird rights) and pursuing
+external players, each with the contract the team would realistically offer and
 why, gated for affordability (no banking on a player taking a huge paycut) and
 timeline fit (rebuilds pass on aging stars; that lives in team_suitors.desire).
 
@@ -53,7 +53,7 @@ def fa_status(name):
     s = fmt_nc(name, nc)
     if s == "RFA":
         return "RFA"
-    if s == "—":
+    if s == ", ":
         return "RFA" if normalize(name) in rookie else "UFA"
     if " PO" in s:
         return "Player Option"
@@ -132,7 +132,7 @@ def _grade(s):
 
 
 def best_fits_for(rows, needs, thin):
-    """The free agents who best MATCH this team — roster need + the team's positions
+    """The free agents who best MATCH this team, roster need + the team's positions
     of need + timeline desire + value, fused into one fit score. Deliberately distinct
     from the keenness-ranked board: it rewards genuine need-fillers and bargains over
     the most expensive name a team could sign, deduped to one pick per position."""
@@ -163,7 +163,7 @@ def best_fits_for(rows, needs, thin):
         scored.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
                        "status": x["status"], "value_M": val, "offer_M": off,
                        "fit": score, "grade": _grade(score), "ppos": p, "slot": slot,
-                       "why": f"{need_txt} — {val_txt}."})
+                       "why": f"{need_txt}, {val_txt}."})
     # One pick per position so the three fits diversify (no two C upgrades for the same hole).
     scored.sort(key=lambda s: -s["fit"])
     seen, out = set(), []
@@ -221,7 +221,7 @@ def board_for(team):
         "team": team,
         "name": str(t.get("team_name", team)),
         "cap_room_M": round(cap), "exception_M": round(exc),
-        "timeline": ts._TL_DISPLAY.get(tl, tl) or "—",
+        "timeline": ts._TL_DISPLAY.get(tl, tl) or ", ",
         "needs": need, "thin": thin,
         "best_fits": best_fits_for(rows, need, thin),
         "resign": [pack(x) for x in rows if x["is_inc"]],
@@ -236,7 +236,7 @@ for tm in teams:
     if b:
         boards[tm] = b
         print(f"  {tm:4} {b['timeline']:11} cap ${b['cap_room_M']:>3}M  "
-              f"resign {len(b['resign']):>2}  pursue {len(b['pursue']):>2}  needs {','.join(b['needs']) or '—'}")
+              f"resign {len(b['resign']):>2}  pursue {len(b['pursue']):>2}  needs {','.join(b['needs']) or ', '}")
 
 OUT.parent.mkdir(exist_ok=True)
 OUT.write_text(json.dumps({

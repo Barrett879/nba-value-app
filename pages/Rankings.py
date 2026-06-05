@@ -163,7 +163,7 @@ def _attach_prev_score(current_df: pd.DataFrame, prev_df: pd.DataFrame) -> pd.Da
       1. PRIMARY: merge on PLAYER_ID coerced to nullable Int64 (handles
          int64-vs-string dtype mismatches across cache versions).
       2. FALLBACK: for any row that PLAYER_ID didn't match, look up by
-         normalize(Player) — catches cases where one parquet has a
+         normalize(Player), catches cases where one parquet has a
          negative-hash ID (BBRef path) and the other has the real NBA
          Stats ID, or any dtype weirdness that slips through coercion.
 
@@ -266,7 +266,7 @@ with h4:
         st.markdown("""
         <div class="hero-card" style="background:var(--panel-2); border:1px solid var(--sky);">
             <div class="hero-label">Most Improved</div>
-            <div class="hero-name">—</div>
+            <div class="hero-name">, </div>
             <div class="hero-sub">No prior season to compare</div>
         </div>""", unsafe_allow_html=True)
 
@@ -330,7 +330,7 @@ _fig_bar.add_trace(go.Bar(
     # [0] index return nothing — which was the actual bug behind every
     # 'vs last season: -' tooltip, NOT a merge failure).
     customdata=[[d] for d in _top10["delta"].apply(
-        lambda v: f"{v:+.1f}" if not pd.isna(v) else "—"
+        lambda v: f"{v:+.1f}" if not pd.isna(v) else ", "
     )],
     hovertemplate=(
         "<b>%{y}</b><br>"
@@ -399,7 +399,7 @@ def _hsty_delta(v, _row):
 
 def _hsty_next(v, _row):
     s = str(v)
-    if s == "—":   return "color:var(--fg-6)"
+    if s == ", ":   return "color:var(--fg-6)"
     if " TO" in s: return "color:var(--orange);font-weight:700"
     if " PO" in s: return "color:var(--blue);font-weight:700"
     return ""
@@ -464,7 +464,7 @@ def render_splits_panel(player_name, season):
             r["barrett_score"]  = main["barrett_score"]
             r["MPG"]            = main["MPG"]
 
-        ts_str = f"{r['ts_pct']*100:.1f}%" if not pd.isna(r["ts_pct"]) else "—"
+        ts_str = f"{r['ts_pct']*100:.1f}%" if not pd.isna(r["ts_pct"]) else ", "
         rows_out.append({
             "#": i + 1, "Team": r["Team"],
             "GP": str(int(r["GP"])), "MPG": f"{r['MPG']:.2f}", "Total MIN": str(int(r["total_min"])),
@@ -804,7 +804,7 @@ if show_splits and splits_df is not None:
         return [""] * len(row)
 
     _nc_lookup = df.set_index("Player")["next_contract"]
-    sdisplay["Next $"] = sdisplay["Player"].map(_nc_lookup).fillna("—")
+    sdisplay["Next $"] = sdisplay["Player"].map(_nc_lookup).fillna(", ")
 
     if advanced:
         sfmt = sdisplay[["Player", "Team", "GP", "MPG",
@@ -827,7 +827,7 @@ if show_splits and splits_df is not None:
                             .apply(highlight_tot_row, axis=1)
         s_col_config = {
             "Next $":        st.column_config.TextColumn("Next $",
-                help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = UFA.",
+                help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray, = UFA.",
                 width="medium"),
             "MPG":           st.column_config.NumberColumn(format="%.2f"),
             "Base Score":    st.column_config.NumberColumn(format="%.2f"),
@@ -854,7 +854,7 @@ if show_splits and splits_df is not None:
                             .apply(highlight_tot_row, axis=1)
         s_col_config = {
             "Next $":        st.column_config.TextColumn("Next $",
-                help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray — = UFA.",
+                help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray, = UFA.",
                 width="medium"),
             "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
             "Salary":        st.column_config.NumberColumn(format="$%.2fM",
@@ -967,7 +967,7 @@ else:
         aligns={c: "right" for c in _r_num},
         numeric=_r_num,
         helps={
-            "Next $": "Next season salary. White = guaranteed · orange (TO) = team option · blue (PO) = player option · — = UFA.",
+            "Next $": "Next season salary. White = guaranteed · orange (TO) = team option · blue (PO) = player option ·, = UFA.",
             "Barrett Score": "Base Score × Availability Multiplier.",
             "Salary": "Player's actual salary this season. Purple = rookie-scale contract.",
             "Proj. Salary": "Salary earned by whoever holds the same rank by pay.",
@@ -1083,7 +1083,7 @@ if new_selected:
             caption = "★ = current season"
             if no_dlebron:
                 caption += (f"  ·  ⚠️ D-LEBRON unavailable for "
-                            f"{', '.join(no_dlebron)} — defense estimated from box-score stats "
+                            f"{', '.join(no_dlebron)}, defense estimated from box-score stats "
                             "(BLK, STL, DREB, PF) on the same scale")
             st.caption(caption)
 

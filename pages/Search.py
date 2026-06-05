@@ -414,7 +414,7 @@ if len(selected) == 1:
 
     if _dist.empty:
         st.info(
-            f"No league-wide component data on disk for {_bd_season} yet — "
+            f"No league-wide component data on disk for {_bd_season} yet, "
             "the percentile bars need that. Try a more recent season."
         )
     else:
@@ -545,7 +545,7 @@ if len(selected) == 1:
             st.markdown(_eq_html, unsafe_allow_html=True)
             st.caption(
                 "Each bar shows where this player ranked among all qualifying players "
-                f"in {_bd_season} — 90th percentile = better than 90% of the league. "
+                f"in {_bd_season}, 90th percentile = better than 90% of the league. "
                 "Hover any bar for the underlying formula and raw value."
             )
 
@@ -663,8 +663,8 @@ if len(selected) == 1:
                 f"Same components, ranked only against other {_peer_pos}s "
                 f"({_peer_n} qualifying player-seasons pooled across "
                 f"{_bd_season} + the previous season). A PG/SG playmaking "
-                f"at the 95th percentile of guards is different — usually "
-                f"more elite — than 95th vs the whole league, since "
+                f"at the 95th percentile of guards is different, usually "
+                f"more elite, than 95th vs the whole league, since "
                 f"Centers don't compete for that crown."
             )
 
