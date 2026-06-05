@@ -182,20 +182,22 @@ def best_fits_for(rows, needs, thin):
 def resign_plan(team, resign_rows):
     """Rank a team's own free agents by quality, run a cumulative payroll total
     from its committed salary, and flag who pushes it past the second apron (the
-    practical ceiling) — i.e. who it realistically can't afford to keep. Skipped
+    practical ceiling), i.e. who it realistically can't afford to keep. Skipped
     when we don't have a plausible committed payroll for the team."""
     committed = float((CAP_TABLE.get(team) or {}).get("committed_M") or 0.0)
     if committed < 50.0 or not resign_rows:
         return None
     running = committed
+    tax_r, apron2_r = round(TAX_M), round(APRON2_M)
     keeps = []
     for x in sorted(resign_rows, key=lambda r: -r["barrett"]):
         running += x["offer_M"]
-        zone = "ok" if running < TAX_M else "tax" if running < APRON2_M else "over"
+        run_r = round(running)                       # the displayed number drives the verdict
+        zone = "ok" if run_r < tax_r else "tax" if run_r < apron2_r else "over"
         keeps.append({"name": x["name"], "pos": x["pos"], "cost_M": x["offer_M"],
-                      "running_M": round(running), "zone": zone, "keep": running < APRON2_M})
-    return {"committed_M": round(committed), "tax_M": round(TAX_M),
-            "apron2_M": round(APRON2_M), "all_in_M": round(running), "keeps": keeps}
+                      "running_M": run_r, "zone": zone, "keep": run_r < apron2_r})
+    return {"committed_M": round(committed), "tax_M": tax_r,
+            "apron2_M": apron2_r, "all_in_M": round(running), "keeps": keeps}
 
 
 def board_for(team):

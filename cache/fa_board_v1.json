@@ -3094,7 +3094,7 @@
       "pos": "C",
       "cost_M": 6,
       "running_M": 200,
-      "zone": "ok",
+      "zone": "tax",
       "keep": true
      },
      {
@@ -3489,7 +3489,7 @@
       "pos": "PG/SG",
       "cost_M": 8,
       "running_M": 200,
-      "zone": "ok",
+      "zone": "tax",
       "keep": true
      },
      {
@@ -4522,7 +4522,7 @@
       "pos": "PF/C",
       "cost_M": 20,
       "running_M": 200,
-      "zone": "ok",
+      "zone": "tax",
       "keep": true
      },
      {
@@ -4945,7 +4945,7 @@
       "pos": "SG/PG",
       "cost_M": 8,
       "running_M": 200,
-      "zone": "ok",
+      "zone": "tax",
       "keep": true
      },
      {
@@ -4961,8 +4961,8 @@
       "pos": "SF/PF",
       "cost_M": 16,
       "running_M": 222,
-      "zone": "tax",
-      "keep": true
+      "zone": "over",
+      "keep": false
      },
      {
       "name": "Luke Kennard",
@@ -6695,7 +6695,7 @@
       "pos": "PF/C",
       "cost_M": 4,
       "running_M": 200,
-      "zone": "ok",
+      "zone": "tax",
       "keep": true
      }
     ]
@@ -8441,7 +8441,7 @@
       "pos": "C",
       "cost_M": 6,
       "running_M": 200,
-      "zone": "ok",
+      "zone": "tax",
       "keep": true
      },
      {
