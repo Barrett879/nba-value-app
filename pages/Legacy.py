@@ -599,7 +599,8 @@ with tab_team:
     rush_df = (
         all_df[all_df["Team"] == rush_team]
         .sort_values("barrett_score", ascending=False)
-        .head(4)
+        .drop_duplicates("Player")   # one face per player — the 4 greatest PLAYERS,
+        .head(4)                     # not the 4 best seasons of a single star
         .reset_index(drop=True)
     )
 
