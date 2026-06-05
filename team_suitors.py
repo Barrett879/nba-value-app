@@ -36,6 +36,12 @@ POS_OVERRIDE_PATH = _DATA / "player_positions_override.csv"  # user corrections 
 DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
 ROTATION_DEPTH = 3      # starter/rotation boundary: slot 0=starter, 1=key sub, 2=depth (labels)
 INTEREST_DEPTH = 5      # in his market if he'd be ~top-5 at the position (own team gets +2 leash)
+# A max-salary incumbent is a locked-in starter: you don't sign a cheaper free
+# agent to "start over" your franchise player because he had a down/injured year
+# (e.g. an 18-Barrett Ja Morant on $39M). Floor such an incumbent's depth-chart
+# quality so only a genuine upgrade out-rates him — display/offers are unchanged.
+_LOCK_SALARY = 25_000_000   # committed-starter / near-max salary, in dollars
+_LOCK_FLOOR = 27.0          # ...rates at least fringe-starter in the depth chart
 
 # His current team's re-sign pull. Predictive backtest (1,810 signings — does the board
 # rank the ACTUAL signing team highly?): 49% of FAs re-sign with their own team, and
@@ -276,9 +282,16 @@ def roster_need(target_score: float, target_pos: str, team_roster: pd.DataFrame)
     # SF — a secondary-only-for-both overlap doesn't count as competing for minutes.
     def _competes(p):
         return (_primary_position(p) in elig) or (tgt_primary in _eligible_positions(p))
-    inc = (team_roster[team_roster["pos"].map(_competes)]
-           .sort_values("barrett", ascending=False).reset_index(drop=True))
-    scores = inc["barrett"].astype(float).tolist()
+    inc = team_roster[team_roster["pos"].map(_competes)].copy()
+    # Depth-chart quality: a max-salary incumbent is a locked-in starter, so floor
+    # his quality — a cheaper free agent doesn't "start over" a franchise player
+    # who had a down/injured year. (Display & offers still use the real score.)
+    _sal = (inc["salary"] if "salary" in inc.columns
+            else pd.Series([0.0] * len(inc), index=inc.index))
+    inc["_q"] = [max(float(b), _LOCK_FLOOR if float(s or 0) >= _LOCK_SALARY else 0.0)
+                 for b, s in zip(inc["barrett"].astype(float), _sal)]
+    inc = inc.sort_values("_q", ascending=False).reset_index(drop=True)
+    scores = inc["_q"].astype(float).tolist()
     slot = sum(1 for s in scores if s > target_score)   # how many incumbents are better
     if slot < len(scores):                              # he leapfrogs the incumbent at this slot
         d = inc.iloc[slot]
@@ -561,7 +574,7 @@ def build_rosters(ranked: pd.DataFrame) -> pd.DataFrame:
     per-player ranked table (build_ranked_projected). Robust to column-name
     variants; returns an empty frame if the needed columns aren't present so the
     caller can degrade gracefully."""
-    empty = pd.DataFrame(columns=["team", "player", "pos", "barrett"])
+    empty = pd.DataFrame(columns=["team", "player", "pos", "barrett", "salary"])
     if ranked is None or len(ranked) == 0:
         return empty
     pick = lambda *names: next((c for c in names if c in ranked.columns), None)
@@ -569,11 +582,15 @@ def build_rosters(ranked: pd.DataFrame) -> pd.DataFrame:
     pcol = pick("Player", "PLAYER_NAME", "name")
     poscol = pick("position_detailed", "pos", "position", "POSITION", "Pos")
     bcol = pick("barrett_score", "barrett", "Barrett")
+    scol = pick("salary", "Salary")
     if not all([tcol, pcol, poscol, bcol]):
         return empty
-    out = ranked[[tcol, pcol, poscol, bcol]].copy()
-    out.columns = ["team", "player", "pos", "barrett"]
+    cols = [tcol, pcol, poscol, bcol] + ([scol] if scol else [])
+    out = ranked[cols].copy()
+    out.columns = ["team", "player", "pos", "barrett"] + (["salary"] if scol else [])
     out["barrett"] = pd.to_numeric(out["barrett"], errors="coerce")
+    out["salary"] = (pd.to_numeric(out["salary"], errors="coerce").fillna(0.0)
+                     if "salary" in out.columns else 0.0)
     return out.dropna(subset=["team", "pos", "barrett"])
 
 
