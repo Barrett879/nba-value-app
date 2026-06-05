@@ -143,7 +143,7 @@ if _get_ctx() is not None:
         st.session_state.cp_view_seg = _seg_labels[0] if _MODE == "player" else _seg_labels[1]
     st.markdown(
         "<style>"
-        "div[data-testid='stSegmentedControl']{width:100%}"
+        "div[data-testid='stSegmentedControl']{width:100%;padding-bottom:1rem}"
         "div[data-testid='stSegmentedControl']>div{display:flex !important;width:100%;gap:6px}"
         "div[data-testid='stSegmentedControl']>div>*{flex:1 1 0 !important}"
         "div[data-testid='stSegmentedControl'] label{flex:1 1 0 !important}"

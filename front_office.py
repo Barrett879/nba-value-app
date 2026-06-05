@@ -42,7 +42,7 @@ _GRADE_COLOR = {"A+": "var(--value-good)", "A": "var(--accent-teal)",
 
 _FIT_CSS = """
 <style>
-.hv-fits { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.2rem 0 0.4rem; }
+.hv-fits { display:flex; gap:0.7rem; flex-wrap:wrap; margin:0.2rem 0 1rem; }
 .hv-fit { flex:1 1 0; min-width:210px; background:var(--panel-solid);
     border:1px solid var(--panel-line); border-top:3px solid var(--c);
     border-radius:10px; padding:0.95rem 1rem 0.9rem; position:relative; box-shadow:var(--shadow-card); }
@@ -79,15 +79,6 @@ def render_front_office():
         return
     DATA = json.loads(_BOARD.read_text())
     TEAMS = DATA["teams"]
-
-    # Even out the vertical rhythm: Streamlit's per-element caption/divider margins
-    # stack on top of the block gap and make the spacing lumpy. Normalise them.
-    st.markdown(
-        "<style>"
-        "section[data-testid='stMain'] [data-testid='stCaptionContainer']"
-        "{margin-top:0.3rem !important;margin-bottom:0.2rem !important}"
-        "section[data-testid='stMain'] hr{margin:0.6rem 0 0.9rem !important}"
-        "</style>", unsafe_allow_html=True)
 
     st.caption(
         "The contract predictor from the team's side of the table. Pick a club and see the free "
