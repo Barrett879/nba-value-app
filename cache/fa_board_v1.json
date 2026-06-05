@@ -2,7 +2,7 @@
  "season": "2025-26",
  "contract_season": "2026-27",
  "cap_M": 165.0,
- "n_free_agents": 123,
+ "n_free_agents": 115,
  "teams": {
   "ATL": {
    "team": "ATL",
@@ -44,17 +44,17 @@
      "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
     },
     {
-     "name": "Andrew Wiggins",
+     "name": "Kelly Oubre Jr.",
      "pos": "SF/PF",
-     "from": "MIA",
-     "status": "Player Option",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "fit": 68,
+     "from": "PHI",
+     "status": "UFA",
+     "value_M": 12.4,
+     "offer_M": 11,
+     "fit": 66,
      "grade": "A-",
      "ppos": "SF",
      "slot": 1,
-     "why": "Adds a needed second body at SF \u2014 a bargain at $15M against his $19.3M market."
+     "why": "Adds a needed second body at SF \u2014 a bargain at $11M against his $12.4M market."
     }
    ],
    "resign": [
@@ -132,18 +132,6 @@
     }
    ],
    "pursue": [
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Jonathan Kuminga"
-    },
     {
      "name": "Deandre Ayton",
      "pos": "C",
@@ -347,6 +335,18 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Buddy Hield"
+    },
+    {
+     "name": "Collin Gillespie",
+     "pos": "PG",
+     "status": "UFA",
+     "from": "PHX",
+     "value_M": 14.6,
+     "offer_M": 9,
+     "barrett": 21.6,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Gabe Vincent"
     }
    ]
   },
@@ -527,18 +527,6 @@
      "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 17,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Noah Clowney"
-    },
-    {
      "name": "Donte DiVincenzo",
      "pos": "PG/SG",
      "status": "UFA",
@@ -657,6 +645,18 @@
      "age": 27,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
+    },
+    {
+     "name": "Jonathan Kuminga",
+     "pos": "SF/PF",
+     "status": "Team Option",
+     "from": "ATL",
+     "value_M": 12.3,
+     "offer_M": 11,
+     "barrett": 11.2,
+     "age": 23,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Noah Clowney"
     }
    ]
   },
@@ -687,17 +687,17 @@
      "why": "Rotation depth at SG \u2014 a bargain at $3M against his $5.6M market."
     },
     {
-     "name": "Draymond Green",
-     "pos": "PF/C",
-     "from": "GSW",
-     "status": "Player Option",
-     "value_M": 4.0,
-     "offer_M": 2,
-     "fit": 68,
-     "grade": "A-",
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "status": "UFA",
+     "value_M": 16.0,
+     "offer_M": 10,
+     "fit": 65,
+     "grade": "B+",
      "ppos": "PF",
      "slot": 3,
-     "why": "Rotation depth at PF \u2014 a bargain at $2M against his $4.0M market."
+     "why": "Rotation depth at PF \u2014 a bargain at $10M against his $16.0M market."
     },
     {
      "name": "Andre Drummond",
@@ -775,18 +775,6 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Luka Garza"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Sam Hauser"
     },
     {
      "name": "Kevin Porter Jr.",
@@ -967,6 +955,18 @@
      "age": 33,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Sam Hauser"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 16.3,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Sam Hauser"
     }
    ]
   },
@@ -1133,18 +1133,6 @@
      "why": "Rotation depth behind Grant Williams"
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 12,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Grant Williams"
-    },
-    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "status": "UFA",
@@ -1251,6 +1239,18 @@
      "age": 30,
      "tool": "Cap room",
      "why": "Rotation depth behind Grant Williams"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "SAS",
+     "value_M": 16.0,
+     "offer_M": 14,
+     "barrett": 12.4,
+     "age": 34,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Grant Williams"
     }
    ]
   },
@@ -1296,17 +1296,17 @@
      "why": "Upgrades on Anfernee Simons at SG \u2014 fair value at $41M."
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "from": "MIA",
-     "status": "Player Option",
-     "value_M": 19.3,
-     "offer_M": 19,
-     "fit": 81,
-     "grade": "A",
-     "ppos": "SF",
-     "slot": 0,
-     "why": "Upgrades on Matas Buzelis at SF \u2014 fair value at $19M."
+     "name": "Kristaps Porzi\u0146\u0123is",
+     "pos": "PF/C",
+     "from": "GSW",
+     "status": "UFA",
+     "value_M": 15.7,
+     "offer_M": 14,
+     "fit": 73,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 1,
+     "why": "Adds a needed second body at PF \u2014 a bargain at $14M against his $15.7M market."
     }
    ],
    "resign": [
@@ -1443,18 +1443,6 @@
      "age": 23,
      "tool": "Cap room",
      "why": "Rotation depth behind Isaac Okoro"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 19,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Matas Buzelis"
     },
     {
      "name": "Neemias Queta",
@@ -1599,6 +1587,18 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Tre Jones"
+    },
+    {
+     "name": "Ayo Dosunmu",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "MIN",
+     "value_M": 18.3,
+     "offer_M": 11,
+     "barrett": 17.6,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Collin Sexton"
     }
    ]
   },
@@ -1643,32 +1643,20 @@
      "why": "Rotation depth at SF \u2014 a bargain at $2M against his $7.5M market."
     },
     {
-     "name": "Al Horford",
-     "pos": "C/PF",
-     "from": "GSW",
-     "status": "Player Option",
-     "value_M": 6.4,
+     "name": "Brook Lopez",
+     "pos": "C",
+     "from": "LAC",
+     "status": "Team Option",
+     "value_M": 8.8,
      "offer_M": 2,
      "fit": 68,
      "grade": "A-",
      "ppos": "C",
      "slot": 2,
-     "why": "Rotation depth at C \u2014 a bargain at $2M against his $6.4M market."
+     "why": "Rotation depth at C \u2014 a bargain at $2M against his $8.8M market."
     }
    ],
    "resign": [
-    {
-     "name": "James Harden",
-     "pos": "PG/SG",
-     "status": "Player Option",
-     "from": "CLE",
-     "value_M": 47.1,
-     "offer_M": 47,
-     "barrett": 32.5,
-     "age": 36,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
     {
      "name": "Dean Wade",
      "pos": "SF/PF",
@@ -1720,18 +1708,6 @@
    ],
    "pursue": [
     {
-     "name": "Al Horford",
-     "pos": "C/PF",
-     "status": "Player Option",
-     "from": "GSW",
-     "value_M": 6.4,
-     "offer_M": 2,
-     "barrett": 11.2,
-     "age": 40,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Andre Drummond",
      "pos": "C",
      "status": "UFA",
@@ -1764,18 +1740,6 @@
      "offer_M": 2,
      "barrett": 20.5,
      "age": 34,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Draymond Green",
-     "pos": "PF/C",
-     "status": "Player Option",
-     "from": "GSW",
-     "value_M": 4.0,
-     "offer_M": 2,
-     "barrett": 16.0,
-     "age": 36,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -1932,6 +1896,30 @@
      "offer_M": 2,
      "barrett": 8.6,
      "age": 32,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Anthony Gill",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "WAS",
+     "value_M": 3.1,
+     "offer_M": 2,
+     "barrett": 6.8,
+     "age": 33,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Drew Eubanks",
+     "pos": "C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 3.1,
+     "offer_M": 2,
+     "barrett": 5.7,
+     "age": 29,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     }
@@ -2091,18 +2079,6 @@
      "why": "Upgrade \u00b7 would start over Daniel Gafford"
     },
     {
-     "name": "James Harden",
-     "pos": "PG/SG",
-     "status": "Player Option",
-     "from": "CLE",
-     "value_M": 47.1,
-     "offer_M": 47,
-     "barrett": 32.5,
-     "age": 36,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Brandon Williams"
-    },
-    {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
      "status": "UFA",
@@ -2187,18 +2163,6 @@
      "why": "Upgrade \u00b7 would start over Brandon Williams"
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Naji Marshall"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -2269,6 +2233,30 @@
      "age": 27,
      "tool": "Cap room",
      "why": "Rotation depth behind Max Christie"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 19.5,
+     "offer_M": 12,
+     "barrett": 16.7,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind P.J. Washington"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 13.3,
+     "offer_M": 12,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Marvin Bagley III"
     }
    ]
   },
@@ -2509,18 +2497,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Al Horford",
-     "pos": "C/PF",
-     "status": "Player Option",
-     "from": "GSW",
-     "value_M": 6.4,
-     "offer_M": 5,
-     "barrett": 11.2,
-     "age": 40,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Russell Westbrook",
      "pos": "PG/SG",
      "status": "UFA",
@@ -2605,14 +2581,26 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Draymond Green",
-     "pos": "PF/C",
-     "status": "Player Option",
-     "from": "GSW",
-     "value_M": 4.0,
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "status": "Team Option",
+     "from": "SAS",
+     "value_M": 8.9,
+     "offer_M": 6,
+     "barrett": 17.7,
+     "age": 24,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Nick Richards",
+     "pos": "C",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 5.8,
      "offer_M": 4,
-     "barrett": 16.0,
-     "age": 36,
+     "barrett": 4.6,
+     "age": 28,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     }
@@ -2643,19 +2631,6 @@
      "why": "Upgrades on Tobias Harris at PF \u2014 a bargain at $35M against his $39.8M market."
     },
     {
-     "name": "James Harden",
-     "pos": "PG/SG",
-     "from": "CLE",
-     "status": "Player Option",
-     "value_M": 47.1,
-     "offer_M": 35,
-     "fit": 67,
-     "grade": "A-",
-     "ppos": "PG",
-     "slot": 1,
-     "why": "Adds a needed second body at PG \u2014 a bargain at $35M against his $47.1M market."
-    },
-    {
      "name": "Austin Reaves",
      "pos": "SG/PG",
      "from": "LAL",
@@ -2667,6 +2642,19 @@
      "ppos": "SG",
      "slot": 1,
      "why": "Adds a needed second body at SG \u2014 a bargain at $35M against his $41.2M market."
+    },
+    {
+     "name": "Russell Westbrook",
+     "pos": "PG/SG",
+     "from": "SAC",
+     "status": "UFA",
+     "value_M": 5.4,
+     "offer_M": 5,
+     "fit": 65,
+     "grade": "B+",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 fair value at $5M."
     }
    ],
    "resign": [
@@ -2757,18 +2745,6 @@
      "why": "Rotation depth behind Duncan Robinson"
     },
     {
-     "name": "James Harden",
-     "pos": "PG/SG",
-     "status": "Player Option",
-     "from": "CLE",
-     "value_M": 47.1,
-     "offer_M": 35,
-     "barrett": 32.5,
-     "age": 36,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Duncan Robinson"
-    },
-    {
      "name": "LeBron James",
      "pos": "PF/SF",
      "status": "UFA",
@@ -2815,18 +2791,6 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Duncan Robinson"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 17,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Ausar Thompson"
     },
     {
      "name": "Neemias Queta",
@@ -2959,6 +2923,30 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Paul Reed"
+    },
+    {
+     "name": "Anfernee Simons",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 15.3,
+     "offer_M": 12,
+     "barrett": 12.7,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Javonte Green"
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "status": "RFA",
+     "from": "PHX",
+     "value_M": 19.1,
+     "offer_M": 17,
+     "barrett": 17.5,
+     "age": 24,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Paul Reed"
     }
    ]
   },
@@ -2977,17 +2965,17 @@
    ],
    "best_fits": [
     {
-     "name": "Zach LaVine",
+     "name": "Pelle Larsson",
      "pos": "SG/SF",
-     "from": "SAC",
-     "status": "Player Option",
-     "value_M": 11.9,
-     "offer_M": 7,
-     "fit": 72,
+     "from": "MIA",
+     "status": "Team Option",
+     "value_M": 13.1,
+     "offer_M": 8,
+     "fit": 71,
      "grade": "A-",
      "ppos": "SG",
      "slot": 3,
-     "why": "Rotation depth at SG \u2014 a bargain at $7M against his $11.9M market."
+     "why": "Rotation depth at SG \u2014 a bargain at $8M against his $13.1M market."
     },
     {
      "name": "Kevin Porter Jr.",
@@ -3042,18 +3030,6 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Al Horford",
-     "pos": "C/PF",
-     "status": "Player Option",
-     "from": "GSW",
-     "value_M": 6.4,
-     "offer_M": 6,
-     "barrett": 11.2,
-     "age": 40,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
      "name": "Gary Payton II",
      "pos": "SG/SF",
      "status": "UFA",
@@ -3074,18 +3050,6 @@
      "offer_M": 4,
      "barrett": 7.7,
      "age": 26,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Draymond Green",
-     "pos": "PF/C",
-     "status": "Player Option",
-     "from": "GSW",
-     "value_M": 4.0,
-     "offer_M": 4,
-     "barrett": 16.0,
-     "age": 36,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
     },
@@ -3224,18 +3188,6 @@
      "why": "Rotation depth behind Gui Santos"
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 12,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Moses Moody"
-    },
-    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "status": "UFA",
@@ -3330,6 +3282,18 @@
      "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Moses Moody"
+    },
+    {
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "status": "Team Option",
+     "from": "BKN",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 13.7,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Al Horford"
     }
    ]
   },
@@ -3374,17 +3338,17 @@
      "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
     },
     {
-     "name": "Draymond Green",
-     "pos": "PF/C",
-     "from": "GSW",
-     "status": "Player Option",
-     "value_M": 4.0,
-     "offer_M": 2,
-     "fit": 68,
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 20.7,
+     "offer_M": 15,
+     "fit": 66,
      "grade": "A-",
-     "ppos": "PF",
-     "slot": 3,
-     "why": "Rotation depth at PF \u2014 a bargain at $2M against his $4.0M market."
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG \u2014 a bargain at $15M against his $20.7M market."
     }
    ],
    "resign": [
@@ -3449,18 +3413,6 @@
      "age": 34,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Reed Sheppard"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Tari Eason"
     },
     {
      "name": "Ayo Dosunmu",
@@ -3629,6 +3581,18 @@
      "age": 27,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Josh Okogie"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 16.3,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Reed Sheppard"
     }
    ]
   },
@@ -3671,17 +3635,17 @@
      "why": "Adds a needed second body at SG \u2014 a bargain at $15M against his $18.7M market."
     },
     {
-     "name": "Andrew Wiggins",
+     "name": "Kelly Oubre Jr.",
      "pos": "SF/PF",
-     "from": "MIA",
-     "status": "Player Option",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "fit": 76,
+     "from": "PHI",
+     "status": "UFA",
+     "value_M": 12.4,
+     "offer_M": 11,
+     "fit": 74,
      "grade": "A",
      "ppos": "SF",
      "slot": 1,
-     "why": "Adds a needed second body at SF \u2014 a bargain at $15M against his $19.3M market."
+     "why": "Adds a needed second body at SF \u2014 a bargain at $11M against his $12.4M market."
     }
    ],
    "resign": [
@@ -3758,18 +3722,6 @@
      "age": 34,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind T.J. McConnell"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Micah Potter"
     },
     {
      "name": "Ayo Dosunmu",
@@ -3926,6 +3878,18 @@
      "age": 30,
      "tool": "Cap room",
      "why": "Rotation depth behind Jay Huff"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 15.3,
+     "offer_M": 12,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jay Huff"
     }
    ]
   },
@@ -4055,18 +4019,6 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Brook Lopez"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Bennedict Mathurin"
     },
     {
      "name": "Ayo Dosunmu",
@@ -4259,6 +4211,18 @@
      "age": 27,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Jordan Miller"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Upgrade \u00b7 would start over Bennedict Mathurin"
     }
    ]
   },
@@ -4290,17 +4254,17 @@
      "why": "Upgrades on Deandre Ayton at C \u2014 fair value at $50M."
     },
     {
-     "name": "Andrew Wiggins",
+     "name": "Kelly Oubre Jr.",
      "pos": "SF/PF",
-     "from": "MIA",
-     "status": "Player Option",
-     "value_M": 19.3,
-     "offer_M": 17,
+     "from": "PHI",
+     "status": "UFA",
+     "value_M": 12.4,
+     "offer_M": 11,
      "fit": 74,
      "grade": "A",
      "ppos": "SF",
      "slot": 1,
-     "why": "Adds a needed second body at SF \u2014 a bargain at $17M against his $19.3M market."
+     "why": "Adds a needed second body at SF \u2014 a bargain at $11M against his $12.4M market."
     },
     {
      "name": "Harrison Barnes",
@@ -4416,18 +4380,6 @@
      "why": "Upgrade \u00b7 would start over Deandre Ayton"
     },
     {
-     "name": "James Harden",
-     "pos": "PG/SG",
-     "status": "Player Option",
-     "from": "CLE",
-     "value_M": 47.1,
-     "offer_M": 42,
-     "barrett": 32.5,
-     "age": 36,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Austin Reaves"
-    },
-    {
      "name": "Isaiah Hartenstein",
      "pos": "C",
      "status": "Team Option",
@@ -4450,18 +4402,6 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Deandre Ayton"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 17,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Rui Hachimura"
     },
     {
      "name": "Norman Powell",
@@ -4618,6 +4558,30 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Jaxson Hayes"
+    },
+    {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "status": "RFA",
+     "from": "LAC",
+     "value_M": 19.7,
+     "offer_M": 18,
+     "barrett": 17.5,
+     "age": 23,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Rui Hachimura"
+    },
+    {
+     "name": "Collin Gillespie",
+     "pos": "PG",
+     "status": "UFA",
+     "from": "PHX",
+     "value_M": 14.6,
+     "offer_M": 11,
+     "barrett": 21.6,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Marcus Smart"
     }
    ]
   },
@@ -4737,18 +4701,6 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Santi Aldama"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 19,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Cedric Coward"
     },
     {
      "name": "Neemias Queta",
@@ -4905,6 +4857,18 @@
      "age": 24,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Cedric Coward"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 16.3,
+     "age": 25,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Ty Jerome"
     }
    ]
   },
@@ -4960,18 +4924,6 @@
     }
    ],
    "resign": [
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 19,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
     {
      "name": "Norman Powell",
      "pos": "SG/SF",
@@ -5254,19 +5206,6 @@
      "why": "Upgrades on Ryan Rollins at SG \u2014 a bargain at $27M against his $41.2M market."
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "from": "MIA",
-     "status": "Player Option",
-     "value_M": 19.3,
-     "offer_M": 17,
-     "fit": 78,
-     "grade": "A",
-     "ppos": "SF",
-     "slot": 1,
-     "why": "Adds a needed second body at SF \u2014 a bargain at $17M against his $19.3M market."
-    },
-    {
      "name": "LeBron James",
      "pos": "PF/SF",
      "from": "LAL",
@@ -5278,6 +5217,19 @@
      "ppos": "PF",
      "slot": 0,
      "why": "Upgrades on Giannis Antetokounmpo at PF \u2014 a bargain at $27M against his $39.8M market."
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "from": "HOU",
+     "status": "RFA",
+     "value_M": 10.1,
+     "offer_M": 6,
+     "fit": 71,
+     "grade": "A-",
+     "ppos": "SF",
+     "slot": 3,
+     "why": "Rotation depth at SF \u2014 a bargain at $6M against his $10.1M market."
     }
    ],
    "resign": [
@@ -5366,18 +5318,6 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Ryan Rollins"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 17,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Kyle Kuzma"
     },
     {
      "name": "Isaiah Hartenstein",
@@ -5570,6 +5510,18 @@
      "age": 27,
      "tool": "Cap room",
      "why": "Rotation depth behind Cam Thomas"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 13.3,
+     "offer_M": 10,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jericho Sims"
     }
    ]
   },
@@ -5723,18 +5675,6 @@
      "age": 34,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Donte DiVincenzo"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Jaden McDaniels"
     },
     {
      "name": "Kevin Porter Jr.",
@@ -5903,6 +5843,18 @@
      "age": 23,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Kyle Anderson"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 10.1,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Kyle Anderson"
     }
    ]
   },
@@ -5984,18 +5936,6 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Upgrade \u00b7 would start over Derik Queen"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Saddiq Bey"
     },
     {
      "name": "Deandre Ayton",
@@ -6188,6 +6128,18 @@
      "age": 30,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Herbert Jones"
+    },
+    {
+     "name": "Anfernee Simons",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 15.3,
+     "offer_M": 9,
+     "barrett": 12.7,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Bryce McGowens"
     }
    ]
   },
@@ -6276,18 +6228,6 @@
      "offer_M": 4,
      "barrett": 4.9,
      "age": 33,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Jose Alvarado",
-     "pos": "PG/SG",
-     "status": "Player Option",
-     "from": "NYK",
-     "value_M": 3.9,
-     "offer_M": 4,
-     "barrett": 7.6,
-     "age": 28,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
     },
@@ -6450,18 +6390,6 @@
      "why": "Rotation depth behind Mitchell Robinson"
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 12,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Landry Shamet"
-    },
-    {
      "name": "Anfernee Simons",
      "pos": "PG/SG",
      "status": "UFA",
@@ -6520,6 +6448,18 @@
      "age": 35,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Mitchell Robinson"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "DET",
+     "value_M": 14.4,
+     "offer_M": 9,
+     "barrett": 16.7,
+     "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jeremy Sochan"
     }
    ]
   },
@@ -6616,18 +6556,6 @@
    ],
    "pursue": [
     {
-     "name": "Al Horford",
-     "pos": "C/PF",
-     "status": "Player Option",
-     "from": "GSW",
-     "value_M": 6.4,
-     "offer_M": 2,
-     "barrett": 11.2,
-     "age": 40,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Andre Drummond",
      "pos": "C",
      "status": "UFA",
@@ -6660,18 +6588,6 @@
      "offer_M": 2,
      "barrett": 20.5,
      "age": 34,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Draymond Green",
-     "pos": "PF/C",
-     "status": "Player Option",
-     "from": "GSW",
-     "value_M": 4.0,
-     "offer_M": 2,
-     "barrett": 16.0,
-     "age": 36,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -7272,18 +7188,6 @@
      "why": "Rotation depth behind Dominick Barlow"
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Quentin Grimes"
-    },
-    {
      "name": "Deandre Ayton",
      "pos": "C",
      "status": "Player Option",
@@ -7462,6 +7366,18 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Cameron Payne"
+    },
+    {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "status": "RFA",
+     "from": "LAC",
+     "value_M": 19.7,
+     "offer_M": 15,
+     "barrett": 17.5,
+     "age": 23,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Quentin Grimes"
     }
    ]
   },
@@ -7490,19 +7406,6 @@
      "why": "Upgrades on Mark Williams at C \u2014 a bargain at $15M against his $23.3M market."
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "from": "MIA",
-     "status": "Player Option",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "fit": 85,
-     "grade": "A+",
-     "ppos": "SF",
-     "slot": 0,
-     "why": "Upgrades on Dillon Brooks at SF \u2014 a bargain at $15M against his $19.3M market."
-    },
-    {
      "name": "Trendon Watford",
      "pos": "PF/SF",
      "from": "PHI",
@@ -7514,6 +7417,19 @@
      "ppos": "PF",
      "slot": 3,
      "why": "Rotation depth at PF \u2014 a bargain at $2M against his $2.9M market."
+    },
+    {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "from": "LAC",
+     "status": "RFA",
+     "value_M": 19.7,
+     "offer_M": 15,
+     "fit": 61,
+     "grade": "B+",
+     "ppos": "SF",
+     "slot": 1,
+     "why": "Adds a needed second body at SF \u2014 a bargain at $15M against his $19.7M market."
     }
    ],
    "resign": [
@@ -7579,18 +7495,6 @@
     }
    ],
    "pursue": [
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Upgrade \u00b7 would start over Dillon Brooks"
-    },
     {
      "name": "Deandre Ayton",
      "pos": "C",
@@ -7794,6 +7698,18 @@
      "age": 33,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Dillon Brooks"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 8.0,
+     "offer_M": 7,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -7875,18 +7791,6 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Robert Williams III"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Toumani Camara"
     },
     {
      "name": "Ayo Dosunmu",
@@ -8079,6 +7983,18 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind V\u00edt Krej\u010d\u00ed"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 15.8,
+     "offer_M": 10,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Scoot Henderson"
     }
    ]
   },
@@ -8134,18 +8050,6 @@
     }
    ],
    "resign": [
-    {
-     "name": "Zach LaVine",
-     "pos": "SG/SF",
-     "status": "Player Option",
-     "from": "SAC",
-     "value_M": 11.9,
-     "offer_M": 12,
-     "barrett": 15.6,
-     "age": 31,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
     {
      "name": "Precious Achiuwa",
      "pos": "PF/C",
@@ -8207,18 +8111,6 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Maxime Raynaud"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Precious Achiuwa"
     },
     {
      "name": "Deandre Ayton",
@@ -8399,6 +8291,18 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Precious Achiuwa"
+    },
+    {
+     "name": "Collin Sexton",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 13.9,
+     "offer_M": 11,
+     "barrett": 14.5,
+     "age": 27,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Nique Clifford"
     }
    ]
   },
@@ -8429,19 +8333,6 @@
      "why": "Adds a needed second body at C \u2014 a bargain at $15M against his $23.3M market."
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "from": "MIA",
-     "status": "Player Option",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "fit": 70,
-     "grade": "A-",
-     "ppos": "SF",
-     "slot": 1,
-     "why": "Adds a needed second body at SF \u2014 a bargain at $15M against his $19.3M market."
-    },
-    {
      "name": "Anthony Gill",
      "pos": "PF/C",
      "from": "WAS",
@@ -8453,6 +8344,19 @@
      "ppos": "PF",
      "slot": 4,
      "why": "Rotation depth at PF \u2014 a bargain at $2M against his $3.1M market."
+    },
+    {
+     "name": "Taurean Prince",
+     "pos": "SF/SG",
+     "from": "MIL",
+     "status": "UFA",
+     "value_M": 4.0,
+     "offer_M": 2,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "SF",
+     "slot": 4,
+     "why": "Rotation depth at SF \u2014 a bargain at $2M against his $4.0M market."
     }
    ],
    "resign": [
@@ -8493,18 +8397,6 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Luke Kornet"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Julian Champagnie"
     },
     {
      "name": "Deandre Ayton",
@@ -8697,6 +8589,18 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Luke Kornet"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "UFA",
+     "from": "TOR",
+     "value_M": 9.1,
+     "offer_M": 8,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Luke Kornet"
     }
    ]
   },
@@ -8725,17 +8629,17 @@
      "why": "Upgrades on Jakob Poeltl at C \u2014 a bargain at $15M against his $23.3M market."
     },
     {
-     "name": "Zach LaVine",
+     "name": "Kevin Huerter",
      "pos": "SG/SF",
-     "from": "SAC",
-     "status": "Player Option",
-     "value_M": 11.9,
-     "offer_M": 7,
+     "from": "DET",
+     "status": "UFA",
+     "value_M": 10.3,
+     "offer_M": 6,
      "fit": 66,
      "grade": "A-",
      "ppos": "SG",
      "slot": 3,
-     "why": "Rotation depth at SG \u2014 a bargain at $7M against his $11.9M market."
+     "why": "Rotation depth at SG \u2014 a bargain at $6M against his $10.3M market."
     },
     {
      "name": "Collin Gillespie",
@@ -8887,18 +8791,6 @@
      "why": "Rotation depth behind Jamal Shead"
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 12,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Collin Murray-Boyles"
-    },
-    {
      "name": "Anfernee Simons",
      "pos": "PG/SG",
      "status": "UFA",
@@ -8993,6 +8885,18 @@
      "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Jamal Shead"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 8.0,
+     "offer_M": 8,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Mid-level exception",
+     "why": "Upgrade \u00b7 would start over Jakob Poeltl"
     }
    ]
   },
@@ -9185,18 +9089,6 @@
      "why": "Rotation depth behind Isaiah Collier"
     },
     {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Kyle Filipowski"
-    },
-    {
      "name": "Collin Gillespie",
      "pos": "PG",
      "status": "UFA",
@@ -9291,6 +9183,18 @@
      "age": 25,
      "tool": "Cap room",
      "why": "Rotation depth behind Isaiah Collier"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 15.8,
+     "offer_M": 10,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Brice Sensabaugh"
     }
    ]
   },
@@ -9398,18 +9302,6 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Anthony Gill"
-    },
-    {
-     "name": "Andrew Wiggins",
-     "pos": "SF/PF",
-     "status": "Player Option",
-     "from": "MIA",
-     "value_M": 19.3,
-     "offer_M": 15,
-     "barrett": 20.9,
-     "age": 31,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Kyshawn George"
     },
     {
      "name": "Ayo Dosunmu",
@@ -9590,6 +9482,18 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Anthony Gill"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 12,
+     "barrett": 16.3,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Bilal Coulibaly"
     }
    ]
   }

@@ -62,6 +62,7 @@ from utils import (
     # CBA / contract structure
     get_max_contract_eligibility,
     fetch_rookie_scale_players, fetch_next_year_contracts, fmt_next_contract,
+    option_opt_in_prob,
     fetch_all_nba_selections, get_all_nba_in_window,
     # Contract end-year scraper — powers the "Current deal: $X through YYYY-YY"
     # context line under the hero (and nothing else after the forward-
@@ -103,6 +104,9 @@ from utils import render_footer  # noqa: E402
 if _get_ctx() is not None:
     from front_office import render_front_office  # noqa: E402
     _MODE = st.session_state.get("cp_mode")
+    # A deep link to a specific player (?player=) skips the chooser → player view.
+    if _MODE not in ("player", "team") and "player" in st.query_params:
+        _MODE = st.session_state.cp_mode = "player"
 
     if _MODE not in ("player", "team"):
         # Landing: two halves, pick one to take over the screen.
@@ -2291,6 +2295,34 @@ else:
         </div>
         """
 st.markdown(_header_html, unsafe_allow_html=True)
+
+# ── Player-option decision: will he opt in, or decline it to test the market? ──
+# A player keeps a $30M option rather than sign for $17M; the call follows the
+# option-vs-market surplus and his age (utils.option_opt_in_prob).
+_po_info = (globals().get("_fa_next") or {}).get(normalize(selected))
+if _po_info and _po_info.get("type") == "player_option":
+    _opt_M = float(_po_info.get("salary") or 0) / 1_000_000
+    if _opt_M > 0:
+        _p_in = option_opt_in_prob(_opt_M, predicted_M, features.get("age"))
+        _gap = _opt_M - predicted_M
+        if _p_in >= 0.5:
+            _ov, _oc = (
+                f"<b>Likely to opt in</b> ({_p_in*100:.0f}%) — his <b>${_opt_M:.0f}M</b> player "
+                f"option beats this ${predicted_M:.0f}M market projection by ${_gap:.0f}M, so he keeps "
+                f"the guaranteed money rather than signing a new deal.",
+                "var(--amber)")
+        else:
+            _ov, _oc = (
+                f"<b>Likely to opt out</b> ({(1 - _p_in)*100:.0f}%) — the market (${predicted_M:.0f}M) "
+                f"projects ${-_gap:.0f}M above his <b>${_opt_M:.0f}M</b> player option, so he'd decline "
+                f"it to sign for more.",
+                "var(--accent-teal)")
+        st.markdown(
+            f"<div style='margin:.45rem 0 .25rem; padding:.7rem .9rem; border-radius:10px;"
+            f" background:var(--panel-solid); border:1px solid var(--panel-line);"
+            f" border-left:3px solid {_oc}; font-size:.9rem; color:var(--fg-2); line-height:1.4;'>"
+            f"<span style='font-weight:700; color:{_oc};'>Player option</span>&nbsp;&nbsp;{_ov}</div>",
+            unsafe_allow_html=True)
 
 # ── Structural caveats — compact chip-style instead of full-width banners ────
 # Playoff multiplier display moved to the About expander (visible in the

@@ -1863,6 +1863,29 @@ def fmt_next_contract(player_name: str, next_contracts: dict) -> str:
     return f"${sal_m:.1f}M"
 
 
+# ── Player-option decision model ─────────────────────────────────────────────
+OPTION_OPT_IN_THRESHOLD = 0.5
+
+
+def option_opt_in_prob(option_M: float, market_M: float, age) -> float:
+    """Probability a player EXERCISES (opts into) his player option instead of
+    declining it to sign a new deal. The dominant driver is how much more the
+    option pays than his projected market value — a player keeps a $30M option
+    rather than sign for $17M — with age breaking gray-zone ties (older players
+    take the guaranteed money; younger ones bet on a longer deal). Returns 0–1.
+
+    Rule-based / economic, not a trained classifier: there's no labelled history
+    of opt-in/out decisions to fit, but the option-vs-market surplus IS the real
+    driver and this captures the clear cases transparently.
+    """
+    if not option_M or option_M <= 0:
+        return 0.0
+    a = float(age) if age is not None else 28.0
+    surplus = (option_M - market_M) / option_M          # premium the option pays over the market
+    z = max(-30.0, min(30.0, 9.0 * surplus + 0.16 * (a - 28.0)))
+    return 1.0 / (1.0 + math.exp(-z))
+
+
 # ── Styling helpers ────────────────────────────────────────────────────────────
 
 def color_rank_diff(val):

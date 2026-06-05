@@ -20,7 +20,8 @@ import pandas as pd
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 warnings.filterwarnings("ignore")
-from utils import normalize, DEFAULT_MIN_THRESHOLD  # noqa: E402
+from utils import (normalize, DEFAULT_MIN_THRESHOLD,  # noqa: E402
+                   option_opt_in_prob, OPTION_OPT_IN_THRESHOLD)
 import team_suitors as ts  # noqa: E402
 
 OUT = ROOT / "cache" / "fa_board_v1.json"
@@ -64,7 +65,7 @@ def fa_status(name):
 # ── Free-agent candidate pool: predict each one once ──────────────────────────
 print("predicting free-agent pool ...")
 qualified = full[full["total_min"] >= DEFAULT_MIN_THRESHOLD]
-cands = []
+cands, opted_in = [], []
 for _, r in qualified.iterrows():
     name = str(r["Player"])
     st_ = fa_status(name)
@@ -73,15 +74,26 @@ for _, r in qualified.iterrows():
     f = gpf(name, CUR)
     if not f:
         continue
+    value_M = round(float(pc(f)["predicted"]) / 1e6, 1)
+    age = int(f.get("age") or 0)
+    # A player who will exercise his player option is staying — not a free agent,
+    # so he shouldn't appear on anyone's board. Drop the likely opt-ins.
+    if st_ == "Player Option":
+        opt_M = float((nc.get(normalize(name)) or {}).get("salary") or 0) / 1e6
+        if option_opt_in_prob(opt_M, value_M, age) >= OPTION_OPT_IN_THRESHOLD:
+            opted_in.append(f"{name} (${opt_M:.0f}M opt)")
+            continue
     cands.append({
         "name": name, "status": st_,
-        "value_M": round(float(pc(f)["predicted"]) / 1e6, 1),
+        "value_M": value_M,
         "barrett": round(float(f["barrett_score"]), 1),
         "pos": ts.resolve_position(name, f.get("position_detailed") or "", pos2k),
-        "age": int(f.get("age") or 0),
+        "age": age,
         "team": str(f.get("current_team") or r["Team"]),
     })
-print(f"  {len(cands)} free agents")
+print(f"  {len(cands)} free agents  ({len(opted_in)} option-holders excluded as likely opt-ins)")
+for x in opted_in:
+    print(f"    opt-in: {x}")
 
 
 def primary(pos):
