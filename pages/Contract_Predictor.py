@@ -1000,10 +1000,19 @@ def _curated_pos_map() -> dict:
 
 def _curated_pos(name: str, bbref_fallback: str = "") -> str:
     """The curated PRIMARY position (PG/SG/SF/PF/C) from the 2K + override file,
-    with the BBRef detailed position as the fallback for anyone not listed."""
+    with the BBRef detailed position as the fallback for anyone not listed.
+    This is what the comp gate matches on (strict, single position)."""
     import team_suitors as _ts
     cpos = _ts.resolve_position(name, bbref_fallback, _curated_pos_map())
     return _ts._primary_position(cpos)
+
+
+def _curated_pos_full(name: str, bbref_fallback: str = "") -> str:
+    """The FULL curated 2K position incl. secondary (e.g. 'PG/SG') — for DISPLAY.
+    Shows a player's real two-way versatility; still contains the primary the
+    comp gate matched on, so it never reads like an off-position comp."""
+    import team_suitors as _ts
+    return _ts.resolve_position(name, bbref_fallback, _curated_pos_map())
 
 
 @st.cache_data(ttl=3600, show_spinner="Loading comparable signings…")
@@ -1705,7 +1714,7 @@ _comps = (
 # The curated 2K primary position — the single source the comps are matched on.
 # Use it for EVERY position label on the page so the hero never contradicts the
 # comp list (e.g. a combo guard reading "SG" up top but "PG" among his comps).
-_pos_display = _curated_pos(
+_pos_display = _curated_pos_full(
     features.get("name", ""),
     features.get("position_detailed") or features.get("position") or "")
 
@@ -2340,13 +2349,15 @@ else:
             else comps.assign(context=comps.apply(_classify_context, axis=1))
         )
 
-        # Display the CURATED primary position the engine actually matched on
-        # (pos_primary), NOT the BBRef detailed one. Otherwise a correct
-        # same-position comp — e.g. Dejounte Murray, curated PG — shows as "SG"
-        # and reads like an off-position match the position gate is supposed to
-        # prevent. Keep them consistent: the column shows what we matched on.
-        _pos_col = comps_with_ctx.get("pos_primary", comps_with_ctx["pos"]).fillna(
-            comps_with_ctx["pos"])
+        # Display the FULL curated 2K position (primary + secondary, e.g. "PG/SG")
+        # for each comp. It contains the primary the gate matched on — so it stays
+        # consistent (no phantom off-position comp) — while showing the player's
+        # real two-way versatility, rather than the BBRef detailed that flattens a
+        # combo guard onto a single, sometimes-contradictory label.
+        _pos_col = comps_with_ctx.apply(
+            lambda r: _curated_pos_full(
+                str(r["Player"]),
+                str(r.get("pos_detailed") or r.get("pos") or "")), axis=1)
         # Final normalize: any remaining "Guard"/"Forward"/"Center" → G/F/C.
         # Belt-and-suspenders — the resolvers in load_historical_signings
         # should already produce single-letter, but if anything slips
