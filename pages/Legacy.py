@@ -93,15 +93,19 @@ def _season_year(s: str) -> int:
 all_df["_season_year"] = all_df["Season"].apply(_season_year)
 SEASONS_CHRON = sorted(all_df["Season"].unique(), key=_season_year)
 
-# Pre-compute season-over-season delta per player (used by multiple sections)
+# Pre-compute season-over-season delta per player (used by "The Fall").
 _arc = (
     all_df.sort_values("_season_year")[["Player", "Season", "_season_year", "barrett_score"]]
     .copy()
 )
-_arc["prev_score"] = (
-    _arc.groupby("Player")["barrett_score"].shift(1)
-)
+_arc["prev_score"] = _arc.groupby("Player")["barrett_score"].shift(1)
+_arc["_prev_year"] = _arc.groupby("Player")["_season_year"].shift(1)
 _arc["yoy_delta"] = _arc["barrett_score"] - _arc["prev_score"]
+# Only a TRUE season-over-season change. Null out gaps — a missed/non-qualifying
+# season or a retirement — so "The Fall" doesn't label a post-injury or
+# post-baseball return (e.g. Jordan 1994-95 vs his 1992-93 season) a
+# single-season collapse, contradicting its own "from one season to the next".
+_arc.loc[_arc["_season_year"] != _arc["_prev_year"] + 1, ["prev_score", "yoy_delta"]] = float("nan")
 
 
 # ══════════════════════════════════════════════════════════════════════════════
