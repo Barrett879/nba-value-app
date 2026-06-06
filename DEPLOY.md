@@ -31,7 +31,20 @@ Output goes to `site/`. Commit it; the host serves it as-is.
 ## Option C — Netlify
 Connect the repo; **Publish directory = `site`**, no build command.
 
+## Hybrid: the Streamlit app keeps the interactive tools
+This static site is the read-only front door — home, rankings, all 365 player
+pages. The **interactive** tools (Contract Predictor / Front Office, Team
+Analysis, Free Agents, Legacy) can't be static, so they stay on the Streamlit
+app. The homepage nav links to them via `APP_BASE` in `build_static.py`
+(default `https://app.hoopsvalue.com`). Cutover:
+
+1. **Static → apex.** Point `hoopsvalue.com` at the CDN host (Cloudflare Pages /
+   GitHub Pages / Render Static). For GitHub Pages, emit the custom-domain file:
+   `PRODUCTION=1 bash scripts/deploy_ghpages.sh`.
+2. **Streamlit → subdomain.** Add `app.hoopsvalue.com` as a custom domain on the
+   Render service, and point that subdomain's DNS at Render.
+3. Done — apex loads instantly; the nav hands off to the app for the live tools.
+
 ## Notes
-- The current Streamlit Render service can stay running (as an admin/fallback)
-  or be retired once the static site owns the domain.
+- Live preview (no domain change): https://barrett879.github.io/nba-value-app/
 - Local preview: `python -m http.server 8502 --directory site` → `localhost:8502`.
