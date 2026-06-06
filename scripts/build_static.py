@@ -161,10 +161,14 @@ INDEX = f"""<!doctype html>
 """
 (SITE / "index.html").write_text(_relativize(INDEX, 0))
 
-# Custom domain for GitHub Pages. Inert until hoopsvalue.com's DNS points at
-# GitHub Pages — until then the apex still resolves to Render, so shipping this
-# changes nothing in production; it just makes the cutover a DNS-only step.
-(SITE / "CNAME").write_text("hoopsvalue.com\n")
+# Custom domain for GitHub Pages — written ONLY on a production deploy
+# (PRODUCTION=1). Writing a CNAME makes GitHub 301-redirect the github.io
+# preview URL to hoopsvalue.com, so we keep it off for normal deploys (preview
+# stays live at github.io) and emit it only at cutover. Cutover is: point
+# hoopsvalue.com's DNS at GitHub Pages, then run
+#   PRODUCTION=1 bash scripts/deploy_ghpages.sh
+if os.environ.get("PRODUCTION") == "1":
+    (SITE / "CNAME").write_text("hoopsvalue.com\n")
 
 
 # ── Phase 2: one static HTML per player (contract prediction + comps) ─────────
