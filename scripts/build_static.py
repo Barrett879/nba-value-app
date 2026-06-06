@@ -29,6 +29,12 @@ SITE = ROOT / "site"
 DATA = SITE / "data"
 DATA.mkdir(parents=True, exist_ok=True)
 
+# The interactive tools (predictor, team analysis, free agents, legacy) can't be
+# static — they stay on the Streamlit app. When this static site becomes the
+# hoopsvalue.com front door, these cards point at the app's own subdomain.
+# Override with APP_BASE=… if you host the Streamlit app somewhere else.
+APP_BASE = os.environ.get("APP_BASE", "https://app.hoopsvalue.com")
+
 
 def slugify(name: str) -> str:
     s = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
@@ -142,9 +148,10 @@ INDEX = f"""<!doctype html>
   <div class="explore-label">Explore deeper</div>
   <div class="nav">
     <a class="navcard" href="/rankings.html" style="--accent:#d13b46"><div><h3>Current Rankings</h3><p>All {home['n_players']} qualified players ranked by Barrett Score this season.</p></div></a>
-    <div class="navcard soon" style="--accent:#c79a3a"><div><h3>Legacy</h3><p>53 seasons of history: all-time greats, era leaderboards, draft classes.</p></div></div>
-    <div class="navcard soon" style="--accent:#3b82c7"><div><h3>Team Analysis</h3><p>Which front offices get the most for their money? Payroll efficiency by team.</p></div></div>
-    <div class="navcard soon" style="--accent:#3d6f52"><div><h3>Free Agents</h3><p>Everyone hitting the market this offseason — UFAs, RFAs, options.</p></div></div>
+    <a class="navcard" href="{APP_BASE}/Contract_Predictor" style="--accent:#16b8a6"><div><h3>Contract Predictor</h3><p>What any player would command on a new deal today — or build out a team's offseason from the front office chair.</p></div></a>
+    <a class="navcard" href="{APP_BASE}/Team_Analysis" style="--accent:#3b82c7"><div><h3>Team Analysis</h3><p>Which front offices get the most for their money? Payroll efficiency by team.</p></div></a>
+    <a class="navcard" href="{APP_BASE}/Free_Agent_Class" style="--accent:#3d6f52"><div><h3>Free Agents</h3><p>Everyone hitting the market this offseason — UFAs, RFAs, options.</p></div></a>
+    <a class="navcard" href="{APP_BASE}/Legacy" style="--accent:#c79a3a"><div><h3>Legacy</h3><p>53 seasons of history: all-time greats, era leaderboards, draft classes.</p></div></a>
   </div>
 </div>
 <footer>hoopsvalue.com · Barrett Score · {home['season']} · data from NBA Stats API</footer>
@@ -153,6 +160,11 @@ INDEX = f"""<!doctype html>
 </html>
 """
 (SITE / "index.html").write_text(_relativize(INDEX, 0))
+
+# Custom domain for GitHub Pages. Inert until hoopsvalue.com's DNS points at
+# GitHub Pages — until then the apex still resolves to Render, so shipping this
+# changes nothing in production; it just makes the cutover a DNS-only step.
+(SITE / "CNAME").write_text("hoopsvalue.com\n")
 
 
 # ── Phase 2: one static HTML per player (contract prediction + comps) ─────────
