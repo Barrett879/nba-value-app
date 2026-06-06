@@ -3721,23 +3721,62 @@ def _raw_disk_exists(season: str, playoffs: bool = False) -> bool:
     """
     return _raw_disk_path(season, playoffs).exists()
 
+# ── Stale-while-revalidate plumbing for the raw-frame disk cache ──────────────
+# At most one background rebuild per (season, playoffs) so a burst of visitors
+# hitting a stale cache kicks off a single refresh, not one rebuild per request.
+_raw_refresh_inflight = set()
+_raw_refresh_lock = threading.Lock()
+
+
+def _spawn_raw_refresh(season: str, playoffs: bool = False) -> None:
+    """Rebuild a stale raw parquet in a background thread so the foreground
+    request serves the cached copy without blocking on the ~20s rebuild."""
+    key = (season, playoffs)
+    with _raw_refresh_lock:
+        if key in _raw_refresh_inflight:
+            return
+        _raw_refresh_inflight.add(key)
+
+    def _job() -> None:
+        try:
+            _build_raw_live(season, playoffs)
+        except Exception:
+            pass
+        finally:
+            with _raw_refresh_lock:
+                _raw_refresh_inflight.discard(key)
+
+    threading.Thread(target=_job, daemon=True).start()
+
+
 @st.cache_data(ttl=3600, show_spinner="Building rankings...")
 def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
-    # ── Disk cache hit: load parquet instead of hitting the APIs ──────────────
-    if _raw_disk_fresh(season, playoffs):
+    """Serve the raw Barrett-score frame, stale-while-revalidate.
+
+    If a parquet exists on disk we return it immediately. When it's past its
+    TTL we kick off a *background* refresh so no page load ever blocks on the
+    ~20s rebuild — the next request picks up the fresh data. Only a genuine
+    cache miss (nothing on disk at all) builds synchronously.
+    """
+    if _raw_disk_exists(season, playoffs):
+        if not _raw_disk_fresh(season, playoffs):
+            _spawn_raw_refresh(season, playoffs)
         try:
             cached = pd.read_parquet(_raw_disk_path(season, playoffs))
             # Sanitize old caches that captured BBRef's Hall-of-Fame asterisk
-            # in player names ("Michael Jordan*"). Newly-built parquets won't
-            # have these, but on-disk pre-fix files do.
+            # in player names ("Michael Jordan*").
             if "Player" in cached.columns:
-                cached["Player"] = (
-                    cached["Player"].astype(str).str.rstrip("*").str.strip()
-                )
+                cached["Player"] = cached["Player"].astype(str).str.rstrip("*").str.strip()
             return cached
         except Exception:
-            pass  # corrupted file — fall through to live fetch
+            pass  # corrupted file — fall through to a live rebuild
+    return _build_raw_live(season, playoffs)
 
+
+def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
+    """Fetch from the APIs, compute the Barrett-score frame, and persist it to
+    disk. The expensive path; build_raw only calls this on a true cache miss or
+    from a background refresh."""
     season_type = "Playoffs" if playoffs else "Regular Season"
 
     # Fetch stats + salaries in parallel — saves ~5s on cold cache misses.
