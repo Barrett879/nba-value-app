@@ -1951,6 +1951,20 @@ def _pkl_save(path: Path, obj) -> None:
         logger.warning("cache write failed for %s: %s", path, e)
 
 
+def _atomic_to_parquet(df: pd.DataFrame, path: Path) -> None:
+    """Write a parquet atomically (tmp file + os.replace, same filesystem).
+
+    pyarrow writes in place, so a writer killed mid-write (deploy SIGTERM
+    killing daemon threads, a one-shot script exiting) would otherwise leave a
+    truncated file whose fresh mtime makes it look valid. With the tmp+replace
+    dance, readers only ever see the old-complete or new-complete file and a
+    kill just abandons the tmp file.
+    """
+    tmp = path.with_suffix(path.suffix + f".tmp{os.getpid()}-{threading.get_ident()}")
+    df.to_parquet(tmp, index=False)
+    os.replace(tmp, path)
+
+
 @st.cache_data(ttl=3600, show_spinner="Fetching league stats...")
 def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.DataFrame:
     """Per-game player stats for one season.
@@ -1981,7 +1995,7 @@ def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.D
             delay = min(delay * 2, 30)
     df = result.get_data_frames()[0]
     try:
-        df.to_parquet(path, index=False)
+        _atomic_to_parquet(df, path)
     except Exception:
         pass
     return df
@@ -2025,7 +2039,7 @@ def fetch_advanced_stats(season: str, season_type: str = "Regular Season") -> pd
         return pd.DataFrame()
     df = result.get_data_frames()[0]
     try:
-        df.to_parquet(path, index=False)
+        _atomic_to_parquet(df, path)
     except Exception:
         pass
     return df
@@ -2475,7 +2489,7 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
 
     if len(df) > 50:
         try:
-            df.to_parquet(disk_path, index=False)
+            _atomic_to_parquet(df, disk_path)
         except Exception:
             pass
     return df
@@ -3602,7 +3616,7 @@ def fetch_dlebron_all() -> pd.DataFrame:
         df = pd.DataFrame(r.json()["players"])
         df = df[["nba_id", "Season", "D-LEBRON"]].dropna()
         try:
-            df.to_parquet(path, index=False)
+            _atomic_to_parquet(df, path)
         except Exception:
             pass
         return df
@@ -3741,35 +3755,66 @@ def _spawn_raw_refresh(season: str, playoffs: bool = False) -> None:
         try:
             _build_raw_live(season, playoffs)
         except Exception:
-            pass
+            logger.warning("background raw refresh failed for %s", key, exc_info=True)
+        else:
+            # Make the fresh parquet visible now: the in-memory memos still
+            # hold the stale frame for up to another hour. Clearing them means
+            # the next request re-reads the disk (~0.1s), not the old memo.
+            # Full clear (not per-args): callers reach these with mixed call
+            # shapes, and a re-read per season is cheap.
+            try:
+                build_raw.clear()
+                build_ranked_projected.clear()
+            except Exception:
+                pass
         finally:
             with _raw_refresh_lock:
                 _raw_refresh_inflight.discard(key)
 
-    threading.Thread(target=_job, daemon=True).start()
+    try:
+        threading.Thread(target=_job, daemon=True).start()
+    except Exception as e:
+        # Thread exhaustion: undo the claim so a later request can retry,
+        # and let the caller serve the stale frame as usual.
+        with _raw_refresh_lock:
+            _raw_refresh_inflight.discard(key)
+        logger.warning("could not start raw refresh thread for %s: %s", key, e)
 
 
 @st.cache_data(ttl=3600, show_spinner="Building rankings...")
 def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
     """Serve the raw Barrett-score frame, stale-while-revalidate.
 
-    If a parquet exists on disk we return it immediately. When it's past its
-    TTL we kick off a *background* refresh so no page load ever blocks on the
-    ~20s rebuild — the next request picks up the fresh data. Only a genuine
-    cache miss (nothing on disk at all) builds synchronously.
+    Inside the Streamlit server: a readable parquet is returned immediately;
+    if it is past its TTL a single deduped background thread rebuilds it and
+    then clears the in-memory memos, so the next request picks up the fresh
+    file. In bare mode (seed_cache.py, scripts/build_*.py) a stale parquet
+    rebuilds synchronously instead — publishing pipelines need fresh-or-block
+    semantics, and daemon threads would be killed at script exit anyway.
+    Only a missing or unreadable parquet rebuilds synchronously on the
+    request path.
     """
     if _raw_disk_exists(season, playoffs):
-        if not _raw_disk_fresh(season, playoffs):
-            _spawn_raw_refresh(season, playoffs)
         try:
             cached = pd.read_parquet(_raw_disk_path(season, playoffs))
             # Sanitize old caches that captured BBRef's Hall-of-Fame asterisk
             # in player names ("Michael Jordan*").
             if "Player" in cached.columns:
                 cached["Player"] = cached["Player"].astype(str).str.rstrip("*").str.strip()
+        except Exception as e:
+            # Corrupted file — fall through to a live rebuild (which also
+            # rewrites it). Spawning happens only after a successful read, so
+            # a corrupt+stale file can't trigger two racing rebuilds.
+            logger.warning("raw cache unreadable for %s (playoffs=%s), rebuilding: %s",
+                           season, playoffs, e)
+        else:
+            if not _raw_disk_fresh(season, playoffs):
+                from streamlit import runtime as _st_runtime
+                if _st_runtime.exists():
+                    _spawn_raw_refresh(season, playoffs)
+                else:
+                    return _build_raw_live(season, playoffs)
             return cached
-        except Exception:
-            pass  # corrupted file — fall through to a live rebuild
     return _build_raw_live(season, playoffs)
 
 
@@ -3957,9 +4002,12 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
 
     # ── Persist to disk so future cold-starts skip the API entirely ───────────
     try:
-        result.to_parquet(_raw_disk_path(season, playoffs), index=False)
-    except Exception:
-        pass
+        _atomic_to_parquet(result, _raw_disk_path(season, playoffs))
+    except Exception as e:
+        # A failed persist means the parquet never freshens and the hourly
+        # background rebuild keeps recomputing for nothing — surface it.
+        logger.warning("raw cache write failed for %s (playoffs=%s): %s",
+                       season, playoffs, e)
 
     return result
 
@@ -4071,7 +4119,7 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD,
 
     combined = pd.concat(frames, ignore_index=True)
     try:
-        combined.to_parquet(path, index=False)
+        _atomic_to_parquet(combined, path)
     except Exception:
         pass
     return combined
@@ -4097,7 +4145,7 @@ def fetch_draft_classes() -> pd.DataFrame:
         df["draft_year"] = df["draft_year"].astype(int)
         df["player_norm"] = df["Player"].apply(normalize)
         try:
-            df.to_parquet(path, index=False)
+            _atomic_to_parquet(df, path)
         except Exception:
             pass
         return df
