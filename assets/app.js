@@ -20,7 +20,7 @@
   function render() {
     if (!matches.length) { box.classList.remove('show'); box.innerHTML = ''; return; }
     box.innerHTML = matches.map((p, i) =>
-      `<a href="/player/${p.slug}.html" class="${i === active ? 'active' : ''}">
+      `<a href="player/${p.slug}.html" class="${i === active ? 'active' : ''}">
          <span class="nm">${p.name}</span>
          <span class="meta">${p.team} · ${p.pos} &nbsp; <span class="sc">${p.score}</span></span>
        </a>`).join('');

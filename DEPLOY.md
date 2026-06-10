@@ -2,9 +2,10 @@
 
 The site is **pre-built static files** under `site/` — no server, no build step
 required at deploy time. Any static host serves them from a CDN edge in
-~20–80ms. Paths are root-absolute (`/assets/...`, `/player/...`), so deploy at a
-**domain root** (works for `hoopsvalue.com`, a `*.pages.dev`, or an
-`*.onrender.com` subdomain — not a GitHub Pages *project* subpath).
+~20–80ms. All refs are emitted **relative** (the build rewrites them via
+`_relativize`), so the site works at a domain root (`hoopsvalue.com`, a
+`*.pages.dev`) **and** at a project subpath — the GitHub Pages preview at
+`barrett879.github.io/nba-value-app/` is exactly that.
 
 ## Rebuild the site (run after data changes)
 ```bash
@@ -38,11 +39,15 @@ Analysis, Free Agents, Legacy) can't be static, so they stay on the Streamlit
 app. The homepage nav links to them via `APP_BASE` in `build_static.py`
 (default `https://app.hoopsvalue.com`). Cutover:
 
-1. **Static → apex.** Point `hoopsvalue.com` at the CDN host (Cloudflare Pages /
-   GitHub Pages / Render Static). For GitHub Pages, emit the custom-domain file:
-   `PRODUCTION=1 bash scripts/deploy_ghpages.sh`.
-2. **Streamlit → subdomain.** Add `app.hoopsvalue.com` as a custom domain on the
-   Render service, and point that subdomain's DNS at Render.
+1. **Streamlit → subdomain FIRST.** Add `app.hoopsvalue.com` as a custom domain
+   on the Render service and point that subdomain's DNS at Render. Verify
+   `https://app.hoopsvalue.com` loads before touching the apex — until it
+   exists, the homepage's four interactive nav cards are dead links, and
+   flipping the apex first would leave the tools unreachable in between.
+2. **Static → apex.** Point `hoopsvalue.com` at the CDN host (Cloudflare Pages /
+   GitHub Pages / Render Static). For GitHub Pages, run the production deploy:
+   `PRODUCTION=1 bash scripts/deploy_ghpages.sh` — it publishes the CNAME, and
+   routine deploys keep it automatically from then on (sticky).
 3. Done — apex loads instantly; the nav hands off to the app for the live tools.
 
 ## Notes
