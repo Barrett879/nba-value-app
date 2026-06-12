@@ -407,7 +407,7 @@ def _hbar_chart(items, w=460, h=140, label_w=140, color_default="#e63946"):
         bw = (it["value"] / vmax) * chart_w if vmax else 0
         c = it.get("color", color_default)
         parts.append(
-            f'<text x="6" y="{y + bar_h/2 + 4:.1f}" fill="#cfcfd6" font-size="11" '
+            f'<text x="6" y="{y + bar_h/2 + 4:.1f}" style="fill:var(--fg-3)" font-size="11" '
             f'font-family="system-ui">{_esc(it["label"])}</text>'
         )
         parts.append(
@@ -416,7 +416,7 @@ def _hbar_chart(items, w=460, h=140, label_w=140, color_default="#e63946"):
         )
         parts.append(
             f'<text x="{chart_x + bw + 6:.1f}" y="{y + bar_h/2 + 4:.1f}" '
-            f'fill="#fff" font-size="11" font-weight="700" '
+            f'style="fill:var(--fg-1)" font-size="11" font-weight="700" '
             f'font-family="system-ui">{_esc(it["value_str"])}</text>'
         )
     return f'<svg viewBox="0 0 {w} {h}" preserveAspectRatio="xMidYMid meet" style="width:100%; height:{h}px;">{"".join(parts)}</svg>'
@@ -447,11 +447,11 @@ def _diverging_bars(rows, w=460, h=140):
         )
         parts.append(
             f'<text x="{x_lbl:.1f}" y="{y + bar_h/2 + 4:.1f}" text-anchor="{anchor_lbl}" '
-            f'fill="#cfcfd6" font-size="10" font-family="system-ui">{_esc(r["label"])}</text>'
+            f'style="fill:var(--fg-3)" font-size="10" font-family="system-ui">{_esc(r["label"])}</text>'
         )
         parts.append(
             f'<text x="{x_val:.1f}" y="{y + bar_h/2 + 4:.1f}" text-anchor="{anchor_val}" '
-            f'fill="#fff" font-size="10" font-weight="700" '
+            f'style="fill:var(--fg-1)" font-size="10" font-weight="700" '
             f'font-family="system-ui">{_esc(r["value_str"])}</text>'
         )
     return f'<svg viewBox="0 0 {w} {h}" preserveAspectRatio="xMidYMid meet" style="width:100%; height:{h}px;">{"".join(parts)}</svg>'
@@ -569,9 +569,9 @@ def _fa_category_chart(items, w=460, h=140):
     chart_w = w - chart_x - 50
     avg_max = max(it["avg_score"] for it in items) or 1.0
     parts = [
-        f'<text x="{w/2:.1f}" y="11" text-anchor="middle" fill="#cfcfd6" '
+        f'<text x="{w/2:.1f}" y="11" text-anchor="middle" style="fill:var(--fg-3)" '
         f'font-size="10.5" font-family="system-ui">'
-        f'<tspan fill="#fff" font-weight="700">{int(total)}</tspan> free agents · avg Barrett Score</text>'
+        f'<tspan style="fill:var(--fg-1)" font-weight="700">{int(total)}</tspan> free agents · avg Barrett Score</text>'
     ]
     for i, it in enumerate(items):
         y = chart_y + i * row_h + (row_h - bar_h) / 2
@@ -587,7 +587,7 @@ def _fa_category_chart(items, w=460, h=140):
         )
         parts.append(
             f'<text x="{chart_x + bw + 5:.1f}" y="{y + bar_h/2 + 4:.1f}" '
-            f'fill="#fff" font-size="10.5" font-weight="700" font-family="system-ui">'
+            f'style="fill:var(--fg-1)" font-size="10.5" font-weight="700" font-family="system-ui">'
             f'{it["avg_score"]:.1f}</text>'
         )
     return f'<svg viewBox="0 0 {w} {h}" preserveAspectRatio="xMidYMid meet" style="width:100%; height:{h}px;">{"".join(parts)}</svg>'
@@ -740,19 +740,25 @@ if _p and _p.get("best_card") and _p.get("steal_card") and _p.get("overpaid_card
 # markdown call (native browser open/close, no script reruns, instant).
 # ══════════════════════════════════════════════════════════════════════════════
 def render_strip(name: str, href: str, accent: str, description: str, preview_html: str):
-    st.markdown(f"""
-    <details class="explore-strip" style="--accent:{accent};">
-        <summary class="explore-strip-summary">
-            <div class="tab-strip-name">{name}</div>
-            <div class="tab-strip-desc">{description}</div>
-            <span class="strip-arrow">▾</span>
-        </summary>
-        <div class="explore-strip-body">
-            {preview_html}
-            <a class="goto-btn" href="{href}" target="_top">Open {name} →</a>
-        </div>
-    </details>
-    """, unsafe_allow_html=True)
+    # The whole strip must reach st.markdown as ONE unbroken HTML block: a
+    # blank (or whitespace-only) line ends the block, and any indented line
+    # after that renders as a markdown code block (raw-HTML leak). So drop
+    # empty lines from the preview and keep the template itself unindented.
+    preview_html = "\n".join(l.strip() for l in preview_html.splitlines() if l.strip())
+    st.markdown(
+        f'<details class="explore-strip" style="--accent:{accent};">'
+        f'<summary class="explore-strip-summary">'
+        f'<div class="tab-strip-name">{name}</div>'
+        f'<div class="tab-strip-desc">{description}</div>'
+        f'<span class="strip-arrow">▾</span>'
+        f'</summary>'
+        f'<div class="explore-strip-body">'
+        f'{preview_html}'
+        f'<a class="goto-btn" href="{href}" target="_top">Open {name} →</a>'
+        f'</div>'
+        f'</details>',
+        unsafe_allow_html=True,
+    )
 
 
 # ── Rankings preview ─────────────────────────────────────────────────────────
