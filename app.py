@@ -4,7 +4,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import streamlit as st
-import plotly.graph_objects as go
 from utils import (
     _bootstrap_warm,
     build_ranked_projected,

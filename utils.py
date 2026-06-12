@@ -108,11 +108,32 @@ import numpy as np
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
-import plotly.express as px
 from bs4 import BeautifulSoup
-from nba_api.stats.endpoints import leaguedashplayerstats, playercareerstats, playerindex
-from nba_api.stats.static import players as nba_players_static
-from nba_api.stats.static import teams as nba_teams_static
+
+
+# ── Lazy nba_api modules ──────────────────────────────────────────────────────
+# Importing nba_api.stats.endpoints costs ~1s locally (~3-4s on Render's
+# half-CPU box) because the package __init__ pulls in EVERY endpoint module.
+# Warm-parquet page loads never touch the API, so defer the import to first
+# live use. The proxy swaps itself for the real module after that first touch,
+# so steady-state access is native speed. (plotly.express was also imported
+# here and never used: it dragged xarray in on every cold start, now gone.)
+class _LazyModule:
+    def __init__(self, path: str, alias: str):
+        self._path, self._alias = path, alias
+
+    def __getattr__(self, attr):
+        import importlib
+        mod = importlib.import_module(self._path)
+        globals()[self._alias] = mod
+        return getattr(mod, attr)
+
+
+leaguedashplayerstats = _LazyModule("nba_api.stats.endpoints.leaguedashplayerstats", "leaguedashplayerstats")
+playercareerstats     = _LazyModule("nba_api.stats.endpoints.playercareerstats", "playercareerstats")
+playerindex           = _LazyModule("nba_api.stats.endpoints.playerindex", "playerindex")
+nba_players_static    = _LazyModule("nba_api.stats.static.players", "nba_players_static")
+nba_teams_static      = _LazyModule("nba_api.stats.static.teams", "nba_teams_static")
 
 
 # ── Logging ──────────────────────────────────────────────────────────────────

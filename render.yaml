@@ -10,7 +10,12 @@ services:
       - key: PYTHON_VERSION
         value: "3.12.8"
     buildCommand: pip install -r requirements.txt
-    startCommand: streamlit run app.py --server.port $PORT --server.address 0.0.0.0
+    # serve.py pre-imports the heavy modules and warms the current-season
+    # caches BEFORE opening the port. Render keeps the old container serving
+    # until the new one listens (and passes the health check), so post-deploy
+    # cold starts are invisible to visitors.
+    startCommand: python serve.py
+    healthCheckPath: /healthz
     plan: starter          # $7/mo — always-on, no spin-down
     disk:
       name: barrett-cache
