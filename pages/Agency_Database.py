@@ -7,7 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from utils import (
-    SEASONS, season_to_espn_year,
+    SEASONS,
     build_ranked_projected,
     render_page_chrome, render_nav, render_footer,
     html_table, stat_cards, _bootstrap_warm,
@@ -196,7 +196,9 @@ if agency_clients:
 
 # ── Books: contract value by agency, then by agent ────────────────────────────
 _payload = load_agent_contracts()
-_cut = season_to_espn_year(CURRENT_SEASON)
+# HoopsHype's season field is the START year (e.g. 2025 = the 2025-26 season),
+# so include season >= the current start year to count the current season onward.
+_cut = int(CURRENT_SEASON.split("-")[0])
 # Corrected agency per agent, so books reflect override fixes (e.g. Drew Gross ->
 # WME) rather than the raw scrape stored in the contract payload.
 _agency_of = {a["agent"].lower(): a["agency"]

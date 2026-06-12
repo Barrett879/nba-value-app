@@ -210,7 +210,7 @@ def _client_book(c: dict, from_season: int | None) -> dict | None:
     """One client's contract summary from their seasons array, or None if they
     carry no live contract in range. The HoopsHype seasons array is a player's
     FULL salary history (past years included), so from_season (a HoopsHype
-    end-year int, e.g. 2026 for 2025-26) counts only current+future years - the
+    start-year int, e.g. 2025 for 2025-26) counts only current+future years - the
     live book, not money already paid. None counts every season (career total).
     Seasons are deduped to one row per year defensively."""
     by_year: dict = {}
