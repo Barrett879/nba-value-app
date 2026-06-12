@@ -10,6 +10,7 @@ whole import chain on a half-CPU box.
 """
 import os
 import sys
+import threading
 import time
 
 _t0 = time.time()
@@ -54,11 +55,63 @@ for _label, _fn in [
     except Exception as _e:  # a failed warm should never block serving
         _log(f"warm FAILED ({_label}): {_e}")
 
+_port = os.environ.get("PORT", "8501")
+
+
+# ── 2.5 Self-warm the first session the instant the port opens ───────────────
+# Streamlit's runtime caches only fill on a real session, so the first visitor
+# after a deploy paid the whole first script run (~11s on Render). This daemon
+# thread waits for our own port, then drives one synthetic websocket session
+# (the same handshake the frontend sends; XSRF is disabled in config.toml).
+# Render flips traffic on port-open, so this races ahead of any human click
+# and they land on warm runtime caches instead.
+def _self_warm() -> None:
+    import socket
+
+    deadline = time.time() + 180
+    while time.time() < deadline:
+        try:
+            with socket.create_connection(("127.0.0.1", int(_port)), timeout=1):
+                break
+        except OSError:
+            time.sleep(0.25)
+    else:
+        _log("self-warm: port never opened")
+        return
+    try:
+        import websocket
+        from streamlit.proto.BackMsg_pb2 import BackMsg
+        from streamlit.proto.ClientState_pb2 import ClientState
+        from streamlit.proto.ForwardMsg_pb2 import ForwardMsg
+
+        t = time.time()
+        ws = websocket.create_connection(
+            f"ws://127.0.0.1:{_port}/_stcore/stream",
+            subprotocols=["streamlit", "PLACEHOLDER_AUTH_TOKEN"],
+            timeout=120,
+        )
+        bm = BackMsg()
+        bm.rerun_script.CopyFrom(ClientState())
+        ws.send_binary(bm.SerializeToString())
+        end = time.time() + 120
+        while time.time() < end:
+            raw = ws.recv()
+            if isinstance(raw, (bytes, bytearray)):
+                fm = ForwardMsg()
+                fm.ParseFromString(raw)
+                if fm.WhichOneof("type") == "script_finished":
+                    break
+        ws.close()
+        _log(f"self-warm session finished in {time.time() - t:.1f}s")
+    except Exception as e:
+        _log(f"self-warm failed (visitors just get the old cold first run): {e}")
+
+
+threading.Thread(target=_self_warm, daemon=True).start()
+
 # ── 3. Open the port (traffic flips to this container now) ───────────────────
 _log("starting streamlit, port opens next")
 from streamlit.web.cli import main  # noqa: E402
-
-_port = os.environ.get("PORT", "8501")
 sys.argv = [
     "streamlit", "run", "app.py",
     "--server.port", _port,
