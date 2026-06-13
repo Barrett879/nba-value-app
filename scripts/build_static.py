@@ -56,7 +56,7 @@ _SUN_SVG = ('<svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true">'
 # Same pages, same order as the app's _NAV_PAGES; static pages link locally,
 # interactive ones go to the app.
 _NAV_LINKS = [
-    ("Current Rankings",    "/rankings.html"),
+    ("Current Rankings",    APP_BASE + "/Rankings"),
     ("Search Player",       APP_BASE + "/Search"),
     ("Legacy",              APP_BASE + "/Legacy"),
     ("Team Analysis",       APP_BASE + "/Team_Analysis"),
@@ -258,7 +258,7 @@ else:
     _lg_prev = ""
 
 _STRIPS = (
-    _strip("Current Rankings", "/rankings.html", "#e63946",
+    _strip("Current Rankings", APP_BASE + "/Rankings", "#e63946",
            "Who's the best NBA player right now? Every player ranked by Barrett Score this season.", _rk_prev)
     + _strip("Legacy", APP_BASE + "/Legacy", "#f1c40f",
              "53 seasons of NBA history: all-time greats, era leaderboards, team Mount Rushmores, draft classes.", _lg_prev)
@@ -570,49 +570,10 @@ _rrows = "".join(
     "</tr>"
     for p in players)
 
-RANK = f"""<!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Current NBA Rankings by Barrett Score · HoopsValue</title>
-<meta name="description" content="Every qualified NBA player this season ranked by the Barrett Score: production vs pay, the steals and the overpays.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="/assets/style.css">
-{_THEME_BOOT}
-</head>
-<body>
-{_nav("Current Rankings")}
-<header class="subhead">
-  <a class="brand" href="/"><span class="h">HO</span><span class="ball"></span><span class="h">PS</span><span class="v">VALUE</span></a>
-</header>
-<main class="wrap rankings">
-  <h1>Current Rankings</h1>
-  <p class="sub">All {len(players)} qualified players, {CUR}, ranked by Barrett Score. Tap a column to sort.</p>
-  <input id="rankfilter" class="rank-filter" type="text" placeholder="Filter players…" autocomplete="off" spellcheck="false">
-  <div class="rank-scroll"><table class="rank-table" id="ranktable">
-    <thead><tr>
-      <th class="num" data-k="num">#</th>
-      <th data-k="text">Player</th>
-      <th class="hide-sm" data-k="text">Team</th>
-      <th data-k="text">Pos</th>
-      <th class="num" data-k="num">Score</th>
-      <th class="num hide-sm" data-k="num">Salary</th>
-      <th class="num" data-k="num">Value vs Pay</th>
-    </tr></thead>
-    <tbody>{_rrows}</tbody>
-  </table></div>
-</main>
-{_footer()}
-<script src="/assets/theme.js"></script>
-<script src="/assets/rankings.js"></script>
-</body>
-</html>
-"""
-(SITE / "rankings.html").write_text(_relativize(RANK, 0))
-print(f"rankings : {len(players)} rows -> rankings.html")
+# The Current Rankings page is interactive (season/min-minutes/playoff controls,
+# live charts) so it can't be a faithful static page — the homepage's Rankings
+# strip now opens the real app at APP_BASE/Rankings instead. (rankings.js + the
+# static rankings.html are intentionally no longer emitted.)
 
 print(f"season   : {CUR}")
 print(f"best     : {home['best']['name']:<24} score {home['best']['score']}")
