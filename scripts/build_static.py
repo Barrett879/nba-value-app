@@ -36,6 +36,67 @@ DATA.mkdir(parents=True, exist_ok=True)
 APP_BASE = os.environ.get("APP_BASE", "https://app.hoopsvalue.com")
 
 
+# ── Shared chrome: top nav, theme toggle, footer (port of the app's design) ───
+# Plain strings and helpers (NOT f-string templates) so inner braces in the
+# JS/SVG never collide with template interpolation.
+_THEME_BOOT = (
+    '<script>(function(){try{if(localStorage.getItem("hv-theme")==="dark")'
+    'document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();</script>'
+)
+
+_MOON_SVG = ('<svg class="ico-moon" viewBox="0 0 24 24" aria-hidden="true">'
+             '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>')
+_SUN_SVG = ('<svg class="ico-sun" viewBox="0 0 24 24" aria-hidden="true">'
+            '<circle cx="12" cy="12" r="5"/>'
+            '<path d="M12 2v2m0 16v2M2 12h2m16 0h2M4.9 4.9l1.4 1.4m11.4 11.4 1.4 1.4'
+            'M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="2" '
+            'fill="none" stroke-linecap="round"/></svg>')
+
+# Same pages, same order as the app's _NAV_PAGES; static pages link locally,
+# interactive ones go to the app.
+_NAV_LINKS = [
+    ("Current Rankings",    "/rankings.html"),
+    ("Search Player",       APP_BASE + "/Search"),
+    ("Legacy",              APP_BASE + "/Legacy"),
+    ("Team Analysis",       APP_BASE + "/Team_Analysis"),
+    ("Contract Predictor",  APP_BASE + "/Contract_Predictor"),
+    ("Current Free Agents", APP_BASE + "/Free_Agent_Class"),
+]
+
+
+def _nav(active: str = "") -> str:
+    links = '<a class="home-link" href="/">Home</a><span class="divider">|</span>'
+    for label, url in _NAV_LINKS:
+        cls = ' class="active"' if label == active else ""
+        links += f'<a{cls} href="{url}">{label}</a>'
+    return (f'<div class="top-nav">{links}</div>'
+            f'<button class="theme-btn" onclick="hvToggleTheme()" aria-label="Toggle dark mode">'
+            f'{_MOON_SVG}{_SUN_SVG}</button>')
+
+
+_X_PATH = ("M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83"
+           "L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z")
+
+
+def _footer() -> str:
+    return (
+        '<div class="hv-footer">'
+        '<div class="hv-foot-top">Enjoying HoopsValue? <a href="mailto:contact@hoopsvalue.com">Share feedback</a></div>'
+        '<div class="hv-foot-disc">HoopsValue.com is an independent project and is not affiliated with, '
+        'endorsed by, or sponsored by the National Basketball Association.</div>'
+        '<div class="hv-foot-rule"></div>'
+        '<div class="hv-foot-bottom">'
+        '<div class="hv-foot-left">© 2026 HoopsValue.com. All rights reserved.</div>'
+        '<div class="hv-foot-right">'
+        '<a href="mailto:contact@hoopsvalue.com">contact@hoopsvalue.com</a>'
+        '<span class="sep">|</span>'
+        '<a href="https://x.com/HoopsValue" target="_blank" rel="noopener">@HoopsValue</a>'
+        '<a class="hv-foot-ico" href="https://x.com/HoopsValue" target="_blank" rel="noopener" '
+        f'aria-label="HoopsValue on X"><svg viewBox="0 0 24 24"><path d="{_X_PATH}"/></svg></a>'
+        '</div></div></div>'
+    )
+
+
 def slugify(name: str) -> str:
     s = unicodedata.normalize("NFKD", name).encode("ascii", "ignore").decode()
     return re.sub(r"[^a-zA-Z0-9]+", "-", s).strip("-").lower()
@@ -112,9 +173,11 @@ INDEX = f"""<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/assets/style.css">
+{_THEME_BOOT}
 </head>
 <body>
-<header>
+{_nav()}
+<header class="hero-head">
   <div class="wordmark"><span class="h">HO</span><span class="ball"></span><span class="h">PS</span><span class="v">VALUE</span></div>
   <div class="eyebrow">NBA Contract Value</div>
 </header>
@@ -154,7 +217,8 @@ INDEX = f"""<!doctype html>
     <a class="navcard" href="{APP_BASE}/Legacy" style="--accent:#c79a3a"><div><h3>Legacy</h3><p>53 seasons of history: all-time greats, era leaderboards, draft classes.</p></div></a>
   </div>
 </div>
-<footer>hoopsvalue.com · Barrett Score · {home['season']} · data from NBA Stats API</footer>
+{_footer()}
+<script src="/assets/theme.js"></script>
 <script src="/assets/app.js"></script>
 </body>
 </html>
@@ -343,11 +407,12 @@ def render_player(p: dict) -> bool:
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/assets/style.css">
+{_THEME_BOOT}
 </head>
 <body>
+{_nav()}
 <header class="subhead">
   <a class="brand" href="/"><span class="h">HO</span><span class="ball"></span><span class="h">PS</span><span class="v">VALUE</span></a>
-  <nav class="topnav"><a href="/rankings.html">Rankings</a></nav>
 </header>
 <main class="wrap player">
   <div class="phead">
@@ -375,7 +440,8 @@ def render_player(p: dict) -> bool:
   </div>
   <p class="disclaimer">Model: {_MODEL}. Projection is for the player's next contract priced at the {CONTRACT} cap. Informational only — not financial advice.</p>
 </main>
-<footer>hoopsvalue.com · Barrett Score · {CUR}</footer>
+{_footer()}
+<script src="/assets/theme.js"></script>
 </body>
 </html>
 """
@@ -419,11 +485,12 @@ RANK = f"""<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="/assets/style.css">
+{_THEME_BOOT}
 </head>
 <body>
+{_nav("Current Rankings")}
 <header class="subhead">
   <a class="brand" href="/"><span class="h">HO</span><span class="ball"></span><span class="h">PS</span><span class="v">VALUE</span></a>
-  <nav class="topnav"><a href="/">Home</a></nav>
 </header>
 <main class="wrap rankings">
   <h1>Current Rankings</h1>
@@ -442,7 +509,8 @@ RANK = f"""<!doctype html>
     <tbody>{_rrows}</tbody>
   </table>
 </main>
-<footer>hoopsvalue.com · Barrett Score · {CUR}</footer>
+{_footer()}
+<script src="/assets/theme.js"></script>
 <script src="/assets/rankings.js"></script>
 </body>
 </html>
