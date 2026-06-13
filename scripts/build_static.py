@@ -236,26 +236,43 @@ _cp_prev = (
     '</div></div>'
 )
 
-# Legacy preview — all five featured legends overlaid on one chart (lines only),
-# matching the app homepage. A per-player picker was tried but the app can't
-# support it (Streamlit resets the selection), so both sides show the overlay
-# for parity. Stateless: nothing to glitch.
+# Legacy — interactive per-player career-arc picker, a self-contained always-open
+# card that matches the app's homepage (the app renders the same card inside an
+# isolated iframe because Streamlit can't host the picker inline; here, on a
+# plain static page, the JS toggle in app.js wires it directly). Last-name pills;
+# one halo'd sparkline per legend; the active one is shown via the .active class.
 _lg_valid = [s for s in _PP.get("legacy_series", []) if s.get("career")]
 if _lg_valid:
-    _lg_prev = (
-        _app._multi_sparkline(_lg_valid, dots=False)
-        + '<div style="text-align:center; font-size:0.7rem; color:var(--fg-5); '
-        'margin-top:0.4rem;">Barrett Score across each career · '
-        'five legends, five eras</div>'
+    _lg_def = next((i for i, s in enumerate(_lg_valid) if s["name"] == "LeBron James"), 0)
+    _lg_labels = "".join(
+        f'<button type="button" class="lg-label{" active" if i == _lg_def else ""}" '
+        f'data-idx="{i}">{_html.escape(s["name"].split()[-1])}</button>'
+        for i, s in enumerate(_lg_valid))
+    _lg_charts = "".join(
+        f'<div class="lg-chart{" active" if i == _lg_def else ""}" data-idx="{i}">'
+        f'{_app._multi_sparkline([s], h=150, dots=False, halo="rgba(18,18,34,0.55)")}'
+        f'<div class="lg-caption">{_html.escape(s["name"])} · {len(s["career"])} seasons · '
+        f'{_html.escape(str(s["career"][0]["season"]))} → {_html.escape(str(s["career"][-1]["season"]))}</div>'
+        f'</div>'
+        for i, s in enumerate(_lg_valid))
+    _lg_card = (
+        '<div class="lg-card">'
+        '<div class="lg-head"><span class="lg-title">Legacy</span>'
+        '<span class="lg-desc">53 seasons of NBA history: all-time greats, era leaderboards, '
+        'team Mount Rushmores, draft classes.</span></div>'
+        '<div class="legacy-picker-wrap">'
+        f'<div class="lg-labels">{_lg_labels}</div>'
+        f'<div class="lg-chart-stack">{_lg_charts}</div></div>'
+        f'<a class="lg-open" href="{APP_BASE}/Legacy">Open Legacy →</a>'
+        '</div>'
     )
 else:
-    _lg_prev = ""
+    _lg_card = ""
 
 _STRIPS = (
     _strip("Current Rankings", APP_BASE + "/Rankings", "#e63946",
            "Who's the best NBA player right now? Every player ranked by Barrett Score this season.", _rk_prev)
-    + _strip("Legacy", APP_BASE + "/Legacy", "#f1c40f",
-             "53 seasons of NBA history: all-time greats, era leaderboards, team Mount Rushmores, draft classes.", _lg_prev)
+    + _lg_card
     + _strip("Team Analysis", APP_BASE + "/Team_Analysis", "#3498db",
              "Which front offices are getting the most for their money? Payroll efficiency by team.", _tm_prev)
     + _strip("Contract Predictor", APP_BASE + "/Contract_Predictor", "var(--accent-teal)",

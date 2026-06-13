@@ -47,3 +47,27 @@
     if (!input.contains(e.target) && !box.contains(e.target)) { box.classList.remove('show'); }
   });
 })();
+
+// Legacy card picker — click a legend's name to show that career arc. The pick
+// persists in sessionStorage so it survives navigation back to the home page.
+(function () {
+  var KEY = 'hv_legacy_pick';
+  var wrap = document.querySelector('.legacy-picker-wrap');
+  if (!wrap) return;
+  var labels = [].slice.call(wrap.querySelectorAll('.lg-label'));
+  var charts = [].slice.call(wrap.querySelectorAll('.lg-chart'));
+  function show(idx) {
+    labels.forEach(function (b) { b.classList.toggle('active', b.dataset.idx === idx); });
+    charts.forEach(function (c) { c.classList.toggle('active', c.dataset.idx === idx); });
+  }
+  var saved = null;
+  try { saved = sessionStorage.getItem(KEY); } catch (e) {}
+  if (saved !== null && labels.some(function (b) { return b.dataset.idx === saved; })) show(saved);
+  labels.forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var idx = btn.dataset.idx;
+      show(idx);
+      try { sessionStorage.setItem(KEY, idx); } catch (e) {}
+    });
+  });
+})();
