@@ -13,6 +13,7 @@ import json
 import re
 import unicodedata
 import warnings
+import hashlib
 import html as _html
 from pathlib import Path
 
@@ -35,6 +36,15 @@ DATA.mkdir(parents=True, exist_ok=True)
 # hoopsvalue.com front door, these cards point at the app's own subdomain.
 # Override with APP_BASE=… if you host the Streamlit app somewhere else.
 APP_BASE = os.environ.get("APP_BASE", "https://app.hoopsvalue.com")
+
+# Cache-busting version stamped onto the CSS/JS links so a browser can never
+# serve a stale cached asset against fresh HTML — the URL changes when (and
+# only when) the asset content changes.
+_ASSET_V = hashlib.md5(b"".join(
+    (SITE / "assets" / _f).read_bytes()
+    for _f in ("style.css", "app.js", "theme.js")
+    if (SITE / "assets" / _f).exists()
+)).hexdigest()[:8]
 
 
 # ── Shared chrome: top nav, theme toggle, footer (port of the app's design) ───
@@ -274,7 +284,7 @@ INDEX = f"""<!doctype html>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/style.css?v={_ASSET_V}">
 {_THEME_BOOT}
 </head>
 <body class="home">
@@ -300,8 +310,8 @@ INDEX = f"""<!doctype html>
   {_STRIPS}
 </div>
 {_footer()}
-<script src="/assets/theme.js"></script>
-<script src="/assets/app.js"></script>
+<script src="/assets/theme.js?v={_ASSET_V}"></script>
+<script src="/assets/app.js?v={_ASSET_V}"></script>
 </body>
 </html>
 """
@@ -492,7 +502,7 @@ def render_player(p: dict) -> bool:
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/style.css?v={_ASSET_V}">
 {_THEME_BOOT}
 </head>
 <body>
@@ -527,7 +537,7 @@ def render_player(p: dict) -> bool:
   <p class="disclaimer">Model: {_MODEL}. Projection is for the player's next contract priced at the {CONTRACT} cap. Informational only, not financial advice.</p>
 </main>
 {_footer()}
-<script src="/assets/theme.js"></script>
+<script src="/assets/theme.js?v={_ASSET_V}"></script>
 </body>
 </html>
 """
