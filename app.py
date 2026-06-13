@@ -4,7 +4,6 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import streamlit as st
-import streamlit.components.v1 as components
 from utils import (
     _bootstrap_warm,
     THEME_DEFAULT_DARK,
@@ -862,125 +861,71 @@ render_strip(
     preview_html=rankings_preview,
 )
 
-# ── Legacy — interactive per-player career-arc picker.
-# This CANNOT be done with inline st.markdown HTML: Streamlit re-renders the
-# markdown on interaction (resetting any DOM state — the cause of the
-# "every-other-click jumps back to LeBron" bug) and strips <script>, so a JS
-# toggle can't run. The reliable path is an ISOLATED st.components.v1.html
-# iframe: its srcdoc JS runs untouched and Streamlit never reaches inside it, so
-# clicking is instant, client-side, and never resets. The iframe is its own
-# element (it can't nest inside a render_strip <details>), so Legacy is a
-# self-contained, always-open card here rather than a collapsing strip.
-#
-# Two boundary problems the iframe creates, both handled below:
-#  - It inherits no page CSS vars, so theme colors are baked from the
-#    server-side theme; a theme toggle reruns the app and re-bakes them.
-#  - A rerun can re-MOUNT the iframe (theme toggle, cache warm), which would
-#    reset the pick to the default. We persist the chosen index in the parent's
-#    sessionStorage (proven reachable via window.parent, same as the theme
-#    persist script) and restore it on load, so re-mounts are invisible.
+# ── Legacy — interactive per-player career-arc picker (Streamlit-NATIVE).
+# Earlier attempts failed in their own ways: an inline st.markdown picker resets
+# its DOM state on every re-render (the "every-other-click jumps to LeBron" bug)
+# and st.markdown strips <script>; an st.components.v1.html iframe works locally
+# but on the live Render server loads the app's OWN homepage into the iframe
+# during cold-starts/restarts. So the picker is now a real Streamlit widget
+# (st.pills) wrapped in @st.fragment: clicking reruns ONLY this fragment, so the
+# chart swaps fast with no full-page re-render, no iframe, and nothing to reset.
+# Legacy is a self-contained always-open card.
 _LEGACY_DESC = ("53 seasons of NBA history: all-time greats, era leaderboards, "
                 "team Mount Rushmores, draft classes.")
-_LEGACY_PICKER_DOC = """<!doctype html><html><head><meta charset="utf-8">
+
+
+@st.fragment
+def _render_legacy_picker(valid):
+    by_last, order = {}, []
+    for s in valid:
+        last = s["name"].split()[-1]
+        by_last[last] = s
+        order.append(last)
+    default = next((s["name"].split()[-1] for s in valid if s["name"] == "LeBron James"), order[0])
+    dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
+    halo = None if dark else "rgba(18,18,34,0.55)"   # outline so a bright line reads on the light card
+    with st.container(key="legacy_card", border=True):
+        st.markdown(
+            f'<div class="lg-head"><span class="lg-title">Legacy</span>'
+            f'<span class="lg-desc">{html.escape(_LEGACY_DESC)}</span></div>',
+            unsafe_allow_html=True,
+        )
+        pick = st.pills("Legend", order, selection_mode="single", default=default,
+                        label_visibility="collapsed", key="legacy_pills")
+        s = by_last.get(pick) or by_last[default]
+        st.markdown(
+            _multi_sparkline([s], h=150, dots=False, halo=halo)
+            + f'<div class="lg-caption">{html.escape(s["name"])} · {len(s["career"])} seasons · '
+            f'{html.escape(str(s["career"][0]["season"]))} → {html.escape(str(s["career"][-1]["season"]))}</div>'
+            '<a class="lg-open" href="/Legacy" target="_top">Open Legacy →</a>',
+            unsafe_allow_html=True,
+        )
+
+
+# Native-pills card styling — gold accent + gold active pill. Injected on full
+# renders (re-baked on a theme toggle for the active-pill text colour); it
+# persists across the fragment's own reruns since it lives outside the fragment.
+_lg_pillfg = "#1a1a2e" if st.session_state.get("theme_dark", THEME_DEFAULT_DARK) else "#ffffff"
+st.markdown(f"""
 <style>
-  html,body{{margin:0;padding:0;height:100%;background:transparent;
-    font-family:system-ui,-apple-system,'Source Sans 3',sans-serif;}}
-  *{{box-sizing:border-box;}}
-  body{{display:flex;}}
-  /* Card fills the fixed iframe height so any desktop slack reads as a slightly
-     taller card, never a transparent dead band above the next strip. */
-  .lg-card{{flex:1;background:{panel2};border:1px solid {border};
-    border-left:3px solid {gold};border-radius:8px;padding:0.9rem 1.2rem 1.0rem;}}
-  .lg-head{{display:flex;align-items:baseline;gap:0.55rem;flex-wrap:wrap;
-    margin-bottom:0.8rem;}}
-  .lg-title{{font-size:1.0rem;font-weight:700;color:{fg1};letter-spacing:-0.01em;}}
-  .lg-desc{{font-size:0.76rem;color:{fg3};line-height:1.4;}}
-  /* On phones the long description wraps to 2-3 lines and bloats the fixed
-     iframe height; drop it there (the title + picker are self-explanatory). */
-  @media (max-width:520px){{.lg-desc{{display:none;}}}}
-  .lg-labels{{display:flex;gap:0.4rem;justify-content:center;
-    margin-bottom:0.7rem;flex-wrap:wrap;}}
-  .lg-label{{padding:0.3rem 0.7rem;border-radius:5px;cursor:pointer;color:{fg3};
-    background:{hsoft};border:1px solid {border};font-size:0.82rem;
-    font-family:inherit;line-height:1.2;
-    transition:background .15s,color .15s,border-color .15s;}}
-  .lg-label:hover{{background:{hairline};color:{fg1};}}
-  .lg-label.active{{background:{gold};color:{pillfg};border-color:{gold};font-weight:700;}}
-  .lg-chart{{display:none;}}
-  .lg-chart.active{{display:block;}}
-  .lg-chart svg{{width:100%;height:auto;display:block;}}
-  .lg-caption{{text-align:center;font-size:0.72rem;color:{fg3};margin-top:0.4rem;}}
-  .lg-open{{display:inline-block;margin-top:0.85rem;background:{gold};color:{pillfg};
-    padding:0.4rem 1.0rem;border-radius:6px;text-decoration:none;
-    font-weight:600;font-size:0.82rem;cursor:pointer;}}
-</style></head>
-<body>
-  <div class="lg-card">
-    <div class="lg-head"><span class="lg-title">Legacy</span><span class="lg-desc">{desc}</span></div>
-    <div class="legacy-picker-wrap">
-      <div class="lg-labels">{labels}</div>
-      <div class="lg-chart-stack">{charts}</div>
-    </div>
-    <a class="lg-open" href="#" onclick="window.top.location.assign(window.top.location.origin+'/Legacy');return false;">Open Legacy →</a>
-  </div>
-  <script>
-    (function () {{
-      var KEY = 'hv_legacy_pick';
-      var wrap = document.querySelector('.legacy-picker-wrap');
-      if (!wrap) return;
-      var labels = [].slice.call(wrap.querySelectorAll('.lg-label'));
-      var charts = [].slice.call(wrap.querySelectorAll('.lg-chart'));
-      function show(idx) {{
-        labels.forEach(function (b) {{ b.classList.toggle('active', b.dataset.idx === idx); }});
-        charts.forEach(function (c) {{ c.classList.toggle('active', c.dataset.idx === idx); }});
-      }}
-      var store = null; try {{ store = window.parent.sessionStorage; }} catch (e) {{}}
-      var saved = null; try {{ saved = store && store.getItem(KEY); }} catch (e) {{}}
-      if (saved !== null && labels.some(function (b) {{ return b.dataset.idx === saved; }})) show(saved);
-      labels.forEach(function (btn) {{
-        btn.addEventListener('click', function () {{
-          var idx = btn.dataset.idx; show(idx);
-          try {{ if (store) store.setItem(KEY, idx); }} catch (e) {{}}
-        }});
-      }});
-    }})();
-  </script>
-</body></html>"""
+.st-key-legacy_card {{ border-left: 3px solid var(--gold) !important; background: var(--panel-2) !important; border-radius: 8px; }}
+.st-key-legacy_card .lg-head {{ display:flex; align-items:baseline; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.2rem; }}
+.st-key-legacy_card .lg-title {{ font-size:1.05rem; font-weight:700; color:var(--fg-1); letter-spacing:-0.01em; }}
+.st-key-legacy_card .lg-desc {{ font-size:0.78rem; color:var(--fg-3); line-height:1.4; }}
+.st-key-legacy_card [data-testid="stElementContainer"]:has([data-testid="stButtonGroup"]) {{ align-self:center; }}
+.st-key-legacy_card [data-testid="stBaseButton-pills"] {{ background:var(--hairline-soft) !important; color:var(--fg-3) !important; border:1px solid var(--panel-line) !important; }}
+.st-key-legacy_card [data-testid="stBaseButton-pills"]:hover {{ background:var(--hairline) !important; color:var(--fg-1) !important; }}
+.st-key-legacy_card [data-testid="stBaseButton-pillsActive"] {{ background:var(--gold) !important; color:{_lg_pillfg} !important; border:1px solid var(--gold) !important; font-weight:700 !important; }}
+.st-key-legacy_card .lg-caption {{ text-align:center; font-size:0.72rem; color:var(--fg-3); margin-top:0.4rem; }}
+.st-key-legacy_card .lg-open {{ display:inline-block; margin-top:0.55rem; background:var(--gold); color:{_lg_pillfg}; padding:0.4rem 1.0rem; border-radius:6px; text-decoration:none; font-weight:600; font-size:0.82rem; }}
+.st-key-legacy_card .lg-open:hover {{ opacity:0.9; }}
+.st-key-legacy_card svg {{ width:100%; height:auto; }}
+</style>
+""", unsafe_allow_html=True)
 
 _legacy_valid = [s for s in _p.get("legacy_series", []) if s.get("career")] if _p else []
 if _legacy_valid:
-    _dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
-    _pal = {
-        "panel2":   "#1a1a2e" if _dark else "#eef1f4",
-        "border":   "rgba(80,80,110,0.35)" if _dark else "#e3e6eb",
-        "hairline": "rgba(255,255,255,0.08)" if _dark else "rgba(20,22,40,0.10)",
-        "hsoft":    "rgba(255,255,255,0.04)" if _dark else "rgba(20,22,40,0.05)",
-        "fg1":      "#ffffff" if _dark else "#14142a",
-        "fg3":      "#aaaaaa" if _dark else "#585c68",
-        "gold":     "#f1c40f" if _dark else "#9a6a00",   # bright yellow is illegible on white
-        "pillfg":   "#1a1a2e" if _dark else "#ffffff",   # text on the gold pill
-    }
-    _halo = None if _dark else "rgba(18,18,34,0.55)"     # outline so bright lines read on light
-    _lg_def = next((i for i, s in enumerate(_legacy_valid) if s["name"] == "LeBron James"), 0)
-    _lg_labels = "".join(
-        f'<button type="button" class="lg-label{" active" if i == _lg_def else ""}" '
-        f'data-idx="{i}">{html.escape(s["name"].split()[-1])}</button>'
-        for i, s in enumerate(_legacy_valid)
-    )
-    _lg_charts = "".join(
-        f'<div class="lg-chart{" active" if i == _lg_def else ""}" data-idx="{i}">'
-        f'{_multi_sparkline([s], h=150, dots=False, halo=_halo)}'
-        f'<div class="lg-caption">{html.escape(s["name"])} · {len(s["career"])} seasons · '
-        f'{html.escape(str(s["career"][0]["season"]))} → {html.escape(str(s["career"][-1]["season"]))}</div>'
-        f'</div>'
-        for i, s in enumerate(_legacy_valid)
-    )
-    components.html(
-        _LEGACY_PICKER_DOC.format(
-            desc=html.escape(_LEGACY_DESC), labels=_lg_labels, charts=_lg_charts, **_pal,
-        ),
-        height=350, scrolling=False,
-    )
+    _render_legacy_picker(_legacy_valid)
 else:
     render_strip(
         name="Legacy", href="/Legacy", accent="#f1c40f",
