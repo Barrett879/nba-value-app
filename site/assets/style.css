@@ -2,7 +2,8 @@
    app's theme (utils.py THEME_BASE_CSS / THEME_LIGHT_CSS) so the static pages
    and the Streamlit app read as one site: same palettes, same nav, same dark
    mode. Light is the default; html[data-theme="dark"] flips every token. */
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap');
+/* Fonts load via a parallel <link> in each page's head (an @import here would
+   serialize: html -> css -> fonts css -> font files). */
 
 :root {
   /* surfaces (light) */

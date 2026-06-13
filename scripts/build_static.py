@@ -172,6 +172,7 @@ INDEX = f"""<!doctype html>
 <meta name="description" content="Every NBA player since 1973 ranked by the Barrett Score — on-court production sized up against every paycheck. Find the steals, expose the overpays, predict any contract.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 {_THEME_BOOT}
 </head>
@@ -406,6 +407,7 @@ def render_player(p: dict) -> bool:
 <meta name="description" content="{nm}'s projected {CONTRACT} contract: {_m(predicted)}/yr at next season's cap, with comparable signings and market value.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 {_THEME_BOOT}
 </head>
@@ -484,6 +486,7 @@ RANK = f"""<!doctype html>
 <meta name="description" content="Every qualified NBA player this season ranked by the Barrett Score — production vs pay, the steals and the overpays.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 {_THEME_BOOT}
 </head>
