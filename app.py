@@ -1,5 +1,6 @@
 import sys
 import html
+import math
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
@@ -861,12 +862,82 @@ render_strip(
     preview_html=rankings_preview,
 )
 
+def _star_points(cx, cy, r):
+    pts = []
+    for k in range(10):
+        a = math.radians(-90 + k * 36)
+        rad = r if k % 2 == 0 else r * 0.42
+        pts.append(f"{cx + rad * math.cos(a):.1f},{cy + rad * math.sin(a):.1f}")
+    return " ".join(pts)
+
+
+def _legacy_compare_svg(valid, dark=False):
+    """Career-arc comparison chart for the Legacy preview — line + dot markers,
+    horizontal gridlines, a Barrett-Score y-axis, a peak star per player and a
+    legend: a compact SVG echo of the full Plotly head-to-head chart on the
+    Search page."""
+    valid = [s for s in valid if s.get("career")]
+    if not valid:
+        return ""
+    W, H = 860, 300
+    ML, MR, MT, MB = 50, 18, 16, 60
+    pw, ph = W - ML - MR, H - MT - MB
+    grid = "rgba(255,255,255,0.07)" if dark else "rgba(20,22,40,0.07)"
+    axfg = "#888888" if dark else "#9aa0ab"
+    txfg = "#aaaaaa" if dark else "#585c68"
+    surf = "#1a1a2e" if dark else "#eef1f4"
+    ytop = max(10, int(math.ceil(max(pt["score"] for s in valid for pt in s["career"]) / 10.0)) * 10)
+    maxlen = max(len(s["career"]) for s in valid)
+
+    def X(i):
+        return ML + (i / (maxlen - 1)) * pw if maxlen > 1 else ML + pw / 2
+
+    def Y(v):
+        return MT + ph - (v / ytop) * ph
+
+    p = []
+    yt = 0
+    while yt <= ytop:
+        gy = Y(yt)
+        p.append(f'<line x1="{ML}" y1="{gy:.1f}" x2="{ML + pw}" y2="{gy:.1f}" stroke="{grid}" stroke-width="1"/>')
+        p.append(f'<text x="{ML - 8}" y="{gy + 3.5:.1f}" text-anchor="end" font-size="11" fill="{axfg}" font-family="system-ui">{yt}</text>')
+        yt += 10
+    _ym = MT + ph / 2
+    p.append(f'<text x="13" y="{_ym:.1f}" text-anchor="middle" font-size="11" fill="{txfg}" '
+             f'font-family="system-ui" transform="rotate(-90 13 {_ym:.1f})">Barrett Score</text>')
+    for xi in sorted({0, 4, 9, 14, 19, maxlen - 1}):
+        if 0 <= xi < maxlen:
+            p.append(f'<text x="{X(xi):.1f}" y="{MT + ph + 17:.1f}" text-anchor="middle" font-size="11" '
+                     f'fill="{axfg}" font-family="system-ui">{xi + 1}</text>')
+    p.append(f'<text x="{ML + pw / 2:.1f}" y="{MT + ph + 33:.1f}" text-anchor="middle" font-size="11" '
+             f'fill="{txfg}" font-family="system-ui">Career year (Year 1 = first season)</text>')
+    for s in valid:
+        col = s["color"]
+        pts = [(X(i), Y(pt["score"])) for i, pt in enumerate(s["career"])]
+        p.append(f'<polyline points="{" ".join(f"{x:.1f},{y:.1f}" for x, y in pts)}" fill="none" '
+                 f'stroke="{col}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>')
+        for x, y in pts:
+            p.append(f'<circle cx="{x:.1f}" cy="{y:.1f}" r="3" fill="{col}" stroke="{surf}" stroke-width="1"/>')
+        pk = max(range(len(s["career"])), key=lambda i: s["career"][i]["score"])
+        p.append(f'<polygon points="{_star_points(X(pk), Y(s["career"][pk]["score"]), 9)}" '
+                 f'fill="{col}" stroke="{surf}" stroke-width="1"/>')
+    segs = []
+    for i, s in enumerate(valid):
+        if i:
+            segs.append('<tspan fill="#999">     </tspan>')
+        segs.append(f'<tspan fill="{s["color"]}" font-weight="600">● {_esc(s["name"])}</tspan>')
+    p.append(f'<text x="{W / 2:.1f}" y="{H - 8:.1f}" text-anchor="middle" font-size="12.5" '
+             f'font-family="system-ui">{"".join(segs)}</text>')
+    return (f'<svg viewBox="0 0 {W} {H}" preserveAspectRatio="xMidYMid meet" '
+            f'style="width:100%; height:auto; max-height:340px;">{"".join(p)}</svg>')
+
+
 # Legacy uses the SAME render_strip <details> as every other strip, so it looks
 # and collapses identically. An interactive per-player picker can't be embedded
 # inline and made to match the other strips' chrome reliably in Streamlit
 # (inline HTML resets / strips scripts; a components.html iframe loads the app
 # homepage into itself on Render restarts; a styled st.expander won't render as a
-# bordered card). So the preview is a static LeBron-vs-Jordan career-arc overlay;
+# bordered card). So the preview is a static LeBron-vs-Jordan comparison chart;
 # the full per-player picker lives on the Legacy page (the "Open Legacy" button).
 _LEGACY_DESC = ("53 seasons of NBA history: all-time greats, era leaderboards, "
                 "team Mount Rushmores, draft classes.")
@@ -874,10 +945,13 @@ _LEGACY_DESC = ("53 seasons of NBA history: all-time greats, era leaderboards, "
 _legacy_valid = [s for s in _p.get("legacy_series", []) if s.get("career")] if _p else []
 if _legacy_valid:
     _dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
-    _halo = None if _dark else "rgba(18,18,34,0.55)"   # outline so bright lines read on the light strip
-    _pair = [s for nm in ("LeBron James", "Michael Jordan") for s in _legacy_valid if s["name"] == nm]
-    _legacy_preview = (_multi_sparkline(_pair or _legacy_valid[:2], dots=False, halo=_halo)
-        + '<div style="text-align:center;font-size:0.7rem;color:var(--fg-5);margin-top:0.4rem;">Career Barrett Score by season</div>')
+    # Legible per-theme colours (bright gold/red on dark, deeper on the light strip).
+    _lcolors = {"Michael Jordan": "#f1c40f" if _dark else "#b8860b",
+                "LeBron James":   "#ef5350" if _dark else "#d83a4a"}
+    _pair = [{**s, "color": _lcolors.get(s["name"], s["color"])}
+             for nm in ("Michael Jordan", "LeBron James")
+             for s in _legacy_valid if s["name"] == nm]
+    _legacy_preview = _legacy_compare_svg(_pair or _legacy_valid[:2], dark=_dark)
 else:
     _legacy_preview = "<em>Loading live data...</em>"
 
