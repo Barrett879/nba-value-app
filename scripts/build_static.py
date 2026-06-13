@@ -13,6 +13,7 @@ import json
 import re
 import unicodedata
 import warnings
+import html as _html
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
@@ -160,6 +161,115 @@ for _, r in df.sort_values("score_rank").iterrows():
 (DATA / "home.json").write_text(json.dumps(home, indent=0))
 (DATA / "players.json").write_text(json.dumps(players, separators=(",", ":")))
 
+# Slugs that actually get a generated player page. Comparable-signings tables
+# draw from historical signings that include players outside the current set,
+# so links are guarded against this to avoid 404s.
+_PLAYER_SLUGS = frozenset(p["slug"] for p in players)
+
+
+# ── Homepage "Explore deeper" strips — reuse the Streamlit app's OWN chart
+# builders + computed payload so the static landing page is pixel-identical to
+# the live app's landing page (no re-implementation, no drift). ───────────────
+import app as _app  # noqa: E402  bare-mode import exposes _p + the chart SVG fns
+_PP = _app._p or {}
+_RANK_COLORS = ["#f1c40f", "#ecbe1a", "#e3b121", "#d3a02a", "#bf8e34",
+                "#a87c3a", "#916b3d", "#7a5b3c", "#634c39", "#4d3e35"]
+_CAP = "text-align:center;font-size:0.7rem;color:var(--fg-5);margin-top:0.4rem;"
+
+
+def _last(nm):
+    return nm.split()[-1] if len(nm.split()) > 1 else nm
+
+
+def _theme_btn():
+    return ('<button class="theme-btn" onclick="hvToggleTheme()" aria-label="Toggle dark mode">'
+            + _MOON_SVG + _SUN_SVG + '</button>')
+
+
+def _strip(name, href, accent, desc, preview):
+    return (
+        f'<details class="explore-strip" style="--accent:{accent};">'
+        f'<summary class="explore-strip-summary">'
+        f'<div class="tab-strip-name">{name}</div>'
+        f'<div class="tab-strip-desc">{desc}</div>'
+        f'<span class="strip-arrow">▾</span></summary>'
+        f'<div class="explore-strip-body">{preview}'
+        f'<a class="goto-btn" href="{href}">Open {name} →</a>'
+        f'</div></details>'
+    )
+
+
+_rk_prev = _app._hbar_chart(
+    [{"label": f"{i+1}. {_last(nm)}", "value": sc, "value_str": f"{sc:.1f}",
+      "color": _RANK_COLORS[min(i, len(_RANK_COLORS) - 1)]}
+     for i, (nm, sc) in enumerate(_PP.get("top10", []))],
+    w=460, h=260, label_w=150,
+) + f'<div style="{_CAP}">Top 10 by Barrett Score · this season</div>'
+
+_tm_rows = ([{"label": t, "value": abs(v), "value_str": f"-${abs(v):.1f}M", "color": "#2ecc71", "side": "neg"}
+             for t, v in _PP.get("best_teams", [])]
+            + [{"label": t, "value": abs(v), "value_str": f"+${abs(v):.1f}M", "color": "#e74c3c", "side": "pos"}
+               for t, v in _PP.get("worst_teams", [])])
+_tm_prev = _app._diverging_bars(_tm_rows) + f'<div style="{_CAP}">Net payroll efficiency · green = team is winning the value game</div>'
+
+_fa_prev = _app._fa_category_chart(_PP.get("fa_categories", [])) + f'<div style="{_CAP}">Free-agent class breakdown · this offseason</div>'
+
+_cp_prev = (
+    '<div style="font-size:0.85rem;color:var(--fg-2);line-height:1.55;">'
+    "Type any player's name to project the contract they'd sign "
+    '<b style="color:var(--fg-1);">today</b>, their 2025-26 production valued '
+    "against next season's salary cap."
+    '<div style="margin-top:0.7rem;display:flex;gap:1.4rem;flex-wrap:wrap;font-size:0.78rem;color:var(--fg-3);">'
+    '<span><b style="color:var(--accent-teal);">HistGBM</b> · 1,900+ modern signings</span>'
+    '<span><b style="color:var(--value-good);">89%</b> within 5% of the cap</span>'
+    '<span>supermax · vet-discount · rookie-scale aware</span>'
+    '</div></div>'
+)
+
+_lg_valid = [s for s in _PP.get("legacy_series", []) if s.get("career")]
+if _lg_valid:
+    _lg_def = next((i for i, s in enumerate(_lg_valid) if s["name"] == "LeBron James"), 0)
+    _lg_radios = "".join(
+        f'<input type="radio" name="legacy-pick" id="lg-{i}" class="lg-radio"{" checked" if i == _lg_def else ""}>'
+        for i in range(len(_lg_valid)))
+    _lg_labels = "".join(f'<label for="lg-{i}" class="lg-label">{_html.escape(s["name"])}</label>'
+                         for i, s in enumerate(_lg_valid))
+    _lg_charts = "".join(
+        f'<div class="lg-chart" data-idx="{i}">{_app._multi_sparkline([s])}'
+        f'<div class="lg-caption">{_html.escape(s["name"])} · {len(s["career"])} seasons · '
+        f'{s["career"][0]["season"]} → {s["career"][-1]["season"]}</div></div>'
+        for i, s in enumerate(_lg_valid))
+    _lg_rules = "".join(
+        f'#lg-{i}:checked ~ .lg-labels label[for="lg-{i}"]{{background:#f1c40f;color:#1a1a2e;font-weight:700;}}'
+        f'#lg-{i}:checked ~ .lg-chart-stack .lg-chart[data-idx="{i}"]{{display:block;}}'
+        for i in range(len(_lg_valid)))
+    _lg_prev = (
+        '<style>.legacy-picker-wrap input[type="radio"].lg-radio{position:absolute;left:-9999px;}'
+        '.lg-labels{display:flex;gap:0.4rem;justify-content:center;margin-bottom:0.7rem;flex-wrap:wrap;}'
+        '.lg-label{display:inline-block;padding:0.3rem 0.75rem;border-radius:4px;cursor:pointer;color:var(--fg-3);'
+        'background:var(--hairline-soft);font-size:0.82rem;transition:background .15s,color .15s;user-select:none;}'
+        '.lg-label:hover{background:var(--hairline);color:var(--fg-1);}.lg-chart{display:none;}'
+        '.lg-caption{text-align:center;font-size:0.7rem;color:var(--fg-5);margin-top:0.4rem;}'
+        + _lg_rules + '</style>'
+        + f'<div class="legacy-picker-wrap">{_lg_radios}<div class="lg-labels">{_lg_labels}</div>'
+        + f'<div class="lg-chart-stack">{_lg_charts}</div></div>'
+    )
+else:
+    _lg_prev = ""
+
+_STRIPS = (
+    _strip("Current Rankings", "/rankings.html", "#e63946",
+           "Who's the best NBA player right now? Every player ranked by Barrett Score this season.", _rk_prev)
+    + _strip("Legacy", APP_BASE + "/Legacy", "#f1c40f",
+             "53 seasons of NBA history: all-time greats, era leaderboards, team Mount Rushmores, draft classes.", _lg_prev)
+    + _strip("Team Analysis", APP_BASE + "/Team_Analysis", "#3498db",
+             "Which front offices are getting the most for their money? Payroll efficiency by team.", _tm_prev)
+    + _strip("Contract Predictor", APP_BASE + "/Contract_Predictor", "var(--accent-teal)",
+             "What would any player command on a new deal signed today? A model prices their production against next season's cap.", _cp_prev)
+    + _strip("Current Free Agents", APP_BASE + "/Free_Agent_Class", "#2ecc71",
+             "Every player hitting the market this offseason: UFAs, RFAs, options. What they're worth.", _fa_prev)
+)
+
 
 # ── Generate index.html with hero data inlined (instant first paint, SEO) ─────
 _bm, _sm, _om = home["best"], home["steal"], home["overpaid"]
@@ -168,55 +278,35 @@ INDEX = f"""<!doctype html>
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>HoopsValue — NBA Contract Value, Every Player Ranked</title>
-<meta name="description" content="Every NBA player since 1973 ranked by the Barrett Score — on-court production sized up against every paycheck. Find the steals, expose the overpays, predict any contract.">
+<title>HoopsValue · NBA Contract Value, Every Player Ranked</title>
+<meta name="description" content="Every NBA player since 1973 ranked by the Barrett Score: on-court production sized up against every paycheck. Find the steals, expose the overpays, predict any contract.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
 <link rel="stylesheet" href="/assets/style.css">
 {_THEME_BOOT}
 </head>
-<body>
-{_nav()}
-<header class="hero-head">
-  <div class="wordmark"><span class="h">HO</span><span class="ball"></span><span class="h">PS</span><span class="v">VALUE</span></div>
-  <div class="eyebrow">NBA Contract Value</div>
-</header>
-<div class="wrap">
-  <p class="tagline">Every NBA player since 1973, ranked by the <b>Barrett Score</b>. On-court production sized up against every paycheck — find the steals, expose the overpays, settle the GOAT debate.</p>
-
-  <div class="search">
-    <input id="search" type="text" autocomplete="off" spellcheck="false"
-           placeholder="Search any player — LeBron, Jokić, Wembanyama…">
+<body class="home">
+{_theme_btn()}
+<div class="hv-logo-wrap"><div class="hv-logo">
+  <div class="hv-wm"><span class="cu">HO</span><svg class="hv-ball" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><circle cx="50" cy="50" r="46"/><path d="M50 4 V96 M4 50 H96 M20 14 Q42 50 20 86 M80 14 Q58 50 80 86"/></g></svg><span class="cu">PS</span><span class="sg">VALUE</span></div>
+  <div class="hv-tag">NBA Contract Value</div>
+</div></div>
+<div class="wrap home-wrap">
+  <p class="home-tagline">Every NBA player since 1973, ranked by the <b>Barrett Score</b>. On-court production sized up against every paycheck.<br>Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</p>
+  <div class="home-search-label">SEARCH ANY PLAYER · CAREER ARCS · HEAD-TO-HEAD COMPARISONS · 1973 → TODAY</div>
+  <div class="search home-combo">
+    <input id="search" type="text" autocomplete="off" spellcheck="false" placeholder="Type a name: LeBron, Jordan, Magic, Jokić, Wembanyama…">
+    <span class="combo-chev">▾</span>
     <div id="results" class="results"></div>
   </div>
-
-  <div class="heroes">
-    <a class="card best" href="/player/{_bm['slug']}.html">
-      <div class="label">Best Player Right Now</div>
-      <div class="name">{_bm['name']}</div>
-      <div class="sub">{_bm['team']} · Barrett Score <b>{_bm['score']}</b></div>
-    </a>
-    <a class="card steal" href="/player/{_sm['slug']}.html">
-      <div class="label">Biggest Steal</div>
-      <div class="name">{_sm['name']}</div>
-      <div class="sub">{_sm['team']} · <span class="pos">${_sm['below_m']}M</span> below market</div>
-    </a>
-    <a class="card over" href="/player/{_om['slug']}.html">
-      <div class="label">Most Overpaid</div>
-      <div class="name">{_om['name']}</div>
-      <div class="sub">{_om['team']} · <span class="red">${_om['above_m']}M</span> above market</div>
-    </a>
+  <div class="home-heroes">
+    <a class="home-hero-card good" href="/player/{_bm['slug']}.html"><div class="hh-label">Best Player Right Now</div><div class="hh-name">{_bm['name']}</div><div class="hh-sub">{_bm['team']} · Barrett Score {_bm['score']}</div></a>
+    <a class="home-hero-card good" href="/player/{_sm['slug']}.html"><div class="hh-label">Biggest Steal</div><div class="hh-name">{_sm['name']}</div><div class="hh-sub">{_sm['team']} · ${_sm['below_m']}M below market value</div></a>
+    <a class="home-hero-card bad" href="/player/{_om['slug']}.html"><div class="hh-label">Most Overpaid</div><div class="hh-name">{_om['name']}</div><div class="hh-sub">{_om['team']} · ${_om['above_m']}M above market value</div></a>
   </div>
-
   <div class="explore-label">Explore deeper</div>
-  <div class="nav">
-    <a class="navcard" href="/rankings.html" style="--accent:#d13b46"><div><h3>Current Rankings</h3><p>All {home['n_players']} qualified players ranked by Barrett Score this season.</p></div></a>
-    <a class="navcard" href="{APP_BASE}/Contract_Predictor" style="--accent:#16b8a6"><div><h3>Contract Predictor</h3><p>What any player would command on a new deal today — or build out a team's offseason from the front office chair.</p></div></a>
-    <a class="navcard" href="{APP_BASE}/Team_Analysis" style="--accent:#3b82c7"><div><h3>Team Analysis</h3><p>Which front offices get the most for their money? Payroll efficiency by team.</p></div></a>
-    <a class="navcard" href="{APP_BASE}/Free_Agent_Class" style="--accent:#3d6f52"><div><h3>Free Agents</h3><p>Everyone hitting the market this offseason — UFAs, RFAs, options.</p></div></a>
-    <a class="navcard" href="{APP_BASE}/Legacy" style="--accent:#c79a3a"><div><h3>Legacy</h3><p>53 seasons of history: all-time greats, era leaderboards, draft classes.</p></div></a>
-  </div>
+  {_STRIPS}
 </div>
 {_footer()}
 <script src="/assets/theme.js"></script>
@@ -352,9 +442,12 @@ def render_player(p: dict) -> bool:
             f'<div><div class="sk">Market middle 50%</div><div class="sv">{_rng}</div></div>'
             f'<div><div class="sk">Closest comps</div><div class="sv">{_top3}</div></div>'
             f'</div></section>')
+        def _comp_name_cell(nm):
+            sl = slugify(nm)
+            return (f'<a href="/player/{sl}.html">{_html.escape(nm)}</a>'
+                    if sl in _PLAYER_SLUGS else _html.escape(nm))
         rows = "".join(
-            f'<tr><td class="cn"><a href="/player/{slugify(str(r["Player"]))}.html">'
-            f'{_html.escape(str(r["Player"]))}</a></td>'
+            f'<tr><td class="cn">{_comp_name_cell(str(r["Player"]))}</td>'
             f'<td>{_html.escape(str(r.get("pos_primary", "")))}</td>'
             f'<td>{_html.escape(str(r.get("signed_in", "")))}</td>'
             f'<td class="cd">{_m(float(r["salary_curr"]))}</td></tr>'
@@ -387,7 +480,7 @@ def render_player(p: dict) -> bool:
                 for s in _sui)
             suitors_html = (
                 f'<section class="suitors"><h2>Likely suitors</h2>'
-                f'<p class="comps-sub">Teams most likely to pursue him — each at the price they\'d realistically offer.</p>'
+                f'<p class="comps-sub">Teams most likely to pursue him, each at the price they\'d realistically offer.</p>'
                 f'<table class="suitors-table"><tbody>{_sr}</tbody></table></section>')
 
     pos = _pos(name)
@@ -403,7 +496,7 @@ def render_player(p: dict) -> bool:
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{nm} — Next Contract Prediction · HoopsValue</title>
+<title>{nm}: Next Contract Prediction · HoopsValue</title>
 <meta name="description" content="{nm}'s projected {CONTRACT} contract: {_m(predicted)}/yr at next season's cap, with comparable signings and market value.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -440,7 +533,7 @@ def render_player(p: dict) -> bool:
     {comps_html}
     {suitors_html}
   </div>
-  <p class="disclaimer">Model: {_MODEL}. Projection is for the player's next contract priced at the {CONTRACT} cap. Informational only — not financial advice.</p>
+  <p class="disclaimer">Model: {_MODEL}. Projection is for the player's next contract priced at the {CONTRACT} cap. Informational only, not financial advice.</p>
 </main>
 {_footer()}
 <script src="/assets/theme.js"></script>
@@ -483,7 +576,7 @@ RANK = f"""<!doctype html>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Current NBA Rankings by Barrett Score · HoopsValue</title>
-<meta name="description" content="Every qualified NBA player this season ranked by the Barrett Score — production vs pay, the steals and the overpays.">
+<meta name="description" content="Every qualified NBA player this season ranked by the Barrett Score: production vs pay, the steals and the overpays.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;600;700&display=swap">
@@ -497,9 +590,9 @@ RANK = f"""<!doctype html>
 </header>
 <main class="wrap rankings">
   <h1>Current Rankings</h1>
-  <p class="sub">All {len(players)} qualified players, {CUR} — ranked by Barrett Score. Tap a column to sort.</p>
+  <p class="sub">All {len(players)} qualified players, {CUR}, ranked by Barrett Score. Tap a column to sort.</p>
   <input id="rankfilter" class="rank-filter" type="text" placeholder="Filter players…" autocomplete="off" spellcheck="false">
-  <table class="rank-table" id="ranktable">
+  <div class="rank-scroll"><table class="rank-table" id="ranktable">
     <thead><tr>
       <th class="num" data-k="num">#</th>
       <th data-k="text">Player</th>
@@ -510,7 +603,7 @@ RANK = f"""<!doctype html>
       <th class="num" data-k="num">Value vs Pay</th>
     </tr></thead>
     <tbody>{_rrows}</tbody>
-  </table>
+  </table></div>
 </main>
 {_footer()}
 <script src="/assets/theme.js"></script>
