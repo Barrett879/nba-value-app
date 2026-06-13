@@ -392,13 +392,6 @@ details[open].explore-strip .strip-arrow { transform: rotate(180deg); }
 .explore-strip-body svg { max-width: 100%; height: auto; }
 a.goto-btn { display: inline-block; background: var(--accent, var(--accent-red)); color: var(--fg-1); padding: 0.45rem 1.1rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; margin-top: 0.8rem; transition: opacity .15s, transform .1s; }
 a.goto-btn:hover { opacity: 0.88; transform: translateX(2px); }
-.legacy-picker-wrap .lg-labels { display: flex; gap: 0.4rem; justify-content: center; margin-bottom: 0.7rem; flex-wrap: wrap; }
-.lg-label { display: inline-block; padding: 0.3rem 0.75rem; border-radius: 4px; cursor: pointer; color: var(--fg-3); background: var(--hairline-soft); font-size: 0.82rem; border: none; font-family: inherit; transition: background .15s, color .15s; }
-.lg-label:hover { background: var(--hairline); color: var(--fg-1); }
-.lg-label.active { background: #f1c40f; color: #1a1a2e; font-weight: 700; }
-.lg-chart { display: none; }
-.lg-chart.active { display: block; }
-.lg-caption { text-align: center; font-size: 0.7rem; color: var(--fg-5); margin-top: 0.4rem; }
 
 @media (max-width: 880px) {
   .hero-grid, .two-col, .scout-grid { grid-template-columns: 1fr; gap: 24px; }

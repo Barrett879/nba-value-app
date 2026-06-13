@@ -470,7 +470,7 @@ def _value_color(v, vmin, vmax, low="#e74c3c", mid="#f1c40f", high="#2ecc71"):
     return _interp_color(low, mid, t * 2) if t < 0.5 else _interp_color(mid, high, (t - 0.5) * 2)
 
 
-def _multi_sparkline(series_list, w=460, h=160):
+def _multi_sparkline(series_list, w=460, h=160, dots=True):
     """Overlay multiple career arcs aligned by career year.
     series_list: list of dicts {name, color, career: [{season, score, rank, total}, ...]}.
     Player labels render as a colored legend across the top.
@@ -521,6 +521,8 @@ def _multi_sparkline(series_list, w=460, h=160):
             f'<polyline points="{line_pts}" fill="none" stroke="{s["color"]}" '
             f'stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" opacity="0.9"/>'
         )
+        if not dots:
+            continue  # lines-only overlay (multi-player preview): skip dots/tooltips
         for x, y, pt in coords:
             tooltip = (
                 f'{_esc(s["name"])} · {_esc(pt["season"])}'
@@ -851,84 +853,22 @@ render_strip(
     preview_html=rankings_preview,
 )
 
-# ── Legacy preview — interactive player picker via pure HTML radio inputs.
-# Five sparkline SVGs are rendered up-front (one per featured player), then
-# CSS sibling-selector rules show only the chart matching the currently-
-# checked radio. No Streamlit reruns / no JS — fits cleanly inside raw
-# <details>, instant on click.
+# ── Legacy preview — all five featured legends overlaid on one chart.
+# An interactive per-player picker (CSS-radio) was tried here but is unreliable
+# inside Streamlit: st.markdown re-renders reset the checked radio back to its
+# default, and st.markdown strips <script> so a JS toggle can't run. A static
+# overlay of all five arcs is stateless (can't glitch) and shows the comparison
+# across eras at a glance — exactly what _multi_sparkline was built to do.
 _legacy_preview_html = '<em>Loading live data…</em>'
 if _p:
     _legacy_series = _p.get("legacy_series", [])
     _valid_legacy = [s for s in _legacy_series if s.get("career")]
     if _valid_legacy:
-        # Default to LeBron (or first available player if LeBron is missing)
-        _default_idx = next(
-            (i for i, s in enumerate(_valid_legacy) if s["name"] == "LeBron James"),
-            0,
+        _legacy_preview_html = (
+            _multi_sparkline(_valid_legacy, dots=False)
+            + '<div style="text-align:center; font-size:0.7rem; color:var(--fg-5); '
+            'margin-top:0.4rem;">Barrett Score across each career · five legends, five eras</div>'
         )
-
-        # Hidden radio inputs (one per player) — sibling to labels + charts
-        _radio_html = "".join(
-            f'<input type="radio" name="legacy-pick" id="lg-{i}" class="lg-radio"'
-            f'{" checked" if i == _default_idx else ""}>'
-            for i in range(len(_valid_legacy))
-        )
-
-        # Player-name labels rendered as clickable pills
-        _labels_html = "".join(
-            f'<label for="lg-{i}" class="lg-label">{html.escape(s["name"])}</label>'
-            for i, s in enumerate(_valid_legacy)
-        )
-
-        # One sparkline + caption per player; CSS shows only the matching one
-        _charts_html = "".join(
-            f'<div class="lg-chart" data-idx="{i}">'
-            f'{_multi_sparkline([s])}'
-            f'<div class="lg-caption">{html.escape(s["name"])} · '
-            f'{len(s["career"])} seasons · '
-            f'{s["career"][0]["season"]} → {s["career"][-1]["season"]}'
-            f'</div>'
-            f'</div>'
-            for i, s in enumerate(_valid_legacy)
-        )
-
-        # Per-player CSS rules (each radio :checked toggles ITS label + chart)
-        _picker_rules = "\n".join(
-            f'#lg-{i}:checked ~ .lg-labels label[for="lg-{i}"] '
-            f'{{ background:#f1c40f; color:#1a1a2e; font-weight:700; }}\n'
-            f'#lg-{i}:checked ~ .lg-chart-stack .lg-chart[data-idx="{i}"] '
-            f'{{ display:block; }}'
-            for i in range(len(_valid_legacy))
-        )
-
-        _legacy_preview_html = f"""
-<style>
-.legacy-picker-wrap input[type="radio"].lg-radio {{
-    position: absolute; left: -9999px;
-}}
-.lg-labels {{
-    display: flex; gap: 0.4rem; justify-content: center;
-    margin-bottom: 0.7rem; flex-wrap: wrap;
-}}
-.lg-label {{
-    display: inline-block; padding: 0.3rem 0.75rem; border-radius: 4px;
-    cursor: pointer; color: var(--fg-3); background: var(--hairline-soft);
-    font-size: 0.82rem; transition: background 0.15s, color 0.15s;
-    user-select: none;
-}}
-.lg-label:hover {{ background: var(--hairline); color: var(--fg-1); }}
-.lg-chart {{ display: none; }}
-.lg-caption {{
-    text-align: center; font-size: 0.7rem; color: var(--fg-5); margin-top: 0.4rem;
-}}
-{_picker_rules}
-</style>
-<div class="legacy-picker-wrap">
-    {_radio_html}
-    <div class="lg-labels">{_labels_html}</div>
-    <div class="lg-chart-stack">{_charts_html}</div>
-</div>
-"""
 
 render_strip(
     name="Legacy",
