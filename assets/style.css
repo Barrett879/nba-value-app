@@ -31,6 +31,7 @@
   --value-good: #16a34a;
   --value-bad: #dc3a2c;
   --gold: #9a6a00;
+  --legacy-pillfg: #ffffff;
   --amber: #a8730a;
   --logo-copper: #985729;
   --logo-sage: #3d6f52;
@@ -77,6 +78,7 @@ html[data-theme="dark"] {
   --value-good: #2ecc71;
   --value-bad: #e74c3c;
   --gold: #f1c40f;
+  --legacy-pillfg: #1a1a2e;
   --amber: #f0b35b;
   --logo-copper: #b06a38;
   --logo-sage: #4f8a68;
@@ -392,6 +394,23 @@ details[open].explore-strip .strip-arrow { transform: rotate(180deg); }
 .explore-strip-body svg { max-width: 100%; height: auto; }
 a.goto-btn { display: inline-block; background: var(--accent, var(--accent-red)); color: var(--fg-1); padding: 0.45rem 1.1rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.85rem; margin-top: 0.8rem; transition: opacity .15s, transform .1s; }
 a.goto-btn:hover { opacity: 0.88; transform: translateX(2px); }
+
+/* Legacy picker — a self-contained always-open card (matches the app's iframe
+   version); app.js wires the .lg-label clicks to toggle the .active chart. */
+.lg-card { background: var(--panel-2); border: 1px solid var(--panel-line); border-left: 3px solid var(--gold); border-radius: 8px; padding: 0.9rem 1.2rem 1.0rem; margin: 0.5rem 0; }
+.lg-card .lg-head { display: flex; align-items: baseline; gap: 0.55rem; flex-wrap: wrap; margin-bottom: 0.8rem; }
+.lg-card .lg-title { font-size: 1.0rem; font-weight: 700; color: var(--fg-1); letter-spacing: -0.01em; }
+.lg-card .lg-desc { font-size: 0.76rem; color: var(--fg-3); line-height: 1.4; }
+.lg-card .lg-labels { display: flex; gap: 0.4rem; justify-content: center; margin-bottom: 0.7rem; flex-wrap: wrap; }
+.lg-card .lg-label { padding: 0.3rem 0.7rem; border-radius: 5px; cursor: pointer; color: var(--fg-3); background: var(--hairline-soft); border: 1px solid var(--panel-line); font-size: 0.82rem; font-family: inherit; line-height: 1.2; transition: background .15s, color .15s, border-color .15s; }
+.lg-card .lg-label:hover { background: var(--hairline); color: var(--fg-1); }
+.lg-card .lg-label.active { background: var(--gold); color: var(--legacy-pillfg); border-color: var(--gold); font-weight: 700; }
+.lg-card .lg-chart { display: none; }
+.lg-card .lg-chart.active { display: block; }
+.lg-card .lg-chart svg { width: 100%; height: auto; display: block; }
+.lg-card .lg-caption { text-align: center; font-size: 0.72rem; color: var(--fg-3); margin-top: 0.4rem; }
+.lg-card .lg-open { display: inline-block; margin-top: 0.85rem; background: var(--gold); color: var(--legacy-pillfg); padding: 0.4rem 1.0rem; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 0.82rem; }
+@media (max-width: 520px) { .lg-card .lg-desc { display: none; } }
 
 @media (max-width: 880px) {
   .hero-grid, .two-col, .scout-grid { grid-template-columns: 1fr; gap: 24px; }
