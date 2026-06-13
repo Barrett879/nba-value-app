@@ -905,10 +905,9 @@ def _legacy_compare_svg(valid, dark=False):
     _ym = MT + ph / 2
     p.append(f'<text x="13" y="{_ym:.1f}" text-anchor="middle" font-size="11" fill="{txfg}" '
              f'font-family="system-ui" transform="rotate(-90 13 {_ym:.1f})">Barrett Score</text>')
-    for xi in sorted({0, 4, 9, 14, 19, maxlen - 1}):
-        if 0 <= xi < maxlen:
-            p.append(f'<text x="{X(xi):.1f}" y="{MT + ph + 17:.1f}" text-anchor="middle" font-size="11" '
-                     f'fill="{axfg}" font-family="system-ui">{xi + 1}</text>')
+    for xi in range(maxlen):
+        p.append(f'<text x="{X(xi):.1f}" y="{MT + ph + 17:.1f}" text-anchor="middle" font-size="10" '
+                 f'fill="{axfg}" font-family="system-ui">{xi + 1}</text>')
     p.append(f'<text x="{ML + pw / 2:.1f}" y="{MT + ph + 33:.1f}" text-anchor="middle" font-size="11" '
              f'fill="{txfg}" font-family="system-ui">Career year (Year 1 = first season)</text>')
     for s in valid:
