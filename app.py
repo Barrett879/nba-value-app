@@ -884,34 +884,35 @@ def _render_legacy_picker(valid):
     default = next((s["name"].split()[-1] for s in valid if s["name"] == "LeBron James"), order[0])
     dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
     halo = None if dark else "rgba(18,18,34,0.55)"   # outline so a bright line reads on the light card
-    with st.container(key="legacy_card", border=True):
-        st.markdown(
-            f'<div class="lg-head"><span class="lg-title">Legacy</span>'
-            f'<span class="lg-desc">{html.escape(_LEGACY_DESC)}</span></div>',
-            unsafe_allow_html=True,
-        )
-        pick = st.pills("Legend", order, selection_mode="single", default=default,
-                        label_visibility="collapsed", key="legacy_pills")
-        s = by_last.get(pick) or by_last[default]
-        st.markdown(
-            _multi_sparkline([s], h=150, dots=False, halo=halo)
-            + f'<div class="lg-caption">{html.escape(s["name"])} · {len(s["career"])} seasons · '
-            f'{html.escape(str(s["career"][0]["season"]))} → {html.escape(str(s["career"][-1]["season"]))}</div>'
-            '<a class="lg-open" href="/Legacy" target="_top">Open Legacy →</a>',
-            unsafe_allow_html=True,
-        )
+    pick = st.pills("Legend", order, selection_mode="single", default=default,
+                    label_visibility="collapsed", key="legacy_pills")
+    s = by_last.get(pick) or by_last[default]
+    st.markdown(
+        _multi_sparkline([s], h=150, dots=False, halo=halo)
+        + f'<div class="lg-caption">{html.escape(s["name"])} · {len(s["career"])} seasons · '
+        f'{html.escape(str(s["career"][0]["season"]))} → {html.escape(str(s["career"][-1]["season"]))}</div>'
+        '<a class="lg-open" href="/Legacy" target="_top">Open Legacy →</a>',
+        unsafe_allow_html=True,
+    )
 
 
-# Native-pills card styling — gold accent + gold active pill. Injected on full
-# renders (re-baked on a theme toggle for the active-pill text colour); it
-# persists across the fragment's own reruns since it lives outside the fragment.
+# Legacy collapsible strip — st.expander restyled to match the custom
+# .explore-strip <details> strips (gold accent, panel header, bold name + grey
+# description in the summary). Injected on full renders (re-baked on a theme
+# toggle for the active-pill text colour) and persists across the fragment's own
+# reruns since it lives outside the fragment.
 _lg_pillfg = "#1a1a2e" if st.session_state.get("theme_dark", THEME_DEFAULT_DARK) else "#ffffff"
 st.markdown(f"""
 <style>
-.st-key-legacy_card {{ border-left: 3px solid var(--gold) !important; background: var(--panel-2) !important; border-radius: 8px; }}
-.st-key-legacy_card .lg-head {{ display:flex; align-items:baseline; gap:0.55rem; flex-wrap:wrap; margin-bottom:0.2rem; }}
-.st-key-legacy_card .lg-title {{ font-size:1.05rem; font-weight:700; color:var(--fg-1); letter-spacing:-0.01em; }}
-.st-key-legacy_card .lg-desc {{ font-size:0.78rem; color:var(--fg-3); line-height:1.4; }}
+.st-key-legacy_card {{ margin-bottom: 0.55rem; }}
+.st-key-legacy_card details {{ background: var(--panel) !important; border: 1px solid var(--panel-line) !important; border-left: 3px solid var(--gold) !important; border-radius: 8px !important; overflow: hidden; }}
+.st-key-legacy_card summary {{ padding: 0.8rem 1.2rem !important; }}
+.st-key-legacy_card summary:hover {{ background: var(--panel-hover) !important; }}
+.st-key-legacy_card summary p {{ font-size: 0.82rem !important; color: var(--fg-3) !important; line-height: 1.35 !important; }}
+.st-key-legacy_card summary strong {{ font-size: 1.05rem !important; color: var(--fg-1) !important; font-weight: 700 !important; margin-right: 0.7rem; }}
+.st-key-legacy_card summary svg {{ fill: var(--gold) !important; color: var(--gold) !important; }}
+.st-key-legacy_card [data-testid="stExpanderDetails"] {{ background: var(--panel-2) !important; }}
+.st-key-legacy_card [data-testid="stExpanderDetails"] svg {{ width: 100%; height: auto; }}
 .st-key-legacy_card [data-testid="stElementContainer"]:has([data-testid="stButtonGroup"]) {{ align-self:center; }}
 .st-key-legacy_card [data-testid="stBaseButton-pills"] {{ background:var(--hairline-soft) !important; color:var(--fg-3) !important; border:1px solid var(--panel-line) !important; }}
 .st-key-legacy_card [data-testid="stBaseButton-pills"]:hover {{ background:var(--hairline) !important; color:var(--fg-1) !important; }}
@@ -919,13 +920,14 @@ st.markdown(f"""
 .st-key-legacy_card .lg-caption {{ text-align:center; font-size:0.72rem; color:var(--fg-3); margin-top:0.4rem; }}
 .st-key-legacy_card .lg-open {{ display:inline-block; margin-top:0.55rem; background:var(--gold); color:{_lg_pillfg}; padding:0.4rem 1.0rem; border-radius:6px; text-decoration:none; font-weight:600; font-size:0.82rem; }}
 .st-key-legacy_card .lg-open:hover {{ opacity:0.9; }}
-.st-key-legacy_card svg {{ width:100%; height:auto; }}
 </style>
 """, unsafe_allow_html=True)
 
 _legacy_valid = [s for s in _p.get("legacy_series", []) if s.get("career")] if _p else []
 if _legacy_valid:
-    _render_legacy_picker(_legacy_valid)
+    with st.container(key="legacy_card"):
+        with st.expander(f"**Legacy** {_LEGACY_DESC}", expanded=False):
+            _render_legacy_picker(_legacy_valid)
 else:
     render_strip(
         name="Legacy", href="/Legacy", accent="#f1c40f",
