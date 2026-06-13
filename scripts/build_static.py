@@ -226,33 +226,24 @@ _cp_prev = (
     '</div></div>'
 )
 
+# Legacy player picker — JS toggle (CSS-radio hidden at left:-9999px caused a
+# focus-scroll jump on each click). Buttons + an .active class; app.js wires it.
 _lg_valid = [s for s in _PP.get("legacy_series", []) if s.get("career")]
 if _lg_valid:
     _lg_def = next((i for i, s in enumerate(_lg_valid) if s["name"] == "LeBron James"), 0)
-    _lg_radios = "".join(
-        f'<input type="radio" name="legacy-pick" id="lg-{i}" class="lg-radio"{" checked" if i == _lg_def else ""}>'
-        for i in range(len(_lg_valid)))
-    _lg_labels = "".join(f'<label for="lg-{i}" class="lg-label">{_html.escape(s["name"])}</label>'
-                         for i, s in enumerate(_lg_valid))
+    _lg_labels = "".join(
+        f'<button type="button" class="lg-label{" active" if i == _lg_def else ""}" data-idx="{i}">'
+        f'{_html.escape(s["name"])}</button>'
+        for i, s in enumerate(_lg_valid))
     _lg_charts = "".join(
-        f'<div class="lg-chart" data-idx="{i}">{_app._multi_sparkline([s])}'
+        f'<div class="lg-chart{" active" if i == _lg_def else ""}" data-idx="{i}">{_app._multi_sparkline([s])}'
         f'<div class="lg-caption">{_html.escape(s["name"])} · {len(s["career"])} seasons · '
         f'{s["career"][0]["season"]} → {s["career"][-1]["season"]}</div></div>'
         for i, s in enumerate(_lg_valid))
-    _lg_rules = "".join(
-        f'#lg-{i}:checked ~ .lg-labels label[for="lg-{i}"]{{background:#f1c40f;color:#1a1a2e;font-weight:700;}}'
-        f'#lg-{i}:checked ~ .lg-chart-stack .lg-chart[data-idx="{i}"]{{display:block;}}'
-        for i in range(len(_lg_valid)))
     _lg_prev = (
-        '<style>.legacy-picker-wrap input[type="radio"].lg-radio{position:absolute;left:-9999px;}'
-        '.lg-labels{display:flex;gap:0.4rem;justify-content:center;margin-bottom:0.7rem;flex-wrap:wrap;}'
-        '.lg-label{display:inline-block;padding:0.3rem 0.75rem;border-radius:4px;cursor:pointer;color:var(--fg-3);'
-        'background:var(--hairline-soft);font-size:0.82rem;transition:background .15s,color .15s;user-select:none;}'
-        '.lg-label:hover{background:var(--hairline);color:var(--fg-1);}.lg-chart{display:none;}'
-        '.lg-caption{text-align:center;font-size:0.7rem;color:var(--fg-5);margin-top:0.4rem;}'
-        + _lg_rules + '</style>'
-        + f'<div class="legacy-picker-wrap">{_lg_radios}<div class="lg-labels">{_lg_labels}</div>'
-        + f'<div class="lg-chart-stack">{_lg_charts}</div></div>'
+        '<div class="legacy-picker-wrap">'
+        f'<div class="lg-labels">{_lg_labels}</div>'
+        f'<div class="lg-chart-stack">{_lg_charts}</div></div>'
     )
 else:
     _lg_prev = ""

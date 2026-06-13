@@ -47,3 +47,17 @@
     if (!input.contains(e.target) && !box.contains(e.target)) { box.classList.remove('show'); }
   });
 })();
+
+// Legacy strip player picker — click a name to show that career arc.
+// (Replaces a CSS :checked toggle whose off-screen radio scroll-jumped on click.)
+(function () {
+  document.querySelectorAll('.legacy-picker-wrap').forEach((wrap) => {
+    wrap.querySelectorAll('.lg-label').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const idx = btn.dataset.idx;
+        wrap.querySelectorAll('.lg-label').forEach((b) => b.classList.toggle('active', b === btn));
+        wrap.querySelectorAll('.lg-chart').forEach((c) => c.classList.toggle('active', c.dataset.idx === idx));
+      });
+    });
+  });
+})();
