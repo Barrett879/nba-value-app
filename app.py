@@ -861,78 +861,27 @@ render_strip(
     preview_html=rankings_preview,
 )
 
-# ── Legacy — interactive per-player career-arc picker (Streamlit-NATIVE).
-# Earlier attempts failed in their own ways: an inline st.markdown picker resets
-# its DOM state on every re-render (the "every-other-click jumps to LeBron" bug)
-# and st.markdown strips <script>; an st.components.v1.html iframe works locally
-# but on the live Render server loads the app's OWN homepage into the iframe
-# during cold-starts/restarts. So the picker is now a real Streamlit widget
-# (st.pills) wrapped in @st.fragment: clicking reruns ONLY this fragment, so the
-# chart swaps fast with no full-page re-render, no iframe, and nothing to reset.
-# Legacy is a self-contained always-open card.
+# Legacy uses the SAME render_strip <details> as every other strip, so it looks
+# and collapses identically. An interactive per-player picker can't be embedded
+# inline and made to match the other strips' chrome reliably in Streamlit
+# (inline HTML resets / strips scripts; a components.html iframe loads the app
+# homepage into itself on Render restarts; a styled st.expander won't render as a
+# bordered card). So the preview is a static LeBron-vs-Jordan career-arc overlay;
+# the full per-player picker lives on the Legacy page (the "Open Legacy" button).
 _LEGACY_DESC = ("53 seasons of NBA history: all-time greats, era leaderboards, "
                 "team Mount Rushmores, draft classes.")
 
-
-@st.fragment
-def _render_legacy_picker(valid):
-    by_last, order = {}, []
-    for s in valid:
-        last = s["name"].split()[-1]
-        by_last[last] = s
-        order.append(last)
-    default = next((s["name"].split()[-1] for s in valid if s["name"] == "LeBron James"), order[0])
-    dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
-    halo = None if dark else "rgba(18,18,34,0.55)"   # outline so a bright line reads on the light card
-    pick = st.pills("Legend", order, selection_mode="single", default=default,
-                    label_visibility="collapsed", key="legacy_pills")
-    s = by_last.get(pick) or by_last[default]
-    st.markdown(
-        _multi_sparkline([s], h=150, dots=False, halo=halo)
-        + f'<div class="lg-caption">{html.escape(s["name"])} · {len(s["career"])} seasons · '
-        f'{html.escape(str(s["career"][0]["season"]))} → {html.escape(str(s["career"][-1]["season"]))}</div>'
-        '<a class="lg-open" href="/Legacy" target="_top">Open Legacy →</a>',
-        unsafe_allow_html=True,
-    )
-
-
-# Legacy collapsible strip — st.expander restyled to match the custom
-# .explore-strip <details> strips (gold accent, panel header, bold name + grey
-# description in the summary). Injected on full renders (re-baked on a theme
-# toggle for the active-pill text colour) and persists across the fragment's own
-# reruns since it lives outside the fragment.
-_lg_pillfg = "#1a1a2e" if st.session_state.get("theme_dark", THEME_DEFAULT_DARK) else "#ffffff"
-st.markdown(f"""
-<style>
-.st-key-legacy_card {{ margin-bottom: 0.55rem; }}
-.st-key-legacy_card details {{ background: var(--panel) !important; border: 1px solid var(--panel-line) !important; border-left: 3px solid var(--gold) !important; border-radius: 8px !important; overflow: hidden; }}
-.st-key-legacy_card summary {{ padding: 0.8rem 1.2rem !important; }}
-.st-key-legacy_card summary:hover {{ background: var(--panel-hover) !important; }}
-.st-key-legacy_card summary p {{ font-size: 0.82rem !important; color: var(--fg-3) !important; line-height: 1.35 !important; }}
-.st-key-legacy_card summary strong {{ font-size: 1.05rem !important; color: var(--fg-1) !important; font-weight: 700 !important; margin-right: 0.7rem; }}
-.st-key-legacy_card summary svg {{ fill: var(--gold) !important; color: var(--gold) !important; }}
-.st-key-legacy_card [data-testid="stExpanderDetails"] {{ background: var(--panel-2) !important; }}
-.st-key-legacy_card [data-testid="stExpanderDetails"] svg {{ width: 100%; height: auto; }}
-.st-key-legacy_card [data-testid="stElementContainer"]:has([data-testid="stButtonGroup"]) {{ align-self:center; }}
-.st-key-legacy_card [data-testid="stBaseButton-pills"] {{ background:var(--hairline-soft) !important; color:var(--fg-3) !important; border:1px solid var(--panel-line) !important; }}
-.st-key-legacy_card [data-testid="stBaseButton-pills"]:hover {{ background:var(--hairline) !important; color:var(--fg-1) !important; }}
-.st-key-legacy_card [data-testid="stBaseButton-pillsActive"] {{ background:var(--gold) !important; color:{_lg_pillfg} !important; border:1px solid var(--gold) !important; font-weight:700 !important; }}
-.st-key-legacy_card .lg-caption {{ text-align:center; font-size:0.72rem; color:var(--fg-3); margin-top:0.4rem; }}
-.st-key-legacy_card .lg-open {{ display:inline-block; margin-top:0.55rem; background:var(--gold); color:{_lg_pillfg}; padding:0.4rem 1.0rem; border-radius:6px; text-decoration:none; font-weight:600; font-size:0.82rem; }}
-.st-key-legacy_card .lg-open:hover {{ opacity:0.9; }}
-</style>
-""", unsafe_allow_html=True)
-
 _legacy_valid = [s for s in _p.get("legacy_series", []) if s.get("career")] if _p else []
 if _legacy_valid:
-    with st.container(key="legacy_card"):
-        with st.expander(f"**Legacy** {_LEGACY_DESC}", expanded=False):
-            _render_legacy_picker(_legacy_valid)
+    _dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
+    _halo = None if _dark else "rgba(18,18,34,0.55)"   # outline so bright lines read on the light strip
+    _pair = [s for nm in ("LeBron James", "Michael Jordan") for s in _legacy_valid if s["name"] == nm]
+    _legacy_preview = (_multi_sparkline(_pair or _legacy_valid[:2], dots=False, halo=_halo)
+        + '<div style="text-align:center;font-size:0.7rem;color:var(--fg-5);margin-top:0.4rem;">Career Barrett Score by season</div>')
 else:
-    render_strip(
-        name="Legacy", href="/Legacy", accent="#f1c40f",
-        description=_LEGACY_DESC, preview_html="<em>Loading live data…</em>",
-    )
+    _legacy_preview = "<em>Loading live data...</em>"
+
+render_strip(name="Legacy", href="/Legacy", accent="#f1c40f", description=_LEGACY_DESC, preview_html=_legacy_preview)
 
 render_strip(
     name="Team Analysis",
