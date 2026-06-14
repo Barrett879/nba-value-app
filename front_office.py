@@ -74,8 +74,11 @@ def _cap_bar_html(committed, cap, tax, apron2, after):
     """A horizontal cap bar: current committed payroll (teal) plus the realistic
     plan's spend (hatched), against the salary cap / luxury tax / second-apron
     lines. The white marker is the projected payroll after the plan."""
+    # Scale from $0 so the teal "committed payroll" segment is proportional to the
+    # real figure. (Starting at min(vals)-10 squeezed committed into a sliver and
+    # made the offseason spend look like the whole payroll.)
     vals = [committed, cap, tax, apron2, after]
-    lo, hi = min(vals) - 10, max(vals) + 10
+    lo, hi = 0.0, max(vals) + 8
     span = max(hi - lo, 1.0)
     p = lambda v: max(0.0, min(100.0, (v - lo) / span * 100))
     cw, aw = p(committed), p(after)
