@@ -80,16 +80,18 @@ for _, r in qualified.iterrows():
         continue
     value_M = round(float(pc(f)["predicted"]) / 1e6, 1)
     age = int(f.get("age") or 0)
+    # Option-year salary (team OR player option) from the contracts feed — the
+    # pre-set figure the option would pay next season, in $M.
+    opt_M = float((nc.get(normalize(name)) or {}).get("salary") or 0) / 1e6
     # A player who will exercise his player option is staying — not a free agent,
     # so he shouldn't appear on anyone's board. Drop the likely opt-ins.
-    if st_ == "Player Option":
-        opt_M = float((nc.get(normalize(name)) or {}).get("salary") or 0) / 1e6
-        if option_opt_in_prob(opt_M, value_M, age) >= OPTION_OPT_IN_THRESHOLD:
-            opted_in.append(f"{name} (${opt_M:.0f}M opt)")
-            continue
+    if st_ == "Player Option" and option_opt_in_prob(opt_M, value_M, age) >= OPTION_OPT_IN_THRESHOLD:
+        opted_in.append(f"{name} (${opt_M:.0f}M opt)")
+        continue
     cands.append({
         "name": name, "status": st_,
         "value_M": value_M,
+        "opt_M": round(opt_M, 1),
         "barrett": round(float(f["barrett_score"]), 1),
         "pos": ts.resolve_position(name, f.get("position_detailed") or "", pos2k),
         "age": age,
@@ -119,7 +121,8 @@ def needs_for(roster):
 
 def why(x, exc):
     if x["is_inc"]:
-        return "Re-sign · Bird rights"
+        return ("Pick up team option" if x["status"] == "Team Option"
+                else "Re-sign · Bird rights")
     if x["offer_M"] <= MIN_MONEY:
         return "Veteran-minimum depth"
     if x["slot"] == 0 and x["displaces"]:
@@ -218,6 +221,13 @@ def board_for(team):
         tool = max(cap, exc, c["value_M"] if is_inc else 0.0)
         fit = 1.0 if is_inc else ts._FIT_FACTOR.get(need["slot"], 0.45)
         offer = min(c["value_M"], tool, c["value_M"] * fit)
+        # Keeping a team-option player means EXERCISING the option, not signing a
+        # new (usually larger) Bird-rights deal — so his keep cost is the option
+        # salary, capped at his market value for the rare above-market option
+        # (you'd decline it and re-sign cheaper). Only on his own team; another
+        # team can't take a player the option-holder controls.
+        if is_inc and c["status"] == "Team Option" and c.get("opt_M"):
+            offer = min(offer, c["opt_M"])
         if offer < 1.0:
             continue
         if not is_inc:
@@ -229,7 +239,8 @@ def board_for(team):
         rows.append({**c, "offer_M": round(offer), "slot": need["slot"],
                      "displaces": need["displaces"], "is_inc": is_inc,
                      "keen": offer * des, "des": des,
-                     "tool": ("Bird rights" if is_inc
+                     "tool": ("Team option" if is_inc and c["status"] == "Team Option"
+                              else "Bird rights" if is_inc
                               else "Cap room" if cap + 1e-6 >= offer
                               else "Mid-level exception" if exc >= 12
                               else "Veteran minimum")})

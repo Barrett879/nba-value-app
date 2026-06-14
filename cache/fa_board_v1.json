@@ -79,8 +79,8 @@
      "offer_M": 12,
      "barrett": 11.2,
      "age": 23,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Mouhamed Gueye",
@@ -88,11 +88,11 @@
      "status": "Team Option",
      "from": "ATL",
      "value_M": 6.8,
-     "offer_M": 7,
+     "offer_M": 2,
      "barrett": 7.2,
      "age": 23,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Jock Landale",
@@ -135,7 +135,7 @@
     "committed_M": 153,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 199,
+    "all_in_M": 194,
     "keeps": [
      {
       "name": "CJ McCollum",
@@ -164,8 +164,8 @@
      {
       "name": "Mouhamed Gueye",
       "pos": "PF/C",
-      "cost_M": 7,
-      "running_M": 193,
+      "cost_M": 2,
+      "running_M": 188,
       "zone": "ok",
       "keep": true
      },
@@ -173,7 +173,7 @@
       "name": "Keaton Wallace",
       "pos": "PG/SG",
       "cost_M": 3,
-      "running_M": 196,
+      "running_M": 191,
       "zone": "ok",
       "keep": true
      },
@@ -181,7 +181,7 @@
       "name": "Gabe Vincent",
       "pos": "PG/SG",
       "cost_M": 3,
-      "running_M": 199,
+      "running_M": 194,
       "zone": "ok",
       "keep": true
      }
@@ -466,11 +466,11 @@
      "status": "Team Option",
      "from": "BKN",
      "value_M": 13.1,
-     "offer_M": 13,
+     "offer_M": 6,
      "barrett": 13.7,
      "age": 24,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Ziaire Williams",
@@ -481,8 +481,8 @@
      "offer_M": 6,
      "barrett": 10.7,
      "age": 24,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Josh Minott",
@@ -490,24 +490,24 @@
      "status": "Team Option",
      "from": "BKN",
      "value_M": 5.2,
-     "offer_M": 5,
+     "offer_M": 3,
      "barrett": 9.2,
      "age": 23,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 121,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 145,
+    "all_in_M": 136,
     "keeps": [
      {
       "name": "Day'Ron Sharpe",
       "pos": "C",
-      "cost_M": 13,
-      "running_M": 134,
+      "cost_M": 6,
+      "running_M": 127,
       "zone": "ok",
       "keep": true
      },
@@ -515,15 +515,15 @@
       "name": "Ziaire Williams",
       "pos": "SF/PF",
       "cost_M": 6,
-      "running_M": 140,
+      "running_M": 133,
       "zone": "ok",
       "keep": true
      },
      {
       "name": "Josh Minott",
       "pos": "PF/SF",
-      "cost_M": 5,
-      "running_M": 145,
+      "cost_M": 3,
+      "running_M": 136,
       "zone": "ok",
       "keep": true
      }
@@ -808,11 +808,11 @@
      "status": "Team Option",
      "from": "BOS",
      "value_M": 18.8,
-     "offer_M": 19,
+     "offer_M": 3,
      "barrett": 21.3,
      "age": 26,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Nikola Vu\u010devi\u0107",
@@ -832,24 +832,24 @@
      "status": "Team Option",
      "from": "BOS",
      "value_M": 4.6,
-     "offer_M": 5,
+     "offer_M": 2,
      "barrett": 8.4,
      "age": 22,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 178,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 212,
+    "all_in_M": 193,
     "keeps": [
      {
       "name": "Neemias Queta",
       "pos": "C",
-      "cost_M": 19,
-      "running_M": 197,
+      "cost_M": 3,
+      "running_M": 181,
       "zone": "ok",
       "keep": true
      },
@@ -857,16 +857,16 @@
       "name": "Nikola Vu\u010devi\u0107",
       "pos": "C/PF",
       "cost_M": 10,
-      "running_M": 207,
-      "zone": "tax",
+      "running_M": 191,
+      "zone": "ok",
       "keep": true
      },
      {
       "name": "Jordan Walsh",
       "pos": "SF/PF",
-      "cost_M": 5,
-      "running_M": 212,
-      "zone": "tax",
+      "cost_M": 2,
+      "running_M": 193,
+      "zone": "ok",
       "keep": true
      }
     ]
@@ -1512,18 +1512,18 @@
      "status": "Team Option",
      "from": "CHI",
      "value_M": 3.3,
-     "offer_M": 3,
+     "offer_M": 2,
      "barrett": 6.0,
      "age": 22,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 93,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 149,
+    "all_in_M": 148,
     "keeps": [
      {
       "name": "Collin Sexton",
@@ -1552,8 +1552,8 @@
      {
       "name": "Leonard Miller",
       "pos": "SF/PF",
-      "cost_M": 3,
-      "running_M": 139,
+      "cost_M": 2,
+      "running_M": 138,
       "zone": "ok",
       "keep": true
      },
@@ -1561,7 +1561,7 @@
       "name": "Nick Richards",
       "pos": "C",
       "cost_M": 6,
-      "running_M": 145,
+      "running_M": 144,
       "zone": "ok",
       "keep": true
      },
@@ -1569,7 +1569,7 @@
       "name": "Guerschon Yabusele",
       "pos": "PF/C",
       "cost_M": 4,
-      "running_M": 149,
+      "running_M": 148,
       "zone": "ok",
       "keep": true
      }
@@ -1879,11 +1879,11 @@
      "status": "Team Option",
      "from": "CLE",
      "value_M": 6.2,
-     "offer_M": 6,
+     "offer_M": 2,
      "barrett": 8.6,
      "age": 26,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Thomas Bryant",
@@ -1902,7 +1902,7 @@
     "committed_M": 222,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 246,
+    "all_in_M": 242,
     "keeps": [
      {
       "name": "Keon Ellis",
@@ -1923,8 +1923,8 @@
      {
       "name": "Craig Porter Jr.",
       "pos": "PG",
-      "cost_M": 6,
-      "running_M": 242,
+      "cost_M": 2,
+      "running_M": 238,
       "zone": "over",
       "keep": false
      },
@@ -1932,7 +1932,7 @@
       "name": "Thomas Bryant",
       "pos": "C",
       "cost_M": 4,
-      "running_M": 246,
+      "running_M": 242,
       "zone": "over",
       "keep": false
      }
@@ -2660,11 +2660,11 @@
      "status": "Team Option",
      "from": "DEN",
      "value_M": 3.2,
-     "offer_M": 3,
+     "offer_M": 2,
      "barrett": 3.4,
      "age": 26,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -2677,7 +2677,7 @@
       "name": "Peyton Watson",
       "pos": "SF/PF",
       "cost_M": 15,
-      "running_M": 230,
+      "running_M": 231,
       "zone": "over",
       "keep": false
      },
@@ -2708,7 +2708,7 @@
      {
       "name": "Jalen Pickett",
       "pos": "SG",
-      "cost_M": 3,
+      "cost_M": 2,
       "running_M": 248,
       "zone": "over",
       "keep": false
@@ -3036,11 +3036,11 @@
      "status": "Team Option",
      "from": "DET",
      "value_M": 7.5,
-     "offer_M": 8,
+     "offer_M": 4,
      "barrett": 11.1,
      "age": 24,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Paul Reed",
@@ -3071,7 +3071,7 @@
     "committed_M": 130,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 224,
+    "all_in_M": 220,
     "keeps": [
      {
       "name": "Jalen Duren",
@@ -3108,8 +3108,8 @@
      {
       "name": "Daniss Jenkins",
       "pos": "PG/SG",
-      "cost_M": 8,
-      "running_M": 214,
+      "cost_M": 4,
+      "running_M": 210,
       "zone": "tax",
       "keep": true
      },
@@ -3117,9 +3117,9 @@
       "name": "Kevin Huerter",
       "pos": "SG/SF",
       "cost_M": 10,
-      "running_M": 224,
-      "zone": "over",
-      "keep": false
+      "running_M": 220,
+      "zone": "tax",
+      "keep": true
      }
     ]
    },
@@ -4130,8 +4130,8 @@
      "offer_M": 3,
      "barrett": 11.4,
      "age": 28,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Kobe Brown",
@@ -4475,8 +4475,8 @@
      "offer_M": 9,
      "barrett": 11.0,
      "age": 38,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Nicolas Batum",
@@ -4487,8 +4487,8 @@
      "offer_M": 4,
      "barrett": 5.3,
      "age": 37,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Jordan Miller",
@@ -4496,18 +4496,18 @@
      "status": "Team Option",
      "from": "LAC",
      "value_M": 3.5,
-     "offer_M": 4,
+     "offer_M": 2,
      "barrett": 10.7,
      "age": 26,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 160,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 217,
+    "all_in_M": 215,
     "keeps": [
      {
       "name": "Bennedict Mathurin",
@@ -4536,8 +4536,8 @@
      {
       "name": "Jordan Miller",
       "pos": "SG/SF",
-      "cost_M": 4,
-      "running_M": 213,
+      "cost_M": 2,
+      "running_M": 211,
       "zone": "tax",
       "keep": true
      },
@@ -4545,7 +4545,7 @@
       "name": "Nicolas Batum",
       "pos": "PF/SF",
       "cost_M": 4,
-      "running_M": 217,
+      "running_M": 215,
       "zone": "tax",
       "keep": true
      }
@@ -5254,24 +5254,24 @@
      "status": "Team Option",
      "from": "MEM",
      "value_M": 3.2,
-     "offer_M": 3,
+     "offer_M": 2,
      "barrett": 9.5,
      "age": 23,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 142,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 145,
+    "all_in_M": 144,
     "keeps": [
      {
       "name": "Olivier-Maxence Prosper",
       "pos": "PF/C",
-      "cost_M": 3,
-      "running_M": 145,
+      "cost_M": 2,
+      "running_M": 144,
       "zone": "ok",
       "keep": true
      }
@@ -5566,11 +5566,11 @@
      "status": "Team Option",
      "from": "MIA",
      "value_M": 13.1,
-     "offer_M": 13,
+     "offer_M": 2,
      "barrett": 16.3,
      "age": 25,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Simone Fontecchio",
@@ -5589,7 +5589,7 @@
     "committed_M": 163,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 201,
+    "all_in_M": 190,
     "keeps": [
      {
       "name": "Norman Powell",
@@ -5602,8 +5602,8 @@
      {
       "name": "Pelle Larsson",
       "pos": "SG/SF",
-      "cost_M": 13,
-      "running_M": 195,
+      "cost_M": 2,
+      "running_M": 184,
       "zone": "ok",
       "keep": true
      },
@@ -5611,8 +5611,8 @@
       "name": "Simone Fontecchio",
       "pos": "SF/PF",
       "cost_M": 6,
-      "running_M": 201,
-      "zone": "tax",
+      "running_M": 190,
+      "zone": "ok",
       "keep": true
      }
     ]
@@ -6677,25 +6677,25 @@
      "status": "Team Option",
      "from": "NOP",
      "value_M": 4.0,
-     "offer_M": 4,
+     "offer_M": 2,
      "barrett": 8.8,
      "age": 25,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 196,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 200,
+    "all_in_M": 198,
     "keeps": [
      {
       "name": "Karlo Matkovi\u0107",
       "pos": "PF/C",
-      "cost_M": 4,
-      "running_M": 200,
-      "zone": "tax",
+      "cost_M": 2,
+      "running_M": 198,
+      "zone": "ok",
       "keep": true
      }
     ]
@@ -7030,7 +7030,7 @@
       "name": "Mitchell Robinson",
       "pos": "C",
       "cost_M": 15,
-      "running_M": 220,
+      "running_M": 221,
       "zone": "tax",
       "keep": true
      },
@@ -7342,8 +7342,8 @@
      "offer_M": 23,
      "barrett": 18.2,
      "age": 28,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Luguentz Dort",
@@ -7354,8 +7354,8 @@
      "offer_M": 12,
      "barrett": 8.5,
      "age": 27,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Kenrich Williams",
@@ -7366,8 +7366,8 @@
      "offer_M": 4,
      "barrett": 6.2,
      "age": 31,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -8003,11 +8003,11 @@
      "status": "Team Option",
      "from": "PHI",
      "value_M": 6.8,
-     "offer_M": 7,
+     "offer_M": 3,
      "barrett": 10.9,
      "age": 23,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     },
     {
      "name": "Andre Drummond",
@@ -8030,15 +8030,15 @@
      "offer_M": 3,
      "barrett": 5.8,
      "age": 25,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 180,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 222,
+    "all_in_M": 218,
     "keeps": [
      {
       "name": "Quentin Grimes",
@@ -8059,8 +8059,8 @@
      {
       "name": "Dominick Barlow",
       "pos": "PF/C",
-      "cost_M": 7,
-      "running_M": 215,
+      "cost_M": 3,
+      "running_M": 211,
       "zone": "tax",
       "keep": true
      },
@@ -8068,7 +8068,7 @@
       "name": "Andre Drummond",
       "pos": "C",
       "cost_M": 4,
-      "running_M": 219,
+      "running_M": 215,
       "zone": "tax",
       "keep": true
      },
@@ -8076,9 +8076,9 @@
       "name": "Trendon Watford",
       "pos": "PF/SF",
       "cost_M": 3,
-      "running_M": 222,
-      "zone": "over",
-      "keep": false
+      "running_M": 218,
+      "zone": "tax",
+      "keep": true
      }
     ]
    },
@@ -8410,8 +8410,8 @@
      "offer_M": 2,
      "barrett": 4.9,
      "age": 26,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -8751,13 +8751,13 @@
     "committed_M": 156,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 170,
+    "all_in_M": 169,
     "keeps": [
      {
       "name": "Robert Williams III",
       "pos": "C",
       "cost_M": 13,
-      "running_M": 170,
+      "running_M": 169,
       "zone": "ok",
       "keep": true
      }
@@ -9394,24 +9394,24 @@
      "status": "Team Option",
      "from": "SAS",
      "value_M": 8.9,
-     "offer_M": 9,
+     "offer_M": 3,
      "barrett": 17.7,
      "age": 24,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 153,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 178,
+    "all_in_M": 172,
     "keeps": [
      {
       "name": "Julian Champagnie",
       "pos": "SF/PF",
-      "cost_M": 9,
-      "running_M": 162,
+      "cost_M": 3,
+      "running_M": 156,
       "zone": "ok",
       "keep": true
      },
@@ -9419,7 +9419,7 @@
       "name": "Harrison Barnes",
       "pos": "PF/SF",
       "cost_M": 16,
-      "running_M": 178,
+      "running_M": 172,
       "zone": "ok",
       "keep": true
      }
@@ -9714,18 +9714,18 @@
      "status": "Team Option",
      "from": "TOR",
      "value_M": 5.5,
-     "offer_M": 6,
+     "offer_M": 2,
      "barrett": 10.7,
      "age": 23,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
     "committed_M": 190,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 205,
+    "all_in_M": 201,
     "keeps": [
      {
       "name": "Sandro Mamukelashvili",
@@ -9738,8 +9738,8 @@
      {
       "name": "Jamal Shead",
       "pos": "PG/SG",
-      "cost_M": 6,
-      "running_M": 205,
+      "cost_M": 2,
+      "running_M": 201,
       "zone": "tax",
       "keep": true
      }
@@ -10362,8 +10362,8 @@
      "offer_M": 2,
      "barrett": 7.3,
      "age": 24,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {

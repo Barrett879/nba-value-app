@@ -162,12 +162,16 @@ def render_front_office():
     st.subheader("Re-sign their own free agents")
     _plan = B.get("resign_plan")
     if _plan:
+        _over = _plan["all_in_M"] > _plan["apron2_M"]
+        _tail = ("so they can't all stay. Ranked by quality, here's who fits under the line "
+                 "and who gets squeezed out:") if _over else \
+                ("keeping them comfortably under the ceiling. Ranked by quality:")
         st.caption((
             f"Committed payroll is **${_plan['committed_M']}M**. The luxury tax starts at "
             f"${_plan['tax_M']}M and the second apron (the practical ceiling) at "
-            f"**${_plan['apron2_M']}M**. Re-signing every one of these via Bird rights would run "
-            f"**${_plan['all_in_M']}M**, so they can't all stay. Ranked by quality, here's who fits "
-            f"under the line and who gets squeezed out:").replace("$", "\\$"))
+            f"**${_plan['apron2_M']}M**. Keeping all of them (Bird rights for the free agents, "
+            f"plus exercising options where they hold one) would run **${_plan['all_in_M']}M**, "
+            f"{_tail}").replace("$", "\\$"))
         _status_by = {x["name"]: x["status"] for x in B["resign"]}
         rp = pd.DataFrame(_plan["keeps"])
         rp["status"] = rp["name"].map(_status_by).fillna("UFA")
