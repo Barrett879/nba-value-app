@@ -28,7 +28,8 @@ import team_suitors as ts  # noqa: E402
 OUT = ROOT / "cache" / "fa_board_v1.json"
 POSITIONS = ["PG", "SG", "SF", "PF", "C"]
 STARTER = 15.0          # a league-average starter's Barrett Score (for needs)
-MIN_MONEY = 7.0         # at/below this an offer is veteran-minimum money, not a real bid
+MIN_MONEY = 7.0         # at/below this an offer is low-cost depth money, not a real bid
+MIN_SALARY = 3.0        # at/below this it's a true veteran-minimum deal (vs BAE-level depth)
 
 SRC = (ROOT / "pages" / "Contract_Predictor.py").read_text().splitlines(keepends=True)
 cut = next(i for i, l in enumerate(SRC) if l.startswith("_sb_col, _fa_col = st.columns("))
@@ -217,15 +218,17 @@ def offseason_plan(pursue_rows, cap_room, mle):
         cap_left, exc_left, exc_label = cap_room, 8.0, "Room exception"
     else:                                              # over the cap
         cap_left, exc_left, exc_label = 0.0, mle, "Mid-level"
-    out, mins = [], 0
+    out, lowcost = [], 0
     for x in pursue_rows:
         offer = x["offer_M"]
-        if cap_left + 1e-6 >= offer:
+        if cap_left + 1e-6 >= offer:                   # cap-space team, any size
             tool, cap_left = "Cap room", cap_left - offer
         elif offer > MIN_MONEY and exc_left + 1e-6 >= offer:
             tool, exc_left = exc_label, exc_left - offer
-        elif offer <= MIN_MONEY and mins < 2:          # a couple of low-cost depth adds
-            tool, mins = "Depth", mins + 1
+        elif offer <= MIN_SALARY and lowcost < 3:      # a true veteran minimum
+            tool, lowcost = "Minimum", lowcost + 1
+        elif offer <= MIN_MONEY and lowcost < 3:       # BAE-level depth
+            tool, lowcost = "Depth", lowcost + 1
         else:
             continue
         out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
@@ -287,12 +290,19 @@ def board_for(team):
 
     _pursue = [x for x in rows if not x["is_inc"]]
     _committed = round(float((CAP_TABLE.get(team) or {}).get("committed_M") or 0.0))
-    # Current roster, ordered by Barrett Score (for the collapsed roster view).
+    # Guaranteed roster, ordered by Barrett Score (for the collapsed roster view):
+    # only players under contract for next season — exclude UFAs/RFAs and player/
+    # team options (classify_fa_status returns non-None for any free agent/option;
+    # None means he's signed and staying).
     _tf = full[full["Team"].astype(str) == team].sort_values("barrett_score", ascending=False)
-    _roster = [{"name": str(r["Player"]), "pos": str(r["pos"]),
-                "barrett": round(float(r["barrett_score"] or 0), 1),
-                "salary_M": round(float(r.get("salary", 0) or 0) / 1e6, 1)}
-               for _, r in _tf.iterrows()]
+    _roster = []
+    for _, r in _tf.iterrows():
+        _nm = str(r["Player"])
+        if classify_fa_status(_nm, fmt_nc(_nm, nc), rookie, CUR) is not None:
+            continue                                   # free agent / option -> not guaranteed
+        _roster.append({"name": _nm, "pos": str(r["pos"]),
+                        "barrett": round(float(r["barrett_score"] or 0), 1),
+                        "salary_M": round(float(r.get("salary", 0) or 0) / 1e6, 1)})
 
     return {
         "team": team,
