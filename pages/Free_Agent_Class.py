@@ -11,7 +11,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    _fmt_salary, fmt_next_contract,
+    _fmt_salary, fmt_next_contract, classify_fa_status,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
     theme_fig, html_table,
     render_barrett_score_explainer, _bootstrap_warm,
@@ -77,19 +77,11 @@ def _style_rookie_salary(row):
 # ══════════════════════════════════════════════════════════════════════════════
 
 def _fa_status(row) -> str | None:
-    nc   = row["next_contract"]
-    name = row["Player"]
-    if nc == "RFA":
-        return "RFA"
-    if nc == "—":
-        if normalize(name) in _rookie_scale:
-            return "RFA"
-        return "UFA"
-    if " PO" in nc:
-        return "Player Option"
-    if " TO" in nc:
-        return "Team Option"
-    return None
+    # Shared classifier — cross-checks the contract-end scraper for players the
+    # salary feed omits (e.g. Austin Reaves' player option). Only the current
+    # season has reliable contract data, so skip the cross-check otherwise.
+    return classify_fa_status(row["Player"], row["next_contract"], _rookie_scale,
+                              season, cross_check=(season == SEASONS[0]))
 
 fa_df = df.copy()
 fa_df["Status"] = fa_df.apply(_fa_status, axis=1)

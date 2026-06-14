@@ -12,7 +12,7 @@ from utils import (
     fetch_next_year_contracts,
     fetch_rookie_scale_players,
     fetch_player_career_with_rank,
-    fmt_next_contract,
+    fmt_next_contract, classify_fa_status,
     season_to_espn_year,
     normalize,
     SEASONS,
@@ -653,21 +653,13 @@ def _compute_charts():
         rookie_scale = fetch_rookie_scale_players(SEASONS[0])
 
         ufa, rfa, po, to = [], [], [], []
+        _fa_lists = {"UFA": ufa, "RFA": rfa, "Player Option": po, "Team Option": to}
         for _, row in df[["Player", "barrett_score"]].iterrows():
             name = row["Player"]
-            score = float(row["barrett_score"])
-            nc = fmt_next_contract(name, next_contracts)
-            if nc == "RFA":
-                rfa.append(score)
-            elif nc == "—":
-                if normalize(name) in rookie_scale:
-                    rfa.append(score)
-                else:
-                    ufa.append(score)
-            elif " PO" in nc:
-                po.append(score)
-            elif " TO" in nc:
-                to.append(score)
+            _st = classify_fa_status(name, fmt_next_contract(name, next_contracts),
+                                     rookie_scale, SEASONS[0])
+            if _st in _fa_lists:
+                _fa_lists[_st].append(float(row["barrett_score"]))
 
         def _avg(xs):
             return sum(xs) / len(xs) if xs else 0.0

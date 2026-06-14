@@ -1935,6 +1935,50 @@ def color_next_contract(val):
     return ""
 
 
+def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
+                       cur_season: str, cross_check: bool = True) -> str | None:
+    """A player's free-agency status THIS offseason: 'UFA' / 'RFA' /
+    'Player Option' / 'Team Option', or None when he is NOT a free agent
+    (still under contract). THE single source of truth — used by the Free Agent
+    Class page, the home-page FA summary, and scripts/build_fa_board.py, so a
+    player's status can never disagree across them.
+
+    The next-year SALARY feed (`next_contract_str` from fmt_next_contract) is
+    primary, but it OMITS some players who hold options or are signed (2nd-round
+    rookies, two-ways, certain option years) — they read as '—'. For those,
+    cross-check the contract-end scraper (get_player_contract_info):
+      - deal ends this season             -> UFA (a genuine expiring free agent)
+      - option on the upcoming season      -> Player/Team Option
+      - signed beyond the upcoming season  -> None (under contract; not an FA)
+    e.g. Austin Reaves' player option and Will Richard's rookie deal are both
+    missing from the salary feed; the cross-check classifies the first as a
+    Player Option and drops the second. cross_check=False skips the scraper
+    (use for non-current seasons, where today's contract data wouldn't apply)."""
+    s = next_contract_str
+    if s == "RFA":
+        return "RFA"
+    if s == "—":
+        if normalize(name) in rookie_set:
+            return "RFA"
+        if cross_check:
+            _cs = int(cur_season[:4]) + 1
+            _contract_season = f"{_cs}-{(_cs + 1) % 100:02d}"   # upcoming season
+            ci = get_player_contract_info(name) or {}
+            end, last = ci.get("end_season"), ci.get("last_year_type")
+            if end and end > cur_season:
+                if end == _contract_season and last == "player_option":
+                    return "Player Option"
+                if end == _contract_season and last == "team_option":
+                    return "Team Option"
+                return None        # signed beyond this offseason -> not an FA
+        return "UFA"
+    if " PO" in s:
+        return "Player Option"
+    if " TO" in s:
+        return "Team Option"
+    return None
+
+
 def style_rookie_salary(row, rookie_scale: set):
     """Color the Salary cell purple for rookie-scale players."""
     result = pd.Series('', index=row.index)

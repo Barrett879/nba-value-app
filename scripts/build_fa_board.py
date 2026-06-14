@@ -22,7 +22,7 @@ sys.path.insert(0, str(ROOT))
 warnings.filterwarnings("ignore")
 from utils import (normalize, DEFAULT_MIN_THRESHOLD,  # noqa: E402
                    option_opt_in_prob, OPTION_OPT_IN_THRESHOLD,
-                   get_player_contract_info)
+                   classify_fa_status)
 import team_suitors as ts  # noqa: E402
 
 OUT = ROOT / "cache" / "fa_board_v1.json"
@@ -59,35 +59,11 @@ ROST = ts.build_rosters(full)
 
 
 def fa_status(name):
-    s = fmt_nc(name, nc)
-    if s == "RFA":
-        return "RFA"
-    if s == "—":
-        if normalize(name) in rookie:
-            return "RFA"
-        # No next-year salary in the feed. Usually an expiring deal (a genuine
-        # UFA), but the feed also OMITS players who are still under contract
-        # (recent 2nd-round picks, two-ways), which would wrongly tag a signed
-        # player as a free agent. Resolve it from the contract-end scraper (the
-        # app's authoritative source; Will Richard's 2028-29 deal verified vs
-        # Spotrac):
-        #   ends this season            -> genuine free agent (UFA)
-        #   option on the upcoming year -> PO/TO (his own opt-in logic decides)
-        #   locked in for 2026-27+      -> under contract, not on the market
-        ci = get_player_contract_info(name) or {}
-        end, last = ci.get("end_season"), ci.get("last_year_type")
-        if not end or end <= CUR:
-            return "UFA"
-        if end == CONTRACT and last == "player_option":
-            return "Player Option"
-        if end == CONTRACT and last == "team_option":
-            return "Team Option"
-        return None
-    if " PO" in s:
-        return "Player Option"
-    if " TO" in s:
-        return "Team Option"
-    return None
+    # Shared single-source classifier (utils.classify_fa_status): the next-year
+    # salary feed, cross-checked against the contract-end scraper for option-
+    # holders / signed players the feed omits (e.g. Reaves' PO, Will Richard's
+    # rookie deal). Same logic the Free Agent Class page + home summary use.
+    return classify_fa_status(name, fmt_nc(name, nc), rookie, CUR)
 
 
 # ── Free-agent candidate pool: predict each one once ──────────────────────────

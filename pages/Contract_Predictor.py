@@ -62,6 +62,7 @@ from utils import (
     # CBA / contract structure
     get_max_contract_eligibility,
     fetch_rookie_scale_players, fetch_next_year_contracts, fmt_next_contract,
+    classify_fa_status,
     option_opt_in_prob,
     fetch_all_nba_selections, get_all_nba_in_window,
     # Contract end-year scraper — powers the "Current deal: $X through YYYY-YY"
@@ -1662,9 +1663,13 @@ active_names = sorted(active_names, key=lambda n: -_barrett_lookup.get(n, 0.0))
 # contract data can't be fetched, so the toggle never empties the search.
 try:
     _fa_next = fetch_next_year_contracts(season_to_espn_year(CURRENT_SEASON), cache_v=7)
+    _fa_rookie = fetch_rookie_scale_players(CURRENT_SEASON)
     def _is_free_agent(_n: str) -> bool:
-        s = fmt_next_contract(_n, _fa_next)
-        return s == "RFA" or s == "—" or " PO" in s or " TO" in s
+        # Same classifier the FA Class page uses (utils.classify_fa_status), so the
+        # toggle's notion of "free agent" matches the displayed Status (under-
+        # contract players the salary feed omits, e.g. Will Richard, are excluded).
+        return classify_fa_status(_n, fmt_next_contract(_n, _fa_next),
+                                  _fa_rookie, CURRENT_SEASON) is not None
     _fa_names = [n for n in active_names if _is_free_agent(n)] or active_names
 except Exception:
     _fa_names = active_names
