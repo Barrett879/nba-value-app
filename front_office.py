@@ -108,12 +108,12 @@ _PLAN_TOOL_COLOR = {"Re-sign": "var(--gold)", "Cap room": "var(--accent-teal)",
                     "Depth": "var(--fg-3)", "Minimum": "var(--fg-5)"}
 _PLAN_CSS = """
 <style>
-.hv-plan { display:flex; gap:0.55rem; flex-wrap:wrap; margin:0.6rem 0 1.1rem; }
+.hv-plan { display:flex; gap:0.75rem 0.55rem; flex-wrap:wrap; margin:1.05rem 0 1.85rem; }
 .hv-plan-chip { background:var(--panel-solid); border:1px solid var(--panel-line);
-    border-left:3px solid var(--c); border-radius:9px; padding:0.5rem 0.85rem; min-width:148px; }
+    border-left:3px solid var(--c); border-radius:9px; padding:0.7rem 0.9rem; min-width:148px; }
 .hv-plan-name { font-weight:800; font-size:0.96rem; line-height:1.15; }
-.hv-plan-sub { font-size:0.7rem; color:var(--fg-4); margin-top:0.1rem; }
-.hv-plan-tool { font-size:0.82rem; font-weight:700; color:var(--c); margin-top:0.35rem; }
+.hv-plan-sub { font-size:0.7rem; color:var(--fg-4); margin-top:0.15rem; }
+.hv-plan-tool { font-size:0.82rem; font-weight:700; color:var(--c); margin-top:0.45rem; }
 </style>
 """
 
