@@ -228,59 +228,6 @@ def render_front_office():
                     unsafe_allow_html=True)
         st.divider()
 
-    # ── The realistic offseason: re-signs + external adds, then the full board ───
-    st.subheader(f"{_short} offseason plan")
-    _plan_moves = B.get("plan", [])
-    _resigns = [m for m in _plan_moves if m.get("kind") == "resign"]
-    _adds = [m for m in _plan_moves if m.get("kind") != "resign"]
-    if _plan_moves:
-        _parts = []
-        if _resigns:
-            _parts.append(f"**re-sign {len(_resigns)}** of their own worth keeping")
-        if _adds:
-            if any(m["tool"] == "Cap room" for m in _adds):
-                _tool = "cap room plus minimums"
-            elif any(m["tool"] in ("Mid-level", "Room exception") for m in _adds):
-                _tool = "the mid-level plus minimums"
-            else:
-                _tool = "veteran minimums"
-            _parts.append(f"**add {len(_adds)}** using {_tool}")
-        st.markdown(
-            f"What {_short} would realistically do this offseason: " + " and ".join(_parts) + ".")
-        st.markdown(_PLAN_CSS + f"<div class='hv-plan'>{''.join(_plan_chip(m) for m in _plan_moves)}</div>",
-                    unsafe_allow_html=True)
-    else:
-        st.markdown(
-            f"Already past the second apron (the practical ceiling) on guaranteed money, so {_short} "
-            "are capped out: their offseason is veteran minimums and exercising any cheap options.")
-    st.caption(
-        "The full board below ranks every external free agent by how keenly a team of this timeline "
-        "would chase them."
-    )
-    if B["pursue"]:
-        pur = pd.DataFrame(B["pursue"])
-        pur = pur[["name", "pos", "from", "status", "value_M", "offer_M", "tool", "why"]]
-        pur.columns = ["Target", "Pos", "From", "Status", "Market Value", "Their Offer", "Tool", "Fit"]
-        pur.insert(0, "#", range(1, len(pur) + 1))
-        html_table(
-            pur,
-            formatters={"Market Value": lambda v: f"${v:.0f}M", "Their Offer": lambda v: f"${v:.0f}M"},
-            styles={"Status": _sty_status, "Their Offer": _sty_offer},
-            aligns={"#": "right", "Market Value": "right", "Their Offer": "right"},
-            numeric={"#", "Market Value", "Their Offer"},
-            helps={
-                "Market Value": "What the player projects to earn on the open market (the player-side predictor).",
-                "Their Offer": "What this team would realistically offer, capped by the tool it has available.",
-                "Tool": "Cap room, the mid-level exception, or a veteran-minimum slot.",
-                "Fit": "Why he fits, fills a need, upgrades a starter, or rotation/minimum depth.",
-            },
-            height=min(720, len(pur) * 38 + 46),
-        )
-    else:
-        st.info("No realistic external targets, this team is capped out with a full rotation.")
-
-    st.divider()
-
     # ── Re-sign your own (cap-aware: who can they actually afford to keep?) ──────
     st.subheader("Re-sign their own free agents")
     _plan = B.get("resign_plan")
@@ -359,6 +306,59 @@ def render_front_office():
         )
     else:
         st.info("No notable free agents of their own to re-sign.")
+
+    st.divider()
+
+    # ── The realistic offseason: re-signs + external adds, then the full board ───
+    st.subheader(f"{_short} offseason plan")
+    _plan_moves = B.get("plan", [])
+    _resigns = [m for m in _plan_moves if m.get("kind") == "resign"]
+    _adds = [m for m in _plan_moves if m.get("kind") != "resign"]
+    if _plan_moves:
+        _parts = []
+        if _resigns:
+            _parts.append(f"**re-sign {len(_resigns)}** of their own worth keeping")
+        if _adds:
+            if any(m["tool"] == "Cap room" for m in _adds):
+                _tool = "cap room plus minimums"
+            elif any(m["tool"] in ("Mid-level", "Room exception") for m in _adds):
+                _tool = "the mid-level plus minimums"
+            else:
+                _tool = "veteran minimums"
+            _parts.append(f"**add {len(_adds)}** using {_tool}")
+        st.markdown(
+            f"What {_short} would realistically do this offseason: " + " and ".join(_parts) + ".")
+        st.markdown(_PLAN_CSS + f"<div class='hv-plan'>{''.join(_plan_chip(m) for m in _plan_moves)}</div>",
+                    unsafe_allow_html=True)
+    else:
+        st.markdown(
+            f"Already past the second apron (the practical ceiling) on guaranteed money, so {_short} "
+            "are capped out: their offseason is veteran minimums and exercising any cheap options.")
+    st.caption(
+        "The full board below ranks every external free agent by how keenly a team of this timeline "
+        "would chase them."
+    )
+    if B["pursue"]:
+        pur = pd.DataFrame(B["pursue"])
+        pur = pur[["name", "pos", "from", "status", "value_M", "offer_M", "tool", "why"]]
+        pur.columns = ["Target", "Pos", "From", "Status", "Market Value", "Their Offer", "Tool", "Fit"]
+        pur.insert(0, "#", range(1, len(pur) + 1))
+        html_table(
+            pur,
+            formatters={"Market Value": lambda v: f"${v:.0f}M", "Their Offer": lambda v: f"${v:.0f}M"},
+            styles={"Status": _sty_status, "Their Offer": _sty_offer},
+            aligns={"#": "right", "Market Value": "right", "Their Offer": "right"},
+            numeric={"#", "Market Value", "Their Offer"},
+            helps={
+                "Market Value": "What the player projects to earn on the open market (the player-side predictor).",
+                "Their Offer": "What this team would realistically offer, capped by the tool it has available.",
+                "Tool": "Cap room, the mid-level exception, or a veteran-minimum slot.",
+                "Fit": "Why he fits, fills a need, upgrades a starter, or rotation/minimum depth.",
+            },
+            height=min(720, len(pur) * 38 + 46),
+        )
+    else:
+        st.info("No realistic external targets, this team is capped out with a full rotation.")
 
     # ── Method ──────────────────────────────────────────────────────────────────
     with st.expander("How these boards are built"):
