@@ -277,7 +277,7 @@ def render_front_office():
             numeric={"#", "Keep $", "Running Payroll"},
             helps={"Running Payroll": "Cumulative payroll if you keep this player plus everyone worth keeping above him.",
                    "Verdict": "Keep = cost-effective and fits under the second apron; can't afford = the keep that tips the team over it; let walk = fair value but a replaceable role player, better spent on a minimum."},
-            height=min(560, len(rp) * 38 + 46),
+            height=len(rp) * 60 + 60,          # fit every row, no inner scroll
         )
     elif B["resign"]:
         st.caption("Players already on the roster who can be kept via Bird rights, no cap room required.")
@@ -290,7 +290,7 @@ def render_front_office():
             styles={"Status": _sty_status, "Re-sign Cost": _sty_offer},
             aligns={"#": "right", "Market Value": "right", "Re-sign Cost": "right"},
             numeric={"#", "Market Value", "Re-sign Cost"},
-            height=min(520, len(res) * 38 + 46),
+            height=len(res) * 60 + 60,         # fit every row, no inner scroll
         )
     else:
         st.info("No notable free agents of their own to re-sign.")
