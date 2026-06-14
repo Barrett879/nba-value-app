@@ -525,9 +525,11 @@ SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
     # otherwise be dropped for a missing salary. Without this they vanish from
     # the Rankings entirely.
     "2025-26": {
-        # Two-way most of the year, converted to a 2yr standard deal in Apr 2026
-        # (2026-27 non-guaranteed). ~$636K is the 2025-26 two-way salary.
-        "nick smith jr.": 636_435,
+        # Two-ways most of the year, converted to 2yr standard deals in Apr 2026
+        # (each non-guaranteed for 2026-27). ~$636K is the 2025-26 two-way salary.
+        # Both replaced a waived player (see data/roster_corrections.csv).
+        "nick smith jr.": 636_435,   # LAL, replaced waived Kobe Bufkin
+        "tolu smith": 636_435,       # DET, replaced waived Bobi Klintman
     },
     "2017-18": {
         "lebron james": 33_285_709,
