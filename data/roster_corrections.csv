@@ -1,0 +1,14 @@
+# HoopsValue — manual roster corrections.
+#
+# The guaranteed-roster list is built from the scraped contract feed, which can
+# lag real transactions (a player waived, or a late signing the source hasn't
+# caught). Each row here patches the FORWARD-LOOKING roster only; it never
+# touches a player's historical stats, so a waived player still shows on the
+# Rankings for the games he actually played.
+#
+#   action = waived  ->  drop <player> from <team>'s guaranteed roster
+#                        (he's no longer under contract there)
+#
+# team = 3-letter abbreviation. Lines starting with # are ignored.
+team,player,action
+LAL,Kobe Bufkin,waived

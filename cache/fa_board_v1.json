@@ -6616,12 +6616,6 @@
      "pos": "SG/SF",
      "barrett": 0.9,
      "salary_M": 4.0
-    },
-    {
-     "name": "Kobe Bufkin",
-     "pos": "SF/SG",
-     "barrett": -0.5,
-     "salary_M": 0.8
     }
    ],
    "best_fits": [
@@ -9722,8 +9716,8 @@
      "pos": "PF/SF",
      "status": "RFA",
      "from": "NYK",
-     "value_M": 3.5,
-     "offer_M": 4,
+     "value_M": 3.4,
+     "offer_M": 3,
      "barrett": 2.7,
      "age": 21,
      "tool": "Bird rights",
@@ -9734,7 +9728,7 @@
     "committed_M": 206,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 220,
+    "all_in_M": 224,
     "keeps": [
      {
       "name": "Mitchell Robinson",
@@ -9772,12 +9766,12 @@
      {
       "name": "Mohamed Diawara",
       "pos": "PF/SF",
-      "cost_M": 4,
-      "value_M": 3.5,
+      "cost_M": 3,
+      "value_M": 3.4,
       "barrett": 2.7,
-      "running_M": null,
-      "zone": "walk",
-      "worth": false,
+      "running_M": 224,
+      "zone": "over",
+      "worth": true,
       "keep": false
      }
     ]

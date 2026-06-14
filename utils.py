@@ -519,6 +519,16 @@ SEASON_GAMES_LOOKUP = {
 # (they're listed as "cap holds" rather than active salaries in some years).
 # This supplement covers confirmed gaps so those players still appear in rankings.
 SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
+    # ── Current-season fill-ins ────────────────────────────────────────────
+    # Players who played real minutes but are absent from the ESPN salary feed
+    # (two-way deals, late-season conversions the feed hasn't caught), so they'd
+    # otherwise be dropped for a missing salary. Without this they vanish from
+    # the Rankings entirely.
+    "2025-26": {
+        # Two-way most of the year, converted to a 2yr standard deal in Apr 2026
+        # (2026-27 non-guaranteed). ~$636K is the 2025-26 two-way salary.
+        "nick smith jr.": 636_435,
+    },
     "2017-18": {
         "lebron james": 33_285_709,
         "kevin durant": 25_000_000,

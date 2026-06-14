@@ -58,6 +58,18 @@ LAND = ts.apply_real_cap(ts.load_team_landscape(), CAP_TABLE)
 TAX_M, APRON2_M = round(CAP_M * 1.215, 1), round(CAP_M * ts._APRON2_RATIO, 1)
 ROST = ts.build_rosters(full)
 
+# Manual roster corrections (data/roster_corrections.csv): players the scraped
+# contract feed still lists as rostered but who've actually been waived. Keyed
+# by (team, normalized name) -> action. Only "waived" is used today; it drops
+# the player from that team's guaranteed roster without touching his stats.
+_ROSTER_FIX = {}
+_rc_path = ROOT / "data" / "roster_corrections.csv"
+if _rc_path.exists():
+    _rc = pd.read_csv(_rc_path, comment="#")
+    for _, _r in _rc.iterrows():
+        _ROSTER_FIX[(str(_r["team"]).strip(), normalize(str(_r["player"])))] = \
+            str(_r["action"]).strip().lower()
+
 
 def fa_status(name):
     # Shared single-source classifier (utils.classify_fa_status): the next-year
@@ -325,6 +337,8 @@ def board_for(team):
     _roster = []
     for _, r in _tf.iterrows():
         _nm = str(r["Player"])
+        if _ROSTER_FIX.get((team, normalize(_nm))) == "waived":
+            continue                                   # waived since the feed snapshot
         if classify_fa_status(_nm, fmt_nc(_nm, nc), rookie, CUR) is not None:
             continue                                   # free agent / option -> not guaranteed
         _roster.append({"name": _nm, "pos": str(r["pos"]),
