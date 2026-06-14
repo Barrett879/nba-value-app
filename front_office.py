@@ -244,8 +244,7 @@ def render_front_office():
                 _tool = "veteran minimums"
             _parts.append(f"**add {len(_adds)}** using {_tool}")
         st.markdown(
-            f"What {_short} would realistically do this offseason: " + " and ".join(_parts) +
-            ". Marginal role players walk — nobody is kept just to fill a spot.")
+            f"What {_short} would realistically do this offseason: " + " and ".join(_parts) + ".")
         st.markdown(_PLAN_CSS + f"<div class='hv-plan'>{''.join(_plan_chip(m) for m in _plan_moves)}</div>",
                     unsafe_allow_html=True)
     else:
@@ -254,8 +253,7 @@ def render_front_office():
             "are capped out: their offseason is veteran minimums and exercising any cheap options.")
     st.caption(
         "The full board below ranks every external free agent by how keenly a team of this timeline "
-        "would chase them — each scored independently (so the mid-level shows up on more than one). "
-        "Gated for affordability; an aging vet on minimum money to chase a ring is the lone exception."
+        "would chase them."
     )
     if B["pursue"]:
         pur = pd.DataFrame(B["pursue"])
