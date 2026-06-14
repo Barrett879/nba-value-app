@@ -96,8 +96,8 @@ def _cap_bar_html(committed, cap, tax, apron2, after):
              f"background:var(--fg-1);transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.35);'></div>")
     legend = ("<div style='display:flex;gap:1.1rem;font-size:0.68rem;color:var(--fg-4);margin-bottom:0.5rem;'>"
               "<span><span style='color:var(--accent-teal)'>&#9632;</span> committed payroll</span>"
-              "<span><span style='color:var(--gold)'>&#9632;</span> the plan's spend</span>"
-              "<span><span style='color:var(--fg-1)'>&#9612;</span> after the plan</span></div>")
+              "<span><span style='color:var(--gold)'>&#9632;</span> this offseason (re-signs + signings)</span>"
+              "<span><span style='color:var(--fg-1)'>&#9612;</span> after the offseason</span></div>")
     return (f"<div style='margin:0.2rem 0 2.8rem;'>{legend}"
             f"<div style='position:relative;height:14px;border-radius:7px;background:var(--hairline-soft);'>"
             f"{seg_now}{seg_plan}{ticks}{amark}</div></div>")
@@ -190,8 +190,9 @@ def render_front_office():
     _tax = B.get("tax_M") or _rp.get("tax_M") or 0
     _apron2 = B.get("apron2_M") or _rp.get("apron2_M") or 0
     _plan_cost = sum(m["cost_M"] for m in B.get("plan", []))
+    _after = _committed + B.get("resign_cost_M", 0) + _plan_cost   # re-signs + external plan
     if _committed and _apron2:
-        st.markdown(_cap_bar_html(_committed, DATA["cap_M"], _tax, _apron2, _committed + _plan_cost),
+        st.markdown(_cap_bar_html(_committed, DATA["cap_M"], _tax, _apron2, _after),
                     unsafe_allow_html=True)
 
     # ── Current roster, collapsed, ordered by Barrett Score ─────────────────────

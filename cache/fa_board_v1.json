@@ -10,6 +10,7 @@
    "cap_room_M": 12,
    "exception_M": 15,
    "committed_M": 153,
+   "resign_cost_M": 41,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -112,18 +113,11 @@
    ],
    "plan": [
     {
-     "name": "Kelly Oubre Jr.",
-     "pos": "SF/PF",
-     "from": "PHI",
-     "cost_M": 11,
-     "tool": "Cap room"
-    },
-    {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 8,
-     "tool": "Room exception"
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "cost_M": 15,
+     "tool": "Mid-level"
     },
     {
      "name": "Brandon Williams",
@@ -526,6 +520,7 @@
    "cap_room_M": 44,
    "exception_M": 15,
    "committed_M": 121,
+   "resign_cost_M": 15,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -634,10 +629,10 @@
    ],
    "plan": [
     {
-     "name": "Jalen Duren",
-     "pos": "C",
-     "from": "DET",
-     "cost_M": 44,
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "cost_M": 27,
      "tool": "Cap room"
     },
     {
@@ -988,6 +983,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 178,
+   "resign_cost_M": 15,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -1443,6 +1439,7 @@
    "cap_room_M": 17,
    "exception_M": 15,
    "committed_M": 148,
+   "resign_cost_M": 16,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -1567,18 +1564,11 @@
    ],
    "plan": [
     {
-     "name": "Mark Williams",
-     "pos": "C",
-     "from": "PHX",
-     "cost_M": 16,
-     "tool": "Cap room"
-    },
-    {
-     "name": "Quentin Grimes",
-     "pos": "SG/SF",
-     "from": "PHI",
-     "cost_M": 8,
-     "tool": "Room exception"
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "from": "LAC",
+     "cost_M": 15,
+     "tool": "Mid-level"
     },
     {
      "name": "Brandon Williams",
@@ -1881,6 +1871,7 @@
    "cap_room_M": 72,
    "exception_M": 15,
    "committed_M": 93,
+   "resign_cost_M": 50,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -1985,13 +1976,6 @@
    ],
    "plan": [
     {
-     "name": "Jalen Duren",
-     "pos": "C",
-     "from": "DET",
-     "cost_M": 50,
-     "tool": "Cap room"
-    },
-    {
      "name": "Peyton Watson",
      "pos": "SF/PF",
      "from": "DEN",
@@ -2017,6 +2001,13 @@
      "pos": "SF/PF",
      "from": "BKN",
      "cost_M": 6,
+     "tool": "Depth"
+    },
+    {
+     "name": "Dominick Barlow",
+     "pos": "PF/C",
+     "from": "PHI",
+     "cost_M": 5,
      "tool": "Depth"
     }
    ],
@@ -2399,6 +2390,7 @@
    "cap_room_M": 0,
    "exception_M": 2,
    "committed_M": 222,
+   "resign_cost_M": 0,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -2868,6 +2860,7 @@
    "cap_room_M": 58,
    "exception_M": 15,
    "committed_M": 107,
+   "resign_cost_M": 31,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -2977,10 +2970,10 @@
    ],
    "plan": [
     {
-     "name": "Jalen Duren",
-     "pos": "C",
-     "from": "DET",
-     "cost_M": 50,
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "from": "MIL",
+     "cost_M": 27,
      "tool": "Cap room"
     },
     {
@@ -2995,7 +2988,7 @@
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Cap room"
+     "tool": "Depth"
     },
     {
      "name": "De'Anthony Melton",
@@ -3371,6 +3364,7 @@
    "cap_room_M": 0,
    "exception_M": 6,
    "committed_M": 216,
+   "resign_cost_M": 0,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -3879,6 +3873,7 @@
    "cap_room_M": 35,
    "exception_M": 15,
    "committed_M": 130,
+   "resign_cost_M": 79,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -3991,18 +3986,11 @@
    ],
    "plan": [
     {
-     "name": "Austin Reaves",
+     "name": "CJ McCollum",
      "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 35,
-     "tool": "Cap room"
-    },
-    {
-     "name": "Nikola Vu\u010devi\u0107",
-     "pos": "C/PF",
-     "from": "BOS",
-     "cost_M": 8,
-     "tool": "Room exception"
+     "from": "ATL",
+     "cost_M": 14,
+     "tool": "Mid-level"
     },
     {
      "name": "Harrison Barnes",
@@ -4385,6 +4373,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 176,
+   "resign_cost_M": 35,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -4863,6 +4852,7 @@
    "cap_room_M": 5,
    "exception_M": 15,
    "committed_M": 160,
+   "resign_cost_M": 16,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -5293,6 +5283,7 @@
    "cap_room_M": 13,
    "exception_M": 15,
    "committed_M": 152,
+   "resign_cost_M": 6,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -5418,18 +5409,11 @@
    ],
    "plan": [
     {
-     "name": "Collin Sexton",
-     "pos": "PG/SG",
-     "from": "CHI",
-     "cost_M": 13,
-     "tool": "Cap room"
-    },
-    {
-     "name": "Tobias Harris",
-     "pos": "PF/SF",
-     "from": "DET",
-     "cost_M": 8,
-     "tool": "Room exception"
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level"
     },
     {
      "name": "Jusuf Nurki\u0107",
@@ -5752,6 +5736,7 @@
    "cap_room_M": 5,
    "exception_M": 15,
    "committed_M": 160,
+   "resign_cost_M": 49,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -6234,6 +6219,7 @@
    "cap_room_M": 72,
    "exception_M": 15,
    "committed_M": 93,
+   "resign_cost_M": 127,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -6331,25 +6317,11 @@
    ],
    "plan": [
     {
-     "name": "Jalen Duren",
-     "pos": "C",
-     "from": "DET",
-     "cost_M": 50,
-     "tool": "Cap room"
-    },
-    {
-     "name": "Bennedict Mathurin",
-     "pos": "SF/PF",
-     "from": "LAC",
-     "cost_M": 21,
-     "tool": "Cap room"
-    },
-    {
-     "name": "Tobias Harris",
-     "pos": "PF/SF",
-     "from": "DET",
-     "cost_M": 8,
-     "tool": "Room exception"
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level"
     },
     {
      "name": "Brook Lopez",
@@ -6362,6 +6334,13 @@
      "name": "Khris Middleton",
      "pos": "SF/PF",
      "from": "DAL",
+     "cost_M": 6,
+     "tool": "Depth"
+    },
+    {
+     "name": "Kevin Huerter",
+     "pos": "SG/SF",
+     "from": "DET",
      "cost_M": 6,
      "tool": "Depth"
     }
@@ -6765,6 +6744,7 @@
    "cap_room_M": 23,
    "exception_M": 15,
    "committed_M": 142,
+   "resign_cost_M": 2,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -6898,10 +6878,10 @@
    ],
    "plan": [
     {
-     "name": "Peyton Watson",
+     "name": "Julian Champagnie",
      "pos": "SF/PF",
-     "from": "DEN",
-     "cost_M": 22,
+     "from": "SAS",
+     "cost_M": 21,
      "tool": "Cap room"
     },
     {
@@ -7212,6 +7192,7 @@
    "cap_room_M": 2,
    "exception_M": 15,
    "committed_M": 163,
+   "resign_cost_M": 27,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -7665,6 +7646,7 @@
    "cap_room_M": 27,
    "exception_M": 15,
    "committed_M": 138,
+   "resign_cost_M": 46,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -7754,18 +7736,11 @@
    ],
    "plan": [
     {
-     "name": "Austin Reaves",
-     "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 27,
-     "tool": "Cap room"
-    },
-    {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 8,
-     "tool": "Room exception"
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "cost_M": 13,
+     "tool": "Mid-level"
     },
     {
      "name": "Jusuf Nurki\u0107",
@@ -8168,6 +8143,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 175,
+   "resign_cost_M": 36,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -8636,6 +8612,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 196,
+   "resign_cost_M": 2,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -9068,6 +9045,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 206,
+   "resign_cost_M": 15,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -9536,6 +9514,7 @@
    "cap_room_M": 0,
    "exception_M": 2,
    "committed_M": 246,
+   "resign_cost_M": 0,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -9948,6 +9927,7 @@
    "cap_room_M": 0,
    "exception_M": 6,
    "committed_M": 215,
+   "resign_cost_M": 4,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -10388,6 +10368,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 180,
+   "resign_cost_M": 35,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -10877,6 +10858,7 @@
    "cap_room_M": 5,
    "exception_M": 15,
    "committed_M": 160,
+   "resign_cost_M": 54,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -11356,6 +11338,7 @@
    "cap_room_M": 8,
    "exception_M": 15,
    "committed_M": 156,
+   "resign_cost_M": 11,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -11475,18 +11458,11 @@
    ],
    "plan": [
     {
-     "name": "Daniss Jenkins",
+     "name": "Ayo Dosunmu",
      "pos": "PG/SG",
-     "from": "DET",
-     "cost_M": 8,
-     "tool": "Cap room"
-    },
-    {
-     "name": "Quentin Grimes",
-     "pos": "SG/SF",
-     "from": "PHI",
-     "cost_M": 8,
-     "tool": "Room exception"
+     "from": "MIN",
+     "cost_M": 15,
+     "tool": "Mid-level"
     },
     {
      "name": "John Collins",
@@ -11789,6 +11765,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 203,
+   "resign_cost_M": 17,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -12242,6 +12219,7 @@
    "cap_room_M": 12,
    "exception_M": 15,
    "committed_M": 153,
+   "resign_cost_M": 13,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -12344,18 +12322,11 @@
    ],
    "plan": [
     {
-     "name": "Norman Powell",
-     "pos": "SG/SF",
-     "from": "MIA",
-     "cost_M": 12,
-     "tool": "Cap room"
-    },
-    {
-     "name": "John Collins",
-     "pos": "PF/C",
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
      "from": "LAC",
-     "cost_M": 8,
-     "tool": "Room exception"
+     "cost_M": 15,
+     "tool": "Mid-level"
     },
     {
      "name": "Tobias Harris",
@@ -12678,6 +12649,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 190,
+   "resign_cost_M": 13,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -13111,6 +13083,7 @@
    "cap_room_M": 27,
    "exception_M": 15,
    "committed_M": 138,
+   "resign_cost_M": 14,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -13225,10 +13198,10 @@
    ],
    "plan": [
     {
-     "name": "Austin Reaves",
-     "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 27,
+     "name": "Coby White",
+     "pos": "PG/SG",
+     "from": "CHA",
+     "cost_M": 13,
      "tool": "Cap room"
     },
     {
@@ -13559,6 +13532,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 175,
+   "resign_cost_M": 5,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",

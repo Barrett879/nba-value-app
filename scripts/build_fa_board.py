@@ -304,18 +304,27 @@ def board_for(team):
                         "barrett": round(float(r["barrett_score"] or 0), 1),
                         "salary_M": round(float(r.get("salary", 0) or 0) / 1e6, 1)})
 
+    _rp = resign_plan(team, [x for x in rows if x["is_inc"]])
+    # Cap room is the THEORETICAL max (own FAs renounced). A team that re-signs
+    # its own keepers via Bird rights is then over the cap and only has the
+    # mid-level — so the realistic plan gets cap room MINUS those re-signings,
+    # not the full figure. (Fixes "$50M on cap room" while also re-signing LeBron.)
+    _resign_cost = round(sum(k["cost_M"] for k in (_rp or {}).get("keeps", []) if k.get("keep")))
+    _real_cap_room = max(0.0, CAP_M - (_committed + _resign_cost))
+
     return {
         "team": team,
         "name": str(t.get("team_name", team)),
         "cap_room_M": round(cap), "exception_M": round(exc),
-        "committed_M": _committed, "tax_M": round(TAX_M), "apron2_M": round(APRON2_M),
+        "committed_M": _committed, "resign_cost_M": _resign_cost,
+        "tax_M": round(TAX_M), "apron2_M": round(APRON2_M),
         "timeline": ts._TL_DISPLAY.get(tl, tl) or "—",
         "needs": need, "thin": thin,
         "roster": _roster,
         "best_fits": best_fits_for(rows, need, thin),
-        "plan": offseason_plan(_pursue, cap, exc),
+        "plan": offseason_plan(_pursue, _real_cap_room, exc),
         "resign": [pack(x) for x in rows if x["is_inc"]],
-        "resign_plan": resign_plan(team, [x for x in rows if x["is_inc"]]),
+        "resign_plan": _rp,
         "pursue": [pack(x) for x in _pursue][:20],
     }
 
