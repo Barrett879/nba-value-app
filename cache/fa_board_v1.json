@@ -9,12 +9,113 @@
    "name": "Atlanta Hawks",
    "cap_room_M": 12,
    "exception_M": 15,
+   "committed_M": 153,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
     "PF"
    ],
    "thin": [
     "SG"
+   ],
+   "roster": [
+    {
+     "name": "Jalen Johnson",
+     "pos": "SF/PF",
+     "barrett": 35.3,
+     "salary_M": 30.0
+    },
+    {
+     "name": "Nickeil Alexander-Walker",
+     "pos": "PG/SG",
+     "barrett": 26.1,
+     "salary_M": 15.2
+    },
+    {
+     "name": "Dyson Daniels",
+     "pos": "PG/SG",
+     "barrett": 25.1,
+     "salary_M": 7.7
+    },
+    {
+     "name": "Onyeka Okongwu",
+     "pos": "C",
+     "barrett": 24.2,
+     "salary_M": 15.0
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "barrett": 20.5,
+     "salary_M": 30.7
+    },
+    {
+     "name": "Jock Landale",
+     "pos": "C",
+     "barrett": 11.7,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Jonathan Kuminga",
+     "pos": "SF/PF",
+     "barrett": 11.2,
+     "salary_M": 22.5
+    },
+    {
+     "name": "Zaccharie Risacher",
+     "pos": "SF/PF",
+     "barrett": 10.1,
+     "salary_M": 13.2
+    },
+    {
+     "name": "Corey Kispert",
+     "pos": "SF/SG",
+     "barrett": 7.5,
+     "salary_M": 14.0
+    },
+    {
+     "name": "Mouhamed Gueye",
+     "pos": "PF/C",
+     "barrett": 7.2,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Buddy Hield",
+     "pos": "SG/SF",
+     "barrett": 5.7,
+     "salary_M": 9.2
+    },
+    {
+     "name": "Asa Newell",
+     "pos": "PF/C",
+     "barrett": 4.9,
+     "salary_M": 3.2
+    },
+    {
+     "name": "Keaton Wallace",
+     "pos": "SF/PF",
+     "barrett": 2.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Caleb Houstan",
+     "pos": "SG/SF",
+     "barrett": 1.1,
+     "salary_M": 0.7
+    },
+    {
+     "name": "Gabe Vincent",
+     "pos": "PG/SG",
+     "barrett": 0.9,
+     "salary_M": 11.5
+    },
+    {
+     "name": "N'Faly Dante",
+     "pos": "SF/PF",
+     "barrett": 0.5,
+     "salary_M": 2.0
+    }
    ],
    "best_fits": [
     {
@@ -55,6 +156,36 @@
      "ppos": "C",
      "slot": 1,
      "why": "Adds a needed second body at C, a bargain at $10M against his $11.3M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "from": "PHI",
+     "cost_M": 11,
+     "tool": "Cap room"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "from": "DAL",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "from": "LAL",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -435,6 +566,9 @@
    "name": "Brooklyn Nets",
    "cap_room_M": 44,
    "exception_M": 15,
+   "committed_M": 121,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
     "PG",
@@ -442,6 +576,92 @@
     "PF"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Michael Porter Jr.",
+     "pos": "SF/PF",
+     "barrett": 22.9,
+     "salary_M": 38.3
+    },
+    {
+     "name": "Nic Claxton",
+     "pos": "C",
+     "barrett": 16.7,
+     "salary_M": 25.4
+    },
+    {
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "barrett": 13.7,
+     "salary_M": 6.2
+    },
+    {
+     "name": "Egor D\u00ebmin",
+     "pos": "PG/SG",
+     "barrett": 11.8,
+     "salary_M": 6.9
+    },
+    {
+     "name": "Noah Clowney",
+     "pos": "PF/C",
+     "barrett": 10.9,
+     "salary_M": 3.4
+    },
+    {
+     "name": "Ziaire Williams",
+     "pos": "SF/PF",
+     "barrett": 10.7,
+     "salary_M": 6.2
+    },
+    {
+     "name": "Danny Wolf",
+     "pos": "SF/PF",
+     "barrett": 9.7,
+     "salary_M": 2.8
+    },
+    {
+     "name": "Josh Minott",
+     "pos": "SF/PF",
+     "barrett": 9.2,
+     "salary_M": 2.4
+    },
+    {
+     "name": "Terance Mann",
+     "pos": "SG/SF",
+     "barrett": 8.3,
+     "salary_M": 15.5
+    },
+    {
+     "name": "Nolan Traore",
+     "pos": "PG/SG",
+     "barrett": 6.3,
+     "salary_M": 3.8
+    },
+    {
+     "name": "Ben Saraf",
+     "pos": "PG/SG",
+     "barrett": 5.4,
+     "salary_M": 2.9
+    },
+    {
+     "name": "Ochai Agbaji",
+     "pos": "SG/SF",
+     "barrett": 3.6,
+     "salary_M": 6.4
+    },
+    {
+     "name": "Jalen Wilson",
+     "pos": "SF/PF",
+     "barrett": 3.5,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Drake Powell",
+     "pos": "SG/SF",
+     "barrett": 3.0,
+     "salary_M": 3.4
+    }
+   ],
    "best_fits": [
     {
      "name": "Coby White",
@@ -481,6 +701,36 @@
      "ppos": "C",
      "slot": 0,
      "why": "Upgrades on Nic Claxton at C, a bargain at $44M against his $49.5M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Jalen Duren",
+     "pos": "C",
+     "from": "DET",
+     "cost_M": 44,
+     "tool": "Cap room"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "from": "GSW",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Jordan Goodwin",
+     "pos": "SG/SF",
+     "from": "PHX",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Jaden Ivey",
+     "pos": "PG/SG",
+     "from": "CHI",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -801,12 +1051,95 @@
    "name": "Boston Celtics",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 178,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "SG"
    ],
    "thin": [
     "PF"
+   ],
+   "roster": [
+    {
+     "name": "Jaylen Brown",
+     "pos": "SF/SG",
+     "barrett": 34.2,
+     "salary_M": 53.1
+    },
+    {
+     "name": "Derrick White",
+     "pos": "PG/SG",
+     "barrett": 28.4,
+     "salary_M": 28.1
+    },
+    {
+     "name": "Payton Pritchard",
+     "pos": "PG",
+     "barrett": 23.5,
+     "salary_M": 7.2
+    },
+    {
+     "name": "Neemias Queta",
+     "pos": "C",
+     "barrett": 21.3,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Nikola Vu\u010devi\u0107",
+     "pos": "C/PF",
+     "barrett": 19.7,
+     "salary_M": 21.5
+    },
+    {
+     "name": "Jayson Tatum",
+     "pos": "PF/SF",
+     "barrett": 19.7,
+     "salary_M": 54.1
+    },
+    {
+     "name": "Sam Hauser",
+     "pos": "SF/PF",
+     "barrett": 11.7,
+     "salary_M": 10.0
+    },
+    {
+     "name": "Luka Garza",
+     "pos": "C",
+     "barrett": 9.6,
+     "salary_M": 2.5
+    },
+    {
+     "name": "Jordan Walsh",
+     "pos": "SF/PF",
+     "barrett": 8.4,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Baylor Scheierman",
+     "pos": "SG/SF",
+     "barrett": 8.1,
+     "salary_M": 2.6
+    },
+    {
+     "name": "Hugo Gonz\u00e1lez",
+     "pos": "SF/SG",
+     "barrett": 6.5,
+     "salary_M": 2.8
+    },
+    {
+     "name": "Amari Williams",
+     "pos": "SF/PF",
+     "barrett": 1.1,
+     "salary_M": 0.5
+    },
+    {
+     "name": "Chris Boucher",
+     "pos": "PF/C",
+     "barrett": -1.0,
+     "salary_M": 2.3
+    }
    ],
    "best_fits": [
     {
@@ -847,6 +1180,29 @@
      "ppos": "C",
      "slot": 3,
      "why": "Rotation depth at C, a bargain at $2M against his $3.9M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Tim Hardaway Jr.",
+     "pos": "SG/SF",
+     "from": "DEN",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "from": "UTA",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -1167,11 +1523,112 @@
    "name": "Charlotte Hornets",
    "cap_room_M": 17,
    "exception_M": 15,
+   "committed_M": 148,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
     "SF"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "LaMelo Ball",
+     "pos": "PG/SG",
+     "barrett": 25.8,
+     "salary_M": 38.0
+    },
+    {
+     "name": "Kon Knueppel",
+     "pos": "SG/SF",
+     "barrett": 24.7,
+     "salary_M": 10.0
+    },
+    {
+     "name": "Brandon Miller",
+     "pos": "SG/SF",
+     "barrett": 22.8,
+     "salary_M": 12.0
+    },
+    {
+     "name": "Miles Bridges",
+     "pos": "PF/SF",
+     "barrett": 21.7,
+     "salary_M": 25.0
+    },
+    {
+     "name": "Moussa Diabat\u00e9",
+     "pos": "C",
+     "barrett": 17.1,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Ryan Kalkbrenner",
+     "pos": "C",
+     "barrett": 16.1,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Coby White",
+     "pos": "PG/SG",
+     "barrett": 14.9,
+     "salary_M": 12.9
+    },
+    {
+     "name": "Sion James",
+     "pos": "SG/PG",
+     "barrett": 8.8,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Grant Williams",
+     "pos": "PF/SF",
+     "barrett": 8.1,
+     "salary_M": 13.6
+    },
+    {
+     "name": "Tidjane Sala\u00fcn",
+     "pos": "SF/PF",
+     "barrett": 6.2,
+     "salary_M": 7.9
+    },
+    {
+     "name": "Josh Green",
+     "pos": "SG/SF",
+     "barrett": 6.0,
+     "salary_M": 13.7
+    },
+    {
+     "name": "Liam McNeeley",
+     "pos": "SG/SF",
+     "barrett": 3.3,
+     "salary_M": 2.8
+    },
+    {
+     "name": "Antonio Reeves",
+     "pos": "SF/PF",
+     "barrett": 2.5,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Pat Connaughton",
+     "pos": "SG/SF",
+     "barrett": 2.1,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Tre Mann",
+     "pos": "PG/SG",
+     "barrett": 1.8,
+     "salary_M": 8.0
+    },
+    {
+     "name": "Xavier Tillman",
+     "pos": "C/PF",
+     "barrett": 1.2,
+     "salary_M": 2.5
+    }
+   ],
    "best_fits": [
     {
      "name": "Neemias Queta",
@@ -1211,6 +1668,36 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, a bargain at $17M against his $26.6M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "cost_M": 16,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "from": "PHI",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "from": "DAL",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "from": "TOR",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -1491,6 +1978,9 @@
    "name": "Chicago Bulls",
    "cap_room_M": 72,
    "exception_M": 15,
+   "committed_M": 93,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
     "SG",
@@ -1499,6 +1989,98 @@
    ],
    "thin": [
     "SF"
+   ],
+   "roster": [
+    {
+     "name": "Josh Giddey",
+     "pos": "PG/SG",
+     "barrett": 25.2,
+     "salary_M": 25.0
+    },
+    {
+     "name": "Tre Jones",
+     "pos": "PG",
+     "barrett": 20.9,
+     "salary_M": 8.0
+    },
+    {
+     "name": "Matas Buzelis",
+     "pos": "SF/PF",
+     "barrett": 19.3,
+     "salary_M": 5.5
+    },
+    {
+     "name": "Collin Sexton",
+     "pos": "PG/SG",
+     "barrett": 14.5,
+     "salary_M": 19.2
+    },
+    {
+     "name": "Anfernee Simons",
+     "pos": "PG/SG",
+     "barrett": 12.7,
+     "salary_M": 27.7
+    },
+    {
+     "name": "Jalen Smith",
+     "pos": "C/PF",
+     "barrett": 12.6,
+     "salary_M": 9.0
+    },
+    {
+     "name": "Isaac Okoro",
+     "pos": "SG/SF",
+     "barrett": 8.5,
+     "salary_M": 11.0
+    },
+    {
+     "name": "Zach Collins",
+     "pos": "C",
+     "barrett": 7.5,
+     "salary_M": 18.1
+    },
+    {
+     "name": "Jaden Ivey",
+     "pos": "PG/SG",
+     "barrett": 6.3,
+     "salary_M": 10.1
+    },
+    {
+     "name": "Leonard Miller",
+     "pos": "SF/PF",
+     "barrett": 6.0,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Patrick Williams",
+     "pos": "SF/PF",
+     "barrett": 5.2,
+     "salary_M": 18.0
+    },
+    {
+     "name": "Nick Richards",
+     "pos": "C",
+     "barrett": 4.6,
+     "salary_M": 5.0
+    },
+    {
+     "name": "Guerschon Yabusele",
+     "pos": "PF/C",
+     "barrett": 4.1,
+     "salary_M": 5.5
+    },
+    {
+     "name": "Rob Dillingham",
+     "pos": "PG/SG",
+     "barrett": 2.0,
+     "salary_M": 6.6
+    },
+    {
+     "name": "Noa Essengue",
+     "pos": "SF/PF",
+     "barrett": 0.1,
+     "salary_M": 5.4
+    }
    ],
    "best_fits": [
     {
@@ -1539,6 +2121,43 @@
      "ppos": "PF",
      "slot": 1,
      "why": "Adds a needed second body at PF, a bargain at $14M against his $15.7M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Jalen Duren",
+     "pos": "C",
+     "from": "DET",
+     "cost_M": 50,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Peyton Watson",
+     "pos": "SF/PF",
+     "from": "DEN",
+     "cost_M": 19,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "from": "PHI",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "from": "DAL",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Ziaire Williams",
+     "pos": "SF/PF",
+     "from": "BKN",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -1919,6 +2538,9 @@
    "name": "Cleveland Cavaliers",
    "cap_room_M": 0,
    "exception_M": 2,
+   "committed_M": 222,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "SF"
@@ -1926,6 +2548,104 @@
    "thin": [
     "PF",
     "C"
+   ],
+   "roster": [
+    {
+     "name": "Donovan Mitchell",
+     "pos": "SG/PG",
+     "barrett": 35.2,
+     "salary_M": 46.4
+    },
+    {
+     "name": "James Harden",
+     "pos": "PG/SG",
+     "barrett": 32.5,
+     "salary_M": 39.4
+    },
+    {
+     "name": "Evan Mobley",
+     "pos": "PF/C",
+     "barrett": 26.9,
+     "salary_M": 46.4
+    },
+    {
+     "name": "Jarrett Allen",
+     "pos": "C",
+     "barrett": 21.6,
+     "salary_M": 20.0
+    },
+    {
+     "name": "Jaylon Tyson",
+     "pos": "SG/SF",
+     "barrett": 15.4,
+     "salary_M": 3.5
+    },
+    {
+     "name": "Sam Merrill",
+     "pos": "SG/SF",
+     "barrett": 14.3,
+     "salary_M": 8.5
+    },
+    {
+     "name": "Dennis Schr\u00f6der",
+     "pos": "PG/SG",
+     "barrett": 12.1,
+     "salary_M": 14.1
+    },
+    {
+     "name": "Keon Ellis",
+     "pos": "SG/PG",
+     "barrett": 9.2,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Dean Wade",
+     "pos": "SF/PF",
+     "barrett": 9.1,
+     "salary_M": 6.6
+    },
+    {
+     "name": "Craig Porter Jr.",
+     "pos": "PG",
+     "barrett": 8.6,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Max Strus",
+     "pos": "SF/SG",
+     "barrett": 8.3,
+     "salary_M": 15.9
+    },
+    {
+     "name": "Thomas Bryant",
+     "pos": "C",
+     "barrett": 6.3,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Lonzo Ball",
+     "pos": "PG/SG",
+     "barrett": 5.4,
+     "salary_M": 10.0
+    },
+    {
+     "name": "Nae'Qwan Tomlin",
+     "pos": "SF/PF",
+     "barrett": 4.7,
+     "salary_M": 0.7
+    },
+    {
+     "name": "Tyrese Proctor",
+     "pos": "PG/SG",
+     "barrett": 2.6,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Larry Nance Jr.",
+     "pos": "PF/C",
+     "barrett": 2.0,
+     "salary_M": 2.3
+    }
    ],
    "best_fits": [
     {
@@ -1966,6 +2686,22 @@
      "ppos": "C",
      "slot": 2,
      "why": "Rotation depth at C, a bargain at $2M against his $7.7M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Andre Drummond",
+     "pos": "C",
+     "from": "PHI",
+     "cost_M": 2,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "from": "LAC",
+     "cost_M": 2,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -2306,6 +3042,9 @@
    "name": "Dallas Mavericks",
    "cap_room_M": 58,
    "exception_M": 15,
+   "committed_M": 107,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
     "SG"
@@ -2313,6 +3052,98 @@
    "thin": [
     "PG",
     "C"
+   ],
+   "roster": [
+    {
+     "name": "Cooper Flagg",
+     "pos": "SF/PF",
+     "barrett": 26.8,
+     "salary_M": 14.4
+    },
+    {
+     "name": "Naji Marshall",
+     "pos": "SF/PF",
+     "barrett": 17.9,
+     "salary_M": 9.0
+    },
+    {
+     "name": "P.J. Washington",
+     "pos": "PF/SF",
+     "barrett": 15.9,
+     "salary_M": 14.2
+    },
+    {
+     "name": "Daniel Gafford",
+     "pos": "C",
+     "barrett": 15.3,
+     "salary_M": 14.4
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "barrett": 15.0,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Max Christie",
+     "pos": "SG/SF",
+     "barrett": 14.3,
+     "salary_M": 7.7
+    },
+    {
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "barrett": 12.1,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Khris Middleton",
+     "pos": "SF/PF",
+     "barrett": 9.0,
+     "salary_M": 33.9
+    },
+    {
+     "name": "Klay Thompson",
+     "pos": "SG/SF",
+     "barrett": 7.0,
+     "salary_M": 16.7
+    },
+    {
+     "name": "Ryan Nembhard",
+     "pos": "PG",
+     "barrett": 6.7,
+     "salary_M": 0.3
+    },
+    {
+     "name": "Dwight Powell",
+     "pos": "C",
+     "barrett": 5.9,
+     "salary_M": 4.0
+    },
+    {
+     "name": "Dereck Lively II",
+     "pos": "C",
+     "barrett": 4.9,
+     "salary_M": 5.3
+    },
+    {
+     "name": "Caleb Martin",
+     "pos": "SF/PF",
+     "barrett": 4.4,
+     "salary_M": 9.6
+    },
+    {
+     "name": "Tyler Smith",
+     "pos": "SF/PF",
+     "barrett": 2.1,
+     "salary_M": 2.0
+    },
+    {
+     "name": "AJ Johnson",
+     "pos": "SG/SF",
+     "barrett": -0.3,
+     "salary_M": 3.1
+    }
    ],
    "best_fits": [
     {
@@ -2353,6 +3184,43 @@
      "ppos": "PG",
      "slot": 0,
      "why": "Upgrades on Brandon Williams at PG, fair value at $27M."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Jalen Duren",
+     "pos": "C",
+     "from": "DET",
+     "cost_M": 50,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Daniss Jenkins",
+     "pos": "PG/SG",
+     "from": "DET",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 7,
+     "tool": "Cap room"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "from": "GSW",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Luke Kennard",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -2713,12 +3581,113 @@
    "name": "Denver Nuggets",
    "cap_room_M": 0,
    "exception_M": 6,
+   "committed_M": 216,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "SG"
    ],
    "thin": [
     "PF"
+   ],
+   "roster": [
+    {
+     "name": "Nikola Joki\u0107",
+     "pos": "C",
+     "barrett": 48.4,
+     "salary_M": 55.2
+    },
+    {
+     "name": "Jamal Murray",
+     "pos": "PG/SG",
+     "barrett": 32.9,
+     "salary_M": 46.4
+    },
+    {
+     "name": "Peyton Watson",
+     "pos": "SF/PF",
+     "barrett": 15.5,
+     "salary_M": 4.4
+    },
+    {
+     "name": "Aaron Gordon",
+     "pos": "PF/C",
+     "barrett": 15.4,
+     "salary_M": 22.8
+    },
+    {
+     "name": "Cameron Johnson",
+     "pos": "SF/PF",
+     "barrett": 14.8,
+     "salary_M": 21.1
+    },
+    {
+     "name": "Christian Braun",
+     "pos": "SG/SF",
+     "barrett": 14.5,
+     "salary_M": 4.9
+    },
+    {
+     "name": "Tim Hardaway Jr.",
+     "pos": "SG/SF",
+     "barrett": 12.7,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Bruce Brown",
+     "pos": "PG/SG",
+     "barrett": 9.3,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Jonas Valan\u010di\u016bnas",
+     "pos": "C",
+     "barrett": 8.3,
+     "salary_M": 10.4
+    },
+    {
+     "name": "Spencer Jones",
+     "pos": "SF/PF",
+     "barrett": 7.4,
+     "salary_M": 0.6
+    },
+    {
+     "name": "Julian Strawther",
+     "pos": "SF/PF",
+     "barrett": 5.2,
+     "salary_M": 2.7
+    },
+    {
+     "name": "DaRon Holmes II",
+     "pos": "PF/C",
+     "barrett": 4.0,
+     "salary_M": 3.2
+    },
+    {
+     "name": "Jalen Pickett",
+     "pos": "SG",
+     "barrett": 3.4,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Zeke Nnaji",
+     "pos": "PF/C",
+     "barrett": 2.9,
+     "salary_M": 8.2
+    },
+    {
+     "name": "Tyus Jones",
+     "pos": "PG",
+     "barrett": 1.5,
+     "salary_M": 0.5
+    },
+    {
+     "name": "Hunter Tyson",
+     "pos": "SF/PF",
+     "barrett": -0.9,
+     "salary_M": 2.2
+    }
    ],
    "best_fits": [
     {
@@ -2759,6 +3728,22 @@
      "ppos": "C",
      "slot": 1,
      "why": "Adds a needed second body at C, a bargain at $6M against his $10.4M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "from": "ATL",
+     "cost_M": 6,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -3139,10 +4124,117 @@
    "name": "Detroit Pistons",
    "cap_room_M": 35,
    "exception_M": 15,
+   "committed_M": 130,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [],
    "thin": [
     "PF"
+   ],
+   "roster": [
+    {
+     "name": "Cade Cunningham",
+     "pos": "PG/SG",
+     "barrett": 37.6,
+     "salary_M": 46.4
+    },
+    {
+     "name": "Jalen Duren",
+     "pos": "C",
+     "barrett": 28.2,
+     "salary_M": 6.5
+    },
+    {
+     "name": "Ausar Thompson",
+     "pos": "SF/PF",
+     "barrett": 19.2,
+     "salary_M": 8.8
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "barrett": 16.7,
+     "salary_M": 26.6
+    },
+    {
+     "name": "Duncan Robinson",
+     "pos": "SG/SF",
+     "barrett": 15.4,
+     "salary_M": 16.8
+    },
+    {
+     "name": "Paul Reed",
+     "pos": "C",
+     "barrett": 12.4,
+     "salary_M": 5.3
+    },
+    {
+     "name": "Isaiah Stewart",
+     "pos": "C/PF",
+     "barrett": 11.9,
+     "salary_M": 15.0
+    },
+    {
+     "name": "Javonte Green",
+     "pos": "SG/SF",
+     "barrett": 11.3,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Daniss Jenkins",
+     "pos": "PG/SG",
+     "barrett": 11.1,
+     "salary_M": 3.8
+    },
+    {
+     "name": "Kevin Huerter",
+     "pos": "SG/SF",
+     "barrett": 11.0,
+     "salary_M": 18.0
+    },
+    {
+     "name": "Ronald Holland II",
+     "pos": "SF/PF",
+     "barrett": 10.3,
+     "salary_M": 8.7
+    },
+    {
+     "name": "Caris LeVert",
+     "pos": "SG/SF",
+     "barrett": 7.3,
+     "salary_M": 14.1
+    },
+    {
+     "name": "Marcus Sasser",
+     "pos": "PG/SG",
+     "barrett": 3.8,
+     "salary_M": 2.9
+    },
+    {
+     "name": "Isaac Jones",
+     "pos": "PF/C",
+     "barrett": 0.6,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Chaz Lanier",
+     "pos": "SF/PF",
+     "barrett": -0.4,
+     "salary_M": 1.4
+    },
+    {
+     "name": "Colby Jones",
+     "pos": "SG/SF",
+     "barrett": -0.5,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Bobi Klintman",
+     "pos": "SF/PF",
+     "barrett": -1.5,
+     "salary_M": 2.0
+    }
    ],
    "best_fits": [
     {
@@ -3183,6 +4275,36 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, fair value at $5M."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "cost_M": 35,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Nikola Vu\u010devi\u0107",
+     "pos": "C/PF",
+     "from": "BOS",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -3543,6 +4665,9 @@
    "name": "Golden State Warriors",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 176,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
     "SG",
@@ -3550,6 +4675,92 @@
    ],
    "thin": [
     "SF"
+   ],
+   "roster": [
+    {
+     "name": "Stephen Curry",
+     "pos": "PG/SG",
+     "barrett": 25.8,
+     "salary_M": 59.6
+    },
+    {
+     "name": "Jimmy Butler III",
+     "pos": "SF/PF",
+     "barrett": 24.0,
+     "salary_M": 54.1
+    },
+    {
+     "name": "Brandin Podziemski",
+     "pos": "PG/SG",
+     "barrett": 20.9,
+     "salary_M": 3.7
+    },
+    {
+     "name": "Draymond Green",
+     "pos": "PF/C",
+     "barrett": 16.0,
+     "salary_M": 25.9
+    },
+    {
+     "name": "Kristaps Porzi\u0146\u0123is",
+     "pos": "PF/C",
+     "barrett": 15.2,
+     "salary_M": 30.7
+    },
+    {
+     "name": "Moses Moody",
+     "pos": "SG/SF",
+     "barrett": 14.3,
+     "salary_M": 11.6
+    },
+    {
+     "name": "Gui Santos",
+     "pos": "PF/SF",
+     "barrett": 12.5,
+     "salary_M": 2.2
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "barrett": 12.3,
+     "salary_M": 3.1
+    },
+    {
+     "name": "Al Horford",
+     "pos": "C/PF",
+     "barrett": 11.2,
+     "salary_M": 5.7
+    },
+    {
+     "name": "Gary Payton II",
+     "pos": "SG/SF",
+     "barrett": 10.1,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Will Richard",
+     "pos": "SG/PG",
+     "barrett": 9.0,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Quinten Post",
+     "pos": "PF/C",
+     "barrett": 7.7,
+     "salary_M": 1.9
+    },
+    {
+     "name": "Pat Spencer",
+     "pos": "PG/SG",
+     "barrett": 6.8,
+     "salary_M": 0.9
+    },
+    {
+     "name": "Seth Curry",
+     "pos": "SG/PG",
+     "barrett": 5.0,
+     "salary_M": 1.8
+    }
    ],
    "best_fits": [
     {
@@ -3590,6 +4801,29 @@
      "ppos": "SF",
      "slot": 3,
      "why": "Rotation depth at SF, a bargain at $8M against his $12.1M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Ayo Dosunmu",
+     "pos": "PG/SG",
+     "from": "MIN",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "from": "UTA",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -3950,6 +5184,9 @@
    "name": "Houston Rockets",
    "cap_room_M": 5,
    "exception_M": 15,
+   "committed_M": 160,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "SG"
@@ -3957,6 +5194,86 @@
    "thin": [
     "PF",
     "C"
+   ],
+   "roster": [
+    {
+     "name": "Kevin Durant",
+     "pos": "PF/SF",
+     "barrett": 33.9,
+     "salary_M": 54.7
+    },
+    {
+     "name": "Amen Thompson",
+     "pos": "PG/SG",
+     "barrett": 29.9,
+     "salary_M": 9.7
+    },
+    {
+     "name": "Alperen Sengun",
+     "pos": "C",
+     "barrett": 29.6,
+     "salary_M": 33.9
+    },
+    {
+     "name": "Jabari Smith Jr.",
+     "pos": "SF/PF",
+     "barrett": 21.0,
+     "salary_M": 12.4
+    },
+    {
+     "name": "Reed Sheppard",
+     "pos": "PG/SG",
+     "barrett": 15.4,
+     "salary_M": 10.6
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "barrett": 11.2,
+     "salary_M": 5.7
+    },
+    {
+     "name": "Steven Adams",
+     "pos": "C",
+     "barrett": 6.3,
+     "salary_M": 14.1
+    },
+    {
+     "name": "Clint Capela",
+     "pos": "C",
+     "barrett": 5.5,
+     "salary_M": 6.7
+    },
+    {
+     "name": "Josh Okogie",
+     "pos": "SG/SF",
+     "barrett": 5.3,
+     "salary_M": 7.8
+    },
+    {
+     "name": "Jae'Sean Tate",
+     "pos": "SF/PF",
+     "barrett": 1.9,
+     "salary_M": 2.3
+    },
+    {
+     "name": "JD Davison",
+     "pos": "SF/PF",
+     "barrett": 0.8,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Dorian Finney-Smith",
+     "pos": "SF/PF",
+     "barrett": 0.1,
+     "salary_M": 12.7
+    },
+    {
+     "name": "Jeff Green",
+     "pos": "PF/C",
+     "barrett": -0.4,
+     "salary_M": 2.3
+    }
    ],
    "best_fits": [
     {
@@ -3997,6 +5314,29 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, a bargain at $15M against his $21.7M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "from": "DET",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -4297,12 +5637,113 @@
    "name": "Indiana Pacers",
    "cap_room_M": 13,
    "exception_M": 15,
+   "committed_M": 152,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "SG",
     "SF"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Pascal Siakam",
+     "pos": "PF/C",
+     "barrett": 26.1,
+     "salary_M": 45.6
+    },
+    {
+     "name": "Andrew Nembhard",
+     "pos": "PG/SG",
+     "barrett": 22.1,
+     "salary_M": 18.1
+    },
+    {
+     "name": "Ivica Zubac",
+     "pos": "C",
+     "barrett": 17.6,
+     "salary_M": 18.1
+    },
+    {
+     "name": "Jay Huff",
+     "pos": "C",
+     "barrett": 12.3,
+     "salary_M": 2.3
+    },
+    {
+     "name": "T.J. McConnell",
+     "pos": "PG",
+     "barrett": 12.1,
+     "salary_M": 10.2
+    },
+    {
+     "name": "Micah Potter",
+     "pos": "PF/C",
+     "barrett": 11.4,
+     "salary_M": 1.5
+    },
+    {
+     "name": "Aaron Nesmith",
+     "pos": "SG/SF",
+     "barrett": 11.4,
+     "salary_M": 11.0
+    },
+    {
+     "name": "Jarace Walker",
+     "pos": "SF/PF",
+     "barrett": 11.1,
+     "salary_M": 6.7
+    },
+    {
+     "name": "Obi Toppin",
+     "pos": "PF/C",
+     "barrett": 10.0,
+     "salary_M": 14.0
+    },
+    {
+     "name": "Quenton Jackson",
+     "pos": "PG/SG",
+     "barrett": 8.4,
+     "salary_M": 0.6
+    },
+    {
+     "name": "Ben Sheppard",
+     "pos": "SG/PG",
+     "barrett": 6.5,
+     "salary_M": 2.8
+    },
+    {
+     "name": "Johnny Furphy",
+     "pos": "SG/SF",
+     "barrett": 5.9,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Kobe Brown",
+     "pos": "SF/PF",
+     "barrett": 4.4,
+     "salary_M": 2.7
+    },
+    {
+     "name": "James Wiseman",
+     "pos": "C",
+     "barrett": 1.9,
+     "salary_M": 2.7
+    },
+    {
+     "name": "Kam Jones",
+     "pos": "PG/SG",
+     "barrett": 1.8,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Cody Martin",
+     "pos": "SG/SF",
+     "barrett": -2.1,
+     "salary_M": 8.7
+    }
+   ],
    "best_fits": [
     {
      "name": "Bennedict Mathurin",
@@ -4342,6 +5783,36 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, a bargain at $15M against his $21.7M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Collin Sexton",
+     "pos": "PG/SG",
+     "from": "CHI",
+     "cost_M": 13,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "from": "DET",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "from": "UTA",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Kevin Huerter",
+     "pos": "SG/SF",
+     "from": "DET",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -4642,12 +6113,107 @@
    "name": "LA Clippers",
    "cap_room_M": 5,
    "exception_M": 15,
+   "committed_M": 160,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
     "SG",
     "C"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Kawhi Leonard",
+     "pos": "PF/SF",
+     "barrett": 34.0,
+     "salary_M": 50.0
+    },
+    {
+     "name": "Darius Garland",
+     "pos": "PG",
+     "barrett": 19.7,
+     "salary_M": 39.4
+    },
+    {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "barrett": 17.5,
+     "salary_M": 9.2
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "barrett": 16.7,
+     "salary_M": 26.6
+    },
+    {
+     "name": "Kris Dunn",
+     "pos": "PG/SG",
+     "barrett": 16.0,
+     "salary_M": 5.4
+    },
+    {
+     "name": "Derrick Jones Jr.",
+     "pos": "SF/PF",
+     "barrett": 12.3,
+     "salary_M": 10.0
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "barrett": 11.0,
+     "salary_M": 8.8
+    },
+    {
+     "name": "Jordan Miller",
+     "pos": "SG/SF",
+     "barrett": 10.7,
+     "salary_M": 0.7
+    },
+    {
+     "name": "Isaiah Jackson",
+     "pos": "PF/C",
+     "barrett": 9.3,
+     "salary_M": 7.0
+    },
+    {
+     "name": "Nicolas Batum",
+     "pos": "PF/SF",
+     "barrett": 5.3,
+     "salary_M": 5.6
+    },
+    {
+     "name": "Yanic Konan Niederh\u00e4user",
+     "pos": "PF/C",
+     "barrett": 5.2,
+     "salary_M": 2.7
+    },
+    {
+     "name": "Bogdan Bogdanovi\u0107",
+     "pos": "SG/SF",
+     "barrett": 5.1,
+     "salary_M": 16.0
+    },
+    {
+     "name": "Bradley Beal",
+     "pos": "SG/PG",
+     "barrett": 2.9,
+     "salary_M": 5.4
+    },
+    {
+     "name": "Chris Paul",
+     "pos": "PG",
+     "barrett": 1.3,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Cam Christie",
+     "pos": "SG/SF",
+     "barrett": 0.7,
+     "salary_M": 2.0
+    }
+   ],
    "best_fits": [
     {
      "name": "Norman Powell",
@@ -4687,6 +6253,29 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, a bargain at $15M against his $21.7M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "from": "SAS",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Jaden Ivey",
+     "pos": "PG/SG",
+     "from": "CHI",
+     "cost_M": 6,
+     "tool": "Minimum"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "from": "GSW",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -5047,6 +6636,9 @@
    "name": "Los Angeles Lakers",
    "cap_room_M": 72,
    "exception_M": 15,
+   "committed_M": 93,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "SF"
@@ -5054,6 +6646,104 @@
    "thin": [
     "PG",
     "PF"
+   ],
+   "roster": [
+    {
+     "name": "Luka Don\u010di\u0107",
+     "pos": "PG/SG",
+     "barrett": 43.9,
+     "salary_M": 54.1
+    },
+    {
+     "name": "LeBron James",
+     "pos": "PF/SF",
+     "barrett": 30.2,
+     "salary_M": 52.6
+    },
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "barrett": 28.9,
+     "salary_M": 13.9
+    },
+    {
+     "name": "Deandre Ayton",
+     "pos": "C",
+     "barrett": 18.4,
+     "salary_M": 8.1
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "barrett": 13.5,
+     "salary_M": 5.1
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "barrett": 12.4,
+     "salary_M": 3.4
+    },
+    {
+     "name": "Rui Hachimura",
+     "pos": "SF/PF",
+     "barrett": 10.5,
+     "salary_M": 18.3
+    },
+    {
+     "name": "Luke Kennard",
+     "pos": "SG/PG",
+     "barrett": 10.0,
+     "salary_M": 11.0
+    },
+    {
+     "name": "Jake LaRavia",
+     "pos": "SF/SG",
+     "barrett": 9.5,
+     "salary_M": 6.0
+    },
+    {
+     "name": "Jarred Vanderbilt",
+     "pos": "PF/C",
+     "barrett": 5.6,
+     "salary_M": 11.6
+    },
+    {
+     "name": "Drew Timme",
+     "pos": "PF/C",
+     "barrett": 3.8,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Maxi Kleber",
+     "pos": "C/PF",
+     "barrett": 1.9,
+     "salary_M": 11.0
+    },
+    {
+     "name": "Bronny James",
+     "pos": "PG/SG",
+     "barrett": 1.6,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Adou Thiero",
+     "pos": "SF/PF",
+     "barrett": 1.2,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Dalton Knecht",
+     "pos": "SG/SF",
+     "barrett": 0.9,
+     "salary_M": 4.0
+    },
+    {
+     "name": "Kobe Bufkin",
+     "pos": "SF/SG",
+     "barrett": -0.5,
+     "salary_M": 0.8
+    }
    ],
    "best_fits": [
     {
@@ -5094,6 +6784,43 @@
      "ppos": "PF",
      "slot": 1,
      "why": "Adds a needed second body at PF, a bargain at $8M against his $8.9M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Jalen Duren",
+     "pos": "C",
+     "from": "DET",
+     "cost_M": 50,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "from": "LAC",
+     "cost_M": 21,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "from": "DET",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "from": "LAC",
+     "cost_M": 6,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Khris Middleton",
+     "pos": "SF/PF",
+     "from": "DAL",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -5494,6 +7221,9 @@
    "name": "Memphis Grizzlies",
    "cap_room_M": 23,
    "exception_M": 15,
+   "committed_M": 142,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
     "SG",
@@ -5502,6 +7232,104 @@
     "C"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Ja Morant",
+     "pos": "PG/SG",
+     "barrett": 17.4,
+     "salary_M": 39.4
+    },
+    {
+     "name": "Cam Spencer",
+     "pos": "PG/SG",
+     "barrett": 16.5,
+     "salary_M": 2.5
+    },
+    {
+     "name": "Ty Jerome",
+     "pos": "PG/SG",
+     "barrett": 16.0,
+     "salary_M": 8.8
+    },
+    {
+     "name": "Cedric Coward",
+     "pos": "SG/SF",
+     "barrett": 14.7,
+     "salary_M": 5.7
+    },
+    {
+     "name": "Santi Aldama",
+     "pos": "PF/SF",
+     "barrett": 14.6,
+     "salary_M": 18.5
+    },
+    {
+     "name": "Jaylen Wells",
+     "pos": "SG/SF",
+     "barrett": 12.5,
+     "salary_M": 2.0
+    },
+    {
+     "name": "GG Jackson",
+     "pos": "SF/PF",
+     "barrett": 12.1,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Zach Edey",
+     "pos": "C",
+     "barrett": 10.9,
+     "salary_M": 6.0
+    },
+    {
+     "name": "Olivier-Maxence Prosper",
+     "pos": "PF/C",
+     "barrett": 9.5,
+     "salary_M": 0.5
+    },
+    {
+     "name": "Scotty Pippen Jr.",
+     "pos": "PG/SG",
+     "barrett": 8.1,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Kentavious Caldwell-Pope",
+     "pos": "SG/SF",
+     "barrett": 7.8,
+     "salary_M": 21.6
+    },
+    {
+     "name": "Dariq Whitehead",
+     "pos": "SG/SF",
+     "barrett": 7.8,
+     "salary_M": 3.3
+    },
+    {
+     "name": "Walter Clayton Jr.",
+     "pos": "PG/SG",
+     "barrett": 6.8,
+     "salary_M": 4.0
+    },
+    {
+     "name": "Taylor Hendricks",
+     "pos": "SF/PF",
+     "barrett": 6.5,
+     "salary_M": 6.1
+    },
+    {
+     "name": "Taj Gibson",
+     "pos": "PF/SF",
+     "barrett": 2.1,
+     "salary_M": 1.0
+    },
+    {
+     "name": "Brandon Clarke",
+     "pos": "PF/C",
+     "barrett": -0.2,
+     "salary_M": 12.5
+    }
+   ],
    "best_fits": [
     {
      "name": "Day'Ron Sharpe",
@@ -5541,6 +7369,36 @@
      "ppos": "PF",
      "slot": 0,
      "why": "Upgrades on Santi Aldama at PF, fair value at $16M."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Peyton Watson",
+     "pos": "SF/PF",
+     "from": "DEN",
+     "cost_M": 22,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "from": "PHI",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "from": "DAL",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "from": "LAL",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -5821,11 +7679,100 @@
    "name": "Miami Heat",
    "cap_room_M": 2,
    "exception_M": 15,
+   "committed_M": 163,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
     "PF"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Bam Adebayo",
+     "pos": "C/PF",
+     "barrett": 29.8,
+     "salary_M": 37.1
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "barrett": 22.0,
+     "salary_M": 20.5
+    },
+    {
+     "name": "Andrew Wiggins",
+     "pos": "SF/PF",
+     "barrett": 20.9,
+     "salary_M": 28.2
+    },
+    {
+     "name": "Jaime Jaquez Jr.",
+     "pos": "SF/PF",
+     "barrett": 19.2,
+     "salary_M": 3.9
+    },
+    {
+     "name": "Tyler Herro",
+     "pos": "PG/SG",
+     "barrett": 18.5,
+     "salary_M": 31.0
+    },
+    {
+     "name": "Davion Mitchell",
+     "pos": "PG/SG",
+     "barrett": 17.8,
+     "salary_M": 11.6
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "barrett": 16.3,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Kel'el Ware",
+     "pos": "C/PF",
+     "barrett": 15.7,
+     "salary_M": 4.4
+    },
+    {
+     "name": "Dru Smith",
+     "pos": "PG/SG",
+     "barrett": 8.9,
+     "salary_M": 2.4
+    },
+    {
+     "name": "Kasparas Jaku\u010dionis",
+     "pos": "PG/SG",
+     "barrett": 8.4,
+     "salary_M": 3.7
+    },
+    {
+     "name": "Simone Fontecchio",
+     "pos": "SF/PF",
+     "barrett": 6.9,
+     "salary_M": 8.3
+    },
+    {
+     "name": "Nikola Jovi\u0107",
+     "pos": "PF/C",
+     "barrett": 5.0,
+     "salary_M": 4.4
+    },
+    {
+     "name": "Myron Gardner",
+     "pos": "SG/SF",
+     "barrett": 3.7,
+     "salary_M": 0.4
+    },
+    {
+     "name": "Keshad Johnson",
+     "pos": "SF/PF",
+     "barrett": 2.9,
+     "salary_M": 2.0
+    }
+   ],
    "best_fits": [
     {
      "name": "John Collins",
@@ -5865,6 +7812,29 @@
      "ppos": "SF",
      "slot": 3,
      "why": "Rotation depth at SF, a bargain at $13M against his $21.0M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "from": "LAL",
+     "cost_M": 5,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -6185,12 +8155,113 @@
    "name": "Milwaukee Bucks",
    "cap_room_M": 27,
    "exception_M": 15,
+   "committed_M": 138,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
     "SG",
     "SF"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Giannis Antetokounmpo",
+     "pos": "PF/C",
+     "barrett": 28.5,
+     "salary_M": 54.1
+    },
+    {
+     "name": "Ryan Rollins",
+     "pos": "PG/SG",
+     "barrett": 24.0,
+     "salary_M": 4.0
+    },
+    {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "barrett": 22.9,
+     "salary_M": 5.1
+    },
+    {
+     "name": "Myles Turner",
+     "pos": "C",
+     "barrett": 16.1,
+     "salary_M": 25.3
+    },
+    {
+     "name": "Kyle Kuzma",
+     "pos": "SF/PF",
+     "barrett": 13.1,
+     "salary_M": 21.8
+    },
+    {
+     "name": "AJ Green",
+     "pos": "SF/PF",
+     "barrett": 12.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Bobby Portis",
+     "pos": "PF/SF",
+     "barrett": 11.9,
+     "salary_M": 13.6
+    },
+    {
+     "name": "Jericho Sims",
+     "pos": "C",
+     "barrett": 9.9,
+     "salary_M": 2.5
+    },
+    {
+     "name": "Taurean Prince",
+     "pos": "SF/SG",
+     "barrett": 7.4,
+     "salary_M": 3.3
+    },
+    {
+     "name": "Cam Thomas",
+     "pos": "SG",
+     "barrett": 6.9,
+     "salary_M": 0.8
+    },
+    {
+     "name": "Ousmane Dieng",
+     "pos": "PF/C",
+     "barrett": 6.3,
+     "salary_M": 6.7
+    },
+    {
+     "name": "Cole Anthony",
+     "pos": "PG/SG",
+     "barrett": 4.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Gary Harris",
+     "pos": "SG/SF",
+     "barrett": 3.8,
+     "salary_M": 3.6
+    },
+    {
+     "name": "Gary Trent Jr.",
+     "pos": "SG/SF",
+     "barrett": 3.3,
+     "salary_M": 3.7
+    },
+    {
+     "name": "Thanasis Antetokounmpo",
+     "pos": "SF/PF",
+     "barrett": 1.1,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Andre Jackson Jr.",
+     "pos": "SG/SF",
+     "barrett": -0.4,
+     "salary_M": 2.2
+    }
+   ],
    "best_fits": [
     {
      "name": "Austin Reaves",
@@ -6230,6 +8301,36 @@
      "ppos": "PF",
      "slot": 0,
      "why": "Upgrades on Giannis Antetokounmpo at PF, a bargain at $27M against his $39.8M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "cost_M": 27,
+     "tool": "Cap room"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "from": "UTA",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "from": "GSW",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -6610,11 +8711,106 @@
    "name": "Minnesota Timberwolves",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 175,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [],
    "thin": [
     "SG",
     "PF"
+   ],
+   "roster": [
+    {
+     "name": "Anthony Edwards",
+     "pos": "SG/SF",
+     "barrett": 30.6,
+     "salary_M": 45.6
+    },
+    {
+     "name": "Julius Randle",
+     "pos": "PF/C",
+     "barrett": 26.0,
+     "salary_M": 30.9
+    },
+    {
+     "name": "Rudy Gobert",
+     "pos": "C",
+     "barrett": 23.8,
+     "salary_M": 35.0
+    },
+    {
+     "name": "Jaden McDaniels",
+     "pos": "SF/PF",
+     "barrett": 19.6,
+     "salary_M": 24.9
+    },
+    {
+     "name": "Donte DiVincenzo",
+     "pos": "PG/SG",
+     "barrett": 18.5,
+     "salary_M": 12.0
+    },
+    {
+     "name": "Naz Reid",
+     "pos": "C/PF",
+     "barrett": 18.3,
+     "salary_M": 21.6
+    },
+    {
+     "name": "Ayo Dosunmu",
+     "pos": "PG/SG",
+     "barrett": 17.6,
+     "salary_M": 7.5
+    },
+    {
+     "name": "Bones Hyland",
+     "pos": "PG/SG",
+     "barrett": 9.4,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Kyle Anderson",
+     "pos": "SF/PF",
+     "barrett": 8.6,
+     "salary_M": 0.6
+    },
+    {
+     "name": "Mike Conley",
+     "pos": "PG",
+     "barrett": 5.3,
+     "salary_M": 0.7
+    },
+    {
+     "name": "Joan Beringer",
+     "pos": "PF/C",
+     "barrett": 4.3,
+     "salary_M": 4.2
+    },
+    {
+     "name": "Terrence Shannon Jr.",
+     "pos": "SG/SF",
+     "barrett": 2.4,
+     "salary_M": 2.7
+    },
+    {
+     "name": "Jaylen Clark",
+     "pos": "SG/SF",
+     "barrett": 2.3,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Joe Ingles",
+     "pos": "SF/PF",
+     "barrett": 1.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Julian Phillips",
+     "pos": "SF/PF",
+     "barrett": 1.2,
+     "salary_M": 2.2
+    }
    ],
    "best_fits": [
     {
@@ -6655,6 +8851,29 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, fair value at $5M."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "from": "DAL",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -6995,12 +9214,107 @@
    "name": "New Orleans Pelicans",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 196,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
     "PG",
     "SG"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Trey Murphy III",
+     "pos": "SF/SG",
+     "barrett": 26.3,
+     "salary_M": 25.0
+    },
+    {
+     "name": "Zion Williamson",
+     "pos": "PF/SF",
+     "barrett": 22.9,
+     "salary_M": 39.4
+    },
+    {
+     "name": "Saddiq Bey",
+     "pos": "SF/PF",
+     "barrett": 18.4,
+     "salary_M": 6.1
+    },
+    {
+     "name": "Derik Queen",
+     "pos": "C",
+     "barrett": 15.8,
+     "salary_M": 5.2
+    },
+    {
+     "name": "Dejounte Murray",
+     "pos": "PG/SG",
+     "barrett": 14.7,
+     "salary_M": 30.8
+    },
+    {
+     "name": "Jeremiah Fears",
+     "pos": "PG/SG",
+     "barrett": 13.8,
+     "salary_M": 7.5
+    },
+    {
+     "name": "Herbert Jones",
+     "pos": "SF/PF",
+     "barrett": 11.0,
+     "salary_M": 13.9
+    },
+    {
+     "name": "Karlo Matkovi\u0107",
+     "pos": "PF/C",
+     "barrett": 8.8,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Yves Missi",
+     "pos": "C",
+     "barrett": 8.0,
+     "salary_M": 3.4
+    },
+    {
+     "name": "Jordan Poole",
+     "pos": "PG/SG",
+     "barrett": 7.4,
+     "salary_M": 31.8
+    },
+    {
+     "name": "Bryce McGowens",
+     "pos": "PG/SG",
+     "barrett": 6.8,
+     "salary_M": 0.7
+    },
+    {
+     "name": "DeAndre Jordan",
+     "pos": "C",
+     "barrett": 5.1,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Kevon Looney",
+     "pos": "C",
+     "barrett": 1.7,
+     "salary_M": 8.0
+    },
+    {
+     "name": "Micah Peavy",
+     "pos": "SG/SF",
+     "barrett": 1.2,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Jordan Hawkins",
+     "pos": "PG/SG",
+     "barrett": -0.2,
+     "salary_M": 4.7
+    }
+   ],
    "best_fits": [
     {
      "name": "Mark Williams",
@@ -7040,6 +9354,29 @@
      "ppos": "SG",
      "slot": 4,
      "why": "Rotation depth at SG, a bargain at $5M against his $10.2M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Daniss Jenkins",
+     "pos": "PG/SG",
+     "from": "DET",
+     "cost_M": 6,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "from": "LAL",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -7320,11 +9657,112 @@
    "name": "New York Knicks",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 206,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "PF"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Jalen Brunson",
+     "pos": "PG",
+     "barrett": 31.6,
+     "salary_M": 34.9
+    },
+    {
+     "name": "Karl-Anthony Towns",
+     "pos": "C/PF",
+     "barrett": 28.6,
+     "salary_M": 54.1
+    },
+    {
+     "name": "OG Anunoby",
+     "pos": "SF/PF",
+     "barrett": 24.4,
+     "salary_M": 39.6
+    },
+    {
+     "name": "Mikal Bridges",
+     "pos": "SG/SF",
+     "barrett": 22.8,
+     "salary_M": 24.9
+    },
+    {
+     "name": "Josh Hart",
+     "pos": "SF/SG",
+     "barrett": 21.4,
+     "salary_M": 19.5
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "barrett": 13.1,
+     "salary_M": 13.0
+    },
+    {
+     "name": "Miles McBride",
+     "pos": "PG/SG",
+     "barrett": 11.5,
+     "salary_M": 4.3
+    },
+    {
+     "name": "Landry Shamet",
+     "pos": "SG/SF",
+     "barrett": 9.2,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Jose Alvarado",
+     "pos": "PG/SG",
+     "barrett": 7.6,
+     "salary_M": 4.5
+    },
+    {
+     "name": "Jordan Clarkson",
+     "pos": "PG/SG",
+     "barrett": 4.9,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Tyler Kolek",
+     "pos": "PG/SG",
+     "barrett": 4.5,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Jeremy Sochan",
+     "pos": "PF/SF",
+     "barrett": 3.0,
+     "salary_M": 0.8
+    },
+    {
+     "name": "Mohamed Diawara",
+     "pos": "PF/SF",
+     "barrett": 2.7,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Ariel Hukporti",
+     "pos": "C",
+     "barrett": 2.2,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Pac\u00f4me Dadiet",
+     "pos": "SF/PF",
+     "barrett": 1.1,
+     "salary_M": 2.8
+    },
+    {
+     "name": "Dillon Jones",
+     "pos": "SF/PF",
+     "barrett": 1.0,
+     "salary_M": 2.8
+    }
+   ],
    "best_fits": [
     {
      "name": "Harrison Barnes",
@@ -7364,6 +9802,29 @@
      "ppos": "SF",
      "slot": 4,
      "why": "Rotation depth at SF, a bargain at $4M against his $9.0M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "cost_M": 6,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "from": "LAC",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -7704,12 +10165,101 @@
    "name": "Oklahoma City Thunder",
    "cap_room_M": 0,
    "exception_M": 2,
+   "committed_M": 246,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "SF"
    ],
    "thin": [
     "PF"
+   ],
+   "roster": [
+    {
+     "name": "Shai Gilgeous-Alexander",
+     "pos": "PG/SG",
+     "barrett": 43.3,
+     "salary_M": 38.3
+    },
+    {
+     "name": "Chet Holmgren",
+     "pos": "PF/C",
+     "barrett": 28.6,
+     "salary_M": 13.7
+    },
+    {
+     "name": "Ajay Mitchell",
+     "pos": "PG/SG",
+     "barrett": 18.5,
+     "salary_M": 3.0
+    },
+    {
+     "name": "Jalen Williams",
+     "pos": "SG/SF",
+     "barrett": 18.2,
+     "salary_M": 6.6
+    },
+    {
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "barrett": 18.2,
+     "salary_M": 28.5
+    },
+    {
+     "name": "Cason Wallace",
+     "pos": "SG/SF",
+     "barrett": 16.3,
+     "salary_M": 5.8
+    },
+    {
+     "name": "Isaiah Joe",
+     "pos": "SG/SF",
+     "barrett": 13.3,
+     "salary_M": 12.4
+    },
+    {
+     "name": "Jaylin Williams",
+     "pos": "C/PF",
+     "barrett": 13.2,
+     "salary_M": 8.5
+    },
+    {
+     "name": "Aaron Wiggins",
+     "pos": "SF/SG",
+     "barrett": 9.9,
+     "salary_M": 10.1
+    },
+    {
+     "name": "Alex Caruso",
+     "pos": "SG/SF",
+     "barrett": 9.6,
+     "salary_M": 18.1
+    },
+    {
+     "name": "Luguentz Dort",
+     "pos": "SF/PF",
+     "barrett": 8.5,
+     "salary_M": 18.2
+    },
+    {
+     "name": "Kenrich Williams",
+     "pos": "PF/C",
+     "barrett": 6.2,
+     "salary_M": 7.2
+    },
+    {
+     "name": "Jared McCain",
+     "pos": "PG/SG",
+     "barrett": 4.2,
+     "salary_M": 4.2
+    },
+    {
+     "name": "Nikola Topi\u0107",
+     "pos": "PG/SG",
+     "barrett": 3.7,
+     "salary_M": 5.2
+    }
    ],
    "best_fits": [
     {
@@ -7750,6 +10300,22 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, a bargain at $2M against his $5.4M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Andre Drummond",
+     "pos": "C",
+     "from": "PHI",
+     "cost_M": 2,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "from": "LAC",
+     "cost_M": 2,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -8022,12 +10588,107 @@
    "name": "Orlando Magic",
    "cap_room_M": 0,
    "exception_M": 6,
+   "committed_M": 215,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
     "PF"
    ],
    "thin": [
     "SG"
+   ],
+   "roster": [
+    {
+     "name": "Paolo Banchero",
+     "pos": "SF/PF",
+     "barrett": 29.5,
+     "salary_M": 15.3
+    },
+    {
+     "name": "Desmond Bane",
+     "pos": "SG/SF",
+     "barrett": 27.2,
+     "salary_M": 36.7
+    },
+    {
+     "name": "Jalen Suggs",
+     "pos": "PG/SG",
+     "barrett": 20.7,
+     "salary_M": 35.0
+    },
+    {
+     "name": "Franz Wagner",
+     "pos": "SF/PF",
+     "barrett": 20.3,
+     "salary_M": 38.7
+    },
+    {
+     "name": "Wendell Carter Jr.",
+     "pos": "C",
+     "barrett": 19.1,
+     "salary_M": 10.8
+    },
+    {
+     "name": "Anthony Black",
+     "pos": "PG/SG",
+     "barrett": 18.1,
+     "salary_M": 8.0
+    },
+    {
+     "name": "Goga Bitadze",
+     "pos": "C",
+     "barrett": 12.4,
+     "salary_M": 8.3
+    },
+    {
+     "name": "Tristan da Silva",
+     "pos": "SF/PF",
+     "barrett": 11.8,
+     "salary_M": 3.8
+    },
+    {
+     "name": "Jevon Carter",
+     "pos": "PG/SG",
+     "barrett": 4.5,
+     "salary_M": 0.9
+    },
+    {
+     "name": "Moritz Wagner",
+     "pos": "C",
+     "barrett": 4.5,
+     "salary_M": 5.0
+    },
+    {
+     "name": "Jonathan Isaac",
+     "pos": "PF/C",
+     "barrett": 3.1,
+     "salary_M": 15.0
+    },
+    {
+     "name": "Noah Penda",
+     "pos": "SF/PF",
+     "barrett": 2.9,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Jett Howard",
+     "pos": "SF/PF",
+     "barrett": 1.9,
+     "salary_M": 5.5
+    },
+    {
+     "name": "Jase Richardson",
+     "pos": "PG/SG",
+     "barrett": 1.9,
+     "salary_M": 3.0
+    },
+    {
+     "name": "Colin Castleton",
+     "pos": "C",
+     "barrett": 0.8,
+     "salary_M": 2.2
+    }
    ],
    "best_fits": [
     {
@@ -8068,6 +10729,22 @@
      "ppos": "SG",
      "slot": 3,
      "why": "Rotation depth at SG, a bargain at $4M against his $6.8M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "from": "UTA",
+     "cost_M": 6,
+     "tool": "Minimum"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "from": "GSW",
+     "cost_M": 5,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -8368,12 +11045,113 @@
    "name": "Philadelphia 76ers",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 180,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "PF"
    ],
    "thin": [
     "PG"
+   ],
+   "roster": [
+    {
+     "name": "Tyrese Maxey",
+     "pos": "PG/SG",
+     "barrett": 36.8,
+     "salary_M": 38.0
+    },
+    {
+     "name": "Joel Embiid",
+     "pos": "C",
+     "barrett": 25.4,
+     "salary_M": 55.2
+    },
+    {
+     "name": "VJ Edgecombe",
+     "pos": "SG/SF",
+     "barrett": 21.8,
+     "salary_M": 11.1
+    },
+    {
+     "name": "Paul George",
+     "pos": "SF/PF",
+     "barrett": 18.4,
+     "salary_M": 51.7
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "barrett": 15.2,
+     "salary_M": 8.7
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "barrett": 12.4,
+     "salary_M": 8.4
+    },
+    {
+     "name": "Dominick Barlow",
+     "pos": "PF/C",
+     "barrett": 10.9,
+     "salary_M": 3.4
+    },
+    {
+     "name": "Adem Bona",
+     "pos": "C",
+     "barrett": 8.3,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Andre Drummond",
+     "pos": "C",
+     "barrett": 8.1,
+     "salary_M": 5.0
+    },
+    {
+     "name": "Trendon Watford",
+     "pos": "PF/SF",
+     "barrett": 5.8,
+     "salary_M": 2.5
+    },
+    {
+     "name": "Cameron Payne",
+     "pos": "PG/SG",
+     "barrett": 5.5,
+     "salary_M": 0.7
+    },
+    {
+     "name": "Eric Gordon",
+     "pos": "SF/SG",
+     "barrett": 4.9,
+     "salary_M": 3.5
+    },
+    {
+     "name": "Justin Edwards",
+     "pos": "SF/PF",
+     "barrett": 4.7,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Jabari Walker",
+     "pos": "SF/PF",
+     "barrett": 3.6,
+     "salary_M": 0.7
+    },
+    {
+     "name": "Kyle Lowry",
+     "pos": "PG",
+     "barrett": 1.0,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Johni Broome",
+     "pos": "SF/PF",
+     "barrett": -4.0,
+     "salary_M": 1.3
+    }
    ],
    "best_fits": [
     {
@@ -8414,6 +11192,29 @@
      "ppos": "C",
      "slot": 1,
      "why": "Adds a needed second body at C, a bargain at $9M against his $10.4M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "from": "LAC",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -8774,11 +11575,112 @@
    "name": "Phoenix Suns",
    "cap_room_M": 5,
    "exception_M": 15,
+   "committed_M": 160,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
     "PF"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "Devin Booker",
+     "pos": "PG/SG",
+     "barrett": 31.0,
+     "salary_M": 53.1
+    },
+    {
+     "name": "Collin Gillespie",
+     "pos": "PG",
+     "barrett": 21.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Dillon Brooks",
+     "pos": "SF/PF",
+     "barrett": 18.2,
+     "salary_M": 22.1
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "barrett": 17.5,
+     "salary_M": 6.3
+    },
+    {
+     "name": "Grayson Allen",
+     "pos": "SG/SF",
+     "barrett": 15.7,
+     "salary_M": 16.9
+    },
+    {
+     "name": "Royce O'Neale",
+     "pos": "SF/PF",
+     "barrett": 14.3,
+     "salary_M": 10.1
+    },
+    {
+     "name": "Oso Ighodaro",
+     "pos": "C",
+     "barrett": 13.9,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Jalen Green",
+     "pos": "SG/PG",
+     "barrett": 12.1,
+     "salary_M": 33.5
+    },
+    {
+     "name": "Jordan Goodwin",
+     "pos": "SG/SF",
+     "barrett": 11.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Ryan Dunn",
+     "pos": "SF/PF",
+     "barrett": 7.1,
+     "salary_M": 2.7
+    },
+    {
+     "name": "Haywood Highsmith",
+     "pos": "SF/PF",
+     "barrett": 5.1,
+     "salary_M": 0.8
+    },
+    {
+     "name": "Jamaree Bouyea",
+     "pos": "PG/SG",
+     "barrett": 4.9,
+     "salary_M": 0.6
+    },
+    {
+     "name": "Amir Coffey",
+     "pos": "SG/SF",
+     "barrett": 2.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Khaman Maluach",
+     "pos": "C",
+     "barrett": 2.2,
+     "salary_M": 6.0
+    },
+    {
+     "name": "Rasheer Fleming",
+     "pos": "PF/C",
+     "barrett": 1.7,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Nigel Hayes-Davis",
+     "pos": "SF/PF",
+     "barrett": 1.0,
+     "salary_M": 2.3
+    }
+   ],
    "best_fits": [
     {
      "name": "Isaiah Hartenstein",
@@ -8818,6 +11720,29 @@
      "ppos": "PF",
      "slot": 3,
      "why": "Rotation depth at PF, a bargain at $2M against his $2.9M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Deandre Ayton",
+     "pos": "C",
+     "from": "LAL",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "from": "LAL",
+     "cost_M": 5,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Jock Landale",
+     "pos": "C",
+     "from": "ATL",
+     "cost_M": 5,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -9158,11 +12083,106 @@
    "name": "Portland Trail Blazers",
    "cap_room_M": 8,
    "exception_M": 15,
+   "committed_M": 156,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "retooling",
    "needs": [],
    "thin": [
     "SG",
     "SF"
+   ],
+   "roster": [
+    {
+     "name": "Deni Avdija",
+     "pos": "SF/SG",
+     "barrett": 31.4,
+     "salary_M": 14.4
+    },
+    {
+     "name": "Donovan Clingan",
+     "pos": "C",
+     "barrett": 22.9,
+     "salary_M": 7.2
+    },
+    {
+     "name": "Jrue Holiday",
+     "pos": "PG/SG",
+     "barrett": 22.1,
+     "salary_M": 32.4
+    },
+    {
+     "name": "Toumani Camara",
+     "pos": "PF/SF",
+     "barrett": 19.1,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Jerami Grant",
+     "pos": "PF/SF",
+     "barrett": 17.8,
+     "salary_M": 32.0
+    },
+    {
+     "name": "Shaedon Sharpe",
+     "pos": "SG/PG",
+     "barrett": 16.7,
+     "salary_M": 8.4
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "barrett": 14.6,
+     "salary_M": 13.3
+    },
+    {
+     "name": "Scoot Henderson",
+     "pos": "PG/SG",
+     "barrett": 11.0,
+     "salary_M": 10.7
+    },
+    {
+     "name": "V\u00edt Krej\u010d\u00ed",
+     "pos": "PG/SF",
+     "barrett": 9.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Kris Murray",
+     "pos": "SF/PF",
+     "barrett": 6.5,
+     "salary_M": 3.1
+    },
+    {
+     "name": "Matisse Thybulle",
+     "pos": "SF/SG",
+     "barrett": 5.3,
+     "salary_M": 11.6
+    },
+    {
+     "name": "Sidy Cissoko",
+     "pos": "SG/SF",
+     "barrett": 5.3,
+     "salary_M": 0.7
+    },
+    {
+     "name": "Blake Wesley",
+     "pos": "PG/SG",
+     "barrett": 3.1,
+     "salary_M": 4.7
+    },
+    {
+     "name": "Duop Reath",
+     "pos": "SF/PF",
+     "barrett": 2.3,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Yang Hansen",
+     "pos": "C",
+     "barrett": -1.1,
+     "salary_M": 4.4
+    }
    ],
    "best_fits": [
     {
@@ -9203,6 +12223,36 @@
      "ppos": "SF",
      "slot": 3,
      "why": "Rotation depth at SF, a bargain at $13M against his $21.6M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Daniss Jenkins",
+     "pos": "PG/SG",
+     "from": "DET",
+     "cost_M": 8,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "from": "PHI",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "from": "TOR",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -9483,11 +12533,112 @@
    "name": "Sacramento Kings",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 203,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
     "PF"
    ],
    "thin": [],
+   "roster": [
+    {
+     "name": "DeMar DeRozan",
+     "pos": "SF/SG",
+     "barrett": 21.8,
+     "salary_M": 24.6
+    },
+    {
+     "name": "Russell Westbrook",
+     "pos": "PG/SG",
+     "barrett": 19.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Zach LaVine",
+     "pos": "SG/SF",
+     "barrett": 15.6,
+     "salary_M": 47.5
+    },
+    {
+     "name": "Domantas Sabonis",
+     "pos": "C",
+     "barrett": 15.6,
+     "salary_M": 43.6
+    },
+    {
+     "name": "Maxime Raynaud",
+     "pos": "C",
+     "barrett": 14.0,
+     "salary_M": 1.3
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "barrett": 13.1,
+     "salary_M": 2.1
+    },
+    {
+     "name": "Keegan Murray",
+     "pos": "SF/PF",
+     "barrett": 12.0,
+     "salary_M": 11.1
+    },
+    {
+     "name": "De'Andre Hunter",
+     "pos": "SF/PF",
+     "barrett": 11.0,
+     "salary_M": 23.3
+    },
+    {
+     "name": "Dylan Cardwell",
+     "pos": "C",
+     "barrett": 10.9,
+     "salary_M": 0.9
+    },
+    {
+     "name": "Nique Clifford",
+     "pos": "SG/SF",
+     "barrett": 10.0,
+     "salary_M": 3.1
+    },
+    {
+     "name": "Malik Monk",
+     "pos": "PG/SG",
+     "barrett": 9.9,
+     "salary_M": 18.8
+    },
+    {
+     "name": "Devin Carter",
+     "pos": "PG/SG",
+     "barrett": 7.0,
+     "salary_M": 4.9
+    },
+    {
+     "name": "DaQuan Jeffries",
+     "pos": "SG/SF",
+     "barrett": 6.2,
+     "salary_M": 2.7
+    },
+    {
+     "name": "Drew Eubanks",
+     "pos": "C",
+     "barrett": 5.7,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Doug McDermott",
+     "pos": "SF/PF",
+     "barrett": 4.0,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Dario Saric",
+     "pos": "PF/C",
+     "barrett": 0.6,
+     "salary_M": 5.4
+    }
+   ],
    "best_fits": [
     {
      "name": "Kristaps Porzi\u0146\u0123is",
@@ -9527,6 +12678,29 @@
      "ppos": "PG",
      "slot": 3,
      "why": "Rotation depth at PG, a bargain at $1M against his $2.2M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "from": "SAS",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "from": "GSW",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -9847,12 +13021,107 @@
    "name": "San Antonio Spurs",
    "cap_room_M": 12,
    "exception_M": 15,
+   "committed_M": 153,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "title",
    "needs": [
     "PF"
    ],
    "thin": [
     "SF"
+   ],
+   "roster": [
+    {
+     "name": "Victor Wembanyama",
+     "pos": "C/PF",
+     "barrett": 38.0,
+     "salary_M": 13.4
+    },
+    {
+     "name": "De'Aaron Fox",
+     "pos": "PG/SG",
+     "barrett": 26.5,
+     "salary_M": 37.1
+    },
+    {
+     "name": "Stephon Castle",
+     "pos": "PG/SG",
+     "barrett": 26.5,
+     "salary_M": 9.6
+    },
+    {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "barrett": 17.7,
+     "salary_M": 3.0
+    },
+    {
+     "name": "Dylan Harper",
+     "pos": "PG/SG",
+     "barrett": 15.6,
+     "salary_M": 12.4
+    },
+    {
+     "name": "Devin Vassell",
+     "pos": "SG/SF",
+     "barrett": 15.2,
+     "salary_M": 27.0
+    },
+    {
+     "name": "Keldon Johnson",
+     "pos": "SG/SF",
+     "barrett": 14.4,
+     "salary_M": 17.5
+    },
+    {
+     "name": "Luke Kornet",
+     "pos": "C",
+     "barrett": 13.9,
+     "salary_M": 11.0
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "barrett": 12.4,
+     "salary_M": 19.0
+    },
+    {
+     "name": "Kelly Olynyk",
+     "pos": "PF/C",
+     "barrett": 3.2,
+     "salary_M": 13.4
+    },
+    {
+     "name": "Carter Bryant",
+     "pos": "SF/SG",
+     "barrett": 2.9,
+     "salary_M": 4.9
+    },
+    {
+     "name": "Jordan McLaughlin",
+     "pos": "PG",
+     "barrett": 1.9,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Mason Plumlee",
+     "pos": "C",
+     "barrett": 1.8,
+     "salary_M": 0.6
+    },
+    {
+     "name": "Lindy Waters III",
+     "pos": "SG/SF",
+     "barrett": 1.0,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Bismack Biyombo",
+     "pos": "C",
+     "barrett": 0.5,
+     "salary_M": 2.3
+    }
    ],
    "best_fits": [
     {
@@ -9893,6 +13162,36 @@
      "ppos": "C",
      "slot": 1,
      "why": "Adds a needed second body at C, a bargain at $9M against his $10.4M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 12,
+     "tool": "Cap room"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "from": "DET",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "from": "LAC",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -10193,10 +13492,105 @@
    "name": "Toronto Raptors",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 190,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "playoff",
    "needs": [],
    "thin": [
     "SG"
+   ],
+   "roster": [
+    {
+     "name": "Scottie Barnes",
+     "pos": "PF/SF",
+     "barrett": 31.8,
+     "salary_M": 38.7
+    },
+    {
+     "name": "Brandon Ingram",
+     "pos": "SF/PF",
+     "barrett": 25.0,
+     "salary_M": 38.1
+    },
+    {
+     "name": "Immanuel Quickley",
+     "pos": "PG/SG",
+     "barrett": 24.7,
+     "salary_M": 32.5
+    },
+    {
+     "name": "RJ Barrett",
+     "pos": "SG/SF",
+     "barrett": 21.3,
+     "salary_M": 27.7
+    },
+    {
+     "name": "Jakob Poeltl",
+     "pos": "C",
+     "barrett": 15.9,
+     "salary_M": 19.5
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "barrett": 15.7,
+     "salary_M": 2.5
+    },
+    {
+     "name": "Collin Murray-Boyles",
+     "pos": "PF/C",
+     "barrett": 12.9,
+     "salary_M": 6.3
+    },
+    {
+     "name": "Jamal Shead",
+     "pos": "PG/SG",
+     "barrett": 10.7,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Ja'Kobe Walter",
+     "pos": "SF/PF",
+     "barrett": 9.2,
+     "salary_M": 3.6
+    },
+    {
+     "name": "Gradey Dick",
+     "pos": "SG/SF",
+     "barrett": 3.4,
+     "salary_M": 5.0
+    },
+    {
+     "name": "Trayce Jackson-Davis",
+     "pos": "C/PF",
+     "barrett": 3.3,
+     "salary_M": 2.2
+    },
+    {
+     "name": "Jamison Battle",
+     "pos": "SF/PF",
+     "barrett": 3.1,
+     "salary_M": 2.0
+    },
+    {
+     "name": "A.J. Lawson",
+     "pos": "SG/SF",
+     "barrett": 2.5,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Jonathan Mogbo",
+     "pos": "PF/C",
+     "barrett": 1.4,
+     "salary_M": 2.0
+    },
+    {
+     "name": "Garrett Temple",
+     "pos": "SF/PF",
+     "barrett": 0.6,
+     "salary_M": 2.3
+    }
    ],
    "best_fits": [
     {
@@ -10237,6 +13631,29 @@
      "ppos": "PG",
      "slot": 3,
      "why": "Rotation depth at PG, a bargain at $1M against his $2.3M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Ayo Dosunmu",
+     "pos": "PG/SG",
+     "from": "MIN",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "from": "GSW",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Kevin Huerter",
+     "pos": "SG/SF",
+     "from": "DET",
+     "cost_M": 6,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -10537,12 +13954,101 @@
    "name": "Utah Jazz",
    "cap_room_M": 27,
    "exception_M": 15,
+   "committed_M": 138,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
     "SG"
    ],
    "thin": [
     "SF"
+   ],
+   "roster": [
+    {
+     "name": "Lauri Markkanen",
+     "pos": "SF/PF",
+     "barrett": 26.2,
+     "salary_M": 46.4
+    },
+    {
+     "name": "Keyonte George",
+     "pos": "PG/SG",
+     "barrett": 25.5,
+     "salary_M": 4.3
+    },
+    {
+     "name": "Jaren Jackson Jr.",
+     "pos": "PF/C",
+     "barrett": 20.8,
+     "salary_M": 35.0
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "barrett": 17.4,
+     "salary_M": 19.4
+    },
+    {
+     "name": "Isaiah Collier",
+     "pos": "PG/SG",
+     "barrett": 15.8,
+     "salary_M": 2.6
+    },
+    {
+     "name": "Kyle Filipowski",
+     "pos": "PF/C",
+     "barrett": 14.9,
+     "salary_M": 3.0
+    },
+    {
+     "name": "Walker Kessler",
+     "pos": "C",
+     "barrett": 12.8,
+     "salary_M": 4.9
+    },
+    {
+     "name": "Brice Sensabaugh",
+     "pos": "SG/SF",
+     "barrett": 11.7,
+     "salary_M": 2.7
+    },
+    {
+     "name": "Ace Bailey",
+     "pos": "SG/SF",
+     "barrett": 11.2,
+     "salary_M": 9.1
+    },
+    {
+     "name": "John Konchar",
+     "pos": "SG/SF",
+     "barrett": 8.6,
+     "salary_M": 6.2
+    },
+    {
+     "name": "Svi Mykhailiuk",
+     "pos": "SG/SF",
+     "barrett": 8.6,
+     "salary_M": 3.7
+    },
+    {
+     "name": "Cody Williams",
+     "pos": "SG/SF",
+     "barrett": 7.8,
+     "salary_M": 5.7
+    },
+    {
+     "name": "Vince Williams Jr.",
+     "pos": "PG/SG",
+     "barrett": 6.6,
+     "salary_M": 2.3
+    },
+    {
+     "name": "Kevin Love",
+     "pos": "C/PF",
+     "barrett": 6.0,
+     "salary_M": 4.2
+    }
    ],
    "best_fits": [
     {
@@ -10583,6 +14089,36 @@
      "ppos": "C",
      "slot": 1,
      "why": "Adds a needed second body at C, a bargain at $14M against his $15.6M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "cost_M": 27,
+     "tool": "Cap room"
+    },
+    {
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "from": "BKN",
+     "cost_M": 8,
+     "tool": "Room exception"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "from": "POR",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -10883,6 +14419,9 @@
    "name": "Washington Wizards",
    "cap_room_M": 0,
    "exception_M": 15,
+   "committed_M": 175,
+   "tax_M": 200,
+   "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
     "SG"
@@ -10890,6 +14429,104 @@
    "thin": [
     "PF",
     "C"
+   ],
+   "roster": [
+    {
+     "name": "Anthony Davis",
+     "pos": "PF/C",
+     "barrett": 18.5,
+     "salary_M": 54.1
+    },
+    {
+     "name": "Alex Sarr",
+     "pos": "C/PF",
+     "barrett": 18.2,
+     "salary_M": 11.8
+    },
+    {
+     "name": "Trae Young",
+     "pos": "PG",
+     "barrett": 16.6,
+     "salary_M": 46.4
+    },
+    {
+     "name": "Kyshawn George",
+     "pos": "SF/SG",
+     "barrett": 16.5,
+     "salary_M": 3.0
+    },
+    {
+     "name": "Bilal Coulibaly",
+     "pos": "SG/SF",
+     "barrett": 12.3,
+     "salary_M": 7.3
+    },
+    {
+     "name": "Bub Carrington",
+     "pos": "PG/SG",
+     "barrett": 9.6,
+     "salary_M": 4.7
+    },
+    {
+     "name": "Justin Champagnie",
+     "pos": "SF/PF",
+     "barrett": 8.7,
+     "salary_M": 2.3
+    },
+    {
+     "name": "D'Angelo Russell",
+     "pos": "PG/SG",
+     "barrett": 8.1,
+     "salary_M": 5.7
+    },
+    {
+     "name": "Jamir Watkins",
+     "pos": "SG/SF",
+     "barrett": 7.3,
+     "salary_M": 1.1
+    },
+    {
+     "name": "Tre Johnson",
+     "pos": "SG/SF",
+     "barrett": 7.3,
+     "salary_M": 8.2
+    },
+    {
+     "name": "Anthony Gill",
+     "pos": "PF/C",
+     "barrett": 6.8,
+     "salary_M": 2.5
+    },
+    {
+     "name": "Tristan Vukcevic",
+     "pos": "PF/C",
+     "barrett": 6.7,
+     "salary_M": 2.9
+    },
+    {
+     "name": "Will Riley",
+     "pos": "SG/SF",
+     "barrett": 6.1,
+     "salary_M": 3.5
+    },
+    {
+     "name": "Cam Whitmore",
+     "pos": "SF/SG",
+     "barrett": 5.2,
+     "salary_M": 3.5
+    },
+    {
+     "name": "Jaden Hardy",
+     "pos": "PG/SG",
+     "barrett": 3.8,
+     "salary_M": 6.0
+    },
+    {
+     "name": "Malaki Branham",
+     "pos": "PG/SG",
+     "barrett": 3.5,
+     "salary_M": 5.0
+    }
    ],
    "best_fits": [
     {
@@ -10930,6 +14567,29 @@
      "ppos": "C",
      "slot": 1,
      "why": "Adds a needed second body at C, a bargain at $15M against his $16.8M market."
+    }
+   ],
+   "plan": [
+    {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "from": "SAS",
+     "cost_M": 15,
+     "tool": "Mid-level"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "from": "UTA",
+     "cost_M": 7,
+     "tool": "Minimum"
+    },
+    {
+     "name": "Jordan Goodwin",
+     "pos": "SG/SF",
+     "from": "PHX",
+     "cost_M": 7,
+     "tool": "Minimum"
     }
    ],
    "resign": [

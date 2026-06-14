@@ -70,6 +70,62 @@ def _fit_card(f):
             f"<div class='hv-fit-why'>{_h.escape(str(f['why']))}</div></div>")
 
 
+def _cap_bar_html(committed, cap, tax, apron2, after):
+    """A horizontal cap bar: current committed payroll (teal) plus the realistic
+    plan's spend (hatched), against the salary cap / luxury tax / second-apron
+    lines. The white marker is the projected payroll after the plan."""
+    vals = [committed, cap, tax, apron2, after]
+    lo, hi = min(vals) - 10, max(vals) + 10
+    span = max(hi - lo, 1.0)
+    p = lambda v: max(0.0, min(100.0, (v - lo) / span * 100))
+    cw, aw = p(committed), p(after)
+    seg_now = (f"<div style='position:absolute;left:0;width:{cw:.1f}%;top:0;bottom:0;border-radius:7px 0 0 7px;"
+               f"background:linear-gradient(90deg,rgba(22,212,193,.32),rgba(22,212,193,.6));'></div>")
+    seg_plan = (f"<div style='position:absolute;left:{cw:.1f}%;width:{max(aw - cw, 0.4):.1f}%;top:0;bottom:0;"
+                f"background:repeating-linear-gradient(45deg,rgba(241,196,15,.45),rgba(241,196,15,.45) 5px,"
+                f"transparent 5px,transparent 11px);'></div>") if after > committed + 0.5 else ""
+    def tick(v, label, color):
+        x = p(v)
+        return (f"<div style='position:absolute;left:{x:.1f}%;top:-4px;bottom:18px;width:2px;background:{color};'></div>"
+                f"<div style='position:absolute;left:{x:.1f}%;bottom:-1px;transform:translateX(-50%);font-size:0.6rem;"
+                f"line-height:1.1;color:var(--fg-5);white-space:nowrap;text-align:center;'>{label}"
+                f"<br><b style='color:var(--fg-3)'>${v:.0f}M</b></div>")
+    ticks = (tick(cap, "Cap", "var(--hairline)") + tick(tax, "Tax", "var(--orange)")
+             + tick(apron2, "2nd apron", "var(--value-bad)"))
+    amark = (f"<div style='position:absolute;left:{aw:.1f}%;top:-7px;width:3px;height:28px;border-radius:2px;"
+             f"background:var(--fg-1);transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.35);'></div>")
+    legend = ("<div style='display:flex;gap:1.1rem;font-size:0.68rem;color:var(--fg-4);margin-bottom:0.5rem;'>"
+              "<span><span style='color:var(--accent-teal)'>&#9632;</span> committed payroll</span>"
+              "<span><span style='color:var(--gold)'>&#9632;</span> the plan's spend</span>"
+              "<span><span style='color:var(--fg-1)'>&#9612;</span> after the plan</span></div>")
+    return (f"<div style='margin:0.2rem 0 2.8rem;'>{legend}"
+            f"<div style='position:relative;height:14px;border-radius:7px;background:var(--hairline-soft);'>"
+            f"{seg_now}{seg_plan}{ticks}{amark}</div></div>")
+
+
+_PLAN_TOOL_COLOR = {"Cap room": "var(--accent-teal)", "Room exception": "var(--blue)",
+                    "Mid-level": "var(--blue)", "Minimum": "var(--fg-4)"}
+_PLAN_CSS = """
+<style>
+.hv-plan { display:flex; gap:0.6rem; flex-wrap:wrap; margin:0.3rem 0 0.6rem; }
+.hv-plan-chip { background:var(--panel-solid); border:1px solid var(--panel-line);
+    border-left:3px solid var(--c); border-radius:9px; padding:0.5rem 0.85rem; min-width:150px; }
+.hv-plan-name { font-weight:800; font-size:0.96rem; line-height:1.15; }
+.hv-plan-sub { font-size:0.7rem; color:var(--fg-4); margin-top:0.1rem; }
+.hv-plan-tool { font-size:0.82rem; font-weight:700; color:var(--c); margin-top:0.35rem; }
+</style>
+"""
+
+
+def _plan_chip(m):
+    import html as _h
+    c = _PLAN_TOOL_COLOR.get(m["tool"], "var(--fg-4)")
+    return (f"<div class='hv-plan-chip' style='--c:{c}'>"
+            f"<div class='hv-plan-name'>{_h.escape(str(m['name']))}</div>"
+            f"<div class='hv-plan-sub'>{_h.escape(str(m['pos']))} &middot; from {_h.escape(str(m['from']))}</div>"
+            f"<div class='hv-plan-tool'>{_h.escape(str(m['tool']))} &middot; ${m['cost_M']:.0f}M</div></div>")
+
+
 def render_front_office():
     """Render the team-side board into the current page (no page chrome/nav)."""
     if not _BOARD.exists():
@@ -109,6 +165,7 @@ def render_front_office():
     if _ab and st.query_params.get("team") != _ab:
         st.query_params["team"] = _ab
     B = TEAMS[_name_to_abbr[pick]]
+    _short = B["name"].split()[-1]
 
     # ── Header: cap tools, timeline, needs ──────────────────────────────────────
     needs = ", ".join(B["needs"]) if B["needs"] else "Roster set"
@@ -127,10 +184,34 @@ def render_front_office():
         "and shop with the mid-level exception. Offers below are bounded by whichever tool actually applies."
     )
 
+    # ── Cap bar: committed payroll + the plan, against cap / tax / second apron ──
+    _rp = B.get("resign_plan") or {}
+    _committed = B.get("committed_M") or _rp.get("committed_M") or 0
+    _tax = B.get("tax_M") or _rp.get("tax_M") or 0
+    _apron2 = B.get("apron2_M") or _rp.get("apron2_M") or 0
+    _plan_cost = sum(m["cost_M"] for m in B.get("plan", []))
+    if _committed and _apron2:
+        st.markdown(_cap_bar_html(_committed, DATA["cap_M"], _tax, _apron2, _committed + _plan_cost),
+                    unsafe_allow_html=True)
+
+    # ── Current roster, collapsed, ordered by Barrett Score ─────────────────────
+    _roster = B.get("roster", [])
+    if _roster:
+        with st.expander(f"{_short} current roster ({len(_roster)} players, by Barrett Score)"):
+            _rdf = pd.DataFrame(_roster)[["name", "pos", "barrett", "salary_M"]]
+            _rdf.columns = ["Player", "Pos", "Barrett", "Salary"]
+            _rdf.insert(0, "#", range(1, len(_rdf) + 1))
+            html_table(
+                _rdf,
+                formatters={"Barrett": lambda v: f"{v:.1f}", "Salary": lambda v: f"${v:.1f}M"},
+                aligns={"#": "right", "Barrett": "right", "Salary": "right"},
+                numeric={"#", "Barrett", "Salary"},
+                height=min(740, len(_rdf) * 35 + 44),
+            )
+
     st.divider()
 
     # ── Best fits (the featured suggestion) ─────────────────────────────────────
-    _short = B["name"].split()[-1]
     fits = B.get("best_fits", [])
     if fits:
         st.markdown(f"#### Best fits for the {_short}")
@@ -142,12 +223,21 @@ def render_front_office():
                     unsafe_allow_html=True)
         st.divider()
 
-    # ── Pursue (external targets) ───────────────────────────────────────────────
+    # ── Pursue (external targets): the realistic plan, then the full board ───────
     st.subheader(f"Who {_short} should pursue")
+    _plan_moves = B.get("plan", [])
+    if _plan_moves:
+        _tot = sum(m["cost_M"] for m in _plan_moves)
+        st.markdown(
+            f"**The realistic plan** — what {_short} can actually do with their real tools (their cap "
+            f"room *or* one mid-level, plus a couple of minimums), after re-signing their own. "
+            f"~\\${_tot:.0f}M across {len(_plan_moves)} signings:")
+        st.markdown(_PLAN_CSS + f"<div class='hv-plan'>{''.join(_plan_chip(m) for m in _plan_moves)}</div>",
+                    unsafe_allow_html=True)
     st.caption(
-        "External free agents ranked by how keenly a team of this timeline would chase them, "
-        "gated for affordability, no banking on a star taking a massive paycut (an aging vet "
-        "on minimum money to chase a ring is the one exception)."
+        "The full board below ranks every external free agent by how keenly a team of this timeline "
+        "would chase them — each scored independently (so the mid-level shows up on more than one). "
+        "Gated for affordability; an aging vet on minimum money to chase a ring is the lone exception."
     )
     if B["pursue"]:
         pur = pd.DataFrame(B["pursue"])

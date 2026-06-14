@@ -203,6 +203,38 @@ def resign_plan(team, resign_rows):
             "apron2_M": apron2_r, "all_in_M": round(running), "keeps": keeps}
 
 
+def offseason_plan(pursue_rows, cap_room, mle):
+    """A REALISTIC external-signing haul (vs the full 20-deep pursue board where
+    every target gets an independent offer). Walk the keenness-ranked targets and
+    spend the team's ACTUAL tools, CBA-correctly:
+      - a cap-space team spends its cap-room pool, then the ~$8M room exception;
+      - an over-the-cap team spends ONE mid-level exception (~$15M, split-able);
+      - either way, a couple of veteran minimums for depth.
+    A team uses cap room OR the full mid-level, never both. Each tool is used
+    once; stops at 5 moves (a real summer). A target the team can't afford with
+    its remaining tools is skipped."""
+    if cap_room >= 8:                                  # cap-space team
+        cap_left, exc_left, exc_label = cap_room, 8.0, "Room exception"
+    else:                                              # over the cap
+        cap_left, exc_left, exc_label = 0.0, mle, "Mid-level"
+    out, mins = [], 0
+    for x in pursue_rows:
+        offer = x["offer_M"]
+        if cap_left + 1e-6 >= offer:
+            tool, cap_left = "Cap room", cap_left - offer
+        elif offer > MIN_MONEY and exc_left + 1e-6 >= offer:
+            tool, exc_left = exc_label, exc_left - offer
+        elif offer <= MIN_MONEY and mins < 2:          # a couple of minimum depth adds
+            tool, mins = "Minimum", mins + 1
+        else:
+            continue
+        out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
+                    "cost_M": offer, "tool": tool})
+        if len(out) >= 5:
+            break
+    return out
+
+
 def board_for(team):
     row = LAND[LAND["team"].astype(str) == team]
     if row.empty:
@@ -253,16 +285,28 @@ def board_for(team):
                 "barrett": x["barrett"], "age": x["age"], "tool": x["tool"],
                 "why": why(x, exc)}
 
+    _pursue = [x for x in rows if not x["is_inc"]]
+    _committed = round(float((CAP_TABLE.get(team) or {}).get("committed_M") or 0.0))
+    # Current roster, ordered by Barrett Score (for the collapsed roster view).
+    _tf = full[full["Team"].astype(str) == team].sort_values("barrett_score", ascending=False)
+    _roster = [{"name": str(r["Player"]), "pos": str(r["pos"]),
+                "barrett": round(float(r["barrett_score"] or 0), 1),
+                "salary_M": round(float(r.get("salary", 0) or 0) / 1e6, 1)}
+               for _, r in _tf.iterrows()]
+
     return {
         "team": team,
         "name": str(t.get("team_name", team)),
         "cap_room_M": round(cap), "exception_M": round(exc),
+        "committed_M": _committed, "tax_M": round(TAX_M), "apron2_M": round(APRON2_M),
         "timeline": ts._TL_DISPLAY.get(tl, tl) or "—",
         "needs": need, "thin": thin,
+        "roster": _roster,
         "best_fits": best_fits_for(rows, need, thin),
+        "plan": offseason_plan(_pursue, cap, exc),
         "resign": [pack(x) for x in rows if x["is_inc"]],
         "resign_plan": resign_plan(team, [x for x in rows if x["is_inc"]]),
-        "pursue": [pack(x) for x in rows if not x["is_inc"]][:20],
+        "pursue": [pack(x) for x in _pursue][:20],
     }
 
 
