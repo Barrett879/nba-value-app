@@ -1676,14 +1676,35 @@ def _toggle_fa():
     st.session_state["fa_filter"] = not st.session_state.get("fa_filter", False)
 
 
-# Player pool: free agents only when the toggle is on, else everyone (Barrett
-# desc). Move the selected / deep-linked player to the FRONT so he's the top
-# option the instant the dropdown opens — a native dropdown opens at the top of
-# the list, so this is what makes it "jump to" him (no scroll to depend on). It
-# also keeps him in the list when the FA filter would otherwise exclude him.
+# Player pool in STABLE Barrett-desc order (free agents only when the toggle is
+# on). The ORDER must not change between reruns: Streamlit derives the
+# selectbox's element ID from str(options), so reordering identical members
+# orphans the user's selection under the old ID — that was the "pick a player,
+# it doesn't register, pick again" glitch. So we only PREPEND a deep-linked
+# player when he'd otherwise be ABSENT (e.g. a non-FA opened while the FA filter
+# is on); an already-present player is never moved.
 _pool = list(_fa_names if _fa_on else active_names)
-if _init_player:
-    _pool = [_init_player] + [p for p in _pool if p != _init_player]
+if _init_player and _init_player not in _pool:
+    _pool = [_init_player] + _pool
+
+# Seed a deep-linked player into the widget's state ONCE, before the box is
+# built, so ?player= pre-selects him on first load. After that the widget key
+# owns the state (no index= below), so a user's pick can never be overridden by
+# a stale default. Guarded on "not yet set" so it fires only on a fresh render.
+if _init_player and _PICKER_KEY not in st.session_state:
+    st.session_state[_PICKER_KEY] = _init_player
+
+
+def _mirror_player_to_url():
+    # Mirror the live selection into the URL for deep-linking. As the
+    # selectbox's on_change it fires in the SAME rerun as the pick (reading the
+    # value from session_state), so it never lags a rerun behind the selection.
+    _sel = st.session_state.get(_PICKER_KEY)
+    if _sel:
+        if st.query_params.get("player") != _sel:
+            st.query_params["player"] = _sel
+    elif "player" in st.query_params:
+        del st.query_params["player"]
 
 # Free-agents toggle button: vivid teal when ON, search-box-coloured when OFF.
 if _sb_dark:
@@ -1734,25 +1755,19 @@ with _fa_col:
               type=("primary" if _fa_on else "secondary"),
               help="Show only free agents, UFA, RFA, and player/team options")
 with _sb_col:
-    # Native dropdown: type to search, scrolls to the selected player on open,
-    # themes with the page — no iframe / regex / scroll hacks. (Replaces the
-    # st_searchbox component, which fought us on caching, scrolling and theming.)
+    # Native dropdown: type to search, themes with the page — no iframe / regex
+    # / scroll hacks. (Replaces the st_searchbox component, which fought us on
+    # caching, scrolling and theming.) No index=: the widget key owns the
+    # selection (seeded once above for deep-links), and the on_change mirrors it
+    # to the URL — together they keep every pick from being dropped on a rerun.
     selected = st.selectbox(
         "Player",
         options=_pool,
-        index=(_pool.index(_init_player) if _init_player in _pool else None),
         placeholder="Type a player name…",
         label_visibility="collapsed",
         key=_PICKER_KEY,
+        on_change=_mirror_player_to_url,
     )
-
-# Mirror selection into the URL for deep-linking. Skip if unchanged to
-# avoid re-triggering the URL → state seed in a loop.
-if selected:
-    if st.query_params.get("player") != selected:
-        st.query_params["player"] = selected
-elif "player" in st.query_params:
-    del st.query_params["player"]
 
 if not selected:
     st.info(
