@@ -202,16 +202,16 @@ def render_front_office():
     # ── Current roster, collapsed, ordered by Barrett Score ─────────────────────
     _roster = B.get("roster", [])
     if _roster:
-        with st.expander(f"{_short} guaranteed roster ({len(_roster)} under contract, by Barrett Score)"):
+        with st.expander(f"{_short} guaranteed roster ({len(_roster)} under contract)"):
             _rdf = pd.DataFrame(_roster)[["name", "pos", "barrett", "salary_M"]]
-            _rdf.columns = ["Player", "Pos", "Barrett", "Salary"]
+            _rdf.columns = ["Player", "Pos", "Barrett Score", "Salary"]
             _rdf.insert(0, "#", range(1, len(_rdf) + 1))
             html_table(
                 _rdf,
-                formatters={"Barrett": lambda v: f"{v:.1f}", "Salary": lambda v: f"${v:.1f}M"},
-                aligns={"#": "right", "Barrett": "right", "Salary": "right"},
-                numeric={"#", "Barrett", "Salary"},
-                height=min(740, len(_rdf) * 35 + 44),
+                formatters={"Barrett Score": lambda v: f"{v:.1f}", "Salary": lambda v: f"${v:.1f}M"},
+                aligns={"#": "right", "Barrett Score": "right", "Salary": "right"},
+                numeric={"#", "Barrett Score", "Salary"},
+                height=len(_rdf) * 60 + 60,        # fit every row, no inner scroll
             )
 
     st.divider()
