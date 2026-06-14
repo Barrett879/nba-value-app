@@ -2,7 +2,7 @@
  "season": "2025-26",
  "contract_season": "2026-27",
  "cap_M": 165.0,
- "n_free_agents": 115,
+ "n_free_agents": 111,
  "teams": {
   "ATL": {
    "team": "ATL",
@@ -297,18 +297,6 @@
      "why": "Rotation depth behind Zaccharie Risacher"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 11,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Buddy Hield"
-    },
-    {
      "name": "Mark Williams",
      "pos": "C",
      "status": "RFA",
@@ -347,7 +335,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 10,
@@ -403,6 +391,18 @@
      "age": 27,
      "tool": "Cap room",
      "why": "Rotation depth behind Buddy Hield"
+    },
+    {
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "status": "Team Option",
+     "from": "BKN",
+     "value_M": 13.1,
+     "offer_M": 12,
+     "barrett": 13.7,
+     "age": 24,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jock Landale"
     }
    ]
   },
@@ -436,7 +436,7 @@
      "name": "Austin Reaves",
      "pos": "SG/PG",
      "from": "LAL",
-     "status": "UFA",
+     "status": "Player Option",
      "value_M": 41.2,
      "offer_M": 41,
      "fit": 87,
@@ -545,7 +545,7 @@
     {
      "name": "Austin Reaves",
      "pos": "SG/PG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "LAL",
      "value_M": 41.2,
      "offer_M": 41,
@@ -557,7 +557,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 27,
@@ -637,18 +637,6 @@
      "age": 23,
      "tool": "Cap room",
      "why": "Rotation depth behind Noah Clowney"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 17,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
     },
     {
      "name": "Mark Williams",
@@ -745,6 +733,18 @@
      "age": 30,
      "tool": "Cap room",
      "why": "Rotation depth behind Day'Ron Sharpe"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 12,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Egor D\u00ebmin"
     }
    ]
   },
@@ -905,18 +905,6 @@
      "offer_M": 15,
      "barrett": 17.6,
      "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Baylor Scheierman"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Baylor Scheierman"
     },
@@ -1087,6 +1075,18 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Luka Garza"
+    },
+    {
+     "name": "Rui Hachimura",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "LAL",
+     "value_M": 14.2,
+     "offer_M": 9,
+     "barrett": 10.5,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jordan Walsh"
     }
    ]
   },
@@ -1211,7 +1211,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 17,
@@ -1305,18 +1305,6 @@
      "why": "Rotation depth behind Xavier Tillman"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 11,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Coby White"
-    },
-    {
      "name": "Kristaps Porzi\u0146\u0123is",
      "pos": "PF/C",
      "status": "UFA",
@@ -1387,6 +1375,18 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Ryan Kalkbrenner"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.5,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Xavier Tillman"
     }
    ]
   },
@@ -1422,7 +1422,7 @@
      "name": "Austin Reaves",
      "pos": "SG/PG",
      "from": "LAL",
-     "status": "UFA",
+     "status": "Player Option",
      "value_M": 41.2,
      "offer_M": 41,
      "fit": 87,
@@ -1591,7 +1591,7 @@
     {
      "name": "Austin Reaves",
      "pos": "SG/PG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "LAL",
      "value_M": 41.2,
      "offer_M": 41,
@@ -1651,7 +1651,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 21,
@@ -2098,7 +2098,7 @@
     {
      "name": "Jericho Sims",
      "pos": "C",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 3.1,
      "offer_M": 2,
@@ -2175,7 +2175,7 @@
      "name": "Austin Reaves",
      "pos": "SG/PG",
      "from": "LAL",
-     "status": "UFA",
+     "status": "Player Option",
      "value_M": 41.2,
      "offer_M": 41,
      "fit": 88,
@@ -2201,7 +2201,7 @@
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
      "from": "MIL",
-     "status": "UFA",
+     "status": "Player Option",
      "value_M": 26.9,
      "offer_M": 27,
      "fit": 82,
@@ -2337,7 +2337,7 @@
     {
      "name": "Austin Reaves",
      "pos": "SG/PG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "LAL",
      "value_M": 41.2,
      "offer_M": 41,
@@ -2349,7 +2349,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 27,
@@ -2405,18 +2405,6 @@
      "age": 41,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Khris Middleton"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 17,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Brandon Williams"
     },
     {
      "name": "Isaiah Hartenstein",
@@ -2537,6 +2525,18 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Marvin Bagley III"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 10,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Daniel Gafford"
     }
    ]
   },
@@ -2823,24 +2823,12 @@
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "GSW",
      "value_M": 8.4,
      "offer_M": 5,
      "barrett": 12.3,
      "age": 28,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Paul Reed",
-     "pos": "C",
-     "status": "UFA",
-     "from": "DET",
-     "value_M": 6.4,
-     "offer_M": 5,
-     "barrett": 12.4,
-     "age": 26,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -2939,6 +2927,18 @@
      "age": 25,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Andre Drummond",
+     "pos": "C",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 3.9,
+     "offer_M": 2,
+     "barrett": 8.1,
+     "age": 32,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -2970,7 +2970,7 @@
      "name": "Austin Reaves",
      "pos": "SG/PG",
      "from": "LAL",
-     "status": "UFA",
+     "status": "Player Option",
      "value_M": 41.2,
      "offer_M": 35,
      "fit": 65,
@@ -3031,18 +3031,6 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Paul Reed",
-     "pos": "C",
-     "status": "UFA",
-     "from": "DET",
-     "value_M": 6.4,
-     "offer_M": 6,
-     "barrett": 12.4,
-     "age": 26,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
      "name": "Javonte Green",
      "pos": "SG/SF",
      "status": "UFA",
@@ -3071,7 +3059,7 @@
     "committed_M": 130,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 215,
+    "all_in_M": 209,
     "keeps": [
      {
       "name": "Jalen Duren",
@@ -3090,34 +3078,26 @@
       "keep": true
      },
      {
-      "name": "Paul Reed",
-      "pos": "C",
+      "name": "Javonte Green",
+      "pos": "SG/SF",
       "cost_M": 6,
       "running_M": 195,
       "zone": "ok",
       "keep": true
      },
      {
-      "name": "Javonte Green",
-      "pos": "SG/SF",
-      "cost_M": 6,
-      "running_M": 201,
-      "zone": "tax",
-      "keep": true
-     },
-     {
       "name": "Daniss Jenkins",
       "pos": "PG/SG",
       "cost_M": 4,
-      "running_M": 205,
-      "zone": "tax",
+      "running_M": 199,
+      "zone": "ok",
       "keep": true
      },
      {
       "name": "Kevin Huerter",
       "pos": "SG/SF",
       "cost_M": 10,
-      "running_M": 215,
+      "running_M": 209,
       "zone": "tax",
       "keep": true
      }
@@ -3127,7 +3107,7 @@
     {
      "name": "Austin Reaves",
      "pos": "SG/PG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "LAL",
      "value_M": 41.2,
      "offer_M": 35,
@@ -3151,7 +3131,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 24,
@@ -3229,18 +3209,6 @@
      "offer_M": 14,
      "barrett": 20.5,
      "age": 34,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Duncan Robinson"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 15,
-     "barrett": 18.5,
-     "age": 29,
      "tool": "Cap room",
      "why": "Rotation depth behind Duncan Robinson"
     },
@@ -3339,6 +3307,18 @@
      "age": 25,
      "tool": "Cap room",
      "why": "Rotation depth behind Duncan Robinson"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.3,
+     "offer_M": 10,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Paul Reed"
     }
    ]
   },
@@ -3373,7 +3353,7 @@
      "name": "Jericho Sims",
      "pos": "C",
      "from": "MIL",
-     "status": "UFA",
+     "status": "Player Option",
      "value_M": 3.1,
      "offer_M": 2,
      "fit": 70,
@@ -3412,7 +3392,7 @@
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "GSW",
      "value_M": 8.4,
      "offer_M": 8,
@@ -3446,18 +3426,6 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Will Richard",
-     "pos": "SG/PG",
-     "status": "UFA",
-     "from": "GSW",
-     "value_M": 3.2,
-     "offer_M": 3,
-     "barrett": 9.0,
-     "age": 23,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
      "name": "Pat Spencer",
      "pos": "PG/SG",
      "status": "RFA",
@@ -3474,7 +3442,7 @@
     "committed_M": 176,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 214,
+    "all_in_M": 211,
     "keeps": [
      {
       "name": "Kristaps Porzi\u0146\u0123is",
@@ -3501,18 +3469,10 @@
       "keep": true
      },
      {
-      "name": "Will Richard",
-      "pos": "SG/PG",
-      "cost_M": 3,
-      "running_M": 208,
-      "zone": "tax",
-      "keep": true
-     },
-     {
       "name": "Quinten Post",
       "pos": "PF/C",
       "cost_M": 4,
-      "running_M": 212,
+      "running_M": 209,
       "zone": "tax",
       "keep": true
      },
@@ -3520,7 +3480,7 @@
       "name": "Pat Spencer",
       "pos": "PG/SG",
       "cost_M": 2,
-      "running_M": 214,
+      "running_M": 211,
       "zone": "tax",
       "keep": true
      }
@@ -3548,18 +3508,6 @@
      "offer_M": 15,
      "barrett": 17.5,
      "age": 23,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Moses Moody"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Moses Moody"
     },
@@ -3698,7 +3646,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 8,
@@ -3742,6 +3690,18 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Al Horford"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Gui Santos"
     }
    ]
   },
@@ -3895,18 +3855,6 @@
      "offer_M": 15,
      "barrett": 17.6,
      "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Reed Sheppard"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 15,
-     "barrett": 18.5,
-     "age": 29,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Reed Sheppard"
     },
@@ -4065,6 +4013,18 @@
      "age": 35,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Steven Adams"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 9,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Josh Okogie"
     }
    ]
   },
@@ -4216,18 +4176,6 @@
      "offer_M": 15,
      "barrett": 17.6,
      "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind T.J. McConnell"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 15,
-     "barrett": 18.5,
-     "age": 29,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind T.J. McConnell"
     },
@@ -4386,6 +4334,18 @@
      "age": 32,
      "tool": "Cap room",
      "why": "Rotation depth behind T.J. McConnell"
+    },
+    {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "status": "Team Option",
+     "from": "SAS",
+     "value_M": 21.0,
+     "offer_M": 15,
+     "barrett": 17.7,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Micah Potter"
     }
    ]
   },
@@ -4415,17 +4375,17 @@
      "why": "Upgrades on Bennedict Mathurin at SG, a bargain at $15M against his $18.7M market."
     },
     {
-     "name": "Oso Ighodaro",
+     "name": "Mark Williams",
      "pos": "C",
      "from": "PHX",
-     "status": "UFA",
-     "value_M": 5.8,
-     "offer_M": 5,
-     "fit": 78,
+     "status": "RFA",
+     "value_M": 15.6,
+     "offer_M": 14,
+     "fit": 77,
      "grade": "A",
      "ppos": "C",
      "slot": 1,
-     "why": "Adds a needed second body at C, a bargain at $5M against his $5.8M market."
+     "why": "Adds a needed second body at C, a bargain at $14M against his $15.6M market."
     },
     {
      "name": "Ayo Dosunmu",
@@ -4601,18 +4561,6 @@
      "why": "Rotation depth behind Kris Dunn"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 15,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Kris Dunn"
-    },
-    {
      "name": "Isaiah Hartenstein",
      "pos": "C",
      "status": "Team Option",
@@ -4767,6 +4715,18 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Brook Lopez"
+    },
+    {
+     "name": "Daniss Jenkins",
+     "pos": "PG/SG",
+     "status": "Team Option",
+     "from": "DET",
+     "value_M": 10.1,
+     "offer_M": 8,
+     "barrett": 11.1,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jordan Miller"
     }
    ]
   },
@@ -4828,7 +4788,7 @@
     {
      "name": "Austin Reaves",
      "pos": "SG/PG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "LAL",
      "value_M": 41.2,
      "offer_M": 41,
@@ -5014,7 +4974,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 21,
@@ -5080,18 +5040,6 @@
      "offer_M": 12,
      "barrett": 20.5,
      "age": 34,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Marcus Smart"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
      "tool": "Cap room",
      "why": "Rotation depth behind Marcus Smart"
     },
@@ -5188,6 +5136,18 @@
      "offer_M": 10,
      "barrett": 15.2,
      "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Marcus Smart"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 16.3,
+     "age": 25,
      "tool": "Cap room",
      "why": "Rotation depth behind Marcus Smart"
     }
@@ -5329,7 +5289,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 23,
@@ -5411,18 +5371,6 @@
      "why": "Upgrade \u00b7 would start over Santi Aldama"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 15,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Cam Spencer"
-    },
-    {
      "name": "Day'Ron Sharpe",
      "pos": "C",
      "status": "Team Option",
@@ -5485,7 +5433,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 11,
@@ -5493,6 +5441,18 @@
      "age": 27,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Santi Aldama"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.5,
+     "offer_M": 10,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Zach Edey"
     }
    ]
   },
@@ -5691,18 +5651,6 @@
      "why": "Rotation depth behind Pelle Larsson"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Davion Mitchell"
-    },
-    {
      "name": "Day'Ron Sharpe",
      "pos": "C",
      "status": "Team Option",
@@ -5717,7 +5665,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 10,
@@ -5799,18 +5747,6 @@
      "why": "Rotation depth behind Kel'el Ware"
     },
     {
-     "name": "Paul Reed",
-     "pos": "C",
-     "status": "UFA",
-     "from": "DET",
-     "value_M": 6.4,
-     "offer_M": 5,
-     "barrett": 12.4,
-     "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Jaxson Hayes",
      "pos": "C",
      "status": "UFA",
@@ -5833,6 +5769,30 @@
      "age": 30,
      "tool": "Mid-level exception",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Craig Porter Jr.",
+     "pos": "PG",
+     "status": "Team Option",
+     "from": "CLE",
+     "value_M": 6.2,
+     "offer_M": 4,
+     "barrett": 8.6,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Nick Richards",
+     "pos": "C",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 5.8,
+     "offer_M": 4,
+     "barrett": 4.6,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -5852,7 +5812,7 @@
      "name": "Austin Reaves",
      "pos": "SG/PG",
      "from": "LAL",
-     "status": "UFA",
+     "status": "Player Option",
      "value_M": 41.2,
      "offer_M": 27,
      "fit": 99,
@@ -5892,7 +5852,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 27,
@@ -5916,7 +5876,7 @@
     {
      "name": "Taurean Prince",
      "pos": "SF/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 4.0,
      "offer_M": 4,
@@ -5940,7 +5900,7 @@
     {
      "name": "Jericho Sims",
      "pos": "C",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 3.1,
      "offer_M": 3,
@@ -6022,7 +5982,7 @@
     {
      "name": "Austin Reaves",
      "pos": "SG/PG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "LAL",
      "value_M": 41.2,
      "offer_M": 27,
@@ -6114,18 +6074,6 @@
      "age": 24,
      "tool": "Cap room",
      "why": "Rotation depth behind Kyle Kuzma"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Cam Thomas"
     },
     {
      "name": "Isaiah Hartenstein",
@@ -6234,6 +6182,18 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Kyle Kuzma"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 9,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Cam Thomas"
     }
    ]
   },
@@ -6303,18 +6263,6 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 17,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
      "name": "Bones Hyland",
      "pos": "PG/SG",
      "status": "UFA",
@@ -6355,29 +6303,21 @@
     "committed_M": 175,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 228,
+    "all_in_M": 211,
     "keeps": [
-     {
-      "name": "Donte DiVincenzo",
-      "pos": "PG/SG",
-      "cost_M": 17,
-      "running_M": 192,
-      "zone": "ok",
-      "keep": true
-     },
      {
       "name": "Ayo Dosunmu",
       "pos": "PG/SG",
       "cost_M": 22,
-      "running_M": 214,
-      "zone": "tax",
+      "running_M": 197,
+      "zone": "ok",
       "keep": true
      },
      {
       "name": "Bones Hyland",
       "pos": "PG/SG",
       "cost_M": 6,
-      "running_M": 220,
+      "running_M": 203,
       "zone": "tax",
       "keep": true
      },
@@ -6385,17 +6325,17 @@
       "name": "Kyle Anderson",
       "pos": "SF/PF",
       "cost_M": 4,
-      "running_M": 224,
-      "zone": "over",
-      "keep": false
+      "running_M": 207,
+      "zone": "tax",
+      "keep": true
      },
      {
       "name": "Mike Conley",
       "pos": "PG",
       "cost_M": 4,
-      "running_M": 228,
-      "zone": "over",
-      "keep": false
+      "running_M": 211,
+      "zone": "tax",
+      "keep": true
      }
     ]
    },
@@ -6798,18 +6738,6 @@
      "why": "Rotation depth behind Karlo Matkovi\u0107"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Jeremiah Fears"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -6916,6 +6844,18 @@
      "age": 23,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Herbert Jones"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 16.7,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Derik Queen"
     }
    ]
   },
@@ -7122,18 +7062,6 @@
      "why": "Rotation depth behind Mitchell Robinson"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Miles McBride"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -7220,7 +7148,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 10,
@@ -7276,6 +7204,18 @@
      "age": 23,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Landry Shamet"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 9,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Mitchell Robinson"
     }
    ]
   },
@@ -7550,7 +7490,7 @@
     {
      "name": "Jericho Sims",
      "pos": "C",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 3.1,
      "offer_M": 2,
@@ -7716,24 +7656,12 @@
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "GSW",
      "value_M": 8.4,
      "offer_M": 5,
      "barrett": 12.3,
      "age": 28,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Paul Reed",
-     "pos": "C",
-     "status": "UFA",
-     "from": "DET",
-     "value_M": 6.4,
-     "offer_M": 5,
-     "barrett": 12.4,
-     "age": 26,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -7858,18 +7786,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Oso Ighodaro",
-     "pos": "C",
-     "status": "UFA",
-     "from": "PHX",
-     "value_M": 5.8,
-     "offer_M": 5,
-     "barrett": 13.9,
-     "age": 23,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Bones Hyland",
      "pos": "PG/SG",
      "status": "UFA",
@@ -7914,6 +7830,30 @@
      "offer_M": 6,
      "barrett": 12.4,
      "age": 34,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "status": "Player Option",
+     "from": "LAL",
+     "value_M": 10.2,
+     "offer_M": 6,
+     "barrett": 13.5,
+     "age": 32,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Nikola Vu\u010devi\u0107",
+     "pos": "C/PF",
+     "status": "UFA",
+     "from": "BOS",
+     "value_M": 10.4,
+     "offer_M": 6,
+     "barrett": 19.7,
+     "age": 35,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     }
@@ -8156,18 +8096,6 @@
      "why": "Rotation depth behind Quentin Grimes"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Quentin Grimes"
-    },
-    {
      "name": "Kristaps Porzi\u0146\u0123is",
      "pos": "PF/C",
      "status": "UFA",
@@ -8242,7 +8170,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 10,
@@ -8298,6 +8226,18 @@
      "age": 33,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Kelly Oubre Jr."
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "status": "RFA",
+     "from": "PHX",
+     "value_M": 15.6,
+     "offer_M": 14,
+     "barrett": 17.5,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Dominick Barlow"
     }
    ]
   },
@@ -8390,18 +8330,6 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Oso Ighodaro",
-     "pos": "C",
-     "status": "UFA",
-     "from": "PHX",
-     "value_M": 5.8,
-     "offer_M": 6,
-     "barrett": 13.9,
-     "age": 23,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
      "name": "Jamaree Bouyea",
      "pos": "PG/SG",
      "status": "Team Option",
@@ -8418,7 +8346,7 @@
     "committed_M": 160,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 220,
+    "all_in_M": 214,
     "keeps": [
      {
       "name": "Collin Gillespie",
@@ -8437,18 +8365,10 @@
       "keep": true
      },
      {
-      "name": "Oso Ighodaro",
-      "pos": "C",
-      "cost_M": 6,
-      "running_M": 209,
-      "zone": "tax",
-      "keep": true
-     },
-     {
       "name": "Jordan Goodwin",
       "pos": "SG/SF",
       "cost_M": 9,
-      "running_M": 218,
+      "running_M": 212,
       "zone": "tax",
       "keep": true
      },
@@ -8456,7 +8376,7 @@
       "name": "Jamaree Bouyea",
       "pos": "PG/SG",
       "cost_M": 2,
-      "running_M": 220,
+      "running_M": 214,
       "zone": "tax",
       "keep": true
      }
@@ -8548,18 +8468,6 @@
      "why": "Rotation depth behind Royce O'Neale"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 11,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Grayson Allen"
-    },
-    {
      "name": "Robert Williams III",
      "pos": "C",
      "status": "UFA",
@@ -8574,7 +8482,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 10,
@@ -8678,6 +8586,18 @@
      "age": 35,
      "tool": "Mid-level exception",
      "why": "Upgrade \u00b7 would start over Mark Williams"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "status": "UFA",
+     "from": "LAL",
+     "value_M": 6.2,
+     "offer_M": 5,
+     "barrett": 12.4,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -8773,18 +8693,6 @@
      "offer_M": 15,
      "barrett": 17.6,
      "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Shaedon Sharpe"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 15,
-     "barrett": 18.5,
-     "age": 29,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Shaedon Sharpe"
     },
@@ -8977,6 +8885,18 @@
      "offer_M": 8,
      "barrett": 11.1,
      "age": 24,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Scoot Henderson"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 8,
+     "barrett": 15.2,
+     "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Scoot Henderson"
     }
@@ -9201,18 +9121,6 @@
      "why": "Rotation depth behind Maxime Raynaud"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Nique Clifford"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -9299,7 +9207,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 10,
@@ -9317,6 +9225,18 @@
      "offer_M": 8,
      "barrett": 11.1,
      "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Nique Clifford"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 9,
+     "barrett": 15.0,
+     "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Nique Clifford"
     }
@@ -9523,18 +9443,6 @@
      "why": "Rotation depth behind Luke Kornet"
     },
     {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 11,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Dylan Harper"
-    },
-    {
      "name": "Robert Williams III",
      "pos": "C",
      "status": "UFA",
@@ -9561,7 +9469,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 10,
@@ -9641,6 +9549,18 @@
      "age": 30,
      "tool": "Cap room",
      "why": "Rotation depth behind Harrison Barnes"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Harrison Barnes"
     }
    ]
   },
@@ -9699,7 +9619,7 @@
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "TOR",
      "value_M": 10.6,
      "offer_M": 11,
@@ -9793,18 +9713,6 @@
      "age": 23,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Collin Murray-Boyles"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 13,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Jamal Shead"
     },
     {
      "name": "Coby White",
@@ -9961,6 +9869,18 @@
      "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Jamal Shead"
+    },
+    {
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "status": "Team Option",
+     "from": "BKN",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 13.7,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Collin Murray-Boyles"
     }
    ]
   },
@@ -9981,7 +9901,7 @@
      "name": "Austin Reaves",
      "pos": "SG/PG",
      "from": "LAL",
-     "status": "UFA",
+     "status": "Player Option",
      "value_M": 41.2,
      "offer_M": 27,
      "fit": 96,
@@ -10071,7 +9991,7 @@
     {
      "name": "Austin Reaves",
      "pos": "SG/PG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "LAL",
      "value_M": 41.2,
      "offer_M": 27,
@@ -10083,7 +10003,7 @@
     {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
-     "status": "UFA",
+     "status": "Player Option",
      "from": "MIL",
      "value_M": 26.9,
      "offer_M": 24,
@@ -10163,18 +10083,6 @@
      "age": 24,
      "tool": "Cap room",
      "why": "Rotation depth behind Kyle Filipowski"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 15,
-     "barrett": 18.5,
-     "age": 29,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Isaiah Collier"
     },
     {
      "name": "Isaiah Hartenstein",
@@ -10283,6 +10191,18 @@
      "age": 30,
      "tool": "Cap room",
      "why": "Rotation depth behind Kyle Filipowski"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 9,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Brice Sensabaugh"
     }
    ]
   },
@@ -10424,18 +10344,6 @@
      "offer_M": 15,
      "barrett": 17.6,
      "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Bilal Coulibaly"
-    },
-    {
-     "name": "Donte DiVincenzo",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 17.2,
-     "offer_M": 15,
-     "barrett": 18.5,
-     "age": 29,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Bilal Coulibaly"
     },
@@ -10604,6 +10512,18 @@
      "offer_M": 9,
      "barrett": 13.1,
      "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Justin Champagnie"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 9,
+     "barrett": 11.2,
+     "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Justin Champagnie"
     }

@@ -21,7 +21,8 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 warnings.filterwarnings("ignore")
 from utils import (normalize, DEFAULT_MIN_THRESHOLD,  # noqa: E402
-                   option_opt_in_prob, OPTION_OPT_IN_THRESHOLD)
+                   option_opt_in_prob, OPTION_OPT_IN_THRESHOLD,
+                   get_player_contract_info)
 import team_suitors as ts  # noqa: E402
 
 OUT = ROOT / "cache" / "fa_board_v1.json"
@@ -62,7 +63,26 @@ def fa_status(name):
     if s == "RFA":
         return "RFA"
     if s == "—":
-        return "RFA" if normalize(name) in rookie else "UFA"
+        if normalize(name) in rookie:
+            return "RFA"
+        # No next-year salary in the feed. Usually an expiring deal (a genuine
+        # UFA), but the feed also OMITS players who are still under contract
+        # (recent 2nd-round picks, two-ways), which would wrongly tag a signed
+        # player as a free agent. Resolve it from the contract-end scraper (the
+        # app's authoritative source; Will Richard's 2028-29 deal verified vs
+        # Spotrac):
+        #   ends this season            -> genuine free agent (UFA)
+        #   option on the upcoming year -> PO/TO (his own opt-in logic decides)
+        #   locked in for 2026-27+      -> under contract, not on the market
+        ci = get_player_contract_info(name) or {}
+        end, last = ci.get("end_season"), ci.get("last_year_type")
+        if not end or end <= CUR:
+            return "UFA"
+        if end == CONTRACT and last == "player_option":
+            return "Player Option"
+        if end == CONTRACT and last == "team_option":
+            return "Team Option"
+        return None
     if " PO" in s:
         return "Player Option"
     if " TO" in s:
