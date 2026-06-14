@@ -204,23 +204,27 @@ def resign_plan(team, resign_rows):
             "apron2_M": apron2_r, "all_in_M": round(running), "keeps": keeps}
 
 
-def offseason_plan(pursue_rows, cap_room, mle):
+def offseason_plan(pursue_rows, cap_room, mle, apron_room):
     """A REALISTIC external-signing haul (vs the full 20-deep pursue board where
     every target gets an independent offer). Walk the keenness-ranked targets and
     spend the team's ACTUAL tools, CBA-correctly:
       - a cap-space team spends its cap-room pool, then the ~$8M room exception;
       - an over-the-cap team spends ONE mid-level exception (~$15M, split-able);
       - either way, a couple of veteran minimums for depth.
-    A team uses cap room OR the full mid-level, never both. Each tool is used
-    once; stops at 5 moves (a real summer). A target the team can't afford with
-    its remaining tools is skipped."""
+    A team uses cap room OR the full mid-level, never both. CRUCIALLY, the total
+    is ALSO hard-capped by the second apron (`apron_room` = how much is left
+    below it AFTER re-signing their own): a team that re-signs its core up to the
+    apron can't pile a full mid-level on top — it's capped out, minimums only.
+    Each tool is used once; stops at 5 moves."""
     if cap_room >= 8:                                  # cap-space team
         cap_left, exc_left, exc_label = cap_room, 8.0, "Room exception"
     else:                                              # over the cap
         cap_left, exc_left, exc_label = 0.0, mle, "Mid-level"
-    out, lowcost = [], 0
+    out, lowcost, spent = [], 0, 0.0
     for x in pursue_rows:
         offer = x["offer_M"]
+        if spent + offer > apron_room + 1e-6:          # would cross the 2nd apron -> can't
+            continue
         if cap_left + 1e-6 >= offer:                   # cap-space team, any size
             tool, cap_left = "Cap room", cap_left - offer
         elif offer > MIN_MONEY and exc_left + 1e-6 >= offer:
@@ -233,6 +237,7 @@ def offseason_plan(pursue_rows, cap_room, mle):
             continue
         out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
                     "cost_M": offer, "tool": tool})
+        spent += offer
         if len(out) >= 5:
             break
     return out
@@ -311,6 +316,9 @@ def board_for(team):
     # not the full figure. (Fixes "$50M on cap room" while also re-signing LeBron.)
     _resign_cost = round(sum(k["cost_M"] for k in (_rp or {}).get("keeps", []) if k.get("keep")))
     _real_cap_room = max(0.0, CAP_M - (_committed + _resign_cost))
+    # Room left below the second apron (the practical hard ceiling) after the
+    # re-signings — bounds how much the team can actually add in free agency.
+    _apron_room = max(0.0, round(APRON2_M) - (_committed + _resign_cost))
 
     return {
         "team": team,
@@ -322,7 +330,7 @@ def board_for(team):
         "needs": need, "thin": thin,
         "roster": _roster,
         "best_fits": best_fits_for(rows, need, thin),
-        "plan": offseason_plan(_pursue, _real_cap_room, exc),
+        "plan": offseason_plan(_pursue, _real_cap_room, exc, _apron_room),
         "resign": [pack(x) for x in rows if x["is_inc"]],
         "resign_plan": _rp,
         "pursue": [pack(x) for x in _pursue][:20],

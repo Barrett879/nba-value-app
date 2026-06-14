@@ -235,6 +235,11 @@ def render_front_office():
             f"~\\${_tot:.0f}M across {len(_plan_moves)} signings:")
         st.markdown(_PLAN_CSS + f"<div class='hv-plan'>{''.join(_plan_chip(m) for m in _plan_moves)}</div>",
                     unsafe_allow_html=True)
+    else:
+        st.markdown(
+            f"**The realistic plan** — after re-signing their own, {_short} are pressed against the "
+            "second apron (the practical hard ceiling) with no room for outside deals beyond veteran "
+            "minimums. Their offseason is re-signing their core, shown below.")
     st.caption(
         "The full board below ranks every external free agent by how keenly a team of this timeline "
         "would chase them — each scored independently (so the mid-level shows up on more than one). "

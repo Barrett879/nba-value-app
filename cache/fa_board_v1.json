@@ -132,13 +132,6 @@
      "from": "LAL",
      "cost_M": 6,
      "tool": "Depth"
-    },
-    {
-     "name": "De'Anthony Melton",
-     "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 5,
-     "tool": "Depth"
     }
    ],
    "resign": [
@@ -1110,13 +1103,6 @@
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Marcus Smart",
-     "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 6,
      "tool": "Depth"
     }
    ],
@@ -2498,29 +2484,7 @@
      "why": "Rotation depth at C, a bargain at $2M against his $7.7M market."
     }
    ],
-   "plan": [
-    {
-     "name": "Andre Drummond",
-     "pos": "C",
-     "from": "PHI",
-     "cost_M": 2,
-     "tool": "Minimum"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
-     "cost_M": 2,
-     "tool": "Minimum"
-    },
-    {
-     "name": "CJ McCollum",
-     "pos": "SG/PG",
-     "from": "ATL",
-     "cost_M": 2,
-     "tool": "Minimum"
-    }
-   ],
+   "plan": [],
    "resign": [
     {
      "name": "Dean Wade",
@@ -3478,20 +3442,6 @@
      "from": "ATL",
      "cost_M": 6,
      "tool": "Depth"
-    },
-    {
-     "name": "Marcus Smart",
-     "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "Nikola Vu\u010devi\u0107",
-     "pos": "C/PF",
-     "from": "BOS",
-     "cost_M": 6,
-     "tool": "Depth"
     }
    ],
    "resign": [
@@ -3986,32 +3936,11 @@
    ],
    "plan": [
     {
-     "name": "CJ McCollum",
-     "pos": "SG/PG",
-     "from": "ATL",
-     "cost_M": 14,
-     "tool": "Mid-level"
-    },
-    {
-     "name": "Harrison Barnes",
-     "pos": "PF/SF",
-     "from": "SAS",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "De'Anthony Melton",
+     "name": "Coby White",
      "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 7,
-     "tool": "Depth"
+     "from": "CHA",
+     "cost_M": 13,
+     "tool": "Mid-level"
     }
    ],
    "resign": [
@@ -4465,32 +4394,11 @@
    ],
    "plan": [
     {
-     "name": "Ayo Dosunmu",
+     "name": "Collin Sexton",
      "pos": "PG/SG",
-     "from": "MIN",
-     "cost_M": 15,
+     "from": "CHI",
+     "cost_M": 11,
      "tool": "Mid-level"
-    },
-    {
-     "name": "Jusuf Nurki\u0107",
-     "pos": "C",
-     "from": "UTA",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Jaxson Hayes",
-     "pos": "C",
-     "from": "LAL",
-     "cost_M": 5,
-     "tool": "Depth"
     }
    ],
    "resign": [
@@ -5832,32 +5740,11 @@
    ],
    "plan": [
     {
-     "name": "Julian Champagnie",
+     "name": "Peyton Watson",
      "pos": "SF/PF",
-     "from": "SAS",
-     "cost_M": 15,
+     "from": "DEN",
+     "cost_M": 13,
      "tool": "Mid-level"
-    },
-    {
-     "name": "Jaden Ivey",
-     "pos": "PG/SG",
-     "from": "CHI",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "De'Anthony Melton",
-     "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Kevin Huerter",
-     "pos": "SG/SF",
-     "from": "DET",
-     "cost_M": 6,
-     "tool": "Depth"
     }
    ],
    "resign": [
@@ -6317,32 +6204,11 @@
    ],
    "plan": [
     {
-     "name": "Norman Powell",
+     "name": "Gary Payton II",
      "pos": "SG/SF",
-     "from": "MIA",
-     "cost_M": 15,
-     "tool": "Mid-level"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "Khris Middleton",
-     "pos": "SF/PF",
-     "from": "DAL",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "Kevin Huerter",
-     "pos": "SG/SF",
-     "from": "DET",
-     "cost_M": 6,
-     "tool": "Depth"
+     "from": "GSW",
+     "cost_M": 2,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -8245,32 +8111,18 @@
    ],
    "plan": [
     {
-     "name": "Norman Powell",
-     "pos": "SG/SF",
-     "from": "MIA",
-     "cost_M": 15,
+     "name": "Isaiah Hartenstein",
+     "pos": "C",
+     "from": "OKC",
+     "cost_M": 10,
      "tool": "Mid-level"
     },
     {
-     "name": "Brandon Williams",
-     "pos": "PG/SG",
+     "name": "Ryan Nembhard",
+     "pos": "PG",
      "from": "DAL",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Marcus Smart",
-     "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "from": "POR",
-     "cost_M": 7,
-     "tool": "Depth"
+     "cost_M": 1,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -8752,18 +8604,11 @@
      "tool": "Depth"
     },
     {
-     "name": "Jaxson Hayes",
-     "pos": "C",
-     "from": "LAL",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "Jock Landale",
-     "pos": "C",
-     "from": "ATL",
-     "cost_M": 6,
-     "tool": "Depth"
+     "name": "Jamal Shead",
+     "pos": "PG/SG",
+     "from": "TOR",
+     "cost_M": 3,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -9147,32 +8992,11 @@
    ],
    "plan": [
     {
-     "name": "Norman Powell",
-     "pos": "SG/SF",
-     "from": "MIA",
-     "cost_M": 15,
-     "tool": "Mid-level"
-    },
-    {
-     "name": "Tim Hardaway Jr.",
-     "pos": "SG/SF",
-     "from": "DEN",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Marcus Smart",
-     "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
-     "cost_M": 6,
-     "tool": "Depth"
+     "name": "Ryan Nembhard",
+     "pos": "PG",
+     "from": "DAL",
+     "cost_M": 1,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -9633,29 +9457,7 @@
      "why": "Adds a needed second body at PG, a bargain at $2M against his $5.4M market."
     }
    ],
-   "plan": [
-    {
-     "name": "Andre Drummond",
-     "pos": "C",
-     "from": "PHI",
-     "cost_M": 2,
-     "tool": "Minimum"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
-     "cost_M": 2,
-     "tool": "Minimum"
-    },
-    {
-     "name": "CJ McCollum",
-     "pos": "SG/PG",
-     "from": "ATL",
-     "cost_M": 2,
-     "tool": "Minimum"
-    }
-   ],
+   "plan": [],
    "resign": [
     {
      "name": "Isaiah Hartenstein",
@@ -10048,25 +9850,11 @@
    ],
    "plan": [
     {
-     "name": "Jusuf Nurki\u0107",
-     "pos": "C",
-     "from": "UTA",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "De'Anthony Melton",
+     "name": "Bones Hyland",
      "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 5,
-     "tool": "Depth"
-    },
-    {
-     "name": "Craig Porter Jr.",
-     "pos": "PG",
-     "from": "CLE",
-     "cost_M": 5,
-     "tool": "Depth"
+     "from": "MIN",
+     "cost_M": 3,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -10471,30 +10259,9 @@
    ],
    "plan": [
     {
-     "name": "Norman Powell",
-     "pos": "SG/SF",
-     "from": "MIA",
-     "cost_M": 15,
-     "tool": "Mid-level"
-    },
-    {
      "name": "Harrison Barnes",
      "pos": "PF/SF",
      "from": "SAS",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Brandon Williams",
-     "pos": "PG/SG",
-     "from": "DAL",
      "cost_M": 7,
      "tool": "Depth"
     }
@@ -10971,32 +10738,11 @@
    ],
    "plan": [
     {
-     "name": "Deandre Ayton",
-     "pos": "C",
-     "from": "LAL",
-     "cost_M": 15,
+     "name": "John Collins",
+     "pos": "PF/C",
+     "from": "LAC",
+     "cost_M": 8,
      "tool": "Mid-level"
-    },
-    {
-     "name": "Jaxson Hayes",
-     "pos": "C",
-     "from": "LAL",
-     "cost_M": 5,
-     "tool": "Depth"
-    },
-    {
-     "name": "Jock Landale",
-     "pos": "C",
-     "from": "ATL",
-     "cost_M": 5,
-     "tool": "Depth"
-    },
-    {
-     "name": "Nick Richards",
-     "pos": "C",
-     "from": "CHI",
-     "cost_M": 5,
-     "tool": "Depth"
     }
    ],
    "resign": [
@@ -11872,32 +11618,11 @@
    ],
    "plan": [
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "from": "SAS",
-     "cost_M": 15,
-     "tool": "Mid-level"
-    },
-    {
-     "name": "De'Anthony Melton",
-     "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Harrison Barnes",
-     "pos": "PF/SF",
-     "from": "SAS",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Jamal Shead",
-     "pos": "PG/SG",
-     "from": "TOR",
-     "cost_M": 4,
-     "tool": "Depth"
+     "name": "Tyus Jones",
+     "pos": "PG",
+     "from": "DEN",
+     "cost_M": 2,
+     "tool": "Minimum"
     }
    ],
    "resign": [
@@ -12763,24 +12488,10 @@
      "tool": "Mid-level"
     },
     {
-     "name": "De'Anthony Melton",
+     "name": "Lonzo Ball",
      "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 7,
-     "tool": "Depth"
-    },
-    {
-     "name": "Kevin Huerter",
-     "pos": "SG/SF",
-     "from": "DET",
-     "cost_M": 6,
-     "tool": "Depth"
-    },
-    {
-     "name": "Jordan Goodwin",
-     "pos": "SG/SF",
-     "from": "PHX",
-     "cost_M": 5,
+     "from": "CLE",
+     "cost_M": 4,
      "tool": "Depth"
     }
    ],
