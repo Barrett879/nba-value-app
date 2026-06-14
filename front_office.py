@@ -332,7 +332,7 @@ def render_front_office():
                 "Tool": "Cap room, the mid-level exception, or a veteran-minimum slot.",
                 "Fit": "Why he fits, fills a need, upgrades a starter, or rotation/minimum depth.",
             },
-            height=min(720, len(pur) * 38 + 46),
+            height=len(pur) * 60 + 60,         # fit every row, no inner scroll
         )
     else:
         st.info("No realistic external targets, this team is capped out with a full rotation.")
