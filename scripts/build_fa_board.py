@@ -37,6 +37,10 @@ exec(compile("".join(SRC[:cut]), "cp", "exec"), ns)
 CUR = ns["CURRENT_SEASON"]
 CONTRACT = ns.get("CONTRACT_SEASON", CUR)
 gpf, pc, fmt_nc = ns["get_player_features"], ns["predict_contract"], ns["fmt_next_contract"]
+# Market value = the SAME market-blended figure the Contract Predictor hero
+# shows (model blended toward comps), not the raw model output — so a player's
+# value is identical on his page and on every team's board.
+pcv = ns["projected_contract_value"]
 
 full = ns["build_ranked_projected"](CUR).copy()
 pos2k = ts.load_player_positions()
@@ -78,7 +82,7 @@ for _, r in qualified.iterrows():
     f = gpf(name, CUR)
     if not f:
         continue
-    value_M = round(float(pc(f)["predicted"]) / 1e6, 1)
+    value_M = round(float(pcv(f)) / 1e6, 1)
     age = int(f.get("age") or 0)
     # Option-year salary (team OR player option) from the contracts feed — the
     # pre-set figure the option would pay next season, in $M.

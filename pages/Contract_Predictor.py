@@ -1549,6 +1549,83 @@ def _comp_salaries_in_contract_dollars(comps: pd.DataFrame) -> np.ndarray:
     return comps["salary_curr"].astype(float).values * factor
 
 
+# ── Market blend: the single source of truth for the displayed contract value ──
+# The model prediction is blended toward the comparable-signings median in the
+# mid-tier. The hero card AND the Front Office board both read the value through
+# these helpers, so a player's projected deal is the SAME number in both places
+# (the board used to show the raw, un-blended model figure and disagree).
+_BLEND_TIER_LO_M, _BLEND_TIER_HI_M = 7.0, 25.0
+
+
+def market_median_from_comps(features: dict, comps: pd.DataFrame):
+    """Distance-weighted median of comparable signings in CONTRACT-season dollars,
+    plus the supermax filter/suppress decision. Returns
+    (median_or_None, used_comps, filter_applied, suppressed). Comps must already
+    carry a 'context' column (see _classify_context)."""
+    used, filter_applied, suppressed = comps, False, False
+    if not comps.empty:
+        cur_pct = (float(features.get("salary", 0) or 0)
+                   / (SALARY_CAP_M.get(CURRENT_SEASON, 154.6) * 1_000_000))
+        if cur_pct >= SUPERMAX_CAP_PCT:
+            non_paycut = comps[comps["context"] != "Paycut"]
+            if len(non_paycut) >= 3:
+                used, filter_applied = non_paycut, True
+            else:
+                suppressed = True
+    if suppressed or used.empty:
+        return None, used, filter_applied, suppressed
+    salaries = _comp_salaries_in_contract_dollars(used)
+    if "distance" in used.columns:
+        weights = _inverse_distance_weights(used["distance"].astype(float).values)
+    else:
+        weights = np.ones_like(salaries)
+    return _weighted_median(salaries, weights), used, filter_applied, suppressed
+
+
+def blend_toward_market(predicted_dollars: float, market_median, prediction: dict):
+    """Blend the model prediction toward the comp median in the mid-tier. Returns
+    (final_dollars, blended_flag). Gate: only $7-25M model projections, only once
+    model and market diverge past 25%, market weight ramps 0.35 -> 0.65, never
+    below the player's CBA minimum, and exempt for CBA-capped/floored deals (those
+    are a rule, not a noisy estimate). See scripts/experiment_blend_value.py."""
+    predicted_M = predicted_dollars / 1_000_000
+    if (market_median is None
+            or prediction.get("cba_cap_applied")
+            or prediction.get("cba_floor_applied")
+            or not (_BLEND_TIER_LO_M <= predicted_M <= _BLEND_TIER_HI_M)):
+        return predicted_dollars, False
+    mkt_M = market_median / 1_000_000
+    hi = max(predicted_M, mkt_M)
+    gap = abs(predicted_M - mkt_M) / hi if hi > 0 else 0.0
+    if gap <= 0.25 or mkt_M <= 0:
+        return predicted_dollars, False
+    min_floor_M = prediction.get(
+        "min_floor_dollars", 0.015 * SALARY_CAP_M.get(CONTRACT_SEASON, 165.0) * 1e6) / 1e6
+    w_mkt = min(0.65, 0.35 + 0.30 * (gap - 0.25) / 0.35)
+    blended_M = max((1 - w_mkt) * predicted_M + w_mkt * mkt_M, min_floor_M)
+    if abs(blended_M - predicted_M) <= 0.05:
+        return predicted_dollars, False
+    return blended_M * 1_000_000, True
+
+
+def projected_contract_value(features: dict, prediction: dict | None = None) -> float:
+    """A player's projected NEW-contract value in dollars: the model prediction
+    blended toward the market median, exactly as the Contract Predictor hero
+    displays it. The single number the Front Office 'market value' reads from so
+    the player page and the team board never disagree."""
+    if prediction is None:
+        prediction = predict_contract(features)
+    history = load_historical_signings(n_recent_pairs=3)
+    comps = (find_comparables(features, history, n=6)
+             if not history.empty else pd.DataFrame())
+    if not comps.empty:
+        comps = comps.copy()
+        comps["context"] = comps.apply(_classify_context, axis=1)
+    median, _used, _filt, _supp = market_median_from_comps(features, comps)
+    final_dollars, _blended = blend_toward_market(prediction["predicted"], median, prediction)
+    return final_dollars
+
+
 def _scouting_take(features: dict, comps: pd.DataFrame) -> dict:
     """Build the 'Scouting take' summary: top-3 names, weighted median deal,
     weighted IQR range, X-factor narrative.
@@ -1832,39 +1909,12 @@ if not _comps.empty:
 #                  player's market. Show "Limited comparable data"
 #                  instead of a misleading $3M-tier number; anchor
 #                  the honest range on current salary instead.
-_market_used_comps = _comps
-_market_filter_applied = False
-_market_suppressed = False
-if not _comps.empty:
-    _player_cur_sal_pct = (
-        float(features.get("salary", 0) or 0)
-        / (SALARY_CAP_M.get(CURRENT_SEASON, 154.6) * 1_000_000)
-    )
-    if _player_cur_sal_pct >= SUPERMAX_CAP_PCT:
-        _non_paycut = _comps[_comps["context"] != "Paycut"]
-        if len(_non_paycut) >= 3:
-            # Case 2: enough non-Paycut data to compute a meaningful median.
-            _market_used_comps = _non_paycut
-            _market_filter_applied = True
-        else:
-            # Case 3: too few good comps. Don't show the broken median.
-            _market_suppressed = True
-
-# Market view uses distance-weighted median so the closest comparables
-# count more than the farthest.
-if _market_suppressed:
-    _market_median = None
-elif not _market_used_comps.empty:
-    _salaries = _comp_salaries_in_contract_dollars(_market_used_comps)  # 2026-27 dollars
-    if "distance" in _market_used_comps.columns:
-        _weights = _inverse_distance_weights(
-            _market_used_comps["distance"].astype(float).values
-        )
-    else:
-        _weights = np.ones_like(_salaries)
-    _market_median = _weighted_median(_salaries, _weights)
-else:
-    _market_median = None
+# Distance-weighted market median + the supermax filter/suppress decision,
+# computed by the shared helper so the Front Office board reads the identical
+# number (the 3 cases above). _market_used_comps/_market_filter_applied are
+# kept for parity; only _market_median and _market_suppressed are used below.
+(_market_median, _market_used_comps,
+ _market_filter_applied, _market_suppressed) = market_median_from_comps(features, _comps)
 
 def _confidence_bar_html(model_M, low_M, high_M, secondary_M=None,
                          secondary_color="#16d4c1", secondary_label="market",
@@ -1979,46 +2029,22 @@ low_M  = prediction["low"]  / 1_000_000
 high_M = prediction["high"] / 1_000_000
 _model_only_M = predicted_M   # keep the pure model output for the explainer
 
-# Blend toward the market ONLY in the mid-tier, where it earns its keep. The
-# model is noisy on mid-tier role players (the comp median is the stronger
-# signal there), but it NAILS the extremes — minimums (service floor) and stars
-# (CBA max) — where blending toward noisier comps only adds error. Walk-forward
-# OOS (scripts/experiment_blend_value.py): gating the blend to a model
-# projection of ~$7-25M cuts overall median error $2.7M -> $1.9M vs always-on,
-# killing the minimum/star over-projections while keeping the mid-tier market
-# consensus. Max-capped / supermax-floor players stay exempt (their number is a
-# CBA rule, not a noisy estimate); cap the market weight at 0.65.
-_BLEND_TIER_LO_M, _BLEND_TIER_HI_M = 7.0, 25.0
-# Service-scaled league-minimum floor (model dollars → millions): the bar's
-# left edge, the blended-band floor, and the "≈ League min" test all use it.
+# Blend toward the market median (mid-tier only) — shared with the Front Office
+# board via blend_toward_market so the displayed value is identical in both.
+# Service-scaled league-minimum floor (model dollars → millions): the bar's left
+# edge, the blended-band floor, and the "≈ League min" test all use it.
 _min_floor_M = prediction.get(
     "min_floor_dollars", 0.015 * SALARY_CAP_M.get(CONTRACT_SEASON, 165.0) * 1e6) / 1e6
-_blended_toward_market = False
-if (_market_median is not None
-        and not prediction.get("cba_cap_applied")
-        and not prediction.get("cba_floor_applied")
-        and _BLEND_TIER_LO_M <= predicted_M <= _BLEND_TIER_HI_M):
-    _mkt_M = _market_median / 1_000_000
-    _hi = max(predicted_M, _mkt_M)
-    _gap = abs(predicted_M - _mkt_M) / _hi if _hi > 0 else 0.0
-    if _gap > 0.25 and _mkt_M > 0:
-        # Once they diverge past 25%, give the market real weight: 0.35 at the
-        # 25% threshold, ramping to 0.65 by a 60%+ gap. (A 47% Joe-style gap →
-        # ~0.5 weight, pulling $18.8M + $12.8M to ~$15.8M.)
-        _w_mkt = min(0.65, 0.35 + 0.30 * (_gap - 0.25) / 0.35)
-        _blended_M = (1 - _w_mkt) * predicted_M + _w_mkt * _mkt_M
-        # Never let a low market blend a projection BELOW the player's CBA
-        # minimum (e.g. a fringe vet whose min comps median under his vet-min).
-        _blended_M = max(_blended_M, _min_floor_M)
-        if abs(_blended_M - predicted_M) > 0.05:
-            _blended_toward_market = True
-            # Recompute the band around the blended number using the same
-            # tier-aware half-width the model uses (45%→12% by size).
-            _bw = float(np.interp(_blended_M, [2.0, 8.0, 20.0, 45.0],
-                                              [0.45, 0.33, 0.24, 0.12]))
-            predicted_M = _blended_M
-            low_M  = max(_min_floor_M, _blended_M * (1 - _bw))
-            high_M = _blended_M * (1 + _bw)
+_blended_dollars, _blended_toward_market = blend_toward_market(
+    prediction["predicted"], _market_median, prediction)
+if _blended_toward_market:
+    predicted_M = _blended_dollars / 1_000_000
+    # Recompute the band around the blended number with the same tier-aware
+    # half-width the model uses (45% → 12% by size).
+    _bw = float(np.interp(predicted_M, [2.0, 8.0, 20.0, 45.0],
+                                       [0.45, 0.33, 0.24, 0.12]))
+    low_M  = max(_min_floor_M, predicted_M * (1 - _bw))
+    high_M = predicted_M * (1 + _bw)
 
 # Confidence-bar scale: from the player's service-scaled league-min floor up to THIS
 # player's OWN capped max — their 25/30/35% tier (prediction["cba_max_dollars"]).
