@@ -104,7 +104,7 @@ def _cap_bar_html(committed, cap, tax, apron2, after):
 
 
 _PLAN_TOOL_COLOR = {"Cap room": "var(--accent-teal)", "Room exception": "var(--blue)",
-                    "Mid-level": "var(--blue)", "Minimum": "var(--fg-4)"}
+                    "Mid-level": "var(--blue)", "Depth": "var(--fg-4)"}
 _PLAN_CSS = """
 <style>
 .hv-plan { display:flex; gap:0.6rem; flex-wrap:wrap; margin:0.3rem 0 0.6rem; }
@@ -230,7 +230,7 @@ def render_front_office():
         _tot = sum(m["cost_M"] for m in _plan_moves)
         st.markdown(
             f"**The realistic plan** — what {_short} can actually do with their real tools (their cap "
-            f"room *or* one mid-level, plus a couple of minimums), after re-signing their own. "
+            f"room *or* one mid-level, plus a couple of low-cost depth adds), after re-signing their own. "
             f"~\\${_tot:.0f}M across {len(_plan_moves)} signings:")
         st.markdown(_PLAN_CSS + f"<div class='hv-plan'>{''.join(_plan_chip(m) for m in _plan_moves)}</div>",
                     unsafe_allow_html=True)

@@ -178,14 +178,14 @@
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Jaxson Hayes",
      "pos": "C",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -723,14 +723,14 @@
      "pos": "SG/SF",
      "from": "PHX",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Jaden Ivey",
      "pos": "PG/SG",
      "from": "CHI",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -1195,14 +1195,14 @@
      "pos": "SG/SF",
      "from": "DEN",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Jusuf Nurki\u0107",
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -1690,14 +1690,14 @@
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
      "from": "TOR",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -2150,14 +2150,14 @@
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Ziaire Williams",
      "pos": "SF/PF",
      "from": "BKN",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -2694,14 +2694,14 @@
      "pos": "C",
      "from": "PHI",
      "cost_M": 2,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Brook Lopez",
      "pos": "C",
      "from": "LAC",
      "cost_M": 2,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -3213,14 +3213,14 @@
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Luke Kennard",
      "pos": "SG/PG",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -3736,14 +3736,14 @@
      "pos": "SG/PG",
      "from": "ATL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Marcus Smart",
      "pos": "SG/PG",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -4297,14 +4297,14 @@
      "pos": "PF/SF",
      "from": "SAS",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "John Collins",
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -4816,14 +4816,14 @@
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "John Collins",
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -5329,14 +5329,14 @@
      "pos": "PF/SF",
      "from": "SAS",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Tobias Harris",
      "pos": "PF/SF",
      "from": "DET",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -5805,14 +5805,14 @@
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Kevin Huerter",
      "pos": "SG/SF",
      "from": "DET",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -6268,14 +6268,14 @@
      "pos": "PG/SG",
      "from": "CHI",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -6813,14 +6813,14 @@
      "pos": "C",
      "from": "LAC",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Khris Middleton",
      "pos": "SF/PF",
      "from": "DAL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -7391,14 +7391,14 @@
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Jaxson Hayes",
      "pos": "C",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -7827,14 +7827,14 @@
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Jaxson Hayes",
      "pos": "C",
      "from": "LAL",
      "cost_M": 5,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -8323,14 +8323,14 @@
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -8866,14 +8866,14 @@
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Marcus Smart",
      "pos": "SG/PG",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -9369,14 +9369,14 @@
      "pos": "PG/SG",
      "from": "DET",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Jaxson Hayes",
      "pos": "C",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -9818,14 +9818,14 @@
      "pos": "SG/SF",
      "from": "DEN",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Marcus Smart",
      "pos": "SG/PG",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -10309,14 +10309,14 @@
      "pos": "C",
      "from": "PHI",
      "cost_M": 2,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Brook Lopez",
      "pos": "C",
      "from": "LAC",
      "cost_M": 2,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -10738,14 +10738,14 @@
      "pos": "C",
      "from": "UTA",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 5,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -11208,14 +11208,14 @@
      "pos": "PF/SF",
      "from": "SAS",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Brook Lopez",
      "pos": "C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -11736,14 +11736,14 @@
      "pos": "C",
      "from": "LAL",
      "cost_M": 5,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Jock Landale",
      "pos": "C",
      "from": "ATL",
      "cost_M": 5,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -12246,14 +12246,14 @@
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
      "from": "TOR",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -12694,14 +12694,14 @@
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Harrison Barnes",
      "pos": "PF/SF",
      "from": "SAS",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -13185,14 +13185,14 @@
      "pos": "PF/SF",
      "from": "DET",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Brook Lopez",
      "pos": "C",
      "from": "LAC",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -13647,14 +13647,14 @@
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Kevin Huerter",
      "pos": "SG/SF",
      "from": "DET",
      "cost_M": 6,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -14112,14 +14112,14 @@
      "pos": "C",
      "from": "POR",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "John Collins",
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [
@@ -14583,14 +14583,14 @@
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     },
     {
      "name": "Jordan Goodwin",
      "pos": "SG/SF",
      "from": "PHX",
      "cost_M": 7,
-     "tool": "Minimum"
+     "tool": "Depth"
     }
    ],
    "resign": [

@@ -224,8 +224,8 @@ def offseason_plan(pursue_rows, cap_room, mle):
             tool, cap_left = "Cap room", cap_left - offer
         elif offer > MIN_MONEY and exc_left + 1e-6 >= offer:
             tool, exc_left = exc_label, exc_left - offer
-        elif offer <= MIN_MONEY and mins < 2:          # a couple of minimum depth adds
-            tool, mins = "Minimum", mins + 1
+        elif offer <= MIN_MONEY and mins < 2:          # a couple of low-cost depth adds
+            tool, mins = "Depth", mins + 1
         else:
             continue
         out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
