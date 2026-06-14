@@ -9661,10 +9661,11 @@
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
-   "needs": [
+   "needs": [],
+   "thin": [
+    "SF",
     "PF"
    ],
-   "thin": [],
    "roster": [
     {
      "name": "Jalen Brunson",
@@ -9680,7 +9681,7 @@
     },
     {
      "name": "OG Anunoby",
-     "pos": "SF/PF",
+     "pos": "PF/SF",
      "barrett": 24.4,
      "salary_M": 39.6
     },
@@ -9765,30 +9766,17 @@
    ],
    "best_fits": [
     {
-     "name": "Harrison Barnes",
-     "pos": "PF/SF",
-     "from": "SAS",
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
      "status": "UFA",
-     "value_M": 9.5,
-     "offer_M": 6,
-     "fit": 70,
+     "value_M": 18.7,
+     "offer_M": 15,
+     "fit": 68,
      "grade": "A-",
-     "ppos": "PF",
-     "slot": 3,
-     "why": "Rotation depth at PF, a bargain at $6M against his $9.5M market."
-    },
-    {
-     "name": "Nikola Vu\u010devi\u0107",
-     "pos": "C/PF",
-     "from": "BOS",
-     "status": "UFA",
-     "value_M": 10.4,
-     "offer_M": 9,
-     "fit": 66,
-     "grade": "A-",
-     "ppos": "C",
+     "ppos": "SG",
      "slot": 1,
-     "why": "Adds a needed second body at C, a bargain at $9M against his $10.4M market."
+     "why": "Adds a needed second body at SG, a bargain at $15M against his $18.7M market."
     },
     {
      "name": "Khris Middleton",
@@ -9797,11 +9785,24 @@
      "status": "UFA",
      "value_M": 9.0,
      "offer_M": 4,
-     "fit": 62,
-     "grade": "B+",
+     "fit": 68,
+     "grade": "A-",
      "ppos": "SF",
      "slot": 4,
      "why": "Rotation depth at SF, a bargain at $4M against his $9.0M market."
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "status": "UFA",
+     "value_M": 9.5,
+     "offer_M": 6,
+     "fit": 64,
+     "grade": "B+",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF, a bargain at $6M against his $9.5M market."
     }
    ],
    "plan": [
@@ -9813,16 +9814,16 @@
      "tool": "Mid-level"
     },
     {
-     "name": "Marcus Smart",
-     "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 6,
+     "name": "Tim Hardaway Jr.",
+     "pos": "SG/SF",
+     "from": "DEN",
+     "cost_M": 7,
      "tool": "Minimum"
     },
     {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "from": "LAL",
      "cost_M": 6,
      "tool": "Minimum"
     }
@@ -10039,16 +10040,28 @@
      "why": "Rotation depth behind Miles McBride"
     },
     {
-     "name": "Nikola Vu\u010devi\u0107",
-     "pos": "C/PF",
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
      "status": "UFA",
-     "from": "BOS",
-     "value_M": 10.4,
-     "offer_M": 9,
-     "barrett": 19.7,
-     "age": 35,
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 10,
+     "barrett": 15.2,
+     "age": 26,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Mitchell Robinson"
+     "why": "Rotation depth behind Miles McBride"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 16.3,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Miles McBride"
     },
     {
      "name": "Robert Williams III",
@@ -10063,14 +10076,14 @@
      "why": "Rotation depth behind Mitchell Robinson"
     },
     {
-     "name": "Sandro Mamukelashvili",
+     "name": "Nikola Vu\u010devi\u0107",
      "pos": "C/PF",
-     "status": "Player Option",
-     "from": "TOR",
-     "value_M": 10.6,
-     "offer_M": 10,
-     "barrett": 15.7,
-     "age": 27,
+     "status": "UFA",
+     "from": "BOS",
+     "value_M": 10.4,
+     "offer_M": 8,
+     "barrett": 19.7,
+     "age": 35,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Mitchell Robinson"
     },
@@ -10145,18 +10158,6 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Landry Shamet"
-    },
-    {
-     "name": "Quentin Grimes",
-     "pos": "SG/SF",
-     "status": "UFA",
-     "from": "PHI",
-     "value_M": 13.4,
-     "offer_M": 8,
-     "barrett": 15.2,
-     "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Miles McBride"
     }
    ]
   },
