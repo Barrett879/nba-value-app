@@ -1767,13 +1767,14 @@ with _fa_col:
               help="Show only free agents, UFA, RFA, and player/team options")
 with _sb_col:
     # Native dropdown: type to search, themes with the page — no iframe / regex
-    # / scroll hacks. (Replaces the st_searchbox component, which fought us on
-    # caching, scrolling and theming.) No index=: the widget key owns the
-    # selection (seeded once above for deep-links), and the on_change mirrors it
-    # to the URL — together they keep every pick from being dropped on a rerun.
+    # / scroll hacks. index=None so it starts EMPTY (the placeholder) instead of
+    # auto-selecting the first option; a ?player= deep-link is seeded into the
+    # widget key above (which then owns the selection), and on_change mirrors the
+    # pick back to the URL — together they keep a pick from dropping on a rerun.
     selected = st.selectbox(
         "Player",
         options=_pool,
+        index=None,
         placeholder="Type a player name…",
         label_visibility="collapsed",
         key=_PICKER_KEY,

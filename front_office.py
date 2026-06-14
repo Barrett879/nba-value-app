@@ -88,18 +88,23 @@ def render_front_office():
     )
 
     # ── Team picker (full names → abbreviation), reflected in the URL ────────────
-    # ?team=LAL deep-links straight to a club, and the selection is mirrored back
-    # into the URL so a board is shareable/bookmarkable. Options stay in STABLE
-    # sorted order (never reordered) so the selectbox keeps its element identity;
-    # the URL seeds the widget once, then the key owns the state.
+    # Starts with NO team selected (a prompt, not an auto-pick). ?team=LAL deep-
+    # links straight to a club, and once a team is chosen the selection is
+    # mirrored back into the URL so a board is shareable/bookmarkable. Options
+    # stay in STABLE sorted order (never reordered) so the selectbox keeps its
+    # element identity; a ?team= deep-link seeds the widget once, then it owns it.
     _name_to_abbr = {b["name"]: ab for ab, b in TEAMS.items()}
     _abbr_to_name = {ab: b["name"] for ab, b in TEAMS.items()}
     _names = sorted(_name_to_abbr)
-    _default_name = "Los Angeles Lakers" if "Los Angeles Lakers" in _name_to_abbr else _names[0]
     if "fo_team" not in st.session_state:
-        _url_abbr = (st.query_params.get("team") or "").upper()
-        st.session_state["fo_team"] = _abbr_to_name.get(_url_abbr, _default_name)
-    pick = st.selectbox("Team", _names, key="fo_team")
+        _url_name = _abbr_to_name.get((st.query_params.get("team") or "").upper())
+        if _url_name:
+            st.session_state["fo_team"] = _url_name
+    pick = st.selectbox("Team", _names, index=None, placeholder="Select a team…", key="fo_team")
+    if not pick:
+        st.info("Pick a team to see its offseason board — who to re-sign, who to "
+                "pursue, and the contract it would realistically offer.")
+        return
     _ab = _name_to_abbr.get(pick)                       # mirror the pick into the URL
     if _ab and st.query_params.get("team") != _ab:
         st.query_params["team"] = _ab
