@@ -329,6 +329,18 @@ _DESIRE = {
 }
 _DESIRE_DEFAULT = "playoff"   # an unclassified team -> neutral win-now-ish
 
+# Big-market pull: the largest media markets land more OUTSIDE free agents than
+# offer/fit/desire alone predict (brand, endorsements, the lights). Applied to
+# the hand rank for non-incumbent big-market teams only. Validated in the FULL
+# shipped pipeline (40/60 GBM+hand blend), held out on 2020-25 signings
+# (scripts/backtest_ext.py + market A/B): top-5 61.5% -> 62.8%, mean rank
+# 7.15 -> 6.94 (top-1 unchanged — that slot is the re-sign, which market can't
+# move). A no-state-income-tax prior was tested the same way and showed NO
+# signal, so it is deliberately omitted; a learned re-ranker only leaned harder
+# on incumbency and was dropped too.
+_MARKET_PULL_TEAMS = {"LAL", "LAC", "NYK", "BKN", "CHI", "GSW"}
+_MARKET_PULL = 1.30
+
 
 def _timeline_key(timeline: str) -> str:
     """Map a CSV timeline label (incl. legacy contender/middle) to a desire tier."""
@@ -419,6 +431,8 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
         else:               tool_label = "minimum"
         tl = str(t.get("timeline", "")).strip().lower()
         des = 1.0 if is_inc else desire_weight(tl, age, price_M)
+        if not is_inc and str(t["team"]) in _MARKET_PULL_TEAMS:
+            des *= _MARKET_PULL          # big-market draw (validated; see _MARKET_PULL)
         sf = (skill_fit or {}).get(t["team"]) or {"fit": 0.5, "need": None}
         # hand rank: skill-fit nudge + incumbent re-sign pull
         rank = offer * des * ((1.0 - SKILL_WEIGHT / 2.0) + SKILL_WEIGHT * float(sf["fit"]))
