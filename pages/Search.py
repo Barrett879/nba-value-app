@@ -19,7 +19,7 @@ from utils import (
 )
 from urllib.parse import quote
 
-st.set_page_config(page_title="Search Player", layout="wide")
+st.set_page_config(page_title="Search Player", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
 _bootstrap_warm()
 render_nav("Search Player")

@@ -86,7 +86,7 @@ MAX_FLOOR_DISCOUNT = 0.03
 
 
 # ── Page boilerplate ─────────────────────────────────────────────────────────
-st.set_page_config(page_title="Contract Predictor", layout="wide")
+st.set_page_config(page_title="Contract Predictor", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
 _bootstrap_warm()
 render_nav("Contract Predictor")

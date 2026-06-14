@@ -23,7 +23,7 @@ from utils import (
 )
 import threading
 
-st.set_page_config(page_title="Rankings", layout="wide")
+st.set_page_config(page_title="Rankings", page_icon="static/favicon.svg", layout="wide")
 
 render_page_chrome()
 render_nav("Current Rankings")

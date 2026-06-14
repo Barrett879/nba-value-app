@@ -16,7 +16,7 @@ from utils import (
     PRE_1990_SALARY_NOTE,
 )
 
-st.set_page_config(page_title="Team Analysis", layout="wide")
+st.set_page_config(page_title="Team Analysis", page_icon="static/favicon.svg", layout="wide")
 
 render_page_chrome()
 _bootstrap_warm()

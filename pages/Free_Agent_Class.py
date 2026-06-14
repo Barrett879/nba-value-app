@@ -17,7 +17,7 @@ from utils import (
     render_barrett_score_explainer, _bootstrap_warm,
 )
 
-st.set_page_config(page_title="Free Agent Class", layout="wide")
+st.set_page_config(page_title="Free Agent Class", page_icon="static/favicon.svg", layout="wide")
 
 render_page_chrome()
 _bootstrap_warm()
