@@ -345,12 +345,17 @@ def render_front_office():
         if _resigns:
             _parts.append(f"**re-sign {len(_resigns)}** of their own worth keeping")
         if _adds:
-            if any(m["tool"] == "Cap room" for m in _adds):
-                _tool = "cap room plus minimums"
-            elif any(m["tool"] in ("Mid-level", "Room exception") for m in _adds):
-                _tool = "the mid-level plus minimums"
-            else:
-                _tool = "veteran minimums"
+            _used = {m["tool"] for m in _adds}
+            _bits = []
+            if "Cap room" in _used:
+                _bits.append("cap room")
+            if "Room exception" in _used:
+                _bits.append("the room exception")
+            if "Mid-level" in _used:
+                _bits.append("the mid-level")
+            if "Minimum" in _used:
+                _bits.append("veteran minimums")
+            _tool = " and ".join(_bits) if _bits else "veteran minimums"
             _parts.append(f"**add {len(_adds)}** using {_tool}")
         st.markdown(
             f"What {_short} would realistically do this offseason: " + " and ".join(_parts) + ".")

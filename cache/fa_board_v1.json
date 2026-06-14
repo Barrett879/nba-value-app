@@ -163,19 +163,27 @@
      "kind": "external"
     },
     {
-     "name": "Brandon Williams",
-     "pos": "PG/SG",
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
      "from": "DAL",
-     "cost_M": 7,
-     "tool": "Depth",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Jaxson Hayes",
+     "name": "Bruce Brown",
+     "pos": "PG/SG",
+     "from": "DEN",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Thomas Bryant",
      "pos": "C",
-     "from": "LAL",
-     "cost_M": 6,
-     "tool": "Depth",
+     "from": "CLE",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -722,27 +730,27 @@
      "kind": "external"
     },
     {
-     "name": "Jordan Goodwin",
-     "pos": "SG/SF",
-     "from": "PHX",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Jaden Ivey",
+     "name": "Javon Small",
      "pos": "PG/SG",
-     "from": "CHI",
-     "cost_M": 6,
-     "tool": "Depth",
+     "from": "MEM",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Luke Kennard",
-     "pos": "SG/PG",
-     "from": "LAL",
-     "cost_M": 6,
-     "tool": "Depth",
+     "name": "Jordan Miller",
+     "pos": "SG/SF",
+     "from": "LAC",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "from": "DAL",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -1212,19 +1220,27 @@
      "kind": "external"
     },
     {
-     "name": "Tim Hardaway Jr.",
+     "name": "Javonte Green",
      "pos": "SG/SF",
-     "from": "DEN",
-     "cost_M": 7,
-     "tool": "Depth",
+     "from": "DET",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Jusuf Nurki\u0107",
-     "pos": "C",
-     "from": "UTA",
-     "cost_M": 7,
-     "tool": "Depth",
+     "name": "Gary Payton II",
+     "pos": "SG/SF",
+     "from": "GSW",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Mike Conley",
+     "pos": "PG",
+     "from": "MIN",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -1696,27 +1712,27 @@
      "kind": "external"
     },
     {
-     "name": "Brandon Williams",
-     "pos": "PG/SG",
-     "from": "DAL",
-     "cost_M": 7,
-     "tool": "Depth",
+     "name": "Thomas Bryant",
+     "pos": "C",
+     "from": "CLE",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Luguentz Dort",
+     "name": "Jordan Walsh",
      "pos": "SF/PF",
-     "from": "OKC",
-     "cost_M": 7,
-     "tool": "Depth",
+     "from": "BOS",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Sandro Mamukelashvili",
-     "pos": "C/PF",
-     "from": "TOR",
-     "cost_M": 7,
-     "tool": "Depth",
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "from": "DAL",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -2144,27 +2160,27 @@
      "kind": "external"
     },
     {
-     "name": "Brandon Williams",
-     "pos": "PG/SG",
+     "name": "Ousmane Dieng",
+     "pos": "PF/C",
+     "from": "MIL",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Spencer Jones",
+     "pos": "SF/PF",
+     "from": "DEN",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
      "from": "DAL",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Ziaire Williams",
-     "pos": "SF/PF",
-     "from": "BKN",
-     "cost_M": 6,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Dean Wade",
-     "pos": "SF/PF",
-     "from": "CLE",
-     "cost_M": 6,
-     "tool": "Depth",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -3186,27 +3202,27 @@
      "kind": "external"
     },
     {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "De'Anthony Melton",
+     "name": "Bruce Brown",
      "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 7,
-     "tool": "Depth",
+     "from": "DEN",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Jaxson Hayes",
+     "name": "Thomas Bryant",
      "pos": "C",
-     "from": "LAL",
-     "cost_M": 6,
-     "tool": "Depth",
+     "from": "CLE",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Javon Small",
+     "pos": "PG/SG",
+     "from": "MEM",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -3720,7 +3736,7 @@
      "pos": "SG/PG",
      "from": "ATL",
      "cost_M": 6,
-     "tool": "Depth",
+     "tool": "Mid-level",
      "kind": "external"
     }
    ],
@@ -5273,27 +5289,27 @@
      "kind": "external"
     },
     {
-     "name": "Harrison Barnes",
-     "pos": "PF/SF",
-     "from": "SAS",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Tobias Harris",
-     "pos": "PF/SF",
+     "name": "Javonte Green",
+     "pos": "SG/SF",
      "from": "DET",
-     "cost_M": 7,
-     "tool": "Depth",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Brook Lopez",
+     "name": "Dwight Powell",
      "pos": "C",
-     "from": "LAC",
-     "cost_M": 7,
-     "tool": "Depth",
+     "from": "DAL",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Mike Conley",
+     "pos": "PG",
+     "from": "MIN",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -5774,27 +5790,27 @@
      "kind": "external"
     },
     {
-     "name": "Jusuf Nurki\u0107",
-     "pos": "C",
-     "from": "UTA",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Kevin Huerter",
+     "name": "Gary Payton II",
      "pos": "SG/SF",
-     "from": "DET",
-     "cost_M": 6,
-     "tool": "Depth",
+     "from": "GSW",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Russell Westbrook",
-     "pos": "PG/SG",
-     "from": "SAC",
-     "cost_M": 5,
-     "tool": "Depth",
+     "name": "Taurean Prince",
+     "pos": "SF/SG",
+     "from": "MIL",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Landry Shamet",
+     "pos": "SG/SF",
+     "from": "NYK",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -7342,27 +7358,27 @@
      "kind": "external"
     },
     {
-     "name": "Brandon Williams",
-     "pos": "PG/SG",
+     "name": "Josh Minott",
+     "pos": "PF/SF",
+     "from": "BKN",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
      "from": "DAL",
-     "cost_M": 7,
-     "tool": "Depth",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Jaxson Hayes",
+     "name": "Thomas Bryant",
      "pos": "C",
-     "from": "LAL",
-     "cost_M": 6,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Jock Landale",
-     "pos": "C",
-     "from": "ATL",
-     "cost_M": 6,
-     "tool": "Depth",
+     "from": "CLE",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -7800,27 +7816,27 @@
      "kind": "external"
     },
     {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 7,
-     "tool": "Depth",
+     "name": "Thomas Bryant",
+     "pos": "C",
+     "from": "CLE",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Jaxson Hayes",
+     "name": "Drew Eubanks",
      "pos": "C",
-     "from": "LAL",
-     "cost_M": 5,
-     "tool": "Depth",
+     "from": "SAC",
+     "cost_M": 2,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Jock Landale",
+     "name": "Jericho Sims",
      "pos": "C",
-     "from": "ATL",
-     "cost_M": 5,
-     "tool": "Depth",
+     "from": "MIL",
+     "cost_M": 2,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -8285,27 +8301,35 @@
      "kind": "external"
     },
     {
-     "name": "Jusuf Nurki\u0107",
-     "pos": "C",
-     "from": "UTA",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "De'Anthony Melton",
+     "name": "Bruce Brown",
      "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 7,
-     "tool": "Depth",
+     "from": "DEN",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Jaxson Hayes",
-     "pos": "C",
-     "from": "LAL",
-     "cost_M": 5,
-     "tool": "Depth",
+     "name": "Tyus Jones",
+     "pos": "PG",
+     "from": "DEN",
+     "cost_M": 2,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Javon Small",
+     "pos": "PG/SG",
+     "from": "MEM",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Sharife Cooper",
+     "pos": "PG",
+     "from": "WAS",
+     "cost_M": 2,
+     "tool": "Mid-level",
      "kind": "external"
     }
    ],
@@ -9329,18 +9353,26 @@
      "kind": "external"
     },
     {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "from": "DET",
-     "cost_M": 6,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
      "name": "Jamal Shead",
      "pos": "PG/SG",
      "from": "TOR",
      "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Jericho Sims",
+     "pos": "C",
+     "from": "MIL",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Javon Small",
+     "pos": "PG/SG",
+     "from": "MEM",
+     "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
     }
@@ -10639,7 +10671,7 @@
      "pos": "C",
      "from": "UTA",
      "cost_M": 6,
-     "tool": "Depth",
+     "tool": "Mid-level",
      "kind": "external"
     },
     {
@@ -11075,7 +11107,7 @@
      "pos": "PF/SF",
      "from": "SAS",
      "cost_M": 7,
-     "tool": "Depth",
+     "tool": "Mid-level",
      "kind": "external"
     }
    ],
@@ -12118,27 +12150,27 @@
      "kind": "external"
     },
     {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Sandro Mamukelashvili",
-     "pos": "C/PF",
-     "from": "TOR",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "De'Anthony Melton",
+     "name": "Jamal Shead",
      "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 7,
-     "tool": "Depth",
+     "from": "TOR",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Josh Minott",
+     "pos": "PF/SF",
+     "from": "BKN",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Thomas Bryant",
+     "pos": "C",
+     "from": "CLE",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -13030,27 +13062,27 @@
      "kind": "external"
     },
     {
-     "name": "Tobias Harris",
-     "pos": "PF/SF",
-     "from": "DET",
-     "cost_M": 7,
-     "tool": "Depth",
+     "name": "Russell Westbrook",
+     "pos": "PG/SG",
+     "from": "SAC",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Brook Lopez",
+     "name": "Andre Drummond",
      "pos": "C",
-     "from": "LAC",
-     "cost_M": 6,
-     "tool": "Depth",
+     "from": "PHI",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Khris Middleton",
-     "pos": "SF/PF",
+     "name": "Dwight Powell",
+     "pos": "C",
      "from": "DAL",
-     "cost_M": 4,
-     "tool": "Depth",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -13488,11 +13520,19 @@
      "kind": "external"
     },
     {
-     "name": "Lonzo Ball",
+     "name": "Tyus Jones",
+     "pos": "PG",
+     "from": "DEN",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Jamaree Bouyea",
      "pos": "PG/SG",
-     "from": "CLE",
-     "cost_M": 4,
-     "tool": "Depth",
+     "from": "PHX",
+     "cost_M": 1,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -13937,27 +13977,27 @@
      "kind": "external"
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "from": "POR",
-     "cost_M": 7,
-     "tool": "Depth",
+     "name": "Tyus Jones",
+     "pos": "PG",
+     "from": "DEN",
+     "cost_M": 2,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 7,
-     "tool": "Depth",
+     "name": "Ryan Nembhard",
+     "pos": "PG",
+     "from": "DAL",
+     "cost_M": 2,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "De'Anthony Melton",
-     "pos": "PG/SG",
-     "from": "GSW",
-     "cost_M": 7,
-     "tool": "Depth",
+     "name": "Sharife Cooper",
+     "pos": "PG",
+     "from": "WAS",
+     "cost_M": 2,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -14416,27 +14456,27 @@
      "kind": "external"
     },
     {
-     "name": "Jusuf Nurki\u0107",
-     "pos": "C",
-     "from": "UTA",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Jordan Goodwin",
-     "pos": "SG/SF",
-     "from": "PHX",
-     "cost_M": 7,
-     "tool": "Depth",
-     "kind": "external"
-    },
-    {
-     "name": "Dominick Barlow",
+     "name": "Marvin Bagley III",
      "pos": "PF/C",
-     "from": "PHI",
-     "cost_M": 5,
-     "tool": "Depth",
+     "from": "DAL",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Javon Small",
+     "pos": "PG/SG",
+     "from": "MEM",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Landry Shamet",
+     "pos": "SG/SF",
+     "from": "NYK",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     }
    ],

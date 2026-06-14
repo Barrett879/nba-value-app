@@ -249,26 +249,29 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room):
     is ALSO hard-capped by the second apron (`apron_room` = how much is left
     below it AFTER re-signing their own): a team that re-signs its core up to the
     apron can't pile a full mid-level on top — it's capped out, minimums only.
-    Each tool is used once; stops at 5 moves."""
+
+    Each spending tool is a FINITE pool, drawn down as it's used (the mid-level
+    and cap room are both splittable across several players). Once a pool is
+    empty it's gone — an over-the-cap team that spends its whole mid-level on one
+    player can only add veteran minimums after that, NOT a string of $7M deals it
+    has no tool to fund. Stops at 5 external moves."""
     if cap_room >= 8:                                  # cap-space team
         cap_left, exc_left, exc_label = cap_room, 8.0, "Room exception"
-    else:                                              # over the cap
+    else:                                              # over the cap: one mid-level
         cap_left, exc_left, exc_label = 0.0, mle, "Mid-level"
-    out, lowcost, spent = [], 0, 0.0
+    out, mins, spent = [], 0, 0.0
     for x in pursue_rows:
         offer = x["offer_M"]
         if spent + offer > apron_room + 1e-6:          # would cross the 2nd apron -> can't
             continue
-        if cap_left + 1e-6 >= offer:                   # cap-space team, any size
+        if offer <= MIN_SALARY and mins < 3:           # a true veteran minimum (~$2-3M)
+            tool, mins = "Minimum", mins + 1           # checked first -> saves the
+        elif cap_left + 1e-6 >= offer:                 #   exception for bigger targets
             tool, cap_left = "Cap room", cap_left - offer
-        elif offer > MIN_MONEY and exc_left + 1e-6 >= offer:
+        elif exc_left + 1e-6 >= offer:                 # the one exception, split across players
             tool, exc_left = exc_label, exc_left - offer
-        elif offer <= MIN_SALARY and lowcost < 3:      # a true veteran minimum
-            tool, lowcost = "Minimum", lowcost + 1
-        elif offer <= MIN_MONEY and lowcost < 3:       # BAE-level depth
-            tool, lowcost = "Depth", lowcost + 1
         else:
-            continue
+            continue                                   # no tool can fund this offer -> can't sign
         out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
                     "cost_M": offer, "tool": tool})
         spent += offer
