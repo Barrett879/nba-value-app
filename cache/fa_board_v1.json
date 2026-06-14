@@ -113,25 +113,70 @@
    ],
    "plan": [
     {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "cost_M": 15,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jock Landale",
+     "pos": "C",
+     "cost_M": 6,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jonathan Kuminga",
+     "pos": "SF/PF",
+     "cost_M": 12,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Mouhamed Gueye",
+     "pos": "PF/C",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Keaton Wallace",
+     "pos": "PG/SG",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Gabe Vincent",
+     "pos": "PG/SG",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Isaiah Hartenstein",
      "pos": "C",
      "from": "OKC",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Brandon Williams",
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jaxson Hayes",
      "pos": "C",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -218,48 +263,66 @@
       "name": "CJ McCollum",
       "pos": "SG/PG",
       "cost_M": 15,
+      "value_M": 15.2,
+      "barrett": 20.5,
       "running_M": 168,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jock Landale",
       "pos": "C",
       "cost_M": 6,
+      "value_M": 6.2,
+      "barrett": 11.7,
       "running_M": 174,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jonathan Kuminga",
       "pos": "SF/PF",
       "cost_M": 12,
+      "value_M": 12.3,
+      "barrett": 11.2,
       "running_M": 186,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Mouhamed Gueye",
       "pos": "PF/C",
       "cost_M": 2,
+      "value_M": 6.8,
+      "barrett": 7.2,
       "running_M": 188,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Keaton Wallace",
       "pos": "PG/SG",
       "cost_M": 3,
+      "value_M": 2.6,
+      "barrett": 2.6,
       "running_M": 191,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Gabe Vincent",
       "pos": "PG/SG",
       "cost_M": 3,
+      "value_M": 2.9,
+      "barrett": 0.9,
       "running_M": 194,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -622,39 +685,65 @@
    ],
    "plan": [
     {
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "cost_M": 6,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Ziaire Williams",
+     "pos": "SF/PF",
+     "cost_M": 6,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Josh Minott",
+     "pos": "PF/SF",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
      "from": "MIL",
      "cost_M": 27,
-     "tool": "Cap room"
+     "tool": "Cap room",
+     "kind": "external"
     },
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 8,
-     "tool": "Room exception"
+     "tool": "Room exception",
+     "kind": "external"
     },
     {
      "name": "Jordan Goodwin",
      "pos": "SG/SF",
      "from": "PHX",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jaden Ivey",
      "pos": "PG/SG",
      "from": "CHI",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Luke Kennard",
      "pos": "SG/PG",
      "from": "LAL",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -705,24 +794,33 @@
       "name": "Day'Ron Sharpe",
       "pos": "C",
       "cost_M": 6,
+      "value_M": 13.1,
+      "barrett": 13.7,
       "running_M": 127,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Ziaire Williams",
       "pos": "SF/PF",
       "cost_M": 6,
+      "value_M": 6.5,
+      "barrett": 10.7,
       "running_M": 133,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Josh Minott",
       "pos": "PF/SF",
       "cost_M": 3,
+      "value_M": 5.2,
+      "barrett": 9.2,
       "running_M": 136,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -1085,25 +1183,49 @@
    ],
    "plan": [
     {
+     "name": "Neemias Queta",
+     "pos": "C",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Nikola Vu\u010devi\u0107",
+     "pos": "C/PF",
+     "cost_M": 10,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jordan Walsh",
+     "pos": "SF/PF",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Norman Powell",
      "pos": "SG/SF",
      "from": "MIA",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Tim Hardaway Jr.",
      "pos": "SG/SF",
      "from": "DEN",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jusuf Nurki\u0107",
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -1154,24 +1276,33 @@
       "name": "Neemias Queta",
       "pos": "C",
       "cost_M": 3,
+      "value_M": 25.5,
+      "barrett": 21.3,
       "running_M": 181,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Nikola Vu\u010devi\u0107",
       "pos": "C/PF",
       "cost_M": 10,
+      "value_M": 10.4,
+      "barrett": 19.7,
       "running_M": 191,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jordan Walsh",
       "pos": "SF/PF",
       "cost_M": 2,
+      "value_M": 4.6,
+      "barrett": 8.4,
       "running_M": 193,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -1550,32 +1681,43 @@
    ],
    "plan": [
     {
+     "name": "Coby White",
+     "pos": "PG/SG",
+     "cost_M": 16,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Bennedict Mathurin",
      "pos": "SF/PF",
      "from": "LAC",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Brandon Williams",
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
      "from": "TOR",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Josh Minott",
      "pos": "PF/SF",
      "from": "BKN",
      "cost_M": 5,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -1602,8 +1744,11 @@
       "name": "Coby White",
       "pos": "PG/SG",
       "cost_M": 16,
+      "value_M": 16.4,
+      "barrett": 14.9,
       "running_M": 164,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -1857,7 +2002,7 @@
    "cap_room_M": 72,
    "exception_M": 15,
    "committed_M": 93,
-   "resign_cost_M": 50,
+   "resign_cost_M": 31,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -1962,39 +2107,65 @@
    ],
    "plan": [
     {
-     "name": "Peyton Watson",
+     "name": "Collin Sexton",
+     "pos": "PG/SG",
+     "cost_M": 14,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Anfernee Simons",
+     "pos": "PG/SG",
+     "cost_M": 15,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Leonard Miller",
      "pos": "SF/PF",
-     "from": "DEN",
-     "cost_M": 19,
-     "tool": "Cap room"
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "cost_M": 41,
+     "tool": "Cap room",
+     "kind": "external"
     },
     {
      "name": "Quentin Grimes",
      "pos": "SG/SF",
      "from": "PHI",
      "cost_M": 8,
-     "tool": "Room exception"
+     "tool": "Room exception",
+     "kind": "external"
     },
     {
      "name": "Brandon Williams",
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Ziaire Williams",
      "pos": "SF/PF",
      "from": "BKN",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Dominick Barlow",
      "pos": "PF/C",
      "from": "PHI",
      "cost_M": 5,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -2075,55 +2246,73 @@
     "committed_M": 93,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 143,
+    "all_in_M": 124,
     "keeps": [
      {
       "name": "Collin Sexton",
       "pos": "PG/SG",
       "cost_M": 14,
+      "value_M": 13.9,
+      "barrett": 14.5,
       "running_M": 107,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Anfernee Simons",
       "pos": "PG/SG",
       "cost_M": 15,
+      "value_M": 15.2,
+      "barrett": 12.7,
       "running_M": 122,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jaden Ivey",
       "pos": "PG/SG",
       "cost_M": 9,
-      "running_M": 131,
-      "zone": "ok",
-      "keep": true
+      "value_M": 9.1,
+      "barrett": 6.3,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      },
      {
       "name": "Leonard Miller",
       "pos": "SF/PF",
       "cost_M": 2,
-      "running_M": 133,
+      "value_M": 3.3,
+      "barrett": 6.0,
+      "running_M": 124,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Nick Richards",
       "pos": "C",
       "cost_M": 6,
-      "running_M": 139,
-      "zone": "ok",
-      "keep": true
+      "value_M": 5.8,
+      "barrett": 4.6,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      },
      {
       "name": "Guerschon Yabusele",
       "pos": "PF/C",
       "cost_M": 4,
-      "running_M": 143,
-      "zone": "ok",
-      "keep": true
+      "value_M": 4.5,
+      "barrett": 4.1,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      }
     ]
    },
@@ -2539,38 +2728,50 @@
     "committed_M": 222,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 242,
+    "all_in_M": 238,
     "keeps": [
      {
       "name": "Keon Ellis",
       "pos": "SG/PG",
       "cost_M": 7,
+      "value_M": 6.8,
+      "barrett": 9.2,
       "running_M": 229,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Dean Wade",
       "pos": "SF/PF",
       "cost_M": 7,
+      "value_M": 6.8,
+      "barrett": 9.1,
       "running_M": 236,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Craig Porter Jr.",
       "pos": "PG",
       "cost_M": 2,
+      "value_M": 6.2,
+      "barrett": 8.6,
       "running_M": 238,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Thomas Bryant",
       "pos": "C",
       "cost_M": 4,
-      "running_M": 242,
-      "zone": "over",
+      "value_M": 4.2,
+      "barrett": 6.3,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
       "keep": false
      }
     ]
@@ -2824,7 +3025,7 @@
    "cap_room_M": 58,
    "exception_M": 15,
    "committed_M": 107,
-   "resign_cost_M": 31,
+   "resign_cost_M": 27,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -2934,39 +3135,72 @@
    ],
    "plan": [
     {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "cost_M": 12,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "cost_M": 4,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Khris Middleton",
+     "pos": "SF/PF",
+     "cost_M": 9,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Ryan Nembhard",
+     "pos": "PG",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
      "from": "MIL",
      "cost_M": 27,
-     "tool": "Cap room"
+     "tool": "Cap room",
+     "kind": "external"
     },
     {
      "name": "Daniss Jenkins",
      "pos": "PG/SG",
      "from": "DET",
      "cost_M": 8,
-     "tool": "Room exception"
+     "tool": "Room exception",
+     "kind": "external"
     },
     {
      "name": "John Collins",
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Luke Kennard",
      "pos": "SG/PG",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -3035,47 +3269,62 @@
     "committed_M": 107,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 138,
+    "all_in_M": 134,
     "keeps": [
      {
       "name": "Brandon Williams",
       "pos": "PG/SG",
       "cost_M": 12,
+      "value_M": 11.8,
+      "barrett": 15.0,
       "running_M": 119,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Marvin Bagley III",
       "pos": "PF/C",
       "cost_M": 4,
+      "value_M": 4.3,
+      "barrett": 12.1,
       "running_M": 123,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Khris Middleton",
       "pos": "SF/PF",
       "cost_M": 9,
+      "value_M": 9.0,
+      "barrett": 9.0,
       "running_M": 132,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Ryan Nembhard",
       "pos": "PG",
       "cost_M": 2,
+      "value_M": 2.2,
+      "barrett": 6.7,
       "running_M": 134,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Dwight Powell",
       "pos": "C",
       "cost_M": 4,
-      "running_M": 138,
-      "zone": "ok",
-      "keep": true
+      "value_M": 3.9,
+      "barrett": 5.9,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      }
     ]
    },
@@ -3441,7 +3690,8 @@
      "pos": "SG/PG",
      "from": "ATL",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -3522,54 +3772,72 @@
     "committed_M": 216,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 260,
+    "all_in_M": 256,
     "keeps": [
      {
       "name": "Peyton Watson",
       "pos": "SF/PF",
       "cost_M": 22,
+      "value_M": 21.6,
+      "barrett": 15.5,
       "running_M": 238,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Tim Hardaway Jr.",
       "pos": "SG/SF",
       "cost_M": 9,
+      "value_M": 8.8,
+      "barrett": 12.7,
       "running_M": 246,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Bruce Brown",
       "pos": "PG/SG",
       "cost_M": 4,
+      "value_M": 4.5,
+      "barrett": 9.3,
       "running_M": 250,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Spencer Jones",
       "pos": "SF/PF",
       "cost_M": 4,
+      "value_M": 4.0,
+      "barrett": 7.4,
       "running_M": 254,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Jalen Pickett",
       "pos": "SG",
       "cost_M": 2,
+      "value_M": 3.2,
+      "barrett": 3.4,
       "running_M": 256,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Tyus Jones",
       "pos": "PG",
       "cost_M": 4,
-      "running_M": 260,
-      "zone": "over",
+      "value_M": 3.9,
+      "barrett": 1.5,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
       "keep": false
      }
     ]
@@ -3936,11 +4204,47 @@
    ],
    "plan": [
     {
+     "name": "Jalen Duren",
+     "pos": "C",
+     "cost_M": 50,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "cost_M": 9,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Javonte Green",
+     "pos": "SG/SF",
+     "cost_M": 6,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Daniss Jenkins",
+     "pos": "PG/SG",
+     "cost_M": 4,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Kevin Huerter",
+     "pos": "SG/SF",
+     "cost_M": 10,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Coby White",
      "pos": "PG/SG",
      "from": "CHA",
      "cost_M": 13,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -4015,40 +4319,55 @@
       "name": "Jalen Duren",
       "pos": "C",
       "cost_M": 50,
+      "value_M": 49.5,
+      "barrett": 28.2,
       "running_M": 180,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Tobias Harris",
       "pos": "PF/SF",
       "cost_M": 9,
+      "value_M": 8.9,
+      "barrett": 16.7,
       "running_M": 189,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Javonte Green",
       "pos": "SG/SF",
       "cost_M": 6,
+      "value_M": 5.6,
+      "barrett": 11.3,
       "running_M": 195,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Daniss Jenkins",
       "pos": "PG/SG",
       "cost_M": 4,
+      "value_M": 10.1,
+      "barrett": 11.1,
       "running_M": 199,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Kevin Huerter",
       "pos": "SG/SF",
       "cost_M": 10,
+      "value_M": 10.3,
+      "barrett": 11.0,
       "running_M": 209,
       "zone": "tax",
+      "worth": true,
       "keep": true
      }
     ]
@@ -4394,11 +4713,47 @@
    ],
    "plan": [
     {
+     "name": "Kristaps Porzi\u0146\u0123is",
+     "pos": "PF/C",
+     "cost_M": 16,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "cost_M": 8,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Gary Payton II",
+     "pos": "SG/SF",
+     "cost_M": 5,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Quinten Post",
+     "pos": "PF/C",
+     "cost_M": 4,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Pat Spencer",
+     "pos": "PG/SG",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Collin Sexton",
      "pos": "PG/SG",
      "from": "CHI",
      "cost_M": 11,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -4473,40 +4828,55 @@
       "name": "Kristaps Porzi\u0146\u0123is",
       "pos": "PF/C",
       "cost_M": 16,
+      "value_M": 15.7,
+      "barrett": 15.2,
       "running_M": 192,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "De'Anthony Melton",
       "pos": "PG/SG",
       "cost_M": 8,
+      "value_M": 8.4,
+      "barrett": 12.3,
       "running_M": 200,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Gary Payton II",
       "pos": "SG/SF",
       "cost_M": 5,
+      "value_M": 4.9,
+      "barrett": 10.1,
       "running_M": 205,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Quinten Post",
       "pos": "PF/C",
       "cost_M": 4,
+      "value_M": 4.1,
+      "barrett": 7.7,
       "running_M": 209,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Pat Spencer",
       "pos": "PG/SG",
       "cost_M": 2,
+      "value_M": 2.5,
+      "barrett": 6.8,
       "running_M": 211,
       "zone": "tax",
+      "worth": true,
       "keep": true
      }
     ]
@@ -4760,7 +5130,7 @@
    "cap_room_M": 5,
    "exception_M": 15,
    "committed_M": 160,
-   "resign_cost_M": 16,
+   "resign_cost_M": 12,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -4864,32 +5234,43 @@
    ],
    "plan": [
     {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "cost_M": 12,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Norman Powell",
      "pos": "SG/SF",
      "from": "MIA",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Harrison Barnes",
      "pos": "PF/SF",
      "from": "SAS",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Tobias Harris",
      "pos": "PF/SF",
      "from": "DET",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Brook Lopez",
      "pos": "C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -4922,23 +5303,29 @@
     "committed_M": 160,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 176,
+    "all_in_M": 172,
     "keeps": [
      {
       "name": "Tari Eason",
       "pos": "SF/SG",
       "cost_M": 12,
+      "value_M": 12.1,
+      "barrett": 11.2,
       "running_M": 172,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Josh Okogie",
       "pos": "SG/SF",
       "cost_M": 4,
-      "running_M": 176,
-      "zone": "ok",
-      "keep": true
+      "value_M": 3.5,
+      "barrett": 5.3,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      }
     ]
    },
@@ -5317,32 +5704,50 @@
    ],
    "plan": [
     {
+     "name": "Micah Potter",
+     "pos": "PF/C",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Kobe Brown",
+     "pos": "SF/PF",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Norman Powell",
      "pos": "SG/SF",
      "from": "MIA",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Jusuf Nurki\u0107",
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Kevin Huerter",
      "pos": "SG/SF",
      "from": "DET",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Russell Westbrook",
      "pos": "PG/SG",
      "from": "SAC",
      "cost_M": 5,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -5381,16 +5786,22 @@
       "name": "Micah Potter",
       "pos": "PF/C",
       "cost_M": 3,
+      "value_M": 3.4,
+      "barrett": 11.4,
       "running_M": 155,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Kobe Brown",
       "pos": "SF/PF",
       "cost_M": 3,
+      "value_M": 2.8,
+      "barrett": 4.4,
       "running_M": 158,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -5644,7 +6055,7 @@
    "cap_room_M": 5,
    "exception_M": 15,
    "committed_M": 160,
-   "resign_cost_M": 49,
+   "resign_cost_M": 45,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -5740,11 +6151,48 @@
    ],
    "plan": [
     {
-     "name": "Peyton Watson",
+     "name": "Bennedict Mathurin",
      "pos": "SF/PF",
-     "from": "DEN",
-     "cost_M": 13,
-     "tool": "Mid-level"
+     "cost_M": 24,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "cost_M": 11,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "cost_M": 8,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jordan Miller",
+     "pos": "SG/SF",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "from": "SAS",
+     "cost_M": 15,
+     "tool": "Mid-level",
+     "kind": "external"
+    },
+    {
+     "name": "Cam Thomas",
+     "pos": "SG",
+     "from": "MIL",
+     "cost_M": 2,
+     "tool": "Minimum",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -5813,47 +6261,62 @@
     "committed_M": 160,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 209,
+    "all_in_M": 205,
     "keeps": [
      {
       "name": "Bennedict Mathurin",
       "pos": "SF/PF",
       "cost_M": 24,
+      "value_M": 23.8,
+      "barrett": 17.5,
       "running_M": 184,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "John Collins",
       "pos": "PF/C",
       "cost_M": 11,
+      "value_M": 10.6,
+      "barrett": 16.7,
       "running_M": 195,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Brook Lopez",
       "pos": "C",
       "cost_M": 8,
+      "value_M": 7.7,
+      "barrett": 11.0,
       "running_M": 203,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jordan Miller",
       "pos": "SG/SF",
       "cost_M": 2,
+      "value_M": 3.5,
+      "barrett": 10.7,
       "running_M": 205,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Nicolas Batum",
       "pos": "PF/SF",
       "cost_M": 4,
-      "running_M": 209,
-      "zone": "tax",
-      "keep": true
+      "value_M": 4.1,
+      "barrett": 5.3,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      }
     ]
    },
@@ -6204,11 +6667,54 @@
    ],
    "plan": [
     {
+     "name": "LeBron James",
+     "pos": "PF/SF",
+     "cost_M": 40,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Austin Reaves",
+     "pos": "SG/PG",
+     "cost_M": 41,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Deandre Ayton",
+     "pos": "C",
+     "cost_M": 16,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "cost_M": 10,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "cost_M": 6,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Rui Hachimura",
+     "pos": "SF/PF",
+     "cost_M": 14,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Gary Payton II",
      "pos": "SG/SF",
      "from": "GSW",
      "cost_M": 2,
-     "tool": "Minimum"
+     "tool": "Minimum",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -6307,56 +6813,77 @@
       "name": "LeBron James",
       "pos": "PF/SF",
       "cost_M": 40,
+      "value_M": 39.8,
+      "barrett": 30.2,
       "running_M": 133,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Austin Reaves",
       "pos": "SG/PG",
       "cost_M": 41,
+      "value_M": 41.2,
+      "barrett": 28.9,
       "running_M": 174,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Deandre Ayton",
       "pos": "C",
       "cost_M": 16,
+      "value_M": 15.7,
+      "barrett": 18.4,
       "running_M": 190,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Marcus Smart",
       "pos": "SG/PG",
       "cost_M": 10,
+      "value_M": 10.2,
+      "barrett": 13.5,
       "running_M": 200,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jaxson Hayes",
       "pos": "C",
       "cost_M": 6,
+      "value_M": 6.2,
+      "barrett": 12.4,
       "running_M": 206,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Rui Hachimura",
       "pos": "SF/PF",
       "cost_M": 14,
+      "value_M": 14.2,
+      "barrett": 10.5,
       "running_M": 220,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Luke Kennard",
       "pos": "SG/PG",
       "cost_M": 7,
+      "value_M": 7.3,
+      "barrett": 10.0,
       "running_M": 227,
       "zone": "over",
+      "worth": true,
       "keep": false
      }
     ]
@@ -6744,39 +7271,51 @@
    ],
    "plan": [
     {
+     "name": "Olivier-Maxence Prosper",
+     "pos": "PF/C",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Julian Champagnie",
      "pos": "SF/PF",
      "from": "SAS",
      "cost_M": 21,
-     "tool": "Cap room"
+     "tool": "Cap room",
+     "kind": "external"
     },
     {
      "name": "Quentin Grimes",
      "pos": "SG/SF",
      "from": "PHI",
      "cost_M": 8,
-     "tool": "Room exception"
+     "tool": "Room exception",
+     "kind": "external"
     },
     {
      "name": "Brandon Williams",
      "pos": "PG/SG",
      "from": "DAL",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jaxson Hayes",
      "pos": "C",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jock Landale",
      "pos": "C",
      "from": "ATL",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -6803,8 +7342,11 @@
       "name": "Olivier-Maxence Prosper",
       "pos": "PF/C",
       "cost_M": 2,
+      "value_M": 3.2,
+      "barrett": 9.5,
       "running_M": 144,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -7058,7 +7600,7 @@
    "cap_room_M": 2,
    "exception_M": 15,
    "committed_M": 163,
-   "resign_cost_M": 27,
+   "resign_cost_M": 21,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -7165,32 +7707,50 @@
    ],
    "plan": [
     {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "cost_M": 19,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Isaiah Hartenstein",
      "pos": "C",
      "from": "OKC",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "John Collins",
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jaxson Hayes",
      "pos": "C",
      "from": "LAL",
      "cost_M": 5,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jock Landale",
      "pos": "C",
      "from": "ATL",
      "cost_M": 5,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -7235,31 +7795,40 @@
     "committed_M": 163,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 190,
+    "all_in_M": 184,
     "keeps": [
      {
       "name": "Norman Powell",
       "pos": "SG/SF",
       "cost_M": 19,
+      "value_M": 18.7,
+      "barrett": 22.0,
       "running_M": 182,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Pelle Larsson",
       "pos": "SG/SF",
       "cost_M": 2,
+      "value_M": 13.1,
+      "barrett": 16.3,
       "running_M": 184,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Simone Fontecchio",
       "pos": "SF/PF",
       "cost_M": 6,
-      "running_M": 190,
-      "zone": "ok",
-      "keep": true
+      "value_M": 6.5,
+      "barrett": 6.9,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      }
     ]
    },
@@ -7512,7 +8081,7 @@
    "cap_room_M": 27,
    "exception_M": 15,
    "committed_M": 138,
-   "resign_cost_M": 46,
+   "resign_cost_M": 40,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -7602,32 +8171,71 @@
    ],
    "plan": [
     {
+     "name": "Kevin Porter Jr.",
+     "pos": "PG/SG",
+     "cost_M": 27,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jericho Sims",
+     "pos": "C",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Taurean Prince",
+     "pos": "SF/SG",
+     "cost_M": 4,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Cam Thomas",
+     "pos": "SG",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Cole Anthony",
+     "pos": "PG/SG",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Isaiah Hartenstein",
      "pos": "C",
      "from": "OKC",
      "cost_M": 13,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Jusuf Nurki\u0107",
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Luke Kennard",
      "pos": "SG/PG",
      "from": "LAL",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -7708,54 +8316,72 @@
     "committed_M": 138,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 184,
+    "all_in_M": 178,
     "keeps": [
      {
       "name": "Kevin Porter Jr.",
       "pos": "PG/SG",
       "cost_M": 27,
+      "value_M": 26.9,
+      "barrett": 22.9,
       "running_M": 165,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jericho Sims",
       "pos": "C",
       "cost_M": 3,
+      "value_M": 3.1,
+      "barrett": 9.9,
       "running_M": 168,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Taurean Prince",
       "pos": "SF/SG",
       "cost_M": 4,
+      "value_M": 4.0,
+      "barrett": 7.4,
       "running_M": 172,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Cam Thomas",
       "pos": "SG",
       "cost_M": 3,
+      "value_M": 2.9,
+      "barrett": 6.9,
       "running_M": 175,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Ousmane Dieng",
       "pos": "PF/C",
       "cost_M": 6,
-      "running_M": 181,
-      "zone": "ok",
-      "keep": true
+      "value_M": 5.5,
+      "barrett": 6.3,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      },
      {
       "name": "Cole Anthony",
       "pos": "PG/SG",
       "cost_M": 3,
-      "running_M": 184,
+      "value_M": 3.1,
+      "barrett": 4.6,
+      "running_M": 178,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -8009,7 +8635,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 175,
-   "resign_cost_M": 36,
+   "resign_cost_M": 32,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -8111,18 +8737,33 @@
    ],
    "plan": [
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "from": "OKC",
-     "cost_M": 10,
-     "tool": "Mid-level"
+     "name": "Ayo Dosunmu",
+     "pos": "PG/SG",
+     "cost_M": 22,
+     "tool": "Re-sign",
+     "kind": "resign"
     },
     {
-     "name": "Ryan Nembhard",
-     "pos": "PG",
-     "from": "DAL",
-     "cost_M": 1,
-     "tool": "Minimum"
+     "name": "Bones Hyland",
+     "pos": "PG/SG",
+     "cost_M": 6,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Kyle Anderson",
+     "pos": "SF/PF",
+     "cost_M": 4,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -8179,39 +8820,51 @@
     "committed_M": 175,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 211,
+    "all_in_M": 207,
     "keeps": [
      {
       "name": "Ayo Dosunmu",
       "pos": "PG/SG",
       "cost_M": 22,
+      "value_M": 21.7,
+      "barrett": 17.6,
       "running_M": 197,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Bones Hyland",
       "pos": "PG/SG",
       "cost_M": 6,
+      "value_M": 5.5,
+      "barrett": 9.4,
       "running_M": 203,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Kyle Anderson",
       "pos": "SF/PF",
       "cost_M": 4,
+      "value_M": 3.9,
+      "barrett": 8.6,
       "running_M": 207,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Mike Conley",
       "pos": "PG",
       "cost_M": 4,
-      "running_M": 211,
-      "zone": "tax",
-      "keep": true
+      "value_M": 3.9,
+      "barrett": 5.3,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      }
     ]
    },
@@ -8590,25 +9243,35 @@
    ],
    "plan": [
     {
+     "name": "Karlo Matkovi\u0107",
+     "pos": "PF/C",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Mark Williams",
      "pos": "C",
      "from": "PHX",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Daniss Jenkins",
      "pos": "PG/SG",
      "from": "DET",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jamal Shead",
      "pos": "PG/SG",
      "from": "TOR",
      "cost_M": 3,
-     "tool": "Minimum"
+     "tool": "Minimum",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -8635,8 +9298,11 @@
       "name": "Karlo Matkovi\u0107",
       "pos": "PF/C",
       "cost_M": 2,
+      "value_M": 4.0,
+      "barrett": 8.8,
       "running_M": 198,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -8992,11 +9658,26 @@
    ],
    "plan": [
     {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "cost_M": 10,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Landry Shamet",
+     "pos": "SG/SF",
+     "cost_M": 5,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Ryan Nembhard",
      "pos": "PG",
      "from": "DAL",
      "cost_M": 1,
-     "tool": "Minimum"
+     "tool": "Minimum",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -9053,38 +9734,50 @@
     "committed_M": 206,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 228,
+    "all_in_M": 220,
     "keeps": [
      {
       "name": "Mitchell Robinson",
       "pos": "C",
       "cost_M": 10,
+      "value_M": 10.5,
+      "barrett": 13.1,
       "running_M": 216,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Landry Shamet",
       "pos": "SG/SF",
       "cost_M": 5,
+      "value_M": 5.1,
+      "barrett": 9.2,
       "running_M": 220,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jordan Clarkson",
       "pos": "PG/SG",
       "cost_M": 4,
-      "running_M": 224,
-      "zone": "over",
+      "value_M": 4.2,
+      "barrett": 4.9,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
       "keep": false
      },
      {
       "name": "Mohamed Diawara",
       "pos": "PF/SF",
       "cost_M": 4,
-      "running_M": 228,
-      "zone": "over",
+      "value_M": 3.5,
+      "barrett": 2.7,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
       "keep": false
      }
     ]
@@ -9500,30 +10193,39 @@
     "committed_M": 246,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 279,
+    "all_in_M": 275,
     "keeps": [
      {
       "name": "Isaiah Hartenstein",
       "pos": "C",
       "cost_M": 17,
+      "value_M": 16.8,
+      "barrett": 18.2,
       "running_M": 263,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Luguentz Dort",
       "pos": "SF/PF",
       "cost_M": 12,
+      "value_M": 12.3,
+      "barrett": 8.5,
       "running_M": 275,
       "zone": "over",
+      "worth": true,
       "keep": false
      },
      {
       "name": "Kenrich Williams",
       "pos": "PF/C",
       "cost_M": 4,
-      "running_M": 279,
-      "zone": "over",
+      "value_M": 4.3,
+      "barrett": 6.2,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
       "keep": false
      }
     ]
@@ -9729,7 +10431,7 @@
    "cap_room_M": 0,
    "exception_M": 6,
    "committed_M": 215,
-   "resign_cost_M": 4,
+   "resign_cost_M": 0,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -9850,11 +10552,20 @@
    ],
    "plan": [
     {
-     "name": "Bones Hyland",
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "from": "UTA",
+     "cost_M": 6,
+     "tool": "Depth",
+     "kind": "external"
+    },
+    {
+     "name": "Jamaree Bouyea",
      "pos": "PG/SG",
-     "from": "MIN",
-     "cost_M": 3,
-     "tool": "Minimum"
+     "from": "PHX",
+     "cost_M": 1,
+     "tool": "Minimum",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -9887,22 +10598,28 @@
     "committed_M": 215,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 223,
+    "all_in_M": 215,
     "keeps": [
      {
       "name": "Jevon Carter",
       "pos": "PG/SG",
       "cost_M": 4,
-      "running_M": 219,
-      "zone": "tax",
-      "keep": true
+      "value_M": 3.5,
+      "barrett": 4.5,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      },
      {
       "name": "Jett Howard",
       "pos": "SF/PF",
       "cost_M": 4,
-      "running_M": 223,
-      "zone": "over",
+      "value_M": 4.0,
+      "barrett": 1.9,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
       "keep": false
      }
     ]
@@ -10259,11 +10976,47 @@
    ],
    "plan": [
     {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "cost_M": 13,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "cost_M": 12,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Dominick Barlow",
+     "pos": "PF/C",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Andre Drummond",
+     "pos": "C",
+     "cost_M": 4,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Trendon Watford",
+     "pos": "PF/SF",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Harrison Barnes",
      "pos": "PF/SF",
      "from": "SAS",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -10338,40 +11091,55 @@
       "name": "Quentin Grimes",
       "pos": "SG/SF",
       "cost_M": 13,
+      "value_M": 13.4,
+      "barrett": 15.2,
       "running_M": 193,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Kelly Oubre Jr.",
       "pos": "SF/PF",
       "cost_M": 12,
+      "value_M": 12.4,
+      "barrett": 12.4,
       "running_M": 205,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Dominick Barlow",
       "pos": "PF/C",
       "cost_M": 3,
+      "value_M": 6.8,
+      "barrett": 10.9,
       "running_M": 208,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Andre Drummond",
       "pos": "C",
       "cost_M": 4,
+      "value_M": 3.9,
+      "barrett": 8.1,
       "running_M": 212,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Trendon Watford",
       "pos": "PF/SF",
       "cost_M": 3,
+      "value_M": 2.9,
+      "barrett": 5.8,
       "running_M": 215,
       "zone": "tax",
+      "worth": true,
       "keep": true
      }
     ]
@@ -10738,11 +11506,40 @@
    ],
    "plan": [
     {
+     "name": "Collin Gillespie",
+     "pos": "PG",
+     "cost_M": 27,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "cost_M": 16,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jordan Goodwin",
+     "pos": "SG/SF",
+     "cost_M": 9,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jamaree Bouyea",
+     "pos": "PG/SG",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "John Collins",
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 8,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -10805,32 +11602,44 @@
       "name": "Collin Gillespie",
       "pos": "PG",
       "cost_M": 27,
+      "value_M": 26.6,
+      "barrett": 21.6,
       "running_M": 187,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Mark Williams",
       "pos": "C",
       "cost_M": 16,
+      "value_M": 15.6,
+      "barrett": 17.5,
       "running_M": 203,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jordan Goodwin",
       "pos": "SG/SF",
       "cost_M": 9,
+      "value_M": 8.8,
+      "barrett": 11.6,
       "running_M": 212,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jamaree Bouyea",
       "pos": "PG/SG",
       "cost_M": 2,
+      "value_M": 2.3,
+      "barrett": 4.9,
       "running_M": 214,
       "zone": "tax",
+      "worth": true,
       "keep": true
      }
     ]
@@ -11204,32 +12013,43 @@
    ],
    "plan": [
     {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "cost_M": 11,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "from": "MIN",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "John Collins",
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
      "from": "TOR",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -11256,8 +12076,11 @@
       "name": "Robert Williams III",
       "pos": "C",
       "cost_M": 11,
+      "value_M": 11.3,
+      "barrett": 14.6,
       "running_M": 168,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -11618,11 +12441,26 @@
    ],
    "plan": [
     {
+     "name": "Russell Westbrook",
+     "pos": "PG/SG",
+     "cost_M": 5,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "cost_M": 12,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Tyus Jones",
      "pos": "PG",
      "from": "DEN",
      "cost_M": 2,
-     "tool": "Minimum"
+     "tool": "Minimum",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -11673,24 +12511,33 @@
       "name": "Russell Westbrook",
       "pos": "PG/SG",
       "cost_M": 5,
+      "value_M": 5.4,
+      "barrett": 19.6,
       "running_M": 208,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Precious Achiuwa",
       "pos": "PF/C",
       "cost_M": 12,
+      "value_M": 12.1,
+      "barrett": 13.1,
       "running_M": 220,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Drew Eubanks",
       "pos": "C",
       "cost_M": 3,
+      "value_M": 3.1,
+      "barrett": 5.7,
       "running_M": 223,
       "zone": "over",
+      "worth": true,
       "keep": false
      }
     ]
@@ -12047,32 +12894,50 @@
    ],
    "plan": [
     {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "cost_M": 10,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Bennedict Mathurin",
      "pos": "SF/PF",
      "from": "LAC",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Tobias Harris",
      "pos": "PF/SF",
      "from": "DET",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Brook Lopez",
      "pos": "C",
      "from": "LAC",
      "cost_M": 6,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Khris Middleton",
      "pos": "SF/PF",
      "from": "DAL",
      "cost_M": 4,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -12111,16 +12976,22 @@
       "name": "Julian Champagnie",
       "pos": "SF/PF",
       "cost_M": 3,
+      "value_M": 21.0,
+      "barrett": 17.7,
       "running_M": 156,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Harrison Barnes",
       "pos": "PF/SF",
       "cost_M": 10,
+      "value_M": 9.5,
+      "barrett": 12.4,
       "running_M": 166,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]
@@ -12481,18 +13352,34 @@
    ],
    "plan": [
     {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "cost_M": 11,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Jamal Shead",
+     "pos": "PG/SG",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "from": "MIN",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Lonzo Ball",
      "pos": "PG/SG",
      "from": "CLE",
      "cost_M": 4,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -12531,16 +13418,22 @@
       "name": "Sandro Mamukelashvili",
       "pos": "C/PF",
       "cost_M": 11,
+      "value_M": 10.6,
+      "barrett": 15.7,
       "running_M": 201,
       "zone": "tax",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Jamal Shead",
       "pos": "PG/SG",
       "cost_M": 2,
+      "value_M": 5.5,
+      "barrett": 10.7,
       "running_M": 203,
       "zone": "tax",
+      "worth": true,
       "keep": true
      }
     ]
@@ -12794,7 +13687,7 @@
    "cap_room_M": 27,
    "exception_M": 15,
    "committed_M": 138,
-   "resign_cost_M": 14,
+   "resign_cost_M": 10,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -12909,39 +13802,51 @@
    ],
    "plan": [
     {
-     "name": "Coby White",
-     "pos": "PG/SG",
-     "from": "CHA",
-     "cost_M": 13,
-     "tool": "Cap room"
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "cost_M": 10,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Peyton Watson",
+     "pos": "SF/PF",
+     "from": "DEN",
+     "cost_M": 17,
+     "tool": "Cap room",
+     "kind": "external"
     },
     {
      "name": "Day'Ron Sharpe",
      "pos": "C",
      "from": "BKN",
      "cost_M": 8,
-     "tool": "Room exception"
+     "tool": "Room exception",
+     "kind": "external"
     },
     {
      "name": "Robert Williams III",
      "pos": "C",
      "from": "POR",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "John Collins",
      "pos": "PF/C",
      "from": "LAC",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "De'Anthony Melton",
      "pos": "PG/SG",
      "from": "GSW",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -12974,23 +13879,29 @@
     "committed_M": 138,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 152,
+    "all_in_M": 148,
     "keeps": [
      {
       "name": "Jusuf Nurki\u0107",
       "pos": "C",
       "cost_M": 10,
+      "value_M": 9.5,
+      "barrett": 17.4,
       "running_M": 148,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Kevin Love",
       "pos": "C/PF",
       "cost_M": 4,
-      "running_M": 152,
-      "zone": "ok",
-      "keep": true
+      "value_M": 3.9,
+      "barrett": 6.0,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      }
     ]
    },
@@ -13365,32 +14276,50 @@
    ],
    "plan": [
     {
+     "name": "Jamir Watkins",
+     "pos": "SG/SF",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Anthony Gill",
+     "pos": "PF/C",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Julian Champagnie",
      "pos": "SF/PF",
      "from": "SAS",
      "cost_M": 15,
-     "tool": "Mid-level"
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "Jusuf Nurki\u0107",
      "pos": "C",
      "from": "UTA",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Jordan Goodwin",
      "pos": "SG/SF",
      "from": "PHX",
      "cost_M": 7,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     },
     {
      "name": "Dominick Barlow",
      "pos": "PF/C",
      "from": "PHI",
      "cost_M": 5,
-     "tool": "Depth"
+     "tool": "Depth",
+     "kind": "external"
     }
    ],
    "resign": [
@@ -13429,16 +14358,22 @@
       "name": "Jamir Watkins",
       "pos": "SG/SF",
       "cost_M": 2,
+      "value_M": 2.2,
+      "barrett": 7.3,
       "running_M": 177,
       "zone": "ok",
+      "worth": true,
       "keep": true
      },
      {
       "name": "Anthony Gill",
       "pos": "PF/C",
       "cost_M": 3,
+      "value_M": 3.1,
+      "barrett": 6.8,
       "running_M": 180,
       "zone": "ok",
+      "worth": true,
       "keep": true
      }
     ]

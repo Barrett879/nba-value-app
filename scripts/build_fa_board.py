@@ -183,11 +183,25 @@ def best_fits_for(rows, needs, thin):
     return out[:3]
 
 
+def _worth_resign(barrett, value_M, cost_M):
+    """Is keeping this free agent cost-effective, or would the team just be
+    re-signing him for the sake of it? Worth it when he's a genuine rotation
+    contributor (Barrett >= 7), a clear bargain (market value well above the keep
+    cost, e.g. a cheap team option), or cheap enough to be a no-risk flier
+    (minimum money). A fair-priced fringe role player on real money walks — the
+    team replaces him with a minimum rather than pay up to keep a replaceable
+    piece."""
+    return barrett >= 7.0 or cost_M <= MIN_SALARY or (value_M - cost_M) >= 5.0
+
+
 def resign_plan(team, resign_rows):
-    """Rank a team's own free agents by quality, run a cumulative payroll total
-    from its committed salary, and flag who pushes it past the second apron (the
-    practical ceiling), i.e. who it realistically can't afford to keep. Skipped
-    when we don't have a plausible committed payroll for the team."""
+    """Rank a team's own free agents by quality and decide who it actually keeps.
+    Two gates: (1) is he WORTH re-signing (cost-effective, not just filling a
+    spot — see `_worth_resign`); (2) does keeping him still fit under the second
+    apron (the practical ceiling). A cumulative payroll total runs over the
+    worth-keeping players in quality order, so the apron line falls where the
+    team runs out of room. Skipped when we don't have a plausible committed
+    payroll for the team."""
     committed = float((CAP_TABLE.get(team) or {}).get("committed_M") or 0.0)
     if committed < 50.0 or not resign_rows:
         return None
@@ -195,11 +209,19 @@ def resign_plan(team, resign_rows):
     tax_r, apron2_r = round(TAX_M), round(APRON2_M)
     keeps = []
     for x in sorted(resign_rows, key=lambda r: -r["barrett"]):
+        worth = _worth_resign(x["barrett"], x["value_M"], x["offer_M"])
+        if not worth:                                # replaceable -> let him walk
+            keeps.append({"name": x["name"], "pos": x["pos"], "cost_M": x["offer_M"],
+                          "value_M": x["value_M"], "barrett": x["barrett"],
+                          "running_M": None, "zone": "walk", "worth": False, "keep": False})
+            continue
         running += x["offer_M"]
         run_r = round(running)                       # the displayed number drives the verdict
+        afford = run_r < apron2_r
         zone = "ok" if run_r < tax_r else "tax" if run_r < apron2_r else "over"
         keeps.append({"name": x["name"], "pos": x["pos"], "cost_M": x["offer_M"],
-                      "running_M": run_r, "zone": zone, "keep": run_r < apron2_r})
+                      "value_M": x["value_M"], "barrett": x["barrett"],
+                      "running_M": run_r, "zone": zone, "worth": True, "keep": afford})
     return {"committed_M": round(committed), "tax_M": tax_r,
             "apron2_M": apron2_r, "all_in_M": round(running), "keeps": keeps}
 
@@ -310,15 +332,26 @@ def board_for(team):
                         "salary_M": round(float(r.get("salary", 0) or 0) / 1e6, 1)})
 
     _rp = resign_plan(team, [x for x in rows if x["is_inc"]])
+    # The re-signings ARE part of the realistic plan — the cost-effective keepers
+    # (worth it AND fitting under the apron, per resign_plan's two gates). Show
+    # them alongside the external signings as one offseason.
+    _resign_moves = [{"name": k["name"], "pos": k["pos"], "cost_M": k["cost_M"],
+                      "tool": "Re-sign", "kind": "resign"}
+                     for k in (_rp or {}).get("keeps", []) if k.get("keep")]
     # Cap room is the THEORETICAL max (own FAs renounced). A team that re-signs
     # its own keepers via Bird rights is then over the cap and only has the
-    # mid-level — so the realistic plan gets cap room MINUS those re-signings,
-    # not the full figure. (Fixes "$50M on cap room" while also re-signing LeBron.)
-    _resign_cost = round(sum(k["cost_M"] for k in (_rp or {}).get("keeps", []) if k.get("keep")))
+    # mid-level — so the external part of the plan gets cap room MINUS those
+    # re-signings, not the full figure. (Fixes "$50M on cap room" while also
+    # re-signing LeBron.)
+    _resign_cost = round(sum(m["cost_M"] for m in _resign_moves))
     _real_cap_room = max(0.0, CAP_M - (_committed + _resign_cost))
     # Room left below the second apron (the practical hard ceiling) after the
     # re-signings — bounds how much the team can actually add in free agency.
     _apron_room = max(0.0, round(APRON2_M) - (_committed + _resign_cost))
+    _external = offseason_plan(_pursue, _real_cap_room, exc, _apron_room)
+    for _m in _external:
+        _m["kind"] = "external"
+    _plan = _resign_moves + _external
 
     return {
         "team": team,
@@ -330,7 +363,7 @@ def board_for(team):
         "needs": need, "thin": thin,
         "roster": _roster,
         "best_fits": best_fits_for(rows, need, thin),
-        "plan": offseason_plan(_pursue, _real_cap_room, exc, _apron_room),
+        "plan": _plan,
         "resign": [pack(x) for x in rows if x["is_inc"]],
         "resign_plan": _rp,
         "pursue": [pack(x) for x in _pursue][:20],

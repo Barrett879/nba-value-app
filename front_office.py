@@ -103,13 +103,14 @@ def _cap_bar_html(committed, cap, tax, apron2, after):
             f"{seg_now}{seg_plan}{ticks}{amark}</div></div>")
 
 
-_PLAN_TOOL_COLOR = {"Cap room": "var(--accent-teal)", "Room exception": "var(--blue)",
-                    "Mid-level": "var(--blue)", "Depth": "var(--fg-3)", "Minimum": "var(--fg-5)"}
+_PLAN_TOOL_COLOR = {"Re-sign": "var(--gold)", "Cap room": "var(--accent-teal)",
+                    "Room exception": "var(--blue)", "Mid-level": "var(--blue)",
+                    "Depth": "var(--fg-3)", "Minimum": "var(--fg-5)"}
 _PLAN_CSS = """
 <style>
-.hv-plan { display:flex; gap:0.6rem; flex-wrap:wrap; margin:0.3rem 0 0.6rem; }
+.hv-plan { display:flex; gap:0.55rem; flex-wrap:wrap; margin:0.6rem 0 1.1rem; }
 .hv-plan-chip { background:var(--panel-solid); border:1px solid var(--panel-line);
-    border-left:3px solid var(--c); border-radius:9px; padding:0.5rem 0.85rem; min-width:150px; }
+    border-left:3px solid var(--c); border-radius:9px; padding:0.5rem 0.85rem; min-width:148px; }
 .hv-plan-name { font-weight:800; font-size:0.96rem; line-height:1.15; }
 .hv-plan-sub { font-size:0.7rem; color:var(--fg-4); margin-top:0.1rem; }
 .hv-plan-tool { font-size:0.82rem; font-weight:700; color:var(--c); margin-top:0.35rem; }
@@ -120,9 +121,10 @@ _PLAN_CSS = """
 def _plan_chip(m):
     import html as _h
     c = _PLAN_TOOL_COLOR.get(m["tool"], "var(--fg-4)")
+    _src = f" &middot; from {_h.escape(str(m['from']))}" if m.get("from") else ""
     return (f"<div class='hv-plan-chip' style='--c:{c}'>"
             f"<div class='hv-plan-name'>{_h.escape(str(m['name']))}</div>"
-            f"<div class='hv-plan-sub'>{_h.escape(str(m['pos']))} &middot; from {_h.escape(str(m['from']))}</div>"
+            f"<div class='hv-plan-sub'>{_h.escape(str(m['pos']))}{_src}</div>"
             f"<div class='hv-plan-tool'>{_h.escape(str(m['tool']))} &middot; ${m['cost_M']:.0f}M</div></div>")
 
 
@@ -189,8 +191,8 @@ def render_front_office():
     _committed = B.get("committed_M") or _rp.get("committed_M") or 0
     _tax = B.get("tax_M") or _rp.get("tax_M") or 0
     _apron2 = B.get("apron2_M") or _rp.get("apron2_M") or 0
-    _plan_cost = sum(m["cost_M"] for m in B.get("plan", []))
-    _after = _committed + B.get("resign_cost_M", 0) + _plan_cost   # re-signs + external plan
+    _plan_cost = sum(m["cost_M"] for m in B.get("plan", []))       # re-signs + external, one plan
+    _after = _committed + _plan_cost
     if _committed and _apron2:
         st.markdown(_cap_bar_html(_committed, DATA["cap_M"], _tax, _apron2, _after),
                     unsafe_allow_html=True)
@@ -224,22 +226,32 @@ def render_front_office():
                     unsafe_allow_html=True)
         st.divider()
 
-    # ── Pursue (external targets): the realistic plan, then the full board ───────
-    st.subheader(f"Who {_short} should pursue")
+    # ── The realistic offseason: re-signs + external adds, then the full board ───
+    st.subheader(f"{_short} offseason plan")
     _plan_moves = B.get("plan", [])
+    _resigns = [m for m in _plan_moves if m.get("kind") == "resign"]
+    _adds = [m for m in _plan_moves if m.get("kind") != "resign"]
     if _plan_moves:
-        _tot = sum(m["cost_M"] for m in _plan_moves)
+        _parts = []
+        if _resigns:
+            _parts.append(f"**re-sign {len(_resigns)}** of their own worth keeping")
+        if _adds:
+            if any(m["tool"] == "Cap room" for m in _adds):
+                _tool = "cap room plus minimums"
+            elif any(m["tool"] in ("Mid-level", "Room exception") for m in _adds):
+                _tool = "the mid-level plus minimums"
+            else:
+                _tool = "veteran minimums"
+            _parts.append(f"**add {len(_adds)}** using {_tool}")
         st.markdown(
-            f"**The realistic plan** — what {_short} can actually do with their real tools (their cap "
-            f"room *or* one mid-level, plus depth and veteran-minimum deals), after re-signing their own. "
-            f"~\\${_tot:.0f}M across {len(_plan_moves)} signings:")
+            f"What {_short} would realistically do this offseason: " + " and ".join(_parts) +
+            ". Marginal role players walk — nobody is kept just to fill a spot.")
         st.markdown(_PLAN_CSS + f"<div class='hv-plan'>{''.join(_plan_chip(m) for m in _plan_moves)}</div>",
                     unsafe_allow_html=True)
     else:
         st.markdown(
-            f"**The realistic plan** — after re-signing their own, {_short} are pressed against the "
-            "second apron (the practical hard ceiling) with no room for outside deals beyond veteran "
-            "minimums. Their offseason is re-signing their core, shown below.")
+            f"Already past the second apron (the practical ceiling) on guaranteed money, so {_short} "
+            "are capped out: their offseason is veteran minimums and exercising any cheap options.")
     st.caption(
         "The full board below ranks every external free agent by how keenly a team of this timeline "
         "would chase them — each scored independently (so the mid-level shows up on more than one). "
@@ -274,19 +286,25 @@ def render_front_office():
     _plan = B.get("resign_plan")
     if _plan:
         _over = _plan["all_in_M"] > _plan["apron2_M"]
-        _tail = ("so they can't all stay. Ranked by quality, here's who fits under the line "
-                 "and who gets squeezed out:") if _over else \
-                ("keeping them comfortably under the ceiling. Ranked by quality:")
+        _tail = ("so they can't keep them all under the line — here's who fits and who gets "
+                 "squeezed out:") if _over else "keeping them comfortably under the ceiling."
         st.caption((
             f"Committed payroll is **${_plan['committed_M']}M**. The luxury tax starts at "
             f"${_plan['tax_M']}M and the second apron (the practical ceiling) at "
-            f"**${_plan['apron2_M']}M**. Keeping all of them (Bird rights for the free agents, "
-            f"plus exercising options where they hold one) would run **${_plan['all_in_M']}M**, "
-            f"{_tail}").replace("$", "\\$"))
+            f"**${_plan['apron2_M']}M**. Re-signing everyone worth keeping (Bird rights, plus "
+            f"exercising cheap options) would run **${_plan['all_in_M']}M**, {_tail} A fringe role "
+            f"player on real money is flagged 'let walk' — fair value, but replaceable by a "
+            f"minimum.").replace("$", "\\$"))
         _status_by = {x["name"]: x["status"] for x in B["resign"]}
         rp = pd.DataFrame(_plan["keeps"])
         rp["status"] = rp["name"].map(_status_by).fillna("UFA")
-        rp["verdict"] = rp["keep"].map(lambda k: "Keep" if k else "Likely walks")
+
+        def _verdict(r):
+            if not r.get("worth", True):
+                return "Let walk"
+            return "Keep" if r["keep"] else "Can't afford"
+
+        rp["verdict"] = rp.apply(_verdict, axis=1)
         rp = rp[["name", "pos", "status", "cost_M", "running_M", "verdict"]]
         rp.columns = ["Player", "Pos", "Status", "Keep $", "Running Payroll", "Verdict"]
         rp.insert(0, "#", range(1, len(rp) + 1))
@@ -302,17 +320,28 @@ def render_front_office():
             return "color:var(--orange)" if n >= _tax else ""
 
         def _sty_verdict(v, _r):
-            return ("color:var(--value-bad);font-weight:700" if v == "Likely walks"
-                    else "color:var(--value-good);font-weight:600")
+            if v == "Keep":
+                return "color:var(--value-good);font-weight:600"
+            if v == "Can't afford":
+                return "color:var(--value-bad);font-weight:700"
+            return "color:var(--fg-4)"                  # let walk: replaceable, not unaffordable
+
+        def _fmt_run(v):
+            try:
+                if v is None or pd.isna(v):
+                    return "—"
+            except (ValueError, TypeError):
+                return "—"
+            return f"${v:.0f}M"
 
         html_table(
             rp,
-            formatters={"Keep $": lambda v: f"${v:.0f}M", "Running Payroll": lambda v: f"${v:.0f}M"},
+            formatters={"Keep $": lambda v: f"${v:.0f}M", "Running Payroll": _fmt_run},
             styles={"Status": _sty_status, "Running Payroll": _sty_run, "Verdict": _sty_verdict},
             aligns={"#": "right", "Keep $": "right", "Running Payroll": "right"},
             numeric={"#", "Keep $", "Running Payroll"},
-            helps={"Running Payroll": "Cumulative payroll if you keep this player plus everyone above him.",
-                   "Verdict": "Keep = stays under the second apron; likely walks = the keep that tips the team over it."},
+            helps={"Running Payroll": "Cumulative payroll if you keep this player plus everyone worth keeping above him.",
+                   "Verdict": "Keep = cost-effective and fits under the second apron; can't afford = the keep that tips the team over it; let walk = fair value but a replaceable role player, better spent on a minimum."},
             height=min(560, len(rp) * 38 + 46),
         )
     elif B["resign"]:
