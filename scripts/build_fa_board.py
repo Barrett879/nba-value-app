@@ -341,9 +341,16 @@ def board_for(team):
             continue                                   # waived since the feed snapshot
         if classify_fa_status(_nm, fmt_nc(_nm, nc), rookie, CUR) is not None:
             continue                                   # free agent / option -> not guaranteed
+        # Salary = NEXT season (CONTRACT_SEASON, e.g. 2026-27) to match the
+        # forward-looking roster + the 2026-27 cap bar — not the current-season
+        # figure. (Dyson Daniels reads $25M on his extension, not last year's
+        # $7.7M.) Fall back to the current salary if the next-year feed is missing
+        # him (it omits some 2nd-rounders/two-ways).
+        _ny = float((nc.get(normalize(_nm)) or {}).get("salary") or 0)
+        _sal = _ny if _ny > 0 else float(r.get("salary", 0) or 0)
         _roster.append({"name": _nm, "pos": str(r["pos"]),
                         "barrett": round(float(r["barrett_score"] or 0), 1),
-                        "salary_M": round(float(r.get("salary", 0) or 0) / 1e6, 1)})
+                        "salary_M": round(_sal / 1e6, 1)})
 
     _rp = resign_plan(team, [x for x in rows if x["is_inc"]])
     # The re-signings ARE part of the realistic plan — the cost-effective keepers

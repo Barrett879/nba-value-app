@@ -31,25 +31,25 @@
      "name": "Nickeil Alexander-Walker",
      "pos": "PG/SG",
      "barrett": 26.1,
-     "salary_M": 15.2
+     "salary_M": 14.4
     },
     {
      "name": "Dyson Daniels",
      "pos": "PG/SG",
      "barrett": 25.1,
-     "salary_M": 7.7
+     "salary_M": 25.0
     },
     {
      "name": "Onyeka Okongwu",
      "pos": "C",
      "barrett": 24.2,
-     "salary_M": 15.0
+     "salary_M": 16.1
     },
     {
      "name": "Zaccharie Risacher",
      "pos": "SF/PF",
      "barrett": 10.1,
-     "salary_M": 13.2
+     "salary_M": 13.8
     },
     {
      "name": "Corey Kispert",
@@ -61,13 +61,13 @@
      "name": "Buddy Hield",
      "pos": "SG/SF",
      "barrett": 5.7,
-     "salary_M": 9.2
+     "salary_M": 9.7
     },
     {
      "name": "Asa Newell",
      "pos": "PF/C",
      "barrett": 4.9,
-     "salary_M": 3.2
+     "salary_M": 3.4
     }
    ],
    "best_fits": [
@@ -591,31 +591,31 @@
      "name": "Michael Porter Jr.",
      "pos": "SF/PF",
      "barrett": 22.9,
-     "salary_M": 38.3
+     "salary_M": 40.9
     },
     {
      "name": "Nic Claxton",
      "pos": "C",
      "barrett": 16.7,
-     "salary_M": 25.4
+     "salary_M": 23.1
     },
     {
      "name": "Egor D\u00ebmin",
      "pos": "PG/SG",
      "barrett": 11.8,
-     "salary_M": 6.9
+     "salary_M": 7.2
     },
     {
      "name": "Noah Clowney",
      "pos": "PF/C",
      "barrett": 10.9,
-     "salary_M": 3.4
+     "salary_M": 5.4
     },
     {
      "name": "Danny Wolf",
      "pos": "SF/PF",
      "barrett": 9.7,
-     "salary_M": 2.8
+     "salary_M": 2.9
     },
     {
      "name": "Terance Mann",
@@ -627,19 +627,19 @@
      "name": "Nolan Traore",
      "pos": "PG/SG",
      "barrett": 6.3,
-     "salary_M": 3.8
+     "salary_M": 4.0
     },
     {
      "name": "Ben Saraf",
      "pos": "PG/SG",
      "barrett": 5.4,
-     "salary_M": 2.9
+     "salary_M": 3.0
     },
     {
      "name": "Drake Powell",
      "pos": "SG/SF",
      "barrett": 3.0,
-     "salary_M": 3.4
+     "salary_M": 3.5
     }
    ],
    "best_fits": [
@@ -1089,49 +1089,49 @@
      "name": "Jaylen Brown",
      "pos": "SF/SG",
      "barrett": 34.2,
-     "salary_M": 53.1
+     "salary_M": 57.1
     },
     {
      "name": "Derrick White",
      "pos": "PG/SG",
      "barrett": 28.4,
-     "salary_M": 28.1
+     "salary_M": 30.3
     },
     {
      "name": "Payton Pritchard",
      "pos": "PG",
      "barrett": 23.5,
-     "salary_M": 7.2
+     "salary_M": 7.8
     },
     {
      "name": "Jayson Tatum",
      "pos": "PF/SF",
      "barrett": 19.7,
-     "salary_M": 54.1
+     "salary_M": 58.5
     },
     {
      "name": "Sam Hauser",
      "pos": "SF/PF",
      "barrett": 11.7,
-     "salary_M": 10.0
+     "salary_M": 10.8
     },
     {
      "name": "Luka Garza",
      "pos": "C",
      "barrett": 9.6,
-     "salary_M": 2.5
+     "salary_M": 2.8
     },
     {
      "name": "Baylor Scheierman",
      "pos": "SG/SF",
      "barrett": 8.1,
-     "salary_M": 2.6
+     "salary_M": 2.7
     },
     {
      "name": "Hugo Gonz\u00e1lez",
      "pos": "SF/SG",
      "barrett": 6.5,
-     "salary_M": 2.8
+     "salary_M": 2.9
     },
     {
      "name": "Amari Williams",
@@ -1569,67 +1569,67 @@
      "name": "LaMelo Ball",
      "pos": "PG/SG",
      "barrett": 25.8,
-     "salary_M": 38.0
+     "salary_M": 40.8
     },
     {
      "name": "Kon Knueppel",
      "pos": "SG/SF",
      "barrett": 24.7,
-     "salary_M": 10.0
+     "salary_M": 10.5
     },
     {
      "name": "Brandon Miller",
      "pos": "SG/SF",
      "barrett": 22.8,
-     "salary_M": 12.0
+     "salary_M": 15.1
     },
     {
      "name": "Miles Bridges",
      "pos": "PF/SF",
      "barrett": 21.7,
-     "salary_M": 25.0
+     "salary_M": 22.8
     },
     {
      "name": "Moussa Diabat\u00e9",
      "pos": "C",
      "barrett": 17.1,
-     "salary_M": 2.3
+     "salary_M": 2.5
     },
     {
      "name": "Ryan Kalkbrenner",
      "pos": "C",
      "barrett": 16.1,
-     "salary_M": 2.3
+     "salary_M": 2.4
     },
     {
      "name": "Sion James",
      "pos": "SG/PG",
      "barrett": 8.8,
-     "salary_M": 2.3
+     "salary_M": 2.4
     },
     {
      "name": "Grant Williams",
      "pos": "PF/SF",
      "barrett": 8.1,
-     "salary_M": 13.6
+     "salary_M": 14.3
     },
     {
      "name": "Tidjane Sala\u00fcn",
      "pos": "SF/PF",
      "barrett": 6.2,
-     "salary_M": 7.9
+     "salary_M": 8.2
     },
     {
      "name": "Josh Green",
      "pos": "SG/SF",
      "barrett": 6.0,
-     "salary_M": 13.7
+     "salary_M": 14.7
     },
     {
      "name": "Liam McNeeley",
      "pos": "SG/SF",
      "barrett": 3.3,
-     "salary_M": 2.8
+     "salary_M": 2.9
     },
     {
      "name": "Tre Mann",
@@ -2031,19 +2031,19 @@
      "name": "Matas Buzelis",
      "pos": "SF/PF",
      "barrett": 19.3,
-     "salary_M": 5.5
+     "salary_M": 5.7
     },
     {
      "name": "Jalen Smith",
      "pos": "C/PF",
      "barrett": 12.6,
-     "salary_M": 9.0
+     "salary_M": 9.4
     },
     {
      "name": "Isaac Okoro",
      "pos": "SG/SF",
      "barrett": 8.5,
-     "salary_M": 11.0
+     "salary_M": 11.8
     },
     {
      "name": "Patrick Williams",
@@ -2055,13 +2055,13 @@
      "name": "Rob Dillingham",
      "pos": "PG/SG",
      "barrett": 2.0,
-     "salary_M": 6.6
+     "salary_M": 6.9
     },
     {
      "name": "Noa Essengue",
      "pos": "SF/PF",
      "barrett": 0.1,
-     "salary_M": 5.4
+     "salary_M": 5.7
     }
    ],
    "best_fits": [
@@ -2581,55 +2581,55 @@
      "name": "Donovan Mitchell",
      "pos": "SG/PG",
      "barrett": 35.2,
-     "salary_M": 46.4
+     "salary_M": 50.1
     },
     {
      "name": "Evan Mobley",
      "pos": "PF/C",
      "barrett": 26.9,
-     "salary_M": 46.4
+     "salary_M": 50.1
     },
     {
      "name": "Jarrett Allen",
      "pos": "C",
      "barrett": 21.6,
-     "salary_M": 20.0
+     "salary_M": 28.0
     },
     {
      "name": "Jaylon Tyson",
      "pos": "SG/SF",
      "barrett": 15.4,
-     "salary_M": 3.5
+     "salary_M": 3.7
     },
     {
      "name": "Sam Merrill",
      "pos": "SG/SF",
      "barrett": 14.3,
-     "salary_M": 8.5
+     "salary_M": 9.2
     },
     {
      "name": "Dennis Schr\u00f6der",
      "pos": "PG/SG",
      "barrett": 12.1,
-     "salary_M": 14.1
+     "salary_M": 14.8
     },
     {
      "name": "Max Strus",
      "pos": "SF/SG",
      "barrett": 8.3,
-     "salary_M": 15.9
+     "salary_M": 16.7
     },
     {
      "name": "Nae'Qwan Tomlin",
      "pos": "SF/PF",
      "barrett": 4.7,
-     "salary_M": 0.7
+     "salary_M": 2.4
     },
     {
      "name": "Tyrese Proctor",
      "pos": "PG/SG",
      "barrett": 2.6,
-     "salary_M": 1.3
+     "salary_M": 2.2
     }
    ],
    "best_fits": [
@@ -3041,55 +3041,55 @@
      "name": "Cooper Flagg",
      "pos": "SF/PF",
      "barrett": 26.8,
-     "salary_M": 14.4
+     "salary_M": 14.5
     },
     {
      "name": "Naji Marshall",
      "pos": "SF/PF",
      "barrett": 17.9,
-     "salary_M": 9.0
+     "salary_M": 9.4
     },
     {
      "name": "P.J. Washington",
      "pos": "PF/SF",
      "barrett": 15.9,
-     "salary_M": 14.2
+     "salary_M": 19.8
     },
     {
      "name": "Daniel Gafford",
      "pos": "C",
      "barrett": 15.3,
-     "salary_M": 14.4
+     "salary_M": 17.3
     },
     {
      "name": "Max Christie",
      "pos": "SG/SF",
      "barrett": 14.3,
-     "salary_M": 7.7
+     "salary_M": 8.3
     },
     {
      "name": "Klay Thompson",
      "pos": "SG/SF",
      "barrett": 7.0,
-     "salary_M": 16.7
+     "salary_M": 17.5
     },
     {
      "name": "Dereck Lively II",
      "pos": "C",
      "barrett": 4.9,
-     "salary_M": 5.3
+     "salary_M": 7.2
     },
     {
      "name": "Caleb Martin",
      "pos": "SF/PF",
      "barrett": 4.4,
-     "salary_M": 9.6
+     "salary_M": 10.0
     },
     {
      "name": "AJ Johnson",
      "pos": "SG/SF",
      "barrett": -0.3,
-     "salary_M": 3.1
+     "salary_M": 3.2
     }
    ],
    "best_fits": [
@@ -3622,55 +3622,55 @@
      "name": "Nikola Joki\u0107",
      "pos": "C",
      "barrett": 48.4,
-     "salary_M": 55.2
+     "salary_M": 59.0
     },
     {
      "name": "Jamal Murray",
      "pos": "PG/SG",
      "barrett": 32.9,
-     "salary_M": 46.4
+     "salary_M": 50.1
     },
     {
      "name": "Aaron Gordon",
      "pos": "PF/C",
      "barrett": 15.4,
-     "salary_M": 22.8
+     "salary_M": 33.7
     },
     {
      "name": "Cameron Johnson",
      "pos": "SF/PF",
      "barrett": 14.8,
-     "salary_M": 21.1
+     "salary_M": 23.1
     },
     {
      "name": "Christian Braun",
      "pos": "SG/SF",
      "barrett": 14.5,
-     "salary_M": 4.9
+     "salary_M": 21.6
     },
     {
      "name": "Jonas Valan\u010di\u016bnas",
      "pos": "C",
      "barrett": 8.3,
-     "salary_M": 10.4
+     "salary_M": 10.0
     },
     {
      "name": "Julian Strawther",
      "pos": "SF/PF",
      "barrett": 5.2,
-     "salary_M": 2.7
+     "salary_M": 4.8
     },
     {
      "name": "DaRon Holmes II",
      "pos": "PF/C",
      "barrett": 4.0,
-     "salary_M": 3.2
+     "salary_M": 3.4
     },
     {
      "name": "Zeke Nnaji",
      "pos": "PF/C",
      "barrett": 2.9,
-     "salary_M": 8.2
+     "salary_M": 7.5
     }
    ],
    "best_fits": [
@@ -4134,19 +4134,19 @@
      "name": "Cade Cunningham",
      "pos": "PG/SG",
      "barrett": 37.6,
-     "salary_M": 46.4
+     "salary_M": 50.1
     },
     {
      "name": "Ausar Thompson",
      "pos": "SF/PF",
      "barrett": 19.2,
-     "salary_M": 8.8
+     "salary_M": 11.1
     },
     {
      "name": "Duncan Robinson",
      "pos": "SG/SF",
      "barrett": 15.4,
-     "salary_M": 16.8
+     "salary_M": 16.0
     },
     {
      "name": "Paul Reed",
@@ -4164,25 +4164,25 @@
      "name": "Ronald Holland II",
      "pos": "SF/PF",
      "barrett": 10.3,
-     "salary_M": 8.7
+     "salary_M": 9.1
     },
     {
      "name": "Caris LeVert",
      "pos": "SG/SF",
      "barrett": 7.3,
-     "salary_M": 14.1
+     "salary_M": 14.8
     },
     {
      "name": "Marcus Sasser",
      "pos": "PG/SG",
      "barrett": 3.8,
-     "salary_M": 2.9
+     "salary_M": 5.2
     },
     {
      "name": "Chaz Lanier",
      "pos": "SF/PF",
      "barrett": -0.4,
-     "salary_M": 1.4
+     "salary_M": 2.2
     }
    ],
    "best_fits": [
@@ -4661,31 +4661,31 @@
      "name": "Stephen Curry",
      "pos": "PG/SG",
      "barrett": 25.8,
-     "salary_M": 59.6
+     "salary_M": 62.6
     },
     {
      "name": "Jimmy Butler III",
      "pos": "SF/PF",
      "barrett": 24.0,
-     "salary_M": 54.1
+     "salary_M": 56.8
     },
     {
      "name": "Brandin Podziemski",
      "pos": "PG/SG",
      "barrett": 20.9,
-     "salary_M": 3.7
+     "salary_M": 5.7
     },
     {
      "name": "Moses Moody",
      "pos": "SG/SF",
      "barrett": 14.3,
-     "salary_M": 11.6
+     "salary_M": 12.5
     },
     {
      "name": "Gui Santos",
      "pos": "PF/SF",
      "barrett": 12.5,
-     "salary_M": 2.2
+     "salary_M": 4.6
     },
     {
      "name": "Will Richard",
@@ -5170,49 +5170,49 @@
      "name": "Kevin Durant",
      "pos": "PF/SF",
      "barrett": 33.9,
-     "salary_M": 54.7
+     "salary_M": 43.9
     },
     {
      "name": "Amen Thompson",
      "pos": "PG/SG",
      "barrett": 29.9,
-     "salary_M": 9.7
+     "salary_M": 12.3
     },
     {
      "name": "Alperen Sengun",
      "pos": "C",
      "barrett": 29.6,
-     "salary_M": 33.9
+     "salary_M": 35.6
     },
     {
      "name": "Jabari Smith Jr.",
      "pos": "SF/PF",
      "barrett": 21.0,
-     "salary_M": 12.4
+     "salary_M": 23.6
     },
     {
      "name": "Reed Sheppard",
      "pos": "PG/SG",
      "barrett": 15.4,
-     "salary_M": 10.6
+     "salary_M": 11.1
     },
     {
      "name": "Steven Adams",
      "pos": "C",
      "barrett": 6.3,
-     "salary_M": 14.1
+     "salary_M": 13.0
     },
     {
      "name": "Clint Capela",
      "pos": "C",
      "barrett": 5.5,
-     "salary_M": 6.7
+     "salary_M": 7.0
     },
     {
      "name": "Dorian Finney-Smith",
      "pos": "SF/PF",
      "barrett": 0.1,
-     "salary_M": 12.7
+     "salary_M": 13.3
     }
    ],
    "best_fits": [
@@ -5639,31 +5639,31 @@
      "name": "Pascal Siakam",
      "pos": "PF/C",
      "barrett": 26.1,
-     "salary_M": 45.6
+     "salary_M": 48.9
     },
     {
      "name": "Andrew Nembhard",
      "pos": "PG/SG",
      "barrett": 22.1,
-     "salary_M": 18.1
+     "salary_M": 19.6
     },
     {
      "name": "Ivica Zubac",
      "pos": "C",
      "barrett": 17.6,
-     "salary_M": 18.1
+     "salary_M": 20.3
     },
     {
      "name": "Jay Huff",
      "pos": "C",
      "barrett": 12.3,
-     "salary_M": 2.3
+     "salary_M": 2.7
     },
     {
      "name": "T.J. McConnell",
      "pos": "PG",
      "barrett": 12.1,
-     "salary_M": 10.2
+     "salary_M": 11.0
     },
     {
      "name": "Aaron Nesmith",
@@ -5675,37 +5675,37 @@
      "name": "Jarace Walker",
      "pos": "SF/PF",
      "barrett": 11.1,
-     "salary_M": 6.7
+     "salary_M": 8.5
     },
     {
      "name": "Obi Toppin",
      "pos": "PF/C",
      "barrett": 10.0,
-     "salary_M": 14.0
+     "salary_M": 15.0
     },
     {
      "name": "Quenton Jackson",
      "pos": "PG/SG",
      "barrett": 8.4,
-     "salary_M": 0.6
+     "salary_M": 2.6
     },
     {
      "name": "Ben Sheppard",
      "pos": "SG/PG",
      "barrett": 6.5,
-     "salary_M": 2.8
+     "salary_M": 5.0
     },
     {
      "name": "Johnny Furphy",
      "pos": "SG/SF",
      "barrett": 5.9,
-     "salary_M": 2.0
+     "salary_M": 2.3
     },
     {
      "name": "Kam Jones",
      "pos": "PG/SG",
      "barrett": 1.8,
-     "salary_M": 1.3
+     "salary_M": 2.2
     }
    ],
    "best_fits": [
@@ -6094,25 +6094,25 @@
      "name": "Kawhi Leonard",
      "pos": "PF/SF",
      "barrett": 34.0,
-     "salary_M": 50.0
+     "salary_M": 50.3
     },
     {
      "name": "Darius Garland",
      "pos": "PG",
      "barrett": 19.7,
-     "salary_M": 39.4
+     "salary_M": 42.2
     },
     {
      "name": "Kris Dunn",
      "pos": "PG/SG",
      "barrett": 16.0,
-     "salary_M": 5.4
+     "salary_M": 5.7
     },
     {
      "name": "Derrick Jones Jr.",
      "pos": "SF/PF",
      "barrett": 12.3,
-     "salary_M": 10.0
+     "salary_M": 10.5
     },
     {
      "name": "Isaiah Jackson",
@@ -6124,13 +6124,13 @@
      "name": "Yanic Konan Niederh\u00e4user",
      "pos": "PF/C",
      "barrett": 5.2,
-     "salary_M": 2.7
+     "salary_M": 2.9
     },
     {
      "name": "Cam Christie",
      "pos": "SG/SF",
      "barrett": 0.7,
-     "salary_M": 2.0
+     "salary_M": 2.3
     }
    ],
    "best_fits": [
@@ -6632,7 +6632,7 @@
      "name": "Luka Don\u010di\u0107",
      "pos": "PG/SG",
      "barrett": 43.9,
-     "salary_M": 54.1
+     "salary_M": 49.5
     },
     {
      "name": "Jake LaRavia",
@@ -6644,25 +6644,25 @@
      "name": "Jarred Vanderbilt",
      "pos": "PF/C",
      "barrett": 5.6,
-     "salary_M": 11.6
+     "salary_M": 12.4
     },
     {
      "name": "Bronny James",
      "pos": "PG/SG",
      "barrett": 1.6,
-     "salary_M": 2.0
+     "salary_M": 2.3
     },
     {
      "name": "Adou Thiero",
      "pos": "SF/PF",
      "barrett": 1.2,
-     "salary_M": 1.3
+     "salary_M": 2.2
     },
     {
      "name": "Dalton Knecht",
      "pos": "SG/SF",
      "barrett": 0.9,
-     "salary_M": 4.0
+     "salary_M": 4.2
     }
    ],
    "best_fits": [
@@ -7194,73 +7194,73 @@
      "name": "Ja Morant",
      "pos": "PG/SG",
      "barrett": 17.4,
-     "salary_M": 39.4
+     "salary_M": 42.2
     },
     {
      "name": "Cam Spencer",
      "pos": "PG/SG",
      "barrett": 16.5,
-     "salary_M": 2.5
+     "salary_M": 2.4
     },
     {
      "name": "Ty Jerome",
      "pos": "PG/SG",
      "barrett": 16.0,
-     "salary_M": 8.8
+     "salary_M": 9.2
     },
     {
      "name": "Cedric Coward",
      "pos": "SG/SF",
      "barrett": 14.7,
-     "salary_M": 5.7
+     "salary_M": 6.0
     },
     {
      "name": "Santi Aldama",
      "pos": "PF/SF",
      "barrett": 14.6,
-     "salary_M": 18.5
+     "salary_M": 17.0
     },
     {
      "name": "Jaylen Wells",
      "pos": "SG/SF",
      "barrett": 12.5,
-     "salary_M": 2.0
+     "salary_M": 2.3
     },
     {
      "name": "GG Jackson",
      "pos": "SF/PF",
      "barrett": 12.1,
-     "salary_M": 2.2
+     "salary_M": 2.4
     },
     {
      "name": "Zach Edey",
      "pos": "C",
      "barrett": 10.9,
-     "salary_M": 6.0
+     "salary_M": 6.3
     },
     {
      "name": "Scotty Pippen Jr.",
      "pos": "PG/SG",
      "barrett": 8.1,
-     "salary_M": 2.3
+     "salary_M": 2.5
     },
     {
      "name": "Walter Clayton Jr.",
      "pos": "PG/SG",
      "barrett": 6.8,
-     "salary_M": 4.0
+     "salary_M": 4.2
     },
     {
      "name": "Taylor Hendricks",
      "pos": "SF/PF",
      "barrett": 6.5,
-     "salary_M": 6.1
+     "salary_M": 7.8
     },
     {
      "name": "Taj Gibson",
      "pos": "PF/SF",
      "barrett": 2.1,
-     "salary_M": 1.0
+     "salary_M": 3.2
     },
     {
      "name": "Brandon Clarke",
@@ -7684,55 +7684,55 @@
      "name": "Bam Adebayo",
      "pos": "C/PF",
      "barrett": 29.8,
-     "salary_M": 37.1
+     "salary_M": 49.5
     },
     {
      "name": "Jaime Jaquez Jr.",
      "pos": "SF/PF",
      "barrett": 19.2,
-     "salary_M": 3.9
+     "salary_M": 5.9
     },
     {
      "name": "Tyler Herro",
      "pos": "PG/SG",
      "barrett": 18.5,
-     "salary_M": 31.0
+     "salary_M": 33.0
     },
     {
      "name": "Davion Mitchell",
      "pos": "PG/SG",
      "barrett": 17.8,
-     "salary_M": 11.6
+     "salary_M": 12.4
     },
     {
      "name": "Kel'el Ware",
      "pos": "C/PF",
      "barrett": 15.7,
-     "salary_M": 4.4
+     "salary_M": 4.7
     },
     {
      "name": "Dru Smith",
      "pos": "PG/SG",
      "barrett": 8.9,
-     "salary_M": 2.4
+     "salary_M": 2.6
     },
     {
      "name": "Kasparas Jaku\u010dionis",
      "pos": "PG/SG",
      "barrett": 8.4,
-     "salary_M": 3.7
+     "salary_M": 3.8
     },
     {
      "name": "Nikola Jovi\u0107",
      "pos": "PF/C",
      "barrett": 5.0,
-     "salary_M": 4.4
+     "salary_M": 16.2
     },
     {
      "name": "Myron Gardner",
      "pos": "SG/SF",
      "barrett": 3.7,
-     "salary_M": 0.4
+     "salary_M": 2.2
     }
    ],
    "best_fits": [
@@ -8166,7 +8166,7 @@
      "name": "Giannis Antetokounmpo",
      "pos": "PF/C",
      "barrett": 28.5,
-     "salary_M": 54.1
+     "salary_M": 58.5
     },
     {
      "name": "Ryan Rollins",
@@ -8178,25 +8178,25 @@
      "name": "Myles Turner",
      "pos": "C",
      "barrett": 16.1,
-     "salary_M": 25.3
+     "salary_M": 26.6
     },
     {
      "name": "Kyle Kuzma",
      "pos": "SF/PF",
      "barrett": 13.1,
-     "salary_M": 21.8
+     "salary_M": 20.3
     },
     {
      "name": "AJ Green",
      "pos": "SF/PF",
      "barrett": 12.6,
-     "salary_M": 2.3
+     "salary_M": 10.0
     },
     {
      "name": "Bobby Portis",
      "pos": "PF/SF",
      "barrett": 11.9,
-     "salary_M": 13.6
+     "salary_M": 14.5
     }
    ],
    "best_fits": [
@@ -8720,25 +8720,25 @@
      "name": "Anthony Edwards",
      "pos": "SG/SF",
      "barrett": 30.6,
-     "salary_M": 45.6
+     "salary_M": 48.9
     },
     {
      "name": "Julius Randle",
      "pos": "PF/C",
      "barrett": 26.0,
-     "salary_M": 30.9
+     "salary_M": 33.3
     },
     {
      "name": "Rudy Gobert",
      "pos": "C",
      "barrett": 23.8,
-     "salary_M": 35.0
+     "salary_M": 36.5
     },
     {
      "name": "Jaden McDaniels",
      "pos": "SF/PF",
      "barrett": 19.6,
-     "salary_M": 24.9
+     "salary_M": 26.2
     },
     {
      "name": "Donte DiVincenzo",
@@ -8750,19 +8750,19 @@
      "name": "Naz Reid",
      "pos": "C/PF",
      "barrett": 18.3,
-     "salary_M": 21.6
+     "salary_M": 23.3
     },
     {
      "name": "Joan Beringer",
      "pos": "PF/C",
      "barrett": 4.3,
-     "salary_M": 4.2
+     "salary_M": 4.4
     },
     {
      "name": "Terrence Shannon Jr.",
      "pos": "SG/SF",
      "barrett": 2.4,
-     "salary_M": 2.7
+     "salary_M": 2.8
     }
    ],
    "best_fits": [
@@ -9202,73 +9202,73 @@
      "name": "Trey Murphy III",
      "pos": "SF/SG",
      "barrett": 26.3,
-     "salary_M": 25.0
+     "salary_M": 27.0
     },
     {
      "name": "Zion Williamson",
      "pos": "PF/SF",
      "barrett": 22.9,
-     "salary_M": 39.4
+     "salary_M": 42.2
     },
     {
      "name": "Saddiq Bey",
      "pos": "SF/PF",
      "barrett": 18.4,
-     "salary_M": 6.1
+     "salary_M": 6.4
     },
     {
      "name": "Derik Queen",
      "pos": "C",
      "barrett": 15.8,
-     "salary_M": 5.2
+     "salary_M": 5.4
     },
     {
      "name": "Dejounte Murray",
      "pos": "PG/SG",
      "barrett": 14.7,
-     "salary_M": 30.8
+     "salary_M": 32.8
     },
     {
      "name": "Jeremiah Fears",
      "pos": "PG/SG",
      "barrett": 13.8,
-     "salary_M": 7.5
+     "salary_M": 7.9
     },
     {
      "name": "Herbert Jones",
      "pos": "SF/PF",
      "barrett": 11.0,
-     "salary_M": 13.9
+     "salary_M": 14.9
     },
     {
      "name": "Yves Missi",
      "pos": "C",
      "barrett": 8.0,
-     "salary_M": 3.4
+     "salary_M": 3.5
     },
     {
      "name": "Jordan Poole",
      "pos": "PG/SG",
      "barrett": 7.4,
-     "salary_M": 31.8
+     "salary_M": 34.0
     },
     {
      "name": "Bryce McGowens",
      "pos": "PG/SG",
      "barrett": 6.8,
-     "salary_M": 0.7
+     "salary_M": 2.6
     },
     {
      "name": "Micah Peavy",
      "pos": "SG/SF",
      "barrett": 1.2,
-     "salary_M": 1.3
+     "salary_M": 2.2
     },
     {
      "name": "Jordan Hawkins",
      "pos": "PG/SG",
      "barrett": -0.2,
-     "salary_M": 4.7
+     "salary_M": 7.0
     }
    ],
    "best_fits": [
@@ -9641,49 +9641,49 @@
      "name": "Jalen Brunson",
      "pos": "PG",
      "barrett": 31.6,
-     "salary_M": 34.9
+     "salary_M": 37.7
     },
     {
      "name": "Karl-Anthony Towns",
      "pos": "C/PF",
      "barrett": 28.6,
-     "salary_M": 54.1
+     "salary_M": 57.1
     },
     {
      "name": "OG Anunoby",
      "pos": "PF/SF",
      "barrett": 24.4,
-     "salary_M": 39.6
+     "salary_M": 42.5
     },
     {
      "name": "Mikal Bridges",
      "pos": "SG/SF",
      "barrett": 22.8,
-     "salary_M": 24.9
+     "salary_M": 33.5
     },
     {
      "name": "Josh Hart",
      "pos": "SF/SG",
      "barrett": 21.4,
-     "salary_M": 19.5
+     "salary_M": 20.9
     },
     {
      "name": "Miles McBride",
      "pos": "PG/SG",
      "barrett": 11.5,
-     "salary_M": 4.3
+     "salary_M": 4.0
     },
     {
      "name": "Tyler Kolek",
      "pos": "PG/SG",
      "barrett": 4.5,
-     "salary_M": 2.2
+     "salary_M": 2.3
     },
     {
      "name": "Pac\u00f4me Dadiet",
      "pos": "SF/PF",
      "barrett": 1.1,
-     "salary_M": 2.8
+     "salary_M": 3.0
     }
    ],
    "best_fits": [
@@ -10117,67 +10117,67 @@
      "name": "Shai Gilgeous-Alexander",
      "pos": "PG/SG",
      "barrett": 43.3,
-     "salary_M": 38.3
+     "salary_M": 40.8
     },
     {
      "name": "Chet Holmgren",
      "pos": "PF/C",
      "barrett": 28.6,
-     "salary_M": 13.7
+     "salary_M": 41.5
     },
     {
      "name": "Ajay Mitchell",
      "pos": "PG/SG",
      "barrett": 18.5,
-     "salary_M": 3.0
+     "salary_M": 2.9
     },
     {
      "name": "Jalen Williams",
      "pos": "SG/SF",
      "barrett": 18.2,
-     "salary_M": 6.6
+     "salary_M": 41.5
     },
     {
      "name": "Cason Wallace",
      "pos": "SG/SF",
      "barrett": 16.3,
-     "salary_M": 5.8
+     "salary_M": 7.4
     },
     {
      "name": "Isaiah Joe",
      "pos": "SG/SF",
      "barrett": 13.3,
-     "salary_M": 12.4
+     "salary_M": 11.3
     },
     {
      "name": "Jaylin Williams",
      "pos": "C/PF",
      "barrett": 13.2,
-     "salary_M": 8.5
+     "salary_M": 7.8
     },
     {
      "name": "Aaron Wiggins",
      "pos": "SF/SG",
      "barrett": 9.9,
-     "salary_M": 10.1
+     "salary_M": 9.2
     },
     {
      "name": "Alex Caruso",
      "pos": "SG/SF",
      "barrett": 9.6,
-     "salary_M": 18.1
+     "salary_M": 19.6
     },
     {
      "name": "Jared McCain",
      "pos": "PG/SG",
      "barrett": 4.2,
-     "salary_M": 4.2
+     "salary_M": 4.4
     },
     {
      "name": "Nikola Topi\u0107",
      "pos": "PG/SG",
      "barrett": 3.7,
-     "salary_M": 5.2
+     "salary_M": 5.4
     }
    ],
    "best_fits": [
@@ -10529,67 +10529,67 @@
      "name": "Paolo Banchero",
      "pos": "SF/PF",
      "barrett": 29.5,
-     "salary_M": 15.3
+     "salary_M": 41.5
     },
     {
      "name": "Desmond Bane",
      "pos": "SG/SF",
      "barrett": 27.2,
-     "salary_M": 36.7
+     "salary_M": 39.4
     },
     {
      "name": "Jalen Suggs",
      "pos": "PG/SG",
      "barrett": 20.7,
-     "salary_M": 35.0
+     "salary_M": 32.4
     },
     {
      "name": "Franz Wagner",
      "pos": "SF/PF",
      "barrett": 20.3,
-     "salary_M": 38.7
+     "salary_M": 41.8
     },
     {
      "name": "Wendell Carter Jr.",
      "pos": "C",
      "barrett": 19.1,
-     "salary_M": 10.8
+     "salary_M": 18.1
     },
     {
      "name": "Anthony Black",
      "pos": "PG/SG",
      "barrett": 18.1,
-     "salary_M": 8.0
+     "salary_M": 10.1
     },
     {
      "name": "Goga Bitadze",
      "pos": "C",
      "barrett": 12.4,
-     "salary_M": 8.3
+     "salary_M": 7.6
     },
     {
      "name": "Tristan da Silva",
      "pos": "SF/PF",
      "barrett": 11.8,
-     "salary_M": 3.8
+     "salary_M": 4.0
     },
     {
      "name": "Jonathan Isaac",
      "pos": "PF/C",
      "barrett": 3.1,
-     "salary_M": 15.0
+     "salary_M": 14.5
     },
     {
      "name": "Noah Penda",
      "pos": "SF/PF",
      "barrett": 2.9,
-     "salary_M": 1.3
+     "salary_M": 2.2
     },
     {
      "name": "Jase Richardson",
      "pos": "PG/SG",
      "barrett": 1.9,
-     "salary_M": 3.0
+     "salary_M": 3.1
     }
    ],
    "best_fits": [
@@ -10948,49 +10948,49 @@
      "name": "Tyrese Maxey",
      "pos": "PG/SG",
      "barrett": 36.8,
-     "salary_M": 38.0
+     "salary_M": 40.8
     },
     {
      "name": "Joel Embiid",
      "pos": "C",
      "barrett": 25.4,
-     "salary_M": 55.2
+     "salary_M": 58.1
     },
     {
      "name": "VJ Edgecombe",
      "pos": "SG/SF",
      "barrett": 21.8,
-     "salary_M": 11.1
+     "salary_M": 11.7
     },
     {
      "name": "Paul George",
      "pos": "SF/PF",
      "barrett": 18.4,
-     "salary_M": 51.7
+     "salary_M": 54.1
     },
     {
      "name": "Adem Bona",
      "pos": "C",
      "barrett": 8.3,
-     "salary_M": 2.0
+     "salary_M": 2.3
     },
     {
      "name": "Justin Edwards",
      "pos": "SF/PF",
      "barrett": 4.7,
-     "salary_M": 2.0
+     "salary_M": 2.4
     },
     {
      "name": "Jabari Walker",
      "pos": "SF/PF",
      "barrett": 3.6,
-     "salary_M": 0.7
+     "salary_M": 2.6
     },
     {
      "name": "Johni Broome",
      "pos": "SF/PF",
      "barrett": -4.0,
-     "salary_M": 1.3
+     "salary_M": 2.2
     }
    ],
    "best_fits": [
@@ -11489,25 +11489,25 @@
      "name": "Devin Booker",
      "pos": "PG/SG",
      "barrett": 31.0,
-     "salary_M": 53.1
+     "salary_M": 57.1
     },
     {
      "name": "Dillon Brooks",
      "pos": "SF/PF",
      "barrett": 18.2,
-     "salary_M": 22.1
+     "salary_M": 20.0
     },
     {
      "name": "Grayson Allen",
      "pos": "SG/SF",
      "barrett": 15.7,
-     "salary_M": 16.9
+     "salary_M": 18.1
     },
     {
      "name": "Royce O'Neale",
      "pos": "SF/PF",
      "barrett": 14.3,
-     "salary_M": 10.1
+     "salary_M": 11.4
     },
     {
      "name": "Oso Ighodaro",
@@ -11519,31 +11519,31 @@
      "name": "Jalen Green",
      "pos": "SG/PG",
      "barrett": 12.1,
-     "salary_M": 33.5
+     "salary_M": 36.3
     },
     {
      "name": "Ryan Dunn",
      "pos": "SF/PF",
      "barrett": 7.1,
-     "salary_M": 2.7
+     "salary_M": 2.8
     },
     {
      "name": "Haywood Highsmith",
      "pos": "SF/PF",
      "barrett": 5.1,
-     "salary_M": 0.8
+     "salary_M": 3.0
     },
     {
      "name": "Khaman Maluach",
      "pos": "C",
      "barrett": 2.2,
-     "salary_M": 6.0
+     "salary_M": 6.3
     },
     {
      "name": "Rasheer Fleming",
      "pos": "PF/C",
      "barrett": 1.7,
-     "salary_M": 1.3
+     "salary_M": 2.2
     }
    ],
    "best_fits": [
@@ -11990,67 +11990,67 @@
      "name": "Deni Avdija",
      "pos": "SF/SG",
      "barrett": 31.4,
-     "salary_M": 14.4
+     "salary_M": 13.1
     },
     {
      "name": "Donovan Clingan",
      "pos": "C",
      "barrett": 22.9,
-     "salary_M": 7.2
+     "salary_M": 7.5
     },
     {
      "name": "Jrue Holiday",
      "pos": "PG/SG",
      "barrett": 22.1,
-     "salary_M": 32.4
+     "salary_M": 34.8
     },
     {
      "name": "Toumani Camara",
      "pos": "PF/SF",
      "barrett": 19.1,
-     "salary_M": 2.2
+     "salary_M": 18.1
     },
     {
      "name": "Jerami Grant",
      "pos": "PF/SF",
      "barrett": 17.8,
-     "salary_M": 32.0
+     "salary_M": 34.2
     },
     {
      "name": "Shaedon Sharpe",
      "pos": "SG/PG",
      "barrett": 16.7,
-     "salary_M": 8.4
+     "salary_M": 20.1
     },
     {
      "name": "Scoot Henderson",
      "pos": "PG/SG",
      "barrett": 11.0,
-     "salary_M": 10.7
+     "salary_M": 13.6
     },
     {
      "name": "V\u00edt Krej\u010d\u00ed",
      "pos": "PG/SF",
      "barrett": 9.6,
-     "salary_M": 2.3
+     "salary_M": 2.7
     },
     {
      "name": "Kris Murray",
      "pos": "SF/PF",
      "barrett": 6.5,
-     "salary_M": 3.1
+     "salary_M": 5.3
     },
     {
      "name": "Sidy Cissoko",
      "pos": "SG/SF",
      "barrett": 5.3,
-     "salary_M": 0.7
+     "salary_M": 2.5
     },
     {
      "name": "Yang Hansen",
      "pos": "C",
      "barrett": -1.1,
-     "salary_M": 4.4
+     "salary_M": 4.6
     }
    ],
    "best_fits": [
@@ -12460,55 +12460,55 @@
      "name": "DeMar DeRozan",
      "pos": "SF/SG",
      "barrett": 21.8,
-     "salary_M": 24.6
+     "salary_M": 25.7
     },
     {
      "name": "Domantas Sabonis",
      "pos": "C",
      "barrett": 15.6,
-     "salary_M": 43.6
+     "salary_M": 45.5
     },
     {
      "name": "Maxime Raynaud",
      "pos": "C",
      "barrett": 14.0,
-     "salary_M": 1.3
+     "salary_M": 2.2
     },
     {
      "name": "Keegan Murray",
      "pos": "SF/PF",
      "barrett": 12.0,
-     "salary_M": 11.1
+     "salary_M": 24.1
     },
     {
      "name": "De'Andre Hunter",
      "pos": "SF/PF",
      "barrett": 11.0,
-     "salary_M": 23.3
+     "salary_M": 24.9
     },
     {
      "name": "Dylan Cardwell",
      "pos": "C",
      "barrett": 10.9,
-     "salary_M": 0.9
+     "salary_M": 2.2
     },
     {
      "name": "Nique Clifford",
      "pos": "SG/SF",
      "barrett": 10.0,
-     "salary_M": 3.1
+     "salary_M": 3.3
     },
     {
      "name": "Malik Monk",
      "pos": "PG/SG",
      "barrett": 9.9,
-     "salary_M": 18.8
+     "salary_M": 21.2
     },
     {
      "name": "Devin Carter",
      "pos": "PG/SG",
      "barrett": 7.0,
-     "salary_M": 4.9
+     "salary_M": 5.2
     }
    ],
    "best_fits": [
@@ -12920,25 +12920,25 @@
      "name": "Victor Wembanyama",
      "pos": "C/PF",
      "barrett": 38.0,
-     "salary_M": 13.4
+     "salary_M": 16.9
     },
     {
      "name": "De'Aaron Fox",
      "pos": "PG/SG",
      "barrett": 26.5,
-     "salary_M": 37.1
+     "salary_M": 49.8
     },
     {
      "name": "Stephon Castle",
      "pos": "PG/SG",
      "barrett": 26.5,
-     "salary_M": 9.6
+     "salary_M": 10.0
     },
     {
      "name": "Dylan Harper",
      "pos": "PG/SG",
      "barrett": 15.6,
-     "salary_M": 12.4
+     "salary_M": 13.0
     },
     {
      "name": "Devin Vassell",
@@ -12956,13 +12956,13 @@
      "name": "Luke Kornet",
      "pos": "C",
      "barrett": 13.9,
-     "salary_M": 11.0
+     "salary_M": 10.4
     },
     {
      "name": "Carter Bryant",
      "pos": "SF/SG",
      "barrett": 2.9,
-     "salary_M": 4.9
+     "salary_M": 5.1
     }
    ],
    "best_fits": [
@@ -13372,13 +13372,13 @@
      "name": "Scottie Barnes",
      "pos": "PF/SF",
      "barrett": 31.8,
-     "salary_M": 38.7
+     "salary_M": 41.8
     },
     {
      "name": "Brandon Ingram",
      "pos": "SF/PF",
      "barrett": 25.0,
-     "salary_M": 38.1
+     "salary_M": 40.0
     },
     {
      "name": "Immanuel Quickley",
@@ -13390,7 +13390,7 @@
      "name": "RJ Barrett",
      "pos": "SG/SF",
      "barrett": 21.3,
-     "salary_M": 27.7
+     "salary_M": 29.6
     },
     {
      "name": "Jakob Poeltl",
@@ -13402,25 +13402,25 @@
      "name": "Collin Murray-Boyles",
      "pos": "PF/C",
      "barrett": 12.9,
-     "salary_M": 6.3
+     "salary_M": 6.6
     },
     {
      "name": "Ja'Kobe Walter",
      "pos": "SF/PF",
      "barrett": 9.2,
-     "salary_M": 3.6
+     "salary_M": 3.8
     },
     {
      "name": "Gradey Dick",
      "pos": "SG/SF",
      "barrett": 3.4,
-     "salary_M": 5.0
+     "salary_M": 7.1
     },
     {
      "name": "Jamison Battle",
      "pos": "SF/PF",
      "barrett": 3.1,
-     "salary_M": 2.0
+     "salary_M": 2.3
     }
    ],
    "best_fits": [
@@ -13814,25 +13814,25 @@
      "name": "Lauri Markkanen",
      "pos": "SF/PF",
      "barrett": 26.2,
-     "salary_M": 46.4
+     "salary_M": 46.1
     },
     {
      "name": "Keyonte George",
      "pos": "PG/SG",
      "barrett": 25.5,
-     "salary_M": 4.3
+     "salary_M": 6.6
     },
     {
      "name": "Jaren Jackson Jr.",
      "pos": "PF/C",
      "barrett": 20.8,
-     "salary_M": 35.0
+     "salary_M": 49.0
     },
     {
      "name": "Isaiah Collier",
      "pos": "PG/SG",
      "barrett": 15.8,
-     "salary_M": 2.6
+     "salary_M": 2.8
     },
     {
      "name": "Kyle Filipowski",
@@ -13844,13 +13844,13 @@
      "name": "Brice Sensabaugh",
      "pos": "SG/SF",
      "barrett": 11.7,
-     "salary_M": 2.7
+     "salary_M": 4.9
     },
     {
      "name": "Ace Bailey",
      "pos": "SG/SF",
      "barrett": 11.2,
-     "salary_M": 9.1
+     "salary_M": 9.5
     },
     {
      "name": "John Konchar",
@@ -13862,13 +13862,13 @@
      "name": "Svi Mykhailiuk",
      "pos": "SG/SF",
      "barrett": 8.6,
-     "salary_M": 3.7
+     "salary_M": 3.9
     },
     {
      "name": "Cody Williams",
      "pos": "SG/SF",
      "barrett": 7.8,
-     "salary_M": 5.7
+     "salary_M": 6.0
     }
    ],
    "best_fits": [
@@ -14281,61 +14281,61 @@
      "name": "Anthony Davis",
      "pos": "PF/C",
      "barrett": 18.5,
-     "salary_M": 54.1
+     "salary_M": 58.5
     },
     {
      "name": "Alex Sarr",
      "pos": "C/PF",
      "barrett": 18.2,
-     "salary_M": 11.8
+     "salary_M": 12.4
     },
     {
      "name": "Kyshawn George",
      "pos": "SF/SG",
      "barrett": 16.5,
-     "salary_M": 3.0
+     "salary_M": 3.1
     },
     {
      "name": "Bilal Coulibaly",
      "pos": "SG/SF",
      "barrett": 12.3,
-     "salary_M": 7.3
+     "salary_M": 9.2
     },
     {
      "name": "Bub Carrington",
      "pos": "PG/SG",
      "barrett": 9.6,
-     "salary_M": 4.7
+     "salary_M": 4.9
     },
     {
      "name": "Justin Champagnie",
      "pos": "SF/PF",
      "barrett": 8.7,
-     "salary_M": 2.3
+     "salary_M": 2.7
     },
     {
      "name": "Tre Johnson",
      "pos": "SG/SF",
      "barrett": 7.3,
-     "salary_M": 8.2
+     "salary_M": 8.6
     },
     {
      "name": "Tristan Vukcevic",
      "pos": "PF/C",
      "barrett": 6.7,
-     "salary_M": 2.9
+     "salary_M": 3.0
     },
     {
      "name": "Will Riley",
      "pos": "SG/SF",
      "barrett": 6.1,
-     "salary_M": 3.5
+     "salary_M": 3.7
     },
     {
      "name": "Cam Whitmore",
      "pos": "SF/SG",
      "barrett": 5.2,
-     "salary_M": 3.5
+     "salary_M": 5.5
     },
     {
      "name": "Jaden Hardy",
