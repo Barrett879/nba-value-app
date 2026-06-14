@@ -87,12 +87,22 @@ def render_front_office():
         "the front office's chair."
     )
 
-    # ── Team picker (full names → abbreviation) ─────────────────────────────────
+    # ── Team picker (full names → abbreviation), reflected in the URL ────────────
+    # ?team=LAL deep-links straight to a club, and the selection is mirrored back
+    # into the URL so a board is shareable/bookmarkable. Options stay in STABLE
+    # sorted order (never reordered) so the selectbox keeps its element identity;
+    # the URL seeds the widget once, then the key owns the state.
     _name_to_abbr = {b["name"]: ab for ab, b in TEAMS.items()}
+    _abbr_to_name = {ab: b["name"] for ab, b in TEAMS.items()}
     _names = sorted(_name_to_abbr)
-    _default = _name_to_abbr.get("Los Angeles Lakers", _names[0])
-    _default_name = next(n for n, a in _name_to_abbr.items() if a == _default)
-    pick = st.selectbox("Team", _names, index=_names.index(_default_name), key="fo_team")
+    _default_name = "Los Angeles Lakers" if "Los Angeles Lakers" in _name_to_abbr else _names[0]
+    if "fo_team" not in st.session_state:
+        _url_abbr = (st.query_params.get("team") or "").upper()
+        st.session_state["fo_team"] = _abbr_to_name.get(_url_abbr, _default_name)
+    pick = st.selectbox("Team", _names, key="fo_team")
+    _ab = _name_to_abbr.get(pick)                       # mirror the pick into the URL
+    if _ab and st.query_params.get("team") != _ab:
+        st.query_params["team"] = _ab
     B = TEAMS[_name_to_abbr[pick]]
 
     # ── Header: cap tools, timeline, needs ──────────────────────────────────────
