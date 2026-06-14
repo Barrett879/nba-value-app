@@ -2292,22 +2292,26 @@ if _po_info and _po_info.get("type") == "player_option":
         _p_in = option_opt_in_prob(_opt_M, _po_market_M, features.get("age"))
         _gap = _opt_M - _po_market_M
         if _p_in >= 0.5:
-            _ov, _oc = (
-                f"<b>Likely to opt in</b> ({_p_in*100:.0f}%), his <b>${_opt_M:.0f}M</b> player "
-                f"option beats his ${_po_market_M:.0f}M market value by ${_gap:.0f}M, so he keeps "
-                f"the guaranteed money rather than signing a new deal.",
-                "var(--amber)")
+            if _gap >= 0:
+                _detail = (f"his <b>${_opt_M:.0f}M</b> option tops his ${_po_market_M:.0f}M projected "
+                           f"market by ${_gap:.0f}M, so he keeps the guaranteed money over a new deal.")
+            else:
+                _detail = (f"his <b>${_opt_M:.0f}M</b> option sits just ${-_gap:.0f}M under his "
+                           f"${_po_market_M:.0f}M projected market, so the guaranteed money likely "
+                           f"wins out over testing free agency.")
+            _ov, _oc = (f"<b>Likely to opt in</b> ({_p_in*100:.0f}%), {_detail}", "var(--amber)")
         else:
             _ov, _oc = (
                 f"<b>Likely to opt out</b> ({(1 - _p_in)*100:.0f}%), the market (${_po_market_M:.0f}M) "
-                f"projects ${-_gap:.0f}M above his <b>${_opt_M:.0f}M</b> player option, so he'd decline "
+                f"projects ${-_gap:.0f}M above his <b>${_opt_M:.0f}M</b> option, so he'd decline "
                 f"it to sign for more.",
                 "var(--accent-teal)")
         st.markdown(
             f"<div style='margin:.45rem 0 .25rem; padding:.7rem .9rem; border-radius:10px;"
             f" background:var(--panel-solid); border:1px solid var(--panel-line);"
-            f" border-left:3px solid {_oc}; font-size:.9rem; color:var(--fg-2); line-height:1.4;'>"
-            f"<span style='font-weight:700; color:{_oc};'>Player option</span>&nbsp;&nbsp;{_ov}</div>",
+            f" border-left:3px solid {_oc}; font-size:.9rem; color:var(--fg-2); line-height:1.45;'>"
+            f"<span style='font-weight:700; color:{_oc};'>Player option</span>"
+            f"<span style='color:var(--fg-4);'> &middot; </span>{_ov}</div>",
             unsafe_allow_html=True)
 
 # ── Structural caveats — compact chip-style instead of full-width banners ────
