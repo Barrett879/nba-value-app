@@ -524,12 +524,83 @@ SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
     # (two-way deals, late-season conversions the feed hasn't caught), so they'd
     # otherwise be dropped for a missing salary. Without this they vanish from
     # the Rankings entirely.
+    # ── Current-season fill-ins ────────────────────────────────────────────
+    # Players who played real minutes but are absent from the ESPN salary feed
+    # (two-ways, late-season conversions, 10-day deals), so they'd otherwise be
+    # dropped for a missing salary and vanish from the Rankings. Salaries were
+    # verified per player (Spotrac/HoopsHype/SalarySwish); sub-two-way prorated
+    # figures floored to the $636,435 two-way scale for clean display. Nick Smith
+    # Jr. (LAL) and Tolu Smith (DET) each replaced a waived player -- see
+    # data/roster_corrections.csv.
     "2025-26": {
-        # Two-ways most of the year, converted to 2yr standard deals in Apr 2026
-        # (each non-guaranteed for 2026-27). ~$636K is the 2025-26 two-way salary.
-        # Both replaced a waived player (see data/roster_corrections.csv).
-        "nick smith jr.": 636_435,   # LAL, replaced waived Kobe Bufkin
-        "tolu smith": 636_435,       # DET, replaced waived Bobi Klintman
+        "nick smith jr.": 636_435,
+        "tolu smith": 636_435,
+        "aaron holiday": 3_080_921,
+        "alijah martin": 636_435,
+        "bez mbeng": 636_435,
+        "blake hinson": 636_435,
+        "branden carlson": 636_435,
+        "brooks barnhizer": 636_435,
+        "caleb love": 636_435,
+        "chaney johnson": 636_435,
+        "charles bassey": 2_296_274,
+        "chris youngblood": 636_435,
+        "christian koloko": 636_435,
+        "cormac ryan": 636_435,
+        "curtis jones": 636_435,
+        "daeqwon plowden": 636_435,
+        "dalen terry": 636_435,
+        "david jones garcia": 636_435,
+        "dejon jarreau": 2_296_274,
+        "e.j. liddell": 636_435,
+        "elijah harkless": 636_435,
+        "ethan thompson": 636_435,
+        "garrison mathews": 2_031_929,
+        "isaiah crawford": 636_435,
+        "isaiah livers": 636_435,
+        "jahmai mashack": 636_435,
+        "jahmir young": 636_435,
+        "jalen slawson": 636_435,
+        "jamal cain": 636_435,
+        "javon small": 636_435,
+        "javonte cooke": 636_435,
+        "jeremiah robinson-earl": 636_435,
+        "john poulakidas": 636_435,
+        "johnny juzang": 636_435,
+        "julian reese": 636_435,
+        "kennedy chandler": 636_435,
+        "kevin mccullar jr.": 636_435,
+        "killian hayes": 3_018_158,
+        "kj simpson": 636_435,
+        "kobe sanders": 636_435,
+        "koby brea": 636_435,
+        "lachlan olbrich": 636_435,
+        "leaky black": 636_435,
+        "lj cryer": 636_435,
+        "luke travers": 636_435,
+        "mac mcclung": 2_378_870,
+        "malachi smith": 636_435,
+        "malevy leons": 636_435,
+        "marjon beauchamp": 636_435,
+        "max shulga": 636_435,
+        "miles kelly": 636_435,
+        "moussa cisse": 636_435,
+        "nate williams": 636_435,
+        "oscar tshiebwe": 636_435,
+        "pete nance": 977_689,
+        "pj hall": 636_435,
+        "rayan rupert": 636_435,
+        "rayj dennis": 636_435,
+        "ron harper jr.": 636_435,
+        "sharife cooper": 636_435,
+        "taelon peter": 636_435,
+        "tony bradley": 2_940_876,
+        "trey jemison iii": 636_435,
+        "tyler burton": 636_435,
+        "tyrese martin": 2_191_897,
+        "tyson etienne": 636_435,
+        "tyty washington jr.": 636_435,
+        "yuki kawamura": 636_435,
     },
     "2017-18": {
         "lebron james": 33_285_709,

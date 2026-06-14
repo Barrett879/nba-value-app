@@ -2,7 +2,7 @@
  "season": "2025-26",
  "contract_season": "2026-27",
  "cap_M": 165.0,
- "n_free_agents": 111,
+ "n_free_agents": 125,
  "teams": {
   "ATL": {
    "team": "ATL",
@@ -72,19 +72,6 @@
    ],
    "best_fits": [
     {
-     "name": "Micah Potter",
-     "pos": "PF/C",
-     "from": "IND",
-     "status": "Team Option",
-     "value_M": 3.4,
-     "offer_M": 2,
-     "fit": 72,
-     "grade": "A-",
-     "ppos": "PF",
-     "slot": 3,
-     "why": "Rotation depth at PF, a bargain at $2M against his $3.4M market."
-    },
-    {
      "name": "Bennedict Mathurin",
      "pos": "SF/PF",
      "from": "LAC",
@@ -98,24 +85,37 @@
      "why": "Adds a needed second body at SF, a bargain at $15M against his $23.8M market."
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "from": "POR",
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "from": "DAL",
      "status": "UFA",
-     "value_M": 11.3,
-     "offer_M": 10,
+     "value_M": 4.3,
+     "offer_M": 3,
+     "fit": 69,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 2,
+     "why": "Rotation depth at PF, a bargain at $3M against his $4.3M market."
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "from": "NYK",
+     "status": "UFA",
+     "value_M": 10.4,
+     "offer_M": 9,
      "fit": 66,
      "grade": "A-",
      "ppos": "C",
      "slot": 1,
-     "why": "Adds a needed second body at C, a bargain at $10M against his $11.3M market."
+     "why": "Adds a needed second body at C, a bargain at $9M against his $10.4M market."
     }
    ],
    "plan": [
     {
      "name": "CJ McCollum",
      "pos": "SG/PG",
-     "cost_M": 15,
+     "cost_M": 16,
      "tool": "Re-sign",
      "kind": "resign"
     },
@@ -143,7 +143,7 @@
     {
      "name": "Keaton Wallace",
      "pos": "PG/SG",
-     "cost_M": 3,
+     "cost_M": 2,
      "tool": "Re-sign",
      "kind": "resign"
     },
@@ -185,8 +185,8 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
-     "offer_M": 15,
+     "value_M": 15.5,
+     "offer_M": 16,
      "barrett": 20.5,
      "age": 34,
      "tool": "Bird rights",
@@ -229,28 +229,28 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Keaton Wallace",
-     "pos": "PG/SG",
-     "status": "RFA",
-     "from": "ATL",
-     "value_M": 2.6,
-     "offer_M": 3,
-     "barrett": 2.6,
-     "age": 27,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
      "name": "Mouhamed Gueye",
      "pos": "PF/C",
      "status": "Team Option",
      "from": "ATL",
-     "value_M": 6.8,
+     "value_M": 6.7,
      "offer_M": 2,
      "barrett": 7.2,
      "age": 23,
      "tool": "Team option",
      "why": "Pick up team option"
+    },
+    {
+     "name": "Keaton Wallace",
+     "pos": "PG/SG",
+     "status": "RFA",
+     "from": "ATL",
+     "value_M": 2.2,
+     "offer_M": 2,
+     "barrett": 2.6,
+     "age": 27,
+     "tool": "Bird rights",
+     "why": "Re-sign \u00b7 Bird rights"
     }
    ],
    "resign_plan": {
@@ -262,10 +262,10 @@
      {
       "name": "CJ McCollum",
       "pos": "SG/PG",
-      "cost_M": 15,
-      "value_M": 15.2,
+      "cost_M": 16,
+      "value_M": 15.5,
       "barrett": 20.5,
-      "running_M": 168,
+      "running_M": 169,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -276,7 +276,7 @@
       "cost_M": 6,
       "value_M": 6.2,
       "barrett": 11.7,
-      "running_M": 174,
+      "running_M": 175,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -287,7 +287,7 @@
       "cost_M": 12,
       "value_M": 12.3,
       "barrett": 11.2,
-      "running_M": 186,
+      "running_M": 187,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -296,9 +296,9 @@
       "name": "Mouhamed Gueye",
       "pos": "PF/C",
       "cost_M": 2,
-      "value_M": 6.8,
+      "value_M": 6.7,
       "barrett": 7.2,
-      "running_M": 188,
+      "running_M": 189,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -306,8 +306,8 @@
      {
       "name": "Keaton Wallace",
       "pos": "PG/SG",
-      "cost_M": 3,
-      "value_M": 2.6,
+      "cost_M": 2,
+      "value_M": 2.2,
       "barrett": 2.6,
       "running_M": 191,
       "zone": "ok",
@@ -449,18 +449,6 @@
      "why": "Rotation depth behind Jock Landale"
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "status": "UFA",
-     "from": "POR",
-     "value_M": 11.3,
-     "offer_M": 10,
-     "barrett": 14.6,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jock Landale"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -473,6 +461,18 @@
      "why": "Rotation depth behind Buddy Hield"
     },
     {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.0,
+     "offer_M": 10,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jock Landale"
+    },
+    {
      "name": "Sandro Mamukelashvili",
      "pos": "C/PF",
      "status": "Player Option",
@@ -481,18 +481,6 @@
      "offer_M": 10,
      "barrett": 15.7,
      "age": 27,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jock Landale"
-    },
-    {
-     "name": "Mitchell Robinson",
-     "pos": "C",
-     "status": "UFA",
-     "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 9,
-     "barrett": 13.1,
-     "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Jock Landale"
     },
@@ -531,6 +519,18 @@
      "age": 27,
      "tool": "Cap room",
      "why": "Rotation depth behind Buddy Hield"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 9,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jock Landale"
     },
     {
      "name": "Day'Ron Sharpe",
@@ -741,7 +741,7 @@
      "name": "Luke Kennard",
      "pos": "SG/PG",
      "from": "LAL",
-     "cost_M": 7,
+     "cost_M": 6,
      "tool": "Depth",
      "kind": "external"
     }
@@ -776,7 +776,7 @@
      "pos": "PF/SF",
      "status": "Team Option",
      "from": "BKN",
-     "value_M": 5.2,
+     "value_M": 5.0,
      "offer_M": 3,
      "barrett": 9.2,
      "age": 23,
@@ -816,7 +816,7 @@
       "name": "Josh Minott",
       "pos": "PF/SF",
       "cost_M": 3,
-      "value_M": 5.2,
+      "value_M": 5.0,
       "barrett": 9.2,
       "running_M": 136,
       "zone": "ok",
@@ -1159,13 +1159,13 @@
      "pos": "PF/SF",
      "from": "SAS",
      "status": "UFA",
-     "value_M": 9.5,
+     "value_M": 9.2,
      "offer_M": 6,
      "fit": 64,
      "grade": "B+",
      "ppos": "PF",
      "slot": 3,
-     "why": "Rotation depth at PF, a bargain at $6M against his $9.5M market."
+     "why": "Rotation depth at PF, a bargain at $6M against his $9.2M market."
     },
     {
      "name": "Andre Drummond",
@@ -1393,6 +1393,18 @@
      "why": "Rotation depth behind Baylor Scheierman"
     },
     {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 10,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Baylor Scheierman"
+    },
+    {
      "name": "Collin Sexton",
      "pos": "PG/SG",
      "status": "UFA",
@@ -1401,18 +1413,6 @@
      "offer_M": 11,
      "barrett": 14.5,
      "age": 27,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Baylor Scheierman"
-    },
-    {
-     "name": "CJ McCollum",
-     "pos": "SG/PG",
-     "status": "UFA",
-     "from": "ATL",
-     "value_M": 15.2,
-     "offer_M": 9,
-     "barrett": 20.5,
-     "age": 34,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Baylor Scheierman"
     },
@@ -1501,18 +1501,6 @@
      "why": "Rotation depth behind Baylor Scheierman"
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "status": "UFA",
-     "from": "POR",
-     "value_M": 11.3,
-     "offer_M": 9,
-     "barrett": 14.6,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Luka Garza"
-    },
-    {
      "name": "Rui Hachimura",
      "pos": "SF/PF",
      "status": "UFA",
@@ -1525,11 +1513,23 @@
      "why": "Rotation depth behind Jordan Walsh"
     },
     {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.0,
+     "offer_M": 9,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Luka Garza"
+    },
+    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 8,
      "barrett": 13.1,
      "age": 28,
@@ -1537,16 +1537,16 @@
      "why": "Rotation depth behind Luka Garza"
     },
     {
-     "name": "Mark Williams",
-     "pos": "C",
-     "status": "RFA",
-     "from": "PHX",
-     "value_M": 15.6,
-     "offer_M": 12,
-     "barrett": 17.5,
-     "age": 24,
+     "name": "Tim Hardaway Jr.",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "DEN",
+     "value_M": 8.9,
+     "offer_M": 7,
+     "barrett": 12.7,
+     "age": 34,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Luka Garza"
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -1704,18 +1704,18 @@
      "kind": "external"
     },
     {
-     "name": "Sandro Mamukelashvili",
-     "pos": "C/PF",
-     "from": "TOR",
+     "name": "Luguentz Dort",
+     "pos": "SF/PF",
+     "from": "OKC",
      "cost_M": 7,
      "tool": "Depth",
      "kind": "external"
     },
     {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "from": "BKN",
-     "cost_M": 5,
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "from": "TOR",
+     "cost_M": 7,
      "tool": "Depth",
      "kind": "external"
     }
@@ -1911,18 +1911,6 @@
      "why": "Upgrade \u00b7 would start over Moussa Diabat\u00e9"
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "status": "UFA",
-     "from": "POR",
-     "value_M": 11.3,
-     "offer_M": 9,
-     "barrett": 14.6,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Xavier Tillman"
-    },
-    {
      "name": "Rui Hachimura",
      "pos": "SF/PF",
      "status": "UFA",
@@ -1933,6 +1921,18 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Grant Williams"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.0,
+     "offer_M": 9,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Xavier Tillman"
     },
     {
      "name": "Quentin Grimes",
@@ -1959,18 +1959,6 @@
      "why": "Rotation depth behind Ryan Kalkbrenner"
     },
     {
-     "name": "Mitchell Robinson",
-     "pos": "C",
-     "status": "UFA",
-     "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 8,
-     "barrett": 13.1,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Xavier Tillman"
-    },
-    {
      "name": "Jonathan Kuminga",
      "pos": "SF/PF",
      "status": "Team Option",
@@ -1993,6 +1981,18 @@
      "age": 25,
      "tool": "Cap room",
      "why": "Rotation depth behind Coby White"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Xavier Tillman"
     }
    ]
   },
@@ -2160,10 +2160,10 @@
      "kind": "external"
     },
     {
-     "name": "Dominick Barlow",
-     "pos": "PF/C",
-     "from": "PHI",
-     "cost_M": 5,
+     "name": "Dean Wade",
+     "pos": "SF/PF",
+     "from": "CLE",
+     "cost_M": 6,
      "tool": "Depth",
      "kind": "external"
     }
@@ -2510,18 +2510,6 @@
      "why": "Rotation depth behind Isaac Okoro"
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "status": "UFA",
-     "from": "POR",
-     "value_M": 11.3,
-     "offer_M": 11,
-     "barrett": 14.6,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Jalen Smith"
-    },
-    {
      "name": "Kelly Oubre Jr.",
      "pos": "SF/PF",
      "status": "UFA",
@@ -2534,16 +2522,16 @@
      "why": "Rotation depth behind Isaac Okoro"
     },
     {
-     "name": "Luguentz Dort",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 12.3,
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.0,
      "offer_M": 11,
-     "barrett": 8.5,
-     "age": 27,
+     "barrett": 14.6,
+     "age": 28,
      "tool": "Cap room",
-     "why": "Rotation depth behind Isaac Okoro"
+     "why": "Upgrade \u00b7 would start over Jalen Smith"
     },
     {
      "name": "Precious Achiuwa",
@@ -2556,6 +2544,18 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Jalen Smith"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 11,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Isaac Okoro"
     }
    ]
   },
@@ -2638,13 +2638,13 @@
      "pos": "PF/SF",
      "from": "SAS",
      "status": "UFA",
-     "value_M": 9.5,
+     "value_M": 9.2,
      "offer_M": 2,
      "fit": 81,
      "grade": "A",
      "ppos": "PF",
      "slot": 1,
-     "why": "Adds a needed second body at PF, a bargain at $2M against his $9.5M market."
+     "why": "Adds a needed second body at PF, a bargain at $2M against his $9.2M market."
     },
     {
      "name": "Khris Middleton",
@@ -2680,7 +2680,7 @@
      "pos": "SF/PF",
      "status": "UFA",
      "from": "CLE",
-     "value_M": 6.8,
+     "value_M": 6.7,
      "offer_M": 7,
      "barrett": 9.1,
      "age": 29,
@@ -2692,7 +2692,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "CLE",
-     "value_M": 6.8,
+     "value_M": 6.7,
      "offer_M": 7,
      "barrett": 9.2,
      "age": 26,
@@ -2704,7 +2704,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "CLE",
-     "value_M": 4.2,
+     "value_M": 4.1,
      "offer_M": 4,
      "barrett": 6.3,
      "age": 28,
@@ -2716,7 +2716,7 @@
      "pos": "PG",
      "status": "Team Option",
      "from": "CLE",
-     "value_M": 6.2,
+     "value_M": 6.1,
      "offer_M": 2,
      "barrett": 8.6,
      "age": 26,
@@ -2734,7 +2734,7 @@
       "name": "Keon Ellis",
       "pos": "SG/PG",
       "cost_M": 7,
-      "value_M": 6.8,
+      "value_M": 6.7,
       "barrett": 9.2,
       "running_M": 229,
       "zone": "over",
@@ -2745,7 +2745,7 @@
       "name": "Dean Wade",
       "pos": "SF/PF",
       "cost_M": 7,
-      "value_M": 6.8,
+      "value_M": 6.7,
       "barrett": 9.1,
       "running_M": 236,
       "zone": "over",
@@ -2756,7 +2756,7 @@
       "name": "Craig Porter Jr.",
       "pos": "PG",
       "cost_M": 2,
-      "value_M": 6.2,
+      "value_M": 6.1,
       "barrett": 8.6,
       "running_M": 238,
       "zone": "over",
@@ -2767,7 +2767,7 @@
       "name": "Thomas Bryant",
       "pos": "C",
       "cost_M": 4,
-      "value_M": 4.2,
+      "value_M": 4.1,
       "barrett": 6.3,
       "running_M": null,
       "zone": "walk",
@@ -2806,7 +2806,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 2,
      "barrett": 20.5,
      "age": 34,
@@ -2830,7 +2830,7 @@
      "pos": "PF/SF",
      "status": "UFA",
      "from": "SAS",
-     "value_M": 9.5,
+     "value_M": 9.2,
      "offer_M": 2,
      "barrett": 12.4,
      "age": 34,
@@ -2866,7 +2866,7 @@
      "pos": "SG/PG",
      "status": "Player Option",
      "from": "LAL",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 2,
      "barrett": 13.5,
      "age": 32,
@@ -2914,7 +2914,7 @@
      "pos": "SG/SF",
      "status": "UFA",
      "from": "DEN",
-     "value_M": 8.8,
+     "value_M": 8.9,
      "offer_M": 2,
      "barrett": 12.7,
      "age": 34,
@@ -2950,7 +2950,7 @@
      "pos": "PF/C",
      "status": "Team Option",
      "from": "IND",
-     "value_M": 3.4,
+     "value_M": 2.9,
      "offer_M": 2,
      "barrett": 11.4,
      "age": 28,
@@ -3025,7 +3025,7 @@
    "cap_room_M": 58,
    "exception_M": 15,
    "committed_M": 107,
-   "resign_cost_M": 27,
+   "resign_cost_M": 29,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -3163,6 +3163,13 @@
      "kind": "resign"
     },
     {
+     "name": "Moussa Cisse",
+     "pos": "C",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Kevin Porter Jr.",
      "pos": "PG/SG",
      "from": "MIL",
@@ -3195,8 +3202,8 @@
      "kind": "external"
     },
     {
-     "name": "Luke Kennard",
-     "pos": "SG/PG",
+     "name": "Jaxson Hayes",
+     "pos": "C",
      "from": "LAL",
      "cost_M": 6,
      "tool": "Depth",
@@ -3263,13 +3270,25 @@
      "age": 23,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
+    },
+    {
+     "name": "Moussa Cisse",
+     "pos": "C",
+     "status": "RFA",
+     "from": "DAL",
+     "value_M": 2.2,
+     "offer_M": 2,
+     "barrett": 6.2,
+     "age": 23,
+     "tool": "Bird rights",
+     "why": "Re-sign \u00b7 Bird rights"
     }
    ],
    "resign_plan": {
     "committed_M": 107,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 134,
+    "all_in_M": 136,
     "keeps": [
      {
       "name": "Brandon Williams",
@@ -3311,6 +3330,17 @@
       "value_M": 2.2,
       "barrett": 6.7,
       "running_M": 134,
+      "zone": "ok",
+      "worth": true,
+      "keep": true
+     },
+     {
+      "name": "Moussa Cisse",
+      "pos": "C",
+      "cost_M": 2,
+      "value_M": 2.2,
+      "barrett": 6.2,
+      "running_M": 136,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -3526,7 +3556,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -3562,7 +3592,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 9,
      "barrett": 13.1,
      "age": 28,
@@ -3662,13 +3692,13 @@
      "pos": "SG/PG",
      "from": "ATL",
      "status": "UFA",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 6,
      "fit": 87,
      "grade": "A+",
      "ppos": "SG",
      "slot": 1,
-     "why": "Adds a needed second body at SG, a bargain at $6M against his $15.2M market."
+     "why": "Adds a needed second body at SG, a bargain at $6M against his $15.5M market."
     },
     {
      "name": "Nikola Vu\u010devi\u0107",
@@ -3712,7 +3742,7 @@
      "pos": "SG/SF",
      "status": "UFA",
      "from": "DEN",
-     "value_M": 8.8,
+     "value_M": 8.9,
      "offer_M": 9,
      "barrett": 12.7,
      "age": 34,
@@ -3724,7 +3754,7 @@
      "pos": "PG/SG",
      "status": "UFA",
      "from": "DEN",
-     "value_M": 4.5,
+     "value_M": 4.4,
      "offer_M": 4,
      "barrett": 9.3,
      "age": 29,
@@ -3760,7 +3790,7 @@
      "pos": "SG",
      "status": "Team Option",
      "from": "DEN",
-     "value_M": 3.2,
+     "value_M": 2.8,
      "offer_M": 2,
      "barrett": 3.4,
      "age": 26,
@@ -3789,7 +3819,7 @@
       "name": "Tim Hardaway Jr.",
       "pos": "SG/SF",
       "cost_M": 9,
-      "value_M": 8.8,
+      "value_M": 8.9,
       "barrett": 12.7,
       "running_M": 246,
       "zone": "over",
@@ -3800,7 +3830,7 @@
       "name": "Bruce Brown",
       "pos": "PG/SG",
       "cost_M": 4,
-      "value_M": 4.5,
+      "value_M": 4.4,
       "barrett": 9.3,
       "running_M": 250,
       "zone": "over",
@@ -3822,7 +3852,7 @@
       "name": "Jalen Pickett",
       "pos": "SG",
       "cost_M": 2,
-      "value_M": 3.2,
+      "value_M": 2.8,
       "barrett": 3.4,
       "running_M": 256,
       "zone": "over",
@@ -3848,7 +3878,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 6,
      "barrett": 20.5,
      "age": 34,
@@ -3860,7 +3890,7 @@
      "pos": "SG/PG",
      "status": "Player Option",
      "from": "LAL",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 6,
      "barrett": 13.5,
      "age": 32,
@@ -3908,7 +3938,7 @@
      "pos": "PF/SF",
      "status": "UFA",
      "from": "SAS",
-     "value_M": 9.5,
+     "value_M": 9.2,
      "offer_M": 6,
      "barrett": 12.4,
      "age": 34,
@@ -3952,18 +3982,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Craig Porter Jr.",
-     "pos": "PG",
-     "status": "Team Option",
-     "from": "CLE",
-     "value_M": 6.2,
-     "offer_M": 5,
-     "barrett": 8.6,
-     "age": 26,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Jaxson Hayes",
      "pos": "C",
      "status": "UFA",
@@ -3988,12 +4006,24 @@
      "why": "Veteran-minimum depth"
     },
     {
+     "name": "Craig Porter Jr.",
+     "pos": "PG",
+     "status": "Team Option",
+     "from": "CLE",
+     "value_M": 6.1,
+     "offer_M": 5,
+     "barrett": 8.6,
+     "age": 26,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
      "name": "Luke Kennard",
      "pos": "SG/PG",
      "status": "UFA",
      "from": "LAL",
-     "value_M": 7.3,
-     "offer_M": 5,
+     "value_M": 7.1,
+     "offer_M": 4,
      "barrett": 10.0,
      "age": 29,
      "tool": "Veteran minimum",
@@ -4024,6 +4054,18 @@
      "why": "Veteran-minimum depth"
     },
     {
+     "name": "Bones Hyland",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "MIN",
+     "value_M": 5.7,
+     "offer_M": 4,
+     "barrett": 9.4,
+     "age": 25,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
      "name": "Mike Conley",
      "pos": "PG",
      "status": "UFA",
@@ -4032,18 +4074,6 @@
      "offer_M": 3,
      "barrett": 5.3,
      "age": 38,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Bones Hyland",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "MIN",
-     "value_M": 5.5,
-     "offer_M": 3,
-     "barrett": 9.4,
-     "age": 25,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -4468,7 +4498,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 14,
      "barrett": 20.5,
      "age": 34,
@@ -4576,7 +4606,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -4600,7 +4630,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 9,
      "barrett": 13.1,
      "age": 28,
@@ -4615,7 +4645,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 176,
-   "resign_cost_M": 35,
+   "resign_cost_M": 36,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
@@ -4723,7 +4753,7 @@
     {
      "name": "Gary Payton II",
      "pos": "SG/SF",
-     "cost_M": 5,
+     "cost_M": 6,
      "tool": "Re-sign",
      "kind": "resign"
     },
@@ -4742,10 +4772,10 @@
      "kind": "resign"
     },
     {
-     "name": "Collin Sexton",
+     "name": "Anfernee Simons",
      "pos": "PG/SG",
      "from": "CHI",
-     "cost_M": 11,
+     "cost_M": 9,
      "tool": "Mid-level",
      "kind": "external"
     }
@@ -4780,8 +4810,8 @@
      "pos": "SG/SF",
      "status": "UFA",
      "from": "GSW",
-     "value_M": 4.9,
-     "offer_M": 5,
+     "value_M": 5.5,
+     "offer_M": 6,
      "barrett": 10.1,
      "age": 33,
      "tool": "Bird rights",
@@ -4792,7 +4822,7 @@
      "pos": "PF/C",
      "status": "RFA",
      "from": "GSW",
-     "value_M": 4.1,
+     "value_M": 3.9,
      "offer_M": 4,
      "barrett": 7.7,
      "age": 26,
@@ -4816,7 +4846,7 @@
     "committed_M": 176,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 211,
+    "all_in_M": 212,
     "keeps": [
      {
       "name": "Kristaps Porzi\u0146\u0123is",
@@ -4843,10 +4873,10 @@
      {
       "name": "Gary Payton II",
       "pos": "SG/SF",
-      "cost_M": 5,
-      "value_M": 4.9,
+      "cost_M": 6,
+      "value_M": 5.5,
       "barrett": 10.1,
-      "running_M": 205,
+      "running_M": 206,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -4855,9 +4885,9 @@
       "name": "Quinten Post",
       "pos": "PF/C",
       "cost_M": 4,
-      "value_M": 4.1,
+      "value_M": 3.9,
       "barrett": 7.7,
-      "running_M": 209,
+      "running_M": 210,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -4868,7 +4898,7 @@
       "cost_M": 2,
       "value_M": 2.5,
       "barrett": 6.8,
-      "running_M": 211,
+      "running_M": 212,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -5013,7 +5043,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 9,
      "barrett": 14.6,
      "age": 28,
@@ -5045,18 +5075,6 @@
      "why": "Rotation depth behind Gui Santos"
     },
     {
-     "name": "Mitchell Robinson",
-     "pos": "C",
-     "status": "UFA",
-     "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 8,
-     "barrett": 13.1,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Al Horford"
-    },
-    {
      "name": "Pelle Larsson",
      "pos": "SG/SF",
      "status": "Team Option",
@@ -5067,6 +5085,18 @@
      "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Moses Moody"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Al Horford"
     },
     {
      "name": "Day'Ron Sharpe",
@@ -5291,6 +5321,18 @@
      "age": 27,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
+    },
+    {
+     "name": "Aaron Holiday",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "HOU",
+     "value_M": 3.5,
+     "offer_M": 4,
+     "barrett": 3.8,
+     "age": 29,
+     "tool": "Bird rights",
+     "why": "Re-sign \u00b7 Bird rights"
     }
    ],
    "resign_plan": {
@@ -5316,6 +5358,17 @@
       "cost_M": 4,
       "value_M": 3.5,
       "barrett": 5.3,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
+     },
+     {
+      "name": "Aaron Holiday",
+      "pos": "PG/SG",
+      "cost_M": 4,
+      "value_M": 3.5,
+      "barrett": 3.8,
       "running_M": null,
       "zone": "walk",
       "worth": false,
@@ -5353,7 +5406,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 14,
      "barrett": 20.5,
      "age": 34,
@@ -5449,7 +5502,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -5509,7 +5562,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 9,
      "barrett": 13.1,
      "age": 28,
@@ -5557,7 +5610,7 @@
      "pos": "SG/PG",
      "status": "Player Option",
      "from": "LAL",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 8,
      "barrett": 13.5,
      "age": 32,
@@ -5572,7 +5625,7 @@
    "cap_room_M": 13,
    "exception_M": 15,
    "committed_M": 152,
-   "resign_cost_M": 6,
+   "resign_cost_M": 3,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -5705,18 +5758,19 @@
      "kind": "resign"
     },
     {
-     "name": "Kobe Brown",
-     "pos": "SF/PF",
-     "cost_M": 3,
-     "tool": "Re-sign",
-     "kind": "resign"
+     "name": "Nikola Vu\u010devi\u0107",
+     "pos": "C/PF",
+     "from": "BOS",
+     "cost_M": 9,
+     "tool": "Cap room",
+     "kind": "external"
     },
     {
-     "name": "Norman Powell",
-     "pos": "SG/SF",
-     "from": "MIA",
-     "cost_M": 15,
-     "tool": "Mid-level",
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "cost_M": 8,
+     "tool": "Room exception",
      "kind": "external"
     },
     {
@@ -5746,23 +5800,11 @@
    ],
    "resign": [
     {
-     "name": "Kobe Brown",
-     "pos": "SF/PF",
-     "status": "RFA",
-     "from": "IND",
-     "value_M": 2.8,
-     "offer_M": 3,
-     "barrett": 4.4,
-     "age": 26,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
      "name": "Micah Potter",
      "pos": "PF/C",
      "status": "Team Option",
      "from": "IND",
-     "value_M": 3.4,
+     "value_M": 2.9,
      "offer_M": 3,
      "barrett": 11.4,
      "age": 28,
@@ -5774,26 +5816,15 @@
     "committed_M": 152,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 158,
+    "all_in_M": 155,
     "keeps": [
      {
       "name": "Micah Potter",
       "pos": "PF/C",
       "cost_M": 3,
-      "value_M": 3.4,
+      "value_M": 2.9,
       "barrett": 11.4,
       "running_M": 155,
-      "zone": "ok",
-      "worth": true,
-      "keep": true
-     },
-     {
-      "name": "Kobe Brown",
-      "pos": "SF/PF",
-      "cost_M": 3,
-      "value_M": 2.8,
-      "barrett": 4.4,
-      "running_M": 158,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -5830,7 +5861,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 14,
      "barrett": 20.5,
      "age": 34,
@@ -5998,7 +6029,7 @@
      "pos": "SG/PG",
      "status": "Player Option",
      "from": "LAL",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 9,
      "barrett": 13.5,
      "age": 32,
@@ -6034,8 +6065,8 @@
      "pos": "PF/SF",
      "status": "UFA",
      "from": "SAS",
-     "value_M": 9.5,
-     "offer_M": 9,
+     "value_M": 9.2,
+     "offer_M": 8,
      "barrett": 12.4,
      "age": 34,
      "tool": "Cap room",
@@ -6046,10 +6077,10 @@
   "LAC": {
    "team": "LAC",
    "name": "LA Clippers",
-   "cap_room_M": 5,
+   "cap_room_M": 3,
    "exception_M": 15,
-   "committed_M": 160,
-   "resign_cost_M": 45,
+   "committed_M": 162,
+   "resign_cost_M": 47,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -6173,19 +6204,18 @@
      "kind": "resign"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "from": "SAS",
-     "cost_M": 15,
-     "tool": "Mid-level",
-     "kind": "external"
+     "name": "Kobe Sanders",
+     "pos": "SG/SF",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
     },
     {
-     "name": "Cam Thomas",
-     "pos": "SG",
-     "from": "MIL",
-     "cost_M": 2,
-     "tool": "Minimum",
+     "name": "Peyton Watson",
+     "pos": "SF/PF",
+     "from": "DEN",
+     "cost_M": 13,
+     "tool": "Mid-level",
      "kind": "external"
     }
    ],
@@ -6249,13 +6279,25 @@
      "age": 26,
      "tool": "Team option",
      "why": "Pick up team option"
+    },
+    {
+     "name": "Kobe Sanders",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "LAC",
+     "value_M": 2.8,
+     "offer_M": 2,
+     "barrett": 7.0,
+     "age": 24,
+     "tool": "Team option",
+     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
-    "committed_M": 160,
+    "committed_M": 162,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 205,
+    "all_in_M": 209,
     "keeps": [
      {
       "name": "Bennedict Mathurin",
@@ -6263,7 +6305,7 @@
       "cost_M": 24,
       "value_M": 23.8,
       "barrett": 17.5,
-      "running_M": 184,
+      "running_M": 186,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -6274,7 +6316,7 @@
       "cost_M": 11,
       "value_M": 10.6,
       "barrett": 16.7,
-      "running_M": 195,
+      "running_M": 197,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -6285,7 +6327,7 @@
       "cost_M": 8,
       "value_M": 7.7,
       "barrett": 11.0,
-      "running_M": 203,
+      "running_M": 205,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -6296,7 +6338,18 @@
       "cost_M": 2,
       "value_M": 3.5,
       "barrett": 10.7,
-      "running_M": 205,
+      "running_M": 207,
+      "zone": "tax",
+      "worth": true,
+      "keep": true
+     },
+     {
+      "name": "Kobe Sanders",
+      "pos": "SG/SF",
+      "cost_M": 2,
+      "value_M": 2.8,
+      "barrett": 7.0,
+      "running_M": 209,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -6476,7 +6529,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -6500,7 +6553,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 14,
      "barrett": 20.5,
      "age": 34,
@@ -6512,7 +6565,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 9,
      "barrett": 13.1,
      "age": 28,
@@ -6640,17 +6693,17 @@
      "why": "Adds a needed second body at SF, a bargain at $21M against his $23.8M market."
     },
     {
-     "name": "Tobias Harris",
+     "name": "Harrison Barnes",
      "pos": "PF/SF",
-     "from": "DET",
+     "from": "SAS",
      "status": "UFA",
-     "value_M": 8.9,
+     "value_M": 9.2,
      "offer_M": 8,
-     "fit": 71,
+     "fit": 72,
      "grade": "A-",
      "ppos": "PF",
      "slot": 1,
-     "why": "Adds a needed second body at PF, a bargain at $8M against his $8.9M market."
+     "why": "Adds a needed second body at PF, a bargain at $8M against his $9.2M market."
     }
    ],
    "plan": [
@@ -6697,9 +6750,9 @@
      "kind": "resign"
     },
     {
-     "name": "Gary Payton II",
-     "pos": "SG/SF",
-     "from": "GSW",
+     "name": "Kevin Love",
+     "pos": "C/PF",
+     "from": "UTA",
      "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
@@ -6759,7 +6812,7 @@
      "pos": "SG/PG",
      "status": "Player Option",
      "from": "LAL",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 10,
      "barrett": 13.5,
      "age": 32,
@@ -6771,7 +6824,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "LAL",
-     "value_M": 7.3,
+     "value_M": 7.1,
      "offer_M": 7,
      "barrett": 10.0,
      "age": 29,
@@ -6834,7 +6887,7 @@
       "name": "Marcus Smart",
       "pos": "SG/PG",
       "cost_M": 10,
-      "value_M": 10.2,
+      "value_M": 10.1,
       "barrett": 13.5,
       "running_M": 200,
       "zone": "tax",
@@ -6867,7 +6920,7 @@
       "name": "Luke Kennard",
       "pos": "SG/PG",
       "cost_M": 7,
-      "value_M": 7.3,
+      "value_M": 7.1,
       "barrett": 10.0,
       "running_M": 227,
       "zone": "over",
@@ -6978,7 +7031,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 12,
      "barrett": 20.5,
      "age": 34,
@@ -7098,7 +7151,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -7110,8 +7163,8 @@
      "pos": "PF/SF",
      "status": "UFA",
      "from": "SAS",
-     "value_M": 9.5,
-     "offer_M": 9,
+     "value_M": 9.2,
+     "offer_M": 8,
      "barrett": 12.4,
      "age": 34,
      "tool": "Cap room",
@@ -7125,7 +7178,7 @@
    "cap_room_M": 23,
    "exception_M": 15,
    "committed_M": 142,
-   "resign_cost_M": 2,
+   "resign_cost_M": 6,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -7259,6 +7312,13 @@
    ],
    "plan": [
     {
+     "name": "Javon Small",
+     "pos": "PG/SG",
+     "cost_M": 4,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Olivier-Maxence Prosper",
      "pos": "PF/C",
      "cost_M": 2,
@@ -7266,10 +7326,10 @@
      "kind": "resign"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "from": "SAS",
-     "cost_M": 21,
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "cost_M": 16,
      "tool": "Cap room",
      "kind": "external"
     },
@@ -7308,6 +7368,18 @@
    ],
    "resign": [
     {
+     "name": "Javon Small",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "MEM",
+     "value_M": 3.8,
+     "offer_M": 4,
+     "barrett": 10.6,
+     "age": 23,
+     "tool": "Bird rights",
+     "why": "Re-sign \u00b7 Bird rights"
+    },
+    {
      "name": "Olivier-Maxence Prosper",
      "pos": "PF/C",
      "status": "Team Option",
@@ -7324,15 +7396,26 @@
     "committed_M": 142,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 144,
+    "all_in_M": 148,
     "keeps": [
+     {
+      "name": "Javon Small",
+      "pos": "PG/SG",
+      "cost_M": 4,
+      "value_M": 3.8,
+      "barrett": 10.6,
+      "running_M": 146,
+      "zone": "ok",
+      "worth": true,
+      "keep": true
+     },
      {
       "name": "Olivier-Maxence Prosper",
       "pos": "PF/C",
       "cost_M": 2,
       "value_M": 3.2,
       "barrett": 9.5,
-      "running_M": 144,
+      "running_M": 148,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -7501,7 +7584,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 11,
      "barrett": 14.6,
      "age": 28,
@@ -7549,7 +7632,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 10,
      "barrett": 13.1,
      "age": 28,
@@ -7759,7 +7842,7 @@
      "pos": "SF/PF",
      "status": "UFA",
      "from": "MIA",
-     "value_M": 6.5,
+     "value_M": 6.4,
      "offer_M": 6,
      "barrett": 6.9,
      "age": 30,
@@ -7811,7 +7894,7 @@
       "name": "Simone Fontecchio",
       "pos": "SF/PF",
       "cost_M": 6,
-      "value_M": 6.5,
+      "value_M": 6.4,
       "barrett": 6.9,
       "running_M": null,
       "zone": "walk",
@@ -7922,7 +8005,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 9,
      "barrett": 14.6,
      "age": 28,
@@ -7946,7 +8029,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 8,
      "barrett": 13.1,
      "age": 28,
@@ -7958,7 +8041,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 12,
      "barrett": 20.5,
      "age": 34,
@@ -8018,7 +8101,7 @@
      "pos": "PG",
      "status": "Team Option",
      "from": "CLE",
-     "value_M": 6.2,
+     "value_M": 6.1,
      "offer_M": 4,
      "barrett": 8.6,
      "age": 26,
@@ -8218,10 +8301,10 @@
      "kind": "external"
     },
     {
-     "name": "Luke Kennard",
-     "pos": "SG/PG",
+     "name": "Jaxson Hayes",
+     "pos": "C",
      "from": "LAL",
-     "cost_M": 6,
+     "cost_M": 5,
      "tool": "Depth",
      "kind": "external"
     }
@@ -8433,7 +8516,7 @@
      "barrett": 17.6,
      "age": 26,
      "tool": "Cap room",
-     "why": "Rotation depth behind Cam Thomas"
+     "why": "Rotation depth behind Cormac Ryan"
     },
     {
      "name": "LeBron James",
@@ -8493,7 +8576,7 @@
      "barrett": 14.9,
      "age": 26,
      "tool": "Cap room",
-     "why": "Rotation depth behind Cam Thomas"
+     "why": "Rotation depth behind Cormac Ryan"
     },
     {
      "name": "Deandre Ayton",
@@ -8529,7 +8612,7 @@
      "barrett": 12.7,
      "age": 27,
      "tool": "Cap room",
-     "why": "Rotation depth behind Cam Thomas"
+     "why": "Rotation depth behind Cormac Ryan"
     },
     {
      "name": "Collin Sexton",
@@ -8541,7 +8624,7 @@
      "barrett": 14.5,
      "age": 27,
      "tool": "Cap room",
-     "why": "Rotation depth behind Cam Thomas"
+     "why": "Rotation depth behind Cormac Ryan"
     },
     {
      "name": "Quentin Grimes",
@@ -8589,7 +8672,7 @@
      "barrett": 15.0,
      "age": 26,
      "tool": "Cap room",
-     "why": "Rotation depth behind Cam Thomas"
+     "why": "Rotation depth behind Cormac Ryan"
     },
     {
      "name": "Mark Williams",
@@ -8608,7 +8691,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 9,
      "barrett": 14.6,
      "age": 28,
@@ -8772,7 +8855,7 @@
      "pos": "PG/SG",
      "status": "UFA",
      "from": "MIN",
-     "value_M": 5.5,
+     "value_M": 5.7,
      "offer_M": 6,
      "barrett": 9.4,
      "age": 25,
@@ -8825,7 +8908,7 @@
       "name": "Bones Hyland",
       "pos": "PG/SG",
       "cost_M": 6,
-      "value_M": 5.5,
+      "value_M": 5.7,
       "barrett": 9.4,
       "running_M": 203,
       "zone": "tax",
@@ -8886,7 +8969,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 14,
      "barrett": 20.5,
      "age": 34,
@@ -9042,7 +9125,7 @@
      "pos": "SG/PG",
      "status": "Player Option",
      "from": "LAL",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 6,
      "barrett": 13.5,
      "age": 32,
@@ -9054,22 +9137,10 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 7,
      "barrett": 14.6,
      "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Harrison Barnes",
-     "pos": "PF/SF",
-     "status": "UFA",
-     "from": "SAS",
-     "value_M": 9.5,
-     "offer_M": 6,
-     "barrett": 12.4,
-     "age": 34,
      "tool": "Mid-level exception",
      "why": "Veteran-minimum depth"
     },
@@ -9086,12 +9157,24 @@
      "why": "Veteran-minimum depth"
     },
     {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "SAS",
+     "value_M": 9.2,
+     "offer_M": 6,
+     "barrett": 12.4,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 7,
+     "value_M": 10.4,
+     "offer_M": 6,
      "barrett": 13.1,
      "age": 28,
      "tool": "Mid-level exception",
@@ -9203,30 +9286,30 @@
      "why": "Upgrades on Derik Queen at C, fair value at $15M."
     },
     {
-     "name": "Jamal Shead",
+     "name": "Javon Small",
      "pos": "PG/SG",
-     "from": "TOR",
-     "status": "Team Option",
-     "value_M": 5.5,
-     "offer_M": 3,
+     "from": "MEM",
+     "status": "UFA",
+     "value_M": 3.8,
+     "offer_M": 2,
      "fit": 73,
      "grade": "A-",
      "ppos": "PG",
      "slot": 3,
-     "why": "Rotation depth at PG, a bargain at $3M against his $5.5M market."
+     "why": "Rotation depth at PG, a bargain at $2M against his $3.8M market."
     },
     {
      "name": "Marcus Smart",
      "pos": "SG/PG",
      "from": "LAL",
      "status": "Player Option",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 5,
      "fit": 61,
      "grade": "B+",
      "ppos": "SG",
      "slot": 4,
-     "why": "Rotation depth at SG, a bargain at $5M against his $10.2M market."
+     "why": "Rotation depth at SG, a bargain at $5M against his $10.1M market."
     }
    ],
    "plan": [
@@ -9421,7 +9504,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -9453,18 +9536,6 @@
      "why": "Upgrade \u00b7 would start over Derik Queen"
     },
     {
-     "name": "Mitchell Robinson",
-     "pos": "C",
-     "status": "UFA",
-     "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 9,
-     "barrett": 13.1,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Karlo Matkovi\u0107"
-    },
-    {
      "name": "Anfernee Simons",
      "pos": "PG/SG",
      "status": "UFA",
@@ -9475,6 +9546,18 @@
      "age": 27,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Bryce McGowens"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 9,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Karlo Matkovi\u0107"
     },
     {
      "name": "Brandon Williams",
@@ -9635,13 +9718,13 @@
      "pos": "PF/SF",
      "from": "SAS",
      "status": "UFA",
-     "value_M": 9.5,
+     "value_M": 9.2,
      "offer_M": 6,
      "fit": 64,
      "grade": "B+",
      "ppos": "PF",
      "slot": 3,
-     "why": "Rotation depth at PF, a bargain at $6M against his $9.5M market."
+     "why": "Rotation depth at PF, a bargain at $6M against his $9.2M market."
     }
    ],
    "plan": [
@@ -9660,9 +9743,9 @@
      "kind": "resign"
     },
     {
-     "name": "Ryan Nembhard",
-     "pos": "PG",
-     "from": "DAL",
+     "name": "Pete Nance",
+     "pos": "PF/C",
+     "from": "MIL",
      "cost_M": 1,
      "tool": "Minimum",
      "kind": "external"
@@ -9674,7 +9757,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 10,
      "barrett": 13.1,
      "age": 28,
@@ -9698,7 +9781,7 @@
      "pos": "PG/SG",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 4.2,
+     "value_M": 4.3,
      "offer_M": 4,
      "barrett": 4.9,
      "age": 34,
@@ -9728,7 +9811,7 @@
       "name": "Mitchell Robinson",
       "pos": "C",
       "cost_M": 10,
-      "value_M": 10.5,
+      "value_M": 10.4,
       "barrett": 13.1,
       "running_M": 216,
       "zone": "tax",
@@ -9750,7 +9833,7 @@
       "name": "Jordan Clarkson",
       "pos": "PG/SG",
       "cost_M": 4,
-      "value_M": 4.2,
+      "value_M": 4.3,
       "barrett": 4.9,
       "running_M": null,
       "zone": "walk",
@@ -9868,6 +9951,18 @@
      "why": "Rotation depth behind Miles McBride"
     },
     {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 10,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Miles McBride"
+    },
+    {
      "name": "Collin Sexton",
      "pos": "PG/SG",
      "status": "UFA",
@@ -9876,18 +9971,6 @@
      "offer_M": 11,
      "barrett": 14.5,
      "age": 27,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Miles McBride"
-    },
-    {
-     "name": "CJ McCollum",
-     "pos": "SG/PG",
-     "status": "UFA",
-     "from": "ATL",
-     "value_M": 15.2,
-     "offer_M": 9,
-     "barrett": 20.5,
-     "age": 34,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Miles McBride"
     },
@@ -9920,7 +10003,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -10116,13 +10199,13 @@
      "pos": "SG/PG",
      "from": "ATL",
      "status": "UFA",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 2,
      "fit": 75,
      "grade": "A",
      "ppos": "SG",
      "slot": 1,
-     "why": "Adds a needed second body at SG, a bargain at $2M against his $15.2M market."
+     "why": "Adds a needed second body at SG, a bargain at $2M against his $15.5M market."
     },
     {
      "name": "Russell Westbrook",
@@ -10157,7 +10240,7 @@
      "pos": "SF/PF",
      "status": "Team Option",
      "from": "OKC",
-     "value_M": 12.3,
+     "value_M": 11.7,
      "offer_M": 12,
      "barrett": 8.5,
      "age": 27,
@@ -10198,7 +10281,7 @@
       "name": "Luguentz Dort",
       "pos": "SF/PF",
       "cost_M": 12,
-      "value_M": 12.3,
+      "value_M": 11.7,
       "barrett": 8.5,
       "running_M": 275,
       "zone": "over",
@@ -10248,7 +10331,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 2,
      "barrett": 20.5,
      "age": 34,
@@ -10260,7 +10343,7 @@
      "pos": "PF/SF",
      "status": "UFA",
      "from": "SAS",
-     "value_M": 9.5,
+     "value_M": 9.2,
      "offer_M": 2,
      "barrett": 12.4,
      "age": 34,
@@ -10272,7 +10355,7 @@
      "pos": "SG/PG",
      "status": "Player Option",
      "from": "LAL",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 2,
      "barrett": 13.5,
      "age": 32,
@@ -10352,18 +10435,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Micah Potter",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "IND",
-     "value_M": 3.4,
-     "offer_M": 2,
-     "barrett": 11.4,
-     "age": 28,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Jericho Sims",
      "pos": "C",
      "status": "Player Option",
@@ -10376,6 +10447,18 @@
      "why": "Veteran-minimum depth"
     },
     {
+     "name": "Micah Potter",
+     "pos": "PF/C",
+     "status": "Team Option",
+     "from": "IND",
+     "value_M": 2.9,
+     "offer_M": 2,
+     "barrett": 11.4,
+     "age": 28,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
      "name": "Anthony Gill",
      "pos": "PF/C",
      "status": "UFA",
@@ -10384,6 +10467,18 @@
      "offer_M": 2,
      "barrett": 6.8,
      "age": 33,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Sharife Cooper",
+     "pos": "PG",
+     "status": "RFA",
+     "from": "WAS",
+     "value_M": 2.2,
+     "offer_M": 2,
+     "barrett": 6.6,
+     "age": 25,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -10525,17 +10620,17 @@
      "why": "Rotation depth at PF, a bargain at $2M against his $2.9M market."
     },
     {
-     "name": "Keon Ellis",
+     "name": "Luke Kennard",
      "pos": "SG/PG",
-     "from": "CLE",
+     "from": "LAL",
      "status": "UFA",
-     "value_M": 6.8,
+     "value_M": 7.1,
      "offer_M": 4,
      "fit": 66,
      "grade": "A-",
      "ppos": "SG",
      "slot": 3,
-     "why": "Rotation depth at SG, a bargain at $4M against his $6.8M market."
+     "why": "Rotation depth at SG, a bargain at $4M against his $7.1M market."
     }
    ],
    "plan": [
@@ -10557,18 +10652,6 @@
     }
    ],
    "resign": [
-    {
-     "name": "Jett Howard",
-     "pos": "SF/PF",
-     "status": "RFA",
-     "from": "ORL",
-     "value_M": 4.0,
-     "offer_M": 4,
-     "barrett": 1.9,
-     "age": 22,
-     "tool": "Bird rights",
-     "why": "Re-sign \u00b7 Bird rights"
-    },
     {
      "name": "Jevon Carter",
      "pos": "PG/SG",
@@ -10594,17 +10677,6 @@
       "cost_M": 4,
       "value_M": 3.5,
       "barrett": 4.5,
-      "running_M": null,
-      "zone": "walk",
-      "worth": false,
-      "keep": false
-     },
-     {
-      "name": "Jett Howard",
-      "pos": "SF/PF",
-      "cost_M": 4,
-      "value_M": 4.0,
-      "barrett": 1.9,
       "running_M": null,
       "zone": "walk",
       "worth": false,
@@ -10638,18 +10710,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Craig Porter Jr.",
-     "pos": "PG",
-     "status": "Team Option",
-     "from": "CLE",
-     "value_M": 6.2,
-     "offer_M": 5,
-     "barrett": 8.6,
-     "age": 26,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Jaxson Hayes",
      "pos": "C",
      "status": "UFA",
@@ -10674,14 +10734,14 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Luke Kennard",
-     "pos": "SG/PG",
-     "status": "UFA",
-     "from": "LAL",
-     "value_M": 7.3,
+     "name": "Craig Porter Jr.",
+     "pos": "PG",
+     "status": "Team Option",
+     "from": "CLE",
+     "value_M": 6.1,
      "offer_M": 5,
-     "barrett": 10.0,
-     "age": 29,
+     "barrett": 8.6,
+     "age": 26,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -10722,14 +10782,14 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Keon Ellis",
+     "name": "Luke Kennard",
      "pos": "SG/PG",
      "status": "UFA",
-     "from": "CLE",
-     "value_M": 6.8,
+     "from": "LAL",
+     "value_M": 7.1,
      "offer_M": 4,
-     "barrett": 9.2,
-     "age": 26,
+     "barrett": 10.0,
+     "age": 29,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -10746,11 +10806,23 @@
      "why": "Veteran-minimum depth"
     },
     {
+     "name": "Keon Ellis",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "CLE",
+     "value_M": 6.7,
+     "offer_M": 4,
+     "barrett": 9.2,
+     "age": 26,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
      "name": "Vince Williams Jr.",
      "pos": "PG/SG",
      "status": "UFA",
      "from": "UTA",
-     "value_M": 6.6,
+     "value_M": 5.9,
      "offer_M": 4,
      "barrett": 6.6,
      "age": 25,
@@ -10762,8 +10834,8 @@
      "pos": "PG/SG",
      "status": "UFA",
      "from": "MIN",
-     "value_M": 5.5,
-     "offer_M": 3,
+     "value_M": 5.7,
+     "offer_M": 4,
      "barrett": 9.4,
      "age": 25,
      "tool": "Veteran minimum",
@@ -10774,7 +10846,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "CLE",
-     "value_M": 4.2,
+     "value_M": 4.1,
      "offer_M": 3,
      "barrett": 6.3,
      "age": 28,
@@ -10786,7 +10858,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 6,
      "barrett": 20.5,
      "age": 34,
@@ -10798,7 +10870,7 @@
      "pos": "PF/SF",
      "status": "UFA",
      "from": "SAS",
-     "value_M": 9.5,
+     "value_M": 9.2,
      "offer_M": 6,
      "barrett": 12.4,
      "age": 34,
@@ -10810,7 +10882,7 @@
      "pos": "SG/PG",
      "status": "Player Option",
      "from": "LAL",
-     "value_M": 10.2,
+     "value_M": 10.1,
      "offer_M": 6,
      "barrett": 13.5,
      "age": 32,
@@ -10936,17 +11008,17 @@
      "why": "Adds a needed second body at PF, a bargain at $8M against his $8.9M market."
     },
     {
-     "name": "Jordan Clarkson",
-     "pos": "PG/SG",
-     "from": "NYK",
-     "status": "UFA",
-     "value_M": 4.2,
-     "offer_M": 2,
-     "fit": 68,
+     "name": "Craig Porter Jr.",
+     "pos": "PG",
+     "from": "CLE",
+     "status": "Team Option",
+     "value_M": 6.1,
+     "offer_M": 5,
+     "fit": 69,
      "grade": "A-",
      "ppos": "PG",
-     "slot": 4,
-     "why": "Rotation depth at PG, a bargain at $2M against his $4.2M market."
+     "slot": 1,
+     "why": "Adds a needed second body at PG, a bargain at $5M against his $6.1M market."
     },
     {
      "name": "Nikola Vu\u010devi\u0107",
@@ -11033,6 +11105,18 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
+     "name": "Tyrese Martin",
+     "pos": "PG/SG",
+     "status": "RFA",
+     "from": "PHI",
+     "value_M": 4.0,
+     "offer_M": 4,
+     "barrett": 4.2,
+     "age": 27,
+     "tool": "Bird rights",
+     "why": "Re-sign \u00b7 Bird rights"
+    },
+    {
      "name": "Andre Drummond",
      "pos": "C",
      "status": "UFA",
@@ -11049,7 +11133,7 @@
      "pos": "PF/C",
      "status": "Team Option",
      "from": "PHI",
-     "value_M": 6.8,
+     "value_M": 6.3,
      "offer_M": 3,
      "barrett": 10.9,
      "age": 23,
@@ -11101,7 +11185,7 @@
       "name": "Dominick Barlow",
       "pos": "PF/C",
       "cost_M": 3,
-      "value_M": 6.8,
+      "value_M": 6.3,
       "barrett": 10.9,
       "running_M": 208,
       "zone": "tax",
@@ -11129,6 +11213,17 @@
       "zone": "tax",
       "worth": true,
       "keep": true
+     },
+     {
+      "name": "Tyrese Martin",
+      "pos": "PG/SG",
+      "cost_M": 4,
+      "value_M": 4.0,
+      "barrett": 4.2,
+      "running_M": null,
+      "zone": "walk",
+      "worth": false,
+      "keep": false
      }
     ]
    },
@@ -11198,7 +11293,7 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
+     "value_M": 15.5,
      "offer_M": 12,
      "barrett": 20.5,
      "age": 34,
@@ -11230,18 +11325,6 @@
      "why": "Rotation depth behind Dominick Barlow"
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "status": "UFA",
-     "from": "POR",
-     "value_M": 11.3,
-     "offer_M": 10,
-     "barrett": 14.6,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Dominick Barlow"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -11252,6 +11335,18 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Cameron Payne"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.0,
+     "offer_M": 10,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Dominick Barlow"
     },
     {
      "name": "Julian Champagnie",
@@ -11290,18 +11385,6 @@
      "why": "Rotation depth behind Dominick Barlow"
     },
     {
-     "name": "Mitchell Robinson",
-     "pos": "C",
-     "status": "UFA",
-     "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 9,
-     "barrett": 13.1,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Dominick Barlow"
-    },
-    {
      "name": "Precious Achiuwa",
      "pos": "PF/C",
      "status": "UFA",
@@ -11324,6 +11407,18 @@
      "age": 27,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Cameron Payne"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 9,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Dominick Barlow"
     },
     {
      "name": "Tobias Harris",
@@ -11722,7 +11817,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -11766,18 +11861,6 @@
      "why": "Rotation depth behind Royce O'Neale"
     },
     {
-     "name": "Mitchell Robinson",
-     "pos": "C",
-     "status": "UFA",
-     "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 8,
-     "barrett": 13.1,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Khaman Maluach"
-    },
-    {
      "name": "Pelle Larsson",
      "pos": "SG/SF",
      "status": "Team Option",
@@ -11788,6 +11871,18 @@
      "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Grayson Allen"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Khaman Maluach"
     },
     {
      "name": "Kelly Oubre Jr.",
@@ -11838,6 +11933,18 @@
      "why": "Upgrade \u00b7 would start over Mark Williams"
     },
     {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 10,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Grayson Allen"
+    },
+    {
      "name": "Jaxson Hayes",
      "pos": "C",
      "status": "UFA",
@@ -11860,18 +11967,6 @@
      "age": 30,
      "tool": "Cap room",
      "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "CJ McCollum",
-     "pos": "SG/PG",
-     "status": "UFA",
-     "from": "ATL",
-     "value_M": 15.2,
-     "offer_M": 9,
-     "barrett": 20.5,
-     "age": 34,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Grayson Allen"
     }
    ]
   },
@@ -11881,7 +11976,7 @@
    "cap_room_M": 8,
    "exception_M": 15,
    "committed_M": 156,
-   "resign_cost_M": 11,
+   "resign_cost_M": 14,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -12008,6 +12103,13 @@
      "kind": "resign"
     },
     {
+     "name": "Caleb Love",
+     "pos": "PG/SG",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "from": "MIN",
@@ -12046,10 +12148,22 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 11,
      "barrett": 14.6,
      "age": 28,
+     "tool": "Bird rights",
+     "why": "Re-sign \u00b7 Bird rights"
+    },
+    {
+     "name": "Caleb Love",
+     "pos": "PG/SG",
+     "status": "RFA",
+     "from": "POR",
+     "value_M": 2.6,
+     "offer_M": 3,
+     "barrett": 5.6,
+     "age": 24,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
     }
@@ -12058,15 +12172,26 @@
     "committed_M": 156,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 168,
+    "all_in_M": 170,
     "keeps": [
      {
       "name": "Robert Williams III",
       "pos": "C",
       "cost_M": 11,
-      "value_M": 11.3,
+      "value_M": 11.0,
       "barrett": 14.6,
       "running_M": 168,
+      "zone": "ok",
+      "worth": true,
+      "keep": true
+     },
+     {
+      "name": "Caleb Love",
+      "pos": "PG/SG",
+      "cost_M": 3,
+      "value_M": 2.6,
+      "barrett": 5.6,
+      "running_M": 170,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -12291,18 +12416,6 @@
      "why": "Rotation depth behind Scoot Henderson"
     },
     {
-     "name": "Mitchell Robinson",
-     "pos": "C",
-     "status": "UFA",
-     "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 8,
-     "barrett": 13.1,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Yang Hansen"
-    },
-    {
      "name": "Jonathan Kuminga",
      "pos": "SF/PF",
      "status": "Team Option",
@@ -12313,6 +12426,18 @@
      "age": 23,
      "tool": "Cap room",
      "why": "Rotation depth behind V\u00edt Krej\u010d\u00ed"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 8,
+     "barrett": 16.3,
+     "age": 25,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Scoot Henderson"
     }
    ]
   },
@@ -12321,8 +12446,8 @@
    "name": "Sacramento Kings",
    "cap_room_M": 0,
    "exception_M": 15,
-   "committed_M": 203,
-   "resign_cost_M": 17,
+   "committed_M": 206,
+   "resign_cost_M": 5,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "rebuild",
@@ -12436,17 +12561,18 @@
      "kind": "resign"
     },
     {
-     "name": "Precious Achiuwa",
-     "pos": "PF/C",
-     "cost_M": 12,
-     "tool": "Re-sign",
-     "kind": "resign"
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "from": "BKN",
+     "cost_M": 10,
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
-     "name": "Tyus Jones",
+     "name": "Ryan Nembhard",
      "pos": "PG",
-     "from": "DEN",
-     "cost_M": 2,
+     "from": "DAL",
+     "cost_M": 1,
      "tool": "Minimum",
      "kind": "external"
     }
@@ -12490,10 +12616,10 @@
     }
    ],
    "resign_plan": {
-    "committed_M": 203,
+    "committed_M": 206,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 223,
+    "all_in_M": 226,
     "keeps": [
      {
       "name": "Russell Westbrook",
@@ -12501,7 +12627,7 @@
       "cost_M": 5,
       "value_M": 5.4,
       "barrett": 19.6,
-      "running_M": 208,
+      "running_M": 211,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -12512,10 +12638,10 @@
       "cost_M": 12,
       "value_M": 12.1,
       "barrett": 13.1,
-      "running_M": 220,
-      "zone": "tax",
+      "running_M": 223,
+      "zone": "over",
       "worth": true,
-      "keep": true
+      "keep": false
      },
      {
       "name": "Drew Eubanks",
@@ -12523,7 +12649,7 @@
       "cost_M": 3,
       "value_M": 3.1,
       "barrett": 5.7,
-      "running_M": 223,
+      "running_M": 226,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -12692,7 +12818,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -12760,16 +12886,16 @@
      "why": "Rotation depth behind Maxime Raynaud"
     },
     {
-     "name": "Quentin Grimes",
-     "pos": "SG/SF",
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
      "status": "UFA",
-     "from": "PHI",
-     "value_M": 13.4,
-     "offer_M": 8,
-     "barrett": 15.2,
-     "age": 26,
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 12,
+     "barrett": 20.5,
+     "age": 34,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Keegan Murray"
+     "why": "Rotation depth behind Russell Westbrook"
     }
    ]
   },
@@ -12779,7 +12905,7 @@
    "cap_room_M": 12,
    "exception_M": 15,
    "committed_M": 153,
-   "resign_cost_M": 13,
+   "resign_cost_M": 12,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
@@ -12891,7 +13017,7 @@
     {
      "name": "Harrison Barnes",
      "pos": "PF/SF",
-     "cost_M": 10,
+     "cost_M": 9,
      "tool": "Re-sign",
      "kind": "resign"
     },
@@ -12934,8 +13060,8 @@
      "pos": "PF/SF",
      "status": "UFA",
      "from": "SAS",
-     "value_M": 9.5,
-     "offer_M": 10,
+     "value_M": 9.2,
+     "offer_M": 9,
      "barrett": 12.4,
      "age": 34,
      "tool": "Bird rights",
@@ -12958,7 +13084,7 @@
     "committed_M": 153,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 166,
+    "all_in_M": 165,
     "keeps": [
      {
       "name": "Julian Champagnie",
@@ -12974,10 +13100,10 @@
      {
       "name": "Harrison Barnes",
       "pos": "PF/SF",
-      "cost_M": 10,
-      "value_M": 9.5,
+      "cost_M": 9,
+      "value_M": 9.2,
       "barrett": 12.4,
-      "running_M": 166,
+      "running_M": 165,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -13062,8 +13188,8 @@
      "pos": "SG/PG",
      "status": "UFA",
      "from": "ATL",
-     "value_M": 15.2,
-     "offer_M": 9,
+     "value_M": 15.5,
+     "offer_M": 10,
      "barrett": 20.5,
      "age": 34,
      "tool": "Cap room",
@@ -13086,7 +13212,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 10,
      "barrett": 14.6,
      "age": 28,
@@ -13158,7 +13284,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "NYK",
-     "value_M": 10.5,
+     "value_M": 10.4,
      "offer_M": 8,
      "barrett": 13.1,
      "age": 28,
@@ -13325,17 +13451,17 @@
      "why": "Rotation depth at SG, a bargain at $6M against his $10.3M market."
     },
     {
-     "name": "Jamaree Bouyea",
+     "name": "Tyrese Martin",
      "pos": "PG/SG",
-     "from": "PHX",
-     "status": "Team Option",
-     "value_M": 2.3,
-     "offer_M": 1,
+     "from": "PHI",
+     "status": "RFA",
+     "value_M": 4.0,
+     "offer_M": 2,
      "fit": 62,
      "grade": "B+",
      "ppos": "PG",
      "slot": 3,
-     "why": "Rotation depth at PG, a bargain at $1M against his $2.3M market."
+     "why": "Rotation depth at PG, a bargain at $2M against his $4.0M market."
     }
    ],
    "plan": [
@@ -13388,7 +13514,7 @@
      "pos": "PG/SG",
      "status": "Team Option",
      "from": "TOR",
-     "value_M": 5.5,
+     "value_M": 5.4,
      "offer_M": 2,
      "barrett": 10.7,
      "age": 23,
@@ -13417,7 +13543,7 @@
       "name": "Jamal Shead",
       "pos": "PG/SG",
       "cost_M": 2,
-      "value_M": 5.5,
+      "value_M": 5.4,
       "barrett": 10.7,
       "running_M": 203,
       "zone": "tax",
@@ -13576,7 +13702,7 @@
      "pos": "C",
      "status": "UFA",
      "from": "POR",
-     "value_M": 11.3,
+     "value_M": 11.0,
      "offer_M": 9,
      "barrett": 14.6,
      "age": 28,
@@ -13608,18 +13734,6 @@
      "why": "Rotation depth behind Jakob Poeltl"
     },
     {
-     "name": "Mitchell Robinson",
-     "pos": "C",
-     "status": "UFA",
-     "from": "NYK",
-     "value_M": 10.5,
-     "offer_M": 8,
-     "barrett": 13.1,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Collin Murray-Boyles"
-    },
-    {
      "name": "Pelle Larsson",
      "pos": "SG/SF",
      "status": "Team Option",
@@ -13630,6 +13744,18 @@
      "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Jamal Shead"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Collin Murray-Boyles"
     },
     {
      "name": "Day'Ron Sharpe",
@@ -13682,9 +13808,7 @@
    "needs": [
     "SG"
    ],
-   "thin": [
-    "SF"
-   ],
+   "thin": [],
    "roster": [
     {
      "name": "Lauri Markkanen",
@@ -14142,7 +14266,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 175,
-   "resign_cost_M": 5,
+   "resign_cost_M": 7,
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "retooling",
@@ -14150,7 +14274,6 @@
     "SG"
    ],
    "thin": [
-    "PF",
     "C"
    ],
    "roster": [
@@ -14278,6 +14401,13 @@
      "kind": "resign"
     },
     {
+     "name": "Sharife Cooper",
+     "pos": "PG",
+     "cost_M": 2,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
      "name": "Julian Champagnie",
      "pos": "SF/PF",
      "from": "SAS",
@@ -14334,13 +14464,25 @@
      "age": 24,
      "tool": "Team option",
      "why": "Pick up team option"
+    },
+    {
+     "name": "Sharife Cooper",
+     "pos": "PG",
+     "status": "RFA",
+     "from": "WAS",
+     "value_M": 2.2,
+     "offer_M": 2,
+     "barrett": 6.6,
+     "age": 25,
+     "tool": "Bird rights",
+     "why": "Re-sign \u00b7 Bird rights"
     }
    ],
    "resign_plan": {
     "committed_M": 175,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 180,
+    "all_in_M": 182,
     "keeps": [
      {
       "name": "Jamir Watkins",
@@ -14360,6 +14502,17 @@
       "value_M": 3.1,
       "barrett": 6.8,
       "running_M": 180,
+      "zone": "ok",
+      "worth": true,
+      "keep": true
+     },
+     {
+      "name": "Sharife Cooper",
+      "pos": "PG",
+      "cost_M": 2,
+      "value_M": 2.2,
+      "barrett": 6.6,
+      "running_M": 182,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -14473,7 +14626,7 @@
      "barrett": 17.5,
      "age": 24,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Anthony Gill"
+     "why": "Rotation depth behind Julian Reese"
     },
     {
      "name": "Collin Sexton",
@@ -14497,7 +14650,7 @@
      "barrett": 15.2,
      "age": 30,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Justin Champagnie"
+     "why": "Rotation depth behind Julian Reese"
     },
     {
      "name": "Quentin Grimes",
@@ -14533,7 +14686,7 @@
      "barrett": 13.7,
      "age": 24,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Anthony Gill"
+     "why": "Rotation depth behind Julian Reese"
     },
     {
      "name": "Brandon Williams",
@@ -14569,7 +14722,7 @@
      "barrett": 13.1,
      "age": 26,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Justin Champagnie"
+     "why": "Rotation depth behind Julian Reese"
     },
     {
      "name": "Tari Eason",
@@ -14596,16 +14749,16 @@
      "why": "Upgrade \u00b7 would start over Kyshawn George"
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
+     "name": "Rui Hachimura",
+     "pos": "SF/PF",
      "status": "UFA",
-     "from": "POR",
-     "value_M": 11.3,
+     "from": "LAL",
+     "value_M": 14.2,
      "offer_M": 9,
-     "barrett": 14.6,
+     "barrett": 10.5,
      "age": 28,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Anthony Gill"
+     "why": "Rotation depth behind Julian Reese"
     }
    ]
   }
