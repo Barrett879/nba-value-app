@@ -286,7 +286,7 @@ def board_for(team):
         "best_fits": best_fits_for(rows, need, thin),
         "resign": [pack(x) for x in rows if x["is_inc"]],
         "resign_plan": resign_plan(team, [x for x in rows if x["is_inc"]]),
-        "pursue": [pack(x) for x in rows if not x["is_inc"]][:18],
+        "pursue": [pack(x) for x in rows if not x["is_inc"]][:20],
     }
 
 

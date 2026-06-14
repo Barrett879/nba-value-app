@@ -403,6 +403,30 @@
      "age": 24,
      "tool": "Cap room",
      "why": "Rotation depth behind Jock Landale"
+    },
+    {
+     "name": "Collin Sexton",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 13.9,
+     "offer_M": 9,
+     "barrett": 14.5,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Buddy Hield"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 9,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jock Landale"
     }
    ]
   },
@@ -743,6 +767,30 @@
      "offer_M": 12,
      "barrett": 15.2,
      "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Egor D\u00ebmin"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 12,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 12,
+     "barrett": 16.3,
+     "age": 25,
      "tool": "Cap room",
      "why": "Rotation depth behind Egor D\u00ebmin"
     }
@@ -1087,6 +1135,30 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Jordan Walsh"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.5,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Luka Garza"
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "status": "RFA",
+     "from": "PHX",
+     "value_M": 15.6,
+     "offer_M": 12,
+     "barrett": 17.5,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Luka Garza"
     }
    ]
   },
@@ -1387,6 +1459,30 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Xavier Tillman"
+    },
+    {
+     "name": "Jonathan Kuminga",
+     "pos": "SF/PF",
+     "status": "Team Option",
+     "from": "ATL",
+     "value_M": 12.3,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 23,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Grant Williams"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 8,
+     "barrett": 16.3,
+     "age": 25,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Coby White"
     }
    ]
   },
@@ -1791,6 +1887,30 @@
      "age": 30,
      "tool": "Cap room",
      "why": "Rotation depth behind Isaac Okoro"
+    },
+    {
+     "name": "Luguentz Dort",
+     "pos": "SF/PF",
+     "status": "Team Option",
+     "from": "OKC",
+     "value_M": 12.3,
+     "offer_M": 11,
+     "barrett": 8.5,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Isaac Okoro"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 11,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jalen Smith"
     }
    ]
   },
@@ -2152,6 +2272,30 @@
      "offer_M": 2,
      "barrett": 5.7,
      "age": 29,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Trendon Watford",
+     "pos": "PF/SF",
+     "status": "Team Option",
+     "from": "PHI",
+     "value_M": 2.9,
+     "offer_M": 2,
+     "barrett": 5.8,
+     "age": 25,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Olivier-Maxence Prosper",
+     "pos": "PF/C",
+     "status": "Team Option",
+     "from": "MEM",
+     "value_M": 3.2,
+     "offer_M": 2,
+     "barrett": 9.5,
+     "age": 23,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     }
@@ -2537,6 +2681,30 @@
      "age": 27,
      "tool": "Cap room",
      "why": "Rotation depth behind Daniel Gafford"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 10,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Daniel Gafford"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.5,
+     "offer_M": 9,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Marvin Bagley III"
     }
    ]
   },
@@ -2939,6 +3107,30 @@
      "age": 32,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Dwight Powell",
+     "pos": "C",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 3.9,
+     "offer_M": 2,
+     "barrett": 5.9,
+     "age": 34,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Kevin Love",
+     "pos": "C/PF",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 3.9,
+     "offer_M": 2,
+     "barrett": 6.0,
+     "age": 37,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -3316,6 +3508,30 @@
      "value_M": 11.3,
      "offer_M": 10,
      "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Paul Reed"
+    },
+    {
+     "name": "Kristaps Porzi\u0146\u0123is",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "GSW",
+     "value_M": 15.7,
+     "offer_M": 10,
+     "barrett": 15.2,
+     "age": 30,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Paul Reed"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.5,
+     "offer_M": 9,
+     "barrett": 13.1,
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Paul Reed"
@@ -3702,6 +3918,30 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Gui Santos"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Gary Payton II"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Brandin Podziemski"
     }
    ]
   },
@@ -4025,6 +4265,30 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Josh Okogie"
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "status": "RFA",
+     "from": "PHX",
+     "value_M": 15.6,
+     "offer_M": 14,
+     "barrett": 17.5,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Steven Adams"
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "status": "Player Option",
+     "from": "LAL",
+     "value_M": 10.2,
+     "offer_M": 8,
+     "barrett": 13.5,
+     "age": 32,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Tari Eason"
     }
    ]
   },
@@ -4345,6 +4609,30 @@
      "barrett": 17.7,
      "age": 24,
      "tool": "Mid-level exception",
+     "why": "Rotation depth behind Micah Potter"
+    },
+    {
+     "name": "Peyton Watson",
+     "pos": "SF/PF",
+     "status": "RFA",
+     "from": "DEN",
+     "value_M": 21.6,
+     "offer_M": 15,
+     "barrett": 15.5,
+     "age": 23,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Micah Potter"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "SAS",
+     "value_M": 9.5,
+     "offer_M": 9,
+     "barrett": 12.4,
+     "age": 34,
+     "tool": "Cap room",
      "why": "Rotation depth behind Micah Potter"
     }
    ]
@@ -4727,6 +5015,30 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Jordan Miller"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 9,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jordan Miller"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 9,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Brook Lopez"
     }
    ]
   },
@@ -5150,6 +5462,30 @@
      "age": 25,
      "tool": "Cap room",
      "why": "Rotation depth behind Marcus Smart"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.3,
+     "offer_M": 10,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jaxson Hayes"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "SAS",
+     "value_M": 9.5,
+     "offer_M": 9,
+     "barrett": 12.4,
+     "age": 34,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Rui Hachimura"
     }
    ]
   },
@@ -5453,6 +5789,30 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Zach Edey"
+    },
+    {
+     "name": "Pelle Larsson",
+     "pos": "SG/SF",
+     "status": "Team Option",
+     "from": "MIA",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 16.3,
+     "age": 25,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Ty Jerome"
+    },
+    {
+     "name": "Coby White",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHA",
+     "value_M": 16.4,
+     "offer_M": 10,
+     "barrett": 14.9,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Cedric Coward"
     }
    ]
   },
@@ -5791,6 +6151,30 @@
      "offer_M": 4,
      "barrett": 4.6,
      "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "status": "Team Option",
+     "from": "LAC",
+     "value_M": 7.7,
+     "offer_M": 6,
+     "barrett": 11.0,
+     "age": 38,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "DET",
+     "value_M": 8.9,
+     "offer_M": 6,
+     "barrett": 16.7,
+     "age": 33,
      "tool": "Mid-level exception",
      "why": "Veteran-minimum depth"
     }
@@ -6194,6 +6578,30 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Cam Thomas"
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "status": "RFA",
+     "from": "PHX",
+     "value_M": 15.6,
+     "offer_M": 12,
+     "barrett": 17.5,
+     "age": 24,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jericho Sims"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.3,
+     "offer_M": 9,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jericho Sims"
     }
    ]
   },
@@ -6555,6 +6963,30 @@
      "age": 34,
      "tool": "Mid-level exception",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 7,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.5,
+     "offer_M": 7,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -6856,6 +7288,30 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Derik Queen"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Karlo Matkovi\u0107"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 12,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Saddiq Bey"
     }
    ]
   },
@@ -7216,6 +7672,30 @@
      "age": 31,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Mitchell Robinson"
+    },
+    {
+     "name": "Julian Champagnie",
+     "pos": "SF/PF",
+     "status": "Team Option",
+     "from": "SAS",
+     "value_M": 21.0,
+     "offer_M": 13,
+     "barrett": 17.7,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Landry Shamet"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 8,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Miles McBride"
     }
    ]
   },
@@ -7856,6 +8336,30 @@
      "age": 35,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "DET",
+     "value_M": 8.9,
+     "offer_M": 6,
+     "barrett": 16.7,
+     "age": 33,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "status": "Team Option",
+     "from": "LAC",
+     "value_M": 7.7,
+     "offer_M": 6,
+     "barrett": 11.0,
+     "age": 38,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -8238,6 +8742,30 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Dominick Barlow"
+    },
+    {
+     "name": "Collin Sexton",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 13.9,
+     "offer_M": 9,
+     "barrett": 14.5,
+     "age": 27,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Cameron Payne"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 9,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Dominick Barlow"
     }
    ]
   },
@@ -8598,6 +9126,30 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Jock Landale",
+     "pos": "C",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 6.2,
+     "offer_M": 5,
+     "barrett": 11.7,
+     "age": 30,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.2,
+     "offer_M": 9,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Grayson Allen"
     }
    ]
   },
@@ -8899,6 +9451,30 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Scoot Henderson"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.5,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Yang Hansen"
+    },
+    {
+     "name": "Jonathan Kuminga",
+     "pos": "SF/PF",
+     "status": "Team Option",
+     "from": "ATL",
+     "value_M": 12.3,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 23,
+     "tool": "Cap room",
+     "why": "Rotation depth behind V\u00edt Krej\u010d\u00ed"
     }
    ]
   },
@@ -9239,6 +9815,30 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Nique Clifford"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 9,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Maxime Raynaud"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 8,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Keegan Murray"
     }
    ]
   },
@@ -9561,6 +10161,30 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Harrison Barnes"
+    },
+    {
+     "name": "Brook Lopez",
+     "pos": "C",
+     "status": "Team Option",
+     "from": "LAC",
+     "value_M": 7.7,
+     "offer_M": 6,
+     "barrett": 11.0,
+     "age": 38,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "status": "Team Option",
+     "from": "BKN",
+     "value_M": 13.1,
+     "offer_M": 10,
+     "barrett": 13.7,
+     "age": 24,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Kelly Olynyk"
     }
    ]
   },
@@ -9881,6 +10505,30 @@
      "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Collin Murray-Boyles"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Ja'Kobe Walter"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "GSW",
+     "value_M": 8.4,
+     "offer_M": 7,
+     "barrett": 12.3,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -10203,6 +10851,30 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Brice Sensabaugh"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Isaiah Collier"
+    },
+    {
+     "name": "Day'Ron Sharpe",
+     "pos": "C",
+     "status": "Team Option",
+     "from": "BKN",
+     "value_M": 13.1,
+     "offer_M": 8,
+     "barrett": 13.7,
+     "age": 24,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Walker Kessler"
     }
    ]
   },
@@ -10526,6 +11198,30 @@
      "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Justin Champagnie"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Upgrade \u00b7 would start over Kyshawn George"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.3,
+     "offer_M": 9,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Anthony Gill"
     }
    ]
   }
