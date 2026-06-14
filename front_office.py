@@ -141,8 +141,7 @@ def render_front_office():
     st.caption(
         "The contract predictor from the team's side of the table. Pick a club and see the free "
         "agents it should chase this offseason, who to re-sign, who to pursue, the contract it "
-        "would realistically offer, and why. Same engine as a player's Likely Suitors, run from "
-        "the front office's chair."
+        "would realistically offer, and why."
     )
 
     # ── Team picker (full names → abbreviation), reflected in the URL ────────────
@@ -183,7 +182,7 @@ def render_front_office():
     st.caption(
         "**Cap room is the theoretical max**, the space a team would have only if it renounced its own "
         "free agents. In practice most contenders re-sign their own (Bird rights, which don't use cap room) "
-        "and shop with the mid-level exception. Offers below are bounded by whichever tool actually applies."
+        "and shop with the mid-level exception."
     )
 
     # ── Cap bar: committed payroll + the plan, against cap / tax / second apron ──
