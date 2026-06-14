@@ -93,75 +93,9 @@ render_nav("Contract Predictor")
 
 st.title("Contract Predictor")
 
-# ── Dual view: player-side predictor  +  team-side Front Office ───────────────
-# The page opens on a split chooser; picking a side takes the full screen, and a
-# pill toggle flips between them (the choice persists for the session). Guarded
-# by the script-run-context check so the headless build/audit scripts — which
-# exec this file's prefix to grab the prediction functions — never run the
-# Streamlit-only mode logic or trip st.stop()/st.rerun().
-from streamlit.runtime.scriptrunner import get_script_run_ctx as _get_ctx  # noqa: E402
+# Team-side "Build a Team" / Front Office lives on its own tab now
+# (pages/Team_Builder.py); this page is purely the player predictor.
 from utils import render_footer  # noqa: E402
-if _get_ctx() is not None:
-    from front_office import render_front_office  # noqa: E402
-    _MODE = st.session_state.get("cp_mode")
-    # A deep link to a specific player (?player=) skips the chooser → player view.
-    if _MODE not in ("player", "team") and "player" in st.query_params:
-        _MODE = st.session_state.cp_mode = "player"
-
-    if _MODE not in ("player", "team"):
-        # Landing: two halves, pick one to take over the screen.
-        st.caption("Two ways in, predict one player's next contract, or run a whole team's offseason.")
-        st.markdown("<div style='height:10px'></div>", unsafe_allow_html=True)
-        _lc, _rc = st.columns(2, gap="large")
-        with _lc, st.container(border=True):
-            st.markdown(
-                "<div style='padding:12px 10px 8px'>"
-                "<div style='font-size:1.6rem;font-weight:800;margin:0 0 .5rem'>Predict a Player</div>"
-                "<div style='color:var(--fg-2);min-height:64px'>What will any player command on his next "
-                "contract? A market value, a confidence band, comparable signings, and the teams most likely "
-                "to chase him.</div></div>", unsafe_allow_html=True)
-            if st.button("Predict a Player", use_container_width=True, type="primary", key="cp_go_player"):
-                st.session_state.cp_mode = "player"
-                st.rerun()
-        with _rc, st.container(border=True):
-            st.markdown(
-                "<div style='padding:12px 10px 8px'>"
-                "<div style='font-size:1.6rem;font-weight:800;margin:0 0 .5rem'>Build a Team</div>"
-                "<div style='color:var(--fg-2);min-height:64px'>Step into the front office. Pick a team and "
-                "see its whole offseason board, who to re-sign, who to pursue, and the contract it would "
-                "realistically offer.</div></div>", unsafe_allow_html=True)
-            if st.button("Build a Team", use_container_width=True, type="primary", key="cp_go_team"):
-                st.session_state.cp_mode = "team"
-                st.rerun()
-        render_footer()
-        st.stop()
-
-    # Persistent full-width toggle to flip sides (spans the page like the search bar).
-    _SEG = {"Predict a Player": "player", "Build a Team": "team"}
-    _seg_labels = list(_SEG)
-    if "cp_view_seg" not in st.session_state:
-        st.session_state.cp_view_seg = _seg_labels[0] if _MODE == "player" else _seg_labels[1]
-    st.markdown(
-        "<style>"
-        # Streamlit 1.51 renders st.segmented_control with data-testid
-        # 'stButtonGroup' (full width already comes from width='stretch').
-        # The padding keeps the caption from riding up against the toggle.
-        "div[data-testid='stButtonGroup']{padding-bottom:1rem}"
-        # Inactive option: theme it (Streamlit hardcodes a light bg -> glaring white in dark mode).
-        "button[data-testid='stBaseButton-segmented_control']{background:var(--panel) !important;"
-        "color:var(--fg-2) !important;border-color:var(--panel-line) !important}"
-        "</style>", unsafe_allow_html=True)
-    _picked = st.segmented_control("View", _seg_labels, key="cp_view_seg",
-                                   label_visibility="collapsed", width="stretch")
-    if _picked and _SEG[_picked] != _MODE:
-        st.session_state.cp_mode = _SEG[_picked]
-        st.rerun()
-
-    if _MODE == "team":
-        render_front_office()
-        render_footer()
-        st.stop()
-    # _MODE == "player" → fall through to the player predictor below.
 
 st.caption(
     f"Type a player's name to see what they'd command on a NEW contract signed "
