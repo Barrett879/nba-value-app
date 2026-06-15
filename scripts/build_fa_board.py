@@ -238,7 +238,7 @@ def resign_plan(team, resign_rows):
             "apron2_M": apron2_r, "all_in_M": round(running), "keeps": keeps}
 
 
-def offseason_plan(pursue_rows, cap_room, mle, apron_room):
+def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5):
     """A REALISTIC external-signing haul (vs the full 20-deep pursue board where
     every target gets an independent offer). Walk the keenness-ranked targets and
     spend the team's ACTUAL tools, CBA-correctly:
@@ -275,7 +275,7 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room):
         out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
                     "cost_M": offer, "tool": tool})
         spent += offer
-        if len(out) >= 5:
+        if len(out) >= max_adds:
             break
     return out
 
@@ -356,12 +356,19 @@ def board_for(team):
                         "salary_M": round(_sal / 1e6, 1)})
 
     _rp = resign_plan(team, [x for x in rows if x["is_inc"]])
+    # The whole offseason has to fit a 15-man standard roster. Open spots =
+    # 15 minus the players already under contract. Re-signings come first (keep
+    # your own), then external adds fill whatever's left — so the plan can't
+    # carry the team past 15 (no "re-sign 5 + add 5" on top of 9 guaranteed = 19).
+    ROSTER_MAX = 15
+    _open_spots = max(0, ROSTER_MAX - len(_roster))
     # The re-signings ARE part of the realistic plan — the cost-effective keepers
-    # (worth it AND fitting under the apron, per resign_plan's two gates). Show
-    # them alongside the external signings as one offseason.
+    # (worth it AND fitting under the apron, per resign_plan's two gates), capped
+    # at the open roster spots. Show them alongside the external signings.
+    _keepers = [k for k in (_rp or {}).get("keeps", []) if k.get("keep")]
     _resign_moves = [{"name": k["name"], "pos": k["pos"], "cost_M": k["cost_M"],
                       "tool": "Re-sign", "kind": "resign"}
-                     for k in (_rp or {}).get("keeps", []) if k.get("keep")]
+                     for k in _keepers[:_open_spots]]
     # Cap room is the THEORETICAL max (own FAs renounced). A team that re-signs
     # its own keepers via Bird rights is then over the cap and only has the
     # mid-level — so the external part of the plan gets cap room MINUS those
@@ -372,7 +379,9 @@ def board_for(team):
     # Room left below the second apron (the practical hard ceiling) after the
     # re-signings — bounds how much the team can actually add in free agency.
     _apron_room = max(0.0, round(APRON2_M) - (_committed + _resign_cost))
-    _external = offseason_plan(_pursue, _real_cap_room, exc, _apron_room)
+    # External adds fill only the roster spots left after the re-signings.
+    _adds_left = max(0, _open_spots - len(_resign_moves))
+    _external = offseason_plan(_pursue, _real_cap_room, exc, _apron_room, max_adds=_adds_left)
     for _m in _external:
         _m["kind"] = "external"
     _plan = _resign_moves + _external

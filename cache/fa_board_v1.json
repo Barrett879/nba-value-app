@@ -161,30 +161,6 @@
      "cost_M": 15,
      "tool": "Mid-level",
      "kind": "external"
-    },
-    {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Bruce Brown",
-     "pos": "PG/SG",
-     "from": "DEN",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Thomas Bryant",
-     "pos": "C",
-     "from": "CLE",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
     }
    ],
    "resign": [
@@ -736,22 +712,6 @@
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
-    },
-    {
-     "name": "Jordan Miller",
-     "pos": "SG/SF",
-     "from": "LAC",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
     }
    ],
    "resign": [
@@ -1234,14 +1194,6 @@
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
-    },
-    {
-     "name": "Mike Conley",
-     "pos": "PG",
-     "from": "MIN",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
     }
    ],
    "resign": [
@@ -1718,22 +1670,6 @@
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
-    },
-    {
-     "name": "Jordan Walsh",
-     "pos": "SF/PF",
-     "from": "BOS",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
     }
    ],
    "resign": [
@@ -2171,14 +2107,6 @@
      "name": "Spencer Jones",
      "pos": "SF/PF",
      "from": "DEN",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
@@ -3191,38 +3119,6 @@
      "from": "MIL",
      "cost_M": 27,
      "tool": "Cap room",
-     "kind": "external"
-    },
-    {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "from": "DET",
-     "cost_M": 8,
-     "tool": "Room exception",
-     "kind": "external"
-    },
-    {
-     "name": "Bruce Brown",
-     "pos": "PG/SG",
-     "from": "DEN",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Thomas Bryant",
-     "pos": "C",
-     "from": "CLE",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Javon Small",
-     "pos": "PG/SG",
-     "from": "MEM",
-     "cost_M": 3,
-     "tool": "Minimum",
      "kind": "external"
     }
    ],
@@ -5788,30 +5684,6 @@
      "cost_M": 8,
      "tool": "Room exception",
      "kind": "external"
-    },
-    {
-     "name": "Gary Payton II",
-     "pos": "SG/SF",
-     "from": "GSW",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Taurean Prince",
-     "pos": "SF/SG",
-     "from": "MIL",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Landry Shamet",
-     "pos": "SG/SF",
-     "from": "NYK",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
     }
    ],
    "resign": [
@@ -7340,46 +7212,6 @@
      "cost_M": 2,
      "tool": "Re-sign",
      "kind": "resign"
-    },
-    {
-     "name": "Mark Williams",
-     "pos": "C",
-     "from": "PHX",
-     "cost_M": 16,
-     "tool": "Cap room",
-     "kind": "external"
-    },
-    {
-     "name": "Quentin Grimes",
-     "pos": "SG/SF",
-     "from": "PHI",
-     "cost_M": 8,
-     "tool": "Room exception",
-     "kind": "external"
-    },
-    {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "from": "BKN",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Thomas Bryant",
-     "pos": "C",
-     "from": "CLE",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
     }
    ],
    "resign": [
@@ -8322,14 +8154,6 @@
      "from": "MEM",
      "cost_M": 3,
      "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Sharife Cooper",
-     "pos": "PG",
-     "from": "WAS",
-     "cost_M": 2,
-     "tool": "Mid-level",
      "kind": "external"
     }
    ],
@@ -9357,22 +9181,6 @@
      "pos": "PG/SG",
      "from": "TOR",
      "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Jericho Sims",
-     "pos": "C",
-     "from": "MIL",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Javon Small",
-     "pos": "PG/SG",
-     "from": "MEM",
-     "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
     }
@@ -12156,22 +11964,6 @@
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
-    },
-    {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "from": "BKN",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Thomas Bryant",
-     "pos": "C",
-     "from": "CLE",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
     }
    ],
    "resign": [
@@ -13991,14 +13783,6 @@
      "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
-    },
-    {
-     "name": "Sharife Cooper",
-     "pos": "PG",
-     "from": "WAS",
-     "cost_M": 2,
-     "tool": "Minimum",
-     "kind": "external"
     }
    ],
    "resign": [
@@ -14453,30 +14237,6 @@
      "from": "SAS",
      "cost_M": 15,
      "tool": "Mid-level",
-     "kind": "external"
-    },
-    {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Javon Small",
-     "pos": "PG/SG",
-     "from": "MEM",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Landry Shamet",
-     "pos": "SG/SF",
-     "from": "NYK",
-     "cost_M": 3,
-     "tool": "Minimum",
      "kind": "external"
     }
    ],
