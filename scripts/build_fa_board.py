@@ -270,33 +270,33 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5):
     below it AFTER re-signing their own): a team that re-signs its core up to the
     apron can't pile a full mid-level on top — it's capped out, minimums only.
 
-    Each spending tool is a FINITE pool, drawn down as it's used (the mid-level
-    and cap room are both splittable across several players). Once a pool is
-    empty it's gone — an over-the-cap team that spends its whole mid-level on one
-    player can only add veteran minimums after that, NOT a string of $7M deals it
-    has no tool to fund. Stops at 5 external moves."""
+    The big tools are FINITE pools, drawn down as used (the mid-level and cap
+    room are both splittable across several players) and bounded by the second
+    apron — once the pool/apron room is gone, no more $7M deals. Veteran
+    minimums, though, are roster-FILLING and apron-EXEMPT: a team always fills
+    out its 15 with minimums even when it's over the apron, so they keep going
+    (capped only by `max_adds` = the open roster spots), not by apron room."""
     if cap_room >= 8:                                  # cap-space team
         cap_left, exc_left, exc_label = cap_room, 8.0, "Room exception"
     else:                                              # over the cap: one mid-level
         cap_left, exc_left, exc_label = 0.0, mle, "Mid-level"
-    out, mins, spent = [], 0, 0.0
+    out, spent_big = [], 0.0                            # spent_big = non-minimum spend
     for x in pursue_rows:
+        if len(out) >= max_adds:                        # roster spots filled (0 -> add nothing)
+            break
         offer = x["offer_M"]
-        if spent + offer > apron_room + 1e-6:          # would cross the 2nd apron -> can't
-            continue
-        if offer <= MIN_SALARY and mins < 3:           # a true veteran minimum (~$2-3M)
-            tool, mins = "Minimum", mins + 1           # checked first -> saves the
-        elif cap_left + 1e-6 >= offer:                 #   exception for bigger targets
-            tool, cap_left = "Cap room", cap_left - offer
+        if offer <= MIN_SALARY:                        # veteran minimum: fills the roster,
+            tool = "Minimum"                           #   apron-exempt (always allowed)
+        elif spent_big + offer > apron_room + 1e-6:    # the bigger tools are apron-bounded
+            continue                                   #   -> would cross the 2nd apron
+        elif cap_left + 1e-6 >= offer:
+            tool, cap_left, spent_big = "Cap room", cap_left - offer, spent_big + offer
         elif exc_left + 1e-6 >= offer:                 # the one exception, split across players
-            tool, exc_left = exc_label, exc_left - offer
+            tool, exc_left, spent_big = exc_label, exc_left - offer, spent_big + offer
         else:
             continue                                   # no tool can fund this offer -> can't sign
         out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
                     "cost_M": offer, "tool": tool})
-        spent += offer
-        if len(out) >= max_adds:
-            break
     return out
 
 
