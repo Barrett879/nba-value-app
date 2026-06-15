@@ -252,18 +252,20 @@ def _worth_resign(barrett, value_M, cost_M):
     return barrett >= 7.0 or cost_M <= MIN_SALARY or (value_M - cost_M) >= 5.0
 
 
-def resign_plan(team, resign_rows):
+def resign_plan(team, resign_rows, reserve=0.0):
     """Rank a team's own free agents by quality and decide who it actually keeps.
     Two gates: (1) is he WORTH re-signing (cost-effective, not just filling a
     spot — see `_worth_resign`); (2) does keeping him still fit under the second
     apron (the practical ceiling). A cumulative payroll total runs over the
     worth-keeping players in quality order, so the apron line falls where the
-    team runs out of room. Skipped when we don't have a plausible committed
-    payroll for the team."""
+    team runs out of room. `reserve` (the rookie-scale money owed to the team's
+    own first-round picks) is counted up front, so the apron line accounts for
+    the picks too — the team lets its marginal keeper walk rather than blow past
+    the 2nd apron. Skipped when we don't have a plausible committed payroll."""
     committed = float((CAP_TABLE.get(team) or {}).get("committed_M") or 0.0)
     if committed < 50.0 or not resign_rows:
         return None
-    running = committed
+    running = committed + reserve
     tax_r, apron2_r = round(TAX_M), round(APRON2_M)
     keeps = []
     for x in sorted(resign_rows, key=lambda r: -r["barrett"]):
@@ -280,12 +282,13 @@ def resign_plan(team, resign_rows):
         keeps.append({"name": x["name"], "pos": x["pos"], "cost_M": x["offer_M"],
                       "value_M": x["value_M"], "barrett": x["barrett"],
                       "running_M": run_r, "zone": zone, "worth": True, "keep": afford})
-    return {"committed_M": round(committed), "tax_M": tax_r,
-            "apron2_M": apron2_r, "all_in_M": round(running), "keeps": keeps}
+    return {"committed_M": round(committed), "reserve_M": round(reserve),
+            "tax_M": tax_r, "apron2_M": apron2_r,
+            "all_in_M": round(running), "keeps": keeps}
 
 
 def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5,
-                   pos_counts=None, pos_cap=3, mle_label="Mid-level"):
+                   pos_counts=None, pos_cap=3, mle_label="Mid-level", floor=0):
     """A REALISTIC external-signing haul (vs the full 20-deep pursue board where
     every target gets an independent offer). Walk the keenness-ranked targets and
     spend the team's ACTUAL tools, CBA-correctly:
@@ -297,12 +300,17 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5,
     below it AFTER re-signing their own): a team that re-signs its core up to the
     apron can't pile a full mid-level on top — it's capped out, minimums only.
 
-    The big tools are FINITE pools, drawn down as used (the mid-level and cap
-    room are both splittable across several players) and bounded by the second
-    apron — once the pool/apron room is gone, no more $7M deals. Veteran
-    minimums, though, are roster-FILLING and apron-EXEMPT: a team always fills
-    out its 15 with minimums even when it's over the apron, so they keep going
-    (capped only by `max_adds` = the open roster spots), not by apron room.
+    Two passes. Pass 1 spends the real tools (cap room, mid-level) on the top
+    targets, each bounded by `apron_room` (the space below the team's hard cap
+    AFTER re-signs + picks). USING an exception hard-caps the team at that line.
+    Pass 2 fills the roster with veteran minimums: the NBA's 14-man floor forces
+    minimums up to `floor` adds even past the apron, BUT only if no hard cap was
+    triggered — a club that used an exception is locked at its hard cap and can't
+    exceed it for anything, while a club that signed nobody (or minimums only) can
+    keep adding minimums over the apron (minimum deals are exempt). Past the floor
+    the 15th man is added only if a minimum still fits. The big tools (mid-level,
+    cap room) are FINITE pools, drawn down as used — once a pool or the apron room
+    is gone, no more mid-sized deals.
 
     Positional balance: `pos_counts` is the projected roster's count by primary
     position (guaranteed + re-signs); a target is skipped if his primary spot is
@@ -313,27 +321,52 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5,
     else:                                              # over the cap: one mid-level
         cap_left, exc_left, exc_label = 0.0, mle, mle_label
     pos_counts = dict(pos_counts or {})
-    out, spent_big = [], 0.0                            # spent_big = non-minimum spend
+    out, spent, used_exc = [], 0.0, False              # spent = ALL add money; used_exc = an apron-restricted tool was used
+    # Pass 1 — the real targets (cap room / mid-level signings). Each is bounded
+    # by the apron room left below the team's hard cap. Using an exception (the
+    # mid-level or the room exception) HARD-CAPS the team at that line.
     for x in pursue_rows:
-        if len(out) >= max_adds:                        # roster spots filled (0 -> add nothing)
+        if len(out) >= max_adds:
             break
+        offer = x["offer_M"]
+        if offer <= MIN_SALARY:                        # minimums handled in pass 2
+            continue
         _pos = primary(x["pos"])
         if pos_counts.get(_pos, 0) >= pos_cap:          # primary spot already deep -> skip
             continue
-        offer = x["offer_M"]
-        if offer <= MIN_SALARY:                        # veteran minimum: fills the roster,
-            tool = "Minimum"                           #   apron-exempt (always allowed)
-        elif spent_big + offer > apron_room + 1e-6:    # the bigger tools are apron-bounded
-            continue                                   #   -> would cross the 2nd apron
-        elif cap_left + 1e-6 >= offer:
-            tool, cap_left, spent_big = "Cap room", cap_left - offer, spent_big + offer
+        if spent + offer > apron_room + 1e-6:          # the bigger tools are apron-bounded
+            continue                                   #   -> would cross the hard cap
+        if cap_left + 1e-6 >= offer:
+            tool, cap_left, spent = "Cap room", cap_left - offer, spent + offer
         elif exc_left + 1e-6 >= offer:                 # the one exception, split across players
-            tool, exc_left, spent_big = exc_label, exc_left - offer, spent_big + offer
+            tool, exc_left, spent, used_exc = exc_label, exc_left - offer, spent + offer, True
         else:
             continue                                   # no tool can fund this offer -> can't sign
         out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
                     "cost_M": offer, "tool": tool})
         pos_counts[_pos] = pos_counts.get(_pos, 0) + 1
+    # Pass 2 — fill the roster with veteran minimums. The 14-man FLOOR forces
+    # minimums even past the apron, BUT only when the team hasn't triggered a hard
+    # cap: a club that used an exception is locked at that line and can't exceed it
+    # for any reason, while a club that signed nobody (or minimums only) can keep
+    # adding minimums over the apron (minimum deals are exempt). Past the floor the
+    # 15th man is added only if a minimum still fits under the apron.
+    for x in pursue_rows:
+        if len(out) >= max_adds:
+            break
+        offer = x["offer_M"]
+        if offer > MIN_SALARY:                          # big-tool targets already handled
+            continue
+        _pos = primary(x["pos"])
+        if pos_counts.get(_pos, 0) >= pos_cap:
+            continue
+        forced = (not used_exc) and len(out) < floor    # reach 14 unless a hard cap is in force
+        if not forced and spent + offer > apron_room + 1e-6:
+            continue
+        out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
+                    "cost_M": offer, "tool": "Minimum"})
+        pos_counts[_pos] = pos_counts.get(_pos, 0) + 1
+        spent += offer
     return out
 
 
@@ -411,7 +444,6 @@ def board_for(team):
                         "barrett": round(float(r["barrett_score"] or 0), 1),
                         "salary_M": round(_sal / 1e6, 1)})
 
-    _rp = resign_plan(team, [x for x in rows if x["is_inc"]])
     # The whole offseason has to fit a 15-man standard roster. Open spots =
     # 15 minus the players already under contract. Re-signings come first (keep
     # your own), then external adds fill whatever's left — so the plan can't
@@ -420,7 +452,8 @@ def board_for(team):
     # Draft picks are locked in — they take roster spots and rookie money before
     # any free-agent move. First-rounders occupy a standard roster spot at their
     # 120%-of-scale cap hit; second-rounders are modeled as two-way (no standard
-    # spot, ~no cap hit) and just shown for completeness.
+    # spot, ~no cap hit) and just shown for completeness. Computed before the
+    # re-sign plan so the rookie money is reserved against the 2nd-apron line.
     _team_picks = sorted(DRAFT_PICKS.get(team, []), key=lambda p: p["overall"])
     _first = [p for p in _team_picks if p["round"] == 1]
     _second = [p for p in _team_picks if p["round"] == 2]
@@ -431,6 +464,9 @@ def board_for(team):
                        "cost_M": 0, "tool": "2nd-round pick", "kind": "pick",
                        "overall": p["overall"], "round": 2} for p in _second])
     _pick_cost = round(sum(p["cost_M"] for p in _first))
+    # Re-sign plan reserves the pick money up front, so the marginal keeper walks
+    # rather than push the team past the second apron.
+    _rp = resign_plan(team, [x for x in rows if x["is_inc"]], reserve=_pick_cost)
     # Open standard spots = 15 minus players under contract minus the first-round
     # picks (the picks fill spots first). Re-signings then fill what's left, then
     # external adds — so the plan can't carry the team past 15.
@@ -482,9 +518,14 @@ def board_for(team):
         _pp = primary(_m["pos"])
         _pos_counts[_pp] = _pos_counts.get(_pp, 0) + 1
     _adds_left = max(0, _open_spots - len(_resign_moves))
+    # NBA teams must carry at least 14. Players already locked = under contract +
+    # first-round picks + re-signs; the plan must add enough minimums to reach 14
+    # even if the team is capped out at the apron (it still has to field a roster).
+    _locked = len(_roster) + len(_first) + len(_resign_moves)
+    _floor = min(_adds_left, max(0, 14 - _locked))
     _external = offseason_plan(_pursue, _real_cap_room, _mle, _apron_room,
                                max_adds=_adds_left, pos_counts=_pos_counts,
-                               mle_label=_mle_label)
+                               mle_label=_mle_label, floor=_floor)
     for _m in _external:
         _m["kind"] = "external"
     _plan = _resign_moves + _external + _pick_moves

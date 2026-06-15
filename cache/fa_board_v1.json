@@ -252,9 +252,10 @@
    ],
    "resign_plan": {
     "committed_M": 153,
+    "reserve_M": 11,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 194,
+    "all_in_M": 205,
     "keeps": [
      {
       "name": "CJ McCollum",
@@ -262,7 +263,7 @@
       "cost_M": 16,
       "value_M": 15.5,
       "barrett": 20.5,
-      "running_M": 169,
+      "running_M": 180,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -273,7 +274,7 @@
       "cost_M": 6,
       "value_M": 6.2,
       "barrett": 11.7,
-      "running_M": 175,
+      "running_M": 186,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -284,7 +285,7 @@
       "cost_M": 12,
       "value_M": 12.3,
       "barrett": 11.2,
-      "running_M": 187,
+      "running_M": 198,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -295,8 +296,8 @@
       "cost_M": 2,
       "value_M": 6.7,
       "barrett": 7.2,
-      "running_M": 189,
-      "zone": "ok",
+      "running_M": 200,
+      "zone": "tax",
       "worth": true,
       "keep": true
      },
@@ -306,8 +307,8 @@
       "cost_M": 2,
       "value_M": 2.2,
       "barrett": 2.6,
-      "running_M": 191,
-      "zone": "ok",
+      "running_M": 202,
+      "zone": "tax",
       "worth": true,
       "keep": true
      },
@@ -317,8 +318,8 @@
       "cost_M": 3,
       "value_M": 2.9,
       "barrett": 0.9,
-      "running_M": 194,
-      "zone": "ok",
+      "running_M": 205,
+      "zone": "tax",
       "worth": true,
       "keep": true
      }
@@ -787,9 +788,10 @@
    ],
    "resign_plan": {
     "committed_M": 121,
+    "reserve_M": 9,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 136,
+    "all_in_M": 145,
     "keeps": [
      {
       "name": "Day'Ron Sharpe",
@@ -797,7 +799,7 @@
       "cost_M": 6,
       "value_M": 13.1,
       "barrett": 13.7,
-      "running_M": 127,
+      "running_M": 136,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -808,7 +810,7 @@
       "cost_M": 6,
       "value_M": 6.5,
       "barrett": 10.7,
-      "running_M": 133,
+      "running_M": 142,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -819,7 +821,7 @@
       "cost_M": 3,
       "value_M": 5.0,
       "barrett": 9.2,
-      "running_M": 136,
+      "running_M": 145,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -1214,14 +1216,6 @@
      "kind": "external"
     },
     {
-     "name": "Javonte Green",
-     "pos": "SG/SF",
-     "from": "DET",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "2026 Pick #27",
      "pos": "1st round",
      "cost_M": 3,
@@ -1280,9 +1274,10 @@
    ],
    "resign_plan": {
     "committed_M": 178,
+    "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 193,
+    "all_in_M": 196,
     "keeps": [
      {
       "name": "Neemias Queta",
@@ -1290,7 +1285,7 @@
       "cost_M": 3,
       "value_M": 25.5,
       "barrett": 21.3,
-      "running_M": 181,
+      "running_M": 184,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -1301,7 +1296,7 @@
       "cost_M": 10,
       "value_M": 10.4,
       "barrett": 19.7,
-      "running_M": 191,
+      "running_M": 194,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -1312,7 +1307,7 @@
       "cost_M": 2,
       "value_M": 4.6,
       "barrett": 8.4,
-      "running_M": 193,
+      "running_M": 196,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -1735,9 +1730,10 @@
    ],
    "resign_plan": {
     "committed_M": 148,
+    "reserve_M": 10,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 164,
+    "all_in_M": 174,
     "keeps": [
      {
       "name": "Coby White",
@@ -1745,7 +1741,7 @@
       "cost_M": 16,
       "value_M": 16.4,
       "barrett": 14.9,
-      "running_M": 164,
+      "running_M": 174,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -2256,9 +2252,10 @@
    ],
    "resign_plan": {
     "committed_M": 93,
+    "reserve_M": 16,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 121,
+    "all_in_M": 137,
     "keeps": [
      {
       "name": "Collin Sexton",
@@ -2266,7 +2263,7 @@
       "cost_M": 14,
       "value_M": 13.9,
       "barrett": 14.5,
-      "running_M": 107,
+      "running_M": 123,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -2277,7 +2274,7 @@
       "cost_M": 12,
       "value_M": 12.5,
       "barrett": 12.7,
-      "running_M": 119,
+      "running_M": 135,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -2299,7 +2296,7 @@
       "cost_M": 2,
       "value_M": 3.3,
       "barrett": 6.0,
-      "running_M": 121,
+      "running_M": 137,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -2721,14 +2718,6 @@
      "kind": "external"
     },
     {
-     "name": "Nicolas Batum",
-     "pos": "PF/SF",
-     "from": "LAC",
-     "cost_M": 2,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "2026 Pick #29",
      "pos": "1st round",
      "cost_M": 3,
@@ -2790,9 +2779,10 @@
    ],
    "resign_plan": {
     "committed_M": 222,
+    "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 238,
+    "all_in_M": 241,
     "keeps": [
      {
       "name": "Keon Ellis",
@@ -2800,7 +2790,7 @@
       "cost_M": 7,
       "value_M": 6.7,
       "barrett": 9.2,
-      "running_M": 229,
+      "running_M": 232,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -2811,7 +2801,7 @@
       "cost_M": 7,
       "value_M": 6.7,
       "barrett": 9.1,
-      "running_M": 236,
+      "running_M": 239,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -2822,7 +2812,7 @@
       "cost_M": 2,
       "value_M": 6.1,
       "barrett": 8.6,
-      "running_M": 238,
+      "running_M": 241,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -3331,9 +3321,10 @@
    ],
    "resign_plan": {
     "committed_M": 107,
+    "reserve_M": 10,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 136,
+    "all_in_M": 146,
     "keeps": [
      {
       "name": "Brandon Williams",
@@ -3341,7 +3332,7 @@
       "cost_M": 12,
       "value_M": 11.8,
       "barrett": 15.0,
-      "running_M": 119,
+      "running_M": 129,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -3352,7 +3343,7 @@
       "cost_M": 4,
       "value_M": 4.3,
       "barrett": 12.1,
-      "running_M": 123,
+      "running_M": 133,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -3363,7 +3354,7 @@
       "cost_M": 9,
       "value_M": 9.0,
       "barrett": 9.0,
-      "running_M": 132,
+      "running_M": 142,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -3374,7 +3365,7 @@
       "cost_M": 2,
       "value_M": 2.2,
       "barrett": 6.7,
-      "running_M": 134,
+      "running_M": 144,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -3385,7 +3376,7 @@
       "cost_M": 2,
       "value_M": 2.2,
       "barrett": 6.2,
-      "running_M": 136,
+      "running_M": 146,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -3890,9 +3881,10 @@
    ],
    "resign_plan": {
     "committed_M": 216,
+    "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 256,
+    "all_in_M": 260,
     "keeps": [
      {
       "name": "Peyton Watson",
@@ -3900,7 +3892,7 @@
       "cost_M": 22,
       "value_M": 21.6,
       "barrett": 15.5,
-      "running_M": 238,
+      "running_M": 240,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -3911,7 +3903,7 @@
       "cost_M": 9,
       "value_M": 8.9,
       "barrett": 12.7,
-      "running_M": 246,
+      "running_M": 250,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -3922,7 +3914,7 @@
       "cost_M": 4,
       "value_M": 4.4,
       "barrett": 9.3,
-      "running_M": 250,
+      "running_M": 254,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -3933,7 +3925,7 @@
       "cost_M": 4,
       "value_M": 4.0,
       "barrett": 7.4,
-      "running_M": 254,
+      "running_M": 258,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -3944,7 +3936,7 @@
       "cost_M": 2,
       "value_M": 2.8,
       "barrett": 3.4,
-      "running_M": 256,
+      "running_M": 260,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -4427,9 +4419,10 @@
    ],
    "resign_plan": {
     "committed_M": 130,
+    "reserve_M": 4,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 209,
+    "all_in_M": 213,
     "keeps": [
      {
       "name": "Jalen Duren",
@@ -4437,7 +4430,7 @@
       "cost_M": 50,
       "value_M": 49.5,
       "barrett": 28.2,
-      "running_M": 180,
+      "running_M": 184,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -4448,7 +4441,7 @@
       "cost_M": 9,
       "value_M": 8.9,
       "barrett": 16.7,
-      "running_M": 189,
+      "running_M": 193,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -4459,7 +4452,7 @@
       "cost_M": 6,
       "value_M": 5.6,
       "barrett": 11.3,
-      "running_M": 195,
+      "running_M": 199,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -4470,8 +4463,8 @@
       "cost_M": 4,
       "value_M": 10.1,
       "barrett": 11.1,
-      "running_M": 199,
-      "zone": "ok",
+      "running_M": 203,
+      "zone": "tax",
       "worth": true,
       "keep": true
      },
@@ -4481,7 +4474,7 @@
       "cost_M": 10,
       "value_M": 10.3,
       "barrett": 11.0,
-      "running_M": 209,
+      "running_M": 213,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -4881,14 +4874,6 @@
      "kind": "external"
     },
     {
-     "name": "Dwight Powell",
-     "pos": "C",
-     "from": "DAL",
-     "cost_M": 2,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "2026 Pick #11",
      "pos": "1st round",
      "cost_M": 6,
@@ -4971,9 +4956,10 @@
    ],
    "resign_plan": {
     "committed_M": 176,
+    "reserve_M": 6,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 212,
+    "all_in_M": 218,
     "keeps": [
      {
       "name": "Kristaps Porzi\u0146\u0123is",
@@ -4981,7 +4967,7 @@
       "cost_M": 16,
       "value_M": 15.7,
       "barrett": 15.2,
-      "running_M": 192,
+      "running_M": 198,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -4992,7 +4978,7 @@
       "cost_M": 8,
       "value_M": 8.4,
       "barrett": 12.3,
-      "running_M": 200,
+      "running_M": 206,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -5003,7 +4989,7 @@
       "cost_M": 6,
       "value_M": 5.5,
       "barrett": 10.1,
-      "running_M": 206,
+      "running_M": 212,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -5014,7 +5000,7 @@
       "cost_M": 4,
       "value_M": 3.9,
       "barrett": 7.7,
-      "running_M": 210,
+      "running_M": 216,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -5025,7 +5011,7 @@
       "cost_M": 2,
       "value_M": 2.5,
       "barrett": 6.8,
-      "running_M": 212,
+      "running_M": 218,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -5499,6 +5485,7 @@
    ],
    "resign_plan": {
     "committed_M": 160,
+    "reserve_M": 0,
     "tax_M": 200,
     "apron2_M": 222,
     "all_in_M": 172,
@@ -5953,6 +5940,7 @@
    ],
    "resign_plan": {
     "committed_M": 152,
+    "reserve_M": 0,
     "tax_M": 200,
     "apron2_M": 222,
     "all_in_M": 155,
@@ -6359,14 +6347,6 @@
      "kind": "external"
     },
     {
-     "name": "Thomas Bryant",
-     "pos": "C",
-     "from": "CLE",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "2026 Pick #5",
      "pos": "1st round",
      "cost_M": 10,
@@ -6470,9 +6450,10 @@
    ],
    "resign_plan": {
     "committed_M": 162,
+    "reserve_M": 10,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 209,
+    "all_in_M": 219,
     "keeps": [
      {
       "name": "Bennedict Mathurin",
@@ -6480,7 +6461,7 @@
       "cost_M": 24,
       "value_M": 23.8,
       "barrett": 17.5,
-      "running_M": 186,
+      "running_M": 196,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -6491,8 +6472,8 @@
       "cost_M": 11,
       "value_M": 10.6,
       "barrett": 16.7,
-      "running_M": 197,
-      "zone": "ok",
+      "running_M": 207,
+      "zone": "tax",
       "worth": true,
       "keep": true
      },
@@ -6502,7 +6483,7 @@
       "cost_M": 8,
       "value_M": 7.7,
       "barrett": 11.0,
-      "running_M": 205,
+      "running_M": 215,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -6513,7 +6494,7 @@
       "cost_M": 2,
       "value_M": 3.5,
       "barrett": 10.7,
-      "running_M": 207,
+      "running_M": 217,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -6524,7 +6505,7 @@
       "cost_M": 2,
       "value_M": 2.8,
       "barrett": 7.0,
-      "running_M": 209,
+      "running_M": 219,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -6791,7 +6772,7 @@
    "cap_room_M": 72,
    "exception_M": 15,
    "committed_M": 93,
-   "resign_cost_M": 127,
+   "resign_cost_M": 113,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -6919,13 +6900,6 @@
      "kind": "resign"
     },
     {
-     "name": "Rui Hachimura",
-     "pos": "SF/PF",
-     "cost_M": 14,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
      "name": "Andre Drummond",
      "pos": "C",
      "from": "PHI",
@@ -6934,10 +6908,10 @@
      "kind": "external"
     },
     {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
-     "cost_M": 3,
+     "name": "Kyle Anderson",
+     "pos": "SF/PF",
+     "from": "MIN",
+     "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
     },
@@ -7039,9 +7013,10 @@
    ],
    "resign_plan": {
     "committed_M": 93,
+    "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 227,
+    "all_in_M": 230,
     "keeps": [
      {
       "name": "LeBron James",
@@ -7049,7 +7024,7 @@
       "cost_M": 40,
       "value_M": 39.8,
       "barrett": 30.2,
-      "running_M": 133,
+      "running_M": 136,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -7060,7 +7035,7 @@
       "cost_M": 41,
       "value_M": 41.2,
       "barrett": 28.9,
-      "running_M": 174,
+      "running_M": 177,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -7071,7 +7046,7 @@
       "cost_M": 16,
       "value_M": 15.7,
       "barrett": 18.4,
-      "running_M": 190,
+      "running_M": 193,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -7082,7 +7057,7 @@
       "cost_M": 10,
       "value_M": 10.1,
       "barrett": 13.5,
-      "running_M": 200,
+      "running_M": 203,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -7093,7 +7068,7 @@
       "cost_M": 6,
       "value_M": 6.2,
       "barrett": 12.4,
-      "running_M": 206,
+      "running_M": 209,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -7104,10 +7079,10 @@
       "cost_M": 14,
       "value_M": 14.2,
       "barrett": 10.5,
-      "running_M": 220,
-      "zone": "tax",
+      "running_M": 223,
+      "zone": "over",
       "worth": true,
-      "keep": true
+      "keep": false
      },
      {
       "name": "Luke Kennard",
@@ -7115,7 +7090,7 @@
       "cost_M": 7,
       "value_M": 7.1,
       "barrett": 10.0,
-      "running_M": 227,
+      "running_M": 230,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -7561,9 +7536,10 @@
    ],
    "resign_plan": {
     "committed_M": 142,
+    "reserve_M": 17,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 148,
+    "all_in_M": 165,
     "keeps": [
      {
       "name": "Javon Small",
@@ -7571,7 +7547,7 @@
       "cost_M": 4,
       "value_M": 3.8,
       "barrett": 10.6,
-      "running_M": 146,
+      "running_M": 163,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -7582,7 +7558,7 @@
       "cost_M": 2,
       "value_M": 3.2,
       "barrett": 9.5,
-      "running_M": 148,
+      "running_M": 165,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -8044,9 +8020,10 @@
    ],
    "resign_plan": {
     "committed_M": 163,
+    "reserve_M": 6,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 184,
+    "all_in_M": 190,
     "keeps": [
      {
       "name": "Norman Powell",
@@ -8054,7 +8031,7 @@
       "cost_M": 19,
       "value_M": 18.7,
       "barrett": 22.0,
-      "running_M": 182,
+      "running_M": 188,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -8065,7 +8042,7 @@
       "cost_M": 2,
       "value_M": 13.1,
       "barrett": 16.3,
-      "running_M": 184,
+      "running_M": 190,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -8559,9 +8536,10 @@
    ],
    "resign_plan": {
     "committed_M": 138,
+    "reserve_M": 6,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 178,
+    "all_in_M": 184,
     "keeps": [
      {
       "name": "Kevin Porter Jr.",
@@ -8569,7 +8547,7 @@
       "cost_M": 27,
       "value_M": 26.9,
       "barrett": 22.9,
-      "running_M": 165,
+      "running_M": 171,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -8580,7 +8558,7 @@
       "cost_M": 3,
       "value_M": 3.1,
       "barrett": 9.9,
-      "running_M": 168,
+      "running_M": 174,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -8591,7 +8569,7 @@
       "cost_M": 4,
       "value_M": 4.0,
       "barrett": 7.4,
-      "running_M": 172,
+      "running_M": 178,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -8602,7 +8580,7 @@
       "cost_M": 3,
       "value_M": 2.9,
       "barrett": 6.9,
-      "running_M": 175,
+      "running_M": 181,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -8624,7 +8602,7 @@
       "cost_M": 3,
       "value_M": 3.1,
       "barrett": 4.6,
-      "running_M": 178,
+      "running_M": 184,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -9098,9 +9076,10 @@
    ],
    "resign_plan": {
     "committed_M": 175,
+    "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 207,
+    "all_in_M": 210,
     "keeps": [
      {
       "name": "Ayo Dosunmu",
@@ -9108,8 +9087,8 @@
       "cost_M": 22,
       "value_M": 21.7,
       "barrett": 17.6,
-      "running_M": 197,
-      "zone": "ok",
+      "running_M": 200,
+      "zone": "tax",
       "worth": true,
       "keep": true
      },
@@ -9119,7 +9098,7 @@
       "cost_M": 6,
       "value_M": 5.7,
       "barrett": 9.4,
-      "running_M": 203,
+      "running_M": 206,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -9130,7 +9109,7 @@
       "cost_M": 4,
       "value_M": 3.9,
       "barrett": 8.6,
-      "running_M": 207,
+      "running_M": 210,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -9539,14 +9518,6 @@
      "kind": "external"
     },
     {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "2026 Pick #58",
      "pos": "2nd round",
      "cost_M": 0,
@@ -9572,6 +9543,7 @@
    ],
    "resign_plan": {
     "committed_M": 196,
+    "reserve_M": 0,
     "tax_M": 200,
     "apron2_M": 222,
     "all_in_M": 198,
@@ -9838,13 +9810,14 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 206,
-   "resign_cost_M": 15,
+   "resign_cost_M": 10,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [],
    "thin": [
+    "SG",
     "SF",
     "PF"
    ],
@@ -9906,8 +9879,8 @@
      "status": "UFA",
      "value_M": 18.7,
      "offer_M": 15,
-     "fit": 68,
-     "grade": "A-",
+     "fit": 74,
+     "grade": "A",
      "ppos": "SG",
      "slot": 1,
      "why": "Adds a needed second body at SG, a bargain at $15M against his $18.7M market."
@@ -9948,16 +9921,17 @@
      "kind": "resign"
     },
     {
-     "name": "Landry Shamet",
-     "pos": "SG/SF",
-     "cost_M": 5,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
      "name": "Javonte Green",
      "pos": "SG/SF",
      "from": "DET",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Gary Payton II",
+     "pos": "SG/SF",
+     "from": "GSW",
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
@@ -9974,14 +9948,6 @@
      "name": "Nicolas Batum",
      "pos": "PF/SF",
      "from": "LAC",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Guerschon Yabusele",
-     "pos": "PF/C",
-     "from": "CHI",
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
@@ -10066,9 +10032,10 @@
    ],
    "resign_plan": {
     "committed_M": 206,
+    "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 224,
+    "all_in_M": 226,
     "keeps": [
      {
       "name": "Mitchell Robinson",
@@ -10076,7 +10043,7 @@
       "cost_M": 10,
       "value_M": 10.4,
       "barrett": 13.1,
-      "running_M": 216,
+      "running_M": 218,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -10087,10 +10054,10 @@
       "cost_M": 5,
       "value_M": 5.1,
       "barrett": 9.2,
-      "running_M": 220,
-      "zone": "tax",
+      "running_M": 224,
+      "zone": "over",
       "worth": true,
-      "keep": true
+      "keep": false
      },
      {
       "name": "Jordan Clarkson",
@@ -10109,7 +10076,7 @@
       "cost_M": 3,
       "value_M": 3.2,
       "barrett": 2.7,
-      "running_M": 224,
+      "running_M": 226,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -10496,14 +10463,6 @@
      "kind": "external"
     },
     {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
-     "cost_M": 2,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "2026 Pick #12",
      "pos": "1st round",
      "cost_M": 6,
@@ -10571,9 +10530,10 @@
    ],
    "resign_plan": {
     "committed_M": 246,
+    "reserve_M": 10,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 275,
+    "all_in_M": 285,
     "keeps": [
      {
       "name": "Isaiah Hartenstein",
@@ -10581,7 +10541,7 @@
       "cost_M": 17,
       "value_M": 16.8,
       "barrett": 18.2,
-      "running_M": 263,
+      "running_M": 273,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -10592,7 +10552,7 @@
       "cost_M": 12,
       "value_M": 11.7,
       "barrett": 8.5,
-      "running_M": 275,
+      "running_M": 285,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -10953,25 +10913,9 @@
      "kind": "external"
     },
     {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "from": "BKN",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "Trendon Watford",
      "pos": "PF/SF",
      "from": "PHI",
-     "cost_M": 2,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Cam Thomas",
-     "pos": "SG",
-     "from": "MIL",
      "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
@@ -11002,6 +10946,7 @@
    ],
    "resign_plan": {
     "committed_M": 215,
+    "reserve_M": 0,
     "tax_M": 200,
     "apron2_M": 222,
     "all_in_M": 215,
@@ -11500,9 +11445,10 @@
    ],
    "resign_plan": {
     "committed_M": 180,
+    "reserve_M": 4,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 215,
+    "all_in_M": 219,
     "keeps": [
      {
       "name": "Quentin Grimes",
@@ -11510,7 +11456,7 @@
       "cost_M": 13,
       "value_M": 13.4,
       "barrett": 15.2,
-      "running_M": 193,
+      "running_M": 197,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -11521,7 +11467,7 @@
       "cost_M": 12,
       "value_M": 12.4,
       "barrett": 12.4,
-      "running_M": 205,
+      "running_M": 209,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -11532,7 +11478,7 @@
       "cost_M": 3,
       "value_M": 6.3,
       "barrett": 10.9,
-      "running_M": 208,
+      "running_M": 212,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -11543,7 +11489,7 @@
       "cost_M": 4,
       "value_M": 3.9,
       "barrett": 8.1,
-      "running_M": 212,
+      "running_M": 216,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -11554,7 +11500,7 @@
       "cost_M": 3,
       "value_M": 2.9,
       "barrett": 5.8,
-      "running_M": 215,
+      "running_M": 219,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -12032,6 +11978,7 @@
    ],
    "resign_plan": {
     "committed_M": 160,
+    "reserve_M": 0,
     "tax_M": 200,
     "apron2_M": 222,
     "all_in_M": 214,
@@ -12510,6 +12457,7 @@
    ],
    "resign_plan": {
     "committed_M": 156,
+    "reserve_M": 0,
     "tax_M": 200,
     "apron2_M": 222,
     "all_in_M": 170,
@@ -12994,9 +12942,10 @@
    ],
    "resign_plan": {
     "committed_M": 206,
+    "reserve_M": 8,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 226,
+    "all_in_M": 234,
     "keeps": [
      {
       "name": "Russell Westbrook",
@@ -13004,7 +12953,7 @@
       "cost_M": 5,
       "value_M": 5.4,
       "barrett": 19.6,
-      "running_M": 211,
+      "running_M": 219,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -13015,7 +12964,7 @@
       "cost_M": 12,
       "value_M": 12.1,
       "barrett": 13.1,
-      "running_M": 223,
+      "running_M": 231,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -13026,7 +12975,7 @@
       "cost_M": 3,
       "value_M": 3.1,
       "barrett": 5.7,
-      "running_M": 226,
+      "running_M": 234,
       "zone": "over",
       "worth": true,
       "keep": false
@@ -13496,9 +13445,10 @@
    ],
    "resign_plan": {
     "committed_M": 153,
+    "reserve_M": 4,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 165,
+    "all_in_M": 169,
     "keeps": [
      {
       "name": "Julian Champagnie",
@@ -13506,7 +13456,7 @@
       "cost_M": 3,
       "value_M": 21.0,
       "barrett": 17.7,
-      "running_M": 156,
+      "running_M": 160,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -13517,7 +13467,7 @@
       "cost_M": 9,
       "value_M": 9.2,
       "barrett": 12.4,
-      "running_M": 165,
+      "running_M": 169,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -13911,14 +13861,6 @@
      "kind": "external"
     },
     {
-     "name": "Javonte Green",
-     "pos": "SG/SF",
-     "from": "DET",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "2026 Pick #19",
      "pos": "1st round",
      "cost_M": 4,
@@ -13965,9 +13907,10 @@
    ],
    "resign_plan": {
     "committed_M": 190,
+    "reserve_M": 4,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 203,
+    "all_in_M": 207,
     "keeps": [
      {
       "name": "Sandro Mamukelashvili",
@@ -13975,7 +13918,7 @@
       "cost_M": 11,
       "value_M": 10.6,
       "barrett": 15.7,
-      "running_M": 201,
+      "running_M": 205,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -13986,7 +13929,7 @@
       "cost_M": 2,
       "value_M": 5.4,
       "barrett": 10.7,
-      "running_M": 203,
+      "running_M": 207,
       "zone": "tax",
       "worth": true,
       "keep": true
@@ -14427,9 +14370,10 @@
    ],
    "resign_plan": {
     "committed_M": 138,
+    "reserve_M": 13,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 148,
+    "all_in_M": 161,
     "keeps": [
      {
       "name": "Jusuf Nurki\u0107",
@@ -14437,7 +14381,7 @@
       "cost_M": 10,
       "value_M": 9.5,
       "barrett": 17.4,
-      "running_M": 148,
+      "running_M": 161,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -14916,9 +14860,10 @@
    ],
    "resign_plan": {
     "committed_M": 175,
+    "reserve_M": 15,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 182,
+    "all_in_M": 197,
     "keeps": [
      {
       "name": "Jamir Watkins",
@@ -14926,7 +14871,7 @@
       "cost_M": 2,
       "value_M": 2.2,
       "barrett": 7.3,
-      "running_M": 177,
+      "running_M": 192,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -14937,7 +14882,7 @@
       "cost_M": 3,
       "value_M": 3.1,
       "barrett": 6.8,
-      "running_M": 180,
+      "running_M": 195,
       "zone": "ok",
       "worth": true,
       "keep": true
@@ -14948,7 +14893,7 @@
       "cost_M": 2,
       "value_M": 2.2,
       "barrett": 6.6,
-      "running_M": 182,
+      "running_M": 197,
       "zone": "ok",
       "worth": true,
       "keep": true

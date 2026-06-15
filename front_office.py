@@ -95,14 +95,14 @@ def _cap_bar_html(committed, cap, tax, apron2, after, apron1=None):
                 f"<div style='position:absolute;left:{x:.1f}%;bottom:{-1 - drop}px;transform:translateX(-50%);font-size:0.6rem;"
                 f"line-height:1.1;color:var(--fg-5);white-space:nowrap;text-align:center;'>{label}"
                 f"<br><b style='color:var(--fg-3)'>${v:.0f}M</b></div>")
-    ticks = tick(cap, "Cap", "var(--hairline)") + tick(tax, "Tax", "var(--orange)")
+    ticks = tick(tax, "Tax", "var(--orange)")          # cap ($165M) line dropped — only the tax/apron ceilings matter here
     if apron1:
         ticks += tick(apron1, "1st apron", "var(--orange)", drop=22)   # lower row, avoids overlap
     ticks += tick(apron2, "2nd apron", "var(--value-bad)")
     amark = (f"<div style='position:absolute;left:{aw:.1f}%;top:-7px;width:3px;height:28px;border-radius:2px;"
              f"background:var(--fg-1);transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.35);'></div>")
     legend = ("<div style='display:flex;gap:1.1rem;font-size:0.68rem;color:var(--fg-4);margin-bottom:0.5rem;'>"
-              "<span><span style='color:var(--accent-teal)'>&#9632;</span> committed payroll</span>"
+              "<span><span style='color:var(--accent-teal)'>&#9632;</span> guaranteed payroll</span>"
               "<span><span style='color:var(--gold)'>&#9632;</span> this offseason (re-signs + picks + signings)</span>"
               "<span><span style='color:var(--fg-1)'>&#9612;</span> after the offseason</span></div>")
     return (f"<div style='margin:0.2rem 0 3.6rem;'>{legend}"
@@ -232,11 +232,13 @@ def render_front_office():
         _over = _plan["all_in_M"] > _plan["apron2_M"]
         _tail = ("so they can't keep them all under the line — here's who fits and who gets "
                  "squeezed out:") if _over else "keeping them comfortably under the ceiling."
+        _picks = (f" Their incoming draft picks reserve another **${_plan['reserve_M']}M** in "
+                  f"rookie-scale money.") if _plan.get("reserve_M") else ""
         st.caption((
-            f"Committed payroll is **${_plan['committed_M']}M**. The luxury tax starts at "
+            f"Guaranteed payroll is **${_plan['committed_M']}M**.{_picks} The luxury tax starts at "
             f"${_plan['tax_M']}M and the second apron (the practical ceiling) at "
             f"**${_plan['apron2_M']}M**. Re-signing everyone worth keeping (Bird rights, plus "
-            f"exercising cheap options) would run **${_plan['all_in_M']}M**, {_tail} A fringe role "
+            f"exercising cheap options) would run **${_plan['all_in_M']}M** all in, {_tail} A fringe role "
             f"player on real money is flagged 'let walk' — fair value, but replaceable by a "
             f"minimum.").replace("$", "\\$"))
         _status_by = {x["name"]: x["status"] for x in B["resign"]}
