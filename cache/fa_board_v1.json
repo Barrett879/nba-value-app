@@ -12,6 +12,7 @@
    "committed_M": 153,
    "resign_cost_M": 38,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
@@ -574,6 +575,7 @@
    "committed_M": 121,
    "resign_cost_M": 15,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
@@ -1075,6 +1077,7 @@
    "committed_M": 178,
    "resign_cost_M": 15,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -1203,10 +1206,10 @@
      "kind": "resign"
     },
     {
-     "name": "Norman Powell",
-     "pos": "SG/SF",
-     "from": "MIA",
-     "cost_M": 15,
+     "name": "Coby White",
+     "pos": "PG/SG",
+     "from": "CHA",
+     "cost_M": 13,
      "tool": "Mid-level",
      "kind": "external"
     },
@@ -1567,6 +1570,7 @@
    "committed_M": 148,
    "resign_cost_M": 16,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
@@ -1999,6 +2003,7 @@
    "committed_M": 93,
    "resign_cost_M": 28,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
@@ -2574,6 +2579,7 @@
    "committed_M": 222,
    "resign_cost_M": 0,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -3085,6 +3091,7 @@
    "committed_M": 107,
    "resign_cost_M": 27,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
@@ -3647,6 +3654,7 @@
    "committed_M": 216,
    "resign_cost_M": 0,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -4205,6 +4213,7 @@
    "committed_M": 130,
    "resign_cost_M": 79,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [],
@@ -4730,6 +4739,7 @@
    "committed_M": 176,
    "resign_cost_M": 36,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
@@ -5273,6 +5283,7 @@
    "committed_M": 160,
    "resign_cost_M": 12,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -5778,6 +5789,7 @@
    "committed_M": 152,
    "resign_cost_M": 3,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -6209,6 +6221,7 @@
    "committed_M": 162,
    "resign_cost_M": 47,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
@@ -6780,6 +6793,7 @@
    "committed_M": 93,
    "resign_cost_M": 127,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -7359,6 +7373,7 @@
    "committed_M": 142,
    "resign_cost_M": 0,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
@@ -7825,6 +7840,7 @@
    "committed_M": 163,
    "resign_cost_M": 21,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
@@ -8318,6 +8334,7 @@
    "committed_M": 138,
    "resign_cost_M": 40,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
@@ -8865,6 +8882,7 @@
    "committed_M": 175,
    "resign_cost_M": 32,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [],
@@ -8986,11 +9004,11 @@
      "kind": "resign"
     },
     {
-     "name": "Deandre Ayton",
+     "name": "Brook Lopez",
      "pos": "C",
-     "from": "LAL",
-     "cost_M": 12,
-     "tool": "Mid-level",
+     "from": "LAC",
+     "cost_M": 5,
+     "tool": "Taxpayer MLE",
      "kind": "external"
     },
     {
@@ -9381,6 +9399,7 @@
    "committed_M": 196,
    "resign_cost_M": 2,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
@@ -9512,10 +9531,10 @@
      "kind": "resign"
     },
     {
-     "name": "Mark Williams",
+     "name": "Robert Williams III",
      "pos": "C",
-     "from": "PHX",
-     "cost_M": 15,
+     "from": "POR",
+     "cost_M": 10,
      "tool": "Mid-level",
      "kind": "external"
     },
@@ -9821,6 +9840,7 @@
    "committed_M": 206,
    "resign_cost_M": 15,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [],
@@ -10347,6 +10367,7 @@
    "committed_M": 246,
    "resign_cost_M": 0,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -10804,6 +10825,7 @@
    "committed_M": 215,
    "resign_cost_M": 0,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
@@ -10923,11 +10945,11 @@
    ],
    "plan": [
     {
-     "name": "Jusuf Nurki\u0107",
+     "name": "Jaxson Hayes",
      "pos": "C",
-     "from": "UTA",
-     "cost_M": 6,
-     "tool": "Mid-level",
+     "from": "LAL",
+     "cost_M": 5,
+     "tool": "Taxpayer MLE",
      "kind": "external"
     },
     {
@@ -11248,6 +11270,7 @@
    "committed_M": 180,
    "resign_cost_M": 35,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -11800,6 +11823,7 @@
    "committed_M": 160,
    "resign_cost_M": 54,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "playoff",
    "needs": [
@@ -11939,11 +11963,11 @@
      "kind": "resign"
     },
     {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "from": "LAC",
-     "cost_M": 8,
-     "tool": "Mid-level",
+     "name": "Josh Minott",
+     "pos": "PF/SF",
+     "from": "BKN",
+     "cost_M": 4,
+     "tool": "Taxpayer MLE",
      "kind": "external"
     },
     {
@@ -12309,6 +12333,7 @@
    "committed_M": 156,
    "resign_cost_M": 14,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "retooling",
    "needs": [],
@@ -12764,6 +12789,7 @@
    "committed_M": 206,
    "resign_cost_M": 5,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "rebuild",
    "needs": [
@@ -13258,6 +13284,7 @@
    "committed_M": 153,
    "resign_cost_M": 12,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
@@ -13748,6 +13775,7 @@
    "committed_M": 190,
    "resign_cost_M": 13,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "playoff",
    "needs": [],
@@ -13867,11 +13895,11 @@
      "kind": "resign"
     },
     {
-     "name": "Ayo Dosunmu",
-     "pos": "PG/SG",
-     "from": "MIN",
-     "cost_M": 15,
-     "tool": "Mid-level",
+     "name": "Tyus Jones",
+     "pos": "PG",
+     "from": "DEN",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
@@ -14216,6 +14244,7 @@
    "committed_M": 138,
    "resign_cost_M": 10,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "retooling",
    "needs": [
@@ -14677,6 +14706,7 @@
    "committed_M": 175,
    "resign_cost_M": 7,
    "tax_M": 200,
+   "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "retooling",
    "needs": [

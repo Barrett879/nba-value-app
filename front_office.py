@@ -70,14 +70,14 @@ def _fit_card(f):
             f"<div class='hv-fit-why'>{_h.escape(str(f['why']))}</div></div>")
 
 
-def _cap_bar_html(committed, cap, tax, apron2, after):
+def _cap_bar_html(committed, cap, tax, apron2, after, apron1=None):
     """A horizontal cap bar: current committed payroll (teal) plus the realistic
-    plan's spend (hatched), against the salary cap / luxury tax / second-apron
-    lines. The white marker is the projected payroll after the plan."""
+    plan's spend (hatched), against the salary cap / luxury tax / first- and
+    second-apron lines. The white marker is the projected payroll after the plan."""
     # Scale from $0 so the teal "committed payroll" segment is proportional to the
     # real figure. (Starting at min(vals)-10 squeezed committed into a sliver and
     # made the offseason spend look like the whole payroll.)
-    vals = [committed, cap, tax, apron2, after]
+    vals = [committed, cap, tax, apron2, after] + ([apron1] if apron1 else [])
     lo, hi = 0.0, max(vals) + 8
     span = max(hi - lo, 1.0)
     p = lambda v: max(0.0, min(100.0, (v - lo) / span * 100))
@@ -87,27 +87,32 @@ def _cap_bar_html(committed, cap, tax, apron2, after):
     seg_plan = (f"<div style='position:absolute;left:{cw:.1f}%;width:{max(aw - cw, 0.4):.1f}%;top:0;bottom:0;"
                 f"background:repeating-linear-gradient(45deg,rgba(241,196,15,.45),rgba(241,196,15,.45) 5px,"
                 f"transparent 5px,transparent 11px);'></div>") if after > committed + 0.5 else ""
-    def tick(v, label, color):
+    def tick(v, label, color, drop=0):
+        # `drop` pushes the label onto a lower row so neighbouring ticks (tax /
+        # 1st apron / 2nd apron are bunched together) don't overlap.
         x = p(v)
-        return (f"<div style='position:absolute;left:{x:.1f}%;top:-4px;bottom:18px;width:2px;background:{color};'></div>"
-                f"<div style='position:absolute;left:{x:.1f}%;bottom:-1px;transform:translateX(-50%);font-size:0.6rem;"
+        return (f"<div style='position:absolute;left:{x:.1f}%;top:-4px;bottom:{18 - drop}px;width:2px;background:{color};'></div>"
+                f"<div style='position:absolute;left:{x:.1f}%;bottom:{-1 - drop}px;transform:translateX(-50%);font-size:0.6rem;"
                 f"line-height:1.1;color:var(--fg-5);white-space:nowrap;text-align:center;'>{label}"
                 f"<br><b style='color:var(--fg-3)'>${v:.0f}M</b></div>")
-    ticks = (tick(cap, "Cap", "var(--hairline)") + tick(tax, "Tax", "var(--orange)")
-             + tick(apron2, "2nd apron", "var(--value-bad)"))
+    ticks = tick(cap, "Cap", "var(--hairline)") + tick(tax, "Tax", "var(--orange)")
+    if apron1:
+        ticks += tick(apron1, "1st apron", "var(--orange)", drop=22)   # lower row, avoids overlap
+    ticks += tick(apron2, "2nd apron", "var(--value-bad)")
     amark = (f"<div style='position:absolute;left:{aw:.1f}%;top:-7px;width:3px;height:28px;border-radius:2px;"
              f"background:var(--fg-1);transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.35);'></div>")
     legend = ("<div style='display:flex;gap:1.1rem;font-size:0.68rem;color:var(--fg-4);margin-bottom:0.5rem;'>"
               "<span><span style='color:var(--accent-teal)'>&#9632;</span> committed payroll</span>"
               "<span><span style='color:var(--gold)'>&#9632;</span> this offseason (re-signs + picks + signings)</span>"
               "<span><span style='color:var(--fg-1)'>&#9612;</span> after the offseason</span></div>")
-    return (f"<div style='margin:0.2rem 0 2.8rem;'>{legend}"
+    return (f"<div style='margin:0.2rem 0 3.6rem;'>{legend}"
             f"<div style='position:relative;height:14px;border-radius:7px;background:var(--hairline-soft);'>"
             f"{seg_now}{seg_plan}{ticks}{amark}</div></div>")
 
 
 _PLAN_TOOL_COLOR = {"Re-sign": "var(--gold)", "Cap room": "var(--accent-teal)",
                     "Room exception": "var(--blue)", "Mid-level": "var(--blue)",
+                    "Taxpayer MLE": "var(--blue)",
                     "Depth": "var(--fg-3)", "Minimum": "var(--fg-5)",
                     "Draft pick": "var(--purple)", "2nd-round pick": "var(--purple)"}
 _PLAN_CSS = """
@@ -196,10 +201,11 @@ def render_front_office():
     _committed = B.get("committed_M") or _rp.get("committed_M") or 0
     _tax = B.get("tax_M") or _rp.get("tax_M") or 0
     _apron2 = B.get("apron2_M") or _rp.get("apron2_M") or 0
+    _apron1 = B.get("apron1_M") or 0
     _plan_cost = sum(m["cost_M"] for m in B.get("plan", []))       # re-signs + external, one plan
     _after = _committed + _plan_cost
     if _committed and _apron2:
-        st.markdown(_cap_bar_html(_committed, DATA["cap_M"], _tax, _apron2, _after),
+        st.markdown(_cap_bar_html(_committed, DATA["cap_M"], _tax, _apron2, _after, apron1=_apron1),
                     unsafe_allow_html=True)
 
     # ── Current roster, collapsed, ordered by Barrett Score ─────────────────────
@@ -348,6 +354,8 @@ def render_front_office():
                 _bits.append("the room exception")
             if "Mid-level" in _used:
                 _bits.append("the mid-level")
+            if "Taxpayer MLE" in _used:
+                _bits.append("the taxpayer mid-level")
             if "Minimum" in _used:
                 _bits.append("veteran minimums")
             _tool = " and ".join(_bits) if _bits else "veteran minimums"

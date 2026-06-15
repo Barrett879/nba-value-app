@@ -54,8 +54,13 @@ CAP_M = ns["SALARY_CAP_M"].get(CONTRACT, 165.0)
 CAP_TABLE = ts.compute_cap_space(payroll, nc, CAP_M)
 LAND = ts.apply_real_cap(ts.load_team_landscape(), CAP_TABLE)
 # League pay lines, derived from the cap like team_suitors: luxury tax ~1.215x,
-# second apron ~1.344x. The 2nd apron is the practical ceiling for re-signings.
-TAX_M, APRON2_M = round(CAP_M * 1.215, 1), round(CAP_M * ts._APRON2_RATIO, 1)
+# first apron ~1.267x, second apron ~1.344x. A team OVER the 1st apron can only
+# use the taxpayer mid-level (~$5.7M) and is hard-capped at the 2nd apron; a team
+# OVER the 2nd apron has no mid-level at all (minimums only).
+TAX_M = round(CAP_M * 1.215, 1)
+APRON1_M = round(CAP_M * ts._APRON1_RATIO, 1)
+APRON2_M = round(CAP_M * ts._APRON2_RATIO, 1)
+TAXPAYER_MLE_M = 5.7    # the taxpayer mid-level (2026-27); vs the ~$15M non-taxpayer MLE
 ROST = ts.build_rosters(full)
 
 # Manual roster corrections (data/roster_corrections.csv): players the scraped
@@ -280,7 +285,7 @@ def resign_plan(team, resign_rows):
 
 
 def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5,
-                   pos_counts=None, pos_cap=3):
+                   pos_counts=None, pos_cap=3, mle_label="Mid-level"):
     """A REALISTIC external-signing haul (vs the full 20-deep pursue board where
     every target gets an independent offer). Walk the keenness-ranked targets and
     spend the team's ACTUAL tools, CBA-correctly:
@@ -306,7 +311,7 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5,
     if cap_room >= 8:                                  # cap-space team
         cap_left, exc_left, exc_label = cap_room, 8.0, "Room exception"
     else:                                              # over the cap: one mid-level
-        cap_left, exc_left, exc_label = 0.0, mle, "Mid-level"
+        cap_left, exc_left, exc_label = 0.0, mle, mle_label
     pos_counts = dict(pos_counts or {})
     out, spent_big = [], 0.0                            # spent_big = non-minimum spend
     for x in pursue_rows:
@@ -442,10 +447,25 @@ def board_for(team):
     # mid-level — so the external part of the plan gets cap room MINUS those
     # re-signings AND the rookie-scale money owed to its first-round picks.
     _resign_cost = round(sum(m["cost_M"] for m in _resign_moves))
-    _real_cap_room = max(0.0, CAP_M - (_committed + _resign_cost + _pick_cost))
-    # Room left below the second apron (the practical hard ceiling) after the
-    # re-signings and picks — bounds how much the team can actually add in FA.
-    _apron_room = max(0.0, round(APRON2_M) - (_committed + _resign_cost + _pick_cost))
+    # Payroll already committed before any free-agent ADD (under contract +
+    # re-signs + rookie-scale money for the picks). The apron TIER this lands in
+    # sets both the over-the-cap tool and the hard ceiling on big-money signings:
+    #   - cap-space team: cap room + room exception, hard-capped at the 1st apron
+    #   - over the cap, under the 1st apron: full non-taxpayer mid-level (~$15M),
+    #     hard-capped at the 1st apron (using the full MLE triggers that cap)
+    #   - over the 1st apron: ONLY the taxpayer mid-level (~$5.7M), hard cap = 2nd apron
+    #   - over the 2nd apron: NO mid-level at all — minimums only
+    _base = _committed + _resign_cost + _pick_cost
+    _real_cap_room = max(0.0, CAP_M - _base)
+    if _real_cap_room >= 8:
+        _mle, _mle_label, _hard_cap = exc, "Mid-level", APRON1_M
+    elif _base >= APRON2_M:
+        _mle, _mle_label, _hard_cap = 0.0, "Mid-level", APRON2_M
+    elif _base >= APRON1_M:
+        _mle, _mle_label, _hard_cap = TAXPAYER_MLE_M, "Taxpayer MLE", APRON2_M
+    else:
+        _mle, _mle_label, _hard_cap = exc, "Mid-level", APRON1_M
+    _apron_room = max(0.0, round(_hard_cap) - _base)
     # The PROJECTED 2026-27 roster: who's under contract plus the keepers they
     # re-sign. Positions of need and roster balance are judged against THIS, not
     # the 2025-26 roster that still counts departing free agents. (A position-
@@ -462,8 +482,9 @@ def board_for(team):
         _pp = primary(_m["pos"])
         _pos_counts[_pp] = _pos_counts.get(_pp, 0) + 1
     _adds_left = max(0, _open_spots - len(_resign_moves))
-    _external = offseason_plan(_pursue, _real_cap_room, exc, _apron_room,
-                               max_adds=_adds_left, pos_counts=_pos_counts)
+    _external = offseason_plan(_pursue, _real_cap_room, _mle, _apron_room,
+                               max_adds=_adds_left, pos_counts=_pos_counts,
+                               mle_label=_mle_label)
     for _m in _external:
         _m["kind"] = "external"
     _plan = _resign_moves + _external + _pick_moves
@@ -473,7 +494,7 @@ def board_for(team):
         "name": str(t.get("team_name", team)),
         "cap_room_M": round(cap), "exception_M": round(exc),
         "committed_M": _committed, "resign_cost_M": _resign_cost,
-        "tax_M": round(TAX_M), "apron2_M": round(APRON2_M),
+        "tax_M": round(TAX_M), "apron1_M": round(APRON1_M), "apron2_M": round(APRON2_M),
         "timeline": ts._TL_DISPLAY.get(tl, tl) or "—",
         "needs": need, "thin": thin,
         "roster": _roster,
