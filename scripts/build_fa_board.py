@@ -258,7 +258,8 @@ def resign_plan(team, resign_rows):
             "apron2_M": apron2_r, "all_in_M": round(running), "keeps": keeps}
 
 
-def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5):
+def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5,
+                   pos_counts=None, pos_cap=3):
     """A REALISTIC external-signing haul (vs the full 20-deep pursue board where
     every target gets an independent offer). Walk the keenness-ranked targets and
     spend the team's ACTUAL tools, CBA-correctly:
@@ -275,15 +276,24 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5):
     apron — once the pool/apron room is gone, no more $7M deals. Veteran
     minimums, though, are roster-FILLING and apron-EXEMPT: a team always fills
     out its 15 with minimums even when it's over the apron, so they keep going
-    (capped only by `max_adds` = the open roster spots), not by apron room."""
+    (capped only by `max_adds` = the open roster spots), not by apron room.
+
+    Positional balance: `pos_counts` is the projected roster's count by primary
+    position (guaranteed + re-signs); a target is skipped if his primary spot is
+    already `pos_cap`-deep, so the team fills its actual needs instead of, say,
+    a fourth center."""
     if cap_room >= 8:                                  # cap-space team
         cap_left, exc_left, exc_label = cap_room, 8.0, "Room exception"
     else:                                              # over the cap: one mid-level
         cap_left, exc_left, exc_label = 0.0, mle, "Mid-level"
+    pos_counts = dict(pos_counts or {})
     out, spent_big = [], 0.0                            # spent_big = non-minimum spend
     for x in pursue_rows:
         if len(out) >= max_adds:                        # roster spots filled (0 -> add nothing)
             break
+        _pos = primary(x["pos"])
+        if pos_counts.get(_pos, 0) >= pos_cap:          # already deep here -> don't stack it
+            continue
         offer = x["offer_M"]
         if offer <= MIN_SALARY:                        # veteran minimum: fills the roster,
             tool = "Minimum"                           #   apron-exempt (always allowed)
@@ -297,6 +307,7 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5):
             continue                                   # no tool can fund this offer -> can't sign
         out.append({"name": x["name"], "pos": x["pos"], "from": x["team"],
                     "cost_M": offer, "tool": tool})
+        pos_counts[_pos] = pos_counts.get(_pos, 0) + 1
     return out
 
 
@@ -415,9 +426,18 @@ def board_for(team):
     # Room left below the second apron (the practical hard ceiling) after the
     # re-signings and picks — bounds how much the team can actually add in FA.
     _apron_room = max(0.0, round(APRON2_M) - (_committed + _resign_cost + _pick_cost))
-    # External adds fill only the roster spots left after picks + re-signings.
+    # External adds fill only the roster spots left after picks + re-signings,
+    # and are positionally balanced: count the projected roster by primary
+    # position (guaranteed players + re-signs) so the plan fills needs instead
+    # of stacking a position (no 4th center). Draft picks are position-unknown,
+    # so they don't seed the counts.
+    _pos_counts = {}
+    for _m in _roster + _resign_moves:
+        _pp = primary(_m["pos"])
+        _pos_counts[_pp] = _pos_counts.get(_pp, 0) + 1
     _adds_left = max(0, _open_spots - len(_resign_moves))
-    _external = offseason_plan(_pursue, _real_cap_room, exc, _apron_room, max_adds=_adds_left)
+    _external = offseason_plan(_pursue, _real_cap_room, exc, _apron_room,
+                               max_adds=_adds_left, pos_counts=_pos_counts)
     for _m in _external:
         _m["kind"] = "external"
     _plan = _resign_moves + _external + _pick_moves
