@@ -16,6 +16,188 @@
   },
   "note": "single best-guess via the suitor engine; re-signs reliable, team changes noisy"
  },
+ "teams": {
+  "ATL": {
+   "name": "Atlanta Hawks",
+   "committed_M": 153,
+   "resign_cost_M": 38,
+   "room": "full mid-level"
+  },
+  "BKN": {
+   "name": "Brooklyn Nets",
+   "committed_M": 121,
+   "resign_cost_M": 15,
+   "room": "full mid-level"
+  },
+  "BOS": {
+   "name": "Boston Celtics",
+   "committed_M": 178,
+   "resign_cost_M": 15,
+   "room": "full mid-level"
+  },
+  "CHA": {
+   "name": "Charlotte Hornets",
+   "committed_M": 148,
+   "resign_cost_M": 16,
+   "room": "full mid-level"
+  },
+  "CHI": {
+   "name": "Chicago Bulls",
+   "committed_M": 93,
+   "resign_cost_M": 28,
+   "room": "full mid-level"
+  },
+  "CLE": {
+   "name": "Cleveland Cavaliers",
+   "committed_M": 222,
+   "resign_cost_M": 0,
+   "room": "minimums only"
+  },
+  "DAL": {
+   "name": "Dallas Mavericks",
+   "committed_M": 107,
+   "resign_cost_M": 27,
+   "room": "full mid-level"
+  },
+  "DEN": {
+   "name": "Denver Nuggets",
+   "committed_M": 216,
+   "resign_cost_M": 0,
+   "room": "taxpayer mid-level"
+  },
+  "DET": {
+   "name": "Detroit Pistons",
+   "committed_M": 130,
+   "resign_cost_M": 79,
+   "room": "taxpayer mid-level"
+  },
+  "GSW": {
+   "name": "Golden State Warriors",
+   "committed_M": 176,
+   "resign_cost_M": 36,
+   "room": "taxpayer mid-level"
+  },
+  "HOU": {
+   "name": "Houston Rockets",
+   "committed_M": 160,
+   "resign_cost_M": 12,
+   "room": "full mid-level"
+  },
+  "IND": {
+   "name": "Indiana Pacers",
+   "committed_M": 152,
+   "resign_cost_M": 3,
+   "room": "full mid-level"
+  },
+  "LAC": {
+   "name": "LA Clippers",
+   "committed_M": 162,
+   "resign_cost_M": 47,
+   "room": "taxpayer mid-level"
+  },
+  "LAL": {
+   "name": "Los Angeles Lakers",
+   "committed_M": 93,
+   "resign_cost_M": 113,
+   "room": "taxpayer mid-level"
+  },
+  "MEM": {
+   "name": "Memphis Grizzlies",
+   "committed_M": 142,
+   "resign_cost_M": 0,
+   "room": "full mid-level"
+  },
+  "MIA": {
+   "name": "Miami Heat",
+   "committed_M": 163,
+   "resign_cost_M": 21,
+   "room": "full mid-level"
+  },
+  "MIL": {
+   "name": "Milwaukee Bucks",
+   "committed_M": 138,
+   "resign_cost_M": 40,
+   "room": "full mid-level"
+  },
+  "MIN": {
+   "name": "Minnesota Timberwolves",
+   "committed_M": 175,
+   "resign_cost_M": 32,
+   "room": "taxpayer mid-level"
+  },
+  "NOP": {
+   "name": "New Orleans Pelicans",
+   "committed_M": 196,
+   "resign_cost_M": 2,
+   "room": "full mid-level"
+  },
+  "NYK": {
+   "name": "New York Knicks",
+   "committed_M": 206,
+   "resign_cost_M": 10,
+   "room": "taxpayer mid-level"
+  },
+  "OKC": {
+   "name": "Oklahoma City Thunder",
+   "committed_M": 246,
+   "resign_cost_M": 0,
+   "room": "minimums only"
+  },
+  "ORL": {
+   "name": "Orlando Magic",
+   "committed_M": 215,
+   "resign_cost_M": 0,
+   "room": "taxpayer mid-level"
+  },
+  "PHI": {
+   "name": "Philadelphia 76ers",
+   "committed_M": 180,
+   "resign_cost_M": 35,
+   "room": "taxpayer mid-level"
+  },
+  "PHX": {
+   "name": "Phoenix Suns",
+   "committed_M": 160,
+   "resign_cost_M": 54,
+   "room": "taxpayer mid-level"
+  },
+  "POR": {
+   "name": "Portland Trail Blazers",
+   "committed_M": 156,
+   "resign_cost_M": 14,
+   "room": "full mid-level"
+  },
+  "SAC": {
+   "name": "Sacramento Kings",
+   "committed_M": 206,
+   "resign_cost_M": 5,
+   "room": "taxpayer mid-level"
+  },
+  "SAS": {
+   "name": "San Antonio Spurs",
+   "committed_M": 153,
+   "resign_cost_M": 12,
+   "room": "full mid-level"
+  },
+  "TOR": {
+   "name": "Toronto Raptors",
+   "committed_M": 190,
+   "resign_cost_M": 13,
+   "room": "full mid-level"
+  },
+  "UTA": {
+   "name": "Utah Jazz",
+   "committed_M": 138,
+   "resign_cost_M": 10,
+   "room": "full mid-level"
+  },
+  "WAS": {
+   "name": "Washington Wizards",
+   "committed_M": 175,
+   "resign_cost_M": 7,
+   "room": "full mid-level"
+  }
+ },
  "players": [
   {
    "player": "Jalen Duren",
@@ -111,7 +293,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 41.2,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -167,7 +349,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 39.8,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -223,7 +405,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 26.9,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
@@ -274,19 +456,19 @@
     ]
    },
    "realistic": {
-    "predicted": "BKN",
-    "predicted_name": "Brooklyn Nets",
-    "is_resign": false,
-    "confidence": "Medium",
+    "predicted": "PHX",
+    "predicted_name": "Phoenix Suns",
+    "is_resign": true,
+    "confidence": "High",
     "offer_M": 26.6,
-    "tool": "cap room",
-    "reason": "would start over Egor D\u00ebmin (11.8 vs 21.6) \u00b7 rebuild",
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
-      "team": "PHX",
-      "team_name": "Phoenix Suns",
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
       "offer_M": 26.6,
-      "tool": "Bird rights"
+      "tool": "cap room"
      },
      {
       "team": "LAL",
@@ -498,19 +680,19 @@
     ]
    },
    "realistic": {
-    "predicted": "DEN",
-    "predicted_name": "Denver Nuggets",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 21.6,
-    "tool": "Bird rights",
-    "reason": "can match any offer (restricted FA) \u00b7 title",
+    "predicted": "BKN",
+    "predicted_name": "Brooklyn Nets",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 19.4,
+    "tool": "cap room",
+    "reason": "upgrades over Noah Clowney (10.9 vs 15.5) \u00b7 rebuild",
     "alts": [
      {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 19.4,
-      "tool": "cap room"
+      "team": "DEN",
+      "team_name": "Denver Nuggets",
+      "offer_M": 21.6,
+      "tool": "Bird rights"
      },
      {
       "team": "CHI",
@@ -610,25 +792,25 @@
     ]
    },
    "realistic": {
-    "predicted": "NYK",
-    "predicted_name": "New York Knicks",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 15.1,
-    "tool": "mid-level exception",
-    "reason": "upgrades over Josh Hart (21.4 vs 22.0) \u00b7 title",
+    "predicted": "MIA",
+    "predicted_name": "Miami Heat",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 18.7,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
+     {
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 15.1,
+      "tool": "mid-level exception"
+     },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 14.6,
       "tool": "cap room"
-     },
-     {
-      "team": "MIA",
-      "team_name": "Miami Heat",
-      "offer_M": 18.7,
-      "tool": "Bird rights"
      }
     ]
    }
@@ -666,25 +848,25 @@
     ]
    },
    "realistic": {
-    "predicted": "OKC",
-    "predicted_name": "Oklahoma City Thunder",
-    "is_resign": true,
-    "confidence": "High",
+    "predicted": "CHI",
+    "predicted_name": "Chicago Bulls",
+    "is_resign": false,
+    "confidence": "Medium",
     "offer_M": 16.8,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "tool": "cap room",
+    "reason": "would start over Jalen Smith (12.6 vs 18.2) \u00b7 rebuild",
     "alts": [
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
+      "team": "OKC",
+      "team_name": "Oklahoma City Thunder",
       "offer_M": 16.8,
-      "tool": "cap room"
+      "tool": "Bird rights"
      },
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
       "offer_M": 15.1,
-      "tool": "mid-level exception"
+      "tool": "cap room"
      }
     ]
    }
@@ -722,25 +904,25 @@
     ]
    },
    "realistic": {
-    "predicted": "BKN",
-    "predicted_name": "Brooklyn Nets",
-    "is_resign": false,
-    "confidence": "Medium",
+    "predicted": "CHA",
+    "predicted_name": "Charlotte Hornets",
+    "is_resign": true,
+    "confidence": "High",
     "offer_M": 16.4,
-    "tool": "cap room",
-    "reason": "would start over Egor D\u00ebmin (11.8 vs 14.9) \u00b7 rebuild",
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
+     {
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
+      "offer_M": 16.4,
+      "tool": "cap room"
+     },
      {
       "team": "GSW",
       "team_name": "Golden State Warriors",
       "offer_M": 12.8,
       "tool": "mid-level exception"
-     },
-     {
-      "team": "CHA",
-      "team_name": "Charlotte Hornets",
-      "offer_M": 16.4,
-      "tool": "cap room"
      }
     ]
    }
@@ -783,7 +965,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 15.7,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -946,25 +1128,25 @@
     ]
    },
    "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 12.1,
-    "tool": "cap room",
-    "reason": "rotation piece over Marcus Smart (Player Option, 13.5 vs 20.5) \u00b7 title",
+    "predicted": "ATL",
+    "predicted_name": "Atlanta Hawks",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 15.5,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
-      "team": "ATL",
-      "team_name": "Atlanta Hawks",
-      "offer_M": 15.5,
-      "tool": "Bird rights"
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 12.1,
+      "tool": "cap room"
      },
      {
-      "team": "DET",
-      "team_name": "Detroit Pistons",
+      "team": "MIN",
+      "team_name": "Minnesota Timberwolves",
       "offer_M": 14.0,
-      "tool": "cap room"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -1002,25 +1184,25 @@
     ]
    },
    "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 14.2,
+    "predicted": "CHI",
+    "predicted_name": "Chicago Bulls",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 12.8,
     "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "reason": "upgrades over Isaac Okoro (8.5 vs 10.5) \u00b7 rebuild",
     "alts": [
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 12.8,
-      "tool": "cap room"
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 14.2,
+      "tool": "Bird rights"
      },
      {
       "team": "ATL",
       "team_name": "Atlanta Hawks",
       "offer_M": 11.1,
-      "tool": "cap room"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -1058,13 +1240,13 @@
     ]
    },
    "realistic": {
-    "predicted": "GSW",
-    "predicted_name": "Golden State Warriors",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 10.8,
-    "tool": "mid-level exception",
-    "reason": "rotation piece over Moses Moody (14.3 vs 14.5) \u00b7 playoff",
+    "predicted": "CHI",
+    "predicted_name": "Chicago Bulls",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 13.9,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
      {
       "team": "BKN",
@@ -1073,10 +1255,10 @@
       "tool": "cap room"
      },
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 13.9,
-      "tool": "cap room"
+      "team": "GSW",
+      "team_name": "Golden State Warriors",
+      "offer_M": 10.8,
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -1175,7 +1357,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 13.1,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
      {
@@ -1287,7 +1469,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 12.5,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
      {
@@ -1338,23 +1520,23 @@
     ]
    },
    "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 11.2,
-    "tool": "cap room",
-    "reason": "upgrades over Rui Hachimura (UFA, 10.5 vs 12.4) \u00b7 title",
+    "predicted": "PHI",
+    "predicted_name": "Philadelphia 76ers",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 12.4,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
-      "team": "PHI",
-      "team_name": "Philadelphia 76ers",
-      "offer_M": 12.4,
-      "tool": "Bird rights"
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 11.2,
+      "tool": "cap room"
      },
      {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
       "offer_M": 11.2,
       "tool": "cap room"
      }
@@ -1450,25 +1632,25 @@
     ]
    },
    "realistic": {
-    "predicted": "SAC",
-    "predicted_name": "Sacramento Kings",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 12.1,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
+    "predicted": "CHI",
+    "predicted_name": "Chicago Bulls",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 10.9,
+    "tool": "cap room",
+    "reason": "upgrades over Jalen Smith (12.6 vs 13.1) \u00b7 rebuild",
     "alts": [
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 10.9,
-      "tool": "cap room"
+      "team": "SAC",
+      "team_name": "Sacramento Kings",
+      "offer_M": 12.1,
+      "tool": "Bird rights"
      },
      {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
+      "team": "ATL",
+      "team_name": "Atlanta Hawks",
       "offer_M": 9.4,
-      "tool": "cap room"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -1567,7 +1749,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 11.8,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
      {
@@ -1618,25 +1800,25 @@
     ]
    },
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
+    "predicted": "LAL",
+    "predicted_name": "Los Angeles Lakers",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 10.5,
-    "tool": "cap room",
-    "reason": "upgrades over Isaac Okoro (8.5 vs 8.5) \u00b7 rebuild",
+    "offer_M": 6.0,
+    "tool": "taxpayer MLE",
+    "reason": "depth piece over Jarred Vanderbilt (5.6 vs 8.5) \u00b7 title",
     "alts": [
      {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 7.3,
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 10.5,
       "tool": "cap room"
      },
      {
-      "team": "CHA",
-      "team_name": "Charlotte Hornets",
+      "team": "ATL",
+      "team_name": "Atlanta Hawks",
       "offer_M": 7.3,
-      "tool": "cap room"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -1674,25 +1856,25 @@
     ]
    },
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
-    "is_resign": false,
-    "confidence": "Medium",
+    "predicted": "POR",
+    "predicted_name": "Portland Trail Blazers",
+    "is_resign": true,
+    "confidence": "High",
     "offer_M": 11.0,
-    "tool": "cap room",
-    "reason": "would start over Jalen Smith (12.6 vs 14.6) \u00b7 rebuild",
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
+     {
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 11.0,
+      "tool": "cap room"
+     },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 9.9,
       "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 9.9,
-      "tool": "mid-level exception"
      }
     ]
    }
@@ -1842,25 +2024,25 @@
     ]
    },
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
-    "is_resign": false,
-    "confidence": "Medium",
+    "predicted": "NYK",
+    "predicted_name": "New York Knicks",
+    "is_resign": true,
+    "confidence": "High",
     "offer_M": 10.4,
-    "tool": "cap room",
-    "reason": "would start over Jalen Smith (12.6 vs 13.1) \u00b7 rebuild",
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
+     {
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 10.4,
+      "tool": "cap room"
+     },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 9.4,
       "tool": "cap room"
-     },
-     {
-      "team": "GSW",
-      "team_name": "Golden State Warriors",
-      "offer_M": 8.1,
-      "tool": "mid-level exception"
      }
     ]
    }
@@ -1898,25 +2080,25 @@
     ]
    },
    "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 9.4,
-    "tool": "cap room",
-    "reason": "upgrades over Deandre Ayton (Player Option, 18.4 vs 19.7) \u00b7 title",
+    "predicted": "BOS",
+    "predicted_name": "Boston Celtics",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 10.4,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
+     {
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 9.4,
+      "tool": "cap room"
+     },
      {
       "team": "NYK",
       "team_name": "New York Knicks",
       "offer_M": 8.1,
       "tool": "mid-level exception"
-     },
-     {
-      "team": "BOS",
-      "team_name": "Boston Celtics",
-      "offer_M": 10.4,
-      "tool": "Bird rights"
      }
     ]
    }
@@ -1959,7 +2141,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 10.3,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -2015,7 +2197,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 10.1,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -2071,7 +2253,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 10.1,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -2122,25 +2304,25 @@
     ]
    },
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
-    "is_resign": false,
-    "confidence": "Low",
+    "predicted": "UTA",
+    "predicted_name": "Utah Jazz",
+    "is_resign": true,
+    "confidence": "High",
     "offer_M": 9.5,
-    "tool": "cap room",
-    "reason": "would start over Jalen Smith (12.6 vs 17.4) \u00b7 rebuild",
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
+     {
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 9.5,
+      "tool": "cap room"
+     },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 8.6,
       "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 8.6,
-      "tool": "mid-level exception"
      }
     ]
    }
@@ -2178,18 +2360,18 @@
     ]
    },
    "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 8.3,
-    "tool": "cap room",
-    "reason": "upgrades over Rui Hachimura (UFA, 10.5 vs 12.4) \u00b7 title",
+    "predicted": "SAS",
+    "predicted_name": "San Antonio Spurs",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 9.2,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
-      "team": "SAS",
-      "team_name": "San Antonio Spurs",
-      "offer_M": 9.2,
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 8.3,
       "tool": "cap room"
      },
      {
@@ -2234,25 +2416,25 @@
     ]
    },
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 9.1,
+    "predicted": "BKN",
+    "predicted_name": "Brooklyn Nets",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 5.6,
     "tool": "cap room",
-    "reason": "can match any offer (restricted FA) \u00b7 rebuild",
+    "reason": "depth piece over Tyson Etienne (5.9 vs 6.3) \u00b7 rebuild",
     "alts": [
      {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 5.6,
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 9.1,
       "tool": "cap room"
      },
      {
       "team": "LAC",
       "team_name": "LA Clippers",
       "offer_M": 4.5,
-      "tool": "mid-level exception"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -2295,7 +2477,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 9.0,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
      {
@@ -2346,25 +2528,25 @@
     ]
    },
    "realistic": {
-    "predicted": "DEN",
-    "predicted_name": "Denver Nuggets",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 8.9,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "IND",
+    "predicted_name": "Indiana Pacers",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 8.0,
+    "tool": "cap room",
+    "reason": "upgrades over Aaron Nesmith (11.4 vs 12.7) \u00b7 title",
     "alts": [
+     {
+      "team": "DEN",
+      "team_name": "Denver Nuggets",
+      "offer_M": 8.9,
+      "tool": "Bird rights"
+     },
      {
       "team": "NYK",
       "team_name": "New York Knicks",
-      "offer_M": 6.9,
-      "tool": "mid-level exception"
-     },
-     {
-      "team": "IND",
-      "team_name": "Indiana Pacers",
-      "offer_M": 8.0,
-      "tool": "cap room"
+      "offer_M": 6.0,
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -2407,7 +2589,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 8.9,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -2417,10 +2599,10 @@
       "tool": "cap room"
      },
      {
-      "team": "IND",
-      "team_name": "Indiana Pacers",
+      "team": "PHI",
+      "team_name": "Philadelphia 76ers",
       "offer_M": 8.0,
-      "tool": "cap room"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -2467,16 +2649,16 @@
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 6.9,
-      "tool": "mid-level exception"
-     },
-     {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
       "offer_M": 6.9,
       "tool": "cap room"
+     },
+     {
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 6.9,
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -2682,24 +2864,24 @@
     ]
    },
    "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 7.1,
+    "predicted": "DAL",
+    "predicted_name": "Dallas Mavericks",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 5.5,
     "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "reason": "rotation piece over Klay Thompson (7.0 vs 10.0) \u00b7 retooling",
     "alts": [
+     {
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 7.1,
+      "tool": "Bird rights"
+     },
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
       "offer_M": 6.4,
-      "tool": "cap room"
-     },
-     {
-      "team": "DAL",
-      "team_name": "Dallas Mavericks",
-      "offer_M": 5.5,
       "tool": "cap room"
      }
     ]
@@ -2738,24 +2920,24 @@
     ]
    },
    "realistic": {
-    "predicted": "CLE",
-    "predicted_name": "Cleveland Cavaliers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 6.7,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "ATL",
+    "predicted_name": "Atlanta Hawks",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 4.2,
+    "tool": "mid-level exception",
+    "reason": "depth piece over Corey Kispert (7.5 vs 9.1) \u00b7 playoff",
     "alts": [
+     {
+      "team": "CLE",
+      "team_name": "Cleveland Cavaliers",
+      "offer_M": 6.7,
+      "tool": "Bird rights"
+     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
       "offer_M": 6.0,
-      "tool": "cap room"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 4.2,
       "tool": "cap room"
      }
     ]
@@ -2794,24 +2976,24 @@
     ]
    },
    "realistic": {
-    "predicted": "CLE",
-    "predicted_name": "Cleveland Cavaliers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 6.7,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "DAL",
+    "predicted_name": "Dallas Mavericks",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 5.2,
+    "tool": "cap room",
+    "reason": "rotation piece over Klay Thompson (7.0 vs 9.2) \u00b7 retooling",
     "alts": [
+     {
+      "team": "CLE",
+      "team_name": "Cleveland Cavaliers",
+      "offer_M": 6.7,
+      "tool": "Bird rights"
+     },
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
       "offer_M": 6.0,
-      "tool": "cap room"
-     },
-     {
-      "team": "DAL",
-      "team_name": "Dallas Mavericks",
-      "offer_M": 5.2,
       "tool": "cap room"
      }
     ]
@@ -2855,7 +3037,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 6.7,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
@@ -2911,7 +3093,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 6.5,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
      {
@@ -2962,24 +3144,24 @@
     ]
    },
    "realistic": {
-    "predicted": "MIA",
-    "predicted_name": "Miami Heat",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 6.4,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
+    "predicted": "ORL",
+    "predicted_name": "Orlando Magic",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 3.2,
+    "tool": "taxpayer MLE",
+    "reason": "depth piece over Jamal Cain (4.8 vs 6.9) \u00b7 playoff",
     "alts": [
+     {
+      "team": "MIA",
+      "team_name": "Miami Heat",
+      "offer_M": 6.4,
+      "tool": "Bird rights"
+     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
       "offer_M": 5.0,
-      "tool": "cap room"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 4.0,
       "tool": "cap room"
      }
     ]
@@ -3079,20 +3261,20 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 6.2,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
-     {
-      "team": "GSW",
-      "team_name": "Golden State Warriors",
-      "offer_M": 4.8,
-      "tool": "mid-level exception"
-     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
       "offer_M": 5.6,
       "tool": "cap room"
+     },
+     {
+      "team": "LAC",
+      "team_name": "LA Clippers",
+      "offer_M": 5.6,
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -3135,20 +3317,20 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 6.2,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
-     {
-      "team": "GSW",
-      "team_name": "Golden State Warriors",
-      "offer_M": 4.8,
-      "tool": "mid-level exception"
-     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
       "offer_M": 5.6,
       "tool": "cap room"
+     },
+     {
+      "team": "GSW",
+      "team_name": "Golden State Warriors",
+      "offer_M": 4.8,
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -3186,25 +3368,25 @@
     ]
    },
    "realistic": {
-    "predicted": "CLE",
-    "predicted_name": "Cleveland Cavaliers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 6.1,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "DAL",
+    "predicted_name": "Dallas Mavericks",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 5.5,
+    "tool": "cap room",
+    "reason": "upgrades over Ryan Nembhard (UFA, 6.7 vs 8.6) \u00b7 retooling",
     "alts": [
+     {
+      "team": "CLE",
+      "team_name": "Cleveland Cavaliers",
+      "offer_M": 6.1,
+      "tool": "Bird rights"
+     },
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
       "offer_M": 5.5,
       "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 4.8,
-      "tool": "mid-level exception"
      }
     ]
    }
@@ -3242,27 +3424,14 @@
     ]
    },
    "realistic": {
-    "predicted": "HOU",
-    "predicted_name": "Houston Rockets",
-    "is_resign": false,
+    "predicted": "UTA",
+    "predicted_name": "Utah Jazz",
+    "is_resign": true,
     "confidence": "Low",
-    "offer_M": 4.6,
-    "tool": "cap room",
-    "reason": "rotation piece over Josh Okogie (UFA, 5.3 vs 6.6) \u00b7 title",
-    "alts": [
-     {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 4.6,
-      "tool": "cap room"
-     },
-     {
-      "team": "ATL",
-      "team_name": "Atlanta Hawks",
-      "offer_M": 3.7,
-      "tool": "cap room"
-     }
-    ]
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
+    "alts": []
    }
   },
   {
@@ -3298,23 +3467,23 @@
     ]
    },
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 5.8,
-    "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
+    "predicted": "PHX",
+    "predicted_name": "Phoenix Suns",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 4.5,
+    "tool": "taxpayer MLE",
+    "reason": "rotation piece over Khaman Maluach (2.2 vs 4.6) \u00b7 playoff",
     "alts": [
+     {
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 5.8,
+      "tool": "cap room"
+     },
      {
       "team": "NYK",
       "team_name": "New York Knicks",
-      "offer_M": 4.5,
-      "tool": "mid-level exception"
-     },
-     {
-      "team": "ORL",
-      "team_name": "Orlando Magic",
       "offer_M": 4.5,
       "tool": "taxpayer MLE"
      }
@@ -3369,10 +3538,10 @@
       "tool": "cap room"
      },
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 3.5,
-      "tool": "mid-level exception"
+      "team": "DAL",
+      "team_name": "Dallas Mavericks",
+      "offer_M": 4.4,
+      "tool": "cap room"
      }
     ]
    }
@@ -3415,7 +3584,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 5.6,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -3522,25 +3691,25 @@
     ]
    },
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
+    "predicted": "CHA",
+    "predicted_name": "Charlotte Hornets",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 3.4,
-    "tool": "cap room",
-    "reason": "depth piece over Leonard Miller (Team Option, 6.0 vs 6.3) \u00b7 rebuild",
+    "offer_M": 2.8,
+    "tool": "mid-level exception",
+    "reason": "depth piece over Tidjane Sala\u00fcn (6.2 vs 6.3) \u00b7 retooling",
     "alts": [
      {
-      "team": "CHA",
-      "team_name": "Charlotte Hornets",
-      "offer_M": 2.8,
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 3.4,
       "tool": "cap room"
      },
      {
       "team": "NYK",
       "team_name": "New York Knicks",
       "offer_M": 3.4,
-      "tool": "mid-level exception"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -3690,23 +3859,23 @@
     ]
    },
    "realistic": {
-    "predicted": "NYK",
-    "predicted_name": "New York Knicks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 5.1,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "LAC",
+    "predicted_name": "LA Clippers",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.5,
+    "tool": "taxpayer MLE",
+    "reason": "depth piece over Kobe Sanders (Team Option, 7.0 vs 9.2) \u00b7 rebuild",
     "alts": [
+     {
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 5.1,
+      "tool": "Bird rights"
+     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
-      "offer_M": 2.5,
-      "tool": "cap room"
-     },
-     {
-      "team": "LAC",
-      "team_name": "LA Clippers",
       "offer_M": 2.5,
       "tool": "cap room"
      }
@@ -3751,7 +3920,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 5.0,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
      {
@@ -3793,9 +3962,9 @@
     "predicted_name": "Brooklyn Nets",
     "is_resign": true,
     "confidence": "Low",
-    "offer_M": 5.0,
+    "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "no external market \u2014 likely back on a minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -3882,18 +4051,18 @@
     ]
    },
    "realistic": {
-    "predicted": "SAS",
-    "predicted_name": "San Antonio Spurs",
+    "predicted": "NYK",
+    "predicted_name": "New York Knicks",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 2.2,
-    "tool": "cap room",
-    "reason": "depth piece over Kelly Olynyk (3.2 vs 4.1) \u00b7 title",
+    "offer_M": 2.8,
+    "tool": "taxpayer MLE",
+    "reason": "depth piece over Jeremy Sochan (3.0 vs 4.1) \u00b7 title",
     "alts": [
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 2.8,
+      "team": "SAS",
+      "team_name": "San Antonio Spurs",
+      "offer_M": 2.2,
       "tool": "mid-level exception"
      }
     ]
@@ -3932,25 +4101,25 @@
     ]
    },
    "realistic": {
-    "predicted": "DEN",
-    "predicted_name": "Denver Nuggets",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 4.4,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "DAL",
+    "predicted_name": "Dallas Mavericks",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 3.4,
+    "tool": "cap room",
+    "reason": "rotation piece over Klay Thompson (7.0 vs 9.3) \u00b7 retooling",
     "alts": [
+     {
+      "team": "DEN",
+      "team_name": "Denver Nuggets",
+      "offer_M": 4.4,
+      "tool": "Bird rights"
+     },
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
       "offer_M": 4.0,
       "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 2.7,
-      "tool": "mid-level exception"
      }
     ]
    }
@@ -3988,25 +4157,25 @@
     ]
    },
    "realistic": {
-    "predicted": "NYK",
-    "predicted_name": "New York Knicks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 4.3,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "LAL",
+    "predicted_name": "Los Angeles Lakers",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.1,
+    "tool": "minimum",
+    "reason": "depth piece over Nick Smith Jr. (3.7 vs 4.9) \u00b7 title",
     "alts": [
+     {
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 4.3,
+      "tool": "Bird rights"
+     },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 2.1,
-      "tool": "cap room"
-     },
-     {
-      "team": "BOS",
-      "team_name": "Boston Celtics",
-      "offer_M": 2.7,
-      "tool": "mid-level exception"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -4044,25 +4213,25 @@
     ]
    },
    "realistic": {
-    "predicted": "OKC",
-    "predicted_name": "Oklahoma City Thunder",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 4.3,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "LAL",
+    "predicted_name": "Los Angeles Lakers",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.1,
+    "tool": "minimum",
+    "reason": "depth piece over Jarred Vanderbilt (5.6 vs 6.2) \u00b7 title",
     "alts": [
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 2.7,
-      "tool": "cap room"
+      "team": "OKC",
+      "team_name": "Oklahoma City Thunder",
+      "offer_M": 4.3,
+      "tool": "Bird rights"
      },
      {
       "team": "NYK",
       "team_name": "New York Knicks",
       "offer_M": 2.7,
-      "tool": "mid-level exception"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -4105,7 +4274,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 4.3,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
      {
@@ -4156,25 +4325,25 @@
     ]
    },
    "realistic": {
-    "predicted": "LAC",
-    "predicted_name": "LA Clippers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 4.1,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
+    "predicted": "LAL",
+    "predicted_name": "Los Angeles Lakers",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.0,
+    "tool": "minimum",
+    "reason": "depth piece over Drew Timme (3.8 vs 5.3) \u00b7 title",
     "alts": [
+     {
+      "team": "LAC",
+      "team_name": "LA Clippers",
+      "offer_M": 4.1,
+      "tool": "Bird rights"
+     },
      {
       "team": "NYK",
       "team_name": "New York Knicks",
       "offer_M": 2.5,
-      "tool": "mid-level exception"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 2.0,
-      "tool": "cap room"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -4215,24 +4384,11 @@
     "predicted": "CLE",
     "predicted_name": "Cleveland Cavaliers",
     "is_resign": true,
-    "confidence": "High",
-    "offer_M": 4.1,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
-    "alts": [
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 3.2,
-      "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 3.2,
-      "tool": "mid-level exception"
-     }
-    ]
+    "confidence": "Low",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
+    "alts": []
    }
   },
   {
@@ -4260,9 +4416,16 @@
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.0,
-    "tool": "cap room",
+    "tool": "minimum",
     "reason": "depth piece over Jae'Sean Tate (1.9 vs 1.9) \u00b7 title",
-    "alts": []
+    "alts": [
+     {
+      "team": "HOU",
+      "team_name": "Houston Rockets",
+      "offer_M": 2.0,
+      "tool": "mid-level exception"
+     }
+    ]
    }
   },
   {
@@ -4354,24 +4517,24 @@
     ]
    },
    "realistic": {
-    "predicted": "DEN",
-    "predicted_name": "Denver Nuggets",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 4.0,
-    "tool": "Bird rights",
-    "reason": "can match any offer (restricted FA) \u00b7 title",
+    "predicted": "CHA",
+    "predicted_name": "Charlotte Hornets",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.0,
+    "tool": "minimum",
+    "reason": "depth piece over Tidjane Sala\u00fcn (6.2 vs 7.4) \u00b7 retooling",
     "alts": [
+     {
+      "team": "DEN",
+      "team_name": "Denver Nuggets",
+      "offer_M": 4.0,
+      "tool": "Bird rights"
+     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
       "offer_M": 3.1,
-      "tool": "cap room"
-     },
-     {
-      "team": "MIA",
-      "team_name": "Miami Heat",
-      "offer_M": 2.0,
       "tool": "cap room"
      }
     ]
@@ -4415,7 +4578,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 4.0,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
@@ -4466,25 +4629,25 @@
     ]
    },
    "realistic": {
-    "predicted": "PHI",
-    "predicted_name": "Philadelphia 76ers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 4.0,
-    "tool": "Bird rights",
-    "reason": "can match any offer (restricted FA) \u00b7 title",
+    "predicted": "BOS",
+    "predicted_name": "Boston Celtics",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.5,
+    "tool": "mid-level exception",
+    "reason": "fills an open spot at the position \u00b7 title",
     "alts": [
+     {
+      "team": "PHI",
+      "team_name": "Philadelphia 76ers",
+      "offer_M": 4.0,
+      "tool": "Bird rights"
+     },
      {
       "team": "TOR",
       "team_name": "Toronto Raptors",
       "offer_M": 2.5,
       "tool": "mid-level exception"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 2.0,
-      "tool": "cap room"
      }
     ]
    }
@@ -4578,25 +4741,25 @@
     ]
    },
    "realistic": {
-    "predicted": "DAL",
-    "predicted_name": "Dallas Mavericks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.9,
-    "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
+    "predicted": "SAS",
+    "predicted_name": "San Antonio Spurs",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 3.0,
+    "tool": "mid-level exception",
+    "reason": "rotation piece over Kelly Olynyk (3.2 vs 5.9) \u00b7 title",
     "alts": [
+     {
+      "team": "DAL",
+      "team_name": "Dallas Mavericks",
+      "offer_M": 3.9,
+      "tool": "cap room"
+     },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 3.0,
-      "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 3.0,
-      "tool": "mid-level exception"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -4634,25 +4797,25 @@
     ]
    },
    "realistic": {
-    "predicted": "UTA",
-    "predicted_name": "Utah Jazz",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.9,
-    "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
+    "predicted": "DEN",
+    "predicted_name": "Denver Nuggets",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.4,
+    "tool": "taxpayer MLE",
+    "reason": "depth piece over DaRon Holmes II (4.0 vs 6.0) \u00b7 title",
     "alts": [
+     {
+      "team": "UTA",
+      "team_name": "Utah Jazz",
+      "offer_M": 3.9,
+      "tool": "Bird rights"
+     },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 2.4,
-      "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 2.4,
-      "tool": "mid-level exception"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -4746,25 +4909,25 @@
     ]
    },
    "realistic": {
-    "predicted": "MIN",
-    "predicted_name": "Minnesota Timberwolves",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.9,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "DET",
+    "predicted_name": "Detroit Pistons",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 3.0,
+    "tool": "taxpayer MLE",
+    "reason": "rotation piece over Marcus Sasser (3.8 vs 5.3) \u00b7 title",
     "alts": [
+     {
+      "team": "MIN",
+      "team_name": "Minnesota Timberwolves",
+      "offer_M": 3.9,
+      "tool": "Bird rights"
+     },
      {
       "team": "NYK",
       "team_name": "New York Knicks",
       "offer_M": 2.4,
-      "tool": "mid-level exception"
-     },
-     {
-      "team": "BOS",
-      "team_name": "Boston Celtics",
-      "offer_M": 3.0,
-      "tool": "mid-level exception"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -4861,24 +5024,11 @@
     "predicted": "DEN",
     "predicted_name": "Denver Nuggets",
     "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.9,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
-    "alts": [
-     {
-      "team": "TOR",
-      "team_name": "Toronto Raptors",
-      "offer_M": 3.0,
-      "tool": "mid-level exception"
-     },
-     {
-      "team": "DAL",
-      "team_name": "Dallas Mavericks",
-      "offer_M": 3.0,
-      "tool": "cap room"
-     }
-    ]
+    "confidence": "Low",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
+    "alts": []
    }
   },
   {
@@ -4914,24 +5064,24 @@
     ]
    },
    "realistic": {
-    "predicted": "MEM",
-    "predicted_name": "Memphis Grizzlies",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.8,
-    "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
+    "predicted": "SAC",
+    "predicted_name": "Sacramento Kings",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 3.0,
+    "tool": "taxpayer MLE",
+    "reason": "rotation piece over Nique Clifford (10.0 vs 10.6) \u00b7 rebuild",
     "alts": [
+     {
+      "team": "MEM",
+      "team_name": "Memphis Grizzlies",
+      "offer_M": 3.8,
+      "tool": "Bird rights"
+     },
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
       "offer_M": 3.4,
-      "tool": "cap room"
-     },
-     {
-      "team": "LAC",
-      "team_name": "LA Clippers",
-      "offer_M": 2.4,
       "tool": "cap room"
      }
     ]
@@ -4961,9 +5111,9 @@
     "predicted_name": "Milwaukee Bucks",
     "is_resign": true,
     "confidence": "Low",
-    "offer_M": 3.5,
+    "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "no external market \u2014 likely back on a minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -5005,20 +5155,20 @@
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 1.8,
-    "tool": "mid-level exception",
+    "tool": "minimum",
     "reason": "depth piece over Jeremy Sochan (3.0 vs 3.5) \u00b7 title",
     "alts": [
+     {
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 1.8,
+      "tool": "taxpayer MLE"
+     },
      {
       "team": "HOU",
       "team_name": "Houston Rockets",
       "offer_M": 1.8,
-      "tool": "cap room"
-     },
-     {
-      "team": "SAS",
-      "team_name": "San Antonio Spurs",
-      "offer_M": 1.8,
-      "tool": "cap room"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -5056,25 +5206,25 @@
     ]
    },
    "realistic": {
-    "predicted": "ORL",
-    "predicted_name": "Orlando Magic",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.5,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
+    "predicted": "TOR",
+    "predicted_name": "Toronto Raptors",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.2,
+    "tool": "minimum",
+    "reason": "depth piece over Gradey Dick (3.4 vs 4.5) \u00b7 playoff",
     "alts": [
+     {
+      "team": "ORL",
+      "team_name": "Orlando Magic",
+      "offer_M": 3.5,
+      "tool": "Bird rights"
+     },
      {
       "team": "TOR",
       "team_name": "Toronto Raptors",
       "offer_M": 2.2,
       "tool": "mid-level exception"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 1.8,
-      "tool": "cap room"
      }
     ]
    }
@@ -5158,10 +5308,10 @@
     "predicted": "HOU",
     "predicted_name": "Houston Rockets",
     "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.5,
-    "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "confidence": "Low",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -5198,25 +5348,25 @@
     ]
    },
    "realistic": {
-    "predicted": "HOU",
-    "predicted_name": "Houston Rockets",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.5,
-    "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "TOR",
+    "predicted_name": "Toronto Raptors",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.2,
+    "tool": "minimum",
+    "reason": "depth piece over Gradey Dick (3.4 vs 3.8) \u00b7 playoff",
     "alts": [
+     {
+      "team": "HOU",
+      "team_name": "Houston Rockets",
+      "offer_M": 3.5,
+      "tool": "Bird rights"
+     },
      {
       "team": "TOR",
       "team_name": "Toronto Raptors",
       "offer_M": 2.2,
       "tool": "mid-level exception"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 1.8,
-      "tool": "cap room"
      }
     ]
    }
@@ -5245,9 +5395,9 @@
     "predicted_name": "Minnesota Timberwolves",
     "is_resign": true,
     "confidence": "Low",
-    "offer_M": 3.3,
+    "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "no external market \u2014 likely back on a minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -5289,7 +5439,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 3.3,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
      {
@@ -5340,25 +5490,25 @@
     ]
    },
    "realistic": {
-    "predicted": "NYK",
-    "predicted_name": "New York Knicks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.2,
-    "tool": "Bird rights",
-    "reason": "can match any offer (restricted FA) \u00b7 title",
+    "predicted": "CHA",
+    "predicted_name": "Charlotte Hornets",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 1.6,
+    "tool": "minimum",
+    "reason": "depth piece over Antonio Reeves (2.5 vs 2.7) \u00b7 retooling",
     "alts": [
+     {
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 3.2,
+      "tool": "Bird rights"
+     },
      {
       "team": "CHA",
       "team_name": "Charlotte Hornets",
       "offer_M": 1.6,
-      "tool": "cap room"
-     },
-     {
-      "team": "PHX",
-      "team_name": "Phoenix Suns",
-      "offer_M": 1.6,
-      "tool": "cap room"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -5396,25 +5546,25 @@
     ]
    },
    "realistic": {
-    "predicted": "MEM",
-    "predicted_name": "Memphis Grizzlies",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.2,
-    "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
+    "predicted": "WAS",
+    "predicted_name": "Washington Wizards",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 2.5,
+    "tool": "mid-level exception",
+    "reason": "rotation piece over Julian Reese (9.3 vs 9.5) \u00b7 retooling",
     "alts": [
+     {
+      "team": "MEM",
+      "team_name": "Memphis Grizzlies",
+      "offer_M": 3.2,
+      "tool": "Bird rights"
+     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
       "offer_M": 2.5,
       "tool": "cap room"
-     },
-     {
-      "team": "WAS",
-      "team_name": "Washington Wizards",
-      "offer_M": 2.5,
-      "tool": "mid-level exception"
      }
     ]
    }
@@ -5467,9 +5617,9 @@
       "tool": "mid-level exception"
      },
      {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 1.6,
+      "team": "HOU",
+      "team_name": "Houston Rockets",
+      "offer_M": 1.9,
       "tool": "cap room"
      }
     ]
@@ -5513,7 +5663,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 3.1,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
@@ -5567,24 +5717,11 @@
     "predicted": "SAC",
     "predicted_name": "Sacramento Kings",
     "is_resign": true,
-    "confidence": "High",
-    "offer_M": 3.1,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
-    "alts": [
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 2.4,
-      "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 2.4,
-      "tool": "mid-level exception"
-     }
-    ]
+    "confidence": "Low",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
+    "alts": []
    }
   },
   {
@@ -5625,7 +5762,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 3.1,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
@@ -5681,7 +5818,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 2.9,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
@@ -5732,25 +5869,25 @@
     ]
    },
    "realistic": {
-    "predicted": "ATL",
-    "predicted_name": "Atlanta Hawks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 2.9,
-    "tool": "cap room",
-    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
+    "predicted": "BOS",
+    "predicted_name": "Boston Celtics",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 1.8,
+    "tool": "minimum",
+    "reason": "fills an open spot at the position \u00b7 title",
     "alts": [
+     {
+      "team": "ATL",
+      "team_name": "Atlanta Hawks",
+      "offer_M": 2.9,
+      "tool": "Bird rights"
+     },
      {
       "team": "BOS",
       "team_name": "Boston Celtics",
       "offer_M": 1.8,
       "tool": "mid-level exception"
-     },
-     {
-      "team": "DAL",
-      "team_name": "Dallas Mavericks",
-      "offer_M": 1.4,
-      "tool": "cap room"
      }
     ]
    }
@@ -5793,7 +5930,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 2.9,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
@@ -5900,25 +6037,25 @@
     ]
    },
    "realistic": {
-    "predicted": "DEN",
-    "predicted_name": "Denver Nuggets",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 2.8,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "predicted": "TOR",
+    "predicted_name": "Toronto Raptors",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 1.7,
+    "tool": "mid-level exception",
+    "reason": "depth piece over Gradey Dick (3.4 vs 3.4) \u00b7 playoff",
     "alts": [
      {
-      "team": "TOR",
-      "team_name": "Toronto Raptors",
-      "offer_M": 1.7,
-      "tool": "mid-level exception"
+      "team": "DEN",
+      "team_name": "Denver Nuggets",
+      "offer_M": 2.8,
+      "tool": "Bird rights"
      },
      {
-      "team": "DAL",
-      "team_name": "Dallas Mavericks",
-      "offer_M": 1.7,
-      "tool": "cap room"
+      "team": "LAC",
+      "team_name": "LA Clippers",
+      "offer_M": 1.4,
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -5961,20 +6098,20 @@
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 1.4,
-    "tool": "mid-level exception",
+    "tool": "minimum",
     "reason": "depth piece over Jeremy Sochan (3.0 vs 4.4) \u00b7 title",
     "alts": [
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 1.4,
-      "tool": "cap room"
+      "tool": "taxpayer MLE"
      },
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
+      "team": "NYK",
+      "team_name": "New York Knicks",
       "offer_M": 1.4,
-      "tool": "cap room"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -6017,7 +6154,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 2.8,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
      {
@@ -6073,7 +6210,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 2.6,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "can match any offer (restricted FA) \u00b7 retooling",
     "alts": [
      {
@@ -6115,9 +6252,9 @@
     "predicted_name": "Philadelphia 76ers",
     "is_resign": true,
     "confidence": "Low",
-    "offer_M": 2.6,
+    "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "no external market \u2014 likely back on a minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -6154,27 +6291,14 @@
     ]
    },
    "realistic": {
-    "predicted": "BKN",
-    "predicted_name": "Brooklyn Nets",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 2.0,
-    "tool": "cap room",
-    "reason": "rotation piece over Nolan Traore (6.3 vs 6.8) \u00b7 rebuild",
-    "alts": [
-     {
-      "team": "HOU",
-      "team_name": "Houston Rockets",
-      "offer_M": 2.0,
-      "tool": "cap room"
-     },
-     {
-      "team": "ORL",
-      "team_name": "Orlando Magic",
-      "offer_M": 1.6,
-      "tool": "taxpayer MLE"
-     }
-    ]
+    "predicted": "GSW",
+    "predicted_name": "Golden State Warriors",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 2.5,
+    "reason": "re-signs (Team Builder plan)",
+    "alts": [],
+    "tool": "Bird rights"
    }
   },
   {
@@ -6201,9 +6325,9 @@
     "predicted_name": "Memphis Grizzlies",
     "is_resign": true,
     "confidence": "Low",
-    "offer_M": 2.5,
+    "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "no external market \u2014 likely back on a minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -6231,9 +6355,9 @@
     "predicted_name": "Memphis Grizzlies",
     "is_resign": true,
     "confidence": "Low",
-    "offer_M": 2.4,
+    "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "no external market \u2014 likely back on a minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -6275,7 +6399,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 2.3,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
@@ -6326,27 +6450,14 @@
     ]
    },
    "realistic": {
-    "predicted": "LAC",
-    "predicted_name": "LA Clippers",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 1.1,
-    "tool": "cap room",
-    "reason": "depth piece over Kobe Sanders (Team Option, 7.0 vs 7.3) \u00b7 rebuild",
-    "alts": [
-     {
-      "team": "POR",
-      "team_name": "Portland Trail Blazers",
-      "offer_M": 1.1,
-      "tool": "cap room"
-     },
-     {
-      "team": "HOU",
-      "team_name": "Houston Rockets",
-      "offer_M": 1.1,
-      "tool": "cap room"
-     }
-    ]
+    "predicted": "WAS",
+    "predicted_name": "Washington Wizards",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 2.2,
+    "reason": "re-signs (Team Builder plan)",
+    "alts": [],
+    "tool": "Bird rights"
    }
   },
   {
@@ -6387,7 +6498,7 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 2.2,
-    "tool": "cap room",
+    "tool": "Bird rights",
     "reason": "can match any offer (restricted FA) \u00b7 playoff",
     "alts": [
      {
@@ -6438,13 +6549,13 @@
     ]
    },
    "realistic": {
-    "predicted": "LAC",
-    "predicted_name": "LA Clippers",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 1.7,
-    "tool": "cap room",
-    "reason": "rotation piece over Bradley Beal (2.9 vs 6.7) \u00b7 rebuild",
+    "predicted": "DAL",
+    "predicted_name": "Dallas Mavericks",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 2.2,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
      {
       "team": "BKN",
@@ -6453,9 +6564,9 @@
       "tool": "cap room"
      },
      {
-      "team": "DAL",
-      "team_name": "Dallas Mavericks",
-      "offer_M": 2.2,
+      "team": "LAC",
+      "team_name": "LA Clippers",
+      "offer_M": 1.7,
       "tool": "cap room"
      }
     ]
@@ -6499,20 +6610,20 @@
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 1.1,
-    "tool": "mid-level exception",
+    "tool": "minimum",
     "reason": "depth piece over Jose Alvarado (7.6 vs 7.9) \u00b7 title",
     "alts": [
+     {
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 1.1,
+      "tool": "taxpayer MLE"
+     },
      {
       "team": "LAC",
       "team_name": "LA Clippers",
       "offer_M": 1.1,
-      "tool": "cap room"
-     },
-     {
-      "team": "HOU",
-      "team_name": "Houston Rockets",
-      "offer_M": 1.1,
-      "tool": "cap room"
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -6543,7 +6654,7 @@
     "confidence": "Low",
     "offer_M": 2.2,
     "tool": "minimum",
-    "reason": "no external market \u2014 likely back on a minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -6573,7 +6684,7 @@
     "confidence": "Low",
     "offer_M": 2.2,
     "tool": "minimum",
-    "reason": "no external market \u2014 likely back on a minimum",
+    "reason": "no fit on the open market \u2014 likely a minimum deal",
     "alts": []
    }
   },
@@ -6610,24 +6721,24 @@
     ]
    },
    "realistic": {
-    "predicted": "DAL",
-    "predicted_name": "Dallas Mavericks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 2.2,
-    "tool": "cap room",
-    "reason": "can match any offer (restricted FA) \u00b7 retooling",
+    "predicted": "CHI",
+    "predicted_name": "Chicago Bulls",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 1.7,
+    "tool": "minimum",
+    "reason": "rotation piece over Nick Richards (UFA, 4.6 vs 6.2) \u00b7 rebuild",
     "alts": [
+     {
+      "team": "DAL",
+      "team_name": "Dallas Mavericks",
+      "offer_M": 2.2,
+      "tool": "cap room"
+     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
       "offer_M": 1.7,
-      "tool": "cap room"
-     },
-     {
-      "team": "LAC",
-      "team_name": "LA Clippers",
-      "offer_M": 1.4,
       "tool": "cap room"
      }
     ]
@@ -6666,25 +6777,25 @@
     ]
    },
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
+    "predicted": "HOU",
+    "predicted_name": "Houston Rockets",
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 1.1,
-    "tool": "cap room",
-    "reason": "depth piece over Patrick Williams (5.2 vs 6.0) \u00b7 rebuild",
+    "tool": "minimum",
+    "reason": "depth piece over Clint Capela (5.5 vs 6.0) \u00b7 title",
     "alts": [
      {
       "team": "NYK",
       "team_name": "New York Knicks",
       "offer_M": 1.4,
-      "tool": "mid-level exception"
+      "tool": "taxpayer MLE"
      },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
       "offer_M": 1.1,
-      "tool": "cap room"
+      "tool": "taxpayer MLE"
      }
     ]
    }

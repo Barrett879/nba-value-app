@@ -598,9 +598,47 @@ print(f"\nwrote {OUT.relative_to(ROOT)}  ({len(boards)} teams)")
 #               scripts/backtest_fa_sim.py for the measured number.
 print("\nsimulating free-agency destinations (likely + realistic) ...")
 SIM_OUT = ROOT / "cache" / "fa_sim_v1.json"
-REALISTIC_UFA_INC_W = 1.0                               # softened re-sign pull for UFAs (hand-only)
+MAX_REAL_ADDS = 4                                      # a team signs ~3-4 outside FAs in one summer
+MIN_M = 2.3
+CAP = ns["SALARY_CAP_M"].get(CONTRACT, 165.0)
 _TEAMNAME = dict(zip(LAND["team"].astype(str), LAND["team_name"].astype(str)))
 _FA_STATUS = {normalize(c["name"]): c["status"] for c in cands}
+
+# ── Team Builder-derived REAL cap state (the key to money-coherent realism) ───
+# Each team's actual room for OUTSIDE free agents, after the board's own re-signs
+# and draft picks: real cap room if it has any, else one mid-level, capped at the
+# apron it lands in. Built from the board (committed payroll + resign_cost + picks)
+# so the realistic mode can't, say, have a capped-out Lakers add $40M while also
+# keeping its stars. `LAND_REAL` feeds rank_suitors so external offers + tool
+# labels reflect THIS, not the theoretical "renounce everyone" cap room in LAND.
+_board_resigns = {normalize(m["name"]) for b in boards.values()
+                  for m in b.get("plan", []) if m.get("kind") == "resign"}
+
+
+def _real_state(b):
+    pick_cost = sum(m["cost_M"] for m in b.get("plan", []) if m.get("kind") == "pick")
+    base = b["committed_M"] + b["resign_cost_M"] + pick_cost
+    ap1, ap2, exc = b["apron1_M"], b["apron2_M"], b["exception_M"]
+    real_cap = max(0.0, CAP - base)
+    if real_cap >= 8:
+        cap_b, mle_b, hard = real_cap, exc, ap1        # cap room (+ room exception)
+    elif base >= ap2:
+        cap_b, mle_b, hard = 0.0, 0.0, ap2             # over the 2nd apron: minimums only
+    elif base >= ap1:
+        cap_b, mle_b, hard = 0.0, 6.0, ap2             # over the 1st apron: taxpayer MLE
+    else:
+        cap_b, mle_b, hard = 0.0, exc, ap1             # under the cap: full mid-level
+    return cap_b, mle_b, max(0.0, round(hard) - base)
+
+
+budget, _capcol, _exccol = {}, {}, {}
+for tm, b in boards.items():
+    cap_b, mle_b, aroom = _real_state(b)
+    budget[tm] = {"cap": cap_b, "mle": mle_b, "mle_used": False, "apron_room": aroom}
+    _capcol[tm], _exccol[tm] = cap_b, mle_b
+LAND_REAL = LAND.copy()
+LAND_REAL["cap_space_M"] = LAND_REAL["team"].astype(str).map(_capcol).fillna(LAND_REAL["cap_space_M"])
+LAND_REAL["exception_M"] = LAND_REAL["team"].astype(str).map(_exccol).fillna(LAND_REAL["exception_M"])
 
 
 def _conf(entry, c):
@@ -626,52 +664,63 @@ def _pick(entry, board, c):
                      for d in board if d is not entry][:2]}
 
 
-# Pass 1 — score every FA both ways. "likely" = top of the GBM-blended board.
-# "realistic" boards for UFAs use the hand-only, soft-incumbent ranking (computed
-# now, cleared below); RFAs/options reuse the sticky board.
+# Pass 1 — score every FA two ways. "likely" board uses the production landscape
+# (theoretical cap room) + GBM blend = the accuracy-max per-player pick. "realistic"
+# board ranks OUTSIDE suitors against LAND_REAL (real post-re-sign cap room + real
+# exceptions) with the GBM dropped, so external offers + tools are money-true.
 prelim = []
 for c in cands:
-    is_rfa = (c["status"] == "RFA")
-    args = dict(landscape=LAND, n=6, incumbent_team=c["team"], age=c["age"],
-                is_rfa=is_rfa, fa_status=_FA_STATUS)
-    b_like = ts.rank_suitors(c["value_M"], c["barrett"], c["pos"], ROST, **args)
-    if c["status"] == "UFA":
-        b_real = ts.rank_suitors(c["value_M"], c["barrett"], c["pos"], ROST,
-                                 incumbent_weight=REALISTIC_UFA_INC_W, blend_dest=False, **args)
-    else:
-        b_real = b_like
+    args = dict(n=6, incumbent_team=c["team"], age=c["age"],
+                is_rfa=(c["status"] == "RFA"), fa_status=_FA_STATUS)
+    b_like = ts.rank_suitors(c["value_M"], c["barrett"], c["pos"], ROST, landscape=LAND, **args)
+    b_real = ts.rank_suitors(c["value_M"], c["barrett"], c["pos"], ROST,
+                             landscape=LAND_REAL, blend_dest=False, **args)
     prelim.append({"c": c, "b_like": b_like, "b_real": b_real,
                    "likely": _pick(b_like[0] if b_like else None, b_like, c)})
 
-# Pass 2 — light market-clear for the REALISTIC mode only, so the cap-room teams
-# don't sign every UFA. Walk UFAs best-first; a cap-room team can keep signing
-# until its room runs out, then it drops out and later FAs fall to their next
-# option (often a re-sign). This is deliberately NOT applied to "likely" (that
-# mode is the validated accuracy-max pick; market-clearing hurt its accuracy).
-MAX_REAL_ADDS = 4                                      # a team signs ~3-4 outside FAs in one summer
-_caproom = dict(zip(LAND["team"].astype(str), LAND["cap_space_M"].astype(float)))
-cap_left = dict(_caproom); mle_used = {t: False for t in _caproom}; adds = {}
+# Pass 2 — REALISTIC mode, made cap-coherent with the Team Builder. Two rules:
+#   (1) Re-signs come straight from each team's Team Builder plan (the cost-
+#       effective keepers it can actually fit under the apron). So if the board
+#       only re-signs 5 Lakers, the sim shows 5 — not 7 over the 2nd apron.
+#   (2) External adds are bounded by each team's REAL post-re-sign budget from
+#       the board (committed payroll + those re-signs + draft picks -> real cap
+#       room, or just the mid-level if over the cap, hard-capped at the apron) —
+#       not the theoretical "renounce everyone" cap room. So a capped-out team
+#       can't add $40M of outside players while keeping its own stars.
+# (Likely mode is untouched: it's the per-player accuracy-max pick.)
+adds = {}
 real_by_name = {}
 for item in sorted(prelim, key=lambda x: -x["c"]["value_M"]):
-    c = item["c"]
-    if c["status"] != "UFA":                           # sticky bucket -> same as likely
-        real_by_name[c["name"]] = item["likely"]; continue
-    chosen = None
+    c = item["c"]; nm = normalize(c["name"])
+    if nm in _board_resigns:                           # Team Builder keeps him -> re-sign (cap-coherent)
+        inc = next((d for d in item["b_like"] if d["is_incumbent"]), None)
+        rp = (_pick(inc, item["b_like"], c) if inc else {
+            "predicted": c["team"], "predicted_name": _TEAMNAME.get(c["team"], c["team"]),
+            "is_resign": True, "confidence": "High", "offer_M": c["value_M"],
+            "reason": "re-signs (Team Builder plan)", "alts": []})
+        rp["tool"] = "Bird rights"                     # re-sign their own, not via cap room
+        real_by_name[c["name"]] = rp
+        continue
+    chosen = None                                      # otherwise: best feasible OUTSIDE team
     for d in item["b_real"]:
-        t = d["team"]
-        if d["is_incumbent"]:                          # re-sign always available (Bird)
-            chosen = d; break
-        if adds.get(t, 0) >= MAX_REAL_ADDS:            # team's outside-signing slots are full
+        if d["is_incumbent"]:                          # board let him walk -> not a re-sign here
             continue
-        if d["tool"] == "cap room":
-            if cap_left.get(t, 0.0) + 1e-6 >= d["offer_M"]:
-                cap_left[t] -= d["offer_M"]; adds[t] = adds.get(t, 0) + 1; chosen = d; break
-        elif "exception" in d["tool"] or "MLE" in d["tool"]:   # one mid-level per team
-            if not mle_used.get(t, False):
-                mle_used[t] = True; adds[t] = adds.get(t, 0) + 1; chosen = d; break
-        else:                                          # minimum — always available
-            adds[t] = adds.get(t, 0) + 1; chosen = d; break
-    real_by_name[c["name"]] = _pick(chosen, item["b_real"], c)
+        t = d["team"]; o = d["offer_M"]; bud = budget.get(t)
+        if not bud or adds.get(t, 0) >= MAX_REAL_ADDS:
+            continue
+        if bud["cap"] + 1e-6 >= o and bud["apron_room"] + 1e-6 >= o:        # cap room
+            bud["cap"] -= o; bud["apron_room"] -= o; adds[t] = adds.get(t, 0) + 1; chosen = d; break
+        if (not bud["mle_used"]) and bud["mle"] + 1e-6 >= o and bud["apron_room"] + 1e-6 >= o:  # one MLE
+            bud["mle_used"] = True; bud["apron_room"] -= o; adds[t] = adds.get(t, 0) + 1; chosen = d; break
+        if o <= MIN_M + 1e-6:                          # veteran minimum (apron-exempt)
+            adds[t] = adds.get(t, 0) + 1; chosen = {**d, "tool": "minimum"}; break
+    if chosen:
+        real_by_name[c["name"]] = _pick(chosen, item["b_real"], c)
+    else:                                              # no fit anywhere -> a minimum deal
+        real_by_name[c["name"]] = {
+            "predicted": c["team"], "predicted_name": _TEAMNAME.get(c["team"], c["team"]),
+            "is_resign": True, "confidence": "Low", "offer_M": round(min(c["value_M"], MIN_M), 1),
+            "tool": "minimum", "reason": "no fit on the open market — likely a minimum deal", "alts": []}
 
 sim_players = []
 for item in prelim:
@@ -683,6 +732,24 @@ for item in prelim:
         "likely": item["likely"], "realistic": real_by_name[c["name"]],
     })
 sim_players.sort(key=lambda p: -p["value_M"])          # stars first
+
+
+def _room_label(bud):
+    if bud["cap"] >= 8:    return f"${round(bud['cap'])}M cap room"
+    if bud["mle"] >= 15:   return "full mid-level"
+    if bud["mle"] >= 6:    return "taxpayer mid-level"
+    if bud["mle"] > 0:     return "mid-level"
+    return "minimums only"
+
+
+# Per-team cap context (Team Builder data) so the by-team view can SHOW that the
+# projected signings actually fit: guaranteed payroll, the re-sign bill, and the
+# real room left for outside FAs.
+sim_teams = {tm: {"name": _TEAMNAME.get(tm, tm),
+                  "committed_M": round(b["committed_M"]),
+                  "resign_cost_M": round(b["resign_cost_M"]),
+                  "room": _room_label(budget[tm])}
+             for tm, b in boards.items()}
 SIM_OUT.write_text(json.dumps({
     "season": CUR, "contract_season": CONTRACT,
     "cap_M": ns["SALARY_CAP_M"].get(CONTRACT, 165.0),
@@ -693,6 +760,7 @@ SIM_OUT.write_text(json.dumps({
         "realistic": {"top1_recent": None, "top5_recent": None, "top1_all": None},
         "note": "single best-guess via the suitor engine; re-signs reliable, team changes noisy",
     },
+    "teams": sim_teams,
     "players": sim_players,
 }, indent=1))
 _rl = sum(1 for p in sim_players if p["likely"]["is_resign"])

@@ -43,6 +43,7 @@ if not _SIM.exists():
 DATA = json.loads(_SIM.read_text())
 PLAYERS = DATA.get("players", [])
 ACC = DATA.get("accuracy", {})
+TEAMS = DATA.get("teams", {})
 CONTRACT = DATA.get("contract_season", "2026-27")
 
 _CONF_COLOR = {"High": "var(--value-good)", "Medium": "var(--orange)", "Low": "var(--fg-4)"}
@@ -164,6 +165,14 @@ def _team_view(rows):
         adds = [p for p in grp if not pick(p)["is_resign"]]
         keeps = [p for p in grp if pick(p)["is_resign"]]
         with st.expander(f"{name}  —  {len(adds)} add, {len(keeps)} re-sign", expanded=False):
+            ctx = TEAMS.get(tm)
+            if ctx:
+                st.markdown(
+                    f"<div style='color:var(--fg-5);font-size:0.78rem;margin:-0.2rem 0 0.5rem'>"
+                    f"Guaranteed payroll <b style='color:var(--fg-3)'>${ctx['committed_M']}M</b> "
+                    f"&middot; re-signs <b style='color:var(--fg-3)'>${ctx['resign_cost_M']}M</b> "
+                    f"&middot; room for outside FAs: <b style='color:var(--fg-3)'>{_h.escape(ctx['room'])}</b></div>",
+                    unsafe_allow_html=True)
             for p in grp:
                 pk = pick(p)
                 tag = (_chip("re-sign", "var(--value-good)") if pk["is_resign"]
