@@ -83,24 +83,29 @@ def _cap_bar_html(committed, cap, tax, apron2, after, apron1=None):
     cw, aw = p(committed), p(after)
     seg_now = (f"<div style='position:absolute;left:0;width:{cw:.1f}%;top:0;bottom:0;border-radius:7px 0 0 7px;"
                f"background:linear-gradient(90deg,rgba(22,212,193,.32),rgba(22,212,193,.6));'></div>")
-    def tick(v, label, color, drop=0):
-        # `drop` pushes the label onto a lower row so neighbouring ticks (tax /
-        # 1st apron / 2nd apron are bunched together) don't overlap.
+    def tick(v, label, color, row=0):
+        # Every tick hangs BELOW the bar: a short connector line drops from the
+        # bar's lower edge down to its label. The tax / apron lines bunch up, so
+        # the 1st apron uses a second (lower) row to keep its label from colliding.
         x = p(v)
-        return (f"<div style='position:absolute;left:{x:.1f}%;top:-4px;bottom:{18 - drop}px;width:2px;background:{color};'></div>"
-                f"<div style='position:absolute;left:{x:.1f}%;bottom:{-1 - drop}px;transform:translateX(-50%);font-size:0.6rem;"
+        line_h, lab_top = (6, 22) if row == 0 else (20, 36)
+        return (f"<div style='position:absolute;left:{x:.1f}%;top:14px;height:{line_h}px;width:2px;"
+                f"background:{color};transform:translateX(-50%);'></div>"
+                f"<div style='position:absolute;left:{x:.1f}%;top:{lab_top}px;transform:translateX(-50%);font-size:0.6rem;"
                 f"line-height:1.1;color:var(--fg-5);white-space:nowrap;text-align:center;'>{label}"
                 f"<br><b style='color:var(--fg-3)'>${v:.0f}M</b></div>")
     ticks = tick(cap, "Cap", "var(--hairline)") + tick(tax, "Tax", "var(--orange)")
     if apron1:
-        ticks += tick(apron1, "1st apron", "var(--orange)", drop=22)   # lower row, avoids overlap
+        ticks += tick(apron1, "1st apron", "var(--orange)", row=1)   # lower row, avoids overlap
     ticks += tick(apron2, "2nd apron", "var(--value-bad)")
-    amark = (f"<div style='position:absolute;left:{aw:.1f}%;top:-7px;width:3px;height:28px;border-radius:2px;"
+    # Projected-payroll marker sits ON the bar (flush with the top, a small nub
+    # below) so nothing rises above the bar line.
+    amark = (f"<div style='position:absolute;left:{aw:.1f}%;top:0;width:3px;height:19px;border-radius:2px;"
              f"background:var(--fg-1);transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.35);'></div>")
     legend = ("<div style='display:flex;gap:1.1rem;font-size:0.68rem;color:var(--fg-4);margin-bottom:0.5rem;'>"
               "<span><span style='color:var(--accent-teal)'>&#9632;</span> guaranteed payroll</span>"
               "<span><span style='color:var(--fg-1)'>&#9612;</span> projected payroll after the offseason</span></div>")
-    return (f"<div style='margin:0.2rem 0 3.6rem;'>{legend}"
+    return (f"<div style='margin:0.2rem 0 4.6rem;'>{legend}"
             f"<div style='position:relative;height:14px;border-radius:7px;background:var(--hairline-soft);'>"
             f"{seg_now}{ticks}{amark}</div></div>")
 
