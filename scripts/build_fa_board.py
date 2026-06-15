@@ -70,6 +70,26 @@ if _rc_path.exists():
         _ROSTER_FIX[(str(_r["team"]).strip(), normalize(str(_r["player"])))] = \
             str(_r["action"]).strip().lower()
 
+# 2026 draft picks (data/draft_picks_2026.csv): current ownership per pick, post
+# May-2026 lottery (order set; draft ~June 24). DRAFT_PICKS[team] = list of
+# {"overall","round","cost_M"}. First-round cost = 120%-of-scale cap hit (the
+# standard rookie deal); second-rounders are modeled as two-way (no standard
+# roster spot, ~no cap hit) and just shown for completeness.
+_ROOKIE_SCALE_M = {1: 14.8, 2: 13.2, 3: 11.9, 4: 10.7, 5: 9.7, 6: 8.8, 7: 8.0,
+                   8: 7.4, 9: 6.8, 10: 6.4, 11: 6.1, 12: 5.8, 13: 5.5, 14: 5.2,
+                   15: 5.0, 16: 4.7, 17: 4.5, 18: 4.3, 19: 4.1, 20: 3.9, 21: 3.8,
+                   22: 3.6, 23: 3.5, 24: 3.3, 25: 3.2, 26: 3.1, 27: 3.0, 28: 3.0,
+                   29: 3.0, 30: 2.9}
+DRAFT_PICKS = {}
+_dp_path = ROOT / "data" / "draft_picks_2026.csv"
+if _dp_path.exists():
+    _dp = pd.read_csv(_dp_path, comment="#")
+    for _, _r in _dp.iterrows():
+        _ov, _rd, _tm = int(_r["overall"]), int(_r["round"]), str(_r["team"]).strip()
+        DRAFT_PICKS.setdefault(_tm, []).append(
+            {"overall": _ov, "round": _rd,
+             "cost_M": _ROOKIE_SCALE_M.get(_ov, 0.0) if _rd == 1 else 0.0})
+
 
 def fa_status(name):
     # Shared single-source classifier (utils.classify_fa_status): the next-year
@@ -361,7 +381,24 @@ def board_for(team):
     # your own), then external adds fill whatever's left — so the plan can't
     # carry the team past 15 (no "re-sign 5 + add 5" on top of 9 guaranteed = 19).
     ROSTER_MAX = 15
-    _open_spots = max(0, ROSTER_MAX - len(_roster))
+    # Draft picks are locked in — they take roster spots and rookie money before
+    # any free-agent move. First-rounders occupy a standard roster spot at their
+    # 120%-of-scale cap hit; second-rounders are modeled as two-way (no standard
+    # spot, ~no cap hit) and just shown for completeness.
+    _team_picks = sorted(DRAFT_PICKS.get(team, []), key=lambda p: p["overall"])
+    _first = [p for p in _team_picks if p["round"] == 1]
+    _second = [p for p in _team_picks if p["round"] == 2]
+    _pick_moves = ([{"name": f"2026 Pick #{p['overall']}", "pos": "1st round",
+                     "cost_M": round(p["cost_M"]), "tool": "Draft pick", "kind": "pick",
+                     "overall": p["overall"], "round": 1} for p in _first]
+                   + [{"name": f"2026 Pick #{p['overall']}", "pos": "2nd round",
+                       "cost_M": 0, "tool": "2nd-round pick", "kind": "pick",
+                       "overall": p["overall"], "round": 2} for p in _second])
+    _pick_cost = round(sum(p["cost_M"] for p in _first))
+    # Open standard spots = 15 minus players under contract minus the first-round
+    # picks (the picks fill spots first). Re-signings then fill what's left, then
+    # external adds — so the plan can't carry the team past 15.
+    _open_spots = max(0, ROSTER_MAX - len(_roster) - len(_first))
     # The re-signings ARE part of the realistic plan — the cost-effective keepers
     # (worth it AND fitting under the apron, per resign_plan's two gates), capped
     # at the open roster spots. Show them alongside the external signings.
@@ -372,19 +409,18 @@ def board_for(team):
     # Cap room is the THEORETICAL max (own FAs renounced). A team that re-signs
     # its own keepers via Bird rights is then over the cap and only has the
     # mid-level — so the external part of the plan gets cap room MINUS those
-    # re-signings, not the full figure. (Fixes "$50M on cap room" while also
-    # re-signing LeBron.)
+    # re-signings AND the rookie-scale money owed to its first-round picks.
     _resign_cost = round(sum(m["cost_M"] for m in _resign_moves))
-    _real_cap_room = max(0.0, CAP_M - (_committed + _resign_cost))
+    _real_cap_room = max(0.0, CAP_M - (_committed + _resign_cost + _pick_cost))
     # Room left below the second apron (the practical hard ceiling) after the
-    # re-signings — bounds how much the team can actually add in free agency.
-    _apron_room = max(0.0, round(APRON2_M) - (_committed + _resign_cost))
-    # External adds fill only the roster spots left after the re-signings.
+    # re-signings and picks — bounds how much the team can actually add in FA.
+    _apron_room = max(0.0, round(APRON2_M) - (_committed + _resign_cost + _pick_cost))
+    # External adds fill only the roster spots left after picks + re-signings.
     _adds_left = max(0, _open_spots - len(_resign_moves))
     _external = offseason_plan(_pursue, _real_cap_room, exc, _apron_room, max_adds=_adds_left)
     for _m in _external:
         _m["kind"] = "external"
-    _plan = _resign_moves + _external
+    _plan = _resign_moves + _external + _pick_moves
 
     return {
         "team": team,

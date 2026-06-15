@@ -99,7 +99,7 @@ def _cap_bar_html(committed, cap, tax, apron2, after):
              f"background:var(--fg-1);transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.35);'></div>")
     legend = ("<div style='display:flex;gap:1.1rem;font-size:0.68rem;color:var(--fg-4);margin-bottom:0.5rem;'>"
               "<span><span style='color:var(--accent-teal)'>&#9632;</span> committed payroll</span>"
-              "<span><span style='color:var(--gold)'>&#9632;</span> this offseason (re-signs + signings)</span>"
+              "<span><span style='color:var(--gold)'>&#9632;</span> this offseason (re-signs + picks + signings)</span>"
               "<span><span style='color:var(--fg-1)'>&#9612;</span> after the offseason</span></div>")
     return (f"<div style='margin:0.2rem 0 2.8rem;'>{legend}"
             f"<div style='position:relative;height:14px;border-radius:7px;background:var(--hairline-soft);'>"
@@ -108,7 +108,8 @@ def _cap_bar_html(committed, cap, tax, apron2, after):
 
 _PLAN_TOOL_COLOR = {"Re-sign": "var(--gold)", "Cap room": "var(--accent-teal)",
                     "Room exception": "var(--blue)", "Mid-level": "var(--blue)",
-                    "Depth": "var(--fg-3)", "Minimum": "var(--fg-5)"}
+                    "Depth": "var(--fg-3)", "Minimum": "var(--fg-5)",
+                    "Draft pick": "var(--purple)", "2nd-round pick": "var(--purple)"}
 _PLAN_CSS = """
 <style>
 .hv-plan { display:flex; gap:0.75rem 0.55rem; flex-wrap:wrap; margin:1.05rem 0 1.85rem; }
@@ -125,10 +126,12 @@ def _plan_chip(m):
     import html as _h
     c = _PLAN_TOOL_COLOR.get(m["tool"], "var(--fg-4)")
     _src = f" &middot; from {_h.escape(str(m['from']))}" if m.get("from") else ""
+    # second-round picks are modeled as two-way (no standard cap hit)
+    _amt = "two-way" if (m.get("kind") == "pick" and m.get("round") == 2) else f"${m['cost_M']:.0f}M"
     return (f"<div class='hv-plan-chip' style='--c:{c}'>"
             f"<div class='hv-plan-name'>{_h.escape(str(m['name']))}</div>"
             f"<div class='hv-plan-sub'>{_h.escape(str(m['pos']))}{_src}</div>"
-            f"<div class='hv-plan-tool'>{_h.escape(str(m['tool']))} &middot; ${m['cost_M']:.0f}M</div></div>")
+            f"<div class='hv-plan-tool'>{_h.escape(str(m['tool']))} &middot; {_amt}</div></div>")
 
 
 def render_front_office():
@@ -339,7 +342,8 @@ def render_front_office():
 
     _plan_moves = B.get("plan", [])
     _resigns = [m for m in _plan_moves if m.get("kind") == "resign"]
-    _adds = [m for m in _plan_moves if m.get("kind") != "resign"]
+    _adds = [m for m in _plan_moves if m.get("kind") == "external"]
+    _picks = [m for m in _plan_moves if m.get("kind") == "pick"]
     if _plan_moves:
         _parts = []
         if _resigns:
@@ -357,6 +361,15 @@ def render_front_office():
                 _bits.append("veteran minimums")
             _tool = " and ".join(_bits) if _bits else "veteran minimums"
             _parts.append(f"**add {len(_adds)}** using {_tool}")
+        if _picks:
+            _nf = sum(1 for p in _picks if p.get("round") == 1)
+            _ns = len(_picks) - _nf
+            _seg = []
+            if _nf:
+                _seg.append(f"{_nf} first-round")
+            if _ns:
+                _seg.append(f"{_ns} second-round")
+            _parts.append(f"**draft {len(_picks)}** ({', '.join(_seg)})")
         st.markdown(
             f"What {_short} would realistically do this offseason: " + " and ".join(_parts) + ".")
         st.markdown(_PLAN_CSS + f"<div class='hv-plan'>{''.join(_plan_chip(m) for m in _plan_moves)}</div>",
