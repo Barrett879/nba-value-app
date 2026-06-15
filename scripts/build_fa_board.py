@@ -577,3 +577,129 @@ OUT.write_text(json.dumps({
     "teams": boards,
 }, indent=1))
 print(f"\nwrote {OUT.relative_to(ROOT)}  ({len(boards)} teams)")
+
+
+# ── Free-agency simulation: one best-guess destination per free agent ─────────
+# Runs the player-side suitor engine (rank_suitors) for EVERY free agent and
+# takes his single most-likely landing spot. This is the INDEPENDENT prediction:
+# a market-clearing pass was backtested (scripts/backtest_fa_sim.py) and lost ~7
+# points of top-1 accuracy (real signings clear via sign-and-trades / cap holds /
+# exceptions a clean cap model can't see, filtering out the true team ~36% of the
+# time), so we keep the validated-best independent ranking. Measured accuracy:
+# ~51% top-1 / ~59% top-5 on recent seasons (2021-25); re-signs are reliable,
+# players who change teams are the noisy ~70%.
+# Two modes, toggled on the page:
+#   likely    - the validated top-1-optimal pick (incumbent weight 5.0). Re-signs
+#               ~90% of FAs (the safe, accuracy-max call) but shows little movement.
+#   realistic - softens the re-sign pull for UNRESTRICTED FAs only (RFAs/options
+#               stay sticky — they really do mostly stay), so a believable share of
+#               UFAs are projected to move and the board reads like free agency.
+#               Lower raw top-1 (team changes are individually noisy) — see
+#               scripts/backtest_fa_sim.py for the measured number.
+print("\nsimulating free-agency destinations (likely + realistic) ...")
+SIM_OUT = ROOT / "cache" / "fa_sim_v1.json"
+REALISTIC_UFA_INC_W = 1.0                               # softened re-sign pull for UFAs (hand-only)
+_TEAMNAME = dict(zip(LAND["team"].astype(str), LAND["team_name"].astype(str)))
+_FA_STATUS = {normalize(c["name"]): c["status"] for c in cands}
+
+
+def _conf(entry, c):
+    if entry["is_incumbent"]:
+        return "High"
+    if entry["slot"] == 0 and c["value_M"] >= 10.0:    # clear starter-level target with real money
+        return "Medium"
+    return "Low"                                        # team changes / depth pieces are noisy
+
+
+def _pick(entry, board, c):
+    """Build a prediction dict from a chosen board entry; alts = the rest of the board."""
+    if entry is None:                                  # no feasible suitor -> back on a minimum
+        return {"predicted": c["team"], "predicted_name": _TEAMNAME.get(c["team"], c["team"]),
+                "is_resign": True, "confidence": "Low", "offer_M": c["value_M"],
+                "tool": "minimum", "reason": "no external market — likely back on a minimum",
+                "alts": []}
+    return {"predicted": entry["team"], "predicted_name": entry["team_name"],
+            "is_resign": bool(entry["is_incumbent"]), "confidence": _conf(entry, c),
+            "offer_M": entry["offer_M"], "tool": entry["tool"], "reason": entry["reason"],
+            "alts": [{"team": d["team"], "team_name": d["team_name"],
+                      "offer_M": d["offer_M"], "tool": d["tool"]}
+                     for d in board if d is not entry][:2]}
+
+
+# Pass 1 — score every FA both ways. "likely" = top of the GBM-blended board.
+# "realistic" boards for UFAs use the hand-only, soft-incumbent ranking (computed
+# now, cleared below); RFAs/options reuse the sticky board.
+prelim = []
+for c in cands:
+    is_rfa = (c["status"] == "RFA")
+    args = dict(landscape=LAND, n=6, incumbent_team=c["team"], age=c["age"],
+                is_rfa=is_rfa, fa_status=_FA_STATUS)
+    b_like = ts.rank_suitors(c["value_M"], c["barrett"], c["pos"], ROST, **args)
+    if c["status"] == "UFA":
+        b_real = ts.rank_suitors(c["value_M"], c["barrett"], c["pos"], ROST,
+                                 incumbent_weight=REALISTIC_UFA_INC_W, blend_dest=False, **args)
+    else:
+        b_real = b_like
+    prelim.append({"c": c, "b_like": b_like, "b_real": b_real,
+                   "likely": _pick(b_like[0] if b_like else None, b_like, c)})
+
+# Pass 2 — light market-clear for the REALISTIC mode only, so the cap-room teams
+# don't sign every UFA. Walk UFAs best-first; a cap-room team can keep signing
+# until its room runs out, then it drops out and later FAs fall to their next
+# option (often a re-sign). This is deliberately NOT applied to "likely" (that
+# mode is the validated accuracy-max pick; market-clearing hurt its accuracy).
+MAX_REAL_ADDS = 4                                      # a team signs ~3-4 outside FAs in one summer
+_caproom = dict(zip(LAND["team"].astype(str), LAND["cap_space_M"].astype(float)))
+cap_left = dict(_caproom); mle_used = {t: False for t in _caproom}; adds = {}
+real_by_name = {}
+for item in sorted(prelim, key=lambda x: -x["c"]["value_M"]):
+    c = item["c"]
+    if c["status"] != "UFA":                           # sticky bucket -> same as likely
+        real_by_name[c["name"]] = item["likely"]; continue
+    chosen = None
+    for d in item["b_real"]:
+        t = d["team"]
+        if d["is_incumbent"]:                          # re-sign always available (Bird)
+            chosen = d; break
+        if adds.get(t, 0) >= MAX_REAL_ADDS:            # team's outside-signing slots are full
+            continue
+        if d["tool"] == "cap room":
+            if cap_left.get(t, 0.0) + 1e-6 >= d["offer_M"]:
+                cap_left[t] -= d["offer_M"]; adds[t] = adds.get(t, 0) + 1; chosen = d; break
+        elif "exception" in d["tool"] or "MLE" in d["tool"]:   # one mid-level per team
+            if not mle_used.get(t, False):
+                mle_used[t] = True; adds[t] = adds.get(t, 0) + 1; chosen = d; break
+        else:                                          # minimum — always available
+            adds[t] = adds.get(t, 0) + 1; chosen = d; break
+    real_by_name[c["name"]] = _pick(chosen, item["b_real"], c)
+
+sim_players = []
+for item in prelim:
+    c = item["c"]
+    sim_players.append({
+        "player": c["name"], "pos": c["pos"], "age": c["age"],
+        "barrett": c["barrett"], "value_M": c["value_M"], "status": c["status"],
+        "incumbent": c["team"], "incumbent_name": _TEAMNAME.get(c["team"], c["team"]),
+        "likely": item["likely"], "realistic": real_by_name[c["name"]],
+    })
+sim_players.sort(key=lambda p: -p["value_M"])          # stars first
+SIM_OUT.write_text(json.dumps({
+    "season": CUR, "contract_season": CONTRACT,
+    "cap_M": ns["SALARY_CAP_M"].get(CONTRACT, 165.0),
+    "n": len(sim_players),
+    # Backtested on 1,821 historical signings (scripts/backtest_fa_sim.py).
+    "accuracy": {
+        "likely":    {"top1_recent": 51, "top5_recent": 59, "top1_all": 45},
+        "realistic": {"top1_recent": None, "top5_recent": None, "top1_all": None},
+        "note": "single best-guess via the suitor engine; re-signs reliable, team changes noisy",
+    },
+    "players": sim_players,
+}, indent=1))
+_rl = sum(1 for p in sim_players if p["likely"]["is_resign"])
+_rr = sum(1 for p in sim_players if p["realistic"]["is_resign"])
+_ufa = [p for p in sim_players if p["status"] == "UFA"]
+_ufa_move = sum(1 for p in _ufa if not p["realistic"]["is_resign"])
+print(f"  wrote {SIM_OUT.relative_to(ROOT)}  ({len(sim_players)} FAs)")
+print(f"    likely:    {_rl} re-sign, {len(sim_players) - _rl} move")
+print(f"    realistic: {_rr} re-sign, {len(sim_players) - _rr} move "
+      f"(UFAs: {_ufa_move}/{len(_ufa)} move)")

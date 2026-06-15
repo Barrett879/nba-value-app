@@ -1736,6 +1736,7 @@ _NAV_PAGES = [
     # Trades_backup.py at repo root.
     ("Contract Predictor", "/Contract_Predictor"),
     ("Team Builder",       "/Team_Builder"),
+    ("Free Agency Sim",    "/Free_Agency_Simulation"),
     ("Current Free Agents", "/Free_Agent_Class"),
     # Track Record tab removed — page lives at /Track_Record_disabled.py
     # (kept at repo root for easy revival). Restore by moving the file

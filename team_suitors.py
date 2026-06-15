@@ -388,7 +388,8 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
                  rosters: pd.DataFrame, landscape: pd.DataFrame | None = None,
                  n: int = 6, incumbent_team: str | None = None,
                  age: float | None = None, is_rfa: bool = False,
-                 skill_fit: dict | None = None, fa_status: dict | None = None) -> list[dict]:
+                 skill_fit: dict | None = None, fa_status: dict | None = None,
+                 incumbent_weight: float | None = None, blend_dest: bool = True) -> list[dict]:
     """His projected free-agent market: the teams most likely to pursue him, each
     at the price THEY would realistically offer.
 
@@ -438,7 +439,7 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
         rank = offer * des * ((1.0 - SKILL_WEIGHT / 2.0) + SKILL_WEIGHT * float(sf["fit"]))
         pin = False
         if is_inc:                                           # ~half of FAs re-sign -> heavy pull
-            rank *= INCUMBENT_WEIGHT
+            rank *= (INCUMBENT_WEIGHT if incumbent_weight is None else incumbent_weight)
             pin = is_rfa                                     # restricted FA -> pinned to #1
         # feature vector for the trained destination model (order = its FEATS)
         av = float(age) if age is not None else 27.0
@@ -460,7 +461,7 @@ def rank_suitors(price_M: float, target_barrett: float, target_pos: str,
             "_rank":        rank, "_pin": pin, "_feat": feat,
         })
     # Blend the trained model's per-board score with the hand rank (z-scored, 40/60).
-    _b = _dest_model()
+    _b = _dest_model() if blend_dest else None
     if _b and len(out) > 1:
         try:
             import numpy as np
