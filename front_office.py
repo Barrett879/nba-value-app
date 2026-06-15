@@ -236,8 +236,15 @@ def render_front_office():
     _plan = B.get("resign_plan")
     if _plan:
         _over = _plan["all_in_M"] > _plan["apron2_M"]
-        _tail = ("so they can't keep them all under the line — here's who fits and who gets "
-                 "squeezed out:") if _over else "keeping them comfortably under the ceiling."
+        _noroom = any(k.get("zone") == "noroom" for k in _plan["keeps"])
+        if _over:
+            _tail = ("so they can't keep them all under the line — here's who fits and who gets "
+                     "squeezed out:")
+        elif _noroom:
+            _tail = ("but the 15-man roster (their incoming draft picks included) squeezes out the "
+                     "lowest-value keeper — here's who fits:")
+        else:
+            _tail = "keeping them comfortably under the ceiling."
         _picks = (f" Their incoming draft picks reserve another **${_plan['reserve_M']}M** in "
                   f"rookie-scale money.") if _plan.get("reserve_M") else ""
         st.caption((
@@ -254,7 +261,9 @@ def render_front_office():
         def _verdict(r):
             if not r.get("worth", True):
                 return "Let walk"
-            return "Keep" if r["keep"] else "Can't afford"
+            if r["keep"]:
+                return "Keep"
+            return "No room" if r.get("afford", True) else "Can't afford"
 
         rp["verdict"] = rp.apply(_verdict, axis=1)
         rp = rp[["name", "pos", "status", "cost_M", "running_M", "verdict"]]
@@ -276,6 +285,8 @@ def render_front_office():
                 return "color:var(--value-good);font-weight:600"
             if v == "Can't afford":
                 return "color:var(--value-bad);font-weight:700"
+            if v == "No room":                          # worth it + affordable, but roster's full
+                return "color:var(--orange);font-weight:600"
             return "color:var(--fg-4)"                  # let walk: replaceable, not unaffordable
 
         def _fmt_run(v):

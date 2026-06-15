@@ -281,7 +281,8 @@ def resign_plan(team, resign_rows, reserve=0.0):
         zone = "ok" if run_r < tax_r else "tax" if run_r < apron2_r else "over"
         keeps.append({"name": x["name"], "pos": x["pos"], "cost_M": x["offer_M"],
                       "value_M": x["value_M"], "barrett": x["barrett"],
-                      "running_M": run_r, "zone": zone, "worth": True, "keep": afford})
+                      "running_M": run_r, "zone": zone, "worth": True,
+                      "afford": afford, "keep": afford})
     return {"committed_M": round(committed), "reserve_M": round(reserve),
             "tax_M": tax_r, "apron2_M": apron2_r,
             "all_in_M": round(running), "keeps": keeps}
@@ -471,6 +472,18 @@ def board_for(team):
     # picks (the picks fill spots first). Re-signings then fill what's left, then
     # external adds — so the plan can't carry the team past 15.
     _open_spots = max(0, ROSTER_MAX - len(_roster) - len(_first))
+    # A keeper can be worth it AND affordable yet still get squeezed out: once the
+    # draft picks and the higher-value keepers have filled the 15 spots, there's no
+    # room left. Mark those (Barrett order) so the re-sign board's verdict matches
+    # the plan instead of showing "Keep" for someone the team can't actually fit.
+    if _rp:
+        _kept_n = 0
+        for _k in _rp["keeps"]:
+            if _k.get("afford") and _k.get("keep"):
+                if _kept_n < _open_spots:
+                    _kept_n += 1
+                else:
+                    _k["keep"], _k["zone"] = False, "noroom"
     # The re-signings ARE part of the realistic plan — the cost-effective keepers
     # (worth it AND fitting under the apron, per resign_plan's two gates), capped
     # at the open roster spots. Show them alongside the external signings.
