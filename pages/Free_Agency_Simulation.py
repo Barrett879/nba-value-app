@@ -58,36 +58,20 @@ st.caption(
     "educated projection, strongest on re-signings."
 )
 
-# ── Mode toggle ──────────────────────────────────────────────────────────────
-_mode_label = st.radio(
-    "Projection mode",
-    ["Realistic", "Most likely"],
-    horizontal=True, key="fa_sim_mode",
-    help=("Realistic: a believable mix of stays and moves (lower per-pick accuracy). "
-          "Most likely: the accuracy-optimal call, which re-signs most free agents."))
-MODE = "realistic" if _mode_label == "Realistic" else "likely"
+MODE = "realistic"
 
 
 def pick(p):
     return p.get(MODE, {})
 
 
-# ── Summary cards (mode-aware) ───────────────────────────────────────────────
+# ── Summary cards ────────────────────────────────────────────────────────────
 n = len(PLAYERS)
 moves = sum(1 for p in PLAYERS if not pick(p).get("is_resign"))
-if MODE == "likely":
-    a = ACC.get("likely", {})
-    acc_v = f"~{a.get('top1_recent', 51)}%"
-    acc_sub = "exact-team, validated on 1,821 signings"
-else:
-    acc_v = "lower"
-    acc_sub = "trades accuracy for a believable spread"
 stat_cards([
     ("Free Agents", str(n), "var(--accent-teal)", "projected for the offseason"),
-    ("Projected to Move", str(moves), "var(--orange)", f"{n - moves} re-sign / stay"),
-    ("Re-sign Rate", f"{(n - moves) / n * 100:.0f}%" if n else "—", "var(--value-good)",
-     "league norm is ~half"),
-    ("Top-1 Accuracy", acc_v, "var(--blue)", acc_sub),
+    ("Projected to Move", str(moves), "var(--orange)", "change teams"),
+    ("Re-sign / Stay", str(n - moves), "var(--value-good)", "league norm is ~half"),
 ])
 
 # ── Controls ─────────────────────────────────────────────────────────────────
@@ -189,10 +173,7 @@ def _team_view(rows):
         re_cost = sum(round(pick(p).get("offer_M", 0)) for p in keeps)
         add_cost = sum(round(pick(p).get("offer_M", 0)) for p in adds)
         with st.expander(f"{name}  —  {len(adds)} add, {len(keeps)} re-sign", expanded=False):
-            # The cap + roster math is only coherent in Realistic mode (it's
-            # roster-capped + budget-bounded in the build). Most-likely re-signs
-            # every FA independently with no cap, so "X of 15" wouldn't make sense.
-            if ctx and MODE == "realistic":
+            if ctx:
                 roster = (f"{ctx['under_contract']} under contract + {ctx['picks']} pick"
                           f"{'s' if ctx['picks'] != 1 else ''} + {len(grp)} signed = "
                           f"<b style='color:var(--fg-3)'>{total}</b> of 15"
@@ -204,12 +185,6 @@ def _team_view(rows):
                     f"&middot; adds <b style='color:var(--fg-3)'>${add_cost}M</b> "
                     f"&middot; room: <b style='color:var(--fg-3)'>{_h.escape(ctx['room'])}</b>"
                     f"<br>Roster: {roster}</div>",
-                    unsafe_allow_html=True)
-            elif MODE != "realistic":
-                st.markdown(
-                    "<div style='color:var(--fg-5);font-size:0.78rem;margin:-0.2rem 0 0.55rem'>"
-                    "Most-likely keeps each free agent on his current team independently (no cap "
-                    "limit). Switch to <b>Realistic</b> for a cap-coherent, 15-man roster.</div>",
                     unsafe_allow_html=True)
             for p in grp:
                 pk = pick(p)
@@ -241,16 +216,16 @@ with st.expander("How this works + accuracy"):
         "need at his position, and how a club of that timeline values his age/role, then "
         "blends in a destination model trained on 1,810 historical signings. The top team "
         "is his projected landing spot.\n"
-        "- **Most likely** is the accuracy-optimal call: re-signing is the single strongest "
-        "signal (about half of all FAs re-sign), so this mode keeps most players home. "
-        "Measured **~51% top-1 / ~59% top-5** on recent seasons; exact landing spots have a "
-        "hard noise ceiling.\n"
-        "- **Realistic** softens the re-sign pull for unrestricted free agents (restricted "
-        "FAs and option-decliners stay, as they do in reality) and runs a light cap check so "
-        "no single team signs everyone. It reads more like a real offseason but its individual "
-        "team-change calls are educated guesses, not high-confidence.\n"
+        "- **Cap-coherent.** Re-signs come from each team's Team Builder plan (the keepers it "
+        "can fit under the apron), external adds are bounded by the team's real post-re-sign "
+        "room (cap space, or one mid-level if over the cap), and rosters fill to 14-15 — so "
+        "no team spends money or roster spots it doesn't have.\n"
         "- **Confidence.** High = a re-signing. Medium = a clear starter-level fit on real "
         "money. Low = a depth/role move or an ambiguous market — expect these to miss often.\n"
+        "- **Accuracy.** The underlying suitor engine lands the real team in the top suitors "
+        "about **59% (top-5) / ~50% (top-1)** on recent seasons. Re-signings are reliable; "
+        "players who change teams are genuinely hard to call (real signings turn on sign-and-"
+        "trades and fit a model can't see), so treat those as educated guesses.\n"
         "- A full **market-clearing simulation** was prototyped and backtested first; it lost "
         "~7 points of accuracy (real signings clear through sign-and-trades and cap holds a "
         "clean model can't capture), so the independent best-guess is what runs here."

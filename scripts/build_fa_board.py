@@ -684,8 +684,7 @@ for c in cands:
     b_like = ts.rank_suitors(c["value_M"], c["barrett"], c["pos"], ROST, landscape=LAND, **args)
     b_real = ts.rank_suitors(c["value_M"], c["barrett"], c["pos"], ROST,
                              landscape=LAND_REAL, blend_dest=False, **args)
-    prelim.append({"c": c, "b_like": b_like, "b_real": b_real,
-                   "likely": _pick(b_like[0] if b_like else None, b_like, c)})
+    prelim.append({"c": c, "b_like": b_like, "b_real": b_real})
 
 # Pass 2 — REALISTIC mode, made cap-coherent with the Team Builder. Two rules:
 #   (1) Re-signs come straight from each team's Team Builder plan (the cost-
@@ -809,7 +808,7 @@ for item in prelim:
         "player": c["name"], "pos": c["pos"], "age": c["age"],
         "barrett": c["barrett"], "value_M": c["value_M"], "status": c["status"],
         "incumbent": c["team"], "incumbent_name": _TEAMNAME.get(c["team"], c["team"]),
-        "likely": item["likely"], "realistic": real_by_name[c["name"]],
+        "realistic": real_by_name[c["name"]],
     })
 sim_players.sort(key=lambda p: -p["value_M"])          # stars first
 
@@ -838,20 +837,15 @@ SIM_OUT.write_text(json.dumps({
     "season": CUR, "contract_season": CONTRACT,
     "cap_M": ns["SALARY_CAP_M"].get(CONTRACT, 165.0),
     "n": len(sim_players),
-    # Backtested on 1,821 historical signings (scripts/backtest_fa_sim.py).
-    "accuracy": {
-        "likely":    {"top1_recent": 51, "top5_recent": 59, "top1_all": 45},
-        "realistic": {"top1_recent": None, "top5_recent": None, "top1_all": None},
-        "note": "single best-guess via the suitor engine; re-signs reliable, team changes noisy",
-    },
+    # Underlying suitor engine backtested on 1,821 signings (scripts/backtest_fa_sim.py):
+    # ~50% top-1 / ~59% top-5 on recent seasons; re-signs reliable, team changes noisy.
+    "accuracy": {"top1_recent": 50, "top5_recent": 59, "top1_all": 45,
+                 "note": "best-guess via the suitor engine; re-signs reliable, team changes noisy"},
     "teams": sim_teams,
     "players": sim_players,
 }, indent=1))
-_rl = sum(1 for p in sim_players if p["likely"]["is_resign"])
 _rr = sum(1 for p in sim_players if p["realistic"]["is_resign"])
 _ufa = [p for p in sim_players if p["status"] == "UFA"]
 _ufa_move = sum(1 for p in _ufa if not p["realistic"]["is_resign"])
-print(f"  wrote {SIM_OUT.relative_to(ROOT)}  ({len(sim_players)} FAs)")
-print(f"    likely:    {_rl} re-sign, {len(sim_players) - _rl} move")
-print(f"    realistic: {_rr} re-sign, {len(sim_players) - _rr} move "
-      f"(UFAs: {_ufa_move}/{len(_ufa)} move)")
+print(f"  wrote {SIM_OUT.relative_to(ROOT)}  ({len(sim_players)} FAs): "
+      f"{_rr} re-sign/stay, {len(sim_players) - _rr} move (UFAs: {_ufa_move}/{len(_ufa)} move)")
