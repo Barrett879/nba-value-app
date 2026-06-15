@@ -2924,13 +2924,13 @@
     ]
    },
    "realistic": {
-    "predicted": null,
-    "predicted_name": "Unsigned",
+    "predicted": "DEN",
+    "predicted_name": "Denver Nuggets",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 0,
-    "tool": "unsigned",
-    "reason": "no roster spot \u2014 likely a minimum, two-way, or overseas deal",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -3966,13 +3966,13 @@
     "alts": []
    },
    "realistic": {
-    "predicted": null,
-    "predicted_name": "Unsigned",
+    "predicted": "ORL",
+    "predicted_name": "Orlando Magic",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 0,
-    "tool": "unsigned",
-    "reason": "no roster spot \u2014 likely a minimum, two-way, or overseas deal",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -4637,13 +4637,13 @@
     ]
    },
    "realistic": {
-    "predicted": "PHI",
-    "predicted_name": "Philadelphia 76ers",
-    "is_resign": true,
+    "predicted": "SAS",
+    "predicted_name": "San Antonio Spurs",
+    "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "back on a minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -4736,13 +4736,13 @@
     ]
    },
    "realistic": {
-    "predicted": null,
-    "predicted_name": "Unsigned",
+    "predicted": "GSW",
+    "predicted_name": "Golden State Warriors",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 0,
-    "tool": "unsigned",
-    "reason": "no roster spot \u2014 likely a minimum, two-way, or overseas deal",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -5360,13 +5360,13 @@
     "alts": []
    },
    "realistic": {
-    "predicted": "MIN",
-    "predicted_name": "Minnesota Timberwolves",
-    "is_resign": true,
+    "predicted": "MIA",
+    "predicted_name": "Miami Heat",
+    "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "back on a minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -6217,13 +6217,13 @@
     "alts": []
    },
    "realistic": {
-    "predicted": null,
-    "predicted_name": "Unsigned",
+    "predicted": "GSW",
+    "predicted_name": "Golden State Warriors",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 0,
-    "tool": "unsigned",
-    "reason": "no roster spot \u2014 likely a minimum, two-way, or overseas deal",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -6290,13 +6290,13 @@
     "alts": []
    },
    "realistic": {
-    "predicted": null,
-    "predicted_name": "Unsigned",
+    "predicted": "SAS",
+    "predicted_name": "San Antonio Spurs",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 0,
-    "tool": "unsigned",
-    "reason": "no roster spot \u2014 likely a minimum, two-way, or overseas deal",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -6320,13 +6320,13 @@
     "alts": []
    },
    "realistic": {
-    "predicted": null,
-    "predicted_name": "Unsigned",
+    "predicted": "ORL",
+    "predicted_name": "Orlando Magic",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 0,
-    "tool": "unsigned",
-    "reason": "no roster spot \u2014 likely a minimum, two-way, or overseas deal",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -6647,13 +6647,13 @@
     "alts": []
    },
    "realistic": {
-    "predicted": "IND",
-    "predicted_name": "Indiana Pacers",
-    "is_resign": true,
+    "predicted": "DEN",
+    "predicted_name": "Denver Nuggets",
+    "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.2,
     "tool": "minimum",
-    "reason": "back on a minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },

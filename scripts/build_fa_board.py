@@ -733,16 +733,44 @@ for item in sorted((x for x in prelim if x["c"]["name"] not in _resigned),
         real_by_name[c["name"]] = _pick(chosen, item["b_real"], c)
     else:
         _leftover.append(item)
-# Step C — no outside fit: back on a minimum with the incumbent if it still has a
-# roster spot, otherwise genuinely unsigned (a minimum / two-way / overseas guy).
+# Step C — fill rosters to the 14-man minimum with NAMED minimum deals (no generic
+# "+N" gaps unless the notable-FA pool is genuinely exhausted). Three sub-passes:
+ROSTER_MIN = 14
+
+
+def _min_pick(team, c, reason):
+    return {"predicted": team, "predicted_name": _TEAMNAME.get(team, team),
+            "is_resign": team == c["team"], "confidence": "Low",
+            "offer_M": round(min(c["value_M"], MIN_M), 1), "tool": "minimum",
+            "reason": reason, "alts": []}
+
+
+# C1 — a team's own leftover free agents come back on minimums where it still
+# needs bodies (teams fill out with their own fringe guys before chasing others).
+pool = []
 for item in sorted(_leftover, key=lambda x: -x["c"]["value_M"]):
+    c = item["c"]; t = c["team"]
+    if rost_used.get(t, 99) < ROSTER_MIN:
+        rost_used[t] = rost_used.get(t, 0) + 1
+        real_by_name[c["name"]] = _min_pick(t, c, "back on a minimum")
+    else:
+        pool.append(item)
+# C2 — remaining teams under 14 sign outside minimum bodies, preferring a player
+# who fills a position of need, else the best available.
+for tm in sorted((t for t in boards if rost_used.get(t, 0) < ROSTER_MIN),
+                 key=lambda t: rost_used.get(t, 0)):
+    need_pos = set(boards[tm].get("needs", []) + boards[tm].get("thin", []))
+    while rost_used.get(tm, 0) < ROSTER_MIN and pool:
+        ranked = sorted(pool, key=lambda x: -x["c"]["barrett"])
+        fit = next((it for it in ranked if primary(it["c"]["pos"]) in need_pos), ranked[0])
+        pool.remove(fit); rost_used[tm] = rost_used.get(tm, 0) + 1
+        real_by_name[fit["c"]["name"]] = _min_pick(tm, fit["c"], "minimum deal to fill a roster need")
+# C3 — anyone still unplaced: a 15th-man minimum at home if there's room, else unsigned.
+for item in pool:
     c = item["c"]; t = c["team"]
     if rost_used.get(t, 99) < ROSTER_MAX:
         rost_used[t] = rost_used.get(t, 0) + 1
-        real_by_name[c["name"]] = {
-            "predicted": t, "predicted_name": _TEAMNAME.get(t, t), "is_resign": True,
-            "confidence": "Low", "offer_M": round(min(c["value_M"], MIN_M), 1),
-            "tool": "minimum", "reason": "back on a minimum", "alts": []}
+        real_by_name[c["name"]] = _min_pick(t, c, "back on a minimum")
     else:
         real_by_name[c["name"]] = {
             "predicted": None, "predicted_name": "Unsigned", "is_resign": False,
