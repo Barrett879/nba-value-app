@@ -14,9 +14,11 @@
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "playoff",
-   "needs": [],
-   "thin": [
+   "needs": [
     "PF"
+   ],
+   "thin": [
+    "SG"
    ],
    "roster": [
     {
@@ -83,6 +85,19 @@
      "why": "Adds a needed second body at SF, a bargain at $15M against his $23.8M market."
     },
     {
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "from": "DAL",
+     "status": "UFA",
+     "value_M": 4.3,
+     "offer_M": 3,
+     "fit": 69,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 2,
+     "why": "Rotation depth at PF, a bargain at $3M against his $4.3M market."
+    },
+    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "from": "NYK",
@@ -94,19 +109,6 @@
      "ppos": "C",
      "slot": 1,
      "why": "Adds a needed second body at C, a bargain at $9M against his $10.4M market."
-    },
-    {
-     "name": "Marvin Bagley III",
-     "pos": "PF/C",
-     "from": "DAL",
-     "status": "UFA",
-     "value_M": 4.3,
-     "offer_M": 3,
-     "fit": 63,
-     "grade": "B+",
-     "ppos": "PF",
-     "slot": 2,
-     "why": "Rotation depth at PF, a bargain at $3M against his $4.3M market."
     }
    ],
    "plan": [
@@ -1075,8 +1077,12 @@
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
-   "needs": [],
-   "thin": [],
+   "needs": [
+    "SG"
+   ],
+   "thin": [
+    "PF"
+   ],
    "roster": [
     {
      "name": "Jaylen Brown",
@@ -1141,11 +1147,24 @@
      "status": "UFA",
      "value_M": 5.6,
      "offer_M": 3,
-     "fit": 61,
-     "grade": "B+",
+     "fit": 73,
+     "grade": "A-",
      "ppos": "SG",
      "slot": 3,
      "why": "Rotation depth at SG, a bargain at $3M against his $5.6M market."
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "status": "UFA",
+     "value_M": 9.2,
+     "offer_M": 6,
+     "fit": 64,
+     "grade": "B+",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF, a bargain at $6M against his $9.2M market."
     },
     {
      "name": "Andre Drummond",
@@ -1159,19 +1178,6 @@
      "ppos": "C",
      "slot": 3,
      "why": "Rotation depth at C, a bargain at $2M against his $3.9M market."
-    },
-    {
-     "name": "Kyle Anderson",
-     "pos": "SF/PF",
-     "from": "MIN",
-     "status": "UFA",
-     "value_M": 3.9,
-     "offer_M": 2,
-     "fit": 61,
-     "grade": "B+",
-     "ppos": "SF",
-     "slot": 3,
-     "why": "Rotation depth at SF, a bargain at $2M against his $3.9M market."
     }
    ],
    "plan": [
@@ -2571,10 +2577,12 @@
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
+    "PG",
     "SF"
    ],
    "thin": [
-    "PF"
+    "PF",
+    "C"
    ],
    "roster": [
     {
@@ -2660,17 +2668,17 @@
      "why": "Rotation depth at SF, a bargain at $2M against his $9.0M market."
     },
     {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
-     "status": "Team Option",
-     "value_M": 7.7,
+     "name": "Russell Westbrook",
+     "pos": "PG/SG",
+     "from": "SAC",
+     "status": "UFA",
+     "value_M": 5.4,
      "offer_M": 2,
-     "fit": 62,
-     "grade": "B+",
-     "ppos": "C",
+     "fit": 74,
+     "grade": "A",
+     "ppos": "PG",
      "slot": 2,
-     "why": "Rotation depth at C, a bargain at $2M against his $7.7M market."
+     "why": "Rotation depth at PG, a bargain at $2M against his $5.4M market."
     }
    ],
    "plan": [
@@ -3642,6 +3650,7 @@
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
+    "SG",
     "SF"
    ],
    "thin": [
@@ -3725,8 +3734,8 @@
      "status": "UFA",
      "value_M": 15.5,
      "offer_M": 6,
-     "fit": 75,
-     "grade": "A",
+     "fit": 87,
+     "grade": "A+",
      "ppos": "SG",
      "slot": 1,
      "why": "Adds a needed second body at SG, a bargain at $6M against his $15.5M market."
@@ -4199,7 +4208,9 @@
    "apron2_M": 222,
    "timeline": "title",
    "needs": [],
-   "thin": [],
+   "thin": [
+    "PF"
+   ],
    "roster": [
     {
      "name": "Cade Cunningham",
@@ -4264,8 +4275,8 @@
      "status": "UFA",
      "value_M": 39.8,
      "offer_M": 35,
-     "fit": 80,
-     "grade": "A",
+     "fit": 86,
+     "grade": "A+",
      "ppos": "PF",
      "slot": 0,
      "why": "Upgrades on Tobias Harris at PF, a bargain at $35M against his $39.8M market."
@@ -5268,6 +5279,7 @@
     "SG"
    ],
    "thin": [
+    "PF",
     "C"
    ],
    "roster": [
@@ -6770,8 +6782,11 @@
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
-   "needs": [],
+   "needs": [
+    "SF"
+   ],
    "thin": [
+    "PG",
     "PF"
    ],
    "roster": [
@@ -6827,6 +6842,19 @@
      "why": "Upgrades on Deandre Ayton at C, fair value at $50M."
     },
     {
+     "name": "Bennedict Mathurin",
+     "pos": "SF/PF",
+     "from": "LAC",
+     "status": "RFA",
+     "value_M": 23.8,
+     "offer_M": 21,
+     "fit": 76,
+     "grade": "A",
+     "ppos": "SF",
+     "slot": 1,
+     "why": "Adds a needed second body at SF, a bargain at $21M against his $23.8M market."
+    },
+    {
      "name": "Harrison Barnes",
      "pos": "PF/SF",
      "from": "SAS",
@@ -6838,19 +6866,6 @@
      "ppos": "PF",
      "slot": 1,
      "why": "Adds a needed second body at PF, a bargain at $8M against his $9.2M market."
-    },
-    {
-     "name": "Bennedict Mathurin",
-     "pos": "SF/PF",
-     "from": "LAC",
-     "status": "RFA",
-     "value_M": 23.8,
-     "offer_M": 21,
-     "fit": 64,
-     "grade": "B+",
-     "ppos": "SF",
-     "slot": 1,
-     "why": "Adds a needed second body at SF, a bargain at $21M against his $23.8M market."
     }
    ],
    "plan": [
@@ -7815,7 +7830,9 @@
    "needs": [
     "PF"
    ],
-   "thin": [],
+   "thin": [
+    "SF"
+   ],
    "roster": [
     {
      "name": "Bam Adebayo",
@@ -7906,8 +7923,8 @@
      "status": "Team Option",
      "value_M": 21.0,
      "offer_M": 13,
-     "fit": 57,
-     "grade": "B",
+     "fit": 63,
+     "grade": "B+",
      "ppos": "SF",
      "slot": 3,
      "why": "Rotation depth at SF, a bargain at $13M against his $21.0M market."
@@ -8851,7 +8868,10 @@
    "apron2_M": 222,
    "timeline": "title",
    "needs": [],
-   "thin": [],
+   "thin": [
+    "SG",
+    "PF"
+   ],
    "roster": [
     {
      "name": "Anthony Edwards",
@@ -8910,11 +8930,24 @@
      "status": "UFA",
      "value_M": 18.7,
      "offer_M": 15,
-     "fit": 68,
-     "grade": "A-",
+     "fit": 74,
+     "grade": "A",
      "ppos": "SG",
      "slot": 1,
      "why": "Adds a needed second body at SG, a bargain at $15M against his $18.7M market."
+    },
+    {
+     "name": "Nicolas Batum",
+     "pos": "PF/SF",
+     "from": "LAC",
+     "status": "Team Option",
+     "value_M": 4.1,
+     "offer_M": 2,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 4,
+     "why": "Rotation depth at PF, a bargain at $2M against his $4.1M market."
     },
     {
      "name": "Russell Westbrook",
@@ -8928,19 +8961,6 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, fair value at $5M."
-    },
-    {
-     "name": "Taurean Prince",
-     "pos": "SF/SG",
-     "from": "MIL",
-     "status": "Player Option",
-     "value_M": 4.0,
-     "offer_M": 2,
-     "fit": 62,
-     "grade": "B+",
-     "ppos": "SF",
-     "slot": 3,
-     "why": "Rotation depth at SF, a bargain at $2M against his $4.0M market."
     }
    ],
    "plan": [
@@ -9804,7 +9824,10 @@
    "apron2_M": 222,
    "timeline": "title",
    "needs": [],
-   "thin": [],
+   "thin": [
+    "SF",
+    "PF"
+   ],
    "roster": [
     {
      "name": "Jalen Brunson",
@@ -9870,30 +9893,30 @@
      "why": "Adds a needed second body at SG, a bargain at $15M against his $18.7M market."
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "from": "OKC",
-     "status": "Team Option",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "fit": 62,
-     "grade": "B+",
-     "ppos": "C",
-     "slot": 1,
-     "why": "Adds a needed second body at C, a bargain at $15M against his $16.8M market."
-    },
-    {
      "name": "Khris Middleton",
      "pos": "SF/PF",
      "from": "DAL",
      "status": "UFA",
      "value_M": 9.0,
      "offer_M": 4,
-     "fit": 62,
-     "grade": "B+",
+     "fit": 68,
+     "grade": "A-",
      "ppos": "SF",
      "slot": 4,
      "why": "Rotation depth at SF, a bargain at $4M against his $9.0M market."
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "status": "UFA",
+     "value_M": 9.2,
+     "offer_M": 6,
+     "fit": 64,
+     "grade": "B+",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF, a bargain at $6M against his $9.2M market."
     }
    ],
    "plan": [
@@ -10786,7 +10809,9 @@
    "needs": [
     "PF"
    ],
-   "thin": [],
+   "thin": [
+    "SG"
+   ],
    "roster": [
     {
      "name": "Paolo Banchero",
@@ -10883,17 +10908,17 @@
      "why": "Rotation depth at PF, a bargain at $2M against his $2.9M market."
     },
     {
-     "name": "Jamaree Bouyea",
-     "pos": "PG/SG",
-     "from": "PHX",
-     "status": "Team Option",
-     "value_M": 2.3,
-     "offer_M": 1,
-     "fit": 62,
-     "grade": "B+",
-     "ppos": "PG",
+     "name": "Luke Kennard",
+     "pos": "SG/PG",
+     "from": "LAL",
+     "status": "UFA",
+     "value_M": 7.1,
+     "offer_M": 4,
+     "fit": 66,
+     "grade": "A-",
+     "ppos": "SG",
      "slot": 3,
-     "why": "Rotation depth at PG, a bargain at $1M against his $2.3M market."
+     "why": "Rotation depth at SG, a bargain at $4M against his $7.1M market."
     }
    ],
    "plan": [
@@ -12287,7 +12312,10 @@
    "apron2_M": 222,
    "timeline": "retooling",
    "needs": [],
-   "thin": [],
+   "thin": [
+    "SG",
+    "SF"
+   ],
    "roster": [
     {
      "name": "Deni Avdija",
@@ -12390,7 +12418,7 @@
      "status": "RFA",
      "value_M": 21.6,
      "offer_M": 13,
-     "fit": 58,
+     "fit": 64,
      "grade": "B+",
      "ppos": "SF",
      "slot": 3,
@@ -13232,7 +13260,9 @@
    "tax_M": 200,
    "apron2_M": 222,
    "timeline": "title",
-   "needs": [],
+   "needs": [
+    "PF"
+   ],
    "thin": [
     "SF"
    ],
@@ -13288,6 +13318,19 @@
    ],
    "best_fits": [
     {
+     "name": "Anthony Gill",
+     "pos": "PF/C",
+     "from": "WAS",
+     "status": "UFA",
+     "value_M": 3.1,
+     "offer_M": 2,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "PF",
+     "slot": 4,
+     "why": "Rotation depth at PF, a bargain at $2M against his $3.1M market."
+    },
+    {
      "name": "Khris Middleton",
      "pos": "SF/PF",
      "from": "DAL",
@@ -13312,19 +13355,6 @@
      "ppos": "C",
      "slot": 1,
      "why": "Adds a needed second body at C, a bargain at $9M against his $10.4M market."
-    },
-    {
-     "name": "Mike Conley",
-     "pos": "PG",
-     "from": "MIN",
-     "status": "UFA",
-     "value_M": 3.9,
-     "offer_M": 2,
-     "fit": 61,
-     "grade": "B+",
-     "ppos": "PG",
-     "slot": 3,
-     "why": "Rotation depth at PG, a bargain at $2M against his $3.9M market."
     }
    ],
    "plan": [
@@ -13721,7 +13751,9 @@
    "apron2_M": 222,
    "timeline": "playoff",
    "needs": [],
-   "thin": [],
+   "thin": [
+    "SG"
+   ],
    "roster": [
     {
      "name": "Scottie Barnes",
@@ -13793,6 +13825,19 @@
      "why": "Upgrades on Jakob Poeltl at C, a bargain at $15M against his $16.8M market."
     },
     {
+     "name": "Kevin Huerter",
+     "pos": "SG/SF",
+     "from": "DET",
+     "status": "UFA",
+     "value_M": 10.3,
+     "offer_M": 6,
+     "fit": 66,
+     "grade": "A-",
+     "ppos": "SG",
+     "slot": 3,
+     "why": "Rotation depth at SG, a bargain at $6M against his $10.3M market."
+    },
+    {
      "name": "Tyrese Martin",
      "pos": "PG/SG",
      "from": "PHI",
@@ -13804,19 +13849,6 @@
      "ppos": "PG",
      "slot": 3,
      "why": "Rotation depth at PG, a bargain at $2M against his $4.0M market."
-    },
-    {
-     "name": "Kevin Huerter",
-     "pos": "SG/SF",
-     "from": "DET",
-     "status": "UFA",
-     "value_M": 10.3,
-     "offer_M": 6,
-     "fit": 60,
-     "grade": "B+",
-     "ppos": "SG",
-     "slot": 3,
-     "why": "Rotation depth at SG, a bargain at $6M against his $10.3M market."
     }
    ],
    "plan": [
@@ -14190,7 +14222,8 @@
     "SG"
    ],
    "thin": [
-    "SF"
+    "SF",
+    "C"
    ],
    "roster": [
     {
@@ -14269,6 +14302,19 @@
      "why": "Upgrades on Keyonte George at SG, a bargain at $27M against his $41.2M market."
     },
     {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 15.6,
+     "offer_M": 14,
+     "fit": 70,
+     "grade": "A-",
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C, a bargain at $14M against his $15.6M market."
+    },
+    {
      "name": "LeBron James",
      "pos": "PF/SF",
      "from": "LAL",
@@ -14280,19 +14326,6 @@
      "ppos": "PF",
      "slot": 0,
      "why": "Upgrades on Jaren Jackson Jr. at PF, a bargain at $27M against his $39.8M market."
-    },
-    {
-     "name": "Mark Williams",
-     "pos": "C",
-     "from": "PHX",
-     "status": "RFA",
-     "value_M": 15.6,
-     "offer_M": 14,
-     "fit": 64,
-     "grade": "B+",
-     "ppos": "C",
-     "slot": 1,
-     "why": "Adds a needed second body at C, a bargain at $14M against his $15.6M market."
     }
    ],
    "plan": [
@@ -14650,7 +14683,10 @@
     "PG",
     "SG"
    ],
-   "thin": [],
+   "thin": [
+    "PF",
+    "C"
+   ],
    "roster": [
     {
      "name": "Anthony Davis",

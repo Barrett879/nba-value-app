@@ -139,7 +139,7 @@ def primary(pos):
     return ts._primary_position(pos)
 
 
-SECONDARY_W = 0.5       # a player's secondary position counts this much (vs 1.0 primary)
+SECONDARY_W = 0.25      # a player's secondary position counts this much (vs 1.0 primary)
 
 
 def pos_weights(pos_str):
