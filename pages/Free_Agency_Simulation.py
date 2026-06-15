@@ -119,6 +119,8 @@ def _dest_cell(p):
     if pk.get("is_resign"):
         return (f"<b>{_h.escape(p['incumbent'])}</b> "
                 f"<span style='color:var(--fg-5);font-size:0.74rem'>re-sign</span>")
+    if not pk.get("predicted"):
+        return "<b style='color:var(--fg-4)'>Unsigned</b>"
     return (f"<span style='color:var(--fg-5)'>{_h.escape(p['incumbent'])}</span> "
             f"<span style='color:var(--fg-5)'>&rarr;</span> "
             f"<b style='color:var(--accent-teal)'>{_h.escape(pk.get('predicted',''))}</b>")
@@ -159,19 +161,41 @@ def _team_view(rows):
     by = {}
     for p in rows:
         by.setdefault(pick(p)["predicted"], []).append(p)
-    for tm in sorted(by, key=lambda t: -len(by[t])):
+    # real teams first (by signing volume), the Unsigned bucket last
+    for tm in sorted(by, key=lambda t: (t is None, -len(by[t]))):
         grp = sorted(by[tm], key=lambda p: -p["value_M"])
-        name = pick(grp[0])["predicted_name"] if grp else tm
         adds = [p for p in grp if not pick(p)["is_resign"]]
         keeps = [p for p in grp if pick(p)["is_resign"]]
+        if tm is None:                                  # no roster spot anywhere
+            with st.expander(f"Unsigned / no clear landing spot  —  {len(grp)}", expanded=False):
+                st.markdown("<div style='color:var(--fg-5);font-size:0.78rem;margin:-0.2rem 0 0.5rem'>"
+                            "These fall outside any team's projected roster — likely minimum, "
+                            "two-way, or overseas.</div>", unsafe_allow_html=True)
+                for p in grp:
+                    st.markdown(
+                        f"<div style='display:flex;justify-content:space-between;padding:0.3rem 0;"
+                        f"border-bottom:1px solid var(--hairline-soft)'>"
+                        f"<span><b>{_h.escape(p['player'])}</b> "
+                        f"<span style='color:var(--fg-5);font-size:0.78rem'>{_h.escape(p['pos'])} &middot; {_h.escape(p['incumbent'])}</span></span>"
+                        f"<span style='color:var(--fg-5)'>${p['value_M']:.0f}M value</span></div>",
+                        unsafe_allow_html=True)
+            continue
+        ctx = TEAMS.get(tm, {})
+        name = ctx.get("name") or (pick(grp[0])["predicted_name"] if grp else tm)
+        total = ctx.get("under_contract", 0) + ctx.get("picks", 0) + len(grp)
+        fills = max(0, 14 - total)
         with st.expander(f"{name}  —  {len(adds)} add, {len(keeps)} re-sign", expanded=False):
-            ctx = TEAMS.get(tm)
             if ctx:
+                roster = (f"{ctx['under_contract']} under contract + {ctx['picks']} pick"
+                          f"{'s' if ctx['picks'] != 1 else ''} + {len(grp)} signed = "
+                          f"<b style='color:var(--fg-3)'>{total}</b> of 15"
+                          + (f" &middot; +{fills} on a minimum / two-way to reach 14" if fills else ""))
                 st.markdown(
-                    f"<div style='color:var(--fg-5);font-size:0.78rem;margin:-0.2rem 0 0.5rem'>"
+                    f"<div style='color:var(--fg-5);font-size:0.78rem;margin:-0.2rem 0 0.55rem'>"
                     f"Guaranteed payroll <b style='color:var(--fg-3)'>${ctx['committed_M']}M</b> "
                     f"&middot; re-signs <b style='color:var(--fg-3)'>${ctx['resign_cost_M']}M</b> "
-                    f"&middot; room for outside FAs: <b style='color:var(--fg-3)'>{_h.escape(ctx['room'])}</b></div>",
+                    f"&middot; room: <b style='color:var(--fg-3)'>{_h.escape(ctx['room'])}</b>"
+                    f"<br>Roster: {roster}</div>",
                     unsafe_allow_html=True)
             for p in grp:
                 pk = pick(p)

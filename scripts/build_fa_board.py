@@ -688,39 +688,66 @@ for c in cands:
 #       not the theoretical "renounce everyone" cap room. So a capped-out team
 #       can't add $40M of outside players while keeping its own stars.
 # (Likely mode is untouched: it's the per-player accuracy-max pick.)
+# Roster spots are tracked so no team exceeds 15: players under contract + first-
+# round picks occupy spots up front, then re-signs / external adds fill the rest.
+ROSTER_MAX = 15
+rost_used = {tm: len(b.get("roster", []))
+             + sum(1 for m in b.get("plan", []) if m.get("kind") == "pick" and m.get("round") == 1)
+             for tm, b in boards.items()}
 adds = {}
 real_by_name = {}
-for item in sorted(prelim, key=lambda x: -x["c"]["value_M"]):
+# Step A — board re-signs occupy their spots.
+_resigned = set()
+for item in prelim:
     c = item["c"]; nm = normalize(c["name"])
-    if nm in _board_resigns:                           # Team Builder keeps him -> re-sign (cap-coherent)
-        inc = next((d for d in item["b_like"] if d["is_incumbent"]), None)
-        rp = (_pick(inc, item["b_like"], c) if inc else {
-            "predicted": c["team"], "predicted_name": _TEAMNAME.get(c["team"], c["team"]),
-            "is_resign": True, "confidence": "High", "offer_M": c["value_M"],
-            "reason": "re-signs (Team Builder plan)", "alts": []})
-        rp["tool"] = "Bird rights"                     # re-sign their own, not via cap room
-        real_by_name[c["name"]] = rp
+    if nm not in _board_resigns:
         continue
-    chosen = None                                      # otherwise: best feasible OUTSIDE team
+    inc = next((d for d in item["b_like"] if d["is_incumbent"]), None)
+    rp = (_pick(inc, item["b_like"], c) if inc else {
+        "predicted": c["team"], "predicted_name": _TEAMNAME.get(c["team"], c["team"]),
+        "is_resign": True, "confidence": "High", "offer_M": c["value_M"],
+        "reason": "re-signs (Team Builder plan)", "alts": []})
+    rp["tool"] = "Bird rights"                          # re-sign their own, not via cap room
+    real_by_name[c["name"]] = rp; _resigned.add(c["name"])
+    rost_used[c["team"]] = rost_used.get(c["team"], 0) + 1
+# Step B — external clear for everyone else: best OUTSIDE team that has both a
+# roster spot and the real budget. Best-first so the stars get the open money.
+_leftover = []
+for item in sorted((x for x in prelim if x["c"]["name"] not in _resigned),
+                   key=lambda x: -x["c"]["value_M"]):
+    c = item["c"]; chosen = None
     for d in item["b_real"]:
         if d["is_incumbent"]:                          # board let him walk -> not a re-sign here
             continue
         t = d["team"]; o = d["offer_M"]; bud = budget.get(t)
-        if not bud or adds.get(t, 0) >= MAX_REAL_ADDS:
+        if not bud or rost_used.get(t, 99) >= ROSTER_MAX or adds.get(t, 0) >= MAX_REAL_ADDS:
             continue
         if bud["cap"] + 1e-6 >= o and bud["apron_room"] + 1e-6 >= o:        # cap room
-            bud["cap"] -= o; bud["apron_room"] -= o; adds[t] = adds.get(t, 0) + 1; chosen = d; break
+            bud["cap"] -= o; bud["apron_room"] -= o; chosen = d; break
         if (not bud["mle_used"]) and bud["mle"] + 1e-6 >= o and bud["apron_room"] + 1e-6 >= o:  # one MLE
-            bud["mle_used"] = True; bud["apron_room"] -= o; adds[t] = adds.get(t, 0) + 1; chosen = d; break
+            bud["mle_used"] = True; bud["apron_room"] -= o; chosen = d; break
         if o <= MIN_M + 1e-6:                          # veteran minimum (apron-exempt)
-            adds[t] = adds.get(t, 0) + 1; chosen = {**d, "tool": "minimum"}; break
+            chosen = {**d, "tool": "minimum"}; break
     if chosen:
+        t = chosen["team"]; adds[t] = adds.get(t, 0) + 1; rost_used[t] = rost_used.get(t, 0) + 1
         real_by_name[c["name"]] = _pick(chosen, item["b_real"], c)
-    else:                                              # no fit anywhere -> a minimum deal
+    else:
+        _leftover.append(item)
+# Step C — no outside fit: back on a minimum with the incumbent if it still has a
+# roster spot, otherwise genuinely unsigned (a minimum / two-way / overseas guy).
+for item in sorted(_leftover, key=lambda x: -x["c"]["value_M"]):
+    c = item["c"]; t = c["team"]
+    if rost_used.get(t, 99) < ROSTER_MAX:
+        rost_used[t] = rost_used.get(t, 0) + 1
         real_by_name[c["name"]] = {
-            "predicted": c["team"], "predicted_name": _TEAMNAME.get(c["team"], c["team"]),
-            "is_resign": True, "confidence": "Low", "offer_M": round(min(c["value_M"], MIN_M), 1),
-            "tool": "minimum", "reason": "no fit on the open market — likely a minimum deal", "alts": []}
+            "predicted": t, "predicted_name": _TEAMNAME.get(t, t), "is_resign": True,
+            "confidence": "Low", "offer_M": round(min(c["value_M"], MIN_M), 1),
+            "tool": "minimum", "reason": "back on a minimum", "alts": []}
+    else:
+        real_by_name[c["name"]] = {
+            "predicted": None, "predicted_name": "Unsigned", "is_resign": False,
+            "confidence": "Low", "offer_M": 0, "tool": "unsigned",
+            "reason": "no roster spot — likely a minimum, two-way, or overseas deal", "alts": []}
 
 sim_players = []
 for item in prelim:
@@ -748,7 +775,10 @@ def _room_label(bud):
 sim_teams = {tm: {"name": _TEAMNAME.get(tm, tm),
                   "committed_M": round(b["committed_M"]),
                   "resign_cost_M": round(b["resign_cost_M"]),
-                  "room": _room_label(budget[tm])}
+                  "room": _room_label(budget[tm]),
+                  "under_contract": len(b.get("roster", [])),
+                  "picks": sum(1 for m in b.get("plan", [])
+                               if m.get("kind") == "pick" and m.get("round") == 1)}
              for tm, b in boards.items()}
 SIM_OUT.write_text(json.dumps({
     "season": CUR, "contract_season": CONTRACT,
