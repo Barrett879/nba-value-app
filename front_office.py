@@ -300,23 +300,11 @@ def render_front_office():
 
     st.divider()
 
-    # ── Best fits (the featured suggestion) ─────────────────────────────────────
-    fits = B.get("best_fits", [])
-    if fits:
-        st.markdown(f"#### Best fits for the {_short}")
-        st.caption(
-            "Our top matches, roster need, the team's timeline, and value fused into one fit grade. "
-            "The standouts on the board, not just the priciest names a team could sign.")
-        st.markdown(_FIT_CSS, unsafe_allow_html=True)
-        st.markdown(f"<div class='hv-fits'>{''.join(_fit_card(f) for f in fits)}</div>",
-                    unsafe_allow_html=True)
-        st.divider()
-
-    # ── The realistic offseason: re-signs + external adds, then the full board ───
-    st.subheader(f"{_short} offseason plan")
+    # ── Offseason OPTIONS: the full external free-agent board ────────────────────
+    st.subheader(f"{_short} offseason options")
     st.caption(
-        "The full board below ranks every external free agent by how keenly a team of this timeline "
-        "would chase them."
+        "Every external free agent, ranked by how keenly a team of this timeline would chase them. "
+        "These are the options; the realistic plan is below."
     )
     if B["pursue"]:
         pur = pd.DataFrame(B["pursue"])
@@ -340,6 +328,9 @@ def render_front_office():
     else:
         st.info("No realistic external targets, this team is capped out with a full rotation.")
 
+    # ── Offseason PLAN: the realistic move set drawn from the options above ───────
+    st.divider()
+    st.subheader(f"{_short} offseason plan")
     _plan_moves = B.get("plan", [])
     _resigns = [m for m in _plan_moves if m.get("kind") == "resign"]
     _adds = [m for m in _plan_moves if m.get("kind") == "external"]

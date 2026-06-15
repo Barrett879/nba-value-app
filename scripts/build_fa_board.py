@@ -139,12 +139,33 @@ def primary(pos):
     return ts._primary_position(pos)
 
 
+SECONDARY_W = 0.5       # a player's secondary position counts this much (vs 1.0 primary)
+
+
+def pos_weights(pos_str):
+    """A player's positional coverage: 1.0 at his primary spot, SECONDARY_W at
+    each secondary one (a SG/SF is a full SG and a partial SF). Used so a player
+    who can slide over partly covers that position for needs + roster balance."""
+    out = {}
+    for i, p in enumerate(str(pos_str).split("/")):
+        p = p.strip()
+        if p in POSITIONS:
+            out[p] = max(out.get(p, 0.0), 1.0 if i == 0 else SECONDARY_W)
+    return out
+
+
 def needs_for(roster):
-    """Positions with no starter-level primary player (need) and thin spots."""
+    """Positions with no starter-level player (need) and thin spots. A player
+    counts fully at his primary position and partly (SECONDARY_W) at each
+    secondary one, so a forward who can slide over partly covers that spot."""
     need, thin = [], []
     for p in POSITIONS:
-        here = sorted((float(b) for pp, b in zip(roster["pos"], roster["barrett"])
-                       if primary(pp) == p), reverse=True)
+        here = []
+        for pp, b in zip(roster["pos"], roster["barrett"]):
+            wt = pos_weights(pp).get(p)
+            if wt:
+                here.append(float(b) * wt)
+        here.sort(reverse=True)
         if not here or here[0] < STARTER:
             need.append(p)
         elif len(here) < 2 or here[1] < 8.0:
@@ -292,7 +313,7 @@ def offseason_plan(pursue_rows, cap_room, mle, apron_room, max_adds=5,
         if len(out) >= max_adds:                        # roster spots filled (0 -> add nothing)
             break
         _pos = primary(x["pos"])
-        if pos_counts.get(_pos, 0) >= pos_cap:          # already deep here -> don't stack it
+        if pos_counts.get(_pos, 0) >= pos_cap:          # primary spot already deep -> skip
             continue
         offer = x["offer_M"]
         if offer <= MIN_SALARY:                        # veteran minimum: fills the roster,
@@ -353,7 +374,6 @@ def board_for(team):
                               else "Mid-level exception" if exc >= 12
                               else "Veteran minimum")})
     rows.sort(key=lambda x: -x["keen"])
-    need, thin = needs_for(roster)
 
     def pack(x):
         return {"name": x["name"], "pos": x["pos"], "status": x["status"],
@@ -426,11 +446,17 @@ def board_for(team):
     # Room left below the second apron (the practical hard ceiling) after the
     # re-signings and picks — bounds how much the team can actually add in FA.
     _apron_room = max(0.0, round(APRON2_M) - (_committed + _resign_cost + _pick_cost))
-    # External adds fill only the roster spots left after picks + re-signings,
-    # and are positionally balanced: count the projected roster by primary
-    # position (guaranteed players + re-signs) so the plan fills needs instead
-    # of stacking a position (no 4th center). Draft picks are position-unknown,
-    # so they don't seed the counts.
+    # The PROJECTED 2026-27 roster: who's under contract plus the keepers they
+    # re-sign. Positions of need and roster balance are judged against THIS, not
+    # the 2025-26 roster that still counts departing free agents. (A position-
+    # weighted count: primary 1.0, secondary SECONDARY_W, per `pos_weights`.)
+    _kept = _keepers[:_open_spots]
+    _proj = ([{"pos": r["pos"], "barrett": r["barrett"]} for r in _roster]
+             + [{"pos": k["pos"], "barrett": k["barrett"]} for k in _kept])
+    need, thin = needs_for(pd.DataFrame(_proj)) if _proj else ([], [])
+    # Roster balance for external adds: count the projected roster's depth by
+    # PRIMARY position (so the plan won't stack a 4th of one position). Draft
+    # picks are position-unknown, so they don't seed the counts.
     _pos_counts = {}
     for _m in _roster + _resign_moves:
         _pp = primary(_m["pos"])
