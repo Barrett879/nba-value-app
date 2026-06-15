@@ -147,7 +147,7 @@ def _player_table(rows):
             f"<td style='{_TD}'><b>{_h.escape(p['player'])}</b>"
             f"<div style='font-size:0.72rem;color:var(--fg-5)'>age {p['age']} &middot; {_h.escape(p['incumbent_name'])}</div></td>"
             f"<td style='{_TD};color:var(--fg-4)'>{_h.escape(p['pos'])}</td>"
-            f"<td style='{_TD};text-align:right;font-weight:700'>${pk.get('offer_M', p['value_M']):.0f}M</td>"
+            f"<td style='{_TD};text-align:right;font-weight:700'>${pk.get('offer_M', 0):.0f}M</td>"
             f"<td style='{_TD}'>{_chip(p['status'], st_c)}</td>"
             f"<td style='{_TD}'>{_dest_cell(p)}</td>"
             f"<td style='{_TD}'>{_chip(conf, _CONF_COLOR.get(conf, 'var(--fg-4)'))}</td>"
@@ -189,7 +189,10 @@ def _team_view(rows):
         re_cost = sum(round(pick(p).get("offer_M", 0)) for p in keeps)
         add_cost = sum(round(pick(p).get("offer_M", 0)) for p in adds)
         with st.expander(f"{name}  —  {len(adds)} add, {len(keeps)} re-sign", expanded=False):
-            if ctx:
+            # The cap + roster math is only coherent in Realistic mode (it's
+            # roster-capped + budget-bounded in the build). Most-likely re-signs
+            # every FA independently with no cap, so "X of 15" wouldn't make sense.
+            if ctx and MODE == "realistic":
                 roster = (f"{ctx['under_contract']} under contract + {ctx['picks']} pick"
                           f"{'s' if ctx['picks'] != 1 else ''} + {len(grp)} signed = "
                           f"<b style='color:var(--fg-3)'>{total}</b> of 15"
@@ -201,6 +204,12 @@ def _team_view(rows):
                     f"&middot; adds <b style='color:var(--fg-3)'>${add_cost}M</b> "
                     f"&middot; room: <b style='color:var(--fg-3)'>{_h.escape(ctx['room'])}</b>"
                     f"<br>Roster: {roster}</div>",
+                    unsafe_allow_html=True)
+            elif MODE != "realistic":
+                st.markdown(
+                    "<div style='color:var(--fg-5);font-size:0.78rem;margin:-0.2rem 0 0.55rem'>"
+                    "Most-likely keeps each free agent on his current team independently (no cap "
+                    "limit). Switch to <b>Realistic</b> for a cap-coherent, 15-man roster.</div>",
                     unsafe_allow_html=True)
             for p in grp:
                 pk = pick(p)

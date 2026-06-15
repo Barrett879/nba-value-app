@@ -29,7 +29,7 @@
    "name": "Brooklyn Nets",
    "committed_M": 121,
    "resign_cost_M": 15,
-   "room": "full mid-level",
+   "room": "$20M cap room",
    "under_contract": 9,
    "picks": 1
   },
@@ -53,7 +53,7 @@
    "name": "Chicago Bulls",
    "committed_M": 93,
    "resign_cost_M": 28,
-   "room": "$11M cap room",
+   "room": "$28M cap room",
    "under_contract": 8,
    "picks": 2
   },
@@ -109,7 +109,7 @@
    "name": "Indiana Pacers",
    "committed_M": 152,
    "resign_cost_M": 3,
-   "room": "full mid-level",
+   "room": "$10M cap room",
    "under_contract": 12,
    "picks": 0
   },
@@ -352,7 +352,7 @@
     "predicted_name": "Los Angeles Lakers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 41.2,
+    "offer_M": 41,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -576,7 +576,7 @@
     "predicted_name": "Boston Celtics",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 25.5,
+    "offer_M": 3,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -800,7 +800,7 @@
     "predicted_name": "San Antonio Spurs",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 21.0,
+    "offer_M": 3,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -968,7 +968,7 @@
     "predicted_name": "Charlotte Hornets",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 16.4,
+    "offer_M": 16,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
@@ -1249,7 +1249,7 @@
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 12.8,
-    "tool": "cap room",
+    "tool": "mid-level exception",
     "reason": "upgrades over Isaac Okoro (8.5 vs 10.5) \u00b7 rebuild",
     "alts": [
      {
@@ -1360,7 +1360,7 @@
     "predicted_name": "Philadelphia 76ers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 13.4,
+    "offer_M": 13,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -1416,7 +1416,7 @@
     "predicted_name": "Brooklyn Nets",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 13.1,
+    "offer_M": 6,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -1472,7 +1472,7 @@
     "predicted_name": "Miami Heat",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 13.1,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
@@ -1528,7 +1528,7 @@
     "predicted_name": "Chicago Bulls",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 12.5,
+    "offer_M": 12,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -1584,7 +1584,7 @@
     "predicted_name": "Philadelphia 76ers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 12.4,
+    "offer_M": 12,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -1640,7 +1640,7 @@
     "predicted_name": "Atlanta Hawks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 12.3,
+    "offer_M": 12,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
@@ -1752,7 +1752,7 @@
     "predicted_name": "Houston Rockets",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 12.1,
+    "offer_M": 12,
     "tool": "Bird rights",
     "reason": "can match any offer (restricted FA) \u00b7 title",
     "alts": [
@@ -2088,7 +2088,7 @@
     "predicted_name": "New York Knicks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 10.4,
+    "offer_M": 10,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -2144,7 +2144,7 @@
     "predicted_name": "Boston Celtics",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 10.4,
+    "offer_M": 10,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -2200,7 +2200,7 @@
     "predicted_name": "Detroit Pistons",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 10.3,
+    "offer_M": 10,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -2256,7 +2256,7 @@
     "predicted_name": "Detroit Pistons",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 10.1,
+    "offer_M": 4,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -2312,7 +2312,7 @@
     "predicted_name": "Los Angeles Lakers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 10.1,
+    "offer_M": 10,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -2424,7 +2424,7 @@
     "predicted_name": "San Antonio Spurs",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 9.2,
+    "offer_M": 9,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -2481,7 +2481,7 @@
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 5.6,
-    "tool": "cap room",
+    "tool": "mid-level exception",
     "reason": "depth piece over Tyson Etienne (5.9 vs 6.3) \u00b7 rebuild",
     "alts": [
      {
@@ -2760,7 +2760,7 @@
     "predicted_name": "Golden State Warriors",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 8.4,
+    "offer_M": 8,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
@@ -3057,7 +3057,7 @@
     "predicted_name": "Atlanta Hawks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 6.7,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
@@ -3113,7 +3113,7 @@
     "predicted_name": "Brooklyn Nets",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 6.5,
+    "offer_M": 6,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -3225,7 +3225,7 @@
     "predicted_name": "Philadelphia 76ers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 6.3,
+    "offer_M": 3,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -3281,7 +3281,7 @@
     "predicted_name": "Los Angeles Lakers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 6.2,
+    "offer_M": 6,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -3337,7 +3337,7 @@
     "predicted_name": "Atlanta Hawks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 6.2,
+    "offer_M": 6,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
@@ -3759,7 +3759,7 @@
     "predicted_name": "Toronto Raptors",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 5.4,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
@@ -3815,7 +3815,7 @@
     "predicted_name": "Sacramento Kings",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 5.4,
+    "offer_M": 5,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -3927,7 +3927,7 @@
     "predicted_name": "Brooklyn Nets",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 5.0,
+    "offer_M": 3,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -4013,7 +4013,7 @@
     "predicted_name": "Boston Celtics",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 4.6,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
@@ -4180,10 +4180,10 @@
       "tool": "Bird rights"
      },
      {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 2.1,
-      "tool": "taxpayer MLE"
+      "team": "BOS",
+      "team_name": "Boston Celtics",
+      "offer_M": 2.7,
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -4281,7 +4281,7 @@
     "predicted_name": "Dallas Mavericks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 4.3,
+    "offer_M": 4,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
@@ -4426,14 +4426,7 @@
     "offer_M": 2.0,
     "tool": "minimum",
     "reason": "depth piece over Jae'Sean Tate (1.9 vs 1.9) \u00b7 title",
-    "alts": [
-     {
-      "team": "HOU",
-      "team_name": "Houston Rockets",
-      "offer_M": 2.0,
-      "tool": "mid-level exception"
-     }
-    ]
+    "alts": []
    }
   },
   {
@@ -4473,7 +4466,7 @@
     "predicted_name": "New Orleans Pelicans",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 4.0,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -5128,14 +5121,14 @@
     "reason": "depth piece over Jeremy Sochan (3.0 vs 3.5) \u00b7 title",
     "alts": [
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 1.8,
-      "tool": "taxpayer MLE"
-     },
-     {
       "team": "HOU",
       "team_name": "Houston Rockets",
+      "offer_M": 1.8,
+      "tool": "mid-level exception"
+     },
+     {
+      "team": "SAS",
+      "team_name": "San Antonio Spurs",
       "offer_M": 1.8,
       "tool": "mid-level exception"
      }
@@ -5190,10 +5183,10 @@
       "tool": "Bird rights"
      },
      {
-      "team": "TOR",
-      "team_name": "Toronto Raptors",
-      "offer_M": 2.2,
-      "tool": "mid-level exception"
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 1.8,
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -5235,7 +5228,7 @@
     "predicted_name": "LA Clippers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 3.5,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -5332,10 +5325,10 @@
       "tool": "Bird rights"
      },
      {
-      "team": "TOR",
-      "team_name": "Toronto Raptors",
-      "offer_M": 2.2,
-      "tool": "mid-level exception"
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 1.8,
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -5407,7 +5400,7 @@
     "predicted_name": "Chicago Bulls",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 3.3,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -5575,7 +5568,7 @@
     "predicted_name": "Washington Wizards",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 3.1,
+    "offer_M": 3,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
@@ -5631,7 +5624,7 @@
     "predicted_name": "Milwaukee Bucks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 3.1,
+    "offer_M": 3,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
@@ -5730,7 +5723,7 @@
     "predicted_name": "Milwaukee Bucks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 3.1,
+    "offer_M": 3,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
@@ -5853,10 +5846,10 @@
       "tool": "Bird rights"
      },
      {
-      "team": "BOS",
-      "team_name": "Boston Celtics",
-      "offer_M": 1.8,
-      "tool": "mid-level exception"
+      "team": "DAL",
+      "team_name": "Dallas Mavericks",
+      "offer_M": 1.4,
+      "tool": "cap room"
      }
     ]
    }
@@ -6077,10 +6070,10 @@
       "tool": "taxpayer MLE"
      },
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
       "offer_M": 1.4,
-      "tool": "taxpayer MLE"
+      "tool": "cap room"
      }
     ]
    }
@@ -6122,7 +6115,7 @@
     "predicted_name": "LA Clippers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 2.8,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 rebuild",
     "alts": [
@@ -6264,7 +6257,7 @@
     "predicted_name": "Golden State Warriors",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 2.5,
+    "offer_M": 2,
     "reason": "re-signs (Team Builder plan)",
     "alts": [],
     "tool": "Bird rights"
@@ -6367,7 +6360,7 @@
     "predicted_name": "Phoenix Suns",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 2.3,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
@@ -6423,7 +6416,7 @@
     "predicted_name": "Washington Wizards",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 2.2,
+    "offer_M": 2,
     "reason": "re-signs (Team Builder plan)",
     "alts": [],
     "tool": "Bird rights"
@@ -6466,7 +6459,7 @@
     "predicted_name": "Atlanta Hawks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 2.2,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "can match any offer (restricted FA) \u00b7 playoff",
     "alts": [
@@ -6522,7 +6515,7 @@
     "predicted_name": "Dallas Mavericks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 2.2,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
@@ -6583,16 +6576,16 @@
     "reason": "depth piece over Jose Alvarado (7.6 vs 7.9) \u00b7 title",
     "alts": [
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 1.1,
-      "tool": "taxpayer MLE"
-     },
-     {
       "team": "LAC",
       "team_name": "LA Clippers",
       "offer_M": 1.1,
       "tool": "taxpayer MLE"
+     },
+     {
+      "team": "POR",
+      "team_name": "Portland Trail Blazers",
+      "offer_M": 1.1,
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -6806,7 +6799,7 @@
     "predicted_name": "Washington Wizards",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 2.2,
+    "offer_M": 2,
     "tool": "Bird rights",
     "reason": "can match any offer (restricted FA) \u00b7 retooling",
     "alts": [

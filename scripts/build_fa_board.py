@@ -611,8 +611,17 @@ _FA_STATUS = {normalize(c["name"]): c["status"] for c in cands}
 # so the realistic mode can't, say, have a capped-out Lakers add $40M while also
 # keeping its stars. `LAND_REAL` feeds rank_suitors so external offers + tool
 # labels reflect THIS, not the theoretical "renounce everyone" cap room in LAND.
-_board_resigns = {normalize(m["name"]) for b in boards.values()
-                  for m in b.get("plan", []) if m.get("kind") == "resign"}
+# Board re-sign membership AND the team-option-aware keep cost, keyed by
+# (team, normalized name) — so a shared normalized name can't cross-trigger a
+# false re-sign on another team, and so an option player is costed at the cheap
+# option value the board used (not a new full-market deal).
+_board_resigns, _board_resign_cost = set(), {}
+for _tm, _b in boards.items():
+    for _m in _b.get("plan", []):
+        if _m.get("kind") == "resign":
+            _k = (_tm, normalize(_m["name"]))
+            _board_resigns.add(_k)
+            _board_resign_cost[_k] = _m["cost_M"]
 
 
 def _real_state(b):
@@ -699,8 +708,8 @@ real_by_name = {}
 # Step A — board re-signs occupy their spots.
 _resigned = set()
 for item in prelim:
-    c = item["c"]; nm = normalize(c["name"])
-    if nm not in _board_resigns:
+    c = item["c"]; key = (c["team"], normalize(c["name"]))
+    if key not in _board_resigns:
         continue
     inc = next((d for d in item["b_like"] if d["is_incumbent"]), None)
     rp = (_pick(inc, item["b_like"], c) if inc else {
@@ -708,6 +717,11 @@ for item in prelim:
         "is_resign": True, "confidence": "High", "offer_M": c["value_M"],
         "reason": "re-signs (Team Builder plan)", "alts": []})
     rp["tool"] = "Bird rights"                          # re-sign their own, not via cap room
+    # Use the board's keep cost (team-option-aware: cheap option, not a new deal),
+    # so the re-sign bill + apron fit match the Team Builder. Cap at market value so
+    # the offer<=value invariant holds (board cost is rounded to whole $M).
+    _kc = _board_resign_cost.get(key, rp.get("offer_M") or c["value_M"])
+    rp["offer_M"] = round(min(c["value_M"], _kc), 1)
     real_by_name[c["name"]] = rp; _resigned.add(c["name"])
     rost_used[c["team"]] = rost_used.get(c["team"], 0) + 1
 # Step B — external clear for everyone else: best OUTSIDE team that has both a
@@ -722,12 +736,17 @@ for item in sorted((x for x in prelim if x["c"]["name"] not in _resigned),
         t = d["team"]; o = d["offer_M"]; bud = budget.get(t)
         if not bud or rost_used.get(t, 99) >= ROSTER_MAX or adds.get(t, 0) >= MAX_REAL_ADDS:
             continue
+        # Label the row by the tool ACTUALLY used here (not the standalone entry
+        # label), and mutate d in place so _pick's identity check keeps the team
+        # out of its own alternatives list.
         if bud["cap"] + 1e-6 >= o and bud["apron_room"] + 1e-6 >= o:        # cap room
-            bud["cap"] -= o; bud["apron_room"] -= o; chosen = d; break
-        if (not bud["mle_used"]) and bud["mle"] + 1e-6 >= o and bud["apron_room"] + 1e-6 >= o:  # one MLE
-            bud["mle_used"] = True; bud["apron_room"] -= o; chosen = d; break
+            bud["cap"] -= o; bud["apron_room"] -= o; d["tool"] = "cap room"; chosen = d; break
+        if (not bud["mle_used"]) and bud["mle"] + 1e-6 >= o and bud["apron_room"] + 1e-6 >= o:  # the one MLE
+            bud["mle_used"] = True; bud["apron_room"] -= o
+            d["tool"] = "mid-level exception" if bud["mle"] >= 15 else "taxpayer MLE"
+            chosen = d; break
         if o <= MIN_M + 1e-6:                          # veteran minimum (apron-exempt)
-            chosen = {**d, "tool": "minimum"}; break
+            d["tool"] = "minimum"; chosen = d; break
     if chosen:
         t = chosen["team"]; adds[t] = adds.get(t, 0) + 1; rost_used[t] = rost_used.get(t, 0) + 1
         real_by_name[c["name"]] = _pick(chosen, item["b_real"], c)
@@ -755,14 +774,20 @@ for item in sorted(_leftover, key=lambda x: -x["c"]["value_M"]):
         real_by_name[c["name"]] = _min_pick(t, c, "back on a minimum")
     else:
         pool.append(item)
-# C2 — remaining teams under 14 sign outside minimum bodies, preferring a player
-# who fills a position of need, else the best available.
+# C2 — remaining teams under 14 sign outside minimum bodies: a player who fills a
+# position of need, else a genuinely minimum-level body (value <= ~$4M). A
+# starter-caliber leftover is NOT dumped onto a random team's minimum here — he
+# falls through to C3 (back home on a minimum) instead.
+_MINFILL_MAX = 4.0
 for tm in sorted((t for t in boards if rost_used.get(t, 0) < ROSTER_MIN),
                  key=lambda t: rost_used.get(t, 0)):
     need_pos = set(boards[tm].get("needs", []) + boards[tm].get("thin", []))
     while rost_used.get(tm, 0) < ROSTER_MIN and pool:
         ranked = sorted(pool, key=lambda x: -x["c"]["barrett"])
-        fit = next((it for it in ranked if primary(it["c"]["pos"]) in need_pos), ranked[0])
+        fit = (next((it for it in ranked if primary(it["c"]["pos"]) in need_pos), None)
+               or next((it for it in ranked if it["c"]["value_M"] <= _MINFILL_MAX), None))
+        if fit is None:                                # only starter-caliber bodies left -> leave the gap
+            break
         pool.remove(fit); rost_used[tm] = rost_used.get(tm, 0) + 1
         real_by_name[fit["c"]["name"]] = _min_pick(tm, fit["c"], "minimum deal to fill a roster need")
 # C3 — anyone still unplaced: a 15th-man minimum at home if there's room, else unsigned.
@@ -803,7 +828,8 @@ def _room_label(bud):
 sim_teams = {tm: {"name": _TEAMNAME.get(tm, tm),
                   "committed_M": round(b["committed_M"]),
                   "resign_cost_M": round(b["resign_cost_M"]),
-                  "room": _room_label(budget[tm]),
+                  # the room the team STARTED with (budget[] is drained by Step B)
+                  "room": _room_label({"cap": _capcol.get(tm, 0.0), "mle": _exccol.get(tm, 0.0)}),
                   "under_contract": len(b.get("roster", [])),
                   "picks": sum(1 for m in b.get("plan", [])
                                if m.get("kind") == "pick" and m.get("round") == 1)}
