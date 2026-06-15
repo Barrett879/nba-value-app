@@ -135,7 +135,7 @@ def _player_table(rows):
     h = [f"<div style='overflow-x:auto'><table style='width:100%;border-collapse:collapse'>",
          "<thead><tr>",
          f"<th style='{_TH}'>Player</th><th style='{_TH}'>Pos</th>",
-         f"<th style='{_TH};text-align:right'>Proj $</th><th style='{_TH}'>Status</th>",
+         f"<th style='{_TH};text-align:right'>Proj. deal</th><th style='{_TH}'>Status</th>",
          f"<th style='{_TH}'>Projected Destination</th><th style='{_TH}'>Confidence</th>",
          "</tr></thead><tbody>"]
     for p in rows:
@@ -147,7 +147,7 @@ def _player_table(rows):
             f"<td style='{_TD}'><b>{_h.escape(p['player'])}</b>"
             f"<div style='font-size:0.72rem;color:var(--fg-5)'>age {p['age']} &middot; {_h.escape(p['incumbent_name'])}</div></td>"
             f"<td style='{_TD};color:var(--fg-4)'>{_h.escape(p['pos'])}</td>"
-            f"<td style='{_TD};text-align:right;font-weight:700'>${p['value_M']:.0f}M</td>"
+            f"<td style='{_TD};text-align:right;font-weight:700'>${pk.get('offer_M', p['value_M']):.0f}M</td>"
             f"<td style='{_TD}'>{_chip(p['status'], st_c)}</td>"
             f"<td style='{_TD}'>{_dest_cell(p)}</td>"
             f"<td style='{_TD}'>{_chip(conf, _CONF_COLOR.get(conf, 'var(--fg-4)'))}</td>"
@@ -184,6 +184,10 @@ def _team_view(rows):
         name = ctx.get("name") or (pick(grp[0])["predicted_name"] if grp else tm)
         total = ctx.get("under_contract", 0) + ctx.get("picks", 0) + len(grp)
         fills = max(0, 14 - total)
+        # spend from the ACTUAL projected deals shown below (not the board's
+        # worthy-keeper figure), so the header and rows agree.
+        re_cost = sum(round(pick(p).get("offer_M", 0)) for p in keeps)
+        add_cost = sum(round(pick(p).get("offer_M", 0)) for p in adds)
         with st.expander(f"{name}  —  {len(adds)} add, {len(keeps)} re-sign", expanded=False):
             if ctx:
                 roster = (f"{ctx['under_contract']} under contract + {ctx['picks']} pick"
@@ -193,7 +197,8 @@ def _team_view(rows):
                 st.markdown(
                     f"<div style='color:var(--fg-5);font-size:0.78rem;margin:-0.2rem 0 0.55rem'>"
                     f"Guaranteed payroll <b style='color:var(--fg-3)'>${ctx['committed_M']}M</b> "
-                    f"&middot; re-signs <b style='color:var(--fg-3)'>${ctx['resign_cost_M']}M</b> "
+                    f"&middot; re-signs <b style='color:var(--fg-3)'>${re_cost}M</b> "
+                    f"&middot; adds <b style='color:var(--fg-3)'>${add_cost}M</b> "
                     f"&middot; room: <b style='color:var(--fg-3)'>{_h.escape(ctx['room'])}</b>"
                     f"<br>Roster: {roster}</div>",
                     unsafe_allow_html=True)
@@ -206,7 +211,7 @@ def _team_view(rows):
                     f"padding:0.3rem 0;border-bottom:1px solid var(--hairline-soft)'>"
                     f"<span><b>{_h.escape(p['player'])}</b> "
                     f"<span style='color:var(--fg-5);font-size:0.78rem'>{_h.escape(p['pos'])}</span></span>"
-                    f"<span>${p['value_M']:.0f}M &nbsp; {tag} &nbsp; "
+                    f"<span>${pk.get('offer_M', 0):.0f}M &nbsp; {tag} &nbsp; "
                     f"{_chip(pk['confidence'], _CONF_COLOR.get(pk['confidence'], 'var(--fg-4)'))}</span></div>",
                     unsafe_allow_html=True)
 
