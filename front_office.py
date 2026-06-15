@@ -71,12 +71,11 @@ def _fit_card(f):
 
 
 def _cap_bar_html(committed, cap, tax, apron2, after, apron1=None):
-    """A horizontal cap bar: current committed payroll (teal) plus the realistic
-    plan's spend (hatched), against the salary cap / luxury tax / first- and
-    second-apron lines. The white marker is the projected payroll after the plan."""
-    # Scale from $0 so the teal "committed payroll" segment is proportional to the
-    # real figure. (Starting at min(vals)-10 squeezed committed into a sliver and
-    # made the offseason spend look like the whole payroll.)
+    """A horizontal cap bar: guaranteed payroll (teal) and the projected payroll
+    after the offseason (the white marker), against the salary cap / luxury tax /
+    first- and second-apron lines."""
+    # Scale from $0 so the teal "guaranteed payroll" segment is proportional to the
+    # real figure. (Starting at min(vals)-10 squeezed it into a sliver.)
     vals = [committed, cap, tax, apron2, after] + ([apron1] if apron1 else [])
     lo, hi = 0.0, max(vals) + 8
     span = max(hi - lo, 1.0)
@@ -84,9 +83,6 @@ def _cap_bar_html(committed, cap, tax, apron2, after, apron1=None):
     cw, aw = p(committed), p(after)
     seg_now = (f"<div style='position:absolute;left:0;width:{cw:.1f}%;top:0;bottom:0;border-radius:7px 0 0 7px;"
                f"background:linear-gradient(90deg,rgba(22,212,193,.32),rgba(22,212,193,.6));'></div>")
-    seg_plan = (f"<div style='position:absolute;left:{cw:.1f}%;width:{max(aw - cw, 0.4):.1f}%;top:0;bottom:0;"
-                f"background:repeating-linear-gradient(45deg,rgba(241,196,15,.45),rgba(241,196,15,.45) 5px,"
-                f"transparent 5px,transparent 11px);'></div>") if after > committed + 0.5 else ""
     def tick(v, label, color, drop=0):
         # `drop` pushes the label onto a lower row so neighbouring ticks (tax /
         # 1st apron / 2nd apron are bunched together) don't overlap.
@@ -95,7 +91,7 @@ def _cap_bar_html(committed, cap, tax, apron2, after, apron1=None):
                 f"<div style='position:absolute;left:{x:.1f}%;bottom:{-1 - drop}px;transform:translateX(-50%);font-size:0.6rem;"
                 f"line-height:1.1;color:var(--fg-5);white-space:nowrap;text-align:center;'>{label}"
                 f"<br><b style='color:var(--fg-3)'>${v:.0f}M</b></div>")
-    ticks = tick(tax, "Tax", "var(--orange)")          # cap ($165M) line dropped — only the tax/apron ceilings matter here
+    ticks = tick(cap, "Cap", "var(--hairline)") + tick(tax, "Tax", "var(--orange)")
     if apron1:
         ticks += tick(apron1, "1st apron", "var(--orange)", drop=22)   # lower row, avoids overlap
     ticks += tick(apron2, "2nd apron", "var(--value-bad)")
@@ -103,11 +99,10 @@ def _cap_bar_html(committed, cap, tax, apron2, after, apron1=None):
              f"background:var(--fg-1);transform:translateX(-50%);box-shadow:0 0 6px rgba(0,0,0,.35);'></div>")
     legend = ("<div style='display:flex;gap:1.1rem;font-size:0.68rem;color:var(--fg-4);margin-bottom:0.5rem;'>"
               "<span><span style='color:var(--accent-teal)'>&#9632;</span> guaranteed payroll</span>"
-              "<span><span style='color:var(--gold)'>&#9632;</span> this offseason (re-signs + picks + signings)</span>"
-              "<span><span style='color:var(--fg-1)'>&#9612;</span> after the offseason</span></div>")
+              "<span><span style='color:var(--fg-1)'>&#9612;</span> projected payroll after the offseason</span></div>")
     return (f"<div style='margin:0.2rem 0 3.6rem;'>{legend}"
             f"<div style='position:relative;height:14px;border-radius:7px;background:var(--hairline-soft);'>"
-            f"{seg_now}{seg_plan}{ticks}{amark}</div></div>")
+            f"{seg_now}{ticks}{amark}</div></div>")
 
 
 _PLAN_TOOL_COLOR = {"Re-sign": "var(--gold)", "Cap room": "var(--accent-teal)",
