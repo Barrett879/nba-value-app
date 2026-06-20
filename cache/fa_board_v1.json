@@ -2,7 +2,7 @@
  "season": "2025-26",
  "contract_season": "2026-27",
  "cap_M": 165.0,
- "n_free_agents": 125,
+ "n_free_agents": 97,
  "teams": {
   "ATL": {
    "team": "ATL",
@@ -10,7 +10,7 @@
    "cap_room_M": 12,
    "exception_M": 15,
    "committed_M": 153,
-   "resign_cost_M": 38,
+   "resign_cost_M": 27,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -128,25 +128,26 @@
      "kind": "resign"
     },
     {
-     "name": "Jonathan Kuminga",
-     "pos": "SF/PF",
-     "cost_M": 12,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Mouhamed Gueye",
-     "pos": "PF/C",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
      "name": "Keaton Wallace",
      "pos": "PG/SG",
      "cost_M": 2,
      "tool": "Re-sign",
      "kind": "resign"
+    },
+    {
+     "name": "Gabe Vincent",
+     "pos": "PG/SG",
+     "cost_M": 3,
+     "tool": "Re-sign",
+     "kind": "resign"
+    },
+    {
+     "name": "Deandre Ayton",
+     "pos": "C",
+     "from": "LAL",
+     "cost_M": 14,
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "2026 Pick #8",
@@ -190,18 +191,6 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Jonathan Kuminga",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "ATL",
-     "value_M": 12.3,
-     "offer_M": 12,
-     "barrett": 11.2,
-     "age": 23,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
      "name": "Jock Landale",
      "pos": "C",
      "status": "UFA",
@@ -226,18 +215,6 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Mouhamed Gueye",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "ATL",
-     "value_M": 6.7,
-     "offer_M": 2,
-     "barrett": 7.2,
-     "age": 23,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
      "name": "Keaton Wallace",
      "pos": "PG/SG",
      "status": "RFA",
@@ -255,7 +232,7 @@
     "reserve_M": 11,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 205,
+    "all_in_M": 191,
     "keeps": [
      {
       "name": "CJ McCollum",
@@ -282,37 +259,13 @@
       "keep": true
      },
      {
-      "name": "Jonathan Kuminga",
-      "pos": "SF/PF",
-      "cost_M": 12,
-      "value_M": 12.3,
-      "barrett": 11.2,
-      "running_M": 198,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Mouhamed Gueye",
-      "pos": "PF/C",
-      "cost_M": 2,
-      "value_M": 6.7,
-      "barrett": 7.2,
-      "running_M": 200,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
       "name": "Keaton Wallace",
       "pos": "PG/SG",
       "cost_M": 2,
       "value_M": 2.2,
       "barrett": 2.6,
-      "running_M": 202,
-      "zone": "tax",
+      "running_M": 188,
+      "zone": "ok",
       "worth": true,
       "afford": true,
       "keep": true
@@ -323,27 +276,15 @@
       "cost_M": 3,
       "value_M": 2.9,
       "barrett": 0.9,
-      "running_M": 205,
-      "zone": "noroom",
+      "running_M": 191,
+      "zone": "ok",
       "worth": true,
       "afford": true,
-      "keep": false
+      "keep": true
      }
     ]
    },
    "pursue": [
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Jock Landale"
-    },
     {
      "name": "Bennedict Mathurin",
      "pos": "SF/PF",
@@ -402,18 +343,6 @@
      "barrett": 12.4,
      "age": 30,
      "tool": "Cap room",
-     "why": "Rotation depth behind Jonathan Kuminga"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
      "why": "Rotation depth behind Jonathan Kuminga"
     },
     {
@@ -525,18 +454,6 @@
      "why": "Rotation depth behind Jock Landale"
     },
     {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 12,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jock Landale"
-    },
-    {
      "name": "Collin Sexton",
      "pos": "PG/SG",
      "status": "UFA",
@@ -571,6 +488,42 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Jock Landale"
+    },
+    {
+     "name": "Anfernee Simons",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 12.5,
+     "offer_M": 8,
+     "barrett": 12.7,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Buddy Hield"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 7,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "status": "UFA",
+     "from": "LAL",
+     "value_M": 6.2,
+     "offer_M": 6,
+     "barrett": 12.4,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -580,7 +533,7 @@
    "cap_room_M": 44,
    "exception_M": 15,
    "committed_M": 121,
-   "resign_cost_M": 15,
+   "resign_cost_M": 0,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -590,7 +543,9 @@
     "SG",
     "PF"
    ],
-   "thin": [],
+   "thin": [
+    "C"
+   ],
    "roster": [
     {
      "name": "Michael Porter Jr.",
@@ -681,8 +636,8 @@
      "status": "RFA",
      "value_M": 49.5,
      "offer_M": 44,
-     "fit": 78,
-     "grade": "A",
+     "fit": 84,
+     "grade": "A+",
      "ppos": "C",
      "slot": 0,
      "why": "Upgrades on Nic Claxton at C, a bargain at $44M against his $49.5M market."
@@ -690,25 +645,12 @@
    ],
    "plan": [
     {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "cost_M": 6,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Ziaire Williams",
+     "name": "Peyton Watson",
      "pos": "SF/PF",
-     "cost_M": 6,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "cost_M": 3,
-     "tool": "Re-sign",
-     "kind": "resign"
+     "from": "DEN",
+     "cost_M": 19,
+     "tool": "Cap room",
+     "kind": "external"
     },
     {
      "name": "Mark Williams",
@@ -724,6 +666,22 @@
      "from": "LAC",
      "cost_M": 8,
      "tool": "Room exception",
+     "kind": "external"
+    },
+    {
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "from": "DAL",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Cam Thomas",
+     "pos": "SG",
+     "from": "MIL",
+     "cost_M": 2,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
@@ -754,89 +712,8 @@
      "round": 2
     }
    ],
-   "resign": [
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 6,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Ziaire Williams",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 6.5,
-     "offer_M": 6,
-     "barrett": 10.7,
-     "age": 24,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 5.0,
-     "offer_M": 3,
-     "barrett": 9.2,
-     "age": 23,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    }
-   ],
-   "resign_plan": {
-    "committed_M": 121,
-    "reserve_M": 9,
-    "tax_M": 200,
-    "apron2_M": 222,
-    "all_in_M": 145,
-    "keeps": [
-     {
-      "name": "Day'Ron Sharpe",
-      "pos": "C",
-      "cost_M": 6,
-      "value_M": 13.1,
-      "barrett": 13.7,
-      "running_M": 136,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Ziaire Williams",
-      "pos": "SF/PF",
-      "cost_M": 6,
-      "value_M": 6.5,
-      "barrett": 10.7,
-      "running_M": 142,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Josh Minott",
-      "pos": "PF/SF",
-      "cost_M": 3,
-      "value_M": 5.0,
-      "barrett": 9.2,
-      "running_M": 145,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     }
-    ]
-   },
+   "resign": [],
+   "resign_plan": null,
    "pursue": [
     {
      "name": "Jalen Duren",
@@ -887,18 +764,6 @@
      "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 23,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Day'Ron Sharpe"
-    },
-    {
      "name": "Peyton Watson",
      "pos": "SF/PF",
      "status": "RFA",
@@ -907,18 +772,6 @@
      "offer_M": 19,
      "barrett": 15.5,
      "age": 23,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Noah Clowney"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 19,
-     "barrett": 17.7,
-     "age": 24,
      "tool": "Cap room",
      "why": "Rotation depth behind Noah Clowney"
     },
@@ -971,18 +824,6 @@
      "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Day'Ron Sharpe"
-    },
-    {
      "name": "Deandre Ayton",
      "pos": "C",
      "status": "Player Option",
@@ -1005,18 +846,6 @@
      "age": 27,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
-    },
-    {
-     "name": "Jonathan Kuminga",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "ATL",
-     "value_M": 12.3,
-     "offer_M": 11,
-     "barrett": 11.2,
-     "age": 23,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Noah Clowney"
     },
     {
      "name": "Anfernee Simons",
@@ -1067,16 +896,64 @@
      "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
     },
     {
-     "name": "Pelle Larsson",
+     "name": "Norman Powell",
      "pos": "SG/SF",
-     "status": "Team Option",
+     "status": "UFA",
      "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 12,
-     "barrett": 16.3,
-     "age": 25,
+     "value_M": 18.7,
+     "offer_M": 17,
+     "barrett": 22.0,
+     "age": 33,
      "tool": "Cap room",
      "why": "Rotation depth behind Egor D\u00ebmin"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 12.4,
+     "offer_M": 11,
+     "barrett": 12.4,
+     "age": 30,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Noah Clowney"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 11,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Ziaire Williams"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 16,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.0,
+     "offer_M": 10,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Day'Ron Sharpe"
     }
    ]
   },
@@ -1086,7 +963,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 178,
-   "resign_cost_M": 15,
+   "resign_cost_M": 10,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -1196,13 +1073,6 @@
    ],
    "plan": [
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "cost_M": 3,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
      "name": "Nikola Vu\u010devi\u0107",
      "pos": "C/PF",
      "cost_M": 10,
@@ -1210,18 +1080,19 @@
      "kind": "resign"
     },
     {
-     "name": "Jordan Walsh",
-     "pos": "SF/PF",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "from": "MIA",
+     "cost_M": 15,
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
-     "name": "Coby White",
-     "pos": "PG/SG",
-     "from": "CHA",
-     "cost_M": 13,
-     "tool": "Mid-level",
+     "name": "Javonte Green",
+     "pos": "SG/SF",
+     "from": "DET",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
@@ -1255,30 +1126,6 @@
      "age": 35,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 3,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Jordan Walsh",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 4.6,
-     "offer_M": 2,
-     "barrett": 8.4,
-     "age": 22,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -1286,39 +1133,15 @@
     "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 196,
+    "all_in_M": 191,
     "keeps": [
-     {
-      "name": "Neemias Queta",
-      "pos": "C",
-      "cost_M": 3,
-      "value_M": 25.5,
-      "barrett": 21.3,
-      "running_M": 184,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
      {
       "name": "Nikola Vu\u010devi\u0107",
       "pos": "C/PF",
       "cost_M": 10,
       "value_M": 10.4,
       "barrett": 19.7,
-      "running_M": 194,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Jordan Walsh",
-      "pos": "SF/PF",
-      "cost_M": 2,
-      "value_M": 4.6,
-      "barrett": 8.4,
-      "running_M": 196,
+      "running_M": 191,
       "zone": "ok",
       "worth": true,
       "afford": true,
@@ -1362,18 +1185,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Baylor Scheierman"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 13,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Luka Garza"
     },
     {
      "name": "Coby White",
@@ -1432,30 +1243,6 @@
      "offer_M": 10,
      "barrett": 15.2,
      "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Sam Hauser"
-    },
-    {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Sam Hauser"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Sam Hauser"
     },
@@ -1566,6 +1353,42 @@
      "age": 34,
      "tool": "Mid-level exception",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "status": "RFA",
+     "from": "PHX",
+     "value_M": 15.6,
+     "offer_M": 12,
+     "barrett": 17.5,
+     "age": 24,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Luka Garza"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Sam Hauser"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jordan Walsh"
     }
    ]
   },
@@ -1660,17 +1483,17 @@
    ],
    "best_fits": [
     {
-     "name": "Neemias Queta",
+     "name": "Mark Williams",
      "pos": "C",
-     "from": "BOS",
-     "status": "Team Option",
-     "value_M": 25.5,
-     "offer_M": 17,
-     "fit": 84,
-     "grade": "A+",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 15.6,
+     "offer_M": 16,
+     "fit": 78,
+     "grade": "A",
      "ppos": "C",
      "slot": 0,
-     "why": "Upgrades on Moussa Diabat\u00e9 at C, a bargain at $17M against his $25.5M market."
+     "why": "Upgrades on Moussa Diabat\u00e9 at C, fair value at $16M."
     },
     {
      "name": "Peyton Watson",
@@ -1775,18 +1598,6 @@
      "why": "Upgrade \u00b7 would start over Moussa Diabat\u00e9"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 17,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Moussa Diabat\u00e9"
-    },
-    {
      "name": "Collin Gillespie",
      "pos": "PG",
      "status": "UFA",
@@ -1809,18 +1620,6 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Brandon Miller"
-    },
-    {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 17,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Moussa Diabat\u00e9"
     },
     {
      "name": "Deandre Ayton",
@@ -1859,18 +1658,6 @@
      "why": "Rotation depth behind Grant Williams"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Grant Williams"
-    },
-    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "status": "UFA",
@@ -1881,18 +1668,6 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Coby White"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Xavier Tillman"
     },
     {
      "name": "Kristaps Porzi\u0146\u0123is",
@@ -1967,30 +1742,6 @@
      "why": "Rotation depth behind Ryan Kalkbrenner"
     },
     {
-     "name": "Jonathan Kuminga",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "ATL",
-     "value_M": 12.3,
-     "offer_M": 8,
-     "barrett": 11.2,
-     "age": 23,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Grant Williams"
-    },
-    {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 8,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Coby White"
-    },
-    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "status": "UFA",
@@ -2001,6 +1752,78 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Xavier Tillman"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 12.4,
+     "offer_M": 8,
+     "barrett": 12.4,
+     "age": 30,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Grant Williams"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Grant Williams"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Sion James"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 7,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 12,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Coby White"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 7,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -2010,7 +1833,7 @@
    "cap_room_M": 72,
    "exception_M": 15,
    "committed_M": 93,
-   "resign_cost_M": 28,
+   "resign_cost_M": 26,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -2075,17 +1898,17 @@
    ],
    "best_fits": [
     {
-     "name": "Day'Ron Sharpe",
+     "name": "Mark Williams",
      "pos": "C",
-     "from": "BKN",
-     "status": "Team Option",
-     "value_M": 13.1,
-     "offer_M": 13,
-     "fit": 92,
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 15.6,
+     "offer_M": 16,
+     "fit": 91,
      "grade": "A+",
      "ppos": "C",
      "slot": 0,
-     "why": "Upgrades on Jalen Smith at C, fair value at $13M."
+     "why": "Upgrades on Jalen Smith at C, fair value at $16M."
     },
     {
      "name": "Austin Reaves",
@@ -2130,17 +1953,18 @@
      "kind": "resign"
     },
     {
-     "name": "Leonard Miller",
-     "pos": "SF/PF",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "cost_M": 16,
+     "tool": "Cap room",
+     "kind": "external"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "from": "BOS",
-     "cost_M": 26,
+     "name": "Kristaps Porzi\u0146\u0123is",
+     "pos": "PF/C",
+     "from": "GSW",
+     "cost_M": 14,
      "tool": "Cap room",
      "kind": "external"
     },
@@ -2249,18 +2073,6 @@
      "age": 30,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Leonard Miller",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "CHI",
-     "value_M": 3.3,
-     "offer_M": 2,
-     "barrett": 6.0,
-     "age": 22,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -2268,7 +2080,7 @@
     "reserve_M": 16,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 137,
+    "all_in_M": 135,
     "keeps": [
      {
       "name": "Collin Sexton",
@@ -2304,18 +2116,6 @@
       "zone": "walk",
       "worth": false,
       "keep": false
-     },
-     {
-      "name": "Leonard Miller",
-      "pos": "SF/PF",
-      "cost_M": 2,
-      "value_M": 3.3,
-      "barrett": 6.0,
-      "running_M": 137,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
      },
      {
       "name": "Nick Richards",
@@ -2367,18 +2167,6 @@
      "why": "Upgrade \u00b7 would start over Anfernee Simons"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 26,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Jalen Smith"
-    },
-    {
      "name": "Peyton Watson",
      "pos": "SF/PF",
      "status": "RFA",
@@ -2387,18 +2175,6 @@
      "offer_M": 19,
      "barrett": 15.5,
      "age": 23,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Isaac Okoro"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 19,
-     "barrett": 17.7,
-     "age": 24,
      "tool": "Cap room",
      "why": "Rotation depth behind Isaac Okoro"
     },
@@ -2451,18 +2227,6 @@
      "why": "Upgrade \u00b7 would start over Jalen Smith"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 17,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Jalen Smith"
-    },
-    {
      "name": "Deandre Ayton",
      "pos": "C",
      "status": "Player Option",
@@ -2471,18 +2235,6 @@
      "offer_M": 16,
      "barrett": 18.4,
      "age": 27,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Jalen Smith"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 13,
-     "barrett": 13.7,
-     "age": 24,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Jalen Smith"
     },
@@ -2509,18 +2261,6 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Collin Sexton"
-    },
-    {
-     "name": "Jonathan Kuminga",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "ATL",
-     "value_M": 12.3,
-     "offer_M": 11,
-     "barrett": 11.2,
-     "age": 23,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Isaac Okoro"
     },
     {
      "name": "Rui Hachimura",
@@ -2581,6 +2321,66 @@
      "age": 25,
      "tool": "Cap room",
      "why": "Rotation depth behind Isaac Okoro"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 11,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Jalen Smith"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 10,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Jalen Smith"
+    },
+    {
+     "name": "Coby White",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHA",
+     "value_M": 16.4,
+     "offer_M": 10,
+     "barrett": 14.9,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Collin Sexton"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Matas Buzelis"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 10,
+     "barrett": 16.7,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jalen Smith"
     }
    ]
   },
@@ -2710,9 +2510,9 @@
      "kind": "external"
     },
     {
-     "name": "Brook Lopez",
+     "name": "Dwight Powell",
      "pos": "C",
-     "from": "LAC",
+     "from": "DAL",
      "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
@@ -2779,18 +2579,6 @@
      "age": 28,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Craig Porter Jr.",
-     "pos": "PG",
-     "status": "Team Option",
-     "from": "CLE",
-     "value_M": 6.1,
-     "offer_M": 2,
-     "barrett": 8.6,
-     "age": 26,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -2798,7 +2586,7 @@
     "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 241,
+    "all_in_M": 239,
     "keeps": [
      {
       "name": "Keon Ellis",
@@ -2819,18 +2607,6 @@
       "value_M": 6.7,
       "barrett": 9.1,
       "running_M": 239,
-      "zone": "over",
-      "worth": true,
-      "afford": false,
-      "keep": false
-     },
-     {
-      "name": "Craig Porter Jr.",
-      "pos": "PG",
-      "cost_M": 2,
-      "value_M": 6.1,
-      "barrett": 8.6,
-      "running_M": 241,
       "zone": "over",
       "worth": true,
       "afford": false,
@@ -2859,18 +2635,6 @@
      "offer_M": 2,
      "barrett": 8.1,
      "age": 32,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 7.7,
-     "offer_M": 2,
-     "barrett": 11.0,
-     "age": 38,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -2947,18 +2711,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Nicolas Batum",
-     "pos": "PF/SF",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 4.1,
-     "offer_M": 2,
-     "barrett": 5.3,
-     "age": 37,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Nikola Vu\u010devi\u0107",
      "pos": "C/PF",
      "status": "UFA",
@@ -3019,18 +2771,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Micah Potter",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "IND",
-     "value_M": 2.9,
-     "offer_M": 2,
-     "barrett": 11.4,
-     "age": 28,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Kyle Anderson",
      "pos": "SF/PF",
      "status": "UFA",
@@ -3067,25 +2807,13 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Trendon Watford",
-     "pos": "PF/SF",
-     "status": "Team Option",
-     "from": "PHI",
-     "value_M": 2.9,
-     "offer_M": 2,
-     "barrett": 5.8,
-     "age": 25,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Olivier-Maxence Prosper",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "MEM",
-     "value_M": 3.2,
-     "offer_M": 2,
-     "barrett": 9.5,
+     "name": "Moussa Cisse",
+     "pos": "C",
+     "status": "RFA",
+     "from": "DAL",
+     "value_M": 2.2,
+     "offer_M": 1,
+     "barrett": 6.2,
      "age": 23,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
@@ -3468,18 +3196,6 @@
      "why": "Upgrade \u00b7 would start over Brandon Williams"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 26,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Daniel Gafford"
-    },
-    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "status": "UFA",
@@ -3502,18 +3218,6 @@
      "age": 41,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Khris Middleton"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 17,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Daniel Gafford"
     },
     {
      "name": "Mark Williams",
@@ -3562,30 +3266,6 @@
      "age": 23,
      "tool": "Cap room",
      "why": "Rotation depth behind P.J. Washington"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind P.J. Washington"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 12,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Marvin Bagley III"
     },
     {
      "name": "Collin Sexton",
@@ -3658,6 +3338,54 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Marvin Bagley III"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 16,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Brandon Williams"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 15,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Naji Marshall"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 8,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Brandon Williams"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 7,
+     "barrett": 16.7,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -3889,18 +3617,6 @@
      "age": 30,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Jalen Pickett",
-     "pos": "SG",
-     "status": "Team Option",
-     "from": "DEN",
-     "value_M": 2.8,
-     "offer_M": 2,
-     "barrett": 3.4,
-     "age": 26,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -3908,7 +3624,7 @@
     "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 260,
+    "all_in_M": 258,
     "keeps": [
      {
       "name": "Peyton Watson",
@@ -3953,18 +3669,6 @@
       "value_M": 4.0,
       "barrett": 7.4,
       "running_M": 258,
-      "zone": "over",
-      "worth": true,
-      "afford": false,
-      "keep": false
-     },
-     {
-      "name": "Jalen Pickett",
-      "pos": "SG",
-      "cost_M": 2,
-      "value_M": 2.8,
-      "barrett": 3.4,
-      "running_M": 260,
       "zone": "over",
       "worth": true,
       "afford": false,
@@ -4029,18 +3733,6 @@
      "offer_M": 6,
      "barrett": 16.7,
      "age": 33,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 7.7,
-     "offer_M": 6,
-     "barrett": 11.0,
-     "age": 38,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -4117,18 +3809,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Craig Porter Jr.",
-     "pos": "PG",
-     "status": "Team Option",
-     "from": "CLE",
-     "value_M": 6.1,
-     "offer_M": 5,
-     "barrett": 8.6,
-     "age": 26,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Luke Kennard",
      "pos": "SG/PG",
      "status": "UFA",
@@ -4137,18 +3817,6 @@
      "offer_M": 4,
      "barrett": 10.0,
      "age": 29,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "status": "Team Option",
-     "from": "DET",
-     "value_M": 10.1,
-     "offer_M": 6,
-     "barrett": 11.1,
-     "age": 24,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -4223,6 +3891,42 @@
      "age": 37,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Thomas Bryant",
+     "pos": "C",
+     "status": "UFA",
+     "from": "CLE",
+     "value_M": 4.1,
+     "offer_M": 3,
+     "barrett": 6.3,
+     "age": 28,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Jordan Clarkson",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 4.3,
+     "offer_M": 2,
+     "barrett": 4.9,
+     "age": 33,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Jericho Sims",
+     "pos": "C",
+     "status": "Player Option",
+     "from": "MIL",
+     "value_M": 3.1,
+     "offer_M": 2,
+     "barrett": 9.9,
+     "age": 27,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -4232,13 +3936,14 @@
    "cap_room_M": 35,
    "exception_M": 15,
    "committed_M": 130,
-   "resign_cost_M": 79,
+   "resign_cost_M": 75,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [],
    "thin": [
+    "PG",
     "PF"
    ],
    "roster": [
@@ -4312,6 +4017,19 @@
      "why": "Upgrades on Tobias Harris at PF, a bargain at $35M against his $39.8M market."
     },
     {
+     "name": "Russell Westbrook",
+     "pos": "PG/SG",
+     "from": "SAC",
+     "status": "UFA",
+     "value_M": 5.4,
+     "offer_M": 5,
+     "fit": 71,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 1,
+     "why": "Adds a needed second body at PG, fair value at $5M."
+    },
+    {
      "name": "Austin Reaves",
      "pos": "SG/PG",
      "from": "LAL",
@@ -4323,19 +4041,6 @@
      "ppos": "SG",
      "slot": 1,
      "why": "Adds a needed second body at SG, a bargain at $35M against his $41.2M market."
-    },
-    {
-     "name": "Russell Westbrook",
-     "pos": "PG/SG",
-     "from": "SAC",
-     "status": "UFA",
-     "value_M": 5.4,
-     "offer_M": 5,
-     "fit": 65,
-     "grade": "B+",
-     "ppos": "PG",
-     "slot": 1,
-     "why": "Adds a needed second body at PG, fair value at $5M."
     }
    ],
    "plan": [
@@ -4357,13 +4062,6 @@
      "name": "Javonte Green",
      "pos": "SG/SF",
      "cost_M": 6,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "cost_M": 4,
      "tool": "Re-sign",
      "kind": "resign"
     },
@@ -4432,18 +4130,6 @@
      "age": 32,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "status": "Team Option",
-     "from": "DET",
-     "value_M": 10.1,
-     "offer_M": 4,
-     "barrett": 11.1,
-     "age": 24,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -4451,7 +4137,7 @@
     "reserve_M": 4,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 213,
+    "all_in_M": 209,
     "keeps": [
      {
       "name": "Jalen Duren",
@@ -4490,24 +4176,12 @@
       "keep": true
      },
      {
-      "name": "Daniss Jenkins",
-      "pos": "PG/SG",
-      "cost_M": 4,
-      "value_M": 10.1,
-      "barrett": 11.1,
-      "running_M": 203,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
       "name": "Kevin Huerter",
       "pos": "SG/SF",
       "cost_M": 10,
       "value_M": 10.3,
       "barrett": 11.0,
-      "running_M": 213,
+      "running_M": 209,
       "zone": "tax",
       "worth": true,
       "afford": true,
@@ -4565,18 +4239,6 @@
      "why": "Rotation depth behind Daniss Jenkins"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 23,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Paul Reed"
-    },
-    {
      "name": "Bennedict Mathurin",
      "pos": "SF/PF",
      "status": "RFA",
@@ -4623,18 +4285,6 @@
      "age": 34,
      "tool": "Cap room",
      "why": "Rotation depth behind Duncan Robinson"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Paul Reed"
     },
     {
      "name": "Deandre Ayton",
@@ -4685,30 +4335,6 @@
      "why": "Rotation depth behind Javonte Green"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 16,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Duncan Robinson"
-    },
-    {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Duncan Robinson"
-    },
-    {
      "name": "Robert Williams III",
      "pos": "C",
      "status": "UFA",
@@ -4755,6 +4381,54 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Paul Reed"
+    },
+    {
+     "name": "Nikola Vu\u010devi\u0107",
+     "pos": "C/PF",
+     "status": "UFA",
+     "from": "BOS",
+     "value_M": 10.4,
+     "offer_M": 8,
+     "barrett": 19.7,
+     "age": 35,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Paul Reed"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 9,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Javonte Green"
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "status": "RFA",
+     "from": "PHX",
+     "value_M": 15.6,
+     "offer_M": 14,
+     "barrett": 17.5,
+     "age": 24,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Paul Reed"
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "status": "Player Option",
+     "from": "LAL",
+     "value_M": 10.1,
+     "offer_M": 8,
+     "barrett": 13.5,
+     "age": 32,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Javonte Green"
     }
    ]
   },
@@ -5083,18 +4757,6 @@
      "why": "Rotation depth behind Moses Moody"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 13,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Al Horford"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -5139,18 +4801,6 @@
      "offer_M": 13,
      "barrett": 15.5,
      "age": 23,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Moses Moody"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Moses Moody"
     },
@@ -5215,18 +4865,6 @@
      "why": "Rotation depth behind Gui Santos"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 8,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Moses Moody"
-    },
-    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "status": "UFA",
@@ -5249,18 +4887,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind De'Anthony Melton"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Al Horford"
     },
     {
      "name": "Precious Achiuwa",
@@ -5297,6 +4923,54 @@
      "age": 33,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Brandin Podziemski"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 7,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 7,
+     "barrett": 16.7,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 12,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Moses Moody"
+    },
+    {
+     "name": "Jaxson Hayes",
+     "pos": "C",
+     "status": "UFA",
+     "from": "LAL",
+     "value_M": 6.2,
+     "offer_M": 5,
+     "barrett": 12.4,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -5383,17 +5057,17 @@
      "why": "Adds a needed second body at SG, a bargain at $15M against his $18.7M market."
     },
     {
-     "name": "Brook Lopez",
+     "name": "Andre Drummond",
      "pos": "C",
-     "from": "LAC",
-     "status": "Team Option",
-     "value_M": 7.7,
-     "offer_M": 7,
-     "fit": 71,
+     "from": "PHI",
+     "status": "UFA",
+     "value_M": 3.9,
+     "offer_M": 4,
+     "fit": 69,
      "grade": "A-",
      "ppos": "C",
      "slot": 1,
-     "why": "Adds a needed second body at C, fair value at $7M."
+     "why": "Adds a needed second body at C, fair value at $4M."
     },
     {
      "name": "Ayo Dosunmu",
@@ -5450,18 +5124,18 @@
      "kind": "external"
     },
     {
-     "name": "Nicolas Batum",
-     "pos": "PF/SF",
-     "from": "LAC",
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "from": "DAL",
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Marvin Bagley III",
+     "name": "Quinten Post",
      "pos": "PF/C",
-     "from": "DAL",
-     "cost_M": 3,
+     "from": "GSW",
+     "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
     },
@@ -5615,18 +5289,6 @@
      "why": "Rotation depth behind Reed Sheppard"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Steven Adams"
-    },
-    {
      "name": "Deandre Ayton",
      "pos": "C",
      "status": "Player Option",
@@ -5663,18 +5325,6 @@
      "why": "Rotation depth behind Josh Okogie"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Reed Sheppard"
-    },
-    {
      "name": "Robert Williams III",
      "pos": "C",
      "status": "UFA",
@@ -5685,18 +5335,6 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Steven Adams"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Tari Eason"
     },
     {
      "name": "Peyton Watson",
@@ -5805,6 +5443,42 @@
      "age": 32,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Tari Eason"
+    },
+    {
+     "name": "Rui Hachimura",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "LAL",
+     "value_M": 14.2,
+     "offer_M": 9,
+     "barrett": 10.5,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Josh Okogie"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 9,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Steven Adams"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 8,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Tari Eason"
     }
    ]
   },
@@ -5814,7 +5488,7 @@
    "cap_room_M": 13,
    "exception_M": 15,
    "committed_M": 152,
-   "resign_cost_M": 3,
+   "resign_cost_M": 0,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -5941,64 +5615,32 @@
    ],
    "plan": [
     {
-     "name": "Micah Potter",
+     "name": "Kristaps Porzi\u0146\u0123is",
      "pos": "PF/C",
-     "cost_M": 3,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Nikola Vu\u010devi\u0107",
-     "pos": "C/PF",
-     "from": "BOS",
-     "cost_M": 9,
+     "from": "GSW",
+     "cost_M": 12,
      "tool": "Cap room",
      "kind": "external"
     },
     {
-     "name": "Jonathan Kuminga",
-     "pos": "SF/PF",
-     "from": "ATL",
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "from": "TOR",
      "cost_M": 8,
      "tool": "Room exception",
      "kind": "external"
-    }
-   ],
-   "resign": [
+    },
     {
-     "name": "Micah Potter",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "IND",
-     "value_M": 2.9,
-     "offer_M": 3,
-     "barrett": 11.4,
-     "age": 28,
-     "tool": "Team option",
-     "why": "Pick up team option"
+     "name": "Taurean Prince",
+     "pos": "SF/SG",
+     "from": "MIL",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
     }
    ],
-   "resign_plan": {
-    "committed_M": 152,
-    "reserve_M": 0,
-    "tax_M": 200,
-    "apron2_M": 222,
-    "all_in_M": 155,
-    "keeps": [
-     {
-      "name": "Micah Potter",
-      "pos": "PF/C",
-      "cost_M": 3,
-      "value_M": 2.9,
-      "barrett": 11.4,
-      "running_M": 155,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     }
-    ]
-   },
+   "resign": [],
+   "resign_plan": null,
    "pursue": [
     {
      "name": "Norman Powell",
@@ -6047,18 +5689,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind T.J. McConnell"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Ivica Zubac"
     },
     {
      "name": "Coby White",
@@ -6117,18 +5747,6 @@
      "offer_M": 12,
      "barrett": 15.2,
      "age": 26,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Aaron Nesmith"
-    },
-    {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 12,
-     "barrett": 16.3,
-     "age": 25,
      "tool": "Cap room",
      "why": "Rotation depth behind Aaron Nesmith"
     },
@@ -6205,18 +5823,6 @@
      "why": "Rotation depth behind T.J. McConnell"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Micah Potter"
-    },
-    {
      "name": "Peyton Watson",
      "pos": "SF/PF",
      "status": "RFA",
@@ -6239,6 +5845,42 @@
      "age": 34,
      "tool": "Cap room",
      "why": "Rotation depth behind Micah Potter"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 9,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jay Huff"
+    },
+    {
+     "name": "Tim Hardaway Jr.",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "DEN",
+     "value_M": 8.9,
+     "offer_M": 8,
+     "barrett": 12.7,
+     "age": 34,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Aaron Nesmith"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "DET",
+     "value_M": 8.9,
+     "offer_M": 8,
+     "barrett": 16.7,
+     "age": 33,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Micah Potter"
     }
    ]
   },
@@ -6248,7 +5890,7 @@
    "cap_room_M": 3,
    "exception_M": 15,
    "committed_M": 162,
-   "resign_cost_M": 47,
+   "resign_cost_M": 35,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -6359,30 +6001,33 @@
      "kind": "resign"
     },
     {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "cost_M": 8,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Jordan Miller",
-     "pos": "SG/SF",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Kobe Sanders",
-     "pos": "SG/SF",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Jamal Shead",
+     "name": "Javon Small",
      "pos": "PG/SG",
-     "from": "TOR",
+     "from": "MEM",
+     "cost_M": 2,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Thomas Bryant",
+     "pos": "C",
+     "from": "CLE",
+     "cost_M": 3,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Jericho Sims",
+     "pos": "C",
+     "from": "MIL",
+     "cost_M": 2,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Javonte Green",
+     "pos": "SG/SF",
+     "from": "DET",
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
@@ -6439,54 +6084,6 @@
      "age": 28,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 7.7,
-     "offer_M": 8,
-     "barrett": 11.0,
-     "age": 38,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Nicolas Batum",
-     "pos": "PF/SF",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 4.1,
-     "offer_M": 4,
-     "barrett": 5.3,
-     "age": 37,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Jordan Miller",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 3.5,
-     "offer_M": 2,
-     "barrett": 10.7,
-     "age": 26,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Kobe Sanders",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 2.8,
-     "offer_M": 2,
-     "barrett": 7.0,
-     "age": 24,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -6494,7 +6091,7 @@
     "reserve_M": 10,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 219,
+    "all_in_M": 207,
     "keeps": [
      {
       "name": "Bennedict Mathurin",
@@ -6519,69 +6116,10 @@
       "worth": true,
       "afford": true,
       "keep": true
-     },
-     {
-      "name": "Brook Lopez",
-      "pos": "C",
-      "cost_M": 8,
-      "value_M": 7.7,
-      "barrett": 11.0,
-      "running_M": 215,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Jordan Miller",
-      "pos": "SG/SF",
-      "cost_M": 2,
-      "value_M": 3.5,
-      "barrett": 10.7,
-      "running_M": 217,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Kobe Sanders",
-      "pos": "SG/SF",
-      "cost_M": 2,
-      "value_M": 2.8,
-      "barrett": 7.0,
-      "running_M": 219,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Nicolas Batum",
-      "pos": "PF/SF",
-      "cost_M": 4,
-      "value_M": 4.1,
-      "barrett": 5.3,
-      "running_M": null,
-      "zone": "walk",
-      "worth": false,
-      "keep": false
      }
     ]
    },
    "pursue": [
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Bennedict Mathurin"
-    },
     {
      "name": "Mark Williams",
      "pos": "C",
@@ -6619,18 +6157,6 @@
      "why": "Rotation depth behind Kris Dunn"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Brook Lopez"
-    },
-    {
      "name": "Deandre Ayton",
      "pos": "C",
      "status": "Player Option",
@@ -6639,18 +6165,6 @@
      "offer_M": 14,
      "barrett": 18.4,
      "age": 27,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Brook Lopez"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 12,
-     "barrett": 13.7,
-     "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Brook Lopez"
     },
@@ -6665,18 +6179,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Jordan Miller"
-    },
-    {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 12,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Kris Dunn"
     },
     {
      "name": "Collin Sexton",
@@ -6775,18 +6277,6 @@
      "why": "Rotation depth behind Brook Lopez"
     },
     {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "status": "Team Option",
-     "from": "DET",
-     "value_M": 10.1,
-     "offer_M": 8,
-     "barrett": 11.1,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Jordan Miller"
-    },
-    {
      "name": "Brandon Williams",
      "pos": "PG/SG",
      "status": "UFA",
@@ -6809,6 +6299,66 @@
      "age": 31,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Brook Lopez"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Brook Lopez"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 12.4,
+     "offer_M": 8,
+     "barrett": 12.4,
+     "age": 30,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Derrick Jones Jr."
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Derrick Jones Jr."
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jordan Miller"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "GSW",
+     "value_M": 8.4,
+     "offer_M": 7,
+     "barrett": 12.3,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -7164,18 +6714,6 @@
      "why": "Upgrade \u00b7 would start over Deandre Ayton"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 26,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Deandre Ayton"
-    },
-    {
      "name": "Bennedict Mathurin",
      "pos": "SF/PF",
      "status": "RFA",
@@ -7236,18 +6774,6 @@
      "why": "Rotation depth behind Marcus Smart"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jaxson Hayes"
-    },
-    {
      "name": "CJ McCollum",
      "pos": "SG/PG",
      "status": "UFA",
@@ -7280,18 +6806,6 @@
      "offer_M": 19,
      "barrett": 15.5,
      "age": 23,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Rui Hachimura"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 19,
-     "barrett": 17.7,
-     "age": 24,
      "tool": "Cap room",
      "why": "Rotation depth behind Rui Hachimura"
     },
@@ -7356,18 +6870,6 @@
      "why": "Rotation depth behind Marcus Smart"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Marcus Smart"
-    },
-    {
      "name": "Robert Williams III",
      "pos": "C",
      "status": "UFA",
@@ -7390,6 +6892,54 @@
      "age": 34,
      "tool": "Cap room",
      "why": "Rotation depth behind Rui Hachimura"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 9,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jaxson Hayes"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 9,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jaxson Hayes"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "DET",
+     "value_M": 8.9,
+     "offer_M": 8,
+     "barrett": 16.7,
+     "age": 33,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Rui Hachimura"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 9,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Marcus Smart"
     }
    ]
   },
@@ -7493,19 +7043,6 @@
    ],
    "best_fits": [
     {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "from": "BKN",
-     "status": "Team Option",
-     "value_M": 13.1,
-     "offer_M": 13,
-     "fit": 92,
-     "grade": "A+",
-     "ppos": "C",
-     "slot": 0,
-     "why": "Upgrades on Zach Edey at C, fair value at $13M."
-    },
-    {
      "name": "Peyton Watson",
      "pos": "SF/PF",
      "from": "DEN",
@@ -7517,6 +7054,19 @@
      "ppos": "SF",
      "slot": 0,
      "why": "Upgrades on Cedric Coward at SF, fair value at $22M."
+    },
+    {
+     "name": "Mark Williams",
+     "pos": "C",
+     "from": "PHX",
+     "status": "RFA",
+     "value_M": 15.6,
+     "offer_M": 16,
+     "fit": 91,
+     "grade": "A+",
+     "ppos": "C",
+     "slot": 0,
+     "why": "Upgrades on Zach Edey at C, fair value at $16M."
     },
     {
      "name": "Kristaps Porzi\u0146\u0123is",
@@ -7573,18 +7123,6 @@
      "age": 23,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Olivier-Maxence Prosper",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "MEM",
-     "value_M": 3.2,
-     "offer_M": 2,
-     "barrett": 9.5,
-     "age": 23,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -7592,7 +7130,7 @@
     "reserve_M": 17,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 165,
+    "all_in_M": 163,
     "keeps": [
      {
       "name": "Javon Small",
@@ -7601,18 +7139,6 @@
       "value_M": 3.8,
       "barrett": 10.6,
       "running_M": 163,
-      "zone": "noroom",
-      "worth": true,
-      "afford": true,
-      "keep": false
-     },
-     {
-      "name": "Olivier-Maxence Prosper",
-      "pos": "PF/C",
-      "cost_M": 2,
-      "value_M": 3.2,
-      "barrett": 9.5,
-      "running_M": 165,
       "zone": "noroom",
       "worth": true,
       "afford": true,
@@ -7630,18 +7156,6 @@
      "offer_M": 22,
      "barrett": 15.5,
      "age": 23,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Cedric Coward"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 21,
-     "barrett": 17.7,
-     "age": 24,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Cedric Coward"
     },
@@ -7682,18 +7196,6 @@
      "why": "Rotation depth behind Cam Spencer"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 23,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Zach Edey"
-    },
-    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "status": "UFA",
@@ -7714,18 +7216,6 @@
      "offer_M": 16,
      "barrett": 17.5,
      "age": 24,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Zach Edey"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 17,
-     "barrett": 18.2,
-     "age": 28,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Zach Edey"
     },
@@ -7752,18 +7242,6 @@
      "age": 30,
      "tool": "Cap room",
      "why": "Upgrade \u00b7 would start over Santi Aldama"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 13,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Upgrade \u00b7 would start over Zach Edey"
     },
     {
      "name": "Norman Powell",
@@ -7838,18 +7316,6 @@
      "why": "Upgrade \u00b7 would start over Zach Edey"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Ty Jerome"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -7860,6 +7326,66 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Cedric Coward"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 14,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Cam Spencer"
+    },
+    {
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "status": "UFA",
+     "from": "UTA",
+     "value_M": 9.5,
+     "offer_M": 10,
+     "barrett": 17.4,
+     "age": 31,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Zach Edey"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 8,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Cedric Coward"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 12.4,
+     "offer_M": 8,
+     "barrett": 12.4,
+     "age": 30,
+     "tool": "Cap room",
+     "why": "Rotation depth behind GG Jackson"
+    },
+    {
+     "name": "Brandon Williams",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 11.8,
+     "offer_M": 7,
+     "barrett": 15.0,
+     "age": 26,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -7869,7 +7395,7 @@
    "cap_room_M": 2,
    "exception_M": 15,
    "committed_M": 163,
-   "resign_cost_M": 21,
+   "resign_cost_M": 19,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -7878,6 +7404,7 @@
     "PF"
    ],
    "thin": [
+    "SG",
     "SF"
    ],
    "roster": [
@@ -7964,17 +7491,17 @@
      "why": "Adds a needed second body at C, a bargain at $14M against his $15.6M market."
     },
     {
-     "name": "Julian Champagnie",
+     "name": "Bennedict Mathurin",
      "pos": "SF/PF",
-     "from": "SAS",
-     "status": "Team Option",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "fit": 63,
+     "from": "LAC",
+     "status": "RFA",
+     "value_M": 23.8,
+     "offer_M": 15,
+     "fit": 61,
      "grade": "B+",
      "ppos": "SF",
      "slot": 3,
-     "why": "Rotation depth at SF, a bargain at $13M against his $21.0M market."
+     "why": "Rotation depth at SF, a bargain at $15M against his $23.8M market."
     }
    ],
    "plan": [
@@ -7986,17 +7513,10 @@
      "kind": "resign"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Isaiah Hartenstein",
+     "name": "Mark Williams",
      "pos": "C",
-     "from": "OKC",
-     "cost_M": 15,
+     "from": "PHX",
+     "cost_M": 14,
      "tool": "Mid-level",
      "kind": "external"
     },
@@ -8059,18 +7579,6 @@
      "age": 30,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 2,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -8078,7 +7586,7 @@
     "reserve_M": 6,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 190,
+    "all_in_M": 188,
     "keeps": [
      {
       "name": "Norman Powell",
@@ -8087,18 +7595,6 @@
       "value_M": 18.7,
       "barrett": 22.0,
       "running_M": 188,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Pelle Larsson",
-      "pos": "SG/SF",
-      "cost_M": 2,
-      "value_M": 13.1,
-      "barrett": 16.3,
-      "running_M": 190,
       "zone": "ok",
       "worth": true,
       "afford": true,
@@ -8118,18 +7614,6 @@
     ]
    },
    "pursue": [
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Kel'el Ware"
-    },
     {
      "name": "Mark Williams",
      "pos": "C",
@@ -8167,18 +7651,6 @@
      "why": "Rotation depth behind Kel'el Ware"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Pelle Larsson"
-    },
-    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "status": "UFA",
@@ -8189,18 +7661,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Pelle Larsson"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Nikola Jovi\u0107"
     },
     {
      "name": "Sandro Mamukelashvili",
@@ -8311,18 +7771,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Craig Porter Jr.",
-     "pos": "PG",
-     "status": "Team Option",
-     "from": "CLE",
-     "value_M": 6.1,
-     "offer_M": 4,
-     "barrett": 8.6,
-     "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Nick Richards",
      "pos": "C",
      "status": "UFA",
@@ -8335,18 +7783,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 7.7,
-     "offer_M": 6,
-     "barrett": 11.0,
-     "age": 38,
-     "tool": "Mid-level exception",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Tobias Harris",
      "pos": "PF/SF",
      "status": "UFA",
@@ -8355,6 +7791,66 @@
      "offer_M": 6,
      "barrett": 16.7,
      "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Thomas Bryant",
+     "pos": "C",
+     "status": "UFA",
+     "from": "CLE",
+     "value_M": 4.1,
+     "offer_M": 3,
+     "barrett": 6.3,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Marcus Smart",
+     "pos": "SG/PG",
+     "status": "Player Option",
+     "from": "LAL",
+     "value_M": 10.1,
+     "offer_M": 5,
+     "barrett": 13.5,
+     "age": 32,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "SAS",
+     "value_M": 9.2,
+     "offer_M": 5,
+     "barrett": 12.4,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Khris Middleton",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 9.0,
+     "offer_M": 4,
+     "barrett": 9.0,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Russell Westbrook",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 5.4,
+     "offer_M": 4,
+     "barrett": 19.6,
+     "age": 37,
      "tool": "Mid-level exception",
      "why": "Veteran-minimum depth"
     }
@@ -8492,10 +7988,10 @@
      "kind": "resign"
     },
     {
-     "name": "Isaiah Hartenstein",
+     "name": "Deandre Ayton",
      "pos": "C",
-     "from": "OKC",
-     "cost_M": 13,
+     "from": "LAL",
+     "cost_M": 12,
      "tool": "Mid-level",
      "kind": "external"
     },
@@ -8709,18 +8205,6 @@
      "why": "Rotation depth behind Cole Anthony"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 20,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jericho Sims"
-    },
-    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "status": "UFA",
@@ -8755,30 +8239,6 @@
      "age": 23,
      "tool": "Cap room",
      "why": "Rotation depth behind Kyle Kuzma"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 19,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Kyle Kuzma"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 13,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jericho Sims"
     },
     {
      "name": "Coby White",
@@ -8841,18 +8301,6 @@
      "why": "Rotation depth behind Kyle Kuzma"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Kyle Kuzma"
-    },
-    {
      "name": "Anfernee Simons",
      "pos": "PG/SG",
      "status": "UFA",
@@ -8911,6 +8359,54 @@
      "age": 28,
      "tool": "Cap room",
      "why": "Rotation depth behind Jericho Sims"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 16.7,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Kyle Kuzma"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Bobby Portis"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Jericho Sims"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 12.4,
+     "offer_M": 8,
+     "barrett": 12.4,
+     "age": 30,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Bobby Portis"
     }
    ]
   },
@@ -8995,19 +8491,6 @@
      "why": "Adds a needed second body at SG, a bargain at $15M against his $18.7M market."
     },
     {
-     "name": "Nicolas Batum",
-     "pos": "PF/SF",
-     "from": "LAC",
-     "status": "Team Option",
-     "value_M": 4.1,
-     "offer_M": 2,
-     "fit": 68,
-     "grade": "A-",
-     "ppos": "PF",
-     "slot": 4,
-     "why": "Rotation depth at PF, a bargain at $2M against his $4.1M market."
-    },
-    {
      "name": "Russell Westbrook",
      "pos": "PG/SG",
      "from": "SAC",
@@ -9019,6 +8502,19 @@
      "ppos": "PG",
      "slot": 1,
      "why": "Adds a needed second body at PG, fair value at $5M."
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "from": "SAS",
+     "status": "UFA",
+     "value_M": 9.2,
+     "offer_M": 6,
+     "fit": 64,
+     "grade": "B+",
+     "ppos": "PF",
+     "slot": 3,
+     "why": "Rotation depth at PF, a bargain at $6M against his $9.2M market."
     }
    ],
    "plan": [
@@ -9044,25 +8540,25 @@
      "kind": "resign"
     },
     {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "from": "LAC",
-     "cost_M": 5,
-     "tool": "Taxpayer MLE",
-     "kind": "external"
-    },
-    {
-     "name": "Javonte Green",
+     "name": "Tim Hardaway Jr.",
      "pos": "SG/SF",
-     "from": "DET",
-     "cost_M": 3,
-     "tool": "Minimum",
+     "from": "DEN",
+     "cost_M": 4,
+     "tool": "Taxpayer MLE",
      "kind": "external"
     },
     {
      "name": "Taurean Prince",
      "pos": "SF/SG",
      "from": "MIL",
+     "cost_M": 2,
+     "tool": "Minimum",
+     "kind": "external"
+    },
+    {
+     "name": "Andre Drummond",
+     "pos": "C",
+     "from": "PHI",
      "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
@@ -9242,18 +8738,6 @@
      "why": "Rotation depth behind Naz Reid"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 10,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Joan Beringer"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -9324,18 +8808,6 @@
      "age": 27,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Bones Hyland"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Kyle Anderson"
     },
     {
      "name": "Anfernee Simons",
@@ -9432,6 +8904,30 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Khris Middleton",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 9.0,
+     "offer_M": 6,
+     "barrett": 9.0,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "DET",
+     "value_M": 8.9,
+     "offer_M": 6,
+     "barrett": 16.7,
+     "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -9441,7 +8937,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 196,
-   "resign_cost_M": 2,
+   "resign_cost_M": 0,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -9450,7 +8946,9 @@
     "PG",
     "SG"
    ],
-   "thin": [],
+   "thin": [
+    "PF"
+   ],
    "roster": [
     {
      "name": "Trey Murphy III",
@@ -9568,18 +9066,19 @@
    ],
    "plan": [
     {
-     "name": "Karlo Matkovi\u0107",
-     "pos": "PF/C",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
      "name": "Robert Williams III",
      "pos": "C",
      "from": "POR",
      "cost_M": 10,
      "tool": "Mid-level",
+     "kind": "external"
+    },
+    {
+     "name": "Marvin Bagley III",
+     "pos": "PF/C",
+     "from": "DAL",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
@@ -9592,41 +9091,8 @@
      "round": 2
     }
    ],
-   "resign": [
-    {
-     "name": "Karlo Matkovi\u0107",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "NOP",
-     "value_M": 4.0,
-     "offer_M": 2,
-     "barrett": 8.8,
-     "age": 25,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    }
-   ],
-   "resign_plan": {
-    "committed_M": 196,
-    "reserve_M": 0,
-    "tax_M": 200,
-    "apron2_M": 222,
-    "all_in_M": 198,
-    "keeps": [
-     {
-      "name": "Karlo Matkovi\u0107",
-      "pos": "PF/C",
-      "cost_M": 2,
-      "value_M": 4.0,
-      "barrett": 8.8,
-      "running_M": 198,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     }
-    ]
-   },
+   "resign": [],
+   "resign_plan": null,
    "pursue": [
     {
      "name": "Mark Williams",
@@ -9649,18 +9115,6 @@
      "offer_M": 13,
      "barrett": 15.5,
      "age": 23,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Herbert Jones"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Herbert Jones"
     },
@@ -9689,18 +9143,6 @@
      "why": "Upgrade \u00b7 would start over Derik Queen"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Upgrade \u00b7 would start over Derik Queen"
-    },
-    {
      "name": "Bennedict Mathurin",
      "pos": "SF/PF",
      "status": "RFA",
@@ -9711,18 +9153,6 @@
      "age": 23,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Herbert Jones"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 12,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Karlo Matkovi\u0107"
     },
     {
      "name": "Coby White",
@@ -9809,18 +9239,6 @@
      "why": "Rotation depth behind Jeremiah Fears"
     },
     {
-     "name": "Jonathan Kuminga",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "ATL",
-     "value_M": 12.3,
-     "offer_M": 8,
-     "barrett": 11.2,
-     "age": 23,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Herbert Jones"
-    },
-    {
      "name": "John Collins",
      "pos": "PF/C",
      "status": "UFA",
@@ -9867,6 +9285,54 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Bryce McGowens"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 12.4,
+     "offer_M": 8,
+     "barrett": 12.4,
+     "age": 30,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Herbert Jones"
+    },
+    {
+     "name": "Precious Achiuwa",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Herbert Jones"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Herbert Jones"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 10,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jeremiah Fears"
     }
    ]
   },
@@ -10011,9 +9477,9 @@
      "kind": "external"
     },
     {
-     "name": "Nicolas Batum",
-     "pos": "PF/SF",
-     "from": "LAC",
+     "name": "Guerschon Yabusele",
+     "pos": "PF/C",
+     "from": "CHI",
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
@@ -10190,18 +9656,6 @@
      "why": "Rotation depth behind Miles McBride"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Mitchell Robinson"
-    },
-    {
      "name": "Deandre Ayton",
      "pos": "C",
      "status": "Player Option",
@@ -10270,18 +9724,6 @@
      "offer_M": 10,
      "barrett": 15.2,
      "age": 26,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Miles McBride"
-    },
-    {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 16.3,
-     "age": 25,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Miles McBride"
     },
@@ -10382,16 +9824,40 @@
      "why": "Rotation depth behind Mitchell Robinson"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 16.7,
+     "age": 28,
      "tool": "Mid-level exception",
-     "why": "Rotation depth behind Landry Shamet"
+     "why": "Rotation depth behind Mitchell Robinson"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Mitchell Robinson"
+    },
+    {
+     "name": "Tim Hardaway Jr.",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "DEN",
+     "value_M": 8.9,
+     "offer_M": 7,
+     "barrett": 12.7,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -10559,88 +10025,8 @@
      "round": 2
     }
    ],
-   "resign": [
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 17,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Luguentz Dort",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 11.7,
-     "offer_M": 12,
-     "barrett": 8.5,
-     "age": 27,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Kenrich Williams",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 4.3,
-     "offer_M": 4,
-     "barrett": 6.2,
-     "age": 31,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    }
-   ],
-   "resign_plan": {
-    "committed_M": 246,
-    "reserve_M": 10,
-    "tax_M": 200,
-    "apron2_M": 222,
-    "all_in_M": 285,
-    "keeps": [
-     {
-      "name": "Isaiah Hartenstein",
-      "pos": "C",
-      "cost_M": 17,
-      "value_M": 16.8,
-      "barrett": 18.2,
-      "running_M": 273,
-      "zone": "over",
-      "worth": true,
-      "afford": false,
-      "keep": false
-     },
-     {
-      "name": "Luguentz Dort",
-      "pos": "SF/PF",
-      "cost_M": 12,
-      "value_M": 11.7,
-      "barrett": 8.5,
-      "running_M": 285,
-      "zone": "over",
-      "worth": true,
-      "afford": false,
-      "keep": false
-     },
-     {
-      "name": "Kenrich Williams",
-      "pos": "PF/C",
-      "cost_M": 4,
-      "value_M": 4.3,
-      "barrett": 6.2,
-      "running_M": null,
-      "zone": "walk",
-      "worth": false,
-      "keep": false
-     }
-    ]
-   },
+   "resign": [],
+   "resign_plan": null,
    "pursue": [
     {
      "name": "Andre Drummond",
@@ -10651,18 +10037,6 @@
      "offer_M": 2,
      "barrett": 8.1,
      "age": 32,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 7.7,
-     "offer_M": 2,
-     "barrett": 11.0,
-     "age": 38,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -10787,18 +10161,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Micah Potter",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "IND",
-     "value_M": 2.9,
-     "offer_M": 2,
-     "barrett": 11.4,
-     "age": 28,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Anthony Gill",
      "pos": "PF/C",
      "status": "UFA",
@@ -10807,18 +10169,6 @@
      "offer_M": 2,
      "barrett": 6.8,
      "age": 33,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Olivier-Maxence Prosper",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "MEM",
-     "value_M": 3.2,
-     "offer_M": 2,
-     "barrett": 9.5,
-     "age": 23,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -10859,16 +10209,15 @@
    "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "playoff",
-   "needs": [
-    "PF"
-   ],
+   "needs": [],
    "thin": [
-    "SG"
+    "SG",
+    "PF"
    ],
    "roster": [
     {
      "name": "Paolo Banchero",
-     "pos": "SF/PF",
+     "pos": "PF/SF",
      "barrett": 29.5,
      "salary_M": 41.5
     },
@@ -10935,30 +10284,17 @@
    ],
    "best_fits": [
     {
-     "name": "Nikola Vu\u010devi\u0107",
-     "pos": "C/PF",
-     "from": "BOS",
+     "name": "Jusuf Nurki\u0107",
+     "pos": "C",
+     "from": "UTA",
      "status": "UFA",
-     "value_M": 10.4,
+     "value_M": 9.5,
      "offer_M": 6,
-     "fit": 75,
-     "grade": "A",
-     "ppos": "C",
-     "slot": 0,
-     "why": "Upgrades on Wendell Carter Jr. at C, a bargain at $6M against his $10.4M market."
-    },
-    {
-     "name": "Trendon Watford",
-     "pos": "PF/SF",
-     "from": "PHI",
-     "status": "Team Option",
-     "value_M": 2.9,
-     "offer_M": 2,
-     "fit": 69,
+     "fit": 72,
      "grade": "A-",
-     "ppos": "PF",
-     "slot": 3,
-     "why": "Rotation depth at PF, a bargain at $2M against his $2.9M market."
+     "ppos": "C",
+     "slot": 1,
+     "why": "Adds a needed second body at C, a bargain at $6M against his $9.5M market."
     },
     {
      "name": "Luke Kennard",
@@ -10972,6 +10308,19 @@
      "ppos": "SG",
      "slot": 3,
      "why": "Rotation depth at SG, a bargain at $4M against his $7.1M market."
+    },
+    {
+     "name": "Lonzo Ball",
+     "pos": "PG/SG",
+     "from": "CLE",
+     "status": "UFA",
+     "value_M": 7.2,
+     "offer_M": 4,
+     "fit": 60,
+     "grade": "B+",
+     "ppos": "PG",
+     "slot": 3,
+     "why": "Rotation depth at PG, a bargain at $4M against his $7.2M market."
     }
    ],
    "plan": [
@@ -10984,9 +10333,9 @@
      "kind": "external"
     },
     {
-     "name": "Trendon Watford",
-     "pos": "PF/SF",
-     "from": "PHI",
+     "name": "Cam Thomas",
+     "pos": "SG",
+     "from": "MIL",
      "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
@@ -11085,18 +10434,6 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Craig Porter Jr.",
-     "pos": "PG",
-     "status": "Team Option",
-     "from": "CLE",
-     "value_M": 6.1,
-     "offer_M": 5,
-     "barrett": 8.6,
-     "age": 26,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
      "name": "Nick Richards",
      "pos": "C",
      "status": "UFA",
@@ -11105,18 +10442,6 @@
      "offer_M": 5,
      "barrett": 4.6,
      "age": 28,
-     "tool": "Veteran minimum",
-     "why": "Veteran-minimum depth"
-    },
-    {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "status": "Team Option",
-     "from": "DET",
-     "value_M": 10.1,
-     "offer_M": 6,
-     "barrett": 11.1,
-     "age": 24,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     },
@@ -11265,14 +10590,38 @@
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Brook Lopez",
+     "name": "Bruce Brown",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "DEN",
+     "value_M": 4.4,
+     "offer_M": 3,
+     "barrett": 9.3,
+     "age": 29,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Drew Eubanks",
      "pos": "C",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 7.7,
-     "offer_M": 6,
-     "barrett": 11.0,
-     "age": 38,
+     "status": "UFA",
+     "from": "SAC",
+     "value_M": 3.1,
+     "offer_M": 2,
+     "barrett": 5.7,
+     "age": 29,
+     "tool": "Veteran minimum",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Jericho Sims",
+     "pos": "C",
+     "status": "Player Option",
+     "from": "MIL",
+     "value_M": 3.1,
+     "offer_M": 2,
+     "barrett": 9.9,
+     "age": 27,
      "tool": "Veteran minimum",
      "why": "Veteran-minimum depth"
     }
@@ -11284,7 +10633,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 180,
-   "resign_cost_M": 35,
+   "resign_cost_M": 29,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -11360,17 +10709,17 @@
      "why": "Adds a needed second body at PF, a bargain at $8M against his $8.9M market."
     },
     {
-     "name": "Craig Porter Jr.",
-     "pos": "PG",
-     "from": "CLE",
-     "status": "Team Option",
-     "value_M": 6.1,
-     "offer_M": 5,
-     "fit": 69,
+     "name": "Jordan Clarkson",
+     "pos": "PG/SG",
+     "from": "NYK",
+     "status": "UFA",
+     "value_M": 4.3,
+     "offer_M": 2,
+     "fit": 68,
      "grade": "A-",
      "ppos": "PG",
-     "slot": 1,
-     "why": "Adds a needed second body at PG, a bargain at $5M against his $6.1M market."
+     "slot": 4,
+     "why": "Rotation depth at PG, a bargain at $2M against his $4.3M market."
     },
     {
      "name": "Nikola Vu\u010devi\u0107",
@@ -11402,13 +10751,6 @@
      "kind": "resign"
     },
     {
-     "name": "Dominick Barlow",
-     "pos": "PF/C",
-     "cost_M": 3,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
      "name": "Andre Drummond",
      "pos": "C",
      "cost_M": 4,
@@ -11416,11 +10758,12 @@
      "kind": "resign"
     },
     {
-     "name": "Trendon Watford",
-     "pos": "PF/SF",
-     "cost_M": 3,
-     "tool": "Re-sign",
-     "kind": "resign"
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "from": "GSW",
+     "cost_M": 5,
+     "tool": "Taxpayer MLE",
+     "kind": "external"
     },
     {
      "name": "Mike Conley",
@@ -11488,30 +10831,6 @@
      "age": 32,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Dominick Barlow",
-     "pos": "PF/C",
-     "status": "Team Option",
-     "from": "PHI",
-     "value_M": 6.3,
-     "offer_M": 3,
-     "barrett": 10.9,
-     "age": 23,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
-     "name": "Trendon Watford",
-     "pos": "PF/SF",
-     "status": "Team Option",
-     "from": "PHI",
-     "value_M": 2.9,
-     "offer_M": 3,
-     "barrett": 5.8,
-     "age": 25,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -11519,7 +10838,7 @@
     "reserve_M": 4,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 219,
+    "all_in_M": 213,
     "keeps": [
      {
       "name": "Quentin Grimes",
@@ -11546,36 +10865,12 @@
       "keep": true
      },
      {
-      "name": "Dominick Barlow",
-      "pos": "PF/C",
-      "cost_M": 3,
-      "value_M": 6.3,
-      "barrett": 10.9,
-      "running_M": 212,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
       "name": "Andre Drummond",
       "pos": "C",
       "cost_M": 4,
       "value_M": 3.9,
       "barrett": 8.1,
-      "running_M": 216,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Trendon Watford",
-      "pos": "PF/SF",
-      "cost_M": 3,
-      "value_M": 2.9,
-      "barrett": 5.8,
-      "running_M": 219,
+      "running_M": 213,
       "zone": "tax",
       "worth": true,
       "afford": true,
@@ -11630,18 +10925,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Quentin Grimes"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Dominick Barlow"
     },
     {
      "name": "Deandre Ayton",
@@ -11714,18 +10997,6 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Dominick Barlow"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Quentin Grimes"
     },
     {
      "name": "Peyton Watson",
@@ -11834,6 +11105,30 @@
      "age": 28,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Kelly Oubre Jr."
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "SAS",
+     "value_M": 9.2,
+     "offer_M": 7,
+     "barrett": 12.4,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Anfernee Simons",
+     "pos": "PG/SG",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 12.5,
+     "offer_M": 8,
+     "barrett": 12.7,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Cameron Payne"
     }
    ]
   },
@@ -11843,7 +11138,7 @@
    "cap_room_M": 5,
    "exception_M": 15,
    "committed_M": 160,
-   "resign_cost_M": 54,
+   "resign_cost_M": 52,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -11916,17 +11211,17 @@
    ],
    "best_fits": [
     {
-     "name": "Isaiah Hartenstein",
+     "name": "Deandre Ayton",
      "pos": "C",
-     "from": "OKC",
-     "status": "Team Option",
-     "value_M": 16.8,
+     "from": "LAL",
+     "status": "Player Option",
+     "value_M": 15.7,
      "offer_M": 15,
-     "fit": 82,
-     "grade": "A+",
+     "fit": 81,
+     "grade": "A",
      "ppos": "C",
      "slot": 0,
-     "why": "Upgrades on Mark Williams at C, a bargain at $15M against his $16.8M market."
+     "why": "Upgrades on Mark Williams at C, fair value at $15M."
     },
     {
      "name": "Bennedict Mathurin",
@@ -11942,17 +11237,17 @@
      "why": "Adds a needed second body at SF, a bargain at $15M against his $23.8M market."
     },
     {
-     "name": "Trendon Watford",
-     "pos": "PF/SF",
-     "from": "PHI",
-     "status": "Team Option",
-     "value_M": 2.9,
-     "offer_M": 2,
-     "fit": 69,
+     "name": "Kristaps Porzi\u0146\u0123is",
+     "pos": "PF/C",
+     "from": "GSW",
+     "status": "UFA",
+     "value_M": 15.7,
+     "offer_M": 12,
+     "fit": 67,
      "grade": "A-",
      "ppos": "PF",
-     "slot": 3,
-     "why": "Rotation depth at PF, a bargain at $2M against his $2.9M market."
+     "slot": 2,
+     "why": "Rotation depth at PF, a bargain at $12M against his $15.7M market."
     }
    ],
    "plan": [
@@ -11978,18 +11273,11 @@
      "kind": "resign"
     },
     {
-     "name": "Jamaree Bouyea",
+     "name": "Russell Westbrook",
      "pos": "PG/SG",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "from": "BKN",
-     "cost_M": 4,
-     "tool": "Taxpayer MLE",
+     "from": "SAC",
+     "cost_M": 3,
+     "tool": "Minimum",
      "kind": "external"
     },
     {
@@ -12038,18 +11326,6 @@
      "age": 27,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Jamaree Bouyea",
-     "pos": "PG/SG",
-     "status": "Team Option",
-     "from": "PHX",
-     "value_M": 2.3,
-     "offer_M": 2,
-     "barrett": 4.9,
-     "age": 26,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -12057,7 +11333,7 @@
     "reserve_M": 0,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 214,
+    "all_in_M": 212,
     "keeps": [
      {
       "name": "Collin Gillespie",
@@ -12094,18 +11370,6 @@
       "worth": true,
       "afford": true,
       "keep": true
-     },
-     {
-      "name": "Jamaree Bouyea",
-      "pos": "PG/SG",
-      "cost_M": 2,
-      "value_M": 2.3,
-      "barrett": 4.9,
-      "running_M": 214,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
      }
     ]
    },
@@ -12119,18 +11383,6 @@
      "offer_M": 15,
      "barrett": 18.4,
      "age": 27,
-     "tool": "Mid-level exception",
-     "why": "Upgrade \u00b7 would start over Mark Williams"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
      "tool": "Mid-level exception",
      "why": "Upgrade \u00b7 would start over Mark Williams"
     },
@@ -12169,18 +11421,6 @@
      "age": 30,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Royce O'Neale"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Grayson Allen"
     },
     {
      "name": "Peyton Watson",
@@ -12243,18 +11483,6 @@
      "why": "Rotation depth behind Royce O'Neale"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 8,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Grayson Allen"
-    },
-    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "status": "UFA",
@@ -12277,18 +11505,6 @@
      "age": 30,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Jordan Goodwin"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Khaman Maluach"
     },
     {
      "name": "Norman Powell",
@@ -12347,6 +11563,54 @@
      "offer_M": 5,
      "barrett": 11.7,
      "age": 30,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Nick Richards",
+     "pos": "C",
+     "status": "UFA",
+     "from": "CHI",
+     "value_M": 5.8,
+     "offer_M": 5,
+     "barrett": 4.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Tobias Harris",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "DET",
+     "value_M": 8.9,
+     "offer_M": 8,
+     "barrett": 16.7,
+     "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Royce O'Neale"
+    },
+    {
+     "name": "Harrison Barnes",
+     "pos": "PF/SF",
+     "status": "UFA",
+     "from": "SAS",
+     "value_M": 9.2,
+     "offer_M": 7,
+     "barrett": 12.4,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Thomas Bryant",
+     "pos": "C",
+     "status": "UFA",
+     "from": "CLE",
+     "value_M": 4.1,
+     "offer_M": 3,
+     "barrett": 6.3,
+     "age": 28,
      "tool": "Cap room",
      "why": "Veteran-minimum depth"
     }
@@ -12501,9 +11765,9 @@
      "kind": "external"
     },
     {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "from": "BKN",
+     "name": "Javonte Green",
+     "pos": "SG/SF",
+     "from": "DET",
      "cost_M": 3,
      "tool": "Minimum",
      "kind": "external"
@@ -12582,18 +11846,6 @@
      "why": "Rotation depth behind Shaedon Sharpe"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Robert Williams III"
-    },
-    {
      "name": "Mark Williams",
      "pos": "C",
      "status": "RFA",
@@ -12642,18 +11894,6 @@
      "why": "Rotation depth behind Robert Williams III"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind V\u00edt Krej\u010d\u00ed"
-    },
-    {
      "name": "Coby White",
      "pos": "PG/SG",
      "status": "UFA",
@@ -12664,18 +11904,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Scoot Henderson"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Yang Hansen"
     },
     {
      "name": "Collin Sexton",
@@ -12762,18 +11990,6 @@
      "why": "Rotation depth behind Robert Williams III"
     },
     {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "status": "Team Option",
-     "from": "DET",
-     "value_M": 10.1,
-     "offer_M": 8,
-     "barrett": 11.1,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Scoot Henderson"
-    },
-    {
      "name": "Quentin Grimes",
      "pos": "SG/SF",
      "status": "UFA",
@@ -12786,28 +12002,76 @@
      "why": "Rotation depth behind Scoot Henderson"
     },
     {
-     "name": "Jonathan Kuminga",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "ATL",
-     "value_M": 12.3,
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
      "offer_M": 8,
-     "barrett": 11.2,
-     "age": 23,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Yang Hansen"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 12.4,
+     "offer_M": 8,
+     "barrett": 12.4,
+     "age": 30,
      "tool": "Cap room",
      "why": "Rotation depth behind V\u00edt Krej\u010d\u00ed"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 8,
-     "barrett": 16.3,
-     "age": 25,
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 12,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Shaedon Sharpe"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 7,
+     "barrett": 16.7,
+     "age": 28,
      "tool": "Cap room",
-     "why": "Rotation depth behind Scoot Henderson"
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 7,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "De'Anthony Melton",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "GSW",
+     "value_M": 8.4,
+     "offer_M": 7,
+     "barrett": 12.3,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -12949,14 +12213,6 @@
      "kind": "external"
     },
     {
-     "name": "Nicolas Batum",
-     "pos": "PF/SF",
-     "from": "LAC",
-     "cost_M": 2,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
      "name": "2026 Pick #7",
      "pos": "1st round",
      "cost_M": 8,
@@ -13069,18 +12325,6 @@
    },
    "pursue": [
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Precious Achiuwa"
-    },
-    {
      "name": "Peyton Watson",
      "pos": "SF/PF",
      "status": "RFA",
@@ -13129,18 +12373,6 @@
      "why": "Rotation depth behind Precious Achiuwa"
     },
     {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Maxime Raynaud"
-    },
-    {
      "name": "Deandre Ayton",
      "pos": "C",
      "status": "Player Option",
@@ -13175,18 +12407,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Nique Clifford"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Precious Achiuwa"
     },
     {
      "name": "Collin Sexton",
@@ -13261,18 +12481,6 @@
      "why": "Rotation depth behind Maxime Raynaud"
     },
     {
-     "name": "Daniss Jenkins",
-     "pos": "PG/SG",
-     "status": "Team Option",
-     "from": "DET",
-     "value_M": 10.1,
-     "offer_M": 8,
-     "barrett": 11.1,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Nique Clifford"
-    },
-    {
      "name": "Brandon Williams",
      "pos": "PG/SG",
      "status": "UFA",
@@ -13307,6 +12515,54 @@
      "age": 34,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Russell Westbrook"
+    },
+    {
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
+     "offer_M": 8,
+     "barrett": 15.2,
+     "age": 26,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Keegan Murray"
+    },
+    {
+     "name": "Mitchell Robinson",
+     "pos": "C",
+     "status": "UFA",
+     "from": "NYK",
+     "value_M": 10.4,
+     "offer_M": 8,
+     "barrett": 13.1,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Precious Achiuwa"
+    },
+    {
+     "name": "Kelly Oubre Jr.",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 12.4,
+     "offer_M": 8,
+     "barrett": 12.4,
+     "age": 30,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Keegan Murray"
+    },
+    {
+     "name": "Tari Eason",
+     "pos": "SF/SG",
+     "status": "RFA",
+     "from": "HOU",
+     "value_M": 12.1,
+     "offer_M": 8,
+     "barrett": 11.2,
+     "age": 25,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind De'Andre Hunter"
     }
    ]
   },
@@ -13316,17 +12572,16 @@
    "cap_room_M": 12,
    "exception_M": 15,
    "committed_M": 153,
-   "resign_cost_M": 12,
+   "resign_cost_M": 9,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "title",
    "needs": [
+    "SF",
     "PF"
    ],
-   "thin": [
-    "SF"
-   ],
+   "thin": [],
    "roster": [
     {
      "name": "Victor Wembanyama",
@@ -13379,6 +12634,19 @@
    ],
    "best_fits": [
     {
+     "name": "Khris Middleton",
+     "pos": "SF/PF",
+     "from": "DAL",
+     "status": "UFA",
+     "value_M": 9.0,
+     "offer_M": 4,
+     "fit": 74,
+     "grade": "A",
+     "ppos": "SF",
+     "slot": 4,
+     "why": "Rotation depth at SF, a bargain at $4M against his $9.0M market."
+    },
+    {
      "name": "Anthony Gill",
      "pos": "PF/C",
      "from": "WAS",
@@ -13390,19 +12658,6 @@
      "ppos": "PF",
      "slot": 4,
      "why": "Rotation depth at PF, a bargain at $2M against his $3.1M market."
-    },
-    {
-     "name": "Khris Middleton",
-     "pos": "SF/PF",
-     "from": "DAL",
-     "status": "UFA",
-     "value_M": 9.0,
-     "offer_M": 4,
-     "fit": 68,
-     "grade": "A-",
-     "ppos": "SF",
-     "slot": 4,
-     "why": "Rotation depth at SF, a bargain at $4M against his $9.0M market."
     },
     {
      "name": "Nikola Vu\u010devi\u0107",
@@ -13419,13 +12674,6 @@
     }
    ],
    "plan": [
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "cost_M": 3,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
     {
      "name": "Harrison Barnes",
      "pos": "PF/SF",
@@ -13450,18 +12698,18 @@
      "kind": "external"
     },
     {
-     "name": "Nicolas Batum",
-     "pos": "PF/SF",
-     "from": "LAC",
-     "cost_M": 3,
+     "name": "Taurean Prince",
+     "pos": "SF/SG",
+     "from": "MIL",
+     "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
     },
     {
-     "name": "Josh Minott",
-     "pos": "PF/SF",
-     "from": "BKN",
-     "cost_M": 3,
+     "name": "Anthony Gill",
+     "pos": "PF/C",
+     "from": "WAS",
+     "cost_M": 2,
      "tool": "Minimum",
      "kind": "external"
     },
@@ -13514,18 +12762,6 @@
      "age": 34,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 3,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -13533,27 +12769,15 @@
     "reserve_M": 4,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 169,
+    "all_in_M": 166,
     "keeps": [
-     {
-      "name": "Julian Champagnie",
-      "pos": "SF/PF",
-      "cost_M": 3,
-      "value_M": 21.0,
-      "barrett": 17.7,
-      "running_M": 160,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
      {
       "name": "Harrison Barnes",
       "pos": "PF/SF",
       "cost_M": 9,
       "value_M": 9.2,
       "barrett": 12.4,
-      "running_M": 169,
+      "running_M": 166,
       "zone": "ok",
       "worth": true,
       "afford": true,
@@ -13573,18 +12797,6 @@
      "age": 23,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Keldon Johnson"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Luke Kornet"
     },
     {
      "name": "Deandre Ayton",
@@ -13779,28 +12991,40 @@
      "why": "Rotation depth behind Harrison Barnes"
     },
     {
-     "name": "Brook Lopez",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "LAC",
-     "value_M": 7.7,
-     "offer_M": 6,
-     "barrett": 11.0,
-     "age": 38,
+     "name": "Khris Middleton",
+     "pos": "SF/PF",
+     "status": "UFA",
+     "from": "DAL",
+     "value_M": 9.0,
+     "offer_M": 4,
+     "barrett": 9.0,
+     "age": 34,
      "tool": "Cap room",
      "why": "Veteran-minimum depth"
     },
     {
-     "name": "Day'Ron Sharpe",
+     "name": "Jaxson Hayes",
      "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
+     "status": "UFA",
+     "from": "LAL",
+     "value_M": 6.2,
+     "offer_M": 5,
+     "barrett": 12.4,
+     "age": 26,
      "tool": "Cap room",
-     "why": "Rotation depth behind Kelly Olynyk"
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Jock Landale",
+     "pos": "C",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 6.2,
+     "offer_M": 5,
+     "barrett": 11.7,
+     "age": 30,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -13810,13 +13034,14 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 190,
-   "resign_cost_M": 13,
+   "resign_cost_M": 11,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
    "timeline": "playoff",
    "needs": [],
    "thin": [
+    "PG",
     "SG"
    ],
    "roster": [
@@ -13877,17 +13102,30 @@
    ],
    "best_fits": [
     {
-     "name": "Isaiah Hartenstein",
+     "name": "Deandre Ayton",
      "pos": "C",
-     "from": "OKC",
-     "status": "Team Option",
-     "value_M": 16.8,
+     "from": "LAL",
+     "status": "Player Option",
+     "value_M": 15.7,
      "offer_M": 15,
-     "fit": 82,
-     "grade": "A+",
+     "fit": 81,
+     "grade": "A",
      "ppos": "C",
      "slot": 0,
-     "why": "Upgrades on Jakob Poeltl at C, a bargain at $15M against his $16.8M market."
+     "why": "Upgrades on Jakob Poeltl at C, fair value at $15M."
+    },
+    {
+     "name": "Tyrese Martin",
+     "pos": "PG/SG",
+     "from": "PHI",
+     "status": "RFA",
+     "value_M": 4.0,
+     "offer_M": 2,
+     "fit": 68,
+     "grade": "A-",
+     "ppos": "PG",
+     "slot": 3,
+     "why": "Rotation depth at PG, a bargain at $2M against his $4.0M market."
     },
     {
      "name": "Kevin Huerter",
@@ -13901,19 +13139,6 @@
      "ppos": "SG",
      "slot": 3,
      "why": "Rotation depth at SG, a bargain at $6M against his $10.3M market."
-    },
-    {
-     "name": "Tyrese Martin",
-     "pos": "PG/SG",
-     "from": "PHI",
-     "status": "RFA",
-     "value_M": 4.0,
-     "offer_M": 2,
-     "fit": 62,
-     "grade": "B+",
-     "ppos": "PG",
-     "slot": 3,
-     "why": "Rotation depth at PG, a bargain at $2M against his $4.0M market."
     }
    ],
    "plan": [
@@ -13925,26 +13150,11 @@
      "kind": "resign"
     },
     {
-     "name": "Jamal Shead",
+     "name": "Lonzo Ball",
      "pos": "PG/SG",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
-    {
-     "name": "Tyus Jones",
-     "pos": "PG",
-     "from": "DEN",
-     "cost_M": 3,
-     "tool": "Minimum",
-     "kind": "external"
-    },
-    {
-     "name": "Thomas Bryant",
-     "pos": "C",
      "from": "CLE",
-     "cost_M": 3,
-     "tool": "Minimum",
+     "cost_M": 4,
+     "tool": "Mid-level",
      "kind": "external"
     },
     {
@@ -13978,18 +13188,6 @@
      "age": 27,
      "tool": "Bird rights",
      "why": "Re-sign \u00b7 Bird rights"
-    },
-    {
-     "name": "Jamal Shead",
-     "pos": "PG/SG",
-     "status": "Team Option",
-     "from": "TOR",
-     "value_M": 5.4,
-     "offer_M": 2,
-     "barrett": 10.7,
-     "age": 23,
-     "tool": "Team option",
-     "why": "Pick up team option"
     }
    ],
    "resign_plan": {
@@ -13997,7 +13195,7 @@
     "reserve_M": 4,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 207,
+    "all_in_M": 205,
     "keeps": [
      {
       "name": "Sandro Mamukelashvili",
@@ -14006,18 +13204,6 @@
       "value_M": 10.6,
       "barrett": 15.7,
       "running_M": 205,
-      "zone": "tax",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
-     {
-      "name": "Jamal Shead",
-      "pos": "PG/SG",
-      "cost_M": 2,
-      "value_M": 5.4,
-      "barrett": 10.7,
-      "running_M": 207,
       "zone": "tax",
       "worth": true,
       "afford": true,
@@ -14047,18 +13233,6 @@
      "offer_M": 15,
      "barrett": 18.4,
      "age": 27,
-     "tool": "Mid-level exception",
-     "why": "Upgrade \u00b7 would start over Jakob Poeltl"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
      "tool": "Mid-level exception",
      "why": "Upgrade \u00b7 would start over Jakob Poeltl"
     },
@@ -14135,18 +13309,6 @@
      "why": "Rotation depth behind Jamal Shead"
     },
     {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 13,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Collin Murray-Boyles"
-    },
-    {
      "name": "Jusuf Nurki\u0107",
      "pos": "C",
      "status": "UFA",
@@ -14207,18 +13369,6 @@
      "why": "Rotation depth behind Jakob Poeltl"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 8,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Jamal Shead"
-    },
-    {
      "name": "Mitchell Robinson",
      "pos": "C",
      "status": "UFA",
@@ -14227,18 +13377,6 @@
      "offer_M": 8,
      "barrett": 13.1,
      "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Collin Murray-Boyles"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Collin Murray-Boyles"
     },
@@ -14263,6 +13401,54 @@
      "offer_M": 7,
      "barrett": 12.3,
      "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "Kevin Huerter",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "DET",
+     "value_M": 10.3,
+     "offer_M": 6,
+     "barrett": 11.0,
+     "age": 27,
+     "tool": "Mid-level exception",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 12,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jamal Shead"
+    },
+    {
+     "name": "Norman Powell",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "MIA",
+     "value_M": 18.7,
+     "offer_M": 12,
+     "barrett": 22.0,
+     "age": 33,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Jamal Shead"
+    },
+    {
+     "name": "Jordan Goodwin",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHX",
+     "value_M": 8.8,
+     "offer_M": 5,
+     "barrett": 11.6,
+     "age": 27,
      "tool": "Mid-level exception",
      "why": "Veteran-minimum depth"
     }
@@ -14398,10 +13584,10 @@
      "kind": "resign"
     },
     {
-     "name": "Isaiah Hartenstein",
+     "name": "Mark Williams",
      "pos": "C",
-     "from": "OKC",
-     "cost_M": 15,
+     "from": "PHX",
+     "cost_M": 14,
      "tool": "Mid-level",
      "kind": "external"
     },
@@ -14527,18 +13713,6 @@
      "why": "Rotation depth behind Isaiah Collier"
     },
     {
-     "name": "Neemias Queta",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BOS",
-     "value_M": 25.5,
-     "offer_M": 23,
-     "barrett": 21.3,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jusuf Nurki\u0107"
-    },
-    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "status": "UFA",
@@ -14573,30 +13747,6 @@
      "age": 23,
      "tool": "Cap room",
      "why": "Rotation depth behind Kyle Filipowski"
-    },
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 16,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Kyle Filipowski"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jusuf Nurki\u0107"
     },
     {
      "name": "Mark Williams",
@@ -14659,18 +13809,6 @@
      "why": "Rotation depth behind Brice Sensabaugh"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Isaiah Collier"
-    },
-    {
      "name": "Anfernee Simons",
      "pos": "PG/SG",
      "status": "UFA",
@@ -14719,16 +13857,64 @@
      "why": "Rotation depth behind Isaiah Collier"
     },
     {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
+     "name": "Quentin Grimes",
+     "pos": "SG/SF",
+     "status": "UFA",
+     "from": "PHI",
+     "value_M": 13.4,
      "offer_M": 8,
-     "barrett": 13.7,
-     "age": 24,
+     "barrett": 15.2,
+     "age": 26,
      "tool": "Cap room",
-     "why": "Rotation depth behind Walker Kessler"
+     "why": "Rotation depth behind Kennedy Chandler"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 14,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Isaiah Collier"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 15.7,
+     "age": 27,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Kyle Filipowski"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.0,
+     "offer_M": 7,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 7,
+     "barrett": 16.7,
+     "age": 28,
+     "tool": "Cap room",
+     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -14738,7 +13924,7 @@
    "cap_room_M": 0,
    "exception_M": 15,
    "committed_M": 175,
-   "resign_cost_M": 7,
+   "resign_cost_M": 5,
    "tax_M": 200,
    "apron1_M": 209,
    "apron2_M": 222,
@@ -14847,27 +14033,20 @@
      "why": "Adds a needed second body at PG, a bargain at $15M against his $21.7M market."
     },
     {
-     "name": "Julian Champagnie",
+     "name": "Bennedict Mathurin",
      "pos": "SF/PF",
-     "from": "SAS",
-     "status": "Team Option",
-     "value_M": 21.0,
+     "from": "LAC",
+     "status": "RFA",
+     "value_M": 23.8,
      "offer_M": 15,
      "fit": 68,
      "grade": "A-",
      "ppos": "SF",
      "slot": 1,
-     "why": "Adds a needed second body at SF, a bargain at $15M against his $21.0M market."
+     "why": "Adds a needed second body at SF, a bargain at $15M against his $23.8M market."
     }
    ],
    "plan": [
-    {
-     "name": "Jamir Watkins",
-     "pos": "SG/SF",
-     "cost_M": 2,
-     "tool": "Re-sign",
-     "kind": "resign"
-    },
     {
      "name": "Anthony Gill",
      "pos": "PF/C",
@@ -14881,6 +14060,14 @@
      "cost_M": 2,
      "tool": "Re-sign",
      "kind": "resign"
+    },
+    {
+     "name": "Deandre Ayton",
+     "pos": "C",
+     "from": "LAL",
+     "cost_M": 14,
+     "tool": "Mid-level",
+     "kind": "external"
     },
     {
      "name": "2026 Pick #1",
@@ -14924,18 +14111,6 @@
      "why": "Re-sign \u00b7 Bird rights"
     },
     {
-     "name": "Jamir Watkins",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "WAS",
-     "value_M": 2.2,
-     "offer_M": 2,
-     "barrett": 7.3,
-     "age": 24,
-     "tool": "Team option",
-     "why": "Pick up team option"
-    },
-    {
      "name": "Sharife Cooper",
      "pos": "PG",
      "status": "RFA",
@@ -14953,27 +14128,15 @@
     "reserve_M": 15,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 197,
+    "all_in_M": 195,
     "keeps": [
-     {
-      "name": "Jamir Watkins",
-      "pos": "SG/SF",
-      "cost_M": 2,
-      "value_M": 2.2,
-      "barrett": 7.3,
-      "running_M": 192,
-      "zone": "ok",
-      "worth": true,
-      "afford": true,
-      "keep": true
-     },
      {
       "name": "Anthony Gill",
       "pos": "PF/C",
       "cost_M": 3,
       "value_M": 3.1,
       "barrett": 6.8,
-      "running_M": 195,
+      "running_M": 193,
       "zone": "ok",
       "worth": true,
       "afford": true,
@@ -14985,7 +14148,7 @@
       "cost_M": 2,
       "value_M": 2.2,
       "barrett": 6.6,
-      "running_M": 197,
+      "running_M": 195,
       "zone": "ok",
       "worth": true,
       "afford": true,
@@ -14994,18 +14157,6 @@
     ]
    },
    "pursue": [
-    {
-     "name": "Julian Champagnie",
-     "pos": "SF/PF",
-     "status": "Team Option",
-     "from": "SAS",
-     "value_M": 21.0,
-     "offer_M": 15,
-     "barrett": 17.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Kyshawn George"
-    },
     {
      "name": "Peyton Watson",
      "pos": "SF/PF",
@@ -15029,18 +14180,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Bilal Coulibaly"
-    },
-    {
-     "name": "Isaiah Hartenstein",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "OKC",
-     "value_M": 16.8,
-     "offer_M": 15,
-     "barrett": 18.2,
-     "age": 28,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Alex Sarr"
     },
     {
      "name": "Bennedict Mathurin",
@@ -15127,18 +14266,6 @@
      "why": "Rotation depth behind Bilal Coulibaly"
     },
     {
-     "name": "Pelle Larsson",
-     "pos": "SG/SF",
-     "status": "Team Option",
-     "from": "MIA",
-     "value_M": 13.1,
-     "offer_M": 12,
-     "barrett": 16.3,
-     "age": 25,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Bilal Coulibaly"
-    },
-    {
      "name": "Anfernee Simons",
      "pos": "PG/SG",
      "status": "UFA",
@@ -15149,18 +14276,6 @@
      "age": 26,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Bilal Coulibaly"
-    },
-    {
-     "name": "Day'Ron Sharpe",
-     "pos": "C",
-     "status": "Team Option",
-     "from": "BKN",
-     "value_M": 13.1,
-     "offer_M": 10,
-     "barrett": 13.7,
-     "age": 24,
-     "tool": "Mid-level exception",
-     "why": "Rotation depth behind Julian Reese"
     },
     {
      "name": "Brandon Williams",
@@ -15231,6 +14346,54 @@
      "offer_M": 9,
      "barrett": 10.5,
      "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Julian Reese"
+    },
+    {
+     "name": "Robert Williams III",
+     "pos": "C",
+     "status": "UFA",
+     "from": "POR",
+     "value_M": 11.0,
+     "offer_M": 9,
+     "barrett": 14.6,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Julian Reese"
+    },
+    {
+     "name": "CJ McCollum",
+     "pos": "SG/PG",
+     "status": "UFA",
+     "from": "ATL",
+     "value_M": 15.5,
+     "offer_M": 14,
+     "barrett": 20.5,
+     "age": 34,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Kyshawn George"
+    },
+    {
+     "name": "John Collins",
+     "pos": "PF/C",
+     "status": "UFA",
+     "from": "LAC",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 16.7,
+     "age": 28,
+     "tool": "Mid-level exception",
+     "why": "Rotation depth behind Julian Reese"
+    },
+    {
+     "name": "Sandro Mamukelashvili",
+     "pos": "C/PF",
+     "status": "Player Option",
+     "from": "TOR",
+     "value_M": 10.6,
+     "offer_M": 8,
+     "barrett": 15.7,
+     "age": 27,
      "tool": "Mid-level exception",
      "why": "Rotation depth behind Julian Reese"
     }

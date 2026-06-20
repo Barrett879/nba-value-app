@@ -1,0 +1,12 @@
+# HoopsValue - manual team corrections. Override a player's current team when BOTH
+# the contract feed AND the season-stats feed have it wrong (rare; usually a bad
+# mock-trade rumor in the data). The authoritative default is where a player actually
+# played this season (the stats team); this file is the escape hatch on top of that.
+#
+#   player = player name (accents optional)
+#   team   = correct 3-letter team abbreviation
+#   note   = free text, ignored by the build
+#
+# Lines starting with # are ignored. (Rui Hachimura is NOT listed here - the stats
+# feed already has him correctly on LAL; the bug was a stale current-team elsewhere.)
+player,team,note

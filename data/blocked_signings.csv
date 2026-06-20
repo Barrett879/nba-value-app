@@ -1,0 +1,13 @@
+# HoopsValue - blocked signings. Stop the model from signing a specific player to a
+# specific team when it makes no positional/roster sense (e.g. a team already deep at a
+# position). The blocked player is dropped from that team and re-routes elsewhere; he is
+# never sent back to the blocked team.
+#
+#   team   = 3-letter abbreviation that should NOT sign the player
+#   player = the free agent the model wrongly placed there
+#   note   = free text, ignored by the build
+#
+# Lines starting with # are ignored.
+team,player,note
+NOP,Tyus Jones,Pelicans already deep at guard (Poole/Murray/Fears/Hawkins) - no 6th PG
+NOP,Jevon Carter,Pelicans already deep at guard - no 7th PG

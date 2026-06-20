@@ -1,0 +1,535 @@
+{
+ "listing": [
+  {
+   "player": "Caleb Houstan",
+   "team": "ATL",
+   "pos": "SG/SF",
+   "barrett": 1.1,
+   "value_M": 4.3,
+   "projected": false
+  },
+  {
+   "player": "N'Faly Dante",
+   "team": "ATL",
+   "pos": "C",
+   "barrett": 0.5,
+   "value_M": 2.8,
+   "projected": false
+  },
+  {
+   "player": "Duop Reath",
+   "team": "ATL",
+   "pos": "C",
+   "barrett": 2.3,
+   "value_M": 2.7,
+   "projected": false
+  },
+  {
+   "player": "Nikola Djurisic",
+   "team": "ATL",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Hunter Tyson",
+   "team": "BKN",
+   "pos": "PF/SF",
+   "barrett": -0.9,
+   "value_M": 3.7,
+   "projected": false
+  },
+  {
+   "player": "Dariq Whitehead",
+   "team": "BKN",
+   "pos": "SG/SF",
+   "barrett": 7.8,
+   "value_M": 3.4,
+   "projected": false
+  },
+  {
+   "player": "Malachi Smith",
+   "team": "BKN",
+   "pos": "SG/PG",
+   "barrett": 8.4,
+   "value_M": 2.3,
+   "projected": false
+  },
+  {
+   "player": "Keon Johnson",
+   "team": "BKN",
+   "pos": "PG/SG",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Tre Scott",
+   "team": "BKN",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Grant Nelson",
+   "team": "BKN",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "JD Davison",
+   "team": "BOS",
+   "pos": "PG/SG",
+   "barrett": 0.8,
+   "value_M": 2.3,
+   "projected": false
+  },
+  {
+   "player": "Malaki Branham",
+   "team": "CHA",
+   "pos": "PG/SG",
+   "barrett": 3.5,
+   "value_M": 4.8,
+   "projected": false
+  },
+  {
+   "player": "Nick Smith Jr.",
+   "team": "CHA",
+   "pos": "PG/SG",
+   "barrett": 3.7,
+   "value_M": 4.0,
+   "projected": false
+  },
+  {
+   "player": "Xavier Tillman Sr.",
+   "team": "CHA",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Zach Collins",
+   "team": "CHI",
+   "pos": "C",
+   "barrett": 7.5,
+   "value_M": 8.5,
+   "projected": true,
+   "dest_team": "CHI",
+   "offer_M": 8.5,
+   "is_resign": true
+  },
+  {
+   "player": "Larry Nance Jr.",
+   "team": "CLE",
+   "pos": "PF/C",
+   "barrett": 2.0,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Jeremiah Robinson-Earl",
+   "team": "DAL",
+   "pos": "PF/C",
+   "barrett": 2.1,
+   "value_M": 2.9,
+   "projected": false
+  },
+  {
+   "player": "Dario Saric",
+   "team": "DET",
+   "pos": "PF/C",
+   "barrett": 0.6,
+   "value_M": 3.5,
+   "projected": false
+  },
+  {
+   "player": "Isaac Jones",
+   "team": "DET",
+   "pos": "PF/C",
+   "barrett": 0.6,
+   "value_M": 2.5,
+   "projected": false
+  },
+  {
+   "player": "Seth Curry",
+   "team": "GSW",
+   "pos": "SG/PG",
+   "barrett": 5.0,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Jeff Green",
+   "team": "HOU",
+   "pos": "PF/C",
+   "barrett": -0.4,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Jae'Sean Tate",
+   "team": "HOU",
+   "pos": "SF/PF",
+   "barrett": 1.9,
+   "value_M": 3.1,
+   "projected": false
+  },
+  {
+   "player": "Tony Bradley",
+   "team": "IND",
+   "pos": "C",
+   "barrett": 3.5,
+   "value_M": 3.5,
+   "projected": false
+  },
+  {
+   "player": "James Wiseman",
+   "team": "IND",
+   "pos": "C",
+   "barrett": 1.9,
+   "value_M": 2.9,
+   "projected": false
+  },
+  {
+   "player": "Garrison Mathews",
+   "team": "IND",
+   "pos": "SG/SF",
+   "barrett": 3.8,
+   "value_M": 2.9,
+   "projected": false
+  },
+  {
+   "player": "Monte Morris",
+   "team": "IND",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Gabe Mcglothan",
+   "team": "IND",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Dalano Banton",
+   "team": "LAC",
+   "pos": "PG/SG",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Maxi Kleber",
+   "team": "LAL",
+   "pos": "C/PF",
+   "barrett": 1.9,
+   "value_M": 3.5,
+   "projected": false
+  },
+  {
+   "player": "Eric Gordon",
+   "team": "MEM",
+   "pos": "SF/SG",
+   "barrett": 4.9,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Georges Niang",
+   "team": "MEM",
+   "pos": "PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Adama-Alpha Bal",
+   "team": "MEM",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Lawson Lovering",
+   "team": "MEM",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Lucas Williamson",
+   "team": "MEM",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Terry Rozier",
+   "team": "MIA",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Andre Jackson Jr.",
+   "team": "MIL",
+   "pos": "SG/SF",
+   "barrett": -0.4,
+   "value_M": 2.6,
+   "projected": false
+  },
+  {
+   "player": "Nigel Hayes-Davis",
+   "team": "MIL",
+   "pos": "SF/PF",
+   "barrett": 1.0,
+   "value_M": 2.2,
+   "projected": false
+  },
+  {
+   "player": "Joe Ingles",
+   "team": "MIN",
+   "pos": "SF/PF",
+   "barrett": 1.6,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Julian Phillips",
+   "team": "MIN",
+   "pos": "SF/PF",
+   "barrett": 1.2,
+   "value_M": 2.8,
+   "projected": false
+  },
+  {
+   "player": "DeAndre Jordan",
+   "team": "NOP",
+   "pos": "C",
+   "barrett": 5.1,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Jaden Springer",
+   "team": "NOP",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Moritz Wagner",
+   "team": "ORL",
+   "pos": "C",
+   "barrett": 4.5,
+   "value_M": 3.5,
+   "projected": false
+  },
+  {
+   "player": "Kyle Lowry",
+   "team": "PHI",
+   "pos": "PG",
+   "barrett": 1.0,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Cameron Payne",
+   "team": "PHI",
+   "pos": "PG/SG",
+   "barrett": 5.5,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Charles Bassey",
+   "team": "PHI",
+   "pos": "C",
+   "barrett": 5.2,
+   "value_M": 2.9,
+   "projected": false
+  },
+  {
+   "player": "Amir Coffey",
+   "team": "PHX",
+   "pos": "SG/SF",
+   "barrett": 2.6,
+   "value_M": 2.9,
+   "projected": false
+  },
+  {
+   "player": "Matisse Thybulle",
+   "team": "POR",
+   "pos": "SF/SG",
+   "barrett": 5.3,
+   "value_M": 3.3,
+   "projected": false
+  },
+  {
+   "player": "Doug McDermott",
+   "team": "SAC",
+   "pos": "SF/PF",
+   "barrett": 4.0,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Mason Plumlee",
+   "team": "SAS",
+   "pos": "C",
+   "barrett": 1.8,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Kelly Olynyk",
+   "team": "SAS",
+   "pos": "PF/C",
+   "barrett": 3.2,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Bismack Biyombo",
+   "team": "SAS",
+   "pos": "C",
+   "barrett": 0.5,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Jordan McLaughlin",
+   "team": "SAS",
+   "pos": "PG",
+   "barrett": 1.9,
+   "value_M": 2.9,
+   "projected": false
+  },
+  {
+   "player": "Jeremy Sochan",
+   "team": "SAS",
+   "pos": "PF/SF",
+   "barrett": 3.0,
+   "value_M": 2.8,
+   "projected": false
+  },
+  {
+   "player": "Lindy Waters III",
+   "team": "SAS",
+   "pos": "SG/SF",
+   "barrett": 1.0,
+   "value_M": 2.6,
+   "projected": false
+  },
+  {
+   "player": "Garrett Temple",
+   "team": "TOR",
+   "pos": "SG/PG",
+   "barrett": 0.6,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Chris Paul",
+   "team": "TOR",
+   "pos": "PG",
+   "barrett": 1.3,
+   "value_M": 3.9,
+   "projected": false
+  },
+  {
+   "player": "Chris Boucher",
+   "team": "UTA",
+   "pos": "PF/C",
+   "barrett": -1.0,
+   "value_M": 3.5,
+   "projected": false
+  },
+  {
+   "player": "Mo Bamba",
+   "team": "UTA",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Blake Wesley",
+   "team": "WAS",
+   "pos": "PG/SG",
+   "barrett": 3.1,
+   "value_M": 3.0,
+   "projected": false
+  },
+  {
+   "player": "Dante Exum",
+   "team": "WAS",
+   "pos": "SG/SF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Skal Labissiere",
+   "team": "WAS",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Alondes Williams",
+   "team": "WAS",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Kadary Richmond",
+   "team": "WAS",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  },
+  {
+   "player": "Keshon Gilbert",
+   "team": "WAS",
+   "pos": "SF/PF",
+   "barrett": null,
+   "value_M": null,
+   "projected": false
+  }
+ ],
+ "projected": [
+  {
+   "player": "Zach Collins",
+   "team": "CHI",
+   "pos": "C",
+   "barrett": 7.5,
+   "value_M": 8.5,
+   "projected": true,
+   "dest_team": "CHI",
+   "dest_name": "Chicago Bulls",
+   "offer_M": 8.5,
+   "is_resign": true,
+   "tool": "cap room",
+   "status": "UFA"
+  }
+ ]
+}

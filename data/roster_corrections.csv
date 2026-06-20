@@ -6,11 +6,18 @@
 # touches a player's historical stats, so a waived player still shows on the
 # Rankings for the games he actually played.
 #
-#   action = waived  ->  drop <player> from <team>'s guaranteed roster
-#                        (he's no longer under contract there)
+#   action = waived          ->  drop <player> from <team>'s guaranteed roster
+#                                 (waived / no longer under contract there)
+#   action = decline_option  ->  team declines its team option on <player>; he
+#                                 comes off the roster and reaches free agency
 #
-# team = 3-letter abbreviation. Lines starting with # are ignored.
+# team = 3-letter abbreviation (the team that HOLDS the contract/option).
+# Lines starting with # are ignored.
 team,player,action
 LAL,Kobe Bufkin,waived
 DET,Bobi Klintman,waived
+CHA,Pat Connaughton,decline_option
+LAC,Bogdan Bogdanovic,decline_option
+NOP,Kevon Looney,decline_option
+SAC,Killian Hayes,decline_option
 

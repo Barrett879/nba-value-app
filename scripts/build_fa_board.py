@@ -104,6 +104,32 @@ def fa_status(name):
     return classify_fa_status(name, fmt_nc(name, nc), rookie, CUR)
 
 
+# Team of record = where a player actually PLAYED this season (the stats Team), with
+# data/team_corrections.csv on top. The contract-features current_team can be stale (a
+# mock-trade rumor put Rui on POR though he never left LAL), which breaks the incumbent /
+# Bird-rights logic, so the season team wins.  See scripts/dump_current_teams.py.
+import csv as _csv
+_TEAM_CORR = {}
+_tc = ROOT / "data" / "team_corrections.csv"
+if _tc.exists():
+    for _r in _csv.DictReader([l for l in _tc.read_text().splitlines() if not l.lstrip().startswith("#")]):
+        if _r.get("player") and _r.get("team"):
+            _TEAM_CORR[normalize(_r["player"])] = _r["team"].strip()
+_ABBR = {"PHO": "PHX", "CHO": "CHA", "BRK": "BKN", "NOH": "NOP"}
+def _team_of(name, stats_team, stale_team):
+    t = _TEAM_CORR.get(normalize(name)) or str(stats_team or "") or str(stale_team or "")
+    return _ABBR.get(t, t)
+
+# Players who have manually DECLINED a player option (data/fa_sim_overrides.csv,
+# action=opt_out) — force them into the FA pool as UFAs even though the opt-in model
+# would otherwise assume they stay (e.g. Trae Young declining his $49M option).
+_OPT_OUT = set()
+_ovr_oo = ROOT / "data" / "fa_sim_overrides.csv"
+if _ovr_oo.exists():
+    for _r in _csv.DictReader(_ovr_oo.read_text().splitlines()):
+        if (_r.get("action") or "").strip().lower() == "opt_out" and _r.get("player"):
+            _OPT_OUT.add(normalize(_r["player"]))
+
 # ── Free-agent candidate pool: predict each one once ──────────────────────────
 print("predicting free-agent pool ...")
 qualified = full[full["total_min"] >= DEFAULT_MIN_THRESHOLD]
@@ -121,11 +147,21 @@ for _, r in qualified.iterrows():
     # Option-year salary (team OR player option) from the contracts feed — the
     # pre-set figure the option would pay next season, in $M.
     opt_M = float((nc.get(normalize(name)) or {}).get("salary") or 0) / 1e6
+    _optout = normalize(name) in _OPT_OUT
     # A player who will exercise his player option is staying — not a free agent,
-    # so he shouldn't appear on anyone's board. Drop the likely opt-ins.
-    if st_ == "Player Option" and option_opt_in_prob(opt_M, value_M, age) >= OPTION_OPT_IN_THRESHOLD:
+    # so he shouldn't appear on anyone's board. Drop the likely opt-ins, UNLESS he
+    # has manually declined (opt_out), in which case he's a UFA the team can re-sign.
+    if st_ == "Player Option" and not _optout and option_opt_in_prob(opt_M, value_M, age) >= OPTION_OPT_IN_THRESHOLD:
         opted_in.append(f"{name} (${opt_M:.0f}M opt)")
         continue
+    # A team option is the TEAM's call, not a free-agent market — kept (under contract)
+    # if exercised, or dropped via data/roster_corrections.csv (decline_option) if not.
+    # Either way it doesn't belong in the FA pool, so the model can't ship him elsewhere.
+    if st_ == "Team Option":
+        opted_in.append(f"{name} (${opt_M:.0f}M team opt)")
+        continue
+    if _optout:
+        st_ = "UFA"
     cands.append({
         "name": name, "status": st_,
         "value_M": value_M,
@@ -133,7 +169,7 @@ for _, r in qualified.iterrows():
         "barrett": round(float(f["barrett_score"]), 1),
         "pos": ts.resolve_position(name, f.get("position_detailed") or "", pos2k),
         "age": age,
-        "team": str(f.get("current_team") or r["Team"]),
+        "team": _team_of(name, r["Team"], f.get("current_team")),
     })
 print(f"  {len(cands)} free agents  ({len(opted_in)} option-holders excluded as likely opt-ins)")
 for x in opted_in:
@@ -430,8 +466,8 @@ def board_for(team):
     _roster = []
     for _, r in _tf.iterrows():
         _nm = str(r["Player"])
-        if _ROSTER_FIX.get((team, normalize(_nm))) == "waived":
-            continue                                   # waived since the feed snapshot
+        if _ROSTER_FIX.get((team, normalize(_nm))) in ("waived", "decline_option"):
+            continue                                   # waived / declined team option since the feed snapshot
         if classify_fa_status(_nm, fmt_nc(_nm, nc), rookie, CUR) is not None:
             continue                                   # free agent / option -> not guaranteed
         # Salary = NEXT season (CONTRACT_SEASON, e.g. 2026-27) to match the
@@ -604,6 +640,19 @@ CAP = ns["SALARY_CAP_M"].get(CONTRACT, 165.0)
 _TEAMNAME = dict(zip(LAND["team"].astype(str), LAND["team_name"].astype(str)))
 _FA_STATUS = {normalize(c["name"]): c["status"] for c in cands}
 
+# Manual overrides (data/fa_sim_overrides.csv): players to HOLD OUT of free agency
+# entirely (injury, personal, sitting out) — they never re-sign or get signed.
+_HOLD_OUT, _HOLD_NOTE = set(), {}
+_ovr = ROOT / "data" / "fa_sim_overrides.csv"
+if _ovr.exists():
+    import csv as _csv
+    for _r in _csv.DictReader(_ovr.read_text().splitlines()):
+        if (_r.get("action") or "").strip() == "hold_out" and _r.get("player"):
+            _HOLD_OUT.add(normalize(_r["player"]))
+            _HOLD_NOTE[normalize(_r["player"])] = (_r.get("note") or "held out").strip()
+if _HOLD_OUT:
+    print(f"  hold-out overrides: {sorted(_HOLD_NOTE.values())}")
+
 # ── Team Builder-derived REAL cap state (the key to money-coherent realism) ───
 # Each team's actual room for OUTSIDE free agents, after the board's own re-signs
 # and draft picks: real cap room if it has any, else one mid-level, capped at the
@@ -704,9 +753,19 @@ rost_used = {tm: len(b.get("roster", []))
              for tm, b in boards.items()}
 adds = {}
 real_by_name = {}
+# Step 0 — held-out players (manual override) never sign anywhere; everyone else
+# (`active`) flows through the normal re-sign / external / roster-fill passes.
+for item in prelim:
+    if normalize(item["c"]["name"]) in _HOLD_OUT:
+        c = item["c"]
+        real_by_name[c["name"]] = {
+            "predicted": None, "predicted_name": "Unsigned", "is_resign": False,
+            "confidence": "Low", "offer_M": 0, "tool": "held out",
+            "reason": _HOLD_NOTE.get(normalize(c["name"]), "held out — not signing"), "alts": []}
+active = [item for item in prelim if normalize(item["c"]["name"]) not in _HOLD_OUT]
 # Step A — board re-signs occupy their spots.
 _resigned = set()
-for item in prelim:
+for item in active:
     c = item["c"]; key = (c["team"], normalize(c["name"]))
     if key not in _board_resigns:
         continue
@@ -726,7 +785,7 @@ for item in prelim:
 # Step B — external clear for everyone else: best OUTSIDE team that has both a
 # roster spot and the real budget. Best-first so the stars get the open money.
 _leftover = []
-for item in sorted((x for x in prelim if x["c"]["name"] not in _resigned),
+for item in sorted((x for x in active if x["c"]["name"] not in _resigned),
                    key=lambda x: -x["c"]["value_M"]):
     c = item["c"]; chosen = None
     for d in item["b_real"]:
@@ -800,6 +859,29 @@ for item in pool:
             "predicted": None, "predicted_name": "Unsigned", "is_resign": False,
             "confidence": "Low", "offer_M": 0, "tool": "unsigned",
             "reason": "no roster spot — likely a minimum, two-way, or overseas deal", "alts": []}
+
+# Official manual signings (data/manual_signings.csv): completed real-world deals.
+# Force the sim/board projection for any signed FA who is in the pool so the live
+# FA-Simulation + Front Office pages match the spreadsheet (no model guess for him).
+_ms_path = ROOT / "data" / "manual_signings.csv"
+if _ms_path.exists():
+    _cand_by = {normalize(c["name"]): c for c in cands}
+    for r in _csv.DictReader(l for l in _ms_path.read_text().splitlines() if l.strip() and not l.lstrip().startswith("#")):
+        pl = (r.get("player") or "").strip()
+        tm = _ABBR.get((r.get("team") or "").strip().upper(), (r.get("team") or "").strip().upper())
+        if not pl or tm not in boards:
+            continue
+        c = _cand_by.get(normalize(pl))
+        if c is None:                                  # not a pooled FA (e.g. an option-holder) — leave as is
+            continue
+        cost = (r.get("cost_M") or "").strip()
+        offer = round(float(cost), 1) if cost else c["value_M"]
+        resign = (r.get("resign") or "").strip().lower() in ("yes", "y", "true", "1") or _ABBR.get(c["team"], c["team"]) == tm
+        real_by_name[c["name"]] = {
+            "predicted": tm, "predicted_name": _TEAMNAME.get(tm, tm), "is_resign": resign,
+            "confidence": "High", "offer_M": offer,
+            "tool": "Bird rights" if resign else "signed (official)",
+            "reason": "official signing (reported)", "alts": []}
 
 sim_players = []
 for item in prelim:

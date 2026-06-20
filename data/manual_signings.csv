@@ -1,0 +1,21 @@
+# HoopsValue - manual signings. Force a specific player onto a team's projected
+# roster, optionally replacing whoever the model had there (the replaced player is
+# bumped back to free agency and re-routed). For roster calls the model wouldn't make.
+#
+#   player    = the free agent to place
+#   team      = 3-letter abbr of the team that signs him
+#   replaces  = (optional) a player the model put on that team; he is bumped to free
+#               agency, and the new man inherits his salary slot (a clean 1-for-1 swap)
+#   cost_M    = (optional) the salary to book; overrides the replaced player's slot.
+#   resign    = (optional) yes -> this is the team's OWN free agent (Bird rights), so
+#               it counts as a re-sign and can exceed the cap/tax with no exception.
+#               Use to correct a player the feed mis-teamed.
+#   note      = free text, ignored by the build
+#
+# Lines starting with # are ignored.
+player,team,replaces,cost_M,resign,note
+Matisse Thybulle,LAL,Jordan Clarkson,,,manual swap
+Rui Hachimura,LAL,Kenrich Williams,13,yes,Bird-rights re-sign (real Laker; feed wrongly had him on POR)
+Trae Young,WAS,,49.5,yes,declined $49M player option - max re-sign (Bird rights)
+Kevin Porter Jr.,MIL,,8,yes,opts out of $5.4M option, realistic re-sign (model overvalued at $26.9M)
+Collin Gillespie,PHX,,11.2,yes,OFFICIAL - re-signs PHX 4yr/$48M (ESPN); yr1 ~$11.2M
