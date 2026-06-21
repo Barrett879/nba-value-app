@@ -84,6 +84,37 @@ CONTRACT_SEASON = f"{_cs_start}-{(_cs_start + 1) % 100:02d}"
 # top-tier overshoot (diag_residuals.py / test_floor_discount.py). The
 # supermax floor stays at the full max (Designated Vets sign the full supermax).
 MAX_FLOOR_DISCOUNT = 0.03
+# Star-snap (2026-06-21, scripts/tune_snap.py): a GENUINE CURRENT star — recent
+# All-NBA AND Barrett >= STAR_BARRETT_THR — that the model rates near-max snaps to
+# (max − 2pp) at ANY age. The Barrett gate (not age) identifies a real star, so it
+# catches aging elites the age<=33 gate dropped. Holdout-verified: Max-tier
+# within-$4M 11%->72% (28->67 clean holdout), Star tier preserved, headline flat.
+MAX_FLOOR_AGE_CAP   = 33
+STAR_BARRETT_THR    = 22.0
+STAR_FLOOR_DISCOUNT = 0.02
+STAR_FLOOR_AGE_MAX  = 40      # 41+ stars don't get max-snapped (a 41-yo won't sign a max)
+
+
+def _apply_star_floor(predicted, raw_predicted, features, cba_max_dollars,
+                      cap_dollars_val, target_age):
+    """Lift a near-max All-NBA star to the empirical eligible-star level. A genuine
+    current star (career Barrett >= STAR_BARRETT_THR) snaps to max − 2pp at any age;
+    otherwise the aging-star gate (age <= 33) snaps to max − 3pp. Returns
+    (predicted, applied_flag). Mirrors apply_cba_postprocess in build_production_histgbm.py."""
+    if (features.get("all_nba_3yr", 0) or 0) < 1 or raw_predicted < 0.20 * cap_dollars_val:
+        return predicted, False
+    barrett = float(features.get("career_barrett") or 0)
+    star_age_ok = target_age is None or target_age <= STAR_FLOOR_AGE_MAX
+    if barrett >= STAR_BARRETT_THR and star_age_ok:
+        disc = STAR_FLOOR_DISCOUNT                       # genuine current star, age <= 40
+    elif target_age is None or target_age <= MAX_FLOOR_AGE_CAP:
+        disc = MAX_FLOOR_DISCOUNT                        # aging-star gate, age <= 33
+    else:
+        return predicted, False
+    floor_target = cba_max_dollars - disc * cap_dollars_val
+    if predicted < floor_target:
+        return floor_target, True
+    return predicted, False
 
 
 # ── Page boilerplate ─────────────────────────────────────────────────────────
@@ -633,20 +664,13 @@ def predict_contract_histgbm(features: dict, target_season: str = CONTRACT_SEASO
         predicted = cba_max_dollars
         cba_floor_applied = True
 
-    # Max-tier floor: a recent-All-NBA star the model rates near-max (>=20% of
-    # cap) and aged ≤33 gets lifted toward their max tier — but to the EMPIRICAL
-    # eligible-star level (max − 3pp), not the theoretical max. The regressor
-    # hedges below the max (stars got a spread of training outcomes); the floor
-    # corrects that, while the 3pp discount corrects a measured ~2pp overshoot
-    # from snapping discount-takers all the way to the max. Age gate spares
-    # aging stars (Chris Paul 36). Forward-validated: All-NBA within-5% 82→86%.
-    _floor_target = cba_max_dollars - MAX_FLOOR_DISCOUNT * cap_dollars_val
-    if ((features.get("all_nba_3yr", 0) or 0) >= 1
-            and raw_predicted >= 0.20 * cap_dollars_val
-            and (target_age is None or target_age <= 33)
-            and predicted < _floor_target):
-        predicted = _floor_target
-        max_tier_floor_applied = True
+    # Max-tier floor (star-snap): lift a near-max All-NBA player to the empirical
+    # eligible-star level. A genuine current star (career Barrett >= STAR_BARRETT_THR)
+    # snaps to max − 2pp at ANY age; otherwise the aging-star gate (age <= 33) snaps
+    # to max − 3pp. See _apply_star_floor + scripts/tune_snap.py (Max-tier within-$4M
+    # 11%->72%, headline within-5%-of-cap unchanged, holdout-verified).
+    predicted, max_tier_floor_applied = _apply_star_floor(
+        predicted, raw_predicted, features, cba_max_dollars, cap_dollars_val, target_age)
 
     band = _relative_band_dollars(predicted)
 
@@ -756,20 +780,13 @@ def predict_contract(features: dict, target_season: str = CONTRACT_SEASON,
         predicted = cba_max_dollars
         cba_floor_applied = True
 
-    # Max-tier floor: a recent-All-NBA star the model rates near-max (>=20% of
-    # cap) and aged ≤33 gets lifted toward their max tier — but to the EMPIRICAL
-    # eligible-star level (max − 3pp), not the theoretical max. The regressor
-    # hedges below the max (stars got a spread of training outcomes); the floor
-    # corrects that, while the 3pp discount corrects a measured ~2pp overshoot
-    # from snapping discount-takers all the way to the max. Age gate spares
-    # aging stars (Chris Paul 36). Forward-validated: All-NBA within-5% 82→86%.
-    _floor_target = cba_max_dollars - MAX_FLOOR_DISCOUNT * cap_dollars_val
-    if ((features.get("all_nba_3yr", 0) or 0) >= 1
-            and raw_predicted >= 0.20 * cap_dollars_val
-            and (target_age is None or target_age <= 33)
-            and predicted < _floor_target):
-        predicted = _floor_target
-        max_tier_floor_applied = True
+    # Max-tier floor (star-snap): lift a near-max All-NBA player to the empirical
+    # eligible-star level. A genuine current star (career Barrett >= STAR_BARRETT_THR)
+    # snaps to max − 2pp at ANY age; otherwise the aging-star gate (age <= 33) snaps
+    # to max − 3pp. See _apply_star_floor + scripts/tune_snap.py (Max-tier within-$4M
+    # 11%->72%, headline within-5%-of-cap unchanged, holdout-verified).
+    predicted, max_tier_floor_applied = _apply_star_floor(
+        predicted, raw_predicted, features, cba_max_dollars, cap_dollars_val, target_age)
 
     band = _relative_band_dollars(predicted)
 

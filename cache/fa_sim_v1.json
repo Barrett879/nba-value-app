@@ -2,7 +2,7 @@
  "season": "2025-26",
  "contract_season": "2026-27",
  "cap_M": 165.0,
- "n": 97,
+ "n": 98,
  "accuracy": {
   "top1_recent": 50,
   "top5_recent": 59,
@@ -252,6 +252,39 @@
   }
  },
  "players": [
+  {
+   "player": "James Harden",
+   "pos": "PG/SG",
+   "age": 36,
+   "barrett": 32.5,
+   "value_M": 54.5,
+   "status": "Player Option",
+   "incumbent": "CLE",
+   "incumbent_name": "Cleveland Cavaliers",
+   "realistic": {
+    "predicted": "BOS",
+    "predicted_name": "Boston Celtics",
+    "is_resign": false,
+    "confidence": "Medium",
+    "offer_M": 15.0,
+    "tool": "mid-level exception",
+    "reason": "would start over Derrick White (28.4 vs 32.5) \u00b7 title",
+    "alts": [
+     {
+      "team": "CLE",
+      "team_name": "Cleveland Cavaliers",
+      "offer_M": 54.5,
+      "tool": "Bird rights"
+     },
+     {
+      "team": "HOU",
+      "team_name": "Houston Rockets",
+      "offer_M": 15.0,
+      "tool": "mid-level exception"
+     }
+    ]
+   }
+  },
   {
    "player": "Jalen Duren",
    "pos": "C",
@@ -1926,8 +1959,8 @@
    "incumbent": "BKN",
    "incumbent_name": "Brooklyn Nets",
    "realistic": {
-    "predicted": "DEN",
-    "predicted_name": "Denver Nuggets",
+    "predicted": "LAC",
+    "predicted_name": "LA Clippers",
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.3,
@@ -1973,27 +2006,14 @@
    "incumbent": "DEN",
    "incumbent_name": "Denver Nuggets",
    "realistic": {
-    "predicted": "BOS",
-    "predicted_name": "Boston Celtics",
-    "is_resign": false,
+    "predicted": "DEN",
+    "predicted_name": "Denver Nuggets",
+    "is_resign": true,
     "confidence": "Low",
-    "offer_M": 3.4,
-    "tool": "mid-level exception",
-    "reason": "rotation piece over Baylor Scheierman (8.1 vs 9.3) \u00b7 title",
-    "alts": [
-     {
-      "team": "DEN",
-      "team_name": "Denver Nuggets",
-      "offer_M": 4.4,
-      "tool": "Bird rights"
-     },
-     {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 4.0,
-      "tool": "cap room"
-     }
-    ]
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "back on a minimum",
+    "alts": []
    }
   },
   {

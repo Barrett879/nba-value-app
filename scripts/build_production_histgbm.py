@@ -167,6 +167,15 @@ MAX_FLOOR_AGE_CAP  = 33      # don't floor 34+ stars — they routinely take dis
 # 5pp, where genuine-max players exit the 5% band), +0.18pp overall and All-NBA
 # within-5% 82%→86%, zero years hurt.
 MAX_FLOOR_DISCOUNT = 0.03
+# Star-snap (2026-06-21, scripts/tune_snap.py): a GENUINE CURRENT star — recent
+# All-NBA AND Barrett >= STAR_BARRETT_THR — that the model rates near-max is
+# snapped to (max − 2pp) regardless of AGE. The Barrett gate (not age) is what
+# identifies a real star, so it catches aging elites the age<=33 gate dropped.
+# Holdout-verified: Max-tier within-$4M 11%->72% (28->67 on the clean holdout),
+# Star tier preserved (40->38), headline within-5%-of-cap unchanged.
+STAR_BARRETT_THR    = 22.0
+STAR_FLOOR_DISCOUNT = 0.02
+STAR_FLOOR_AGE_MAX  = 40      # 41+ stars don't get max-snapped (a 41-yo won't sign a max)
 
 
 def cba_max_pct(service_years: float, all_nba_3yr: float) -> float:
@@ -195,14 +204,22 @@ def apply_cba_postprocess(pred_pct: np.ndarray, df: pd.DataFrame = None) -> np.n
         svc = df["years_in_league"].values
         ann = df["all_nba_3yr"].values
         age = df["age"].values if "age" in df.columns else np.full(len(out), 30.0)
+        bar = df["barrett"].values if "barrett" in df.columns else np.zeros(len(out))
         for i in range(len(out)):
+            if out[i] < MAX_FLOOR_TRIGGER or (ann[i] or 0) < 1:
+                continue
             a = age[i]
             age_ok = a is None or (isinstance(a, float) and np.isnan(a)) or a <= MAX_FLOOR_AGE_CAP
-            if out[i] >= MAX_FLOOR_TRIGGER and (ann[i] or 0) >= 1 and age_ok:
-                # snap to the EMPIRICAL eligible-star level (max − 3pp), not the
-                # theoretical max — corrects a measured ~2pp top-tier overshoot.
-                target = max(cba_max_pct(svc[i], ann[i]) - MAX_FLOOR_DISCOUNT, MAX_FLOOR_TRIGGER)
-                out[i] = max(out[i], target)
+            star_age_ok = a is None or (isinstance(a, float) and np.isnan(a)) or a <= STAR_FLOOR_AGE_MAX
+            if (bar[i] or 0) >= STAR_BARRETT_THR and star_age_ok:
+                disc = STAR_FLOOR_DISCOUNT        # genuine current star -> max − 2pp (age <= 40)
+            elif age_ok:
+                disc = MAX_FLOOR_DISCOUNT         # aging-star gate (age <= 33) -> max − 3pp
+            else:
+                continue                          # 41+, or 34-40 non-elite-Barrett: leave
+            # snap to the EMPIRICAL eligible-star level, not the theoretical max.
+            target = max(cba_max_pct(svc[i], ann[i]) - disc, MAX_FLOOR_TRIGGER)
+            out[i] = max(out[i], target)
     return out
 
 

@@ -2,7 +2,7 @@
  "season": "2025-26",
  "contract_season": "2026-27",
  "cap_M": 165.0,
- "n_free_agents": 97,
+ "n_free_agents": 98,
  "teams": {
   "ATL": {
    "team": "ATL",
@@ -944,16 +944,16 @@
      "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
     },
     {
-     "name": "Robert Williams III",
-     "pos": "C",
-     "status": "UFA",
-     "from": "POR",
-     "value_M": 11.0,
-     "offer_M": 10,
-     "barrett": 14.6,
-     "age": 28,
+     "name": "James Harden",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "CLE",
+     "value_M": 54.5,
+     "offer_M": 44,
+     "barrett": 32.5,
+     "age": 36,
      "tool": "Cap room",
-     "why": "Rotation depth behind Day'Ron Sharpe"
+     "why": "Upgrade \u00b7 would start over Egor D\u00ebmin"
     }
    ]
   },
@@ -2263,6 +2263,18 @@
      "why": "Rotation depth behind Collin Sexton"
     },
     {
+     "name": "James Harden",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "CLE",
+     "value_M": 54.5,
+     "offer_M": 54,
+     "barrett": 32.5,
+     "age": 36,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Anfernee Simons"
+    },
+    {
      "name": "Rui Hachimura",
      "pos": "SF/PF",
      "status": "UFA",
@@ -2369,18 +2381,6 @@
      "age": 33,
      "tool": "Cap room",
      "why": "Rotation depth behind Matas Buzelis"
-    },
-    {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "status": "UFA",
-     "from": "LAC",
-     "value_M": 10.6,
-     "offer_M": 10,
-     "barrett": 16.7,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Jalen Smith"
     }
    ]
   },
@@ -2545,6 +2545,18 @@
    ],
    "resign": [
     {
+     "name": "James Harden",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "CLE",
+     "value_M": 54.5,
+     "offer_M": 54,
+     "barrett": 32.5,
+     "age": 36,
+     "tool": "Bird rights",
+     "why": "Re-sign \u00b7 Bird rights"
+    },
+    {
      "name": "Dean Wade",
      "pos": "SF/PF",
      "status": "UFA",
@@ -2586,15 +2598,27 @@
     "reserve_M": 3,
     "tax_M": 200,
     "apron2_M": 222,
-    "all_in_M": 239,
+    "all_in_M": 293,
     "keeps": [
+     {
+      "name": "James Harden",
+      "pos": "PG/SG",
+      "cost_M": 54,
+      "value_M": 54.5,
+      "barrett": 32.5,
+      "running_M": 279,
+      "zone": "over",
+      "worth": true,
+      "afford": false,
+      "keep": false
+     },
      {
       "name": "Keon Ellis",
       "pos": "SG/PG",
       "cost_M": 7,
       "value_M": 6.7,
       "barrett": 9.2,
-      "running_M": 232,
+      "running_M": 286,
       "zone": "over",
       "worth": true,
       "afford": false,
@@ -2606,7 +2630,7 @@
       "cost_M": 7,
       "value_M": 6.7,
       "barrett": 9.1,
-      "running_M": 239,
+      "running_M": 293,
       "zone": "over",
       "worth": true,
       "afford": false,
@@ -3196,6 +3220,18 @@
      "why": "Upgrade \u00b7 would start over Brandon Williams"
     },
     {
+     "name": "James Harden",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "CLE",
+     "value_M": 54.5,
+     "offer_M": 54,
+     "barrett": 32.5,
+     "age": 36,
+     "tool": "Cap room",
+     "why": "Upgrade \u00b7 would start over Brandon Williams"
+    },
+    {
      "name": "Ayo Dosunmu",
      "pos": "PG/SG",
      "status": "UFA",
@@ -3374,18 +3410,6 @@
      "age": 26,
      "tool": "Cap room",
      "why": "Rotation depth behind Brandon Williams"
-    },
-    {
-     "name": "John Collins",
-     "pos": "PF/C",
-     "status": "UFA",
-     "from": "LAC",
-     "value_M": 10.6,
-     "offer_M": 7,
-     "barrett": 16.7,
-     "age": 28,
-     "tool": "Cap room",
-     "why": "Veteran-minimum depth"
     }
    ]
   },
@@ -4017,17 +4041,17 @@
      "why": "Upgrades on Tobias Harris at PF, a bargain at $35M against his $39.8M market."
     },
     {
-     "name": "Russell Westbrook",
+     "name": "James Harden",
      "pos": "PG/SG",
-     "from": "SAC",
-     "status": "UFA",
-     "value_M": 5.4,
-     "offer_M": 5,
-     "fit": 71,
-     "grade": "A-",
+     "from": "CLE",
+     "status": "Player Option",
+     "value_M": 54.5,
+     "offer_M": 35,
+     "fit": 75,
+     "grade": "A",
      "ppos": "PG",
      "slot": 1,
-     "why": "Adds a needed second body at PG, fair value at $5M."
+     "why": "Adds a needed second body at PG, a bargain at $35M against his $54.5M market."
     },
     {
      "name": "Austin Reaves",
@@ -4199,6 +4223,18 @@
      "offer_M": 35,
      "barrett": 28.9,
      "age": 28,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Duncan Robinson"
+    },
+    {
+     "name": "James Harden",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "CLE",
+     "value_M": 54.5,
+     "offer_M": 35,
+     "barrett": 32.5,
+     "age": 36,
      "tool": "Cap room",
      "why": "Rotation depth behind Duncan Robinson"
     },
@@ -4417,18 +4453,6 @@
      "age": 24,
      "tool": "Cap room",
      "why": "Rotation depth behind Paul Reed"
-    },
-    {
-     "name": "Marcus Smart",
-     "pos": "SG/PG",
-     "status": "Player Option",
-     "from": "LAL",
-     "value_M": 10.1,
-     "offer_M": 8,
-     "barrett": 13.5,
-     "age": 32,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Javonte Green"
     }
    ]
   },
@@ -6714,6 +6738,18 @@
      "why": "Upgrade \u00b7 would start over Deandre Ayton"
     },
     {
+     "name": "James Harden",
+     "pos": "PG/SG",
+     "status": "Player Option",
+     "from": "CLE",
+     "value_M": 54.5,
+     "offer_M": 49,
+     "barrett": 32.5,
+     "age": 36,
+     "tool": "Cap room",
+     "why": "Rotation depth behind Austin Reaves"
+    },
+    {
      "name": "Bennedict Mathurin",
      "pos": "SF/PF",
      "status": "RFA",
@@ -6928,18 +6964,6 @@
      "age": 33,
      "tool": "Cap room",
      "why": "Rotation depth behind Rui Hachimura"
-    },
-    {
-     "name": "Brandon Williams",
-     "pos": "PG/SG",
-     "status": "UFA",
-     "from": "DAL",
-     "value_M": 11.8,
-     "offer_M": 9,
-     "barrett": 15.0,
-     "age": 26,
-     "tool": "Cap room",
-     "why": "Rotation depth behind Marcus Smart"
     }
    ]
   },
