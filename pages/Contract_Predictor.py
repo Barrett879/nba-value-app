@@ -573,16 +573,18 @@ def _histgbm_feature_vector(features: dict, target_season: str) -> np.ndarray | 
 
 
 def _relative_band_dollars(predicted_dollars: float) -> float:
-    """Confidence half-width as a % of the prediction, tier-aware. The model
-    nails star/max deals (~10% typical relative error) and is noisier on mid-
-    and minimum-level deals (~25–40%), so the band scales WITH the prediction
-    rather than a flat ±X%-of-cap. (The old flat ±$6M band made a $3M projection
-    read as "anywhere from $0 to $9M".) The %s mirror the median relative error
-    by tier measured in the honest temporal CV, see the About expander."""
+    """Half-width of the ~80% prediction interval, in dollars, CALIBRATED to the
+    real out-of-fold market spread by predicted magnitude (scripts/exp_calibrate_
+    band.py: ~80% of comparable historical signings landed within ±this of the
+    projection). The spread is WIDEST in the mid-tier (≈±$9M at an $18M projection)
+    and narrower for max deals (≈±$6M) and minimums, because mid-tier pay is the
+    least predictable from on-court stats — two near-identical players routinely
+    sign $7M+ apart. Replaces the old median-relative-error band, which only
+    covered ~40–67% of actuals (it understated the genuine market uncertainty)."""
     pred_M = max(predicted_dollars, 0.0) / 1e6
-    band_pct = float(np.interp(pred_M, [2.0, 8.0, 20.0, 45.0],
-                                        [0.45, 0.33, 0.24, 0.12]))
-    return predicted_dollars * band_pct
+    knots_M   = [3.0, 5.0, 8.0, 12.0, 18.0, 28.0, 45.0, 55.0]
+    half80_M  = [2.5, 4.3, 6.0,  7.8,  9.1,  6.8,  5.9,  5.9]
+    return float(np.interp(pred_M, knots_M, half80_M)) * 1e6
 
 
 # NBA minimum salary scale by years of service, as a fraction of the cap (the
@@ -2204,6 +2206,9 @@ if _market_median is not None:
         <div style="line-height:0.9;"><span style="font-size:3.4rem; font-weight:800; color:var(--fg-1); letter-spacing:-0.02em;">${predicted_M:.1f}M</span><span style="font-size:0.95rem; color:var(--fg-4); font-weight:600;"> /yr</span>{_caption_chip}</div>{_raise_html}
       </div>
       {_confidence_bar_html(predicted_M, _band_lo_M, _band_hi_M, scale_min_M=_scale_min_M, scale_max_M=_scale_max_M, tertiary_M=_prev_sal_M, tertiary_label=_prev_sal_label)}
+      <div style="margin-top:0.4rem; font-size:0.72rem; color:var(--fg-5);">
+        Shaded band: where ≈80% of comparable deals landed — widest in the mid-tier, where pay is least predictable.
+      </div>
       <div style="margin-top:0.95rem; font-size:0.82rem; color:var(--fg-4);">
         Market second opinion
         <span style="color:var(--fg-6);">(median of comparable signings)</span>:
