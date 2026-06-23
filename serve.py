@@ -109,6 +109,66 @@ def _self_warm() -> None:
 
 threading.Thread(target=_self_warm, daemon=True).start()
 
+# ── 2.9 SEO: patch Streamlit's static index.html ─────────────────────────────
+# Streamlit serves a generic SPA shell — <title>Streamlit</title>, no meta
+# description, and no body text (content arrives later over the websocket) — so
+# Googlebot sees a blank page that never says "HoopsValue", and the site is
+# invisible to search. Inject a real title, meta/OpenGraph tags, and a <noscript>
+# content block with internal links into the file Streamlit serves at "/".
+# Best-effort + idempotent: a failure (e.g. read-only site-packages) just logs
+# and serving continues unaffected. Changes nothing a JS-browser visitor sees.
+def _patch_seo() -> None:
+    try:
+        import pathlib
+        import streamlit as _st
+        idx = pathlib.Path(_st.__file__).parent / "static" / "index.html"
+        html = idx.read_text(encoding="utf-8")
+        if "hv-seo-v1" in html:
+            return
+        title = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
+        desc = ("HoopsValue ranks every NBA player by the Barrett Score — on-court "
+                "production measured against their paycheck — and predicts what any "
+                "player would sign for today. Find the steals, expose the overpays, and "
+                "run any team's free agency.")
+        head = (
+            "<!--hv-seo-v1-->"
+            f'<meta name="description" content="{desc}"/>'
+            '<meta name="robots" content="index, follow"/>'
+            '<link rel="canonical" href="https://hoopsvalue.com/"/>'
+            f'<meta property="og:title" content="{title}"/>'
+            f'<meta property="og:description" content="{desc}"/>'
+            '<meta property="og:type" content="website"/>'
+            '<meta property="og:url" content="https://hoopsvalue.com/"/>'
+            '<meta property="og:image" content="https://hoopsvalue.com/app/static/hoopsvalue_logo.png"/>'
+            '<meta name="twitter:card" content="summary_large_image"/>'
+        )
+        nav = "".join(
+            f'<li><a href="/{slug}">{label}</a></li>' for slug, label in [
+                ("Contract_Predictor", "Contract Predictor — what any player would sign for today"),
+                ("Rankings", "Current Rankings — every NBA player by Barrett Score"),
+                ("Team_Builder", "Front Office — run a team's offseason"),
+                ("Free_Agency_Simulation", "Free Agency Simulation"),
+                ("Search", "Player Search"),
+                ("Legacy", "Legacy — the best players ever by Barrett Score"),
+            ])
+        body = (
+            "<noscript><header><h1>HoopsValue</h1>"
+            "<p>NBA player value, contract predictions, and rankings.</p></header>"
+            f"<main><p>{desc}</p><ul>{nav}</ul></main></noscript>"
+        )
+        if "<title>Streamlit</title>" in html:
+            html = html.replace("<title>Streamlit</title>", f"<title>{title}</title>{head}")
+        else:
+            html = html.replace("</head>", f"<title>{title}</title>{head}</head>", 1)
+        html = html.replace("<body>", f"<body>{body}", 1)
+        idx.write_text(html, encoding="utf-8")
+        _log("SEO: patched streamlit index.html (title + meta + noscript content)")
+    except Exception as e:  # never block serving over an SEO patch
+        _log(f"SEO patch skipped: {e}")
+
+
+_patch_seo()
+
 # ── 3. Open the port (traffic flips to this container now) ───────────────────
 _log("starting streamlit, port opens next")
 from streamlit.web.cli import main  # noqa: E402
