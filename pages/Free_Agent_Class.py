@@ -252,8 +252,12 @@ with fa_cap_col:
 if not fa_display.empty:
     st.divider()
     st.subheader("Position breakdown")
+    # Collapse compound positions (e.g. "PG/SG", "SF/PF") to the primary/first one
+    # so the chart has clean PG/SG/SF/PF/C buckets instead of every slash combo.
+    _primary = fa_display["position"].astype(str).str.split("/").str[0].str.strip()
     pos_status = (
-        fa_display.groupby(["position", "Status"])
+        pd.DataFrame({"position": _primary.values, "Status": fa_display["Status"].values})
+        .groupby(["position", "Status"])
         .size()
         .reset_index(name="count")
     )
@@ -271,7 +275,7 @@ if not fa_display.empty:
             barmode="stack",
             labels={"position": "", "count": "Players", "Status": ""},
             height=320,
-            category_orders={"position": ["Guard", "Forward", "Center"]},
+            category_orders={"position": ["PG", "SG", "SF", "PF", "C"]},
             text_auto="d",
         )
         fig_fa.update_layout(
