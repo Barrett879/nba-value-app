@@ -1,0 +1,60 @@
+{
+ "season": "2026",
+ "scorecard": {
+  "n": 3,
+  "within_4M": 67,
+  "within_5cap": 100,
+  "median_err_M": 3.4,
+  "bias_M": -0.3
+ },
+ "signings": [
+  {
+   "player": "Collin Gillespie",
+   "team": "PHX",
+   "deal": "4yr/$48M",
+   "years": 4,
+   "total_M": 48.0,
+   "actual_M": 11.2,
+   "type": "resign",
+   "date": "2026-06",
+   "model_M": 14.6,
+   "low_M": 6.3,
+   "high_M": 23.0,
+   "delta_M": 3.4,
+   "in4": true,
+   "in5cap": true
+  },
+  {
+   "player": "Jordan Goodwin",
+   "team": "",
+   "deal": "3yr/$19M",
+   "years": 3,
+   "total_M": 19.0,
+   "actual_M": 6.0,
+   "type": "unknown",
+   "date": "2026-06",
+   "model_M": 8.8,
+   "low_M": 2.4,
+   "high_M": 15.1,
+   "delta_M": 2.8,
+   "in4": true,
+   "in5cap": true
+  },
+  {
+   "player": "CJ McCollum",
+   "team": "",
+   "deal": "1yr/$21M",
+   "years": 1,
+   "total_M": 21.0,
+   "actual_M": 21.0,
+   "type": "unknown",
+   "date": "2026-06",
+   "model_M": 13.8,
+   "low_M": 5.6,
+   "high_M": 22.0,
+   "delta_M": -7.2,
+   "in4": false,
+   "in5cap": true
+  }
+ ]
+}
