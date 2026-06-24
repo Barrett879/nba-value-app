@@ -1738,7 +1738,6 @@ _NAV_PAGES = [
     ("Team Builder",       "/Team_Builder"),
     ("Free Agency Sim",    "/Free_Agency_Simulation"),
     ("Current Free Agents", "/Free_Agent_Class"),
-    ("Accuracy",           "/Accuracy_Tracker"),
     # Track Record tab removed — page lives at /Track_Record_disabled.py
     # (kept at repo root for easy revival). Restore by moving the file
     # back into pages/ as Track_Record.py and re-adding the nav entry below.
