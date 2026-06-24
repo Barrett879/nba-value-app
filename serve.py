@@ -160,7 +160,14 @@ def _patch_seo() -> None:
             html = html.replace("<title>Streamlit</title>", f"<title>{title}</title>{head}")
         else:
             html = html.replace("</head>", f"<title>{title}</title>{head}</head>", 1)
-        html = html.replace("<body>", f"<body>{body}", 1)
+        # Replace Streamlit's default "You need to enable JavaScript" <noscript>
+        # (Google was showing it as the result snippet) with real crawlable
+        # content; if no <noscript> exists, inject ours right after <body>.
+        import re as _re
+        if "<noscript" in html:
+            html = _re.sub(r"<noscript>.*?</noscript>", body, html, count=1, flags=_re.S)
+        else:
+            html = html.replace("<body>", f"<body>{body}", 1)
         idx.write_text(html, encoding="utf-8")
         _log("SEO: patched streamlit index.html (title + meta + noscript content)")
     except Exception as e:  # never block serving over an SEO patch
