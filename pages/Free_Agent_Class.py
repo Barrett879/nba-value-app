@@ -13,7 +13,7 @@ from utils import (
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract, classify_fa_status,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
-    theme_fig, html_table, stat_cards,
+    theme_fig, html_table,
     render_barrett_score_explainer, _bootstrap_warm,
 )
 
@@ -92,6 +92,20 @@ n_rfa = (fa_df["Status"] == "RFA").sum()
 n_po  = (fa_df["Status"] == "Player Option").sum()
 n_to  = (fa_df["Status"] == "Team Option").sum()
 
+# ── Real 2026 signings: join the live accuracy tracker so this same list shows
+# each player's actual deal + how the model's projection did, inline. As deals
+# get reported (data/real_signings_2026.csv → build_accuracy_tracker.py), the
+# "Signed" / "vs Model" columns fill in for the players who've come off the board.
+import json as _json
+from pathlib import Path as _Path
+try:
+    _acc = _json.loads((_Path(__file__).parent.parent / "cache" / "accuracy_tracker_v1.json").read_text())
+except Exception:
+    _acc = None
+_signed = {normalize(s["player"]): s
+           for s in (_acc or {}).get("signings", []) if s.get("model_M") is not None}
+_scorecard = (_acc or {}).get("scorecard") or {}
+
 # Summary stat cards — colour-coded to the table's status language (UFA slate ·
 # RFA green · PO blue · TO orange · Total teal) so the page has a visual anchor
 # instead of a flat native-metric row. Hover shows the explainer.
@@ -131,7 +145,7 @@ with fa_col_a:
     fa_search = st.text_input("Filter by name", "", key="fa_search")
 with fa_col_b:
     fa_status_filter = st.selectbox(
-        "Status", ["All", "UFA", "RFA", "Player Option", "Team Option"], key="fa_status"
+        "Status", ["All", "Signed", "UFA", "RFA", "Player Option", "Team Option"], key="fa_status"
     )
 with fa_col_c:
     fa_pos_filter = st.selectbox(
@@ -144,7 +158,9 @@ with fa_col_d:
 fa_display = fa_df.copy()
 if fa_search:
     fa_display = fa_display[fa_display["Player"].str.contains(fa_search, case=False)]
-if fa_status_filter != "All":
+if fa_status_filter == "Signed":
+    fa_display = fa_display[fa_display["Player"].map(normalize).isin(_signed)]
+elif fa_status_filter != "All":
     fa_display = fa_display[fa_display["Status"] == fa_status_filter]
 if fa_pos_filter != "All":
     fa_display = fa_display[fa_display["position"].str.contains(fa_pos_filter, regex=False, na=False)]
@@ -167,6 +183,12 @@ fa_fmt.columns = [
     "Barrett Score", "Salary", "Proj. Value", "Δ Market", "Next $",
 ]
 fa_fmt.insert(0, "#", range(1, len(fa_fmt) + 1))
+
+# Real-signing columns: actual first-year salary + how the model's projection did,
+# inline for any player who has already signed ("—" while still on the board).
+_np_norm = fa_fmt["Player"].map(normalize)
+fa_fmt["Signed"]   = _np_norm.map(lambda p: f"${_signed[p]['actual_M']:.1f}M" if p in _signed else "—")
+fa_fmt["vs Model"] = _np_norm.map(lambda p: f"{_signed[p]['delta_M']:+.1f}M" if p in _signed else "—")
 
 
 # Token-based cell styles for the themed HTML table (follows light/dark; the
@@ -202,6 +224,30 @@ def _sty_salary(_v, row):
         return "color:var(--purple);font-weight:600"
     return ""
 
+def _sty_signed(v, _row):
+    # Actual signed deal: highlight teal when present, mute the "still on the board" dash.
+    return "color:var(--fg-6)" if str(v) == "—" else "color:var(--accent-teal);font-weight:700"
+
+def _sty_vs_model(v, _row):
+    # Model projection minus actual: green within $4M (a hit), red beyond it.
+    s = str(v)
+    if s == "—":
+        return "color:var(--fg-6)"
+    try:
+        n = float(s.replace("M", "").replace("+", ""))
+    except ValueError:
+        return ""
+    return ("color:var(--value-good);font-weight:700" if abs(n) <= 4
+            else "color:var(--value-bad);font-weight:700")
+
+if _scorecard:
+    st.caption(
+        f"Tracking **{_scorecard['n']}** real 2026 signings in this list. The model's projection "
+        f"landed within \\$4M on **{_scorecard['within_4M']}%** of them "
+        f"(median miss \\${_scorecard['median_err_M']}M). Set the **Status** filter to **Signed** to "
+        "see just those; the **Signed** and **vs Model** columns fill in as deals are reported."
+    )
+
 html_table(
     fa_fmt,
     formatters={
@@ -215,10 +261,13 @@ html_table(
         "Next $":   _sty_next,
         "Δ Market": _sty_delta,
         "Salary":   _sty_salary,
+        "Signed":   _sty_signed,
+        "vs Model": _sty_vs_model,
     },
     aligns={
         "#": "right", "Barrett Score": "right", "Salary": "right",
         "Proj. Value": "right", "Δ Market": "right",
+        "Signed": "right", "vs Model": "right",
     },
     numeric={"#", "Barrett Score", "Salary", "Proj. Value", "Δ Market"},
     helps={
@@ -228,6 +277,8 @@ html_table(
         "Δ Market": "Actual − Projected. Negative (green) = underpaid; positive (red) = overpaid.",
         "Next $": "Next-year option salary; UFAs have no set figure. Blue = player option, orange = team option.",
         "Status": "UFA = unrestricted · RFA = restricted (right of first refusal) · PO/TO = player/team option.",
+        "Signed": "Actual first-year salary of the deal this player signed (real reported 2026 signings). “—” = still on the board.",
+        "vs Model": "Our Contract Predictor projection minus the actual first-year salary. Positive = we projected high. Green = within $4M of the real deal.",
     },
     height=min(820, max(220, len(fa_fmt) * 38 + 46)),
 )
@@ -289,63 +340,6 @@ if not fa_display.empty:
         )
         st.plotly_chart(theme_fig(fig_fa), use_container_width=True, config={"displayModeBar": False})
 
-
-# ── Projection accuracy: model vs the real 2026 signings ─────────────────────
-st.divider()
-st.subheader("Projection accuracy")
-st.caption(
-    "How the model's projections are holding up against the **actual** 2026 signings. "
-    "The projection is the model's pure guess — real deals are logged separately and "
-    "never fed back in, so this is an honest scorecard."
-)
-import json as _json
-from pathlib import Path as _Path
-try:
-    _acc = _json.loads((_Path(__file__).parent.parent / "cache" / "accuracy_tracker_v1.json").read_text())
-except Exception:
-    _acc = None
-_signings = [s for s in (_acc or {}).get("signings", []) if s.get("model_M") is not None]
-if not _signings:
-    st.info("No signings logged yet this offseason.")
-else:
-    _sc = (_acc or {}).get("scorecard") or {}
-    if _sc:
-        _good = "var(--value-good)"
-        stat_cards([
-            ("Signings tracked", _sc["n"], "var(--accent-teal)"),
-            ("Within $4M", f"{_sc['within_4M']}%", _good if _sc["within_4M"] >= 60 else "var(--amber)"),
-            ("Within 5% of cap", f"{_sc['within_5cap']}%", _good if _sc["within_5cap"] >= 80 else "var(--amber)"),
-            ("Median miss", f"${_sc['median_err_M']}M", "var(--accent-teal)"),
-            ("Bias", f"${_sc['bias_M']:+}M", "var(--accent-teal)", "+ projects high"),
-        ])
-    _adf = pd.DataFrame([{
-        "Player":     s["player"],
-        "Team":       s.get("team") or "—",
-        "Deal":       s["deal"],
-        "Actual yr1": s["actual_M"],
-        "Model":      s["model_M"],
-        "Range":      f"${s['low_M']:.0f}–{s['high_M']:.0f}M",
-        "Miss":       s["delta_M"],
-        "Within $4M": "Hit" if s.get("in4") else "Miss",
-    } for s in _signings])
-    html_table(
-        _adf,
-        formatters={"Actual yr1": lambda v: f"${v:.1f}M", "Model": lambda v: f"${v:.1f}M",
-                    "Miss": lambda v: f"{v:+.1f}M"},
-        aligns={"Actual yr1": "right", "Model": "right", "Range": "right",
-                "Miss": "right", "Within $4M": "center"},
-        numeric=["Actual yr1", "Model", "Miss"],
-        styles={
-            "Miss":       lambda v, r: "color:var(--value-good)" if abs(v) <= 4 else "color:var(--value-bad)",
-            "Within $4M": lambda v, r: "color:var(--value-good); font-weight:700" if v == "Hit" else "color:var(--value-bad); font-weight:700",
-        },
-        height=340,
-    )
-    st.caption(
-        "“Within \\$4M” = the model's projected first-year salary landed within \\$4M of the real "
-        "deal. The projection is exactly what the Contract Predictor shows; actual deals come "
-        "from `data/real_signings_2026.csv`."
-    )
 
 from utils import render_footer
 render_footer()
