@@ -1,0 +1,22 @@
+# HoopsValue - REAL 2026 free-agency signings (actual reported deals).
+# This is the GROUND TRUTH we score the model against. It is NOT fed into the
+# projection (that stays the model's pure guess) — scripts/compare_signings.py
+# joins each row to the model's projection so we can track accuracy live as the
+# offseason unfolds.
+#
+#   player      = signed player (match the model's name; aliases handled in the script)
+#   team        = 3-letter abbr (blank if unknown / not relevant)
+#   years       = contract length
+#   total_M     = total guaranteed $ in millions
+#   yr1_M       = FIRST-YEAR salary in $M (what the model predicts; = total/years with
+#                 ~5% raises, or the flat figure for a 1-yr deal). The comparison uses this.
+#   type        = resign | ufa | rfa | extension | unknown
+#   signed_date = YYYY-MM (when reported)
+#   source      = where it was reported
+#   note        = free text
+#
+# Add a row each time a real signing is reported. Lines starting with # are ignored.
+player,team,years,total_M,yr1_M,type,signed_date,source,note
+Collin Gillespie,PHX,4,48,11.2,resign,2026-06,ESPN,4yr/$48M return to Phoenix (undrafted, 3 yrs two-way)
+Jordan Goodwin,,3,19,6.0,unknown,2026-06,report,3yr/$19M
+CJ McCollum,,1,21,21.0,unknown,2026-06,report,1yr/$21M

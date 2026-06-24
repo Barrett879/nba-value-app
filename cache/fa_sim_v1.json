@@ -418,10 +418,23 @@
     "predicted_name": "Phoenix Suns",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 11.2,
+    "offer_M": 26.6,
     "tool": "Bird rights",
-    "reason": "official signing (reported)",
-    "alts": []
+    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
+    "alts": [
+     {
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
+      "offer_M": 26.6,
+      "tool": "cap room"
+     },
+     {
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 20.7,
+      "tool": "cap room"
+     }
+    ]
    }
   },
   {
