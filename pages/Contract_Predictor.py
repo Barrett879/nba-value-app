@@ -1541,7 +1541,17 @@ def blend_toward_market(predicted_dollars: float, market_median, prediction: dic
     (final_dollars, blended_flag). Gate: only $7-25M model projections, only once
     model and market diverge past 25%, market weight ramps 0.35 -> 0.65, never
     below the player's CBA minimum, and exempt for CBA-capped/floored deals (those
-    are a rule, not a noisy estimate). See scripts/experiment_blend_value.py."""
+    are a rule, not a noisy estimate).
+
+    DISABLED 2026-06-24: a leakage-safe CV (scripts/exp_compblend.py) showed the
+    blend HURTS — overall -1.66pp within-5%-of-cap, and -9.4pp within-5% on the 18%
+    of contracts where it fired. The comp median is a nearest-neighbor estimate,
+    which is noisier than the model, so blending toward it drags accuracy down
+    (e.g. Gillespie: raw $14.6M, close to his $11.2M actual; blended $26.6M, way
+    off). We now show the raw model as the headline and keep the comp median as a
+    labeled 'market second opinion' (not blended in). The early-return makes this a
+    no-op; the gate logic below is retained for reference only."""
+    return predicted_dollars, False
     predicted_M = predicted_dollars / 1_000_000
     if (market_median is None
             or prediction.get("cba_cap_applied")

@@ -14,19 +14,23 @@ SRC = (ROOT / "pages" / "Contract_Predictor.py").read_text().splitlines(keepends
 cut = next(i for i, l in enumerate(SRC) if l.startswith("_sb_col, _fa_col = st.columns("))
 ns = {"__name__": "cp", "__file__": str((ROOT / "pages" / "Contract_Predictor.py").resolve())}
 exec(compile("".join(SRC[:cut]), "cp", "exec"), ns)
-gpf = ns["get_player_features"]; pc = ns["predict_contract_histgbm"]
+gpf = ns["get_player_features"]
+pcv = ns["projected_contract_value"]          # the DISPLAYED projection (blended w/ comps) — what the page + board show
+band_fn = ns["_relative_band_dollars"]        # calibrated ~80% half-width around the displayed value
 CAP_M = 165.0
 
 ALIASES = {"CJ McCollum": ["CJ McCollum", "C.J. McCollum"]}
 
 
 def model_proj_M(name):
+    """Return the projection EXACTLY as the site shows it (projected_contract_value,
+    blended toward comparable signings), plus the displayed ~80% range."""
     for n in ALIASES.get(name, [name]):
         f = gpf(n)
         if f:
-            r = pc(f)
-            if r:
-                return r["predicted"] / 1e6, (r["low"] / 1e6, r["high"] / 1e6)
+            v = pcv(f) / 1e6
+            b = band_fn(v * 1e6) / 1e6
+            return v, (max(0.0, v - b), v + b)
     return None, None
 
 
