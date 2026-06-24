@@ -18,8 +18,8 @@
 # Add a row each time a real signing is reported. Lines starting with # are ignored.
 player,team,years,total_M,yr1_M,type,signed_date,source,note
 Collin Gillespie,PHX,4,48,11.2,resign,2026-06,ESPN,4yr/$48M return to Phoenix (undrafted, 3 yrs two-way)
-Jordan Goodwin,,3,19,6.0,unknown,2026-06,report,3yr/$19M
-CJ McCollum,,1,21,21.0,unknown,2026-06,report,1yr/$21M
+Jordan Goodwin,PHX,3,19,5.8,resign,2026-06,NBC,3yr/$19M re-sign (starts $5.8M; yr3 player option $6.8M)
+CJ McCollum,ATL,1,21,21.0,extension,2026-06,NBA,1yr/$21M extension to stay in Atlanta (trade kicker)
 Trae Young,WAS,4,212,47.3,resign,2026-06,ESPN,declined option; 4yr/$212M max re-sign (yr1 ~8% raises) - VERIFY
 Ayo Dosunmu,MIN,5,112,20.4,resign,2026-06,report,5yr/$112M w/ yr5 player option - VERIFY
 Austin Reaves,LAL,4,185,41.3,resign,2026-06,CBS,declined $14.9M option; 4yr/$185M max (yr5 player option) - VERIFY
