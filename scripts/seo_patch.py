@@ -23,7 +23,6 @@ PAGES = [
     ("Contract_Predictor", "Contract Predictor — what any player would sign for today"),
     ("Rankings", "Current Rankings — every NBA player by Barrett Score"),
     ("Team_Builder", "Front Office — run a team's offseason"),
-    ("Free_Agency_Simulation", "Free Agency Simulation"),
     ("Search", "Player Search"),
     ("Legacy", "Legacy — the best players ever by Barrett Score"),
 ]
