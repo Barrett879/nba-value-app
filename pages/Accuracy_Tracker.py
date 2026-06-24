@@ -76,7 +76,7 @@ html_table(
 )
 
 st.caption(
-    "“Within $4M” = the model's projected first-year salary landed within $4M of the real "
+    "“Within \\$4M” = the model's projected first-year salary landed within \\$4M of the real "
     "deal. The projection is exactly what the Contract Predictor shows; actual deals come "
     "from `data/real_signings_2026.csv`. Rebuilt by `scripts/build_accuracy_tracker.py`."
 )

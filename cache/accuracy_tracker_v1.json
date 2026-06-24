@@ -1,11 +1,11 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 3,
-  "within_4M": 67,
-  "within_5cap": 100,
+  "n": 5,
+  "within_4M": 60,
+  "within_5cap": 80,
   "median_err_M": 3.4,
-  "bias_M": -0.3
+  "bias_M": -6.5
  },
  "signings": [
   {
@@ -54,6 +54,38 @@
    "high_M": 22.0,
    "delta_M": -7.2,
    "in4": false,
+   "in5cap": true
+  },
+  {
+   "player": "Trae Young",
+   "team": "WAS",
+   "deal": "4yr/$212M",
+   "years": 4,
+   "total_M": 212.0,
+   "actual_M": 47.3,
+   "type": "resign",
+   "date": "2026-06",
+   "model_M": 18.1,
+   "low_M": 9.0,
+   "high_M": 27.1,
+   "delta_M": -29.2,
+   "in4": false,
+   "in5cap": false
+  },
+  {
+   "player": "Ayo Dosunmu",
+   "team": "MIN",
+   "deal": "5yr/$112M",
+   "years": 5,
+   "total_M": 112.0,
+   "actual_M": 20.4,
+   "type": "resign",
+   "date": "2026-06",
+   "model_M": 18.3,
+   "low_M": 9.2,
+   "high_M": 27.3,
+   "delta_M": -2.1,
+   "in4": true,
    "in5cap": true
   }
  ]
