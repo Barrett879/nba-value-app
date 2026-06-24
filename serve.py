@@ -117,64 +117,110 @@ threading.Thread(target=_self_warm, daemon=True).start()
 # content block with internal links into the file Streamlit serves at "/".
 # Best-effort + idempotent: a failure (e.g. read-only site-packages) just logs
 # and serving continues unaffected. Changes nothing a JS-browser visitor sees.
+def _seo_html(html: str) -> str:
+    """Inject a real <title>, meta/OpenGraph tags, and a crawlable <noscript> block
+    (replacing Streamlit's default 'enable JavaScript' one) into the shell HTML."""
+    import re as _re
+    if "hv-seo-v1" in html:
+        return html
+    title = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
+    desc = ("HoopsValue ranks every NBA player by the Barrett Score — on-court "
+            "production measured against their paycheck — and predicts what any "
+            "player would sign for today. Find the steals, expose the overpays, and "
+            "run any team's free agency.")
+    head = (
+        "<!--hv-seo-v1-->"
+        f'<meta name="description" content="{desc}"/>'
+        '<meta name="robots" content="index, follow"/>'
+        '<link rel="canonical" href="https://hoopsvalue.com/"/>'
+        f'<meta property="og:title" content="{title}"/>'
+        f'<meta property="og:description" content="{desc}"/>'
+        '<meta property="og:type" content="website"/>'
+        '<meta property="og:url" content="https://hoopsvalue.com/"/>'
+        '<meta property="og:image" content="https://hoopsvalue.com/app/static/hoopsvalue_logo.png"/>'
+        '<meta name="twitter:card" content="summary_large_image"/>'
+    )
+    nav = "".join(
+        f'<li><a href="/{slug}">{label}</a></li>' for slug, label in [
+            ("Contract_Predictor", "Contract Predictor — what any player would sign for today"),
+            ("Rankings", "Current Rankings — every NBA player by Barrett Score"),
+            ("Team_Builder", "Front Office — run a team's offseason"),
+            ("Free_Agency_Simulation", "Free Agency Simulation"),
+            ("Search", "Player Search"),
+            ("Legacy", "Legacy — the best players ever by Barrett Score"),
+        ])
+    body = (
+        "<noscript><header><h1>HoopsValue</h1>"
+        "<p>NBA player value, contract predictions, and rankings.</p></header>"
+        f"<main><p>{desc}</p><ul>{nav}</ul></main></noscript>"
+    )
+    if "<title>Streamlit</title>" in html:
+        html = html.replace("<title>Streamlit</title>", f"<title>{title}</title>{head}")
+    else:
+        html = html.replace("</head>", f"<title>{title}</title>{head}</head>", 1)
+    if "<noscript" in html:
+        html = _re.sub(r"<noscript>.*?</noscript>", body, html, count=1, flags=_re.S)
+    else:
+        html = html.replace("<body>", f"<body>{body}", 1)
+    return html
+
+
 def _patch_seo() -> None:
+    """Write the patched index.html to disk (works where site-packages is writable)."""
     try:
         import pathlib
         import streamlit as _st
         idx = pathlib.Path(_st.__file__).parent / "static" / "index.html"
         html = idx.read_text(encoding="utf-8")
-        if "hv-seo-v1" in html:
+        if "hv-seo-v1" not in html:
+            idx.write_text(_seo_html(html), encoding="utf-8")
+            _log("SEO: patched index.html on disk")
+    except Exception as e:
+        _log(f"SEO disk patch skipped: {e}")
+
+
+def _patch_seo_inprocess() -> None:
+    """Inject SEO in-memory by overriding Tornado's StaticFileHandler for index.html
+    ONLY — works even when Render's runtime site-packages are read-only (the disk
+    write silently no-ops there). Every other asset falls through untouched. Both
+    get_content and get_content_size are overridden so Content-Length stays correct."""
+    try:
+        import pathlib
+        import tornado.web
+        import streamlit as _st
+        idx = (pathlib.Path(_st.__file__).parent / "static" / "index.html").resolve()
+        data = _seo_html(idx.read_text(encoding="utf-8")).encode("utf-8")
+        if b"<title>HoopsValue" not in data or b"</html>" not in data.lower():
+            _log("SEO in-process: transform looked invalid, skipping")
             return
-        title = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
-        desc = ("HoopsValue ranks every NBA player by the Barrett Score — on-court "
-                "production measured against their paycheck — and predicts what any "
-                "player would sign for today. Find the steals, expose the overpays, and "
-                "run any team's free agency.")
-        head = (
-            "<!--hv-seo-v1-->"
-            f'<meta name="description" content="{desc}"/>'
-            '<meta name="robots" content="index, follow"/>'
-            '<link rel="canonical" href="https://hoopsvalue.com/"/>'
-            f'<meta property="og:title" content="{title}"/>'
-            f'<meta property="og:description" content="{desc}"/>'
-            '<meta property="og:type" content="website"/>'
-            '<meta property="og:url" content="https://hoopsvalue.com/"/>'
-            '<meta property="og:image" content="https://hoopsvalue.com/app/static/hoopsvalue_logo.png"/>'
-            '<meta name="twitter:card" content="summary_large_image"/>'
-        )
-        nav = "".join(
-            f'<li><a href="/{slug}">{label}</a></li>' for slug, label in [
-                ("Contract_Predictor", "Contract Predictor — what any player would sign for today"),
-                ("Rankings", "Current Rankings — every NBA player by Barrett Score"),
-                ("Team_Builder", "Front Office — run a team's offseason"),
-                ("Free_Agency_Simulation", "Free Agency Simulation"),
-                ("Search", "Player Search"),
-                ("Legacy", "Legacy — the best players ever by Barrett Score"),
-            ])
-        body = (
-            "<noscript><header><h1>HoopsValue</h1>"
-            "<p>NBA player value, contract predictions, and rankings.</p></header>"
-            f"<main><p>{desc}</p><ul>{nav}</ul></main></noscript>"
-        )
-        if "<title>Streamlit</title>" in html:
-            html = html.replace("<title>Streamlit</title>", f"<title>{title}</title>{head}")
-        else:
-            html = html.replace("</head>", f"<title>{title}</title>{head}</head>", 1)
-        # Replace Streamlit's default "You need to enable JavaScript" <noscript>
-        # (Google was showing it as the result snippet) with real crawlable
-        # content; if no <noscript> exists, inject ours right after <body>.
-        import re as _re
-        if "<noscript" in html:
-            html = _re.sub(r"<noscript>.*?</noscript>", body, html, count=1, flags=_re.S)
-        else:
-            html = html.replace("<body>", f"<body>{body}", 1)
-        idx.write_text(html, encoding="utf-8")
-        _log("SEO: patched streamlit index.html (title + meta + noscript content)")
+
+        def _is_index(p):
+            return str(p).replace("\\", "/").endswith("static/index.html")
+
+        _orig_gc = tornado.web.StaticFileHandler.get_content.__func__
+
+        def _gc(cls, abspath, start=None, end=None):
+            if _is_index(abspath):
+                s = 0 if start is None else start
+                e = len(data) if end is None else end
+                return data[s:e]
+            return _orig_gc(cls, abspath, start, end)
+        tornado.web.StaticFileHandler.get_content = classmethod(_gc)
+
+        _orig_sz = tornado.web.StaticFileHandler.get_content_size
+
+        def _sz(self):
+            if _is_index(getattr(self, "absolute_path", "") or ""):
+                return len(data)
+            return _orig_sz(self)
+        tornado.web.StaticFileHandler.get_content_size = _sz
+        _log("SEO: in-process index.html injection installed")
     except Exception as e:  # never block serving over an SEO patch
-        _log(f"SEO patch skipped: {e}")
+        _log(f"SEO in-process patch skipped: {e}")
 
 
-_patch_seo()
+_patch_seo()            # disk write (works where site-packages is writable)
+_patch_seo_inprocess()  # Tornado override (works on read-only runtime fs too)
 
 # ── 3. Open the port (traffic flips to this container now) ───────────────────
 _log("starting streamlit, port opens next")
