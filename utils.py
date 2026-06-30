@@ -2047,7 +2047,8 @@ def _load_option_status() -> dict:
 
 
 def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
-                       cur_season: str, cross_check: bool = True) -> str | None:
+                       cur_season: str, cross_check: bool = True,
+                       include_rookie_options: bool = False) -> str | None:
     """A player's free-agency status THIS offseason: 'UFA' / 'RFA' /
     'Player Option' / 'Team Option', or None when he is NOT a free agent
     (still under contract). THE single source of truth — used by the Free Agent
@@ -2074,8 +2075,9 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
         if _opt:
             # Rookie-scale option years (e.g. Wembanyama / Amen Thompson / Keyonte George's
             # year-4 team option) are auto-exercised formalities, NOT free agency — the player
-            # is still on his rookie deal and isn't available, so drop him from the list.
-            if normalize(name) in rookie_set:
+            # is still on his rookie deal and isn't available, so drop him from the list
+            # (unless the caller opts to include them for fun).
+            if normalize(name) in rookie_set and not include_rookie_options:
                 return None
             if _opt.get("type") == "player_option":
                 return "Player Option"

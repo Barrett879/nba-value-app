@@ -42,6 +42,15 @@ _FA_SEASONS = SEASONS[:2]
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", _FA_SEASONS, index=0)
+with ctrl_mid:
+    st.markdown("<div style='height:1.7rem'></div>", unsafe_allow_html=True)  # align with inputs
+    include_rookie_opts = st.checkbox(
+        "Include rookie-scale options",
+        value=False,
+        help="Rookie-scale year-3/4 team options are auto-exercised, so these players (Wembanyama, "
+             "Amen Thompson, Keyonte George, …) aren't really free agents. Toggle on to list them anyway, "
+             "for fun.",
+    )
 with ctrl_r:
     min_threshold = st.slider(
         "Min total minutes", min_value=0, max_value=1500,
@@ -118,7 +127,8 @@ def _fa_status(row) -> str | None:
     # salary feed omits (e.g. Austin Reaves' player option). Only the current
     # season has reliable contract data, so skip the cross-check otherwise.
     return classify_fa_status(row["Player"], row["next_contract"], _rookie_scale,
-                              season, cross_check=(season == SEASONS[0]))
+                              season, cross_check=(season == SEASONS[0]),
+                              include_rookie_options=include_rookie_opts)
 
 fa_df = df.copy()
 fa_df["Status"] = fa_df.apply(_fa_status, axis=1)
