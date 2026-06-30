@@ -1,11 +1,11 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 22,
-  "within_4M": 73,
-  "within_5cap": 95,
-  "median_err_M": 2.4,
-  "bias_M": -1.5
+  "n": 25,
+  "within_4M": 72,
+  "within_5cap": 96,
+  "median_err_M": 2.7,
+  "bias_M": -1.6
  },
  "signings": [
   {
@@ -358,6 +358,54 @@
    "high_M": 23.2,
    "delta_M": 6.8,
    "in4": false,
+   "in5cap": true
+  },
+  {
+   "player": "Robert Williams III",
+   "team": "POR",
+   "deal": "3yr/$44M",
+   "years": 3,
+   "total_M": 44.0,
+   "actual_M": 14.0,
+   "type": "resign",
+   "date": "2026-06",
+   "model_M": 12.6,
+   "low_M": 4.7,
+   "high_M": 20.5,
+   "delta_M": -1.4,
+   "in4": true,
+   "in5cap": true
+  },
+  {
+   "player": "Jock Landale",
+   "team": "ATL",
+   "deal": "1yr/$14M",
+   "years": 1,
+   "total_M": 14.0,
+   "actual_M": 14.0,
+   "type": "resign",
+   "date": "2026-06",
+   "model_M": 6.5,
+   "low_M": 1.4,
+   "high_M": 11.7,
+   "delta_M": -7.5,
+   "in4": false,
+   "in5cap": true
+  },
+  {
+   "player": "Simone Fontecchio",
+   "team": "MIA",
+   "deal": "1yr/$3M",
+   "years": 1,
+   "total_M": 3.0,
+   "actual_M": 3.0,
+   "type": "resign",
+   "date": "2026-06",
+   "model_M": 6.4,
+   "low_M": 1.3,
+   "high_M": 11.6,
+   "delta_M": 3.4,
+   "in4": true,
    "in5cap": true
   }
  ]
