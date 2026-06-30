@@ -1,0 +1,16 @@
+# HoopsValue - actual 2026 player/team OPTION decisions for players still showing in
+# the Free Agent list. Most resolutions are DERIVED automatically: a player who shows a
+# "Player Option" status and also signed a new tracked deal necessarily OPTED OUT, so the
+# list renders "PO Opt Out - Signed" without an entry here. This file is only for players
+# who resolved their option WITHOUT a tracked new deal:
+#   - opted IN  (kept their player option, staying put)        -> po_in
+#   - opted OUT (declined their player option, still on market) -> po_out
+#   - team picked up / declined a team option                  -> to_in / to_out
+#
+#   decision  = po_in | po_out | to_in | to_out
+#   figure_M  = the option's dollar value in $M (for reference)
+#
+# Add a row when a player in the FA list resolves an option but isn't in real_signings.
+player,decision,figure_M,note
+Kevin Porter Jr.,po_in,5.39,exercised $5.39M player option to stay in Milwaukee
+De'Anthony Melton,po_out,3.45,declined $3.45M player option with Golden State to enter UFA

@@ -106,6 +106,39 @@ _signed = {normalize(s["player"]): s
            for s in (_acc or {}).get("signings", []) if s.get("model_M") is not None}
 _scorecard = (_acc or {}).get("scorecard") or {}
 
+# Actual 2026 option DECISIONS (opt in/out) for players still in the FA list. Most
+# resolutions are derived (a signed Player-Option player necessarily opted out); this
+# file only covers players who resolved their option WITHOUT a tracked new deal — i.e.
+# opted IN (staying put) or opted OUT and still on the market. data/option_decisions_2026.csv
+import csv as _csv
+_decisions = {}
+try:
+    with open(_Path(__file__).parent.parent / "data" / "option_decisions_2026.csv") as _fh:
+        for _r in _csv.DictReader(l for l in _fh if l.strip() and not l.lstrip().startswith("#")):
+            if _r.get("player"):
+                _decisions[normalize(_r["player"])] = (_r.get("decision") or "").strip()
+except Exception:
+    _decisions = {}
+
+_OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
+                  "to_in": "TO Picked Up", "to_out": "TO Declined"}
+
+def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
+    """What actually happened to this free agent: their option decision and/or a
+    signing. Falls back to the pending option figure when nothing has resolved yet."""
+    n = normalize(name)
+    signed = n in _signed
+    dec = _decisions.get(n)
+    if not dec and signed:                       # signed players reveal their option call
+        if status == "Player Option": dec = "po_out"
+        elif status == "Team Option": dec = "to_out"
+    parts = []
+    if dec in _OUTCOME_LABEL:
+        parts.append(_OUTCOME_LABEL[dec])
+    if signed:
+        parts.append("Signed")
+    return " · ".join(parts) if parts else next_contract_str
+
 # Summary stat cards — colour-coded to the table's status language (UFA slate ·
 # RFA green · PO blue · TO orange · Total teal) so the page has a visual anchor
 # instead of a flat native-metric row. Hover shows the explainer.
@@ -169,9 +202,14 @@ if fa_team_filter != "All":
 
 fa_display = fa_display.sort_values("barrett_score", ascending=False).reset_index(drop=True)
 
+# Outcome = what actually happened to this FA's contract situation (opt in/out + signed),
+# replacing the raw next-year figure; falls back to the pending option figure when undecided.
+fa_display["outcome"] = fa_display.apply(
+    lambda r: _fa_outcome(r["Player"], r["Status"], r["next_contract"]), axis=1)
+
 fa_fmt = fa_display[[
     "Player", "Team", "position", "Status",
-    "barrett_score", "salary", "projected_salary", "value_diff", "next_contract",
+    "barrett_score", "salary", "projected_salary", "value_diff", "outcome",
 ]].copy()
 
 fa_fmt["salary"]           = fa_fmt["salary"] / 1_000_000
@@ -180,7 +218,7 @@ fa_fmt["value_diff"]       = fa_fmt["value_diff"] / 1_000_000
 
 fa_fmt.columns = [
     "Player", "Team", "Pos", "Status",
-    "Barrett Score", "Salary", "Proj. Value", "Δ Market", "Next $",
+    "Barrett Score", "Salary", "Proj. Value", "Δ Market", "Outcome",
 ]
 fa_fmt.insert(0, "#", range(1, len(fa_fmt) + 1))
 
@@ -212,11 +250,14 @@ def _sty_delta(v, _row):
     if n < -5:  return "color:var(--value-good-s)"
     return ""
 
-def _sty_next(v, _row):
+def _sty_outcome(v, _row):
     s = str(v)
-    if s == "—":   return "color:var(--fg-6)"
-    if " TO" in s: return "color:var(--orange);font-weight:700"
-    if " PO" in s: return "color:var(--blue);font-weight:700"
+    if s == "—":            return "color:var(--fg-6)"
+    if "Signed" in s:       return "color:var(--accent-teal);font-weight:700"
+    if "Opt In" in s or "Picked Up" in s:  return "color:var(--blue);font-weight:700"      # stayed put
+    if "Opt Out" in s or "Declined" in s:  return "color:var(--orange);font-weight:700"    # hit the market
+    if " TO" in s:          return "color:var(--orange);font-weight:700"   # pending team option
+    if " PO" in s:          return "color:var(--blue);font-weight:700"     # pending player option
     return ""
 
 def _sty_salary(_v, row):
@@ -258,7 +299,7 @@ html_table(
     },
     styles={
         "Status":   _sty_status,
-        "Next $":   _sty_next,
+        "Outcome":  _sty_outcome,
         "Δ Market": _sty_delta,
         "Salary":   _sty_salary,
         "Signed":   _sty_signed,
@@ -275,7 +316,7 @@ html_table(
         "Salary": "Current season salary. Purple = rookie-scale contract (1st-round pick, yrs 1–4).",
         "Proj. Value": "What this player would earn if paid by their Barrett Score rank, a market-rate anchor.",
         "Δ Market": "Actual − Projected. Negative (green) = underpaid; positive (red) = overpaid.",
-        "Next $": "Next-year option salary; UFAs have no set figure. Blue = player option, orange = team option.",
+        "Outcome": "What happened to this free agent: PO Opt In / Opt Out (player option), TO Picked Up / Declined (team option), and/or Signed. Falls back to the pending option figure if undecided.",
         "Status": "UFA = unrestricted · RFA = restricted (right of first refusal) · PO/TO = player/team option.",
         "Signed": "Actual first-year salary of the deal this player signed (real reported 2026 signings). “—” = still on the board.",
         "vs Model": "Our Contract Predictor projection minus the actual first-year salary. Positive = we projected high. Green = within $4M of the real deal.",
