@@ -76,27 +76,12 @@ def _style_rookie_salary(row):
 # Free Agent Class content
 # ══════════════════════════════════════════════════════════════════════════════
 
-def _fa_status(row) -> str | None:
-    # Shared classifier — cross-checks the contract-end scraper for players the
-    # salary feed omits (e.g. Austin Reaves' player option). Only the current
-    # season has reliable contract data, so skip the cross-check otherwise.
-    return classify_fa_status(row["Player"], row["next_contract"], _rookie_scale,
-                              season, cross_check=(season == SEASONS[0]))
-
-fa_df = df.copy()
-fa_df["Status"] = fa_df.apply(_fa_status, axis=1)
-fa_df = fa_df[fa_df["Status"].notna()].copy()
-
-n_ufa = (fa_df["Status"] == "UFA").sum()
-n_rfa = (fa_df["Status"] == "RFA").sum()
-n_po  = (fa_df["Status"] == "Player Option").sum()
-n_to  = (fa_df["Status"] == "Team Option").sum()
-
-# ── Real 2026 signings: join the live accuracy tracker so this same list shows
-# each player's actual deal + how the model's projection did, inline. As deals
-# get reported (data/real_signings_2026.csv → build_accuracy_tracker.py), the
-# "Signed" / "vs Model" columns fill in for the players who've come off the board.
+# ── Real 2026 signings + option decisions, loaded UP-FRONT so the FA list can keep
+# tracked signings visible (the salary feed sometimes reports a player's option figure
+# as a plain salary, which would otherwise classify them as "under contract" and drop
+# them). The same data also powers the Signed / vs Model / Outcome columns below.
 import json as _json
+import csv as _csv
 from pathlib import Path as _Path
 try:
     _acc = _json.loads((_Path(__file__).parent.parent / "cache" / "accuracy_tracker_v1.json").read_text())
@@ -106,11 +91,6 @@ _signed = {normalize(s["player"]): s
            for s in (_acc or {}).get("signings", []) if s.get("model_M") is not None}
 _scorecard = (_acc or {}).get("scorecard") or {}
 
-# Actual 2026 option DECISIONS (opt in/out) for players still in the FA list. Most
-# resolutions are derived (a signed Player-Option player necessarily opted out); this
-# file only covers players who resolved their option WITHOUT a tracked new deal — i.e.
-# opted IN (staying put) or opted OUT and still on the market. data/option_decisions_2026.csv
-import csv as _csv
 _decisions = {}   # normalized name -> (decision, option figure $M or None)
 try:
     with open(_Path(__file__).parent.parent / "data" / "option_decisions_2026.csv") as _fh:
@@ -123,6 +103,36 @@ try:
                 _decisions[normalize(_r["player"])] = ((_r.get("decision") or "").strip(), _fig)
 except Exception:
     _decisions = {}
+
+def _signing_status(name: str) -> str:
+    """FA status to show for a tracked 2026 signing the salary feed would otherwise drop."""
+    n = normalize(name)
+    dec = _decisions.get(n, (None, None))[0]
+    if dec in ("po_in", "po_out"): return "Player Option"
+    if dec in ("to_in", "to_out"): return "Team Option"
+    return "RFA" if (_signed.get(n, {}).get("type") == "rfa") else "UFA"
+
+
+def _fa_status(row) -> str | None:
+    # Shared classifier — cross-checks the contract-end scraper for players the
+    # salary feed omits (e.g. Austin Reaves' player option). Only the current
+    # season has reliable contract data, so skip the cross-check otherwise.
+    return classify_fa_status(row["Player"], row["next_contract"], _rookie_scale,
+                              season, cross_check=(season == SEASONS[0]))
+
+fa_df = df.copy()
+fa_df["Status"] = fa_df.apply(_fa_status, axis=1)
+# A tracked 2026 signing is a free agent who came off the board — keep them in the list
+# even when the feed misreads their option figure as a plain salary and would drop them.
+_miss = fa_df["Status"].isna() & fa_df["Player"].map(lambda p: normalize(p) in _signed)
+if _miss.any():
+    fa_df.loc[_miss, "Status"] = fa_df.loc[_miss, "Player"].map(_signing_status)
+fa_df = fa_df[fa_df["Status"].notna()].copy()
+
+n_ufa = (fa_df["Status"] == "UFA").sum()
+n_rfa = (fa_df["Status"] == "RFA").sum()
+n_po  = (fa_df["Status"] == "Player Option").sum()
+n_to  = (fa_df["Status"] == "Team Option").sum()
 
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
                   "to_in": "TO Picked Up", "to_out": "TO Declined"}
