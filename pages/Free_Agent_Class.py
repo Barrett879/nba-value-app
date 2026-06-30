@@ -148,6 +148,32 @@ def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
         parts.append("Signed")
     return " · ".join(parts) if parts else next_contract_str
 
+
+# Contract Predictor projection (model pcv) per FA, from the precomputed board cache
+# (build_fa_board.py writes value_M = projected_contract_value). Signed players use the
+# fresher model_M from the accuracy cache so Predicted − Signed == the vs-Model miss.
+def _load_pcv(rel: str) -> dict:
+    out = {}
+    try:
+        d = _json.loads((_Path(__file__).parent.parent / rel).read_text())
+        lst = d if isinstance(d, list) else next((v for v in d.values() if isinstance(v, list)), [])
+        for p in lst:
+            if isinstance(p, dict) and p.get("player") and p.get("value_M") is not None:
+                out.setdefault(normalize(p["player"]), float(p["value_M"]))
+    except Exception:
+        pass
+    return out
+
+_pcv_by = _load_pcv("cache/fa_sim_v1.json")
+for _n, _v in _load_pcv("cache/fa_extra_v1.json").items():
+    _pcv_by.setdefault(_n, _v)
+
+def _predicted_M(name: str):
+    n = normalize(name)
+    if n in _signed:
+        return _signed[n].get("model_M")
+    return _pcv_by.get(n)
+
 # Summary stat cards — colour-coded to the table's status language (UFA slate ·
 # RFA green · PO blue · TO orange · Total teal) so the page has a visual anchor
 # instead of a flat native-metric row. Hover shows the explainer.
@@ -231,8 +257,10 @@ fa_fmt.columns = [
 ]
 fa_fmt.insert(0, "#", range(1, len(fa_fmt) + 1))
 
-# Real-signing columns: actual first-year salary + how the model's projection did,
-# inline for any player who has already signed ("—" while still on the board).
+# Predicted = the Contract Predictor's model projection (pcv) for every FA, then the
+# real-signing columns: actual first-year salary + how the projection did, inline once signed.
+fa_fmt["Predicted"] = fa_fmt["Player"].map(
+    lambda p: (lambda v: f"${v:.1f}M" if v is not None else "—")(_predicted_M(p)))
 _np_norm = fa_fmt["Player"].map(normalize)
 fa_fmt["Signed"]   = _np_norm.map(lambda p: f"${_signed[p]['actual_M']:.1f}M" if p in _signed else "—")
 fa_fmt["vs Model"] = _np_norm.map(lambda p: f"{_signed[p]['delta_M']:+.1f}M" if p in _signed else "—")
@@ -307,17 +335,18 @@ html_table(
         "Δ Market":      lambda v: f"${v:.2f}M",
     },
     styles={
-        "Status":   _sty_status,
-        "Outcome":  _sty_outcome,
-        "Δ Market": _sty_delta,
-        "Salary":   _sty_salary,
-        "Signed":   _sty_signed,
-        "vs Model": _sty_vs_model,
+        "Status":    _sty_status,
+        "Outcome":   _sty_outcome,
+        "Δ Market":  _sty_delta,
+        "Salary":    _sty_salary,
+        "Predicted": lambda v, r: "color:var(--fg-6)" if str(v) == "—" else "color:var(--accent-teal)",
+        "Signed":    _sty_signed,
+        "vs Model":  _sty_vs_model,
     },
     aligns={
         "#": "right", "Barrett Score": "right", "Salary": "right",
         "Proj. Value": "right", "Δ Market": "right",
-        "Signed": "right", "vs Model": "right",
+        "Predicted": "right", "Signed": "right", "vs Model": "right",
     },
     numeric={"#", "Barrett Score", "Salary", "Proj. Value", "Δ Market"},
     helps={
@@ -327,6 +356,7 @@ html_table(
         "Δ Market": "Actual − Projected. Negative (green) = underpaid; positive (red) = overpaid.",
         "Outcome": "What happened to this free agent: PO Opt In / Opt Out (player option), TO Picked Up / Declined (team option), and/or Signed. Falls back to the pending option figure if undecided.",
         "Status": "UFA = unrestricted · RFA = restricted (right of first refusal) · PO/TO = player/team option.",
+        "Predicted": "The Contract Predictor's model projection — what the model thinks this player signs for today (the same figure the vs Model miss uses). “—” = not precomputed for this player.",
         "Signed": "Actual first-year salary of the deal this player signed (real reported 2026 signings). “—” = still on the board.",
         "vs Model": "Our Contract Predictor projection minus the actual first-year salary. Positive = we projected high. Green = within $4M of the real deal.",
     },
