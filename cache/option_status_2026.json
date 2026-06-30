@@ -1,0 +1,366 @@
+{
+ "upcoming": "2026-27",
+ "season": "2025-26",
+ "options": {
+  "al horford": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "amen thompson": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "andre jackson jr.": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "andrew wiggins": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "anthony black": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "ausar thompson": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "austin reaves": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "ben sheppard": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "bilal coulibaly": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "bogdan bogdanovic": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "brandin podziemski": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "brandon miller": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "brice sensabaugh": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "brook lopez": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "cam whitmore": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "cason wallace": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "craig porter jr.": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "d'angelo russell": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "daniss jenkins": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "day'ron sharpe": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "de'anthony melton": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "dereck lively ii": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "dominick barlow": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "draymond green": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "gary harris": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "gary trent jr.": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "gradey dick": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "isaiah hartenstein": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jaime jaquez jr.": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jalen pickett": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jamal shead": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "james harden": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jarace walker": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jericho sims": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jett howard": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jonathan kuminga": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jonathan mogbo": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jordan hawkins": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jordan walsh": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "jose alvarado": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "josh minott": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "julian champagnie": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "julian phillips": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "julian strawther": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "karlo matkovic": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "kenrich williams": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "kentavious caldwell-pope": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "kevin porter jr.": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "kevon looney": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "keyonte george": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "kobe brown": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "kobe sanders": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "kris murray": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "leonard miller": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "luguentz dort": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "marcus sasser": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "micah potter": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "mouhamed gueye": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "neemias queta": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "nicolas batum": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "noah clowney": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "pelle larsson": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "sandro mamukelashvili": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "scoot henderson": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "taurean prince": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "taylor hendricks": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "trae young": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "override"
+  },
+  "trayce jackson-davis": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "trendon watford": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "victor wembanyama": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "zach lavine": {
+   "type": "player_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  },
+  "ziaire williams": {
+   "type": "team_option",
+   "end_season": "2026-27",
+   "source": "scraper"
+  }
+ }
+}

@@ -2027,6 +2027,25 @@ def color_next_contract(val):
     return ""
 
 
+_OPTION_STATUS_CACHE = None
+
+
+def _load_option_status() -> dict:
+    """Precomputed {normalized_name: {'type': player_option|team_option}} for the upcoming
+    season, built offline from the reliable contract scraper (scripts/build_option_status.py).
+    Authoritative because the live next-year-salary feed mislabels options as 'guaranteed'
+    and is non-deterministic. Loaded once; empty dict if the cache is absent."""
+    global _OPTION_STATUS_CACHE
+    if _OPTION_STATUS_CACHE is None:
+        import json
+        try:
+            d = json.loads((Path(__file__).parent / "cache" / "option_status_2026.json").read_text())
+            _OPTION_STATUS_CACHE = d.get("options", {})
+        except Exception:
+            _OPTION_STATUS_CACHE = {}
+    return _OPTION_STATUS_CACHE
+
+
 def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
                        cur_season: str, cross_check: bool = True) -> str | None:
     """A player's free-agency status THIS offseason: 'UFA' / 'RFA' /
@@ -2046,6 +2065,17 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
     missing from the salary feed; the cross-check classifies the first as a
     Player Option and drops the second. cross_check=False skips the scraper
     (use for non-current seasons, where today's contract data wouldn't apply)."""
+    # Authoritative option source first: a stable precomputed cache from the contract
+    # scraper, because the live salary feed mislabels options as 'guaranteed' (so option
+    # holders like Brook Lopez / Kuminga / Dort would otherwise read as "under contract"
+    # and be dropped). Current season only (where today's contract data applies).
+    if cross_check:
+        _opt = _load_option_status().get(normalize(name))
+        if _opt:
+            if _opt.get("type") == "player_option":
+                return "Player Option"
+            if _opt.get("type") == "team_option":
+                return "Team Option"
     s = next_contract_str
     if s == "RFA":
         return "RFA"
