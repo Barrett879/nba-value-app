@@ -2072,6 +2072,11 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
     if cross_check:
         _opt = _load_option_status().get(normalize(name))
         if _opt:
+            # Rookie-scale option years (e.g. Wembanyama / Amen Thompson / Keyonte George's
+            # year-4 team option) are auto-exercised formalities, NOT free agency — the player
+            # is still on his rookie deal and isn't available, so drop him from the list.
+            if normalize(name) in rookie_set:
+                return None
             if _opt.get("type") == "player_option":
                 return "Player Option"
             if _opt.get("type") == "team_option":
