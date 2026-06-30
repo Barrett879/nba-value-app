@@ -111,12 +111,16 @@ _scorecard = (_acc or {}).get("scorecard") or {}
 # file only covers players who resolved their option WITHOUT a tracked new deal — i.e.
 # opted IN (staying put) or opted OUT and still on the market. data/option_decisions_2026.csv
 import csv as _csv
-_decisions = {}
+_decisions = {}   # normalized name -> (decision, option figure $M or None)
 try:
     with open(_Path(__file__).parent.parent / "data" / "option_decisions_2026.csv") as _fh:
         for _r in _csv.DictReader(l for l in _fh if l.strip() and not l.lstrip().startswith("#")):
             if _r.get("player"):
-                _decisions[normalize(_r["player"])] = (_r.get("decision") or "").strip()
+                try:
+                    _fig = float(_r.get("figure_M") or 0) or None
+                except ValueError:
+                    _fig = None
+                _decisions[normalize(_r["player"])] = ((_r.get("decision") or "").strip(), _fig)
 except Exception:
     _decisions = {}
 
@@ -128,13 +132,18 @@ def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
     signing. Falls back to the pending option figure when nothing has resolved yet."""
     n = normalize(name)
     signed = n in _signed
-    dec = _decisions.get(n)
+    dec, fig = _decisions.get(n, (None, None))
     if not dec and signed:                       # signed players reveal their option call
         if status == "Player Option": dec = "po_out"
         elif status == "Team Option": dec = "to_out"
     parts = []
     if dec in _OUTCOME_LABEL:
-        parts.append(_OUTCOME_LABEL[dec])
+        label = _OUTCOME_LABEL[dec]
+        # opting IN / a team picking up an option = the player stays at that salary,
+        # so it's their next-year figure — surface it (else just the decision).
+        if dec in ("po_in", "to_in") and fig:
+            label += f" · ${fig:.1f}M"
+        parts.append(label)
     if signed:
         parts.append("Signed")
     return " · ".join(parts) if parts else next_contract_str
