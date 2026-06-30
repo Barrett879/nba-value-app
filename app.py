@@ -975,23 +975,17 @@ render_strip(
     ),
 )
 
-render_strip(
-    name="Team Builder",
-    href="/Team_Builder",
-    accent="#9b59b6",
-    description="The same model from the team's side: pick a club and run its whole offseason — who to re-sign, who to pursue, and the deal it would realistically offer.",
-    preview_html=(
-        '<div style="font-size:0.85rem; color:var(--fg-2); line-height:1.55;">'
-        "Step into the <b style=\"color:var(--fg-1);\">front office</b>: every team's offseason board, "
-        "with a realistic plan that spends its actual cap tools (cap room or one mid-level, plus depth)."
-        '<div style="margin-top:0.7rem; display:flex; gap:1.4rem; flex-wrap:wrap; '
-        'font-size:0.78rem; color:var(--fg-3);">'
-        '<span><b style="color:#9b59b6;">30 teams</b> · cap-aware boards</span>'
-        '<span><b style="color:var(--value-good);">re-sign + pursue</b> under the apron</span>'
-        '<span>best-fit grades · realistic plan · cap bar</span>'
-        '</div></div>'
-    ),
-)
+# Team Builder strip removed — page hidden from users' view (lives at
+# Team_Builder_disabled.py; its model is also inside Contract Predictor's team
+# mode). Restore by un-disabling pages/Team_Builder.py + re-adding the nav entry
+# in utils.py, then uncommenting this strip.
+# render_strip(
+#     name="Team Builder",
+#     href="/Team_Builder",
+#     accent="#9b59b6",
+#     description="The same model from the team's side: pick a club and run its whole offseason — who to re-sign, who to pursue, and the deal it would realistically offer.",
+#     preview_html=(...),
+# )
 
 # Trades strip removed — page disabled. Restore by uncommenting and adding
 # back to _NAV_PAGES in utils.py + un-disabling pages/Trades.py.

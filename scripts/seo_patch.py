@@ -22,7 +22,6 @@ DESC = ("HoopsValue ranks every NBA player by the Barrett Score — on-court "
 PAGES = [
     ("Contract_Predictor", "Contract Predictor — what any player would sign for today"),
     ("Rankings", "Current Rankings — every NBA player by Barrett Score"),
-    ("Team_Builder", "Front Office — run a team's offseason"),
     ("Search", "Player Search"),
     ("Legacy", "Legacy — the best players ever by Barrett Score"),
 ]

@@ -144,7 +144,6 @@ def _seo_html(html: str) -> str:
         f'<li><a href="/{slug}">{label}</a></li>' for slug, label in [
             ("Contract_Predictor", "Contract Predictor — what any player would sign for today"),
             ("Rankings", "Current Rankings — every NBA player by Barrett Score"),
-            ("Team_Builder", "Front Office — run a team's offseason"),
             ("Search", "Player Search"),
             ("Legacy", "Legacy — the best players ever by Barrett Score"),
         ])

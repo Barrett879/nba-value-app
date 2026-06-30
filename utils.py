@@ -1735,7 +1735,11 @@ _NAV_PAGES = [
     # easy revival) and a backup of the verdict-aware version is in
     # Trades_backup.py at repo root.
     ("Contract Predictor", "/Contract_Predictor"),
-    ("Team Builder",       "/Team_Builder"),
+    # Team Builder (Front Office) tab removed from users' view — page lives at
+    # /Team_Builder_disabled.py (kept at repo root for easy revival). Its model
+    # also lives inside Contract Predictor's team mode. Restore by moving the file
+    # back into pages/ as Team_Builder.py and re-adding the nav entry below.
+    # ("Team Builder",       "/Team_Builder"),
     # Free Agency Sim tab removed from users' view — page lives at
     # /Free_Agency_Simulation_disabled.py (kept at repo root for easy revival).
     # Restore by moving the file back into pages/ as Free_Agency_Simulation.py
