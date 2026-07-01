@@ -54,8 +54,10 @@ with ctrl_mid:
 with ctrl_r:
     min_threshold = st.slider(
         "Min total minutes", min_value=0, max_value=1500,
-        value=DEFAULT_MIN_THRESHOLD, step=50,
-        help="Hides players below this threshold. Ranks are always computed on the full pool.",
+        value=0, step=50,
+        help="Default 0 shows the ENTIRE free-agent class (injured/low-minute FAs like Zach "
+             "Collins included). Raise it to focus on rotation players. Ranks are always "
+             "computed on the full pool.",
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
