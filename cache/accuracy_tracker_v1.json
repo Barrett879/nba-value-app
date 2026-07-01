@@ -1,11 +1,11 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 45,
-  "within_4M": 76,
+  "n": 48,
+  "within_4M": 75,
   "within_5cap": 98,
-  "median_err_M": 2.1,
-  "bias_M": -0.6
+  "median_err_M": 2.0,
+  "bias_M": -0.5
  },
  "signings": [
   {
@@ -203,6 +203,65 @@
    "total_M": 130.0,
    "actual_M": 29.0,
    "type": "rfa",
+   "date": "2026-07",
+   "model_M": null
+  },
+  {
+   "player": "Tobias Harris",
+   "team": "SAS",
+   "deal": "2yr/$31M",
+   "years": 2,
+   "total_M": 31.0,
+   "actual_M": 15.1,
+   "type": "ufa",
+   "date": "2026-07",
+   "model_M": 14.4,
+   "low_M": 6.1,
+   "high_M": 22.7,
+   "delta_M": -0.7,
+   "in4": true,
+   "in5cap": true
+  },
+  {
+   "player": "Kelly Oubre Jr.",
+   "team": "IND",
+   "deal": "2yr/$17M",
+   "years": 2,
+   "total_M": 17.0,
+   "actual_M": 8.3,
+   "type": "ufa",
+   "date": "2026-07",
+   "model_M": 12.4,
+   "low_M": 4.5,
+   "high_M": 20.3,
+   "delta_M": 4.1,
+   "in4": false,
+   "in5cap": true
+  },
+  {
+   "player": "Jaxson Hayes",
+   "team": "UTA",
+   "deal": "2yr/$12M",
+   "years": 2,
+   "total_M": 12.0,
+   "actual_M": 5.9,
+   "type": "ufa",
+   "date": "2026-07",
+   "model_M": 6.2,
+   "low_M": 1.2,
+   "high_M": 11.2,
+   "delta_M": 0.3,
+   "in4": true,
+   "in5cap": true
+  },
+  {
+   "player": "Alijah Martin",
+   "team": "TOR",
+   "deal": "2yr/$4.8M",
+   "years": 2,
+   "total_M": 4.8,
+   "actual_M": 2.3,
+   "type": "resign",
    "date": "2026-07",
    "model_M": null
   },
