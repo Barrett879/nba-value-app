@@ -230,14 +230,18 @@ st.markdown(
 
 st.divider()
 
-fa_col_a, fa_col_b, fa_col_c, fa_col_d = st.columns([2, 1, 1, 1])
+fa_col_a, fa_col_show, fa_col_b, fa_col_c, fa_col_d = st.columns([2, 1, 1, 1, 1])
 with fa_col_a:
     fa_search = st.text_input("Filter by name", "", key="fa_search")
+with fa_col_show:
+    fa_show = st.selectbox(
+        "Show", ["All", "Available", "Signed"], key="fa_show",
+        help="Available = still on the market (not signed, and not opted-in / team-exercised into "
+             "staying). Signed = came off the board. Combines with Status, e.g. Available + UFA.",
+    )
 with fa_col_b:
     fa_status_filter = st.selectbox(
-        "Status", ["All", "Available", "Signed", "UFA", "RFA", "Player Option", "Team Option"],
-        key="fa_status",
-        help="Available = still on the market (not signed, and not opted-in / team-exercised into staying).",
+        "Status", ["All", "UFA", "RFA", "Player Option", "Team Option"], key="fa_status"
     )
 with fa_col_c:
     fa_pos_filter = st.selectbox(
@@ -250,9 +254,10 @@ with fa_col_d:
 fa_display = fa_df.copy()
 if fa_search:
     fa_display = fa_display[fa_display["Player"].str.contains(fa_search, case=False)]
-if fa_status_filter == "Signed":
+# Availability and Status are independent, so they stack (e.g. Available + UFA).
+if fa_show == "Signed":
     fa_display = fa_display[fa_display["Player"].map(normalize).isin(_signed)]
-elif fa_status_filter == "Available":
+elif fa_show == "Available":
     # Still free = hasn't signed AND hasn't opted in / been retained on an option.
     def _still_free(p):
         n = normalize(p)
@@ -260,7 +265,7 @@ elif fa_status_filter == "Available":
             return False
         return _decisions.get(n, (None, None))[0] not in ("po_in", "to_in")
     fa_display = fa_display[fa_display["Player"].map(_still_free)]
-elif fa_status_filter != "All":
+if fa_status_filter != "All":
     fa_display = fa_display[fa_display["Status"] == fa_status_filter]
 if fa_pos_filter != "All":
     fa_display = fa_display[fa_display["position"].str.contains(fa_pos_filter, regex=False, na=False)]
@@ -354,8 +359,8 @@ if _scorecard:
     st.caption(
         f"Tracking **{_scorecard['n']}** real 2026 signings in this list. The model's projection "
         f"landed within \\$4M on **{_scorecard['within_4M']}%** of them "
-        f"(median miss \\${_scorecard['median_err_M']}M). Set the **Status** filter to **Signed** to "
-        "see just those; the **Signed** and **vs Model** columns fill in as deals are reported."
+        f"(median miss \\${_scorecard['median_err_M']}M). Set **Show** to **Signed** to see just those "
+        "(or **Available** for who's still on the market); the **Signed** and **vs Model** columns fill in as deals land."
     )
 
 html_table(

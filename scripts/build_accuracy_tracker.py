@@ -6,7 +6,10 @@ Usage:  python -u scripts/build_accuracy_tracker.py
 """
 import csv
 import json
+import socket
 from pathlib import Path
+
+socket.setdefaulttimeout(45)   # bound every network read so a throttled scrape can't hang forever
 
 ROOT = Path(__file__).parent.parent
 SRC = (ROOT / "pages" / "Contract_Predictor.py").read_text().splitlines(keepends=True)
