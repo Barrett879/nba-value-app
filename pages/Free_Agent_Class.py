@@ -235,7 +235,9 @@ with fa_col_a:
     fa_search = st.text_input("Filter by name", "", key="fa_search")
 with fa_col_b:
     fa_status_filter = st.selectbox(
-        "Status", ["All", "Signed", "UFA", "RFA", "Player Option", "Team Option"], key="fa_status"
+        "Status", ["All", "Available", "Signed", "UFA", "RFA", "Player Option", "Team Option"],
+        key="fa_status",
+        help="Available = still on the market (not signed, and not opted-in / team-exercised into staying).",
     )
 with fa_col_c:
     fa_pos_filter = st.selectbox(
@@ -250,6 +252,14 @@ if fa_search:
     fa_display = fa_display[fa_display["Player"].str.contains(fa_search, case=False)]
 if fa_status_filter == "Signed":
     fa_display = fa_display[fa_display["Player"].map(normalize).isin(_signed)]
+elif fa_status_filter == "Available":
+    # Still free = hasn't signed AND hasn't opted in / been retained on an option.
+    def _still_free(p):
+        n = normalize(p)
+        if n in _signed:
+            return False
+        return _decisions.get(n, (None, None))[0] not in ("po_in", "to_in")
+    fa_display = fa_display[fa_display["Player"].map(_still_free)]
 elif fa_status_filter != "All":
     fa_display = fa_display[fa_display["Status"] == fa_status_filter]
 if fa_pos_filter != "All":
