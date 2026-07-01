@@ -32,7 +32,8 @@ import pandas as pd
 _DATA = Path(__file__).parent / "data"
 CSV_PATH = _DATA / "team_landscape_2026.csv"
 POS_2K_PATH = _DATA / "player_positions_2k.csv"             # NBA 2K26 primary/secondary
-POS_OVERRIDE_PATH = _DATA / "player_positions_override.csv"  # user corrections (win over 2K)
+POS_REVIEWED_PATH = _DATA / "player_positions_reviewed.csv" # Barrett's hand-reviewed Excel export (wins over 2K)
+POS_OVERRIDE_PATH = _DATA / "player_positions_override.csv"  # user corrections (win over everything)
 DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
 ROTATION_DEPTH = 3      # starter/rotation boundary: slot 0=starter, 1=key sub, 2=depth (labels)
 INTEREST_DEPTH = 5      # in his market if he'd be ~top-5 at the position (own team gets +2 leash)
@@ -128,7 +129,7 @@ def load_player_positions(pos_path: Path | str = POS_2K_PATH,
     contribute nothing, so the caller falls back to group_flex(). These strings are
     authoritative — a value of 'PG' means PG-only, no flex."""
     out: dict = {}
-    for path in (pos_path, override_path):      # 2K first, override second -> override wins
+    for path in (pos_path, POS_REVIEWED_PATH, override_path):  # 2K < reviewed Excel < manual override
         try:
             df = pd.read_csv(path, comment="#", skip_blank_lines=True)
         except Exception:
