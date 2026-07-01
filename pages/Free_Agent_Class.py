@@ -34,11 +34,11 @@ st.caption(
 render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────
-# Free agency data (next-year contracts, options) is only reliable for the
-# current season — Spotrac's URL has no historical year, so older seasons
-# would mix today's free-agency status with stale stat data. Limit to the
-# current + immediately prior season so the page always makes sense.
-_FA_SEASONS = SEASONS[:2]
+# Free agency (next-year contracts, options, signings) only makes sense for the
+# CURRENT season — Spotrac's URL has no historical year, so an older season would
+# mix today's FA status with stale stat data. So the picker is just the current
+# season; it advances on its own (e.g. to 2026-27) once that becomes SEASONS[0].
+_FA_SEASONS = SEASONS[:1]
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", _FA_SEASONS, index=0)
