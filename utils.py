@@ -2130,8 +2130,15 @@ def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> 
     # Historical seasons are immutable — trust the committed disk cache for a
     # month so the live site never re-scrapes old Basketball-Reference pages
     # (a version bump changes the filename, so it still busts when data changes).
-    # Current season auto-refreshes hourly; a fresh deploy resets every mtime.
-    effective_ttl = ttl if ttl is not None else (3600 if season == SEASONS[0] else 2_592_000)
+    # Current season auto-refreshes hourly DURING the season; in the offseason
+    # (Jul–Sep) its stats are final too, so treat it as immutable — the hourly
+    # "refresh" was pure churn that forced live NBA-API calls at request time.
+    if ttl is not None:
+        effective_ttl = ttl
+    elif season == SEASONS[0] and time.localtime().tm_mon not in (7, 8, 9):
+        effective_ttl = 3600
+    else:
+        effective_ttl = 2_592_000
     return (time.time() - path.stat().st_mtime) < effective_ttl
 
 def _pkl_load(path: Path):
@@ -2170,24 +2177,38 @@ def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.D
     """
     suffix = "_playoff" if season_type == "Playoffs" else ""
     path = _dc_path(f"league_stats_{season.replace('-','_')}{suffix}.parquet")
-    if _dc_fresh(path, season=season):
+    stale = None
+    if path.exists():
         try:
-            return pd.read_parquet(path)
+            stale = pd.read_parquet(path)
         except Exception:
-            pass
+            stale = None
+    if stale is not None and _dc_fresh(path, season=season):
+        return stale
+    # Live fetch — BOUNDED, and a readable-but-stale parquet always beats blocking:
+    # stats.nba.com errors/blocks under load (July-1 FA frenzy), and the old
+    # infinite-retry loop here hung every Contract Predictor prediction on the
+    # "Fetching league stats..." spinner. Stale-while-error instead.
     time.sleep(0.5)
     result = None
     delay = 1
-    while result is None:
+    for _ in range(3 if stale is not None else 8):
         try:
             result = leaguedashplayerstats.LeagueDashPlayerStats(
                 season=season,
                 per_mode_detailed="PerGame",
                 season_type_all_star=season_type,
+                timeout=15,
             )
+            break
         except Exception:
             time.sleep(delay)
-            delay = min(delay * 2, 30)
+            delay = min(delay * 2, 15)
+    if result is None:
+        if stale is not None:
+            logger.warning("league stats refresh failed for %s — serving stale parquet", season)
+            return stale
+        return pd.DataFrame()
     df = result.get_data_frames()[0]
     try:
         _atomic_to_parquet(df, path)
@@ -2208,29 +2229,38 @@ def fetch_advanced_stats(season: str, season_type: str = "Regular Season") -> pd
     box score alone (usage rate, on/off ratings, impact estimate)."""
     suffix = "_playoff" if season_type == "Playoffs" else ""
     path = _dc_path(f"adv_stats_{season.replace('-','_')}{suffix}.parquet")
-    if _dc_fresh(path, season=season):
+    stale = None
+    if path.exists():
         try:
-            return pd.read_parquet(path)
+            stale = pd.read_parquet(path)
         except Exception:
-            pass
+            stale = None
+    if stale is not None and _dc_fresh(path, season=season):
+        return stale
     from nba_api.stats.endpoints import leaguedashplayerstats as _ldps
     time.sleep(0.5)
     result = None
     delay = 1
     attempts = 0
-    while result is None and attempts < 8:
+    # Bounded + fail-fast (timeout=15); a stale parquet always beats blocking the
+    # request — same stale-while-error treatment as fetch_league_stats.
+    while result is None and attempts < (3 if stale is not None else 8):
         try:
             result = _ldps.LeagueDashPlayerStats(
                 season=season,
                 per_mode_detailed="PerGame",
                 season_type_all_star=season_type,
                 measure_type_detailed_defense="Advanced",
+                timeout=15,
             )
         except Exception:
             attempts += 1
             time.sleep(delay)
-            delay = min(delay * 2, 30)
+            delay = min(delay * 2, 15)
     if result is None:
+        if stale is not None:
+            logger.warning("advanced stats refresh failed for %s — serving stale parquet", season)
+            return stale
         return pd.DataFrame()
     df = result.get_data_frames()[0]
     try:
