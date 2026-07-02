@@ -593,9 +593,9 @@ if _sel:
     _car = _hub_career()
     _mine = _car[_car["norm"] == _n].sort_values("Season")
 
-    _q1, _q2 = st.columns(2)
+    _left, _right = st.columns(2)
 
-    with _q1:   # ── Quadrant 1: Right Now ─────────────────────────────────────
+    with _left:   # ── Quadrant 1: Right Now ─────────────────────────────────────
         with st.container(border=True):
             st.markdown(f"""
 <div class="hub-qh">Right now · <b>2025-26</b></div>
@@ -610,7 +610,7 @@ at next season's cap.</div>
 <div class="hub-go"><a href="/Contract_Predictor?player={_q}" target="_top">Full contract prediction →</a></div>
 """, unsafe_allow_html=True)
 
-    with _q2:   # ── Quadrant 2: Career ────────────────────────────────────────
+    with _right:   # ── Quadrant 2: Career ────────────────────────────────────────
         with st.container(border=True):
             st.markdown('<div class="hub-qh">Career · <b>scores & contracts</b></div>',
                         unsafe_allow_html=True)
@@ -637,9 +637,7 @@ at next season's cap.</div>
             st.markdown(f'<div class="hub-go"><a href="/Search?player={_q}" target="_top">'
                         f'Full profile & career →</a></div>', unsafe_allow_html=True)
 
-    _q3, _q4 = st.columns(2)
-
-    with _q3:   # ── Quadrant 3: Similar Today ────────────────────────────────
+    with _left:   # ── Quadrant 3: Similar Today ────────────────────────────────
         with st.container(border=True):
             st.markdown('<div class="hub-qh">Similar players · <b>today</b></div>',
                         unsafe_allow_html=True)
@@ -647,7 +645,7 @@ at next season's cap.</div>
                     .loc[lambda d: d["norm"] != _n]
                     .nsmallest(5, "_d")
                     .sort_values("Barrett Score", ascending=False))
-            _sim_view = _sim[["#", "Player", "Pos", "Barrett Score", "Salary", "Predicted"]].copy()
+            _sim_view = _sim[["#", "Player", "Barrett Score", "Salary", "Predicted"]].copy()
             html_table(
                 _sim_view,
                 formatters={
@@ -666,7 +664,7 @@ at next season's cap.</div>
             st.markdown('<div class="hub-note">Closest current Barrett Scores in the '
                         '2025-26 pool.</div>', unsafe_allow_html=True)
 
-    with _q4:   # ── Quadrant 4: Career Twins (all eras) ──────────────────────
+    with _right:   # ── Quadrant 4: Career Twins (all eras) ──────────────────────
         with st.container(border=True):
             st.markdown('<div class="hub-qh">Career twins · <b>1973 → today</b></div>',
                         unsafe_allow_html=True)
@@ -677,8 +675,8 @@ at next season's cap.</div>
                        .assign(_d=lambda d: (d["avg"] - _me["avg"]).abs())
                        .nsmallest(5, "_d")
                        .sort_values("avg", ascending=False))
-                _tw_view = _tw[["Player", "yrs", "avg", "peak", "peak_season", "top_sal"]].copy()
-                _tw_view.columns = ["Player", "Yrs", "Avg Score", "Peak", "Peak Season", "Top Salary"]
+                _tw_view = _tw[["Player", "avg", "peak", "best_rank", "top_sal"]].copy()
+                _tw_view.columns = ["Player", "Avg Score", "Peak", "Best Rank", "Top Salary"]
                 _tw_view["Top Salary"] = _tw_view["Top Salary"] / 1e6
                 html_table(
                     _tw_view,
@@ -687,12 +685,13 @@ at next season's cap.</div>
                                              f'target="_top">{html.escape(str(v))}</a>'),
                         "Avg Score": lambda v: f"{v:.2f}",
                         "Peak": lambda v: f"{v:.2f}",
+                        "Best Rank": lambda v: f"#{int(v)}" if v == v else "—",
                         "Top Salary": lambda v: f"${v:.1f}M",
                     },
                     raw={"Player"},
-                    aligns={"Yrs": "right", "Avg Score": "right", "Peak": "right",
+                    aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
                             "Top Salary": "right"},
-                    numeric={"Yrs", "Avg Score", "Peak", "Top Salary"},
+                    numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
                     height=250,
                 )
                 st.markdown(f'<div class="hub-note">Closest career-average Barrett Scores, every '
