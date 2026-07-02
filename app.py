@@ -86,7 +86,7 @@ st.markdown("""
         padding-bottom: 1rem !important;
         padding-left: 0.75rem;
         padding-right: 0.75rem;
-        max-width: 1100px;
+        max-width: 1500px;
     }
     .stApp { padding-top: 0 !important; }
 
@@ -571,7 +571,8 @@ if _sel:
 /* Skin the quadrants' bordered containers like themed cards. */
 [data-testid="stVerticalBlockBorderWrapper"] {{
   background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
-  border-radius: 14px !important; box-shadow: var(--shadow-card); min-height: 470px; }}
+  border-radius: 14px !important; box-shadow: var(--shadow-card);
+  height: 560px; overflow-y: auto; }}
 [data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
 .hub-qh {{ font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
