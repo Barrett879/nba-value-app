@@ -569,10 +569,11 @@ if _sel:
 .hub-banner .nm {{ font-size: 1.5rem; font-weight: 800; color: var(--fg-1); }}
 .hub-banner .meta {{ color: var(--fg-3); font-size: 0.85rem; }}
 /* Skin the quadrants' bordered containers like themed cards. */
-[data-testid="stVerticalBlockBorderWrapper"] {{
+div[data-testid="stVerticalBlockBorderWrapper"] {{
   background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
   border-radius: 14px !important; box-shadow: var(--shadow-card);
-  height: 560px; overflow-y: auto; }}
+  height: 580px !important; max-height: 580px !important;
+  overflow-y: auto !important; padding: 0.55rem 0.8rem !important; }}
 [data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
 .hub-qh {{ font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
