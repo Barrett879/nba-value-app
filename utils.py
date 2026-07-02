@@ -3714,7 +3714,7 @@ def position_to_bucket(detailed_pos: str) -> str:
 
 
 @st.cache_data(ttl=86400, show_spinner=False)
-def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
+def fetch_rookie_scale_players(season: str, cache_v: int = 3) -> set:
     """Returns a set of normalized names for first-round picks currently
     inside their rookie scale contract (years 1-4 post-draft).
 
@@ -3723,6 +3723,10 @@ def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
 
     cache_v=2: fixes a year-range bug in v1 that missed year-4 rookies
     (e.g. 2022 draftees in the 2025-26 season, Jalen Duren, Tari Eason).
+    cache_v=3: excludes draft-window players whose rookie deal ENDED EARLY —
+    a rookie contract can't run past draft_year+4, so a current deal ending
+    beyond that horizon means a NEW contract (e.g. Jake LaRavia: 2022 pick,
+    option declined, re-signed with LAL through 2026-27 — not rookie scale).
     """
     path = _dc_path(f"rookie_scale_{season.replace('-','_')}_v{cache_v}.pkl")
     stale: set | None = None
@@ -3744,7 +3748,7 @@ def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
         idx = playerindex.PlayerIndex(season=season, timeout=15)
         df_idx = idx.get_data_frames()[0]
 
-        rookies: set = set()
+        draft_year_by: dict[str, int] = {}
         for _, row in df_idx.iterrows():
             try:
                 draft_year  = int(row["DRAFT_YEAR"])
@@ -3753,7 +3757,23 @@ def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
                 continue
             if draft_year in rookie_draft_years and draft_round == 1:
                 full_name = f"{row['PLAYER_FIRST_NAME']} {row['PLAYER_LAST_NAME']}".strip()
-                rookies.add(normalize(full_name))
+                draft_year_by[normalize(full_name)] = draft_year
+
+        # Contract-horizon filter: a rookie deal can't extend past draft_year+4, so a
+        # current contract ending beyond that horizon means the player re-signed a NEW
+        # deal (option declined then re-signed, or extended) and is NOT on rookie scale.
+        contracts = fetch_contract_end_years()
+        rookies: set = set()
+        for nm, dy in draft_year_by.items():
+            ci = contracts.get(nm)
+            if ci and ci.get("end_season"):
+                try:
+                    end_year = int(str(ci["end_season"])[:4]) + 1   # "2026-27" -> 2027
+                    if end_year > dy + 4:
+                        continue                                    # new deal — not rookie scale
+                except (ValueError, TypeError):
+                    pass
+            rookies.add(nm)
         # Sanity floor: 4 draft classes × 30 first-rounders ≈ 100+. A tiny result
         # means the API answered with partial data — treat it as a failure rather
         # than letting it poison the cache (an EMPTY set here made Wembanyama & co
@@ -4366,15 +4386,18 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD,
 def fetch_draft_classes() -> pd.DataFrame:
     """Draft history from the NBA: Player, draft_year (int), round, pick."""
     path = _dc_path("draft_history.parquet")
-    if _dc_fresh(path, ttl=86400):
+    stale = None
+    if path.exists():
         try:
-            return pd.read_parquet(path)
+            stale = pd.read_parquet(path)
         except Exception:
-            pass
+            stale = None
+    if stale is not None and len(stale) and _dc_fresh(path, ttl=86400):
+        return stale
     try:
         from nba_api.stats.endpoints import drafthistory
         time.sleep(0.6)
-        df = drafthistory.DraftHistory().get_data_frames()[0]
+        df = drafthistory.DraftHistory(timeout=15).get_data_frames()[0]
         keep = [c for c in ["PLAYER_NAME", "SEASON", "ROUND_NUMBER", "ROUND_PICK", "OVERALL_PICK"] if c in df.columns]
         df = df[keep].copy().rename(columns={"PLAYER_NAME": "Player", "SEASON": "draft_year"})
         df["draft_year"] = pd.to_numeric(df["draft_year"], errors="coerce")
@@ -4386,7 +4409,12 @@ def fetch_draft_classes() -> pd.DataFrame:
         except Exception:
             pass
         return df
-    except Exception:
+    except Exception as e:
+        # Stale-beats-empty: an empty frame here makes EVERY player "Undrafted" and
+        # silently degrades the model's draft-tier features (July-1 outage lesson).
+        if stale is not None and len(stale):
+            logger.warning("draft classes refresh failed (%s) — serving stale parquet", e)
+            return stale
         return pd.DataFrame(columns=["Player", "draft_year", "player_norm",
                                      "ROUND_NUMBER", "ROUND_PICK", "OVERALL_PICK"])
 
