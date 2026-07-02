@@ -325,13 +325,13 @@ def _sty_delta(v, _row):
     return ""
 
 def _sty_outcome(v, _row):
+    # Colored by OPTION TYPE to match the Status column's language: player options
+    # blue, team options orange (whether exercised or declined); signed deals teal.
     s = str(v)
     if s == "—":            return "color:var(--fg-6)"
     if "Signed" in s:       return "color:var(--accent-teal);font-weight:700"
-    if "Opt In" in s or "Picked Up" in s:  return "color:var(--blue);font-weight:700"      # stayed put
-    if "Opt Out" in s or "Declined" in s:  return "color:var(--orange);font-weight:700"    # hit the market
-    if " TO" in s:          return "color:var(--orange);font-weight:700"   # pending team option
-    if " PO" in s:          return "color:var(--blue);font-weight:700"     # pending player option
+    if s.startswith("PO") or " PO" in s:  return "color:var(--blue);font-weight:700"
+    if s.startswith("TO") or " TO" in s:  return "color:var(--orange);font-weight:700"
     return ""
 
 def _sty_salary(_v, row):
