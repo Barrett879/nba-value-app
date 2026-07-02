@@ -186,7 +186,14 @@ def _load_pcv(rel: str) -> dict:
         pass
     return out
 
-_pcv_by = _load_pcv("cache/fa_sim_v1.json")
+_pcv_by = {}
+try:
+    _hub = _json.loads((_Path(__file__).parent.parent / "cache" / "player_hub_pcv_v1.json").read_text())
+    _pcv_by = {n: p["pcv_M"] for n, p in _hub.get("players", {}).items() if p.get("pcv_M") is not None}
+except Exception:
+    pass
+for _n, _v in _load_pcv("cache/fa_sim_v1.json").items():
+    _pcv_by.setdefault(_n, _v)
 for _n, _v in _load_pcv("cache/fa_extra_v1.json").items():
     _pcv_by.setdefault(_n, _v)
 

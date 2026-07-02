@@ -1,0 +1,3149 @@
+{
+"season": "2025-26",
+"players": {
+"a.j. lawson": {
+"player": "A.J. Lawson",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"aj green": {
+"player": "AJ Green",
+"pcv_M": 7.5,
+"low_M": 1.8,
+"high_M": 13.1
+},
+"aj johnson": {
+"player": "AJ Johnson",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.1
+},
+"aaron gordon": {
+"player": "Aaron Gordon",
+"pcv_M": 19.4,
+"low_M": 10.6,
+"high_M": 28.2
+},
+"aaron holiday": {
+"player": "Aaron Holiday",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"aaron nesmith": {
+"player": "Aaron Nesmith",
+"pcv_M": 8.9,
+"low_M": 2.5,
+"high_M": 15.2
+},
+"aaron wiggins": {
+"player": "Aaron Wiggins",
+"pcv_M": 11.1,
+"low_M": 3.7,
+"high_M": 18.5
+},
+"ace bailey": {
+"player": "Ace Bailey",
+"pcv_M": 12.0,
+"low_M": 4.2,
+"high_M": 19.8
+},
+"adem bona": {
+"player": "Adem Bona",
+"pcv_M": 3.4,
+"low_M": 0.5,
+"high_M": 6.3
+},
+"adou thiero": {
+"player": "Adou Thiero",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"ajay mitchell": {
+"player": "Ajay Mitchell",
+"pcv_M": 13.9,
+"low_M": 5.7,
+"high_M": 22.1
+},
+"al horford": {
+"player": "Al Horford",
+"pcv_M": 6.4,
+"low_M": 1.3,
+"high_M": 11.4
+},
+"alex caruso": {
+"player": "Alex Caruso",
+"pcv_M": 12.9,
+"low_M": 4.9,
+"high_M": 20.8
+},
+"alex sarr": {
+"player": "Alex Sarr",
+"pcv_M": 15.5,
+"low_M": 6.9,
+"high_M": 24.0
+},
+"alijah martin": {
+"player": "Alijah Martin",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.1
+},
+"alperen sengun": {
+"player": "Alperen Sengun",
+"pcv_M": 41.2,
+"low_M": 35.2,
+"high_M": 47.3
+},
+"amari williams": {
+"player": "Amari Williams",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"amen thompson": {
+"player": "Amen Thompson",
+"pcv_M": 14.9,
+"low_M": 6.5,
+"high_M": 23.4
+},
+"amir coffey": {
+"player": "Amir Coffey",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"andre drummond": {
+"player": "Andre Drummond",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"andre jackson jr.": {
+"player": "Andre Jackson Jr.",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"andrew nembhard": {
+"player": "Andrew Nembhard",
+"pcv_M": 22.2,
+"low_M": 14.1,
+"high_M": 30.3
+},
+"andrew wiggins": {
+"player": "Andrew Wiggins",
+"pcv_M": 19.1,
+"low_M": 10.2,
+"high_M": 27.9
+},
+"anfernee simons": {
+"player": "Anfernee Simons",
+"pcv_M": 15.2,
+"low_M": 6.7,
+"high_M": 23.7
+},
+"anthony black": {
+"player": "Anthony Black",
+"pcv_M": 12.7,
+"low_M": 4.7,
+"high_M": 20.6
+},
+"anthony davis": {
+"player": "Anthony Davis",
+"pcv_M": 21.1,
+"low_M": 12.7,
+"high_M": 29.5
+},
+"anthony edwards": {
+"player": "Anthony Edwards",
+"pcv_M": 49.5,
+"low_M": 43.6,
+"high_M": 55.4
+},
+"anthony gill": {
+"player": "Anthony Gill",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.6
+},
+"antonio reeves": {
+"player": "Antonio Reeves",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.7
+},
+"ariel hukporti": {
+"player": "Ariel Hukporti",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"asa newell": {
+"player": "Asa Newell",
+"pcv_M": 3.0,
+"low_M": 0.5,
+"high_M": 5.5
+},
+"ausar thompson": {
+"player": "Ausar Thompson",
+"pcv_M": 21.3,
+"low_M": 13.0,
+"high_M": 29.7
+},
+"austin reaves": {
+"player": "Austin Reaves",
+"pcv_M": 41.2,
+"low_M": 35.2,
+"high_M": 47.3
+},
+"ayo dosunmu": {
+"player": "Ayo Dosunmu",
+"pcv_M": 18.4,
+"low_M": 9.4,
+"high_M": 27.4
+},
+"bam adebayo": {
+"player": "Bam Adebayo",
+"pcv_M": 46.1,
+"low_M": 40.2,
+"high_M": 52.0
+},
+"baylor scheierman": {
+"player": "Baylor Scheierman",
+"pcv_M": 6.8,
+"low_M": 1.5,
+"high_M": 12.1
+},
+"ben saraf": {
+"player": "Ben Saraf",
+"pcv_M": 3.7,
+"low_M": 0.6,
+"high_M": 6.9
+},
+"ben sheppard": {
+"player": "Ben Sheppard",
+"pcv_M": 4.6,
+"low_M": 0.7,
+"high_M": 8.5
+},
+"bennedict mathurin": {
+"player": "Bennedict Mathurin",
+"pcv_M": 19.5,
+"low_M": 10.8,
+"high_M": 28.3
+},
+"bez mbeng": {
+"player": "Bez Mbeng",
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2
+},
+"bilal coulibaly": {
+"player": "Bilal Coulibaly",
+"pcv_M": 11.2,
+"low_M": 3.8,
+"high_M": 18.7
+},
+"bismack biyombo": {
+"player": "Bismack Biyombo",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"blake hinson": {
+"player": "Blake Hinson",
+"pcv_M": 5.0,
+"low_M": 0.7,
+"high_M": 9.2
+},
+"blake wesley": {
+"player": "Blake Wesley",
+"pcv_M": 3.0,
+"low_M": 0.5,
+"high_M": 5.5
+},
+"bobby portis": {
+"player": "Bobby Portis",
+"pcv_M": 7.3,
+"low_M": 1.7,
+"high_M": 12.8
+},
+"bobi klintman": {
+"player": "Bobi Klintman",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"bogdan bogdanovic": {
+"player": "Bogdan Bogdanovi\u0107",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.2
+},
+"bones hyland": {
+"player": "Bones Hyland",
+"pcv_M": 5.7,
+"low_M": 1.0,
+"high_M": 10.4
+},
+"bradley beal": {
+"player": "Bradley Beal",
+"pcv_M": 4.8,
+"low_M": 0.7,
+"high_M": 9.0
+},
+"branden carlson": {
+"player": "Branden Carlson",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"brandin podziemski": {
+"player": "Brandin Podziemski",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"brandon clarke": {
+"player": "Brandon Clarke",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.1
+},
+"brandon ingram": {
+"player": "Brandon Ingram",
+"pcv_M": 31.1,
+"low_M": 24.4,
+"high_M": 37.7
+},
+"brandon miller": {
+"player": "Brandon Miller",
+"pcv_M": 20.6,
+"low_M": 12.1,
+"high_M": 29.1
+},
+"brandon williams": {
+"player": "Brandon Williams",
+"pcv_M": 7.7,
+"low_M": 1.9,
+"high_M": 13.6
+},
+"brice sensabaugh": {
+"player": "Brice Sensabaugh",
+"pcv_M": 7.4,
+"low_M": 1.8,
+"high_M": 13.1
+},
+"bronny james": {
+"player": "Bronny James",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"brook lopez": {
+"player": "Brook Lopez",
+"pcv_M": 8.8,
+"low_M": 2.4,
+"high_M": 15.1
+},
+"brooks barnhizer": {
+"player": "Brooks Barnhizer",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"bruce brown": {
+"player": "Bruce Brown",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.2
+},
+"bryce mcgowens": {
+"player": "Bryce McGowens",
+"pcv_M": 3.6,
+"low_M": 0.6,
+"high_M": 6.7
+},
+"bub carrington": {
+"player": "Bub Carrington",
+"pcv_M": 7.5,
+"low_M": 1.8,
+"high_M": 13.2
+},
+"buddy hield": {
+"player": "Buddy Hield",
+"pcv_M": 5.3,
+"low_M": 0.8,
+"high_M": 9.8
+},
+"cj mccollum": {
+"player": "CJ McCollum",
+"pcv_M": 13.8,
+"low_M": 5.6,
+"high_M": 22.0
+},
+"cade cunningham": {
+"player": "Cade Cunningham",
+"pcv_M": 49.5,
+"low_M": 43.6,
+"high_M": 55.4
+},
+"caleb houstan": {
+"player": "Caleb Houstan",
+"pcv_M": 4.3,
+"low_M": 0.6,
+"high_M": 8.0
+},
+"caleb love": {
+"player": "Caleb Love",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"caleb martin": {
+"player": "Caleb Martin",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0
+},
+"cam christie": {
+"player": "Cam Christie",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.8
+},
+"cam spencer": {
+"player": "Cam Spencer",
+"pcv_M": 6.4,
+"low_M": 1.3,
+"high_M": 11.5
+},
+"cam thomas": {
+"player": "Cam Thomas",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"cam whitmore": {
+"player": "Cam Whitmore",
+"pcv_M": 5.5,
+"low_M": 0.9,
+"high_M": 10.1
+},
+"cameron johnson": {
+"player": "Cameron Johnson",
+"pcv_M": 20.6,
+"low_M": 12.2,
+"high_M": 29.1
+},
+"cameron payne": {
+"player": "Cameron Payne",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"caris levert": {
+"player": "Caris LeVert",
+"pcv_M": 4.8,
+"low_M": 0.7,
+"high_M": 8.9
+},
+"carter bryant": {
+"player": "Carter Bryant",
+"pcv_M": 5.0,
+"low_M": 0.7,
+"high_M": 9.2
+},
+"cason wallace": {
+"player": "Cason Wallace",
+"pcv_M": 19.5,
+"low_M": 10.8,
+"high_M": 28.3
+},
+"cedric coward": {
+"player": "Cedric Coward",
+"pcv_M": 10.2,
+"low_M": 3.2,
+"high_M": 17.2
+},
+"chaney johnson": {
+"player": "Chaney Johnson",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8
+},
+"charles bassey": {
+"player": "Charles Bassey",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"chaz lanier": {
+"player": "Chaz Lanier",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"chet holmgren": {
+"player": "Chet Holmgren",
+"pcv_M": 49.5,
+"low_M": 43.6,
+"high_M": 55.4
+},
+"chris boucher": {
+"player": "Chris Boucher",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"chris paul": {
+"player": "Chris Paul",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"chris youngblood": {
+"player": "Chris Youngblood",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"christian braun": {
+"player": "Christian Braun",
+"pcv_M": 20.4,
+"low_M": 11.9,
+"high_M": 29.0
+},
+"christian koloko": {
+"player": "Christian Koloko",
+"pcv_M": 3.5,
+"low_M": 0.5,
+"high_M": 6.4
+},
+"clint capela": {
+"player": "Clint Capela",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.2
+},
+"coby white": {
+"player": "Coby White",
+"pcv_M": 16.4,
+"low_M": 7.7,
+"high_M": 25.2
+},
+"cody martin": {
+"player": "Cody Martin",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0
+},
+"cody williams": {
+"player": "Cody Williams",
+"pcv_M": 3.6,
+"low_M": 0.6,
+"high_M": 6.6
+},
+"colby jones": {
+"player": "Colby Jones",
+"pcv_M": 6.0,
+"low_M": 1.1,
+"high_M": 10.9
+},
+"cole anthony": {
+"player": "Cole Anthony",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.6
+},
+"colin castleton": {
+"player": "Colin Castleton",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"collin gillespie": {
+"player": "Collin Gillespie",
+"pcv_M": 15.1,
+"low_M": 6.6,
+"high_M": 23.5
+},
+"collin murray-boyles": {
+"player": "Collin Murray-Boyles",
+"pcv_M": 8.7,
+"low_M": 2.4,
+"high_M": 15.0
+},
+"collin sexton": {
+"player": "Collin Sexton",
+"pcv_M": 13.9,
+"low_M": 5.7,
+"high_M": 22.1
+},
+"cooper flagg": {
+"player": "Cooper Flagg",
+"pcv_M": 20.7,
+"low_M": 12.3,
+"high_M": 29.2
+},
+"corey kispert": {
+"player": "Corey Kispert",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.4
+},
+"cormac ryan": {
+"player": "Cormac Ryan",
+"pcv_M": 4.5,
+"low_M": 0.6,
+"high_M": 8.3
+},
+"craig porter jr.": {
+"player": "Craig Porter Jr.",
+"pcv_M": 6.1,
+"low_M": 1.2,
+"high_M": 10.9
+},
+"curtis jones": {
+"player": "Curtis Jones",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"d'angelo russell": {
+"player": "D'Angelo Russell",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"daquan jeffries": {
+"player": "DaQuan Jeffries",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.1
+},
+"daron holmes ii": {
+"player": "DaRon Holmes II",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"daeqwon plowden": {
+"player": "Daeqwon Plowden",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"dalen terry": {
+"player": "Dalen Terry",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"dalton knecht": {
+"player": "Dalton Knecht",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.2
+},
+"daniel gafford": {
+"player": "Daniel Gafford",
+"pcv_M": 14.8,
+"low_M": 6.4,
+"high_M": 23.2
+},
+"daniss jenkins": {
+"player": "Daniss Jenkins",
+"pcv_M": 7.5,
+"low_M": 1.8,
+"high_M": 13.2
+},
+"danny wolf": {
+"player": "Danny Wolf",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"dario saric": {
+"player": "Dario Saric",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"dariq whitehead": {
+"player": "Dariq Whitehead",
+"pcv_M": 3.4,
+"low_M": 0.5,
+"high_M": 6.3
+},
+"darius garland": {
+"player": "Darius Garland",
+"pcv_M": 21.0,
+"low_M": 12.6,
+"high_M": 29.4
+},
+"david jones garcia": {
+"player": "David Jones Garcia",
+"pcv_M": 3.0,
+"low_M": 0.5,
+"high_M": 5.5
+},
+"davion mitchell": {
+"player": "Davion Mitchell",
+"pcv_M": 15.2,
+"low_M": 6.7,
+"high_M": 23.7
+},
+"day'ron sharpe": {
+"player": "Day'Ron Sharpe",
+"pcv_M": 13.1,
+"low_M": 5.1,
+"high_M": 21.1
+},
+"de'aaron fox": {
+"player": "De'Aaron Fox",
+"pcv_M": 48.8,
+"low_M": 42.9,
+"high_M": 54.7
+},
+"de'andre hunter": {
+"player": "De'Andre Hunter",
+"pcv_M": 14.0,
+"low_M": 5.8,
+"high_M": 22.3
+},
+"de'anthony melton": {
+"player": "De'Anthony Melton",
+"pcv_M": 8.3,
+"low_M": 2.2,
+"high_M": 14.5
+},
+"deandre jordan": {
+"player": "DeAndre Jordan",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"dejon jarreau": {
+"player": "DeJon Jarreau",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"demar derozan": {
+"player": "DeMar DeRozan",
+"pcv_M": 15.7,
+"low_M": 7.1,
+"high_M": 24.3
+},
+"dean wade": {
+"player": "Dean Wade",
+"pcv_M": 6.7,
+"low_M": 1.5,
+"high_M": 12.0
+},
+"deandre ayton": {
+"player": "Deandre Ayton",
+"pcv_M": 18.3,
+"low_M": 9.3,
+"high_M": 27.3
+},
+"dejounte murray": {
+"player": "Dejounte Murray",
+"pcv_M": 19.1,
+"low_M": 10.2,
+"high_M": 27.9
+},
+"deni avdija": {
+"player": "Deni Avdija",
+"pcv_M": 34.7,
+"low_M": 28.2,
+"high_M": 41.1
+},
+"dennis schroder": {
+"player": "Dennis Schr\u00f6der",
+"pcv_M": 5.4,
+"low_M": 0.9,
+"high_M": 9.9
+},
+"dereck lively ii": {
+"player": "Dereck Lively II",
+"pcv_M": 9.0,
+"low_M": 2.5,
+"high_M": 15.4
+},
+"derik queen": {
+"player": "Derik Queen",
+"pcv_M": 7.3,
+"low_M": 1.7,
+"high_M": 12.9
+},
+"derrick jones jr.": {
+"player": "Derrick Jones Jr.",
+"pcv_M": 11.3,
+"low_M": 3.8,
+"high_M": 18.7
+},
+"derrick white": {
+"player": "Derrick White",
+"pcv_M": 35.6,
+"low_M": 29.2,
+"high_M": 42.0
+},
+"desmond bane": {
+"player": "Desmond Bane",
+"pcv_M": 32.2,
+"low_M": 25.6,
+"high_M": 38.7
+},
+"devin booker": {
+"player": "Devin Booker",
+"pcv_M": 54.5,
+"low_M": 48.6,
+"high_M": 60.4
+},
+"devin carter": {
+"player": "Devin Carter",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"devin vassell": {
+"player": "Devin Vassell",
+"pcv_M": 21.6,
+"low_M": 13.3,
+"high_M": 29.9
+},
+"dillon brooks": {
+"player": "Dillon Brooks",
+"pcv_M": 23.7,
+"low_M": 15.9,
+"high_M": 31.5
+},
+"dillon jones": {
+"player": "Dillon Jones",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"domantas sabonis": {
+"player": "Domantas Sabonis",
+"pcv_M": 11.7,
+"low_M": 4.1,
+"high_M": 19.4
+},
+"dominick barlow": {
+"player": "Dominick Barlow",
+"pcv_M": 6.2,
+"low_M": 1.2,
+"high_M": 11.2
+},
+"donovan clingan": {
+"player": "Donovan Clingan",
+"pcv_M": 4.1,
+"low_M": 0.6,
+"high_M": 7.6
+},
+"donovan mitchell": {
+"player": "Donovan Mitchell",
+"pcv_M": 57.8,
+"low_M": 51.9,
+"high_M": 63.6
+},
+"donte divincenzo": {
+"player": "Donte DiVincenzo",
+"pcv_M": 17.2,
+"low_M": 8.3,
+"high_M": 26.1
+},
+"dorian finney-smith": {
+"player": "Dorian Finney-Smith",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"doug mcdermott": {
+"player": "Doug McDermott",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"drake powell": {
+"player": "Drake Powell",
+"pcv_M": 3.4,
+"low_M": 0.5,
+"high_M": 6.3
+},
+"draymond green": {
+"player": "Draymond Green",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.4
+},
+"drew eubanks": {
+"player": "Drew Eubanks",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.6
+},
+"drew timme": {
+"player": "Drew Timme",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"dru smith": {
+"player": "Dru Smith",
+"pcv_M": 5.3,
+"low_M": 0.8,
+"high_M": 9.8
+},
+"duncan robinson": {
+"player": "Duncan Robinson",
+"pcv_M": 17.2,
+"low_M": 8.3,
+"high_M": 26.2
+},
+"duop reath": {
+"player": "Duop Reath",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"dwight powell": {
+"player": "Dwight Powell",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"dylan cardwell": {
+"player": "Dylan Cardwell",
+"pcv_M": 3.4,
+"low_M": 0.5,
+"high_M": 6.2
+},
+"dylan harper": {
+"player": "Dylan Harper",
+"pcv_M": 13.1,
+"low_M": 5.1,
+"high_M": 21.2
+},
+"dyson daniels": {
+"player": "Dyson Daniels",
+"pcv_M": 29.7,
+"low_M": 23.0,
+"high_M": 36.4
+},
+"e.j. liddell": {
+"player": "E.J. Liddell",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"egor demin": {
+"player": "Egor D\u00ebmin",
+"pcv_M": 10.2,
+"low_M": 3.2,
+"high_M": 17.1
+},
+"elijah harkless": {
+"player": "Elijah Harkless",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"eric gordon": {
+"player": "Eric Gordon",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"ethan thompson": {
+"player": "Ethan Thompson",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"evan mobley": {
+"player": "Evan Mobley",
+"pcv_M": 41.2,
+"low_M": 35.2,
+"high_M": 47.3
+},
+"franz wagner": {
+"player": "Franz Wagner",
+"pcv_M": 33.3,
+"low_M": 26.8,
+"high_M": 39.8
+},
+"gg jackson": {
+"player": "GG Jackson",
+"pcv_M": 7.6,
+"low_M": 1.8,
+"high_M": 13.4
+},
+"gabe vincent": {
+"player": "Gabe Vincent",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"garrett temple": {
+"player": "Garrett Temple",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"garrison mathews": {
+"player": "Garrison Mathews",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"gary harris": {
+"player": "Gary Harris",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"gary payton ii": {
+"player": "Gary Payton II",
+"pcv_M": 5.5,
+"low_M": 0.9,
+"high_M": 10.1
+},
+"gary trent jr.": {
+"player": "Gary Trent Jr.",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"giannis antetokounmpo": {
+"player": "Giannis Antetokounmpo",
+"pcv_M": 57.8,
+"low_M": 51.9,
+"high_M": 63.6
+},
+"goga bitadze": {
+"player": "Goga Bitadze",
+"pcv_M": 10.0,
+"low_M": 3.1,
+"high_M": 16.9
+},
+"gradey dick": {
+"player": "Gradey Dick",
+"pcv_M": 5.7,
+"low_M": 1.0,
+"high_M": 10.3
+},
+"grant williams": {
+"player": "Grant Williams",
+"pcv_M": 16.3,
+"low_M": 7.6,
+"high_M": 25.1
+},
+"grayson allen": {
+"player": "Grayson Allen",
+"pcv_M": 16.6,
+"low_M": 7.8,
+"high_M": 25.4
+},
+"guerschon yabusele": {
+"player": "Guerschon Yabusele",
+"pcv_M": 4.9,
+"low_M": 0.7,
+"high_M": 9.1
+},
+"gui santos": {
+"player": "Gui Santos",
+"pcv_M": 7.3,
+"low_M": 1.7,
+"high_M": 13.0
+},
+"harrison barnes": {
+"player": "Harrison Barnes",
+"pcv_M": 14.8,
+"low_M": 6.4,
+"high_M": 23.2
+},
+"haywood highsmith": {
+"player": "Haywood Highsmith",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"herbert jones": {
+"player": "Herbert Jones",
+"pcv_M": 9.6,
+"low_M": 2.9,
+"high_M": 16.3
+},
+"hugo gonzalez": {
+"player": "Hugo Gonz\u00e1lez",
+"pcv_M": 6.5,
+"low_M": 1.4,
+"high_M": 11.7
+},
+"hunter tyson": {
+"player": "Hunter Tyson",
+"pcv_M": 3.7,
+"low_M": 0.6,
+"high_M": 6.8
+},
+"immanuel quickley": {
+"player": "Immanuel Quickley",
+"pcv_M": 29.0,
+"low_M": 22.2,
+"high_M": 35.7
+},
+"isaac jones": {
+"player": "Isaac Jones",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"isaac okoro": {
+"player": "Isaac Okoro",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.6
+},
+"isaiah collier": {
+"player": "Isaiah Collier",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"isaiah crawford": {
+"player": "Isaiah Crawford",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"isaiah hartenstein": {
+"player": "Isaiah Hartenstein",
+"pcv_M": 23.3,
+"low_M": 15.4,
+"high_M": 31.2
+},
+"isaiah jackson": {
+"player": "Isaiah Jackson",
+"pcv_M": 3.8,
+"low_M": 0.6,
+"high_M": 7.1
+},
+"isaiah joe": {
+"player": "Isaiah Joe",
+"pcv_M": 19.7,
+"low_M": 10.9,
+"high_M": 28.4
+},
+"isaiah livers": {
+"player": "Isaiah Livers",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"isaiah stewart": {
+"player": "Isaiah Stewart",
+"pcv_M": 11.0,
+"low_M": 3.7,
+"high_M": 18.4
+},
+"ivica zubac": {
+"player": "Ivica Zubac",
+"pcv_M": 7.9,
+"low_M": 2.0,
+"high_M": 13.9
+},
+"jd davison": {
+"player": "JD Davison",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8
+},
+"ja morant": {
+"player": "Ja Morant",
+"pcv_M": 23.2,
+"low_M": 15.2,
+"high_M": 31.1
+},
+"ja'kobe walter": {
+"player": "Ja'Kobe Walter",
+"pcv_M": 5.1,
+"low_M": 0.8,
+"high_M": 9.5
+},
+"jabari smith jr.": {
+"player": "Jabari Smith Jr.",
+"pcv_M": 27.5,
+"low_M": 20.6,
+"high_M": 34.4
+},
+"jabari walker": {
+"player": "Jabari Walker",
+"pcv_M": 5.3,
+"low_M": 0.8,
+"high_M": 9.7
+},
+"jaden hardy": {
+"player": "Jaden Hardy",
+"pcv_M": 5.8,
+"low_M": 1.0,
+"high_M": 10.5
+},
+"jaden ivey": {
+"player": "Jaden Ivey",
+"pcv_M": 14.3,
+"low_M": 6.0,
+"high_M": 22.6
+},
+"jaden mcdaniels": {
+"player": "Jaden McDaniels",
+"pcv_M": 22.7,
+"low_M": 14.7,
+"high_M": 30.7
+},
+"jae'sean tate": {
+"player": "Jae'Sean Tate",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.6
+},
+"jahmai mashack": {
+"player": "Jahmai Mashack",
+"pcv_M": 2.4,
+"low_M": 0.0,
+"high_M": 4.9
+},
+"jahmir young": {
+"player": "Jahmir Young",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"jaime jaquez jr.": {
+"player": "Jaime Jaquez Jr.",
+"pcv_M": 12.0,
+"low_M": 4.2,
+"high_M": 19.8
+},
+"jake laravia": {
+"player": "Jake LaRavia",
+"pcv_M": 9.7,
+"low_M": 2.9,
+"high_M": 16.4
+},
+"jakob poeltl": {
+"player": "Jakob Poeltl",
+"pcv_M": 11.9,
+"low_M": 4.2,
+"high_M": 19.7
+},
+"jalen brunson": {
+"player": "Jalen Brunson",
+"pcv_M": 57.8,
+"low_M": 51.9,
+"high_M": 63.6
+},
+"jalen duren": {
+"player": "Jalen Duren",
+"pcv_M": 49.5,
+"low_M": 43.6,
+"high_M": 55.4
+},
+"jalen green": {
+"player": "Jalen Green",
+"pcv_M": 20.5,
+"low_M": 12.0,
+"high_M": 29.0
+},
+"jalen johnson": {
+"player": "Jalen Johnson",
+"pcv_M": 49.5,
+"low_M": 43.6,
+"high_M": 55.4
+},
+"jalen pickett": {
+"player": "Jalen Pickett",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.6
+},
+"jalen slawson": {
+"player": "Jalen Slawson",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"jalen smith": {
+"player": "Jalen Smith",
+"pcv_M": 13.1,
+"low_M": 5.1,
+"high_M": 21.2
+},
+"jalen suggs": {
+"player": "Jalen Suggs",
+"pcv_M": 22.7,
+"low_M": 14.7,
+"high_M": 30.7
+},
+"jalen williams": {
+"player": "Jalen Williams",
+"pcv_M": 28.3,
+"low_M": 21.5,
+"high_M": 35.1
+},
+"jalen wilson": {
+"player": "Jalen Wilson",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"jamal cain": {
+"player": "Jamal Cain",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"jamal murray": {
+"player": "Jamal Murray",
+"pcv_M": 57.8,
+"low_M": 51.9,
+"high_M": 63.6
+},
+"jamal shead": {
+"player": "Jamal Shead",
+"pcv_M": 5.4,
+"low_M": 0.9,
+"high_M": 9.9
+},
+"jamaree bouyea": {
+"player": "Jamaree Bouyea",
+"pcv_M": 2.4,
+"low_M": 0.0,
+"high_M": 4.9
+},
+"james harden": {
+"player": "James Harden",
+"pcv_M": 54.5,
+"low_M": 48.6,
+"high_M": 60.4
+},
+"james wiseman": {
+"player": "James Wiseman",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"jamir watkins": {
+"player": "Jamir Watkins",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"jamison battle": {
+"player": "Jamison Battle",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.3
+},
+"jarace walker": {
+"player": "Jarace Walker",
+"pcv_M": 9.6,
+"low_M": 2.9,
+"high_M": 16.2
+},
+"jared mccain": {
+"player": "Jared McCain",
+"pcv_M": 5.5,
+"low_M": 0.9,
+"high_M": 10.0
+},
+"jaren jackson jr.": {
+"player": "Jaren Jackson Jr.",
+"pcv_M": 26.3,
+"low_M": 19.1,
+"high_M": 33.5
+},
+"jarred vanderbilt": {
+"player": "Jarred Vanderbilt",
+"pcv_M": 6.4,
+"low_M": 1.3,
+"high_M": 11.5
+},
+"jarrett allen": {
+"player": "Jarrett Allen",
+"pcv_M": 25.6,
+"low_M": 18.3,
+"high_M": 33.0
+},
+"jase richardson": {
+"player": "Jase Richardson",
+"pcv_M": 3.7,
+"low_M": 0.6,
+"high_M": 6.9
+},
+"javon small": {
+"player": "Javon Small",
+"pcv_M": 3.8,
+"low_M": 0.6,
+"high_M": 7.1
+},
+"javonte cooke": {
+"player": "Javonte Cooke",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"javonte green": {
+"player": "Javonte Green",
+"pcv_M": 5.9,
+"low_M": 1.1,
+"high_M": 10.7
+},
+"jaxson hayes": {
+"player": "Jaxson Hayes",
+"pcv_M": 6.2,
+"low_M": 1.2,
+"high_M": 11.1
+},
+"jay huff": {
+"player": "Jay Huff",
+"pcv_M": 5.7,
+"low_M": 1.0,
+"high_M": 10.4
+},
+"jaylen brown": {
+"player": "Jaylen Brown",
+"pcv_M": 57.8,
+"low_M": 51.9,
+"high_M": 63.6
+},
+"jaylen clark": {
+"player": "Jaylen Clark",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0
+},
+"jaylen wells": {
+"player": "Jaylen Wells",
+"pcv_M": 10.4,
+"low_M": 3.3,
+"high_M": 17.5
+},
+"jaylin williams": {
+"player": "Jaylin Williams",
+"pcv_M": 16.1,
+"low_M": 7.4,
+"high_M": 24.8
+},
+"jaylon tyson": {
+"player": "Jaylon Tyson",
+"pcv_M": 5.8,
+"low_M": 1.0,
+"high_M": 10.6
+},
+"jayson tatum": {
+"player": "Jayson Tatum",
+"pcv_M": 57.8,
+"low_M": 51.9,
+"high_M": 63.6
+},
+"jeff green": {
+"player": "Jeff Green",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"jerami grant": {
+"player": "Jerami Grant",
+"pcv_M": 17.0,
+"low_M": 8.1,
+"high_M": 25.8
+},
+"jeremiah fears": {
+"player": "Jeremiah Fears",
+"pcv_M": 8.1,
+"low_M": 2.1,
+"high_M": 14.2
+},
+"jeremiah robinson-earl": {
+"player": "Jeremiah Robinson-Earl",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"jeremy sochan": {
+"player": "Jeremy Sochan",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"jericho sims": {
+"player": "Jericho Sims",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.7
+},
+"jett howard": {
+"player": "Jett Howard",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.4
+},
+"jevon carter": {
+"player": "Jevon Carter",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"jimmy butler iii": {
+"player": "Jimmy Butler III",
+"pcv_M": 41.4,
+"low_M": 35.4,
+"high_M": 47.5
+},
+"joan beringer": {
+"player": "Joan Beringer",
+"pcv_M": 3.4,
+"low_M": 0.5,
+"high_M": 6.3
+},
+"jock landale": {
+"player": "Jock Landale",
+"pcv_M": 6.5,
+"low_M": 1.4,
+"high_M": 11.7
+},
+"joe ingles": {
+"player": "Joe Ingles",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"joel embiid": {
+"player": "Joel Embiid",
+"pcv_M": 41.7,
+"low_M": 35.6,
+"high_M": 47.8
+},
+"john collins": {
+"player": "John Collins",
+"pcv_M": 19.5,
+"low_M": 10.8,
+"high_M": 28.3
+},
+"john konchar": {
+"player": "John Konchar",
+"pcv_M": 3.7,
+"low_M": 0.6,
+"high_M": 6.9
+},
+"john poulakidas": {
+"player": "John Poulakidas",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8
+},
+"johni broome": {
+"player": "Johni Broome",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"johnny furphy": {
+"player": "Johnny Furphy",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"johnny juzang": {
+"player": "Johnny Juzang",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"jonas valanciunas": {
+"player": "Jonas Valan\u010di\u016bnas",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"jonathan isaac": {
+"player": "Jonathan Isaac",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.1
+},
+"jonathan kuminga": {
+"player": "Jonathan Kuminga",
+"pcv_M": 12.3,
+"low_M": 4.4,
+"high_M": 20.1
+},
+"jonathan mogbo": {
+"player": "Jonathan Mogbo",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"jordan clarkson": {
+"player": "Jordan Clarkson",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.1
+},
+"jordan goodwin": {
+"player": "Jordan Goodwin",
+"pcv_M": 8.8,
+"low_M": 2.4,
+"high_M": 15.1
+},
+"jordan hawkins": {
+"player": "Jordan Hawkins",
+"pcv_M": 3.0,
+"low_M": 0.5,
+"high_M": 5.6
+},
+"jordan mclaughlin": {
+"player": "Jordan McLaughlin",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"jordan miller": {
+"player": "Jordan Miller",
+"pcv_M": 3.6,
+"low_M": 0.6,
+"high_M": 6.7
+},
+"jordan poole": {
+"player": "Jordan Poole",
+"pcv_M": 5.7,
+"low_M": 1.0,
+"high_M": 10.4
+},
+"jordan walsh": {
+"player": "Jordan Walsh",
+"pcv_M": 4.6,
+"low_M": 0.7,
+"high_M": 8.5
+},
+"jose alvarado": {
+"player": "Jose Alvarado",
+"pcv_M": 3.8,
+"low_M": 0.6,
+"high_M": 7.1
+},
+"josh giddey": {
+"player": "Josh Giddey",
+"pcv_M": 36.8,
+"low_M": 30.5,
+"high_M": 43.2
+},
+"josh green": {
+"player": "Josh Green",
+"pcv_M": 6.8,
+"low_M": 1.5,
+"high_M": 12.1
+},
+"josh hart": {
+"player": "Josh Hart",
+"pcv_M": 27.1,
+"low_M": 20.1,
+"high_M": 34.1
+},
+"josh minott": {
+"player": "Josh Minott",
+"pcv_M": 5.0,
+"low_M": 0.7,
+"high_M": 9.3
+},
+"josh okogie": {
+"player": "Josh Okogie",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"jrue holiday": {
+"player": "Jrue Holiday",
+"pcv_M": 21.0,
+"low_M": 12.6,
+"high_M": 29.4
+},
+"julian champagnie": {
+"player": "Julian Champagnie",
+"pcv_M": 11.2,
+"low_M": 3.8,
+"high_M": 18.7
+},
+"julian phillips": {
+"player": "Julian Phillips",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"julian reese": {
+"player": "Julian Reese",
+"pcv_M": 2.4,
+"low_M": 0.0,
+"high_M": 4.9
+},
+"julian strawther": {
+"player": "Julian Strawther",
+"pcv_M": 5.4,
+"low_M": 0.9,
+"high_M": 9.9
+},
+"julius randle": {
+"player": "Julius Randle",
+"pcv_M": 34.4,
+"low_M": 28.0,
+"high_M": 40.9
+},
+"justin champagnie": {
+"player": "Justin Champagnie",
+"pcv_M": 4.9,
+"low_M": 0.7,
+"high_M": 9.0
+},
+"justin edwards": {
+"player": "Justin Edwards",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"jusuf nurkic": {
+"player": "Jusuf Nurki\u0107",
+"pcv_M": 8.0,
+"low_M": 2.0,
+"high_M": 14.1
+},
+"kj simpson": {
+"player": "KJ Simpson",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.1
+},
+"kam jones": {
+"player": "Kam Jones",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8
+},
+"karl-anthony towns": {
+"player": "Karl-Anthony Towns",
+"pcv_M": 54.5,
+"low_M": 48.6,
+"high_M": 60.4
+},
+"karlo matkovic": {
+"player": "Karlo Matkovi\u0107",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.3
+},
+"kasparas jakucionis": {
+"player": "Kasparas Jaku\u010dionis",
+"pcv_M": 5.1,
+"low_M": 0.7,
+"high_M": 9.4
+},
+"kawhi leonard": {
+"player": "Kawhi Leonard",
+"pcv_M": 54.5,
+"low_M": 48.6,
+"high_M": 60.4
+},
+"keaton wallace": {
+"player": "Keaton Wallace",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"keegan murray": {
+"player": "Keegan Murray",
+"pcv_M": 19.2,
+"low_M": 10.4,
+"high_M": 28.0
+},
+"kel'el ware": {
+"player": "Kel'el Ware",
+"pcv_M": 8.8,
+"low_M": 2.4,
+"high_M": 15.1
+},
+"keldon johnson": {
+"player": "Keldon Johnson",
+"pcv_M": 23.1,
+"low_M": 15.2,
+"high_M": 31.1
+},
+"kelly olynyk": {
+"player": "Kelly Olynyk",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"kelly oubre jr.": {
+"player": "Kelly Oubre Jr.",
+"pcv_M": 12.3,
+"low_M": 4.5,
+"high_M": 20.2
+},
+"kennedy chandler": {
+"player": "Kennedy Chandler",
+"pcv_M": 4.3,
+"low_M": 0.6,
+"high_M": 7.9
+},
+"kenrich williams": {
+"player": "Kenrich Williams",
+"pcv_M": 4.3,
+"low_M": 0.6,
+"high_M": 7.9
+},
+"kentavious caldwell-pope": {
+"player": "Kentavious Caldwell-Pope",
+"pcv_M": 5.2,
+"low_M": 0.8,
+"high_M": 9.7
+},
+"keon ellis": {
+"player": "Keon Ellis",
+"pcv_M": 6.7,
+"low_M": 1.4,
+"high_M": 11.9
+},
+"keshad johnson": {
+"player": "Keshad Johnson",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.8
+},
+"kevin durant": {
+"player": "Kevin Durant",
+"pcv_M": 54.5,
+"low_M": 48.6,
+"high_M": 60.4
+},
+"kevin huerter": {
+"player": "Kevin Huerter",
+"pcv_M": 10.3,
+"low_M": 3.3,
+"high_M": 17.4
+},
+"kevin love": {
+"player": "Kevin Love",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"kevin mccullar jr.": {
+"player": "Kevin McCullar Jr.",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"kevin porter jr.": {
+"player": "Kevin Porter Jr.",
+"pcv_M": 20.7,
+"low_M": 12.2,
+"high_M": 29.2
+},
+"kevon looney": {
+"player": "Kevon Looney",
+"pcv_M": 7.1,
+"low_M": 1.6,
+"high_M": 12.6
+},
+"keyonte george": {
+"player": "Keyonte George",
+"pcv_M": 4.9,
+"low_M": 0.7,
+"high_M": 9.2
+},
+"khaman maluach": {
+"player": "Khaman Maluach",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9
+},
+"khris middleton": {
+"player": "Khris Middleton",
+"pcv_M": 6.8,
+"low_M": 1.5,
+"high_M": 12.1
+},
+"killian hayes": {
+"player": "Killian Hayes",
+"pcv_M": 6.2,
+"low_M": 1.2,
+"high_M": 11.1
+},
+"klay thompson": {
+"player": "Klay Thompson",
+"pcv_M": 6.0,
+"low_M": 1.2,
+"high_M": 10.9
+},
+"kobe brown": {
+"player": "Kobe Brown",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"kobe bufkin": {
+"player": "Kobe Bufkin",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"kobe sanders": {
+"player": "Kobe Sanders",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"koby brea": {
+"player": "Koby Brea",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"kon knueppel": {
+"player": "Kon Knueppel",
+"pcv_M": 16.1,
+"low_M": 7.4,
+"high_M": 24.7
+},
+"kris dunn": {
+"player": "Kris Dunn",
+"pcv_M": 10.0,
+"low_M": 3.1,
+"high_M": 16.9
+},
+"kris murray": {
+"player": "Kris Murray",
+"pcv_M": 6.2,
+"low_M": 1.2,
+"high_M": 11.2
+},
+"kristaps porzingis": {
+"player": "Kristaps Porzi\u0146\u0123is",
+"pcv_M": 15.7,
+"low_M": 7.1,
+"high_M": 24.3
+},
+"kyle anderson": {
+"player": "Kyle Anderson",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"kyle filipowski": {
+"player": "Kyle Filipowski",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"kyle kuzma": {
+"player": "Kyle Kuzma",
+"pcv_M": 8.1,
+"low_M": 2.0,
+"high_M": 14.1
+},
+"kyle lowry": {
+"player": "Kyle Lowry",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"kyshawn george": {
+"player": "Kyshawn George",
+"pcv_M": 7.6,
+"low_M": 1.8,
+"high_M": 13.3
+},
+"lj cryer": {
+"player": "LJ Cryer",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"lamelo ball": {
+"player": "LaMelo Ball",
+"pcv_M": 41.2,
+"low_M": 35.2,
+"high_M": 47.3
+},
+"lachlan olbrich": {
+"player": "Lachlan Olbrich",
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2
+},
+"landry shamet": {
+"player": "Landry Shamet",
+"pcv_M": 5.1,
+"low_M": 0.7,
+"high_M": 9.4
+},
+"larry nance jr.": {
+"player": "Larry Nance Jr.",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"lauri markkanen": {
+"player": "Lauri Markkanen",
+"pcv_M": 38.0,
+"low_M": 31.7,
+"high_M": 44.2
+},
+"lebron james": {
+"player": "LeBron James",
+"pcv_M": 39.8,
+"low_M": 33.6,
+"high_M": 46.0
+},
+"leaky black": {
+"player": "Leaky Black",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"leonard miller": {
+"player": "Leonard Miller",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0
+},
+"liam mcneeley": {
+"player": "Liam McNeeley",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"lindy waters iii": {
+"player": "Lindy Waters III",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"lonzo ball": {
+"player": "Lonzo Ball",
+"pcv_M": 8.5,
+"low_M": 2.3,
+"high_M": 14.7
+},
+"luguentz dort": {
+"player": "Luguentz Dort",
+"pcv_M": 11.7,
+"low_M": 4.0,
+"high_M": 19.4
+},
+"luka doncic": {
+"player": "Luka Don\u010di\u0107",
+"pcv_M": 49.5,
+"low_M": 43.6,
+"high_M": 55.4
+},
+"luka garza": {
+"player": "Luka Garza",
+"pcv_M": 8.0,
+"low_M": 2.0,
+"high_M": 14.0
+},
+"luke kennard": {
+"player": "Luke Kennard",
+"pcv_M": 6.8,
+"low_M": 1.5,
+"high_M": 12.2
+},
+"luke kornet": {
+"player": "Luke Kornet",
+"pcv_M": 10.1,
+"low_M": 3.2,
+"high_M": 17.0
+},
+"luke travers": {
+"player": "Luke Travers",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9
+},
+"mac mcclung": {
+"player": "Mac McClung",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"malachi smith": {
+"player": "Malachi Smith",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8
+},
+"malaki branham": {
+"player": "Malaki Branham",
+"pcv_M": 4.8,
+"low_M": 0.7,
+"high_M": 8.9
+},
+"malevy leons": {
+"player": "Malevy Leons",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"malik monk": {
+"player": "Malik Monk",
+"pcv_M": 6.2,
+"low_M": 1.2,
+"high_M": 11.2
+},
+"marjon beauchamp": {
+"player": "MarJon Beauchamp",
+"pcv_M": 3.0,
+"low_M": 0.5,
+"high_M": 5.5
+},
+"marcus sasser": {
+"player": "Marcus Sasser",
+"pcv_M": 3.8,
+"low_M": 0.6,
+"high_M": 7.1
+},
+"marcus smart": {
+"player": "Marcus Smart",
+"pcv_M": 7.5,
+"low_M": 1.8,
+"high_M": 13.2
+},
+"mark williams": {
+"player": "Mark Williams",
+"pcv_M": 19.1,
+"low_M": 10.2,
+"high_M": 27.9
+},
+"marvin bagley iii": {
+"player": "Marvin Bagley III",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.1
+},
+"mason plumlee": {
+"player": "Mason Plumlee",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"matas buzelis": {
+"player": "Matas Buzelis",
+"pcv_M": 7.5,
+"low_M": 1.8,
+"high_M": 13.2
+},
+"matisse thybulle": {
+"player": "Matisse Thybulle",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0
+},
+"max christie": {
+"player": "Max Christie",
+"pcv_M": 14.6,
+"low_M": 6.2,
+"high_M": 22.9
+},
+"max shulga": {
+"player": "Max Shulga",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"max strus": {
+"player": "Max Strus",
+"pcv_M": 9.3,
+"low_M": 2.7,
+"high_M": 15.8
+},
+"maxi kleber": {
+"player": "Maxi Kleber",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"maxime raynaud": {
+"player": "Maxime Raynaud",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"micah peavy": {
+"player": "Micah Peavy",
+"pcv_M": 3.0,
+"low_M": 0.5,
+"high_M": 5.5
+},
+"micah potter": {
+"player": "Micah Potter",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"michael porter jr.": {
+"player": "Michael Porter Jr.",
+"pcv_M": 31.9,
+"low_M": 25.3,
+"high_M": 38.5
+},
+"mikal bridges": {
+"player": "Mikal Bridges",
+"pcv_M": 33.1,
+"low_M": 26.5,
+"high_M": 39.6
+},
+"mike conley": {
+"player": "Mike Conley",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"miles bridges": {
+"player": "Miles Bridges",
+"pcv_M": 28.9,
+"low_M": 22.1,
+"high_M": 35.6
+},
+"miles kelly": {
+"player": "Miles Kelly",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"miles mcbride": {
+"player": "Miles McBride",
+"pcv_M": 10.0,
+"low_M": 3.1,
+"high_M": 16.9
+},
+"mitchell robinson": {
+"player": "Mitchell Robinson",
+"pcv_M": 14.7,
+"low_M": 6.3,
+"high_M": 23.1
+},
+"mohamed diawara": {
+"player": "Mohamed Diawara",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9
+},
+"moritz wagner": {
+"player": "Moritz Wagner",
+"pcv_M": 3.8,
+"low_M": 0.6,
+"high_M": 7.0
+},
+"moses moody": {
+"player": "Moses Moody",
+"pcv_M": 15.6,
+"low_M": 7.0,
+"high_M": 24.2
+},
+"mouhamed gueye": {
+"player": "Mouhamed Gueye",
+"pcv_M": 6.7,
+"low_M": 1.4,
+"high_M": 12.0
+},
+"moussa cisse": {
+"player": "Moussa Cisse",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"moussa diabate": {
+"player": "Moussa Diabat\u00e9",
+"pcv_M": 8.0,
+"low_M": 2.0,
+"high_M": 14.0
+},
+"myles turner": {
+"player": "Myles Turner",
+"pcv_M": 7.9,
+"low_M": 2.0,
+"high_M": 13.8
+},
+"myron gardner": {
+"player": "Myron Gardner",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"n'faly dante": {
+"player": "N'Faly Dante",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"nae'qwan tomlin": {
+"player": "Nae'Qwan Tomlin",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.4
+},
+"naji marshall": {
+"player": "Naji Marshall",
+"pcv_M": 15.3,
+"low_M": 6.8,
+"high_M": 23.8
+},
+"nate williams": {
+"player": "Nate Williams",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"naz reid": {
+"player": "Naz Reid",
+"pcv_M": 21.7,
+"low_M": 13.5,
+"high_M": 30.0
+},
+"neemias queta": {
+"player": "Neemias Queta",
+"pcv_M": 18.8,
+"low_M": 9.9,
+"high_M": 27.7
+},
+"nic claxton": {
+"player": "Nic Claxton",
+"pcv_M": 13.3,
+"low_M": 5.2,
+"high_M": 21.4
+},
+"nick richards": {
+"player": "Nick Richards",
+"pcv_M": 5.8,
+"low_M": 1.1,
+"high_M": 10.6
+},
+"nick smith jr.": {
+"player": "Nick Smith Jr.",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.4
+},
+"nickeil alexander-walker": {
+"player": "Nickeil Alexander-Walker",
+"pcv_M": 29.5,
+"low_M": 22.8,
+"high_M": 36.2
+},
+"nicolas batum": {
+"player": "Nicolas Batum",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"nigel hayes-davis": {
+"player": "Nigel Hayes-Davis",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"nikola jokic": {
+"player": "Nikola Joki\u0107",
+"pcv_M": 57.8,
+"low_M": 51.9,
+"high_M": 63.6
+},
+"nikola jovic": {
+"player": "Nikola Jovi\u0107",
+"pcv_M": 5.5,
+"low_M": 0.9,
+"high_M": 10.1
+},
+"nikola topic": {
+"player": "Nikola Topi\u0107",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"nikola vucevic": {
+"player": "Nikola Vu\u010devi\u0107",
+"pcv_M": 10.4,
+"low_M": 3.3,
+"high_M": 17.5
+},
+"nique clifford": {
+"player": "Nique Clifford",
+"pcv_M": 6.9,
+"low_M": 1.5,
+"high_M": 12.3
+},
+"noa essengue": {
+"player": "Noa Essengue",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3
+},
+"noah clowney": {
+"player": "Noah Clowney",
+"pcv_M": 6.1,
+"low_M": 1.2,
+"high_M": 11.1
+},
+"noah penda": {
+"player": "Noah Penda",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"nolan traore": {
+"player": "Nolan Traore",
+"pcv_M": 4.1,
+"low_M": 0.6,
+"high_M": 7.6
+},
+"norman powell": {
+"player": "Norman Powell",
+"pcv_M": 18.7,
+"low_M": 9.8,
+"high_M": 27.7
+},
+"og anunoby": {
+"player": "OG Anunoby",
+"pcv_M": 31.4,
+"low_M": 24.8,
+"high_M": 38.1
+},
+"obi toppin": {
+"player": "Obi Toppin",
+"pcv_M": 9.2,
+"low_M": 2.7,
+"high_M": 15.7
+},
+"ochai agbaji": {
+"player": "Ochai Agbaji",
+"pcv_M": 5.0,
+"low_M": 0.7,
+"high_M": 9.2
+},
+"olivier-maxence prosper": {
+"player": "Olivier-Maxence Prosper",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9
+},
+"onyeka okongwu": {
+"player": "Onyeka Okongwu",
+"pcv_M": 27.4,
+"low_M": 20.5,
+"high_M": 34.3
+},
+"oscar tshiebwe": {
+"player": "Oscar Tshiebwe",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"oso ighodaro": {
+"player": "Oso Ighodaro",
+"pcv_M": 5.3,
+"low_M": 0.8,
+"high_M": 9.8
+},
+"ousmane dieng": {
+"player": "Ousmane Dieng",
+"pcv_M": 5.5,
+"low_M": 0.9,
+"high_M": 10.0
+},
+"p.j. washington": {
+"player": "P.J. Washington",
+"pcv_M": 15.9,
+"low_M": 7.3,
+"high_M": 24.6
+},
+"pj hall": {
+"player": "PJ Hall",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"pacome dadiet": {
+"player": "Pac\u00f4me Dadiet",
+"pcv_M": 3.0,
+"low_M": 0.5,
+"high_M": 5.5
+},
+"paolo banchero": {
+"player": "Paolo Banchero",
+"pcv_M": 41.2,
+"low_M": 35.2,
+"high_M": 47.3
+},
+"pascal siakam": {
+"player": "Pascal Siakam",
+"pcv_M": 31.3,
+"low_M": 24.7,
+"high_M": 37.9
+},
+"pat connaughton": {
+"player": "Pat Connaughton",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"pat spencer": {
+"player": "Pat Spencer",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"patrick williams": {
+"player": "Patrick Williams",
+"pcv_M": 4.5,
+"low_M": 0.7,
+"high_M": 8.4
+},
+"paul george": {
+"player": "Paul George",
+"pcv_M": 15.8,
+"low_M": 7.2,
+"high_M": 24.4
+},
+"paul reed": {
+"player": "Paul Reed",
+"pcv_M": 6.7,
+"low_M": 1.4,
+"high_M": 12.0
+},
+"payton pritchard": {
+"player": "Payton Pritchard",
+"pcv_M": 29.7,
+"low_M": 23.0,
+"high_M": 36.5
+},
+"pelle larsson": {
+"player": "Pelle Larsson",
+"pcv_M": 13.1,
+"low_M": 5.1,
+"high_M": 21.1
+},
+"pete nance": {
+"player": "Pete Nance",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"peyton watson": {
+"player": "Peyton Watson",
+"pcv_M": 15.6,
+"low_M": 7.1,
+"high_M": 24.2
+},
+"precious achiuwa": {
+"player": "Precious Achiuwa",
+"pcv_M": 9.7,
+"low_M": 2.9,
+"high_M": 16.5
+},
+"quentin grimes": {
+"player": "Quentin Grimes",
+"pcv_M": 15.8,
+"low_M": 7.2,
+"high_M": 24.4
+},
+"quenton jackson": {
+"player": "Quenton Jackson",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"quinten post": {
+"player": "Quinten Post",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.3
+},
+"rj barrett": {
+"player": "RJ Barrett",
+"pcv_M": 36.8,
+"low_M": 30.5,
+"high_M": 43.2
+},
+"rasheer fleming": {
+"player": "Rasheer Fleming",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8
+},
+"rayj dennis": {
+"player": "RayJ Dennis",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"rayan rupert": {
+"player": "Rayan Rupert",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"reed sheppard": {
+"player": "Reed Sheppard",
+"pcv_M": 10.6,
+"low_M": 3.4,
+"high_M": 17.8
+},
+"rob dillingham": {
+"player": "Rob Dillingham",
+"pcv_M": 4.1,
+"low_M": 0.6,
+"high_M": 7.6
+},
+"robert williams iii": {
+"player": "Robert Williams III",
+"pcv_M": 12.6,
+"low_M": 4.7,
+"high_M": 20.5
+},
+"ron harper jr.": {
+"player": "Ron Harper Jr.",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8
+},
+"ronald holland ii": {
+"player": "Ronald Holland II",
+"pcv_M": 12.4,
+"low_M": 4.5,
+"high_M": 20.3
+},
+"royce o'neale": {
+"player": "Royce O'Neale",
+"pcv_M": 11.1,
+"low_M": 3.7,
+"high_M": 18.4
+},
+"rudy gobert": {
+"player": "Rudy Gobert",
+"pcv_M": 23.0,
+"low_M": 15.1,
+"high_M": 31.0
+},
+"rui hachimura": {
+"player": "Rui Hachimura",
+"pcv_M": 15.3,
+"low_M": 6.8,
+"high_M": 23.9
+},
+"russell westbrook": {
+"player": "Russell Westbrook",
+"pcv_M": 5.4,
+"low_M": 0.9,
+"high_M": 9.9
+},
+"ryan dunn": {
+"player": "Ryan Dunn",
+"pcv_M": 6.5,
+"low_M": 1.3,
+"high_M": 11.6
+},
+"ryan kalkbrenner": {
+"player": "Ryan Kalkbrenner",
+"pcv_M": 10.5,
+"low_M": 3.4,
+"high_M": 17.7
+},
+"ryan nembhard": {
+"player": "Ryan Nembhard",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"ryan rollins": {
+"player": "Ryan Rollins",
+"pcv_M": 3.7,
+"low_M": 0.6,
+"high_M": 6.8
+},
+"saddiq bey": {
+"player": "Saddiq Bey",
+"pcv_M": 20.5,
+"low_M": 11.9,
+"high_M": 29.0
+},
+"sam hauser": {
+"player": "Sam Hauser",
+"pcv_M": 17.0,
+"low_M": 8.1,
+"high_M": 25.8
+},
+"sam merrill": {
+"player": "Sam Merrill",
+"pcv_M": 10.8,
+"low_M": 3.5,
+"high_M": 18.0
+},
+"sandro mamukelashvili": {
+"player": "Sandro Mamukelashvili",
+"pcv_M": 9.1,
+"low_M": 2.6,
+"high_M": 15.5
+},
+"santi aldama": {
+"player": "Santi Aldama",
+"pcv_M": 17.5,
+"low_M": 8.5,
+"high_M": 26.5
+},
+"scoot henderson": {
+"player": "Scoot Henderson",
+"pcv_M": 7.9,
+"low_M": 2.0,
+"high_M": 13.9
+},
+"scottie barnes": {
+"player": "Scottie Barnes",
+"pcv_M": 41.2,
+"low_M": 35.2,
+"high_M": 47.3
+},
+"scotty pippen jr.": {
+"player": "Scotty Pippen Jr.",
+"pcv_M": 8.1,
+"low_M": 2.0,
+"high_M": 14.1
+},
+"seth curry": {
+"player": "Seth Curry",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"shaedon sharpe": {
+"player": "Shaedon Sharpe",
+"pcv_M": 24.0,
+"low_M": 16.2,
+"high_M": 31.7
+},
+"shai gilgeous-alexander": {
+"player": "Shai Gilgeous-Alexander",
+"pcv_M": 57.8,
+"low_M": 51.9,
+"high_M": 63.6
+},
+"sharife cooper": {
+"player": "Sharife Cooper",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"sidy cissoko": {
+"player": "Sidy Cissoko",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"simone fontecchio": {
+"player": "Simone Fontecchio",
+"pcv_M": 6.4,
+"low_M": 1.3,
+"high_M": 11.6
+},
+"sion james": {
+"player": "Sion James",
+"pcv_M": 6.9,
+"low_M": 1.5,
+"high_M": 12.2
+},
+"spencer jones": {
+"player": "Spencer Jones",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.3
+},
+"stephen curry": {
+"player": "Stephen Curry",
+"pcv_M": 54.5,
+"low_M": 48.6,
+"high_M": 60.4
+},
+"stephon castle": {
+"player": "Stephon Castle",
+"pcv_M": 16.0,
+"low_M": 7.3,
+"high_M": 24.6
+},
+"steven adams": {
+"player": "Steven Adams",
+"pcv_M": 7.2,
+"low_M": 1.7,
+"high_M": 12.8
+},
+"svi mykhailiuk": {
+"player": "Svi Mykhailiuk",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"t.j. mcconnell": {
+"player": "T.J. McConnell",
+"pcv_M": 6.3,
+"low_M": 1.3,
+"high_M": 11.3
+},
+"taelon peter": {
+"player": "Taelon Peter",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"taj gibson": {
+"player": "Taj Gibson",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"tari eason": {
+"player": "Tari Eason",
+"pcv_M": 10.2,
+"low_M": 3.2,
+"high_M": 17.2
+},
+"taurean prince": {
+"player": "Taurean Prince",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.4
+},
+"taylor hendricks": {
+"player": "Taylor Hendricks",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.2
+},
+"terance mann": {
+"player": "Terance Mann",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0
+},
+"terrence shannon jr.": {
+"player": "Terrence Shannon Jr.",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"thanasis antetokounmpo": {
+"player": "Thanasis Antetokounmpo",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0
+},
+"thomas bryant": {
+"player": "Thomas Bryant",
+"pcv_M": 4.1,
+"low_M": 0.6,
+"high_M": 7.6
+},
+"tidjane salaun": {
+"player": "Tidjane Sala\u00fcn",
+"pcv_M": 4.4,
+"low_M": 0.6,
+"high_M": 8.1
+},
+"tim hardaway jr.": {
+"player": "Tim Hardaway Jr.",
+"pcv_M": 7.7,
+"low_M": 1.9,
+"high_M": 13.6
+},
+"tobias harris": {
+"player": "Tobias Harris",
+"pcv_M": 14.4,
+"low_M": 6.1,
+"high_M": 22.7
+},
+"tolu smith": {
+"player": "Tolu Smith",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"tony bradley": {
+"player": "Tony Bradley",
+"pcv_M": 3.5,
+"low_M": 0.6,
+"high_M": 6.5
+},
+"toumani camara": {
+"player": "Toumani Camara",
+"pcv_M": 16.3,
+"low_M": 7.6,
+"high_M": 25.0
+},
+"trae young": {
+"player": "Trae Young",
+"pcv_M": 18.4,
+"low_M": 9.4,
+"high_M": 27.4
+},
+"trayce jackson-davis": {
+"player": "Trayce Jackson-Davis",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"tre johnson": {
+"player": "Tre Johnson",
+"pcv_M": 6.4,
+"low_M": 1.3,
+"high_M": 11.4
+},
+"tre jones": {
+"player": "Tre Jones",
+"pcv_M": 16.9,
+"low_M": 8.0,
+"high_M": 25.7
+},
+"tre mann": {
+"player": "Tre Mann",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.7
+},
+"trendon watford": {
+"player": "Trendon Watford",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4
+},
+"trey jemison iii": {
+"player": "Trey Jemison III",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"trey murphy iii": {
+"player": "Trey Murphy III",
+"pcv_M": 38.2,
+"low_M": 32.0,
+"high_M": 44.5
+},
+"tristan vukcevic": {
+"player": "Tristan Vukcevic",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9
+},
+"tristan da silva": {
+"player": "Tristan da Silva",
+"pcv_M": 11.4,
+"low_M": 3.9,
+"high_M": 19.0
+},
+"ty jerome": {
+"player": "Ty Jerome",
+"pcv_M": 15.3,
+"low_M": 6.8,
+"high_M": 23.8
+},
+"tyty washington jr.": {
+"player": "TyTy Washington Jr.",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"tyler burton": {
+"player": "Tyler Burton",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1
+},
+"tyler herro": {
+"player": "Tyler Herro",
+"pcv_M": 22.6,
+"low_M": 14.6,
+"high_M": 30.7
+},
+"tyler kolek": {
+"player": "Tyler Kolek",
+"pcv_M": 4.5,
+"low_M": 0.7,
+"high_M": 8.4
+},
+"tyler smith": {
+"player": "Tyler Smith",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"tyrese martin": {
+"player": "Tyrese Martin",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.4
+},
+"tyrese maxey": {
+"player": "Tyrese Maxey",
+"pcv_M": 49.5,
+"low_M": 43.6,
+"high_M": 55.4
+},
+"tyrese proctor": {
+"player": "Tyrese Proctor",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8
+},
+"tyson etienne": {
+"player": "Tyson Etienne",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7
+},
+"tyus jones": {
+"player": "Tyus Jones",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.2
+},
+"vj edgecombe": {
+"player": "VJ Edgecombe",
+"pcv_M": 13.8,
+"low_M": 5.6,
+"high_M": 22.0
+},
+"victor wembanyama": {
+"player": "Victor Wembanyama",
+"pcv_M": 49.5,
+"low_M": 43.6,
+"high_M": 55.4
+},
+"vince williams jr.": {
+"player": "Vince Williams Jr.",
+"pcv_M": 5.9,
+"low_M": 1.1,
+"high_M": 10.7
+},
+"vit krejci": {
+"player": "V\u00edt Krej\u010d\u00ed",
+"pcv_M": 8.4,
+"low_M": 2.2,
+"high_M": 14.6
+},
+"walker kessler": {
+"player": "Walker Kessler",
+"pcv_M": 17.5,
+"low_M": 8.5,
+"high_M": 26.5
+},
+"walter clayton jr.": {
+"player": "Walter Clayton Jr.",
+"pcv_M": 4.2,
+"low_M": 0.6,
+"high_M": 7.7
+},
+"wendell carter jr.": {
+"player": "Wendell Carter Jr.",
+"pcv_M": 16.2,
+"low_M": 7.5,
+"high_M": 25.0
+},
+"will richard": {
+"player": "Will Richard",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.8
+},
+"will riley": {
+"player": "Will Riley",
+"pcv_M": 6.3,
+"low_M": 1.3,
+"high_M": 11.4
+},
+"xavier tillman": {
+"player": "Xavier Tillman",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.6
+},
+"yang hansen": {
+"player": "Yang Hansen",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.1
+},
+"yanic konan niederhauser": {
+"player": "Yanic Konan Niederh\u00e4user",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9
+},
+"yuki kawamura": {
+"player": "Yuki Kawamura",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0
+},
+"yves missi": {
+"player": "Yves Missi",
+"pcv_M": 5.6,
+"low_M": 0.9,
+"high_M": 10.2
+},
+"zaccharie risacher": {
+"player": "Zaccharie Risacher",
+"pcv_M": 12.1,
+"low_M": 4.3,
+"high_M": 19.9
+},
+"zach collins": {
+"player": "Zach Collins",
+"pcv_M": 8.5,
+"low_M": 2.3,
+"high_M": 14.7
+},
+"zach edey": {
+"player": "Zach Edey",
+"pcv_M": 11.5,
+"low_M": 3.9,
+"high_M": 19.0
+},
+"zach lavine": {
+"player": "Zach LaVine",
+"pcv_M": 12.2,
+"low_M": 4.3,
+"high_M": 20.0
+},
+"zeke nnaji": {
+"player": "Zeke Nnaji",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.7
+},
+"ziaire williams": {
+"player": "Ziaire Williams",
+"pcv_M": 6.5,
+"low_M": 1.4,
+"high_M": 11.7
+},
+"zion williamson": {
+"player": "Zion Williamson",
+"pcv_M": 39.8,
+"low_M": 33.7,
+"high_M": 46.0
+}
+}
+}

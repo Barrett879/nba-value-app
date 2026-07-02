@@ -1339,7 +1339,7 @@ _HV_SORT_SCRIPT = """
 
 def html_table(df, *, formatters=None, styles=None, aligns=None,
                numeric=None, helps=None, height=560, row_style=None,
-               max_rows=1000):
+               max_rows=1000, raw=None):
     """Render a DataFrame as a themed, sortable HTML table (follows light/dark).
 
     formatters: {col: value -> display str}          (default str(value))
@@ -1350,6 +1350,9 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     row_style:  row_dict -> css str for the <tr> (e.g. peak-season highlight)
     max_rows:   cap rendered rows (native grids virtualise; raw HTML doesn't, so
                 very long tables would bloat the DOM). A note row flags the cap.
+    raw:        iterable of cols whose FORMATTED value is trusted HTML and rendered
+                unescaped (e.g. an <a> player link built by our own formatter —
+                never user input). All other columns stay escaped.
     """
     import html
     formatters = formatters or {}
@@ -1357,6 +1360,7 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     aligns = aligns or {}
     numeric = set(numeric or [])
     helps = helps or {}
+    raw = set(raw or [])
     cols = list(df.columns)
 
     head = []
@@ -1391,9 +1395,10 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
             stl = styles[c](v, rd) if c in styles else ""
             sv = v if c in numeric else disp
             extra = f";{stl}" if stl else ""
+            cell = disp if c in raw else html.escape(disp)
             tds.append(
                 f'<td data-v="{html.escape(str(sv), quote=True)}" '
-                f'style="text-align:{al}{extra}">{html.escape(disp)}</td>'
+                f'style="text-align:{al}{extra}">{cell}</td>'
             )
         rstyle = row_style(rd) if row_style else ""
         tr_open = f'<tr style="{rstyle}">' if rstyle else "<tr>"
