@@ -400,7 +400,7 @@ import plotly.express as px
 
 from utils import (
     CACHE_DIR, html_table, theme_fig, get_player_draft_info,
-    fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
+    fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT, get_player_contract_info,
 )
 import streamlit.components.v1 as _components
 import team_suitors as _ts
@@ -528,6 +528,11 @@ for _i, _r in _pool.iterrows():
         "Barrett Score": float(_r["barrett_score"]),
         "Salary": float(_r["salary"]) / 1e6,
         "Predicted": (_pcv_by.get(_n) or {}).get("pcv_M"),
+        # extra depth for the Right Now quadrant
+        "GP": int(_r.get("GP") or 0), "MPG": float(_r.get("MPG") or 0),
+        "TS": float(_r.get("ts_pct") or 0), "DLEB": float(_r.get("d_lebron") or 0),
+        "ProjValue": float(_r.get("projected_salary") or 0) / 1e6,
+        "DeltaMkt": float(_r.get("value_diff") or 0) / 1e6,
     })
 _hub_df = pd.DataFrame(_hub_rows)
 _hub_df.insert(0, "#", range(1, len(_hub_df) + 1))
@@ -566,7 +571,7 @@ if _sel:
 /* Skin the quadrants' bordered containers like themed cards. */
 [data-testid="stVerticalBlockBorderWrapper"] {{
   background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
-  border-radius: 14px !important; box-shadow: var(--shadow-card); }}
+  border-radius: 14px !important; box-shadow: var(--shadow-card); min-height: 470px; }}
 [data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
 .hub-qh {{ font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
@@ -596,6 +601,16 @@ if _sel:
     _left, _right = st.columns(2)
 
     with _left:   # ── Quadrant 1: Right Now ─────────────────────────────────────
+        # Salary vs market-anchor verdict (value_diff = actual − projected; negative = underpaid)
+        _dm = _sel["DeltaMkt"]
+        _d_color = "var(--value-good)" if _dm < 0 else ("var(--value-bad)" if _dm > 0 else "var(--fg-2)")
+        _d_txt = f"{'+' if _dm > 0 else '−' if _dm < 0 else ''}${abs(_dm):.1f}M"
+        _d_lbl = "Underpaid" if _dm < 0 else ("Overpaid" if _dm > 0 else "At market")
+        _ci = get_player_contract_info(_sel["Player"]) or {}
+        _deal_line = (f'<div class="hub-note">Current deal runs through <b>{html.escape(str(_ci["end_season"]))}</b>'
+                      f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
+                      if _ci.get("end_season") else
+                      '<div class="hub-note">No future salary on the books — signing his next deal now.</div>')
         with st.container(border=True):
             st.markdown(f"""
 <div class="hub-qh">Right now · <b>2025-26</b></div>
@@ -605,8 +620,15 @@ if _sel:
   <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
   <div class="hub-stat"><div class="v">{_pred_txt}</div><div class="l">Predicted contract{(" · " + _band_txt) if _band_txt else ""}</div></div>
 </div>
+<div class="hub-stats" style="margin-top:1rem">
+  <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} · market value ${_sel["ProjValue"]:.1f}M</div></div>
+  <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
+  <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
+  <div class="hub-stat"><div class="v">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
+</div>
+{_deal_line}
 <div class="hub-note">Predicted = the model's projection for a NEW deal signed today,
-at next season's cap.</div>
+at next season's cap. Market value = salary of the player at the same Barrett Score rank.</div>
 <div class="hub-go"><a href="/Contract_Predictor?player={_q}" target="_top">Full contract prediction →</a></div>
 """, unsafe_allow_html=True)
 
@@ -632,7 +654,7 @@ at next season's cap.</div>
                             "Salary": lambda v: f"${v:.1f}M"},
                 aligns={"Score": "right", "Rank": "right", "Salary": "right"},
                 numeric={"Score", "Rank", "Salary"},
-                height=170,
+                height=200,
             )
             st.markdown(f'<div class="hub-go"><a href="/Search?player={_q}" target="_top">'
                         f'Full profile & career →</a></div>', unsafe_allow_html=True)
@@ -643,7 +665,7 @@ at next season's cap.</div>
                         unsafe_allow_html=True)
             _sim = (_hub_df.assign(_d=(_hub_df["Barrett Score"] - _sel["Barrett Score"]).abs())
                     .loc[lambda d: d["norm"] != _n]
-                    .nsmallest(5, "_d")
+                    .nsmallest(7, "_d")
                     .sort_values("Barrett Score", ascending=False))
             _sim_view = _sim[["#", "Player", "Barrett Score", "Salary", "Predicted"]].copy()
             html_table(
@@ -659,7 +681,7 @@ at next season's cap.</div>
                 raw={"Player"},
                 aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
                 numeric={"#", "Barrett Score", "Salary", "Predicted"},
-                height=250,
+                height=350,
             )
             st.markdown('<div class="hub-note">Closest current Barrett Scores in the '
                         '2025-26 pool.</div>', unsafe_allow_html=True)
@@ -673,7 +695,7 @@ at next season's cap.</div>
                 _me = _agg[_agg["norm"] == _n].iloc[0]
                 _tw = (_agg[(_agg["norm"] != _n) & (_agg["yrs"] >= 3)]
                        .assign(_d=lambda d: (d["avg"] - _me["avg"]).abs())
-                       .nsmallest(5, "_d")
+                       .nsmallest(7, "_d")
                        .sort_values("avg", ascending=False))
                 _tw_view = _tw[["Player", "avg", "peak", "best_rank", "top_sal"]].copy()
                 _tw_view.columns = ["Player", "Avg Score", "Peak", "Best Rank", "Top Salary"]
@@ -692,7 +714,7 @@ at next season's cap.</div>
                     aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
                             "Top Salary": "right"},
                     numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
-                    height=250,
+                    height=350,
                 )
                 st.markdown(f'<div class="hub-note">Closest career-average Barrett Scores, every '
                             f'era (3+ seasons). {html.escape(_sel["Player"])}: {_me["avg"]:.2f} avg '
@@ -715,7 +737,8 @@ with _lst_r:
 
 _view = _hub_df if _show_all else _hub_df.head(100)
 html_table(
-    _view.drop(columns=["norm", "Status"]),   # Status stays in the data for the hub panel
+    _view.drop(columns=["norm", "Status", "GP", "MPG", "TS", "DLEB", "ProjValue", "DeltaMkt"]),
+    # Status + depth fields stay in the data for the hub panel
     formatters={
         "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
                              f'target="_top">{html.escape(str(v))}</a>'),
