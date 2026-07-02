@@ -400,9 +400,16 @@ import plotly.express as px
 
 from utils import (
     CACHE_DIR, html_table, theme_fig, get_player_draft_info,
-    fetch_bref_positions,
+    fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
 )
+import streamlit.components.v1 as _components
 import team_suitors as _ts
+
+# The homepage is self-contained chrome (no render_page_chrome), so it must emit
+# the themed-table CSS itself — without it the table has no overflow container
+# and spills over the footer — plus the delegated click-to-sort script.
+st.markdown(HV_TABLE_CSS, unsafe_allow_html=True)
+_components.html(_HV_SORT_SCRIPT, height=0)
 
 _HUB_SEASON = SEASONS[0]
 
@@ -584,7 +591,7 @@ with _lst_r:
 
 _view = _hub_df if _show_all else _hub_df.head(100)
 html_table(
-    _view.drop(columns=["norm"]),
+    _view.drop(columns=["norm", "Status"]),   # Status stays in the data for the hub panel
     formatters={
         "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
                              f'target="_top">{html.escape(str(v))}</a>'),
@@ -595,12 +602,6 @@ html_table(
     },
     raw={"Player"},
     styles={
-        "Status": lambda v, _r: {
-            "UFA": "color:var(--fg-3)", "RFA": "color:var(--value-good);font-weight:700",
-            "Player Option": "color:var(--blue);font-weight:700",
-            "Team Option": "color:var(--orange);font-weight:700",
-            "Signed": "color:var(--accent-teal);font-weight:700",
-        }.get(str(v), "color:var(--fg-6)"),
         "Predicted": lambda v, _r: "color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) else "color:var(--accent-teal)",
     },
     aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
@@ -608,7 +609,6 @@ html_table(
     helps={
         "Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
         "Predicted": "The Contract Predictor's model projection — what this player would sign for today.",
-        "Status": "This offseason: UFA/RFA/option holder, Signed = came off the board, — = under contract.",
     },
     height=min(760, max(260, len(_view) * 38 + 46)),
 )
