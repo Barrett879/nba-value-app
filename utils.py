@@ -3725,11 +3725,14 @@ def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
     (e.g. 2022 draftees in the 2025-26 season, Jalen Duren, Tari Eason).
     """
     path = _dc_path(f"rookie_scale_{season.replace('-','_')}_v{cache_v}.pkl")
-    if _dc_fresh(path, ttl=86400):
+    stale: set | None = None
+    if path.exists():
         try:
-            return _pkl_load(path)
+            stale = _pkl_load(path)
         except Exception:
-            pass
+            stale = None
+    if stale and _dc_fresh(path, ttl=86400):
+        return stale
     try:
         end_year = int(season.split("-")[0]) + 1  # "2025-26" → 2026
 
@@ -3738,7 +3741,7 @@ def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
         # (end_year - 1). Range: end_year-4 inclusive, end_year exclusive.
         rookie_draft_years = set(range(end_year - 4, end_year))
 
-        idx = playerindex.PlayerIndex(season=season)
+        idx = playerindex.PlayerIndex(season=season, timeout=15)
         df_idx = idx.get_data_frames()[0]
 
         rookies: set = set()
@@ -3751,9 +3754,18 @@ def fetch_rookie_scale_players(season: str, cache_v: int = 2) -> set:
             if draft_year in rookie_draft_years and draft_round == 1:
                 full_name = f"{row['PLAYER_FIRST_NAME']} {row['PLAYER_LAST_NAME']}".strip()
                 rookies.add(normalize(full_name))
+        # Sanity floor: 4 draft classes × 30 first-rounders ≈ 100+. A tiny result
+        # means the API answered with partial data — treat it as a failure rather
+        # than letting it poison the cache (an EMPTY set here made Wembanyama & co
+        # show up as free agents and broke RFA classification page-wide).
+        if len(rookies) < 50:
+            raise ValueError(f"suspiciously small rookie-scale set ({len(rookies)})")
         _pkl_save(path, rookies)
         return rookies
-    except Exception:
+    except Exception as e:
+        if stale:
+            logger.warning("rookie-scale refresh failed (%s) — serving stale pkl (%d players)", e, len(stale))
+            return stale
         return set()
 
 
