@@ -1,11 +1,11 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 48,
+  "n": 51,
   "within_4M": 75,
-  "within_5cap": 98,
+  "within_5cap": 96,
   "median_err_M": 2.0,
-  "bias_M": -0.5
+  "bias_M": -0.7
  },
  "signings": [
   {
@@ -177,7 +177,12 @@
    "actual_M": 3.4,
    "type": "ufa",
    "date": "2026-07",
-   "model_M": null
+   "model_M": 2.9,
+   "low_M": 0.4,
+   "high_M": 5.4,
+   "delta_M": -0.5,
+   "in4": true,
+   "in5cap": true
   },
   {
    "player": "Mike Conley",
@@ -204,7 +209,12 @@
    "actual_M": 29.0,
    "type": "rfa",
    "date": "2026-07",
-   "model_M": null
+   "model_M": 17.5,
+   "low_M": 8.5,
+   "high_M": 26.5,
+   "delta_M": -11.5,
+   "in4": false,
+   "in5cap": false
   },
   {
    "player": "Tobias Harris",
@@ -263,7 +273,12 @@
    "actual_M": 2.3,
    "type": "resign",
    "date": "2026-07",
-   "model_M": null
+   "model_M": 3.3,
+   "low_M": 0.5,
+   "high_M": 6.1,
+   "delta_M": 1.0,
+   "in4": true,
+   "in5cap": true
   },
   {
    "player": "Collin Gillespie",
