@@ -2281,7 +2281,10 @@ def fetch_salaries(espn_year: int) -> pd.DataFrame:
     rows = []
     for page in range(1, 15):
         url = f"https://www.espn.com/nba/salaries/_/year/{espn_year}/page/{page}"
-        r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+        try:
+            r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+        except Exception:
+            break                     # partial pages beat hanging/raising mid-scrape
         soup = BeautifulSoup(r.text, "html.parser")
         tables = soup.find_all("table")
         if not tables:
@@ -2751,7 +2754,7 @@ def fetch_monthly_scores(player_id: int, season: str,
     delay = 1
     while gl is None:
         try:
-            gl = playergamelog.PlayerGameLog(player_id=player_id, season=season)
+            gl = playergamelog.PlayerGameLog(player_id=player_id, season=season, timeout=15)
         except Exception:
             time.sleep(delay)
             delay = min(delay * 2, 30)
@@ -3410,7 +3413,7 @@ def _player_season_splits_raw(player_id: int, season: str,
     delay = 1
     while career is None:
         try:
-            career = playercareerstats.PlayerCareerStats(player_id=player_id)
+            career = playercareerstats.PlayerCareerStats(player_id=player_id, timeout=15)
         except Exception:
             time.sleep(delay)
             delay = min(delay * 2, 30)
@@ -3469,12 +3472,13 @@ def build_splits_data_live(season: str, salary_lookup: tuple) -> pd.DataFrame:
 
     def _fetch_team(team: dict):
         delay = 1
-        while True:
+        for _attempt in range(3):     # bounded — a dead stats API must not hang the page
             try:
                 ep = leaguedashplayerstats.LeagueDashPlayerStats(
                     season=season,
                     per_mode_detailed="Totals",
                     team_id_nullable=team["id"],
+                    timeout=15,
                 )
                 df = ep.get_data_frames()[0]
                 if df.empty:
@@ -3801,11 +3805,14 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
     type is one of: "guaranteed", "team_option", "player_option", "rfa".
     """
     path = _dc_path(f"next_contracts_{espn_year}_v{cache_v}.pkl")
-    if _dc_fresh(path, ttl=86400):
+    stale = None
+    if path.exists():
         try:
-            return _pkl_load(path)
+            stale = _pkl_load(path)
         except Exception:
-            pass
+            stale = None
+    if stale and _dc_fresh(path, ttl=86400):
+        return stale
     next_year = espn_year + 1
     contracts: dict = {}
     _hdrs = {
@@ -3851,6 +3858,18 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
     except Exception:
         pass
 
+    # Sanity before caching: a failed ESPN scrape gives a near-empty dict, and a
+    # failed Spotrac scrape strips EVERY option/RFA flag — both poisoned the cache
+    # for a day and made the FA feed flap (options appearing/vanishing between
+    # renders). A stale-but-complete dict always beats a fresh-but-partial one.
+    has_flags = any(v.get("type") != "guaranteed" for v in contracts.values())
+    stale_flags = any(v.get("type") != "guaranteed" for v in (stale or {}).values())
+    if len(contracts) < 200 or (stale_flags and not has_flags):
+        if stale:
+            logger.warning("next-year contracts refresh looked partial (%d entries, flags=%s) — serving stale",
+                           len(contracts), has_flags)
+            return stale
+        return contracts          # nothing better available; do NOT cache it
     _pkl_save(path, contracts)
     return contracts
 
@@ -3859,11 +3878,14 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
 def fetch_dlebron_all() -> pd.DataFrame:
     """Fetches all D-LEBRON data in one call, every player, every season back to 2009-10."""
     path = _dc_path("dlebron_all.parquet")
-    if _dc_fresh(path, ttl=3600):
+    stale = None
+    if path.exists():
         try:
-            return pd.read_parquet(path)
+            stale = pd.read_parquet(path)
         except Exception:
-            pass
+            stale = None
+    if stale is not None and len(stale) and _dc_fresh(path, season=SEASONS[0]):
+        return stale
     try:
         r = requests.post(
             "https://fanspo.com/bbi-role-explorer/api/lebron_dashboard_data",
@@ -3882,7 +3904,10 @@ def fetch_dlebron_all() -> pd.DataFrame:
         except Exception:
             pass
         return df
-    except Exception:
+    except Exception as e:
+        if stale is not None and len(stale):
+            logger.warning("D-LEBRON refresh failed (%s) — serving stale parquet", e)
+            return stale
         return pd.DataFrame(columns=["nba_id", "Season", "D-LEBRON"])
 
 
