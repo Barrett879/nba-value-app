@@ -48,6 +48,10 @@ for _label, _fn in [
     ("rookie scale", lambda: utils.fetch_rookie_scale_players(utils.SEASONS[0])),
     ("d-lebron", lambda: utils.fetch_dlebron(utils.SEASONS[0])),
     ("player name index", utils.get_all_player_names),
+    # Every season's raw frame + rankings — the career loop inside the Contract
+    # Predictor's feature builder touches all of them; warming here means the
+    # FIRST prediction after a deploy doesn't pay ~30-60s of cold compute.
+    ("all-season frames", lambda: utils.build_all_seasons_combined(min_threshold=0)),
 ]:
     try:
         _fn()
@@ -90,19 +94,31 @@ def _self_warm() -> None:
             subprotocols=["streamlit", "PLACEHOLDER_AUTH_TOKEN"],
             timeout=120,
         )
-        bm = BackMsg()
-        bm.rerun_script.CopyFrom(ClientState())
-        ws.send_binary(bm.SerializeToString())
-        end = time.time() + 120
-        while time.time() < end:
-            raw = ws.recv()
-            if isinstance(raw, (bytes, bytearray)):
-                fm = ForwardMsg()
-                fm.ParseFromString(raw)
-                if fm.WhichOneof("type") == "script_finished":
-                    break
+        def _run(state, label, budget):
+            bm = BackMsg()
+            bm.rerun_script.CopyFrom(state)
+            ws.send_binary(bm.SerializeToString())
+            end = time.time() + budget
+            while time.time() < end:
+                raw = ws.recv()
+                if isinstance(raw, (bytes, bytearray)):
+                    fm = ForwardMsg()
+                    fm.ParseFromString(raw)
+                    if fm.WhichOneof("type") == "script_finished":
+                        return True
+            return False
+
+        _run(ClientState(), "home", 120)
+        _log(f"self-warm home finished in {time.time() - t:.1f}s")
+        # One throwaway prediction so the first real predictor user lands warm:
+        # primes the model, comp pool, and the 50-season career path in-page.
+        t2 = time.time()
+        stc = ClientState()
+        stc.page_name = "Contract_Predictor"
+        stc.query_string = "player=LeBron%20James"
+        ok = _run(stc, "predictor", 180)
+        _log(f"self-warm predictor {'finished' if ok else 'TIMED OUT'} in {time.time() - t2:.1f}s")
         ws.close()
-        _log(f"self-warm session finished in {time.time() - t:.1f}s")
     except Exception as e:
         _log(f"self-warm failed (visitors just get the old cold first run): {e}")
 
