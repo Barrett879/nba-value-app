@@ -3116,6 +3116,75 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
     NEVER trigger fresh BBRef scrapes. seed_cache.py populates the disk."""
     name_norm = normalize(player_name)
     season_type = "Playoffs" if playoffs else "Regular Season"
+
+    # FAST PATH: the combined all-seasons frame already holds every season's ranked
+    # output (barrett, rank, salary, ts/d-lebron/avail...) as ONE memoized parquet
+    # read. The legacy loop below re-ranked all ~53 seasons at request time —
+    # ~minutes of CPU on Render's half-core box for the FIRST prediction after
+    # every deploy (the "contract predictor takes forever" reports). Counting
+    # stats (PTS/AST/...) come from the per-season stats parquets, which are
+    # plain cached reads — no ranking work. Falls back to the loop on any gap.
+    try:
+        # Direct read-only load of the persisted combined parquet. Never call the
+        # builder here: it may decide to REBUILD all ~53 seasons (and even hit the
+        # live stats API for missing ones) inside the user's prediction — the
+        # profiled cause of multi-minute predictions. Boot (serve.py) owns rebuilds.
+        if playoffs:
+            _cpath = _dc_path(f"all_seasons_0_playoff_{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet")
+        else:
+            _cpath = _dc_path(f"all_seasons_0_{FORMULA_VERSION}.parquet")
+        combined = pd.read_parquet(_cpath) if _cpath.exists() else pd.DataFrame()
+        need = {"Player", "Season", "barrett_score", "score_rank", "GP", "MPG",
+                "Team", "avail_mult", "ts_pct", "d_lebron", "efficiency_adj", "salary"}
+        if len(combined) and need.issubset(combined.columns):
+            mask = combined["Player"].astype(str).apply(normalize) == name_norm
+            mine = combined[mask]
+            if len(mine):
+                season_sizes = combined["Season"].value_counts()
+                fast_rows: list[dict] = []
+                for _, br in mine.iterrows():
+                    season = br["Season"]
+                    stat_row = None
+                    try:
+                        stats = fetch_league_stats(season, season_type)
+                        if not stats.empty and "PLAYER_NAME" in stats.columns:
+                            m2 = stats["PLAYER_NAME"].apply(normalize) == name_norm
+                            if m2.any():
+                                stat_row = stats[m2].iloc[0]
+                    except Exception:
+                        stat_row = None
+                    _g = (lambda k, d=0.0: float(stat_row.get(k, d)) if stat_row is not None else d)
+                    barrett_canonical = float(br["barrett_score"])
+                    barrett_raw = float(br.get("barrett_score_raw", barrett_canonical))
+                    fast_rows.append({
+                        "Season":        season,
+                        "Team":          br["Team"],
+                        "GP":            int(br["GP"]),
+                        "MPG":           float(br["MPG"]),
+                        "PTS":           _g("PTS"), "AST": _g("AST"),
+                        "OREB":          _g("OREB"), "DREB": _g("DREB"),
+                        "REB":           _g("OREB") + _g("DREB"),
+                        "STL":           _g("STL"), "BLK": _g("BLK"),
+                        "TOV":           _g("TOV"), "PF": _g("PF"),
+                        "TS%":           float(br.get("ts_pct", 0) or 0) * 100,
+                        "D-LEBRON":      float(br.get("d_lebron", 0) or 0),
+                        "EffAdj":        float(br.get("efficiency_adj", 0) or 0),
+                        "Avail":         float(br.get("avail_mult", 1.0) or 1.0),
+                        "Barrett Score": barrett_canonical,
+                        "Barrett (Raw)": barrett_raw,
+                        "Score Rank":    int(br["score_rank"]),
+                        "Total Players": int(season_sizes.get(season, 0)),
+                        "Salary":        float(br.get("salary", 0) or 0),
+                    })
+                if fast_rows:
+                    result = pd.DataFrame(fast_rows)
+                    result["_year"] = result["Season"].apply(lambda s: int(s.split("-")[0]))
+                    return (result.sort_values("_year").drop(columns=["_year"])
+                            .reset_index(drop=True))
+    except Exception as e:
+        logger.warning("full-career fast path failed for %s (%s) — using legacy loop",
+                       player_name, e)
+
     rows: list[dict] = []
     for season in SEASONS:
         if not _raw_disk_exists(season, playoffs):
@@ -4381,7 +4450,9 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD,
         path = _dc_path(f"all_seasons_{min_threshold}_playoff_{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet")
     else:
         path = _dc_path(f"all_seasons_{min_threshold}_{FORMULA_VERSION}.parquet")
-    if _dc_fresh(path, ttl=3600):
+    # Season-aware freshness: rebuilding means re-ranking all ~53 seasons — hourly
+    # was pure churn (and in the offseason the data cannot change at all).
+    if _dc_fresh(path, season=SEASONS[0]):
         try:
             return pd.read_parquet(path)
         except Exception:
