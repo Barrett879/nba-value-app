@@ -87,7 +87,7 @@ st.markdown("""
     [data-testid="stMain"] .block-container,
     [data-testid="stMainBlockContainer"],
     section[data-testid="stMain"] > .block-container {
-        padding-top: 3.8rem !important;   /* clear the fixed top-nav */
+        padding-top: 5.2rem !important;   /* clear the fixed top-nav with breathing room */
         padding-bottom: 1rem !important;
         /* Spotrac-style gutters: content uses most of the screen but always
            floats with generous whitespace off the browser edges. */
@@ -432,7 +432,10 @@ _HUB_SEASON = SEASONS[0]
 def _hub_pcv() -> dict:
     """Full-pool predicted contracts (scripts/build_player_hub.py). {} if absent."""
     try:
-        return _json.loads((CACHE_DIR / "player_hub_pcv_v1.json").read_text()).get("players", {})
+        # REPO copy, not CACHE_DIR: /data on Render only seeds MISSING files, so it
+        # keeps serving the stale first-ever copy of repo-authored caches like this one.
+        return _json.loads((Path(__file__).parent / "cache" / "player_hub_pcv_v1.json")
+                           .read_text()).get("players", {})
     except Exception:
         return {}
 
@@ -441,7 +444,7 @@ def _hub_pcv() -> dict:
 def _hub_signings() -> dict:
     """Real 2026 signings keyed by normalized name (accuracy tracker cache)."""
     try:
-        d = _json.loads((CACHE_DIR / "accuracy_tracker_v1.json").read_text())
+        d = _json.loads((Path(__file__).parent / "cache" / "accuracy_tracker_v1.json").read_text())
         return {normalize(s["player"]): s for s in d.get("signings", [])}
     except Exception:
         return {}
