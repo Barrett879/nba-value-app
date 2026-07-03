@@ -84,9 +84,19 @@ st.markdown("""
     section[data-testid="stMain"] > .block-container {
         padding-top: 0.6rem !important;
         padding-bottom: 1rem !important;
-        padding-left: 0.75rem;
-        padding-right: 0.75rem;
-        max-width: 1500px;
+        /* Spotrac-style gutters: content uses most of the screen but always
+           floats with generous whitespace off the browser edges. */
+        padding-left: 4.5rem;
+        padding-right: 4.5rem;
+        max-width: 1850px;
+    }
+    @media (max-width: 900px) {
+        .block-container,
+        [data-testid="stMain"] .block-container,
+        [data-testid="stMainBlockContainer"] {
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
     }
     .stApp { padding-top: 0 !important; }
 
