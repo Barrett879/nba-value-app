@@ -343,7 +343,7 @@ st.markdown("""
 </div></div>
 """, unsafe_allow_html=True)
 st.markdown("""
-<div style="text-align:center; padding: 0 0 0.6rem 0;">
+<div style="text-align:center; padding: 0 0 0.6rem 0; margin-bottom: 1.1rem;">
     <div style="font-size:0.88rem; color:var(--fg-2); max-width:760px; margin:0.4rem auto 0; line-height:1.45;">
         Every NBA player since 1973, ranked by the <b style="color:var(--fg-1);">Barrett Score</b>. On-court production sized up against every paycheck.<br><span style="color:var(--fg-2);">Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</span>
     </div>
@@ -364,7 +364,7 @@ st.markdown("""
     font-size: 0.78rem;
     color: var(--fg-2);
     text-align: center;
-    margin-bottom: 0.35rem;
+    margin: 1.1rem 0 0.35rem;
     letter-spacing: 0.04em;
 }
 </style>
@@ -592,7 +592,8 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
   background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
   border-radius: 14px !important; box-shadow: var(--shadow-card);
   height: 580px !important; max-height: 580px !important;
-  overflow-y: auto !important; padding: 0.55rem 0.8rem !important; }}
+  overflow-y: auto !important; padding: 0.55rem 0.8rem !important;
+  margin-bottom: 0.9rem; }}
 [data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
 .hub-qh {{ font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
@@ -749,7 +750,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
 _lst_l, _lst_r = st.columns([3, 1])
 with _lst_l:
     st.markdown(
-        f"<div style='font-size:1.05rem;font-weight:800;color:var(--fg-1);margin:0.4rem 0 0.3rem'>"
+        f"<div style='font-size:1.05rem;font-weight:800;color:var(--fg-1);margin:1.6rem 0 0.4rem'>"
         f"2025-26 Player Board <span style='color:var(--fg-4);font-weight:600;font-size:0.8rem'>"
         f"· {len(_hub_df)} players · click a name</span></div>",
         unsafe_allow_html=True)
