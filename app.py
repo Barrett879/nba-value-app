@@ -523,6 +523,7 @@ _pos2k = _ts.load_player_positions()
 _nc = fetch_next_year_contracts(season_to_espn_year(_HUB_SEASON), cache_v=7)
 _rookies = fetch_rookie_scale_players(_HUB_SEASON)
 _pcv_by = _hub_pcv()
+_max_norms = {n for n, p in _pcv_by.items() if p.get("is_max")}
 
 _hub_rows = []
 for _i, _r in _pool.iterrows():
@@ -567,7 +568,8 @@ if _sel:
                   if _draft.get("draft_pick") else "Undrafted")
     _outcome = _hub_outcome(_n, _sel["Status"])
     _q = _urlquote(_sel["Player"])
-    _pred_txt = (f"${_pv['pcv_M']:.1f}M" if _pv.get("pcv_M") is not None else "—")
+    _pred_txt = ((("(Max) " if _pv.get("is_max") else "") + f"${_pv['pcv_M']:.1f}M")
+                 if _pv.get("pcv_M") is not None else "—")
     _band_txt = (f"${_pv['low_M']:.0f}–{_pv['high_M']:.0f}M"
                  if _pv.get("pcv_M") is not None and _pv.get("low_M") is not None else "")
 
@@ -687,8 +689,8 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                                          f'target="_top">{html.escape(str(v))}</a>'),
                     "Barrett Score": lambda v: f"{v:.2f}",
                     "Salary": lambda v: f"${v:.1f}M",
-                    "Predicted": lambda v: ("—" if v is None or (isinstance(v, float) and v != v)
-                                            else f"${v:.1f}M"),
+                    "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
+                                               else ("(Max) " if normalize(str(r.get("Player", ""))) in _max_norms else "") + f"${v:.1f}M"),
                 },
                 raw={"Player"},
                 aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
@@ -756,8 +758,8 @@ html_table(
                              f'target="_top">{html.escape(str(v))}</a>'),
         "Barrett Score": lambda v: f"{v:.2f}",
         "Salary": lambda v: f"${v:.2f}M",
-        "Predicted": lambda v: ("—" if v is None or (isinstance(v, float) and v != v)
-                                else f"${v:.1f}M"),
+        "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
+                                   else ("(Max) " if normalize(str(r.get("Player", ""))) in _max_norms else "") + f"${v:.1f}M"),
     },
     raw={"Player"},
     styles={

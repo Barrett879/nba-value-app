@@ -187,9 +187,11 @@ def _load_pcv(rel: str) -> dict:
     return out
 
 _pcv_by = {}
+_max_norms: set = set()
 try:
     _hub = _json.loads((_Path(__file__).parent.parent / "cache" / "player_hub_pcv_v1.json").read_text())
     _pcv_by = {n: p["pcv_M"] for n, p in _hub.get("players", {}).items() if p.get("pcv_M") is not None}
+    _max_norms = {n for n, p in _hub.get("players", {}).items() if p.get("is_max")}
 except Exception:
     pass
 for _n, _v in _load_pcv("cache/fa_sim_v1.json").items():
@@ -304,7 +306,8 @@ fa_fmt.insert(0, "#", range(1, len(fa_fmt) + 1))
 # Predicted = the Contract Predictor's model projection (pcv) for every FA, then the
 # real-signing columns: actual first-year salary + how the projection did, inline once signed.
 fa_fmt["Predicted"] = fa_fmt["Player"].map(
-    lambda p: (lambda v: f"${v:.1f}M" if v is not None else "—")(_predicted_M(p)))
+    lambda p: (lambda v: (("(Max) " if normalize(p) in _max_norms else "") + f"${v:.1f}M")
+               if v is not None else "—")(_predicted_M(p)))
 _np_norm = fa_fmt["Player"].map(normalize)
 fa_fmt["Signed"]   = _np_norm.map(lambda p: f"${_signed[p]['actual_M']:.1f}M" if p in _signed else "—")
 fa_fmt["vs Model"] = _np_norm.map(lambda p: f"{_signed[p]['delta_M']:+.1f}M" if p in _signed else "—")

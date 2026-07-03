@@ -1384,7 +1384,14 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
             # sparse historical data) must not blow up the whole table.
             if c in formatters:
                 try:
-                    disp = formatters[c](v)
+                    _fmt = formatters[c]
+                    # Row-aware formatters: a 2-arg callable gets (value, row_dict) —
+                    # lets display text depend on other columns (e.g. "(Max)" prefix)
+                    # without affecting the numeric sort value.
+                    if getattr(_fmt, "__code__", None) is not None and _fmt.__code__.co_argcount >= 2:
+                        disp = _fmt(v, rd)
+                    else:
+                        disp = _fmt(v)
                 except Exception:
                     disp = ""
             elif v is None or (isinstance(v, float) and v != v):

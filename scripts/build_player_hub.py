@@ -72,11 +72,23 @@ for i, name in enumerate(todo):
         if f:
             v = float(pcv(f)) / 1e6
             b = float(band_fn(v * 1e6)) / 1e6
+            # Flag predictions sitting AT the player's CBA maximum (25/30/35% of the
+            # contract-season cap by service years, incl. designated bumps) so the
+            # UI can label them "(Max)". Star-snap values (max minus 2-3pp) are
+            # deliberately below max and stay unflagged.
+            is_max = False
+            try:
+                elig = utils.get_max_contract_eligibility(name, utils.SEASONS[0])
+                cap_M = utils.SALARY_CAP_M.get(ns["CONTRACT_SEASON"], 165.0)
+                is_max = v >= (elig["max_pct"] * cap_M) - 0.05
+            except Exception:
+                pass
             out[normalize(name)] = {
                 "player": name,
                 "pcv_M": round(v, 1),
                 "low_M": round(max(0.0, v - b), 1),
                 "high_M": round(v + b, 1),
+                "is_max": bool(is_max),
             }
         else:
             out[normalize(name)] = {"player": name, "pcv_M": None}
