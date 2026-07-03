@@ -2140,6 +2140,8 @@ def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> 
     # "refresh" was pure churn that forced live NBA-API calls at request time.
     if ttl is not None:
         effective_ttl = ttl
+    elif season is not None and season != SEASONS[0]:
+        return True          # historical season caches are immutable (version-busted)
     elif season == SEASONS[0] and time.localtime().tm_mon not in (7, 8, 9):
         effective_ttl = 3600
     else:
@@ -4076,8 +4078,15 @@ def _raw_disk_fresh(season: str, playoffs: bool = False) -> bool:
     p = _raw_disk_path(season, playoffs)
     if not p.exists():
         return False
-    # Current season refreshes every hour; historical seasons every 30 days
-    ttl = 3600 if season == SEASONS[0] else 30 * 86_400
+    # Historical seasons are IMMUTABLE — a finished season's stats never change, and
+    # cache_v/FORMULA_VERSION filename bumps handle real invalidation. The old 30-day
+    # TTL meant a long-lived /data disk "expired" all ~52 history parquets at once and
+    # mass-refetched them (2026-07-02: the boot warm hit exactly that and deploys
+    # ground for so long the old container never handed over). Current season:
+    # hourly during the season, monthly in the offseason (stats are final in July).
+    if season != SEASONS[0]:
+        return True
+    ttl = 3600 if time.localtime().tm_mon not in (7, 8, 9) else 30 * 86_400
     return (time.time() - p.stat().st_mtime) < ttl
 
 
