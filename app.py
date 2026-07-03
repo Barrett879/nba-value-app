@@ -23,6 +23,7 @@ from utils import (
     _PLAYOFF_HELP,
     inject_theme,
     render_theme_toggle,
+    COMMON_CSS, render_nav,
 )
 
 # Featured players for the Legacy preview overlay on the home page.
@@ -46,6 +47,10 @@ st.set_page_config(page_title="HoopsValue", page_icon="static/favicon.svg", layo
 # Theme tokens (light/dark) — home is self-contained chrome (no render_page_chrome),
 # so it injects the tokens itself. Must run right after set_page_config.
 inject_theme()
+
+# Shared chrome CSS (fixed top-nav styling lives here). Injected BEFORE the
+# homepage-specific block below, so the homepage's own overrides still win.
+st.markdown(COMMON_CSS, unsafe_allow_html=True)
 
 # ── Page chrome (background, hide Streamlit UI) ────────────────────────────────
 st.markdown("""
@@ -82,7 +87,7 @@ st.markdown("""
     [data-testid="stMain"] .block-container,
     [data-testid="stMainBlockContainer"],
     section[data-testid="stMain"] > .block-container {
-        padding-top: 0.6rem !important;
+        padding-top: 3.8rem !important;   /* clear the fixed top-nav */
         padding-bottom: 1rem !important;
         /* Spotrac-style gutters: content uses most of the screen but always
            floats with generous whitespace off the browser edges. */
@@ -303,10 +308,9 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Theme button pinned top-right via CSS. Playoff mode is NOT shown here — it
-# only appears on pages where it changes the content.
-with st.container(key="theme_nav_toggle"):
-    render_theme_toggle()
+# Full top nav (tabs + theme toggle), same bar as every other page. No tab is
+# "active" on the homepage — the Home link itself marks where you are.
+render_nav("")
 
 # ── Hero — HoopsValue logo + tagline ────────────────────────────────────────
 # Streamlit serves static files via enableStaticServing in config.toml, but
