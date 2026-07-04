@@ -324,7 +324,7 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700&display=swap');
 /* logo metals (--logo-copper/-sage/-tag) come from the theme tokens so they
    retune per mode; see utils.THEME_BASE_CSS / THEME_LIGHT_CSS */
-.hv-logo-wrap{display:flex;justify-content:center;padding:0.4rem 0 0.1rem;}
+.hv-logo-wrap{display:flex;justify-content:center;padding:1.2rem 0 1.0rem;}
 .hv-logo{display:inline-flex;flex-direction:column;align-items:center;font-size:60px;gap:3px;user-select:none}
 .hv-wm{display:inline-flex;align-items:center;font-family:"Space Grotesk",sans-serif;font-weight:700;line-height:1;letter-spacing:-.035em}
 .hv-wm .cu{color:var(--logo-copper)}
@@ -344,7 +344,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 st.markdown("""
 <div style="text-align:center; padding: 0 0 0.6rem 0; margin-bottom: 1.1rem;">
-    <div style="font-size:0.88rem; color:var(--fg-2); max-width:760px; margin:0.4rem auto 0; line-height:1.45;">
+    <div style="font-size:0.88rem; color:var(--fg-2); max-width:760px; margin:0 auto; line-height:1.45;">
         Every NBA player since 1973, ranked by the <b style="color:var(--fg-1);">Barrett Score</b>. On-court production sized up against every paycheck.<br><span style="color:var(--fg-2);">Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</span>
     </div>
 </div>
