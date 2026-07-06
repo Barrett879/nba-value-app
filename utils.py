@@ -844,6 +844,9 @@ THEME_BASE_CSS = """
         --logo-tag:    #8a8d98;
         /* elevation */
         --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
+        /* table polish (zebra rows + in-cell score bars) */
+        --row-tint: rgba(255, 255, 255, 0.025);
+        --bar-tint: rgba(22, 212, 193, 0.16);
     }
     /* Paint the app surface + native text from tokens so every page follows the
        theme regardless of config.toml base (which can't flip at runtime).
@@ -976,12 +979,17 @@ THEME_LIGHT_CSS = """
         --value-bad-s: #e7584b;
         --gold:        #9a6a00;   /* dark amber, not yellow, on white */
         --amber:       #a8730a;
+        --orange:      #b45f06;
+        --purple:      #7d3fa8;
         /* logo metals (on light) */
         --logo-copper: #985729;
         --logo-sage:   #3d6f52;
         --logo-tag:    #7a7d88;
         /* elevation -> soft light card shadow */
         --shadow-card: 0 1px 2px rgba(20,22,40,.06), 0 4px 14px rgba(20,22,40,.07);
+        /* table polish (zebra rows + in-cell score bars) */
+        --row-tint: rgba(20, 22, 40, 0.028);
+        --bar-tint: rgba(15, 174, 157, 0.15);
     }
 </style>
 """
@@ -1286,17 +1294,33 @@ HV_TABLE_CSS = """
 .hv-table-wrap{overflow:auto;border:1px solid var(--panel-line);border-radius:10px;
   background:var(--panel-solid);box-shadow:var(--shadow-card);
   margin:0.7rem 0 1.7rem;display:block;}
-table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;
+  font-variant-numeric:tabular-nums;}
 .hv-table thead th{position:sticky;top:0;z-index:1;background:var(--panel-2);
   color:var(--fg-4);text-transform:uppercase;font-size:0.68rem;letter-spacing:0.04em;
   font-weight:700;padding:0.6rem 0.7rem;cursor:pointer;white-space:nowrap;
-  border-bottom:1px solid var(--panel-line);user-select:none;}
+  border-bottom:2px solid var(--panel-line);user-select:none;}
 .hv-table thead th:hover{color:var(--fg-2);}
 .hv-table thead th .sort-ind{margin-left:0.15em;font-size:0.85em;color:var(--accent-red);}
 .hv-table tbody td{padding:0.5rem 0.7rem;color:var(--fg-2);
   border-bottom:1px solid var(--hairline-soft);white-space:nowrap;}
-.hv-table tbody tr:hover td{background:var(--panel-hover);}
+.hv-table tbody tr:nth-child(even) td{background:var(--row-tint);}
+.hv-table tbody tr:hover td{background:var(--panel-hover);}  /* must follow zebra */
 .hv-table tbody tr:last-child td{border-bottom:none;}
+/* Status / label chips inside table cells (and reused by page banners). */
+.hv-chip{display:inline-block;padding:0.05rem 0.45rem;border-radius:999px;
+  font-size:0.64rem;font-weight:800;letter-spacing:0.04em;border:1px solid currentColor;
+  white-space:nowrap;vertical-align:middle;}
+.hv-chip.ufa{color:var(--gold);}
+.hv-chip.rfa{color:var(--sky);}
+.hv-chip.po{color:var(--purple);}
+.hv-chip.to{color:var(--orange);}
+.hv-chip.signed,.hv-chip.muted{color:var(--fg-5);border-color:var(--hairline);}
+.hv-chip.max{color:var(--gold);border-radius:4px;font-size:0.6rem;
+  padding:0 0.3rem;margin-right:0.35rem;}
+/* Team-color dot (per-team background classes are emitted by the page). */
+.tdot{display:inline-block;width:8px;height:8px;border-radius:50%;
+  margin-right:0.4rem;background:var(--fg-5);vertical-align:baseline;}
 </style>
 """
 

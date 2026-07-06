@@ -38,6 +38,19 @@ LEGACY_FEATURED = [
     {"name": "Nikola Jokić",    "id": 203999, "color": "#7ec8e8"},  # blue
 ]
 
+# Team accent colors: rails, dots, rings, and low-alpha washes ONLY (never text,
+# never a full background). Brightest recognizable color per team so an 8px dot
+# reads on both the dark and light panel surfaces (navy/black brands swapped for
+# their secondary: BKN/SAS silver, DEN/IND/NOP/UTA gold, MIN lake blue).
+TEAM_HEX = {
+    "ATL": "#E03A3E", "BOS": "#007A33", "BKN": "#8A8D8F", "CHA": "#00788C", "CHI": "#CE1141",
+    "CLE": "#A31D3C", "DAL": "#0064B1", "DEN": "#FEC524", "DET": "#C8102E", "GSW": "#1D428A",
+    "HOU": "#CE1141", "IND": "#FDBB30", "LAC": "#C8102E", "LAL": "#552583", "MEM": "#5D76A9",
+    "MIA": "#B62435", "MIL": "#1E7A44", "MIN": "#236192", "NOP": "#B4975A", "NYK": "#F58426",
+    "OKC": "#007AC1", "ORL": "#0077C0", "PHI": "#006BB6", "PHX": "#E56020", "POR": "#E03A3E",
+    "SAC": "#5A2D81", "SAS": "#8A8D8F", "TOR": "#CE1141", "UTA": "#F9A01B", "WAS": "#E31837",
+}
+
 # Start warming all season caches the moment the server boots —
 # before any user arrives, so the first visitor doesn't pay the cost.
 _bootstrap_warm()
@@ -294,17 +307,44 @@ st.markdown("""
         box-shadow: none !important; background: transparent !important; color: var(--fg-1) !important;
     }
 
-    /* Landing-page hero cards (Best Right Now / Biggest Steal / Most Overpaid) */
-    .home-hero-card {
-        border-radius: 12px;
-        padding: 0.9rem 1.1rem;
-        text-align: center;
-        height: 100%;
-        backdrop-filter: blur(2px);
-    }
-    .hh-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: .09em; opacity: .65; margin-bottom: .25rem; color: var(--fg-1); }
-    .hh-name  { font-size: 1.15rem; font-weight: 800; line-height: 1.2; color: var(--fg-1); }
-    .hh-sub   { font-size: 0.78rem; margin-top: .35rem; opacity: .75; color: var(--fg-1); }
+    /* Rail section headers: kicker + title + count pill + rule line. The page's
+       unifying device (front page strip, player hub, the board). */
+    .hv-rail{display:flex;align-items:center;gap:.65rem;margin:1.6rem 0 .6rem;}
+    .hv-rail::before{content:"";width:4px;height:1.05em;background:var(--accent-red);
+        border-radius:2px;flex:0 0 auto;}
+    .hv-rail .k{font-size:.64rem;font-weight:800;letter-spacing:.11em;
+        text-transform:uppercase;color:var(--fg-4);white-space:nowrap;}
+    .hv-rail .t{font-size:1.02rem;font-weight:800;color:var(--fg-1);white-space:nowrap;}
+    .hv-rail .n{font-size:.72rem;font-weight:700;color:var(--fg-4);background:var(--panel-2);
+        border:1px solid var(--panel-line);border-radius:99px;padding:.1rem .55rem;
+        font-variant-numeric:tabular-nums;white-space:nowrap;}
+    .hv-rail .meta{font-size:.72rem;color:var(--fg-4);white-space:nowrap;}
+    .hv-rail::after{content:"";flex:1;height:1px;background:var(--hairline);order:9;}
+    .hv-rail .meta{order:10;}
+
+    /* Front Page strip: 4 clickable feature cards under the search. */
+    .fp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;
+        margin:.3rem 0 .4rem;}
+    @media(max-width:1100px){.fp-grid{grid-template-columns:1fr 1fr;}}
+    a.fp-card{position:relative;display:flex;align-items:center;gap:.8rem;
+        background:var(--panel-solid);border:1px solid var(--panel-line);
+        border-left:4px solid var(--team,var(--accent-teal));border-radius:12px;
+        padding:.8rem 1rem;box-shadow:var(--shadow-card);text-decoration:none !important;
+        min-height:104px;}
+    a.fp-card:hover{background:var(--panel-hover);border-color:var(--team,var(--accent-teal));}
+    img.fp-face{width:52px;height:52px;border-radius:50%;object-fit:cover;
+        object-position:center 12%;background:var(--panel-2);
+        border:2px solid var(--team,var(--panel-line));flex:0 0 auto;}
+    .fp-card .k{font-size:.64rem;font-weight:800;letter-spacing:.1em;
+        text-transform:uppercase;color:var(--fg-4);}
+    .fp-card .nm{font-size:.95rem;font-weight:800;color:var(--fg-1);line-height:1.15;
+        margin:.1rem 0;}
+    .fp-card .v{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;
+        line-height:1.1;}
+    .fp-card .v.good{color:var(--value-good);}
+    .fp-card .v.bad{color:var(--value-bad);}
+    .fp-card .v.teal{color:var(--accent-teal);}
+    .fp-card .sub{font-size:.72rem;color:var(--fg-3);}
 </style>
 """, unsafe_allow_html=True)
 
@@ -324,8 +364,8 @@ st.markdown("""
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700&display=swap');
 /* logo metals (--logo-copper/-sage/-tag) come from the theme tokens so they
    retune per mode; see utils.THEME_BASE_CSS / THEME_LIGHT_CSS */
-.hv-logo-wrap{display:flex;justify-content:center;padding:1.2rem 0 1.0rem;}
-.hv-logo{display:inline-flex;flex-direction:column;align-items:center;font-size:60px;gap:3px;user-select:none}
+.hv-logo-wrap{display:flex;justify-content:center;padding:0.55rem 0 1.0rem;margin-bottom:0.9rem;}
+.hv-logo{display:inline-flex;flex-direction:column;align-items:center;font-size:46px;gap:3px;user-select:none}
 .hv-wm{display:inline-flex;align-items:center;font-family:"Space Grotesk",sans-serif;font-weight:700;line-height:1;letter-spacing:-.035em}
 .hv-wm .cu{color:var(--logo-copper)}
 .hv-wm .sg{color:var(--logo-sage)}
@@ -343,9 +383,9 @@ st.markdown("""
 </div></div>
 """, unsafe_allow_html=True)
 st.markdown("""
-<div style="text-align:center; padding: 0 0 0.6rem 0; margin-bottom: 1.1rem;">
-    <div style="font-size:0.88rem; color:var(--fg-2); max-width:760px; margin:0 auto; line-height:1.45;">
-        Every NBA player since 1973, ranked by the <b style="color:var(--fg-1);">Barrett Score</b>. On-court production sized up against every paycheck.<br><span style="color:var(--fg-2);">Compare any two eras · find the steals · expose the overpays · settle the GOAT debate.</span>
+<div style="text-align:center; padding: 0 0 0.4rem 0; margin-bottom: 0.6rem;">
+    <div style="font-size:0.8rem; color:var(--fg-2); max-width:820px; margin:0 auto; line-height:1.45;">
+        Every NBA player since 1973, ranked by the <b style="color:var(--fg-1);">Barrett Score</b> · find the steals · expose the overpays · settle the GOAT debate
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -354,23 +394,25 @@ st.markdown("""
 st.markdown("""
 <style>
 [data-testid="stSelectbox"][data-baseweb] div[role="combobox"] {
-    background: var(--panel) !important;
-    border: 2px solid rgba(126, 200, 232, 0.55) !important;
-    border-radius: 12px !important;
-    backdrop-filter: blur(6px);
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+    background: var(--panel-solid) !important;
+    border: 1px solid var(--panel-line) !important;
+    border-radius: 10px !important;
+    box-shadow: var(--shadow-card);
+}
+[data-testid="stSelectbox"]:focus-within div[role="combobox"] {
+    border: 2px solid var(--sky) !important;
 }
 .home-search-label {
-    font-size: 0.78rem;
+    font-size: 0.7rem;
     color: var(--fg-2);
     text-align: center;
-    margin: 1.1rem 0 0.35rem;
+    margin: 0.6rem 0 0.3rem;
     letter-spacing: 0.04em;
 }
 </style>
 """, unsafe_allow_html=True)
 
-_, _search_col, _ = st.columns([1, 2, 1])
+_, _search_col, _ = st.columns([1, 2.6, 1])
 with _search_col:
     st.markdown(
         '<div class="home-search-label">SEARCH ANY PLAYER · CAREER ARCS · HEAD-TO-HEAD COMPARISONS · 1973 → TODAY</div>',
@@ -425,7 +467,71 @@ import team_suitors as _ts
 st.markdown(HV_TABLE_CSS, unsafe_allow_html=True)
 _components.html(_HV_SORT_SCRIPT, height=0)
 
+# Hide headshots whose CDN image 404s (rookies/two-ways). Streamlit strips
+# inline onerror= attributes, so this runs from the components iframe as a
+# capture-phase listener on the parent document (img error events don't
+# bubble; capture is mandatory).
+_components.html("""
+<script>
+(function () {
+    var doc = window.parent.document;
+    if (doc.__hvFaceGuard) return;
+    doc.__hvFaceGuard = true;
+    doc.addEventListener('error', function (e) {
+        var t = e.target;
+        if (t && t.tagName === 'IMG' &&
+            (t.classList.contains('fp-face') || t.classList.contains('hub-face'))) {
+            t.style.display = 'none';
+        }
+    }, true);
+})();
+</script>
+""", height=0)
+
+# Per-team dot colors for the board's Team column (base .tdot class lives in
+# HV_TABLE_CSS; the 30 background rules come from TEAM_HEX).
+st.markdown("<style>" + "".join(f".tdot-{k}{{background:{v}}}" for k, v in TEAM_HEX.items())
+            + "</style>", unsafe_allow_html=True)
+
 _HUB_SEASON = SEASONS[0]
+
+
+@st.cache_data(show_spinner=False)
+def _headshot_ids() -> dict:
+    """normalize(name) -> nba.com player id. nba_api's static players table is a
+    bundled offline json (no network); active players win name collisions."""
+    try:
+        from nba_api.stats.static import players as _np
+        m = {}
+        for p in _np.get_players():
+            k = normalize(p["full_name"])
+            if k not in m or p.get("is_active"):
+                m[k] = p["id"]
+        return m
+    except Exception:
+        return {}
+
+
+def _face_img(name: str, css_class: str) -> str:
+    """Lazy circular headshot <img> from the NBA CDN, or '' when the id is
+    unknown (this year's two-ways). 404s hide themselves via onerror."""
+    pid = _headshot_ids().get(normalize(name))
+    if not pid:
+        return ""
+    return (f'<img class="{css_class}" loading="lazy" decoding="async" '
+            f'src="https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png" '
+            f'onerror="this.style.display=\'none\'" alt="">')
+
+
+def _rail(kicker: str, title: str, count: str | None = None, meta: str | None = None) -> None:
+    """Ruled section header: kicker + title + optional count pill + right meta."""
+    bits = [f'<span class="k">{html.escape(kicker)}</span>',
+            f'<span class="t">{html.escape(title)}</span>']
+    if count:
+        bits.append(f'<span class="n">{html.escape(count)}</span>')
+    if meta:
+        bits.append(f'<span class="meta">{html.escape(meta)}</span>')
+    st.markdown(f'<div class="hv-rail">{"".join(bits)}</div>', unsafe_allow_html=True)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -556,6 +662,57 @@ _hub_df = pd.DataFrame(_hub_rows)
 _hub_df.insert(0, "#", range(1, len(_hub_df) + 1))
 _by_norm = {r["norm"]: dict(r, rank=i + 1) for i, r in enumerate(_hub_rows)}
 
+_FA_SET = {"UFA", "RFA", "Player Option", "Team Option"}
+
+# ── Front Page strip: four clickable feature cards under the search ───────────
+if not _hub_df.empty:
+    def _fp_card(kicker: str, name: str, team: str, value_html: str, sub: str) -> str:
+        _hx = TEAM_HEX.get(str(team), "")
+        _style = f' style="--team:{_hx}"' if _hx else ""
+        return (f'<a class="fp-card" href="/?player={_urlquote(str(name))}" target="_top"{_style}>'
+                f'{_face_img(str(name), "fp-face")}'
+                f'<span style="min-width:0">'
+                f'<span class="k" style="display:block">{html.escape(kicker)}</span>'
+                f'<span class="nm" style="display:block">{html.escape(str(name))}</span>'
+                f'{value_html}'
+                f'<span class="sub" style="display:block">{sub}</span>'
+                f'</span></a>')
+
+    _r0 = _hub_df.iloc[0]
+    _stl = _hub_df[_hub_df["Salary"] >= 2.0]          # keep rookie-min noise off the card
+    _stl = _stl.loc[_stl["DeltaMkt"].idxmin()]
+    _ovp = _hub_df.loc[_hub_df["DeltaMkt"].idxmax()]
+    _fa_df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
+
+    _rail_meta = None
+    try:
+        _sc = (_json.loads((Path(__file__).parent / "cache" / "accuracy_tracker_v1.json")
+                           .read_text()).get("scorecard") or {})
+        if _sc.get("n"):
+            _rail_meta = f"model: {_sc['within_4M']:.0f}% of {_sc['n']} real 2026 deals within $4M"
+    except Exception:
+        pass
+    _rail("Front page", "Today around the league", meta=_rail_meta)
+
+    _cards = [
+        _fp_card("Best right now", _r0["Player"], _r0["Team"],
+                 f'<span class="v teal" style="display:block">{_r0["Barrett Score"]:.2f}</span>',
+                 f'League #1 · ${_r0["Salary"]:.1f}M salary'),
+        _fp_card("Biggest steal", _stl["Player"], _stl["Team"],
+                 f'<span class="v good" style="display:block">-${abs(_stl["DeltaMkt"]):.1f}M</span>',
+                 f'paid ${_stl["Salary"]:.1f}M · worth ${_stl["ProjValue"]:.1f}M'),
+        _fp_card("Most overpaid", _ovp["Player"], _ovp["Team"],
+                 f'<span class="v bad" style="display:block">+${_ovp["DeltaMkt"]:.1f}M</span>',
+                 f'paid ${_ovp["Salary"]:.1f}M · worth ${_ovp["ProjValue"]:.1f}M'),
+    ]
+    if len(_fa_df):
+        _fa_top = _fa_df.iloc[0]
+        _cards.append(
+            _fp_card("FA watch · 2026", _fa_top["Player"], _fa_top["Team"],
+                     f'<span class="v teal" style="display:block">{len(_fa_df)}</span>',
+                     "hit the market this summer"))
+    st.markdown('<div class="fp-grid">' + "".join(_cards) + "</div>", unsafe_allow_html=True)
+
 # ── Selection from ?player= ──────────────────────────────────────────────────
 _sel = None
 if "player" in st.query_params:
@@ -580,23 +737,75 @@ if _sel:
     _band_txt = (f"${_pv['low_M']:.0f}–{_pv['high_M']:.0f}M"
                  if _pv.get("pcv_M") is not None and _pv.get("low_M") is not None else "")
 
+    _team = str(_sel["Team"])
+    _thx = TEAM_HEX.get(_team, "")
+    _team_style = f"--team:{_thx};" if _thx else ""
+    _STATUS_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
+                    "Player Option": ("po", "PLAYER OPTION"),
+                    "Team Option": ("to", "TEAM OPTION"), "Signed": ("signed", "SIGNED")}
+    _chip = _STATUS_CHIP.get(str(_sel["Status"]))
+    _status_html = (f'<span class="hv-chip {_chip[0]}">{_chip[1]}</span>' if _chip
+                    else f'<b>{html.escape(str(_sel["Status"]))}</b>')
+    _outcome_html = f' · {html.escape(_outcome)}' if _outcome else ""
+
     st.markdown(f"""
 <style>
-.hub-banner {{ background: var(--panel-solid); border: 1px solid var(--panel-line);
-  border-radius: 14px; padding: 0.85rem 1.3rem; box-shadow: var(--shadow-card);
-  margin-bottom: 0.7rem; display: flex; align-items: baseline; gap: 0.9rem; flex-wrap: wrap; }}
-.hub-banner .nm {{ font-size: 1.5rem; font-weight: 800; color: var(--fg-1); }}
+/* Selected-player masthead: headshot + name + meta, team-color rail + watermark. */
+.hub-banner {{ display: flex; align-items: center; gap: 1rem;
+  background: var(--panel-solid); border: 1px solid var(--panel-line);
+  border-left: 4px solid var(--team, var(--accent-teal));
+  border-radius: 14px; padding: 0.7rem 1.2rem; box-shadow: var(--shadow-card);
+  position: relative; overflow: hidden; margin-bottom: 0.7rem; }}
+img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+  object-position: center 12%; background: var(--panel-2);
+  border: 2px solid var(--team, var(--panel-line)); flex: 0 0 auto; }}
+.hub-banner .nm {{ font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em;
+  color: var(--fg-1); line-height: 1.15; }}
 .hub-banner .meta {{ color: var(--fg-3); font-size: 0.85rem; }}
-/* Skin the quadrants' bordered containers like themed cards. */
-div[data-testid="stVerticalBlockBorderWrapper"] {{
+.hub-banner .rank {{ margin-left: auto; text-align: right;
+  font-variant-numeric: tabular-nums; position: relative; z-index: 1; }}
+.hub-banner .rank .v {{ font-size: 1.5rem; font-weight: 800; color: var(--accent-teal); }}
+.hub-banner .rank .l {{ display: block; font-size: 0.62rem; text-transform: uppercase;
+  letter-spacing: 0.07em; color: var(--fg-4); }}
+.hub-banner::after {{ content: attr(data-team); position: absolute; right: 4.5rem;
+  top: 50%; transform: translateY(-50%); font-family: "Space Grotesk", sans-serif;
+  font-size: 4.2rem; font-weight: 800; letter-spacing: -0.04em;
+  color: var(--team, var(--accent-teal)); opacity: 0.07; pointer-events: none; }}
+/* Skin the four quadrant containers like themed cards (scoped by key so other
+   bordered containers on the page stay native). Streamlit's st-key class can
+   land on the wrapper itself or a descendant depending on version: cover both. */
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
   background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
   border-radius: 14px !important; box-shadow: var(--shadow-card);
   height: 580px !important; max-height: 580px !important;
   overflow-y: auto !important; padding: 0.55rem 0.8rem !important;
   margin-bottom: 0.9rem; }}
-[data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
-.hub-qh {{ font-size: 0.7rem; font-weight: 800; letter-spacing: 0.07em;
+/* Per-quadrant identity accents. */
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1) {{
+  border-top: 3px solid var(--accent-teal) !important; }}
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2) {{
+  border-top: 3px solid var(--logo-copper) !important; }}
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3) {{
+  border-top: 3px solid var(--sky) !important; }}
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
+[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
+  border-top: 3px solid var(--logo-sage) !important; }}
+[data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap,
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
+.hub-qh {{ display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem;
+  font-weight: 800; letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
+.hub-qh::after {{ content: ""; flex: 1; height: 1px; background: var(--hairline-soft); }}
 .hub-qh b {{ color: var(--accent-teal); }}
 .hub-stats {{ display: flex; gap: 1.6rem; flex-wrap: wrap; margin-top: 0.3rem; }}
 .hub-stat .v {{ font-size: 1.4rem; font-weight: 800; color: var(--accent-teal); }}
@@ -610,10 +819,14 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
 .hv-plink {{ color: var(--sky); font-weight: 700; text-decoration: none; }}
 .hv-plink:hover {{ text-decoration: underline; }}
 </style>
-<div class="hub-banner">
-  <span class="nm">{html.escape(_sel["Player"])}</span>
-  <span class="meta">{html.escape(str(_sel["Team"]))} · {html.escape(str(_sel["Pos"]))} · {html.escape(_draft_txt)}
-  &nbsp;·&nbsp; Status: <b>{html.escape(str(_sel["Status"]))}</b>{(" — " + html.escape(_outcome)) if _outcome else ""}</span>
+<div class="hub-banner" style="{_team_style}" data-team="{html.escape(_team, quote=True)}">
+  {_face_img(_sel["Player"], "hub-face")}
+  <span style="min-width:0">
+    <span class="nm" style="display:block">{html.escape(_sel["Player"])}</span>
+    <span class="meta">{html.escape(_team)} · {html.escape(str(_sel["Pos"]))} · {html.escape(_draft_txt)}
+    &nbsp;·&nbsp; {_status_html}{_outcome_html}</span>
+  </span>
+  <span class="rank"><span class="v">#{_sel["rank"]}</span><span class="l">2025-26 rank</span></span>
 </div>
 """, unsafe_allow_html=True)
 
@@ -633,7 +846,7 @@ div[data-testid="stVerticalBlockBorderWrapper"] {{
                       f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
                       if _ci.get("end_season") else
                       '<div class="hub-note">No future salary on the books — signing his next deal now.</div>')
-        with st.container(border=True):
+        with st.container(border=True, key="hub_q1"):
             st.markdown(f"""
 <div class="hub-qh">Right now · <b>2025-26</b></div>
 <div class="hub-stats">
@@ -655,7 +868,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
 """, unsafe_allow_html=True)
 
     with _right:   # ── Quadrant 2: Career ────────────────────────────────────────
-        with st.container(border=True):
+        with st.container(border=True, key="hub_q2"):
             st.markdown('<div class="hub-qh">Career · <b>scores & contracts</b></div>',
                         unsafe_allow_html=True)
             if len(_mine) >= 2:
@@ -682,7 +895,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                         f'Full profile & career →</a></div>', unsafe_allow_html=True)
 
     with _left:   # ── Quadrant 3: Similar Today ────────────────────────────────
-        with st.container(border=True):
+        with st.container(border=True, key="hub_q3"):
             st.markdown('<div class="hub-qh">Similar players · <b>today</b></div>',
                         unsafe_allow_html=True)
             _sim = (_hub_df.assign(_d=(_hub_df["Barrett Score"] - _sel["Barrett Score"]).abs())
@@ -698,9 +911,11 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                     "Barrett Score": lambda v: f"{v:.2f}",
                     "Salary": lambda v: f"${v:.1f}M",
                     "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
-                                               else ("(Max) " if normalize(str(r.get("Player", ""))) in _max_norms else "") + f"${v:.1f}M"),
+                                               else ('<span class="hv-chip max">MAX</span>'
+                                                     if normalize(str(r.get("Player", ""))) in _max_norms else "")
+                                                    + f"${v:.1f}M"),
                 },
-                raw={"Player"},
+                raw={"Player", "Predicted"},
                 aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
                 numeric={"#", "Barrett Score", "Salary", "Predicted"},
                 height=350,
@@ -709,7 +924,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                         '2025-26 pool.</div>', unsafe_allow_html=True)
 
     with _right:   # ── Quadrant 4: Career Twins (all eras) ──────────────────────
-        with st.container(border=True):
+        with st.container(border=True, key="hub_q4"):
             st.markdown('<div class="hub-qh">Career twins · <b>1973 → today</b></div>',
                         unsafe_allow_html=True)
             _agg = _hub_career_agg()
@@ -746,45 +961,110 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                 st.markdown('<div class="hub-note">No career history on file yet.</div>',
                             unsafe_allow_html=True)
 
-# ── The list ──────────────────────────────────────────────────────────────────
-_lst_l, _lst_r = st.columns([3, 1])
-with _lst_l:
-    st.markdown(
-        f"<div style='font-size:1.05rem;font-weight:800;color:var(--fg-1);margin:1.6rem 0 0.4rem'>"
-        f"2025-26 Player Board <span style='color:var(--fg-4);font-weight:600;font-size:0.8rem'>"
-        f"· {len(_hub_df)} players · click a name</span></div>",
-        unsafe_allow_html=True)
-with _lst_r:
-    _show_all = st.checkbox(f"Show all {len(_hub_df)}", value=False, key="hub_show_all")
+# ── The board ─────────────────────────────────────────────────────────────────
+# Rail header + quick-filter pills + the value-coded table, all in one fragment
+# so a filter click re-renders only the board (the sort script is document-
+# delegated and survives fragment re-renders).
+_BOARD_VIEWS = ["All", "Bargains", "Overpays", "Free agents", "Max tier"]
+_SCORE_MAX = float(_hub_df["Barrett Score"].max() or 0) or 1.0
+_BOARD_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
+               "Player Option": ("po", "PO"), "Team Option": ("to", "TO"),
+               "Signed": ("signed", "SIGNED")}
 
-_view = _hub_df if _show_all else _hub_df.head(100)
-html_table(
-    _view.drop(columns=["norm", "Status", "GP", "MPG", "TS", "DLEB", "ProjValue", "DeltaMkt"]),
-    # Status + depth fields stay in the data for the hub panel
-    formatters={
-        "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
-                             f'target="_top">{html.escape(str(v))}</a>'),
-        "Barrett Score": lambda v: f"{v:.2f}",
-        "Salary": lambda v: f"${v:.2f}M",
-        "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
-                                   else ("(Max) " if normalize(str(r.get("Player", ""))) in _max_norms else "") + f"${v:.1f}M"),
-    },
-    raw={"Player"},
-    styles={
-        "Predicted": lambda v, _r: "color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) else "color:var(--accent-teal)",
-    },
-    aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
-    numeric={"#", "Barrett Score", "Salary", "Predicted"},
-    helps={
-        "Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
-        "Predicted": "The Contract Predictor's model projection — what this player would sign for today.",
-    },
-    height=min(760, max(260, len(_view) * 38 + 46)),
-)
-st.markdown(
-    "<style>.hv-plink{color:var(--sky);font-weight:700;text-decoration:none}"
-    ".hv-plink:hover{text-decoration:underline}</style>",
-    unsafe_allow_html=True)
+st.markdown("""
+<style>
+.st-key-board_view [data-testid="stButtonGroup"] button{border-radius:999px;
+    font-weight:700;font-size:.78rem;background:var(--panel-solid);
+    border:1px solid var(--panel-line);color:var(--fg-3);}
+.st-key-board_view [data-testid="stButtonGroup"] button:hover{color:var(--fg-1);
+    border-color:var(--fg-5);}
+.st-key-board_view [data-testid="stButtonGroup"] button[kind="pillsActive"]{
+    color:var(--accent-teal);border-color:var(--accent-teal);
+    background:var(--panel-hover);}
+.st-key-board_view [data-testid="stButtonGroup"] button p{font-size:.78rem !important;}
+.hv-plink{color:var(--sky);font-weight:700;text-decoration:none}
+.hv-plink:hover{text-decoration:underline}
+</style>
+""", unsafe_allow_html=True)
+
+
+def _board_status(v) -> str:
+    _c = _BOARD_CHIP.get(str(v))
+    if _c:
+        return f'<span class="hv-chip {_c[0]}">{_c[1]}</span>'
+    _s = str(v)
+    if not _s or _s == "—":
+        return "—"
+    return f'<span style="color:var(--fg-5)">{html.escape(_s)}</span>'
+
+
+@st.fragment
+def _board():
+    _pick = st.session_state.get("board_view") or "All"
+    if _pick == "Bargains":
+        _df = _hub_df[_hub_df["DeltaMkt"] <= -5].sort_values("DeltaMkt")
+    elif _pick == "Overpays":
+        _df = _hub_df[_hub_df["DeltaMkt"] >= 5].sort_values("DeltaMkt", ascending=False)
+    elif _pick == "Free agents":
+        _df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
+    elif _pick == "Max tier":
+        _df = _hub_df[_hub_df["norm"].isin(_max_norms)]
+    else:
+        _df = _hub_df
+    _rail("The board", "2025-26 Player Board", count=f"{len(_df)} players",
+          meta="click a name")
+    _pc, _cc = st.columns([4, 1])
+    with _pc:
+        st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
+                 label_visibility="collapsed")
+    with _cc:
+        _show_all = st.checkbox(f"Show all {len(_hub_df)}", value=False, key="hub_show_all")
+
+    _view = _df if (_show_all or _pick != "All") else _df.head(100)
+    _view = _view[["#", "Player", "Team", "Pos", "Status", "Barrett Score",
+                   "Salary", "DeltaMkt", "Predicted"]].rename(columns={"DeltaMkt": "Value"})
+    html_table(
+        _view,
+        formatters={
+            "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
+                                 f'target="_top">{html.escape(str(v))}</a>'),
+            "Team": lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
+                               f'{html.escape(str(v))}'),
+            "Status": _board_status,
+            "Barrett Score": lambda v: f"{v:.2f}",
+            "Salary": lambda v: f"${v:.2f}M",
+            "Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
+            "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
+                                       else ('<span class="hv-chip max">MAX</span>'
+                                             if normalize(str(r.get("Player", ""))) in _max_norms else "")
+                                            + f"${v:.1f}M"),
+        },
+        raw={"Player", "Team", "Status", "Predicted"},
+        styles={
+            "Barrett Score": lambda v, _r: (
+                "" if v is None or (isinstance(v, float) and v != v) else
+                f"background:linear-gradient(90deg,var(--bar-tint) "
+                f"{max(4, min(100, v / _SCORE_MAX * 100)):.0f}%,transparent 0)"),
+            "Value": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                    else ("color:var(--value-good);font-weight:700" if v < 0
+                                          else "color:var(--value-bad);font-weight:700")),
+            "Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
+                                        else "color:var(--accent-teal)"),
+        },
+        aligns={"#": "right", "Barrett Score": "right", "Salary": "right",
+                "Value": "right", "Predicted": "right"},
+        numeric={"#", "Barrett Score", "Salary", "Value", "Predicted"},
+        helps={
+            "Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
+            "Value": "Salary minus market value at the same Barrett Score rank. Negative = underpaid.",
+            "Predicted": "The Contract Predictor's model projection: what this player would sign for today.",
+        },
+        height=min(760, max(260, len(_view) * 38 + 46)),
+    )
+
+
+_board()
 
 
 # ── Footer ────────────────────────────────────────────────────────────────────
