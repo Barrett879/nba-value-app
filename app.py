@@ -655,6 +655,8 @@ for _i, _r in _pool.iterrows():
         # extra depth for the Right Now quadrant
         "GP": int(_r.get("GP") or 0), "MPG": float(_r.get("MPG") or 0),
         "TS": float(_r.get("ts_pct") or 0), "DLEB": float(_r.get("d_lebron") or 0),
+        "SalRank": int(_r.get("salary_rank") or 0),
+        "Avail": float(_r.get("avail_mult") or 0),
         "ProjValue": float(_r.get("projected_salary") or 0) / 1e6,
         "DeltaMkt": float(_r.get("value_diff") or 0) / 1e6,
     })
@@ -732,7 +734,8 @@ if _sel:
                   if _draft.get("draft_pick") else "Undrafted")
     _outcome = _hub_outcome(_n, _sel["Status"])
     _q = _urlquote(_sel["Player"])
-    _pred_txt = ((("(Max) " if _pv.get("is_max") else "") + f"${_pv['pcv_M']:.1f}M")
+    _pred_txt = ((('<span class="hv-chip max">MAX</span>' if _pv.get("is_max") else "")
+                  + f"${_pv['pcv_M']:.1f}M")
                  if _pv.get("pcv_M") is not None else "—")
     _band_txt = (f"${_pv['low_M']:.0f}–{_pv['high_M']:.0f}M"
                  if _pv.get("pcv_M") is not None and _pv.get("low_M") is not None else "")
@@ -745,8 +748,11 @@ if _sel:
                     "Team Option": ("to", "TEAM OPTION"), "Signed": ("signed", "SIGNED")}
     _chip = _STATUS_CHIP.get(str(_sel["Status"]))
     _status_html = (f'<span class="hv-chip {_chip[0]}">{_chip[1]}</span>' if _chip
-                    else f'<b>{html.escape(str(_sel["Status"]))}</b>')
-    _outcome_html = f' · {html.escape(_outcome)}' if _outcome else ""
+                    else (f'<b>{html.escape(str(_sel["Status"]))}</b>'
+                          if str(_sel["Status"]) not in ("", "—") else ""))
+    if _outcome:
+        _status_html = (_status_html + " · " if _status_html else "") + html.escape(_outcome)
+    _status_seg = f"&nbsp;·&nbsp; {_status_html}" if _status_html else ""
 
     st.markdown(f"""
 <style>
@@ -807,12 +813,21 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
 .hub-qh::after {{ content: ""; flex: 1; height: 1px; background: var(--hairline-soft); }}
 .hub-qh b {{ color: var(--accent-teal); }}
-.hub-stats {{ display: flex; gap: 1.6rem; flex-wrap: wrap; margin-top: 0.3rem; }}
-.hub-stat .v {{ font-size: 1.4rem; font-weight: 800; color: var(--accent-teal); }}
+.hub-stats {{ display: flex; gap: 1.7rem; flex-wrap: wrap; margin-top: 0.3rem; }}
+.hub-stat .v {{ font-size: 1.55rem; font-weight: 800; color: var(--accent-teal); }}
 .hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--fg-4); font-weight: 600; margin-top: 0.1rem; }}
-.hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.5rem; }}
-.hub-go a {{ display: inline-block; margin-top: 0.55rem; background: var(--panel);
+.hub-ladder {{ margin-top: 1.35rem; }}
+.hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }}
+.hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
+  letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
+.hub-ladder .lbar {{ flex: 1; height: 13px; background: var(--hairline-soft);
+  border-radius: 7px; overflow: hidden; }}
+.hub-ladder .lbar div {{ height: 100%; border-radius: 7px; }}
+.hub-ladder .lv {{ width: 72px; text-align: right; font-size: 0.78rem; font-weight: 700;
+  color: var(--fg-2); font-variant-numeric: tabular-nums; flex: 0 0 auto; }}
+.hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.85rem; }}
+.hub-go a {{ display: inline-block; margin-top: 0.8rem; background: var(--panel);
   border: 1px solid var(--panel-line); border-radius: 9px; padding: 0.4rem 0.85rem;
   font-size: 0.8rem; font-weight: 700; color: var(--sky); text-decoration: none; }}
 .hub-go a:hover {{ border-color: var(--sky); }}
@@ -824,7 +839,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   <span style="min-width:0">
     <span class="nm" style="display:block">{html.escape(_sel["Player"])}</span>
     <span class="meta">{html.escape(_team)} · {html.escape(str(_sel["Pos"]))} · {html.escape(_draft_txt)}
-    &nbsp;·&nbsp; {_status_html}{_outcome_html}</span>
+{_status_seg}</span>
   </span>
   <span class="rank"><span class="v">#{_sel["rank"]}</span><span class="l">2025-26 rank</span></span>
 </div>
@@ -845,21 +860,46 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
         _deal_line = (f'<div class="hub-note">Current deal runs through <b>{html.escape(str(_ci["end_season"]))}</b>'
                       f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
                       if _ci.get("end_season") else
-                      '<div class="hub-note">No future salary on the books — signing his next deal now.</div>')
+                      '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
+        # Salary vs market vs model, as scaled bars (the value story at a glance).
+        _lad = [("Salary", _sel["Salary"], "var(--fg-5)"),
+                ("Market", _sel["ProjValue"], "var(--sky)")]
+        if _pv.get("pcv_M") is not None:
+            _lad.append(("Predicted", float(_pv["pcv_M"]), "var(--accent-teal)"))
+        _lmx = max((v for _l, v, _c in _lad), default=0) or 1.0
+        _ladder = "".join(
+            f'<div class="lrow"><span class="ll">{_l}</span>'
+            f'<div class="lbar"><div style="width:{max(2.0, v / _lmx * 100):.0f}%;background:{_c}"></div></div>'
+            f'<span class="lv">${v:.1f}M</span></div>'
+            for _l, v, _c in _lad)
+        # Career context (from the same parquet the Career quadrant reads).
+        _yrs = int(_mine["Season"].nunique())
+        _cavg_txt = f"{float(_mine['barrett_score'].mean()):.1f}" if _yrs else "—"
+        _earn = float(_mine["salary"].fillna(0).sum()) / 1e6 if _yrs else 0.0
+        _earn_txt = (f"${_earn / 1000:.2f}B" if _earn >= 1000 else f"${_earn:.0f}M") if _earn > 0 else "—"
+        _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
+        _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
         with st.container(border=True, key="hub_q1"):
             st.markdown(f"""
 <div class="hub-qh">Right now · <b>2025-26</b></div>
-<div class="hub-stats">
+<div class="hub-stats" style="margin-top:0.7rem">
   <div class="hub-stat"><div class="v">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
   <div class="hub-stat"><div class="v">#{_sel["rank"]}</div><div class="l">League rank</div></div>
   <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
   <div class="hub-stat"><div class="v">{_pred_txt}</div><div class="l">Predicted contract{(" · " + _band_txt) if _band_txt else ""}</div></div>
 </div>
-<div class="hub-stats" style="margin-top:1rem">
+<div class="hub-ladder">{_ladder}</div>
+<div class="hub-stats" style="margin-top:1.15rem">
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} · market value ${_sel["ProjValue"]:.1f}M</div></div>
   <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
   <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
   <div class="hub-stat"><div class="v">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
+</div>
+<div class="hub-stats" style="margin-top:1.15rem">
+  <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
+  <div class="hub-stat"><div class="v">{_avail_txt}</div><div class="l">Availability</div></div>
+  <div class="hub-stat"><div class="v">{_cavg_txt}</div><div class="l">Career avg · {_yrs} season{"s" if _yrs != 1 else ""}</div></div>
+  <div class="hub-stat"><div class="v">{_earn_txt}</div><div class="l">Career earnings</div></div>
 </div>
 {_deal_line}
 <div class="hub-note">Predicted = the model's projection for a NEW deal signed today,
@@ -873,7 +913,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                         unsafe_allow_html=True)
             if len(_mine) >= 2:
                 _fig = px.line(_mine, x="Season", y="barrett_score", markers=True,
-                               labels={"barrett_score": "", "Season": ""}, height=140)
+                               labels={"barrett_score": "", "Season": ""}, height=175)
                 _fig.update_layout(margin=dict(t=6, b=6, l=6, r=6),
                                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
                 st.plotly_chart(theme_fig(_fig), use_container_width=True,
@@ -889,7 +929,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                             "Salary": lambda v: f"${v:.1f}M"},
                 aligns={"Score": "right", "Rank": "right", "Salary": "right"},
                 numeric={"Score", "Rank", "Salary"},
-                height=200,
+                height=228,
             )
             st.markdown(f'<div class="hub-go"><a href="/Search?player={_q}" target="_top">'
                         f'Full profile & career →</a></div>', unsafe_allow_html=True)
@@ -900,7 +940,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                         unsafe_allow_html=True)
             _sim = (_hub_df.assign(_d=(_hub_df["Barrett Score"] - _sel["Barrett Score"]).abs())
                     .loc[lambda d: d["norm"] != _n]
-                    .nsmallest(7, "_d")
+                    .nsmallest(10, "_d")
                     .sort_values("Barrett Score", ascending=False))
             _sim_view = _sim[["#", "Player", "Barrett Score", "Salary", "Predicted"]].copy()
             html_table(
@@ -918,7 +958,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                 raw={"Player", "Predicted"},
                 aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
                 numeric={"#", "Barrett Score", "Salary", "Predicted"},
-                height=350,
+                height=442,
             )
             st.markdown('<div class="hub-note">Closest current Barrett Scores in the '
                         '2025-26 pool.</div>', unsafe_allow_html=True)
@@ -932,7 +972,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                 _me = _agg[_agg["norm"] == _n].iloc[0]
                 _tw = (_agg[(_agg["norm"] != _n) & (_agg["yrs"] >= 3)]
                        .assign(_d=lambda d: (d["avg"] - _me["avg"]).abs())
-                       .nsmallest(7, "_d")
+                       .nsmallest(10, "_d")
                        .sort_values("avg", ascending=False))
                 _tw_view = _tw[["Player", "avg", "peak", "best_rank", "top_sal"]].copy()
                 _tw_view.columns = ["Player", "Avg Score", "Peak", "Best Rank", "Top Salary"]
@@ -951,7 +991,7 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                     aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
                             "Top Salary": "right"},
                     numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
-                    height=350,
+                    height=442,
                 )
                 st.markdown(f'<div class="hub-note">Closest career-average Barrett Scores, every '
                             f'era (3+ seasons). {html.escape(_sel["Player"])}: {_me["avg"]:.2f} avg '
