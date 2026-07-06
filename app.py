@@ -453,6 +453,7 @@ from urllib.parse import quote as _urlquote
 
 import pandas as pd
 import plotly.express as px
+import plotly.graph_objects as go
 
 from utils import (
     CACHE_DIR, html_table, theme_fig, get_player_draft_info,
@@ -480,7 +481,8 @@ _components.html("""
     doc.addEventListener('error', function (e) {
         var t = e.target;
         if (t && t.tagName === 'IMG' &&
-            (t.classList.contains('fp-face') || t.classList.contains('hub-face'))) {
+            (t.classList.contains('fp-face') || t.classList.contains('hub-face') ||
+             t.classList.contains('hv-mini-face'))) {
             t.style.display = 'none';
         }
     }, true);
@@ -521,6 +523,38 @@ def _face_img(name: str, css_class: str) -> str:
     return (f'<img class="{css_class}" loading="lazy" decoding="async" '
             f'src="https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png" '
             f'onerror="this.style.display=\'none\'" alt="">')
+
+
+def _hex_rgba(h: str, alpha: float) -> str:
+    """'#RRGGBB' -> 'rgba(r,g,b,a)'. Plotly and per-player CSS can't read theme
+    tokens, so team tints are computed server-side from TEAM_HEX."""
+    h = h.lstrip("#")
+    return f"rgba({int(h[0:2], 16)},{int(h[2:4], 16)},{int(h[4:6], 16)},{alpha})"
+
+
+def _hex_darken(h: str, f: float = 0.72) -> str:
+    h = h.lstrip("#")
+    return "#" + "".join(f"{int(int(h[i:i + 2], 16) * f):02x}" for i in (0, 2, 4))
+
+
+def _hex_is_light(h: str) -> bool:
+    h = h.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 175
+
+
+def _spark_svg(scores: list, w: int = 72, h: int = 20) -> str:
+    """Tiny inline career-shape polyline (Career Twins 'Arc' column)."""
+    if not scores or len(scores) < 2:
+        return ""
+    lo, hi = min(scores), max(scores)
+    rng = (hi - lo) or 1.0
+    pts = " ".join(f"{i / (len(scores) - 1) * (w - 2) + 1:.1f},"
+                   f"{h - 2 - (s - lo) / rng * (h - 4):.1f}"
+                   for i, s in enumerate(scores))
+    return (f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" style="vertical-align:middle">'
+            f'<polyline points="{pts}" fill="none" stroke="var(--logo-sage)" '
+            f'stroke-width="1.5" stroke-linejoin="round"/></svg>')
 
 
 def _rail(kicker: str, title: str, count: str | None = None, meta: str | None = None) -> None:
@@ -748,6 +782,22 @@ if _sel:
     _team = str(_sel["Team"])
     _thx = TEAM_HEX.get(_team, "")
     _team_style = f"--team:{_thx};" if _thx else ""
+    _wash = _hex_rgba(_thx, 0.08) if _thx else "transparent"
+    _rule = _hex_rgba(_thx, 0.35) if _thx else "var(--hairline-soft)"
+    # One-line verdict: production rank vs pay rank vs market, plus the FA hook.
+    _vbits = []
+    if _sel.get("SalRank"):
+        _vbits.append(f'Plays like #{_sel["rank"]}, paid like #{_sel["SalRank"]}')
+    _vdm = _sel["DeltaMkt"]
+    if _vdm <= -3:
+        _vbits.append(f"${abs(_vdm):.1f}M below market value")
+    elif _vdm >= 3:
+        _vbits.append(f"${_vdm:.1f}M over market value")
+    else:
+        _vbits.append("paid about right")
+    if str(_sel["Status"]) in _FA_SET:
+        _vbits.append("hits the market in 2026")
+    _verdict = " · ".join(_vbits)
     _STATUS_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
                     "Player Option": ("po", "PLAYER OPTION"),
                     "Team Option": ("to", "TEAM OPTION"), "Signed": ("signed", "SIGNED")}
@@ -763,7 +813,8 @@ if _sel:
 <style>
 /* Selected-player masthead: headshot + name + meta, team-color rail + watermark. */
 .hub-banner {{ display: flex; align-items: center; gap: 1rem;
-  background: var(--panel-solid); border: 1px solid var(--panel-line);
+  background: linear-gradient(90deg, {_wash}, transparent 45%), var(--panel-solid);
+  border: 1px solid var(--panel-line);
   border-left: 4px solid var(--team, var(--accent-teal));
   border-radius: 14px; padding: 0.7rem 1.2rem; box-shadow: var(--shadow-card);
   position: relative; overflow: hidden; margin-bottom: 0.7rem; }}
@@ -816,19 +867,26 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
 .hub-qh {{ display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem;
   font-weight: 800; letter-spacing: 0.07em;
   text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
-.hub-qh::after {{ content: ""; flex: 1; height: 1px; background: var(--hairline-soft); }}
+.hub-qh::after {{ content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, {_rule}, var(--hairline-soft)); }}
 .hub-qh b {{ color: var(--accent-teal); }}
 .hub-stats {{ display: flex; gap: 1.7rem; flex-wrap: wrap; margin-top: 0.3rem; }}
-.hub-stat .v {{ font-size: 1.55rem; font-weight: 800; color: var(--accent-teal); }}
+.hub-stat .v {{ font-size: 1.55rem; font-weight: 800; color: var(--fg-1); }}
 .hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--fg-4); font-weight: 600; margin-top: 0.1rem; }}
+.hv-mini-wrap {{ display: inline-block; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--panel-2); margin-right: 0.45rem; vertical-align: middle;
+  overflow: hidden; flex: 0 0 auto; }}
+img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
+  object-position: center 15%; display: block; }}
 .hub-ladder {{ margin-top: 1.35rem; }}
 .hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }}
 .hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
 .hub-ladder .lbar {{ flex: 1; height: 13px; background: var(--hairline-soft);
-  border-radius: 7px; overflow: hidden; }}
+  border-radius: 7px; overflow: hidden; position: relative; }}
 .hub-ladder .lbar div {{ height: 100%; border-radius: 7px; }}
+.hub-ladder .lbar .lband {{ position: absolute; top: 0; height: 100%;
+  background: var(--bar-tint); border-radius: 0; }}
 .hub-ladder .lv {{ width: 72px; text-align: right; font-size: 0.78rem; font-weight: 700;
   color: var(--fg-2); font-variant-numeric: tabular-nums; flex: 0 0 auto; }}
 .hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.85rem; }}
@@ -845,6 +903,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
     <span class="nm" style="display:block">{html.escape(_sel["Player"])}</span>
     <span class="meta">{html.escape(_team)} · {html.escape(str(_sel["Pos"]))} · {html.escape(_draft_txt)}
 {_status_seg}</span>
+    <span style="display:block;font-style:italic;color:var(--fg-3);font-size:0.82rem;margin-top:2px">{html.escape(_verdict)}</span>
   </span>
   <span class="rank"><span class="v">#{_sel["rank"]}</span><span class="l">2025-26 rank</span></span>
 </div>
@@ -867,16 +926,23 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                       if _ci.get("end_season") else
                       '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
         # Salary vs market vs model, as scaled bars (the value story at a glance).
-        _lad = [("Salary", _sel["Salary"], "var(--fg-5)"),
-                ("Market", _sel["ProjValue"], "var(--sky)")]
+        # Salary carries the team color; the Predicted track shows the 80% band.
+        _lad = [("Salary", _sel["Salary"], _thx or "var(--fg-5)", ""),
+                ("Market", _sel["ProjValue"], "var(--sky)", "")]
         if _pv.get("pcv_M") is not None:
-            _lad.append(("Predicted", float(_pv["pcv_M"]), "var(--accent-teal)"))
-        _lmx = max((v for _l, v, _c in _lad), default=0) or 1.0
+            _lad.append(("Predicted", float(_pv["pcv_M"]), "var(--accent-teal)", "band"))
+        _lmx = max((v for _l, v, _c, _b in _lad), default=0) or 1.0
+        _band_html = ""
+        if _pv.get("low_M") is not None and _pv.get("high_M") is not None:
+            _b_l = max(0.0, _pv["low_M"] / _lmx * 100)
+            _b_w = max(1.0, min(100 - _b_l, (_pv["high_M"] - _pv["low_M"]) / _lmx * 100))
+            _band_html = f'<div class="lband" style="left:{_b_l:.0f}%;width:{_b_w:.0f}%"></div>'
         _ladder = "".join(
             f'<div class="lrow"><span class="ll">{_l}</span>'
-            f'<div class="lbar"><div style="width:{max(2.0, v / _lmx * 100):.0f}%;background:{_c}"></div></div>'
+            f'<div class="lbar">{_band_html if _b == "band" else ""}'
+            f'<div style="width:{max(2.0, v / _lmx * 100):.0f}%;background:{_c};position:relative"></div></div>'
             f'<span class="lv">${v:.1f}M</span></div>'
-            for _l, v, _c in _lad)
+            for _l, v, _c, _b in _lad)
         # Career context (from the same parquet the Career quadrant reads).
         _yrs = int(_mine["Season"].nunique())
         _cavg_txt = f"{float(_mine['barrett_score'].mean()):.1f}" if _yrs else "—"
@@ -884,29 +950,47 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
         _earn_txt = (f"${_earn / 1000:.2f}B" if _earn >= 1000 else f"${_earn:.0f}M") if _earn > 0 else "—"
         _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
         _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
+        # Named anchors: who owns the paycheck at his production rank, and who
+        # produces at his pay rank. Turns the abstract footnote into people.
+        _anchor_note = ""
+        try:
+            _mk = _hub_df[_hub_df["SalRank"] == _sel["rank"]]
+            _pd_ = _hub_df.iloc[_sel["SalRank"] - 1] if 0 < _sel["SalRank"] <= len(_hub_df) else None
+            _mk_nm = str(_mk.iloc[0]["Player"]) if len(_mk) else ""
+            _pd_nm = str(_pd_["Player"]) if _pd_ is not None else ""
+            _bits = []
+            if _mk_nm and normalize(_mk_nm) != _n:
+                _bits.append(f"market value = the #{_sel['rank']} paycheck ({html.escape(_mk_nm)}'s money)")
+            if _pd_nm and normalize(_pd_nm) != _n:
+                _bits.append(f"his own salary is #{_sel['SalRank']}: {html.escape(_pd_nm)} territory")
+            if _bits:
+                _anchor_note = '<div class="hub-note">In names: ' + " · ".join(_bits) + ".</div>"
+        except Exception:
+            _anchor_note = ""
         with st.container(border=True, key="hub_q1"):
             st.markdown(f"""
 <div class="hub-qh">Right now · <b>2025-26</b></div>
 <div class="hub-stats" style="margin-top:0.7rem">
-  <div class="hub-stat"><div class="v">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
-  <div class="hub-stat"><div class="v">#{_sel["rank"]}</div><div class="l">League rank</div></div>
+  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
+  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">#{_sel["rank"]}</div><div class="l">League rank</div></div>
   <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
-  <div class="hub-stat"><div class="v">{_pred_txt}</div><div class="l">Predicted contract{(" · " + _band_txt) if _band_txt else ""}</div></div>
+  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l">Predicted contract{(" · " + _band_txt) if _band_txt else ""}</div></div>
 </div>
 <div class="hub-ladder">{_ladder}</div>
 <div class="hub-stats" style="margin-top:1.15rem">
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} · market value ${_sel["ProjValue"]:.1f}M</div></div>
   <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
   <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
-  <div class="hub-stat"><div class="v">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
+  <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel["DLEB"] > 0.5 else ('var(--value-bad)' if _sel["DLEB"] < -0.5 else 'var(--fg-1)')}">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
 </div>
 <div class="hub-stats" style="margin-top:1.15rem">
   <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
-  <div class="hub-stat"><div class="v">{_avail_txt}</div><div class="l">Availability</div></div>
+  <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel.get("Avail", 0) >= 0.85 else ('var(--value-bad)' if 0 < _sel.get("Avail", 0) < 0.6 else 'var(--fg-1)')}">{_avail_txt}</div><div class="l">Availability</div></div>
   <div class="hub-stat"><div class="v">{_cavg_txt}</div><div class="l">Career avg · {_yrs} season{"s" if _yrs != 1 else ""}</div></div>
   <div class="hub-stat"><div class="v">{_earn_txt}</div><div class="l">Career earnings</div></div>
 </div>
 {_deal_line}
+{_anchor_note}
 <div class="hub-note">Predicted = the model's projection for a NEW deal signed today,
 at next season's cap. Market value = salary of the player at the same Barrett Score rank.</div>
 <div class="hub-go"><a href="/Contract_Predictor?player={_q}" target="_top">Full contract prediction →</a></div>
@@ -917,21 +1001,55 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
             st.markdown('<div class="hub-qh">Career · <b>scores & contracts</b></div>',
                         unsafe_allow_html=True)
             if len(_mine) >= 2:
-                _fig = px.line(_mine, x="Season", y="barrett_score", markers=True,
-                               labels={"barrett_score": "", "Season": ""}, height=175)
-                _fig.update_layout(margin=dict(t=6, b=6, l=6, r=6),
-                                   paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)")
+                # Team-colored score line over muted salary bars: one graphic,
+                # the whole pay-vs-production story. Plotly can't read CSS vars,
+                # so tints come from TEAM_HEX server-side; light golds (DEN/IND/
+                # UTA/NOP) get darkened for line contrast.
+                _chex = _thx or "#7ec8e8"
+                _line_hex = _hex_darken(_chex, 0.72) if _hex_is_light(_chex) else _chex
+                _pk = _mine.loc[_mine["barrett_score"].idxmax()]
+                _fig = go.Figure()
+                _fig.add_bar(x=_mine["Season"], y=_mine["salary"] / 1e6, yaxis="y2",
+                             marker_color=_hex_rgba(_chex, 0.22),
+                             hovertemplate="$%{y:.1f}M<extra></extra>")
+                _base = float(_mine["barrett_score"].min()) - 2
+                _fig.add_scatter(x=_mine["Season"], y=[_base] * len(_mine),
+                                 mode="lines", line=dict(width=0),
+                                 hoverinfo="skip", showlegend=False)
+                _fig.add_scatter(x=_mine["Season"], y=_mine["barrett_score"],
+                                 mode="lines+markers",
+                                 line=dict(color=_line_hex, width=2.5),
+                                 marker=dict(color=_line_hex, size=5),
+                                 fill="tonexty", fillcolor=_hex_rgba(_chex, 0.10),
+                                 hovertemplate="%{y:.2f}<extra></extra>")
+                _fig.add_scatter(x=[_pk["Season"]], y=[_pk["barrett_score"]],
+                                 mode="markers",
+                                 marker=dict(color="#f1c40f", size=11,
+                                             line=dict(color="#b8860b", width=1)),
+                                 hovertemplate="Peak: %{y:.2f}<extra></extra>")
+                _fig.update_layout(
+                    height=175, margin=dict(t=6, b=6, l=6, r=6), showlegend=False,
+                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                    yaxis2=dict(overlaying="y", side="right", showticklabels=False,
+                                showgrid=False, rangemode="tozero",
+                                range=[0, float(_mine["salary"].max()) / 1e6 * 3.2]),
+                )
                 st.plotly_chart(theme_fig(_fig), use_container_width=True,
                                 config={"displayModeBar": False})
             _ct = _mine.sort_values("Season", ascending=False)[
                 ["Season", "barrett_score", "score_rank", "salary"]].copy()
             _ct.columns = ["Season", "Score", "Rank", "Salary"]
             _ct["Salary"] = _ct["Salary"] / 1e6
+            _pk_score = float(_ct["Score"].max()) if len(_ct) else 0.0
             html_table(
                 _ct,
                 formatters={"Score": lambda v: f"{v:.2f}",
                             "Rank": lambda v: f"#{int(v)}" if v == v else "—",
                             "Salary": lambda v: f"${v:.1f}M"},
+                styles={"Score": lambda v, _r: ("color:var(--gold);font-weight:800"
+                                                if v == _pk_score else "")},
+                row_style=lambda rd: ("background:rgba(241,196,15,0.07)"
+                                      if rd.get("Score") == _pk_score else ""),
                 aligns={"Score": "right", "Rank": "right", "Salary": "right"},
                 numeric={"Score", "Rank", "Salary"},
                 height=228,
@@ -945,14 +1063,29 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                         unsafe_allow_html=True)
             _sim = (_hub_df.assign(_d=(_hub_df["Barrett Score"] - _sel["Barrett Score"]).abs())
                     .loc[lambda d: d["norm"] != _n]
-                    .nsmallest(10, "_d")
+                    .nsmallest(10, "_d"))
+            # Pin the selected player into the list so the comparison has an anchor.
+            _sim = (pd.concat([_sim, _hub_df[_hub_df["norm"] == _n]])
                     .sort_values("Barrett Score", ascending=False))
-            _sim_view = _sim[["#", "Player", "Barrett Score", "Salary", "Predicted"]].copy()
+            _sim_view = _sim[["#", "Player", "Team", "Barrett Score", "Salary", "Predicted"]].copy()
+            _s_lo = float(_sim_view["Barrett Score"].min())
+            _s_hi = float(_sim_view["Barrett Score"].max())
+            _s_rng = (_s_hi - _s_lo) or 1.0
+
+            def _sim_player_cell(v, r):
+                _tm = str(r.get("Team", ""))
+                _ring = TEAM_HEX.get(_tm, "")
+                _ring_st = f' style="box-shadow:inset 0 0 0 2px {_ring}"' if _ring else ""
+                return (f'<span class="hv-mini-wrap"{_ring_st}>{_face_img(str(v), "hv-mini-face")}</span>'
+                        f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
+                        f'target="_top">{html.escape(str(v))}</a>')
+
             html_table(
                 _sim_view,
                 formatters={
-                    "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
-                                         f'target="_top">{html.escape(str(v))}</a>'),
+                    "Player": _sim_player_cell,
+                    "Team": lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
+                                       f'{html.escape(str(v))}'),
                     "Barrett Score": lambda v: f"{v:.2f}",
                     "Salary": lambda v: f"${v:.1f}M",
                     "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
@@ -960,7 +1093,17 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                                                      if normalize(str(r.get("Player", ""))) in _max_norms else "")
                                                     + f"${v:.1f}M"),
                 },
-                raw={"Player", "Predicted"},
+                raw={"Player", "Team", "Predicted"},
+                styles={
+                    "Barrett Score": lambda v, _r: (
+                        f"background:linear-gradient(90deg,var(--bar-tint) "
+                        f"{15 + (v - _s_lo) / _s_rng * 85:.0f}%,transparent 0)"),
+                    "Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
+                                                else "color:var(--accent-teal)"),
+                },
+                row_style=lambda rd: ((f"background:{_hex_rgba(_thx, 0.10)};font-weight:600" if _thx
+                                       else "background:var(--panel-hover);font-weight:600")
+                                      if normalize(str(rd.get("Player", ""))) == _n else ""),
                 aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
                 numeric={"#", "Barrett Score", "Salary", "Predicted"},
                 height=442,
@@ -977,22 +1120,42 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
                 _me = _agg[_agg["norm"] == _n].iloc[0]
                 _tw = (_agg[(_agg["norm"] != _n) & (_agg["yrs"] >= 3)]
                        .assign(_d=lambda d: (d["avg"] - _me["avg"]).abs())
-                       .nsmallest(10, "_d")
+                       .nsmallest(10, "_d"))
+                # Pin the selected player among his twins.
+                _tw = (pd.concat([_tw, _agg[_agg["norm"] == _n]])
                        .sort_values("avg", ascending=False))
-                _tw_view = _tw[["Player", "avg", "peak", "best_rank", "top_sal"]].copy()
-                _tw_view.columns = ["Player", "Avg Score", "Peak", "Best Rank", "Top Salary"]
+                # Career-shape sparklines, from the same parquet (one groupby pass).
+                _arc_norms = set(_tw["norm"])
+                _arcs = {nm: _spark_svg(g.sort_values("Season")["barrett_score"].tolist())
+                         for nm, g in _car[_car["norm"].isin(_arc_norms)].groupby("norm")}
+                _tw_view = _tw[["Player", "norm", "avg", "peak", "best_rank", "top_sal"]].copy()
+                _tw_view["Arc"] = _tw_view["norm"].map(_arcs).fillna("")
+                _tw_view = _tw_view.drop(columns=["norm"])[
+                    ["Player", "Arc", "avg", "peak", "best_rank", "top_sal"]]
+                _tw_view.columns = ["Player", "Arc", "Avg Score", "Peak", "Best Rank", "Top Salary"]
                 _tw_view["Top Salary"] = _tw_view["Top Salary"] / 1e6
+                _t_lo = float(_tw_view["Avg Score"].min())
+                _t_rng = (float(_tw_view["Avg Score"].max()) - _t_lo) or 1.0
                 html_table(
                     _tw_view,
                     formatters={
-                        "Player": lambda v: (f'<a class="hv-plink" href="/Search?player={_urlquote(str(v))}" '
+                        "Player": lambda v: (f'<span class="hv-mini-wrap">{_face_img(str(v), "hv-mini-face")}</span>'
+                                             f'<a class="hv-plink" href="/Search?player={_urlquote(str(v))}" '
                                              f'target="_top">{html.escape(str(v))}</a>'),
                         "Avg Score": lambda v: f"{v:.2f}",
                         "Peak": lambda v: f"{v:.2f}",
                         "Best Rank": lambda v: f"#{int(v)}" if v == v else "—",
                         "Top Salary": lambda v: f"${v:.1f}M",
                     },
-                    raw={"Player"},
+                    raw={"Player", "Arc"},
+                    styles={
+                        "Avg Score": lambda v, _r: (
+                            f"background:linear-gradient(90deg,var(--bar-tint) "
+                            f"{15 + (v - _t_lo) / _t_rng * 85:.0f}%,transparent 0)"),
+                    },
+                    row_style=lambda rd: ((f"background:{_hex_rgba(_thx, 0.10)};font-weight:600" if _thx
+                                           else "background:var(--panel-hover);font-weight:600")
+                                          if normalize(str(rd.get("Player", ""))) == _n else ""),
                     aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
                             "Top Salary": "right"},
                     numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
