@@ -817,7 +817,7 @@ if _sel:
   border: 1px solid var(--panel-line);
   border-left: 4px solid var(--team, var(--accent-teal));
   border-radius: 14px; padding: 0.7rem 1.2rem; box-shadow: var(--shadow-card);
-  position: relative; overflow: hidden; margin-bottom: 0.7rem; }}
+  position: relative; overflow: hidden; margin-bottom: 0.8rem; }}
 img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
   object-position: center 12%; background: var(--panel-2);
   border: 2px solid var(--team, var(--panel-line)); flex: 0 0 auto; }}
@@ -1193,7 +1193,8 @@ st.markdown("""
    swallows section spacing under the zeroed root gap. Neutralize it for the
    page-level rhythm blocks only (rails + card grid). */
 [data-testid="stMarkdownContainer"]:has(.hv-rail),
-[data-testid="stMarkdownContainer"]:has(.fp-grid){margin-bottom:0 !important;}
+[data-testid="stMarkdownContainer"]:has(.fp-grid),
+[data-testid="stMarkdownContainer"]:has(.hub-banner){margin-bottom:0 !important;}
 /* Board fragment: its inner block keeps the default 1rem gap (1.51 nests the
    columns row under a stLayoutWrapper). Tighten pills-to-table; the :not
    guard keeps the rule off the root block, whose gap must stay 0. */
