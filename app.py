@@ -645,6 +645,10 @@ for _i, _r in _pool.iterrows():
     _status = classify_fa_status(_nm, fmt_next_contract(_nm, _nc), _rookies, _HUB_SEASON)
     if _status is None and _n in _hub_signings():
         _status = "Signed"          # tracked 2026 signing that came off the board
+    _sg = _hub_signings().get(_n)
+    _nx = _nc.get(_n)
+    _next_M = (_sg.get("actual_M") if _sg and _sg.get("actual_M") is not None
+               else (float(_nx["salary"]) / 1e6 if _nx and _nx.get("salary") else None))
     _hub_rows.append({
         "norm": _n, "Player": _nm, "Team": _r["Team"],
         "Pos": _ts.resolve_position(_nm, _bref_pos.get(_n, ""), _pos2k),
@@ -657,6 +661,7 @@ for _i, _r in _pool.iterrows():
         "TS": float(_r.get("ts_pct") or 0), "DLEB": float(_r.get("d_lebron") or 0),
         "SalRank": int(_r.get("salary_rank") or 0),
         "Avail": float(_r.get("avail_mult") or 0),
+        "Next": _next_M,
         "ProjValue": float(_r.get("projected_salary") or 0) / 1e6,
         "DeltaMkt": float(_r.get("value_diff") or 0) / 1e6,
     })
@@ -1061,10 +1066,10 @@ def _board():
 
     _view = _df if (_show_all or _pick != "All") else _df.head(100)
     _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",
-                   "ProjValue", "DeltaMkt", "Predicted"]].rename(columns={
+                   "ProjValue", "DeltaMkt", "Predicted", "Next"]].rename(columns={
         "Barrett Score": "2025-26 Barrett Score", "Salary": "2025-26 Salary",
-        "ProjValue": "25-26 Value", "DeltaMkt": "+/-",
-        "Predicted": "2026-27 Predicted"})
+        "ProjValue": "2025-26 Value", "DeltaMkt": "+/-",
+        "Predicted": "2026-27 Predicted", "Next": "Actual 2026-27 Salary"})
     html_table(
         _view,
         formatters={
@@ -1074,8 +1079,10 @@ def _board():
                                f'{html.escape(str(v))}'),
             "2025-26 Barrett Score": lambda v: f"{v:.2f}",
             "2025-26 Salary": lambda v: f"${v:.2f}M",
-            "25-26 Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
-                                      else f"${v:.2f}M"),
+            "2025-26 Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                        else f"${v:.2f}M"),
+            "Actual 2026-27 Salary": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                                else f"${v:.2f}M"),
             "+/-": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
                               else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
             "2026-27 Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
@@ -1096,14 +1103,16 @@ def _board():
                                                 else "color:var(--accent-teal)"),
         },
         aligns={"#": "right", "2025-26 Barrett Score": "right", "2025-26 Salary": "right",
-                "25-26 Value": "right", "+/-": "right", "2026-27 Predicted": "right"},
-        numeric={"#", "2025-26 Barrett Score", "2025-26 Salary", "25-26 Value",
-                 "+/-", "2026-27 Predicted"},
+                "2025-26 Value": "right", "+/-": "right", "2026-27 Predicted": "right",
+                "Actual 2026-27 Salary": "right"},
+        numeric={"#", "2025-26 Barrett Score", "2025-26 Salary", "2025-26 Value",
+                 "+/-", "2026-27 Predicted", "Actual 2026-27 Salary"},
         helps={
             "2025-26 Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
-            "25-26 Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
-            "+/-": "2025-26 Salary minus 25-26 Value. Negative = underpaid.",
+            "2025-26 Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
+            "+/-": "2025-26 Salary minus 2025-26 Value. Negative = underpaid.",
             "2026-27 Predicted": "The Contract Predictor's model projection: what a NEW deal signed today would pay, at next season's cap.",
+            "Actual 2026-27 Salary": "What is really on the books for 2026-27: existing contract, exercised option, or the actual new deal signed this summer. Blank = nothing signed yet.",
         },
         height=min(760, max(260, len(_view) * 38 + 46)),
     )
