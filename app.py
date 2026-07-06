@@ -967,9 +967,6 @@ at next season's cap. Market value = salary of the player at the same Barrett Sc
 # delegated and survives fragment re-renders).
 _BOARD_VIEWS = ["All", "Bargains", "Overpays", "Free agents", "Max tier"]
 _SCORE_MAX = float(_hub_df["Barrett Score"].max() or 0) or 1.0
-_BOARD_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
-               "Player Option": ("po", "PO"), "Team Option": ("to", "TO"),
-               "Signed": ("signed", "SIGNED")}
 
 st.markdown("""
 <style>
@@ -1000,16 +997,6 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 
-def _board_status(v) -> str:
-    _c = _BOARD_CHIP.get(str(v))
-    if _c:
-        return f'<span class="hv-chip {_c[0]}">{_c[1]}</span>'
-    _s = str(v)
-    if not _s or _s == "—":
-        return "—"
-    return f'<span style="color:var(--fg-5)">{html.escape(_s)}</span>'
-
-
 @st.fragment
 def _board():
     _pick = st.session_state.get("board_view") or "All"
@@ -1033,7 +1020,7 @@ def _board():
         _show_all = st.checkbox(f"Show all {len(_hub_df)}", value=False, key="hub_show_all")
 
     _view = _df if (_show_all or _pick != "All") else _df.head(100)
-    _view = _view[["#", "Player", "Team", "Pos", "Status", "Barrett Score",
+    _view = _view[["#", "Player", "Team", "Pos", "Barrett Score",
                    "Salary", "DeltaMkt", "Predicted"]].rename(columns={"DeltaMkt": "Value"})
     html_table(
         _view,
@@ -1042,7 +1029,6 @@ def _board():
                                  f'target="_top">{html.escape(str(v))}</a>'),
             "Team": lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
                                f'{html.escape(str(v))}'),
-            "Status": _board_status,
             "Barrett Score": lambda v: f"{v:.2f}",
             "Salary": lambda v: f"${v:.2f}M",
             "Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
@@ -1052,7 +1038,7 @@ def _board():
                                              if normalize(str(r.get("Player", ""))) in _max_norms else "")
                                             + f"${v:.1f}M"),
         },
-        raw={"Player", "Team", "Status", "Predicted"},
+        raw={"Player", "Team", "Predicted"},
         styles={
             "Barrett Score": lambda v, _r: (
                 "" if v is None or (isinstance(v, float) and v != v) else
