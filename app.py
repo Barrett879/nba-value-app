@@ -309,7 +309,7 @@ st.markdown("""
 
     /* Rail section headers: kicker + title + count pill + rule line. The page's
        unifying device (front page strip, player hub, the board). */
-    .hv-rail{display:flex;align-items:center;gap:.65rem;margin:1.6rem 0 .6rem;}
+    .hv-rail{display:flex;align-items:center;gap:.65rem;margin:0;padding:2.4rem 0 .7rem;}
     .hv-rail::before{content:"";width:4px;height:1.05em;background:var(--accent-red);
         border-radius:2px;flex:0 0 auto;}
     .hv-rail .k{font-size:.64rem;font-weight:800;letter-spacing:.11em;
@@ -324,7 +324,7 @@ st.markdown("""
 
     /* Front Page strip: 4 clickable feature cards under the search. */
     .fp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;
-        margin:.3rem 0 .4rem;}
+        margin:0;padding:.25rem 0 .8rem;}
     @media(max-width:1100px){.fp-grid{grid-template-columns:1fr 1fr;}}
     a.fp-card{position:relative;display:flex;align-items:center;gap:.8rem;
         background:var(--panel-solid);border:1px solid var(--panel-line);
@@ -984,6 +984,18 @@ st.markdown("""
 .st-key-board_view [data-testid="stButtonGroup"] button p{font-size:.78rem !important;}
 .hv-plink{color:var(--sky);font-weight:700;text-decoration:none}
 .hv-plink:hover{text-decoration:underline}
+/* Streamlit 1.51 puts margin-bottom:-16px on every stMarkdownContainer, which
+   swallows section spacing under the zeroed root gap. Neutralize it for the
+   page-level rhythm blocks only (rails + card grid). */
+[data-testid="stMarkdownContainer"]:has(.hv-rail),
+[data-testid="stMarkdownContainer"]:has(.fp-grid){margin-bottom:0 !important;}
+/* Board fragment: its inner block keeps the default 1rem gap (1.51 nests the
+   columns row under a stLayoutWrapper). Tighten pills-to-table; the :not
+   guard keeps the rule off the root block, whose gap must stay 0. */
+[data-testid="stVerticalBlock"]:not(:has(.st-key-theme_nav_toggle)):has(> [data-testid="stLayoutWrapper"] .st-key-board_view){
+    gap:0.35rem !important;}
+[data-testid="stVerticalBlock"]:not(:has(.st-key-theme_nav_toggle)):has(> [data-testid="stLayoutWrapper"] .st-key-board_view) .hv-table-wrap{
+    margin-top:0.25rem;}
 </style>
 """, unsafe_allow_html=True)
 
