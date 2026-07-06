@@ -1060,8 +1060,11 @@ def _board():
         _show_all = st.checkbox(f"Show all {len(_hub_df)}", value=False, key="hub_show_all")
 
     _view = _df if (_show_all or _pick != "All") else _df.head(100)
-    _view = _view[["#", "Player", "Team", "Pos", "Barrett Score",
-                   "Salary", "DeltaMkt", "Predicted"]].rename(columns={"DeltaMkt": "Value"})
+    _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",
+                   "ProjValue", "DeltaMkt", "Predicted"]].rename(columns={
+        "Barrett Score": "2025-26 Barrett Score", "Salary": "2025-26 Salary",
+        "ProjValue": "25-26 Value", "DeltaMkt": "+/-",
+        "Predicted": "2026-27 Predicted"})
     html_table(
         _view,
         formatters={
@@ -1069,34 +1072,38 @@ def _board():
                                  f'target="_top">{html.escape(str(v))}</a>'),
             "Team": lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
                                f'{html.escape(str(v))}'),
-            "Barrett Score": lambda v: f"{v:.2f}",
-            "Salary": lambda v: f"${v:.2f}M",
-            "Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
-                                else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
-            "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
-                                       else ('<span class="hv-chip max">MAX</span>'
-                                             if normalize(str(r.get("Player", ""))) in _max_norms else "")
-                                            + f"${v:.1f}M"),
+            "2025-26 Barrett Score": lambda v: f"{v:.2f}",
+            "2025-26 Salary": lambda v: f"${v:.2f}M",
+            "25-26 Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                      else f"${v:.2f}M"),
+            "+/-": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                              else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
+            "2026-27 Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
+                                               else ('<span class="hv-chip max">MAX</span>'
+                                                     if normalize(str(r.get("Player", ""))) in _max_norms else "")
+                                                    + f"${v:.1f}M"),
         },
-        raw={"Player", "Team", "Predicted"},
+        raw={"Player", "Team", "2026-27 Predicted"},
         styles={
-            "Barrett Score": lambda v, _r: (
+            "2025-26 Barrett Score": lambda v, _r: (
                 "" if v is None or (isinstance(v, float) and v != v) else
                 f"background:linear-gradient(90deg,var(--bar-tint) "
                 f"{max(4, min(100, v / _SCORE_MAX * 100)):.0f}%,transparent 0)"),
-            "Value": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) or v == 0
-                                    else ("color:var(--value-good);font-weight:700" if v < 0
-                                          else "color:var(--value-bad);font-weight:700")),
-            "Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
-                                        else "color:var(--accent-teal)"),
+            "+/-": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                  else ("color:var(--value-good);font-weight:700" if v < 0
+                                        else "color:var(--value-bad);font-weight:700")),
+            "2026-27 Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
+                                                else "color:var(--accent-teal)"),
         },
-        aligns={"#": "right", "Barrett Score": "right", "Salary": "right",
-                "Value": "right", "Predicted": "right"},
-        numeric={"#", "Barrett Score", "Salary", "Value", "Predicted"},
+        aligns={"#": "right", "2025-26 Barrett Score": "right", "2025-26 Salary": "right",
+                "25-26 Value": "right", "+/-": "right", "2026-27 Predicted": "right"},
+        numeric={"#", "2025-26 Barrett Score", "2025-26 Salary", "25-26 Value",
+                 "+/-", "2026-27 Predicted"},
         helps={
-            "Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
-            "Value": "Salary minus market value at the same Barrett Score rank. Negative = underpaid.",
-            "Predicted": "The Contract Predictor's model projection: what this player would sign for today.",
+            "2025-26 Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
+            "25-26 Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
+            "+/-": "2025-26 Salary minus 25-26 Value. Negative = underpaid.",
+            "2026-27 Predicted": "The Contract Predictor's model projection: what a NEW deal signed today would pay, at next season's cap.",
         },
         height=min(760, max(260, len(_view) * 38 + 46)),
     )
