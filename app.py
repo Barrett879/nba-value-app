@@ -914,6 +914,8 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
         def _pct_of(v, pool):
             if not pool:
                 return 50.0
+            if v >= max(pool):
+                return 100.0     # position-best flushes the bar
             return sum(1 for x in pool if x < v) / len(pool) * 100
 
         _prof = []
