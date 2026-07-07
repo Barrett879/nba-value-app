@@ -844,7 +844,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
 .hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--fg-4); font-weight: 600; margin-top: 0.1rem; }}
 .hub-ladder {{ margin-top: 1.4rem; }}
-.hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.42rem; }}
+.hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.28rem; }}
 .hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
 .hub-ladder .lbar {{ flex: 1; height: 13px; background: var(--hairline-soft);
@@ -855,7 +855,9 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
 .hub-ladder .lbar .lband {{ position: absolute; top: 0; height: 100%;
   background: var(--bar-tint); border-radius: 0; }}
 .hub-ladder .lv {{ width: 72px; text-align: right; font-size: 0.78rem; font-weight: 700;
-  color: var(--fg-2); font-variant-numeric: tabular-nums; flex: 0 0 auto; }}
+  color: var(--fg-2); font-variant-numeric: tabular-nums; flex: 0 0 auto; line-height: 1.15; }}
+.hub-ladder .lv .avg {{ display: block; font-size: 0.6rem; font-weight: 600;
+  color: var(--fg-5); }}
 .hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.8rem; }}
 .hub-go a {{ display: inline-block; margin-top: 0.6rem; background: var(--panel);
   border: 1px solid var(--panel-line); border-radius: 9px; padding: 0.4rem 0.85rem;
@@ -918,20 +920,34 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                 return 100.0     # position-best flushes the bar
             return sum(1 for x in pool if x < v) / len(pool) * 100
 
+        def _avg_of(pool):
+            return (sum(pool) / len(pool)) if pool else None
+
         _prof = []
         if _bx:
             for _lbl, _idx in [("Points", 0), ("Rebounds", 1), ("Assists", 2),
                                ("Steals", 3), ("Blocks", 4)]:
                 _v = float(_bx[_idx])
-                _prof.append((_lbl, f"{_v:.1f}", _pct_of(_v, _pos_pool(idx=_idx))))
-        _prof.append(("TS%", f"{_sel['TS'] * 100:.1f}%", _pct_of(float(_sel["TS"]), _pos_pool(col="TS"))))
-        _prof.append(("D-LEBRON", f"{_sel['DLEB']:+.1f}", _pct_of(float(_sel["DLEB"]), _pos_pool(col="DLEB"))))
+                _pl = _pos_pool(idx=_idx)
+                _av = _avg_of(_pl)
+                _prof.append((_lbl, f"{_v:.1f}", _pct_of(_v, _pl),
+                              f"{_av:.1f}" if _av is not None else ""))
+        _ts_pool = _pos_pool(col="TS")
+        _ts_avg = _avg_of(_ts_pool)
+        _prof.append(("TS%", f"{_sel['TS'] * 100:.1f}%", _pct_of(float(_sel["TS"]), _ts_pool),
+                      f"{_ts_avg * 100:.1f}%" if _ts_avg is not None else ""))
+        _dl_pool = _pos_pool(col="DLEB")
+        _dl_avg = _avg_of(_dl_pool)
+        _prof.append(("D-LEBRON", f"{_sel['DLEB']:+.1f}", _pct_of(float(_sel["DLEB"]), _dl_pool),
+                      f"{_dl_avg:+.1f}" if _dl_avg is not None else ""))
         _bar_c = _thx or "var(--accent-teal)"
         _ladder = "".join(
             f'<div class="lrow"><span class="ll">{_l}</span>'
             f'<div class="lbar"><div style="width:{max(2.0, _p):.0f}%;background:{_bar_c};position:relative;z-index:0"></div></div>'
-            f'<span class="lv">{_vtxt}</span></div>'
-            for _l, _vtxt, _p in _prof)
+            f'<span class="lv">{_vtxt}'
+            + (f'<span class="avg">avg {_atxt}</span>' if _atxt else "")
+            + '</span></div>'
+            for _l, _vtxt, _p, _atxt in _prof)
         _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
         _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
         # Named anchors: who owns the paycheck at his production rank, and who
@@ -961,7 +977,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
 </div>
 <div class="hub-ladder">{_ladder}</div>
-<div class="hub-note" style="margin-top:0.3rem">Bar = percentile among {html.escape(_pos_prim)}s this season · tick = median.</div>
+<div class="hub-note" style="margin-top:0.3rem">Bar = percentile among {html.escape(_pos_prim)}s this season · tick = median · small number = {html.escape(_pos_prim)} average.</div>
 <div class="hub-stats" style="margin-top:1.1rem">
   <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
