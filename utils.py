@@ -1088,8 +1088,13 @@ def theme_fig(fig):
         # invisible: global font, title, axis titles/ticks, legend, colorbar.
         _LT = "#e8e8f0"
         try:
-            fig.update_layout(font_color=_LT, title_font_color=_LT,
+            fig.update_layout(font_color=_LT,
                               legend_font_color=_LT, legend_title_font_color=_LT)
+            # Only touch the title when one exists: setting title_font on a
+            # title-less figure creates {font:...} with no text, which
+            # plotly.js renders as the literal string "undefined".
+            if getattr(fig.layout.title, "text", None):
+                fig.update_layout(title_font_color=_LT)
             for axis in (fig.update_xaxes, fig.update_yaxes):
                 axis(color=_LT, tickfont_color=_LT, title_font_color=_LT)
             # Colorbars live on each trace's marker (px.bar/px.scatter) — recolour
@@ -1097,14 +1102,20 @@ def theme_fig(fig):
             for tr in fig.data:
                 try:
                     cb = getattr(getattr(tr, "marker", None), "colorbar", None)
-                    if cb is not None:
+                    # graph_objects materialize attributes on ASSIGNMENT, so only
+                    # touch colorbars that already carry properties - writing to a
+                    # pristine one creates it and a phantom colorbar renders.
+                    if cb is not None and cb.to_plotly_json():
                         cb.tickfont = dict(color=_LT)
                         if getattr(cb, "title", None) is not None:
                             cb.title.font = dict(color=_LT)
                 except Exception:
                     pass
-            fig.update_coloraxes(colorbar_tickfont_color=_LT,
-                                 colorbar_title_font_color=_LT)
+            # Same trap: update_coloraxes on a figure with no coloraxis
+            # CREATES one, conjuring a phantom default colorbar.
+            if fig.layout.coloraxis.to_plotly_json():
+                fig.update_coloraxes(colorbar_tickfont_color=_LT,
+                                     colorbar_title_font_color=_LT)
             for ann in (fig.layout.annotations or []):
                 try:
                     if ann.font is None or not ann.font.color:
