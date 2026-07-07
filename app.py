@@ -980,15 +980,13 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
             f'<span class="lv">${v:.1f}M</span></div>'
             for _l, v, _c, _b in _lad)
         _bx = _hub_counting().get(_n)
-        _box_row = ""
+        _box_stats = ""
         if _bx:
-            _box_row = (
-                '<div class="hub-stats" style="margin-top:1.25rem">'
+            _box_stats = (
                 f'<div class="hub-stat"><div class="v">{_bx[0]:.1f}</div><div class="l">Points</div></div>'
                 f'<div class="hub-stat"><div class="v">{_bx[1]:.1f}</div><div class="l">Rebounds</div></div>'
                 f'<div class="hub-stat"><div class="v">{_bx[2]:.1f}</div><div class="l">Assists</div></div>'
-                f'<div class="hub-stat"><div class="v">{_bx[3]:.1f} · {_bx[4]:.1f}</div><div class="l">STL · BLK</div></div>'
-                '</div>')
+                f'<div class="hub-stat"><div class="v">{_bx[3]:.1f} · {_bx[4]:.1f}</div><div class="l">STL · BLK</div></div>')
         _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
         _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
         # Named anchors: who owns the paycheck at his production rank, and who
@@ -1016,8 +1014,8 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">#{_sel["rank"]}</div><div class="l">League rank</div></div>
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
 </div>
-{_box_row}
-<div class="hub-stats" style="margin-top:0.7rem">
+<div class="hub-stats" style="margin-top:1.25rem">
+{_box_stats}
   <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
   <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
   <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel["DLEB"] > 0.5 else ('var(--value-bad)' if _sel["DLEB"] < -0.5 else 'var(--fg-1)')}">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
