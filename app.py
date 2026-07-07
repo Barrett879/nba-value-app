@@ -458,6 +458,7 @@ import plotly.graph_objects as go
 from utils import (
     CACHE_DIR, html_table, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT, get_player_contract_info,
+    fetch_league_stats,
 )
 import streamlit.components.v1 as _components
 import team_suitors as _ts
@@ -635,6 +636,20 @@ def _hub_career_agg() -> pd.DataFrame:
     peak_season = car.loc[car.groupby("norm")["barrett_score"].idxmax()].set_index("norm")["Season"]
     g["peak_season"] = peak_season
     return g.reset_index()
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_counting() -> dict:
+    """Per-game box-score line for the current season, keyed by normalized name
+    (the same warm league-stats parquet the pool build reads)."""
+    try:
+        _df = fetch_league_stats(_HUB_SEASON)
+        return {normalize(str(r["PLAYER_NAME"])):
+                (float(r["PTS"]), float(r["REB"]), float(r["AST"]),
+                 float(r["STL"]), float(r["BLK"]))
+                for _, r in _df.iterrows()}
+    except Exception:
+        return {}
 
 
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
@@ -878,7 +893,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   overflow: hidden; flex: 0 0 auto; }}
 img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
   object-position: center 15%; display: block; }}
-.hub-ladder {{ margin-top: 1.35rem; }}
+.hub-ladder {{ margin-top: 1.1rem; }}
 .hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }}
 .hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
@@ -889,8 +904,8 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
   background: var(--bar-tint); border-radius: 0; }}
 .hub-ladder .lv {{ width: 72px; text-align: right; font-size: 0.78rem; font-weight: 700;
   color: var(--fg-2); font-variant-numeric: tabular-nums; flex: 0 0 auto; }}
-.hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.85rem; }}
-.hub-go a {{ display: inline-block; margin-top: 0.8rem; background: var(--panel);
+.hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.55rem; }}
+.hub-go a {{ display: inline-block; margin-top: 0.6rem; background: var(--panel);
   border: 1px solid var(--panel-line); border-radius: 9px; padding: 0.4rem 0.85rem;
   font-size: 0.8rem; font-weight: 700; color: var(--sky); text-decoration: none; }}
 .hub-go a:hover {{ border-color: var(--sky); }}
@@ -948,6 +963,16 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
         _cavg_txt = f"{float(_mine['barrett_score'].mean()):.1f}" if _yrs else "—"
         _earn = float(_mine["salary"].fillna(0).sum()) / 1e6 if _yrs else 0.0
         _earn_txt = (f"${_earn / 1000:.2f}B" if _earn >= 1000 else f"${_earn:.0f}M") if _earn > 0 else "—"
+        _bx = _hub_counting().get(_n)
+        _box_row = ""
+        if _bx:
+            _box_row = (
+                '<div class="hub-stats" style="margin-top:1.0rem">'
+                f'<div class="hub-stat"><div class="v">{_bx[0]:.1f}</div><div class="l">Points</div></div>'
+                f'<div class="hub-stat"><div class="v">{_bx[1]:.1f}</div><div class="l">Rebounds</div></div>'
+                f'<div class="hub-stat"><div class="v">{_bx[2]:.1f}</div><div class="l">Assists</div></div>'
+                f'<div class="hub-stat"><div class="v">{_bx[3]:.1f} · {_bx[4]:.1f}</div><div class="l">STL · BLK</div></div>'
+                '</div>')
         _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
         _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
         # Named anchors: who owns the paycheck at his production rank, and who
@@ -976,14 +1001,15 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
   <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l">Predicted contract{(" · " + _band_txt) if _band_txt else ""}</div></div>
 </div>
+{_box_row}
 <div class="hub-ladder">{_ladder}</div>
-<div class="hub-stats" style="margin-top:1.15rem">
+<div class="hub-stats" style="margin-top:1.0rem">
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} · market value ${_sel["ProjValue"]:.1f}M</div></div>
   <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
   <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
   <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel["DLEB"] > 0.5 else ('var(--value-bad)' if _sel["DLEB"] < -0.5 else 'var(--fg-1)')}">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
 </div>
-<div class="hub-stats" style="margin-top:1.15rem">
+<div class="hub-stats" style="margin-top:1.0rem">
   <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
   <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel.get("Avail", 0) >= 0.85 else ('var(--value-bad)' if 0 < _sel.get("Avail", 0) < 0.6 else 'var(--fg-1)')}">{_avail_txt}</div><div class="l">Availability</div></div>
   <div class="hub-stat"><div class="v">{_cavg_txt}</div><div class="l">Career avg · {_yrs} season{"s" if _yrs != 1 else ""}</div></div>
@@ -991,8 +1017,7 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
 </div>
 {_deal_line}
 {_anchor_note}
-<div class="hub-note">Predicted = the model's projection for a NEW deal signed today,
-at next season's cap. Market value = salary of the player at the same Barrett Score rank.</div>
+<div class="hub-note">Predicted = the model's projection for a NEW deal signed today, at next season's cap.</div>
 <div class="hub-go"><a href="/Contract_Predictor?player={_q}" target="_top">Full contract prediction →</a></div>
 """, unsafe_allow_html=True)
 
