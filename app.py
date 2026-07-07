@@ -1069,6 +1069,13 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
                                 showgrid=False, rangemode="tozero",
                                 range=[0, float(_mine["salary"].max()) / 1e6 * 3.2]),
                 )
+                # Season strings like "2003-04" parse as YYYY-MM dates, so plotly
+                # infers a DATE axis from early-career values and silently drops
+                # "2012-13"+ (months 13-26 do not exist). Force categories; thin
+                # the tick labels for long careers so they do not collide.
+                _fig.update_xaxes(type="category",
+                                  dtick=max(1, len(_mine) // 8),
+                                  tickfont=dict(size=9))
                 st.plotly_chart(theme_fig(_fig), use_container_width=True,
                                 config={"displayModeBar": False})
             _ct = _mine.sort_values("Season", ascending=False)[
