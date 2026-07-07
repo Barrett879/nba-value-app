@@ -806,8 +806,19 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
   border-radius: 14px !important; box-shadow: var(--shadow-card);
   height: 580px !important; max-height: 580px !important;
-  overflow-y: auto !important; padding: 0.55rem 0.8rem !important;
-  margin-bottom: 0.9rem; }}
+  overflow-y: auto !important; padding: 0.55rem 0.8rem 3.3rem !important;
+  position: relative; margin-bottom: 0.9rem; }}
+/* Jump buttons pin to the bottom-left of every quadrant card. Streamlit's
+   element containers are positioned, which would capture the absolute button,
+   so the containers on the button's ancestor chain go static. */
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stElementContainer"]:has(.hub-go),
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stMarkdown"]:has(.hub-go),
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stMarkdownContainer"]:has(.hub-go) {{
+  position: static !important; }}
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go {{
+  position: absolute; left: 0.9rem; bottom: 0.7rem; z-index: 2; margin: 0; }}
+[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go a {{
+  margin-top: 0; }}
 /* Per-quadrant identity accents. */
 [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
 [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1) {{
@@ -1012,7 +1023,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                                       if rd.get("Score") == _pk_score else ""),
                 aligns={"Score": "right", "Rank": "right", "Salary": "right"},
                 numeric={"Score", "Rank", "Salary"},
-                height=228,
+                height=216,
             )
             st.markdown(f'<div class="hub-go"><a href="/Search?player={_q}" target="_top">'
                         f'Full profile & career →</a></div>', unsafe_allow_html=True)
@@ -1066,13 +1077,11 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                                       if normalize(str(rd.get("Player", ""))) == _n else ""),
                 aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
                 numeric={"#", "Barrett Score", "Salary", "Predicted"},
-                height=442,
+                height=404,
             )
-            st.markdown('<div class="hub-note hub-go" style="display:flex;justify-content:space-between;'
-                        'align-items:center;gap:0.8rem;flex-wrap:wrap">'
-                        '<span>Closest current Barrett Scores in the 2025-26 pool.</span>'
-                        '<a href="/Rankings" target="_top" style="margin-top:0">Full current rankings →</a>'
-                        '</div>', unsafe_allow_html=True)
+            st.markdown('<div class="hub-note">Closest current Barrett Scores in the 2025-26 pool.</div>'
+                        '<div class="hub-go"><a href="/Rankings" target="_top">Full current rankings →</a></div>',
+                        unsafe_allow_html=True)
 
     with _right:   # ── Quadrant 4: Career Twins (all eras) ──────────────────────
         with st.container(border=True, key="hub_q4"):
@@ -1122,14 +1131,13 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                     aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
                             "Top Salary": "right"},
                     numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
-                    height=442,
+                    height=404,
                 )
-                st.markdown(f'<div class="hub-note hub-go" style="display:flex;justify-content:space-between;'
-                            f'align-items:center;gap:0.8rem;flex-wrap:wrap">'
-                            f'<span>Closest career averages, all eras: {html.escape(_sel["Player"])} '
-                            f'at {_me["avg"]:.2f} over {int(_me["yrs"])} season{"s" if _me["yrs"] != 1 else ""}.</span>'
-                            f'<a href="/Legacy" target="_top" style="margin-top:0">Compare eras in Legacy →</a>'
-                            f'</div>', unsafe_allow_html=True)
+                st.markdown(f'<div class="hub-note">Closest career averages, all eras: '
+                            f'{html.escape(_sel["Player"])} at {_me["avg"]:.2f} over '
+                            f'{int(_me["yrs"])} season{"s" if _me["yrs"] != 1 else ""}.</div>'
+                            f'<div class="hub-go"><a href="/Legacy" target="_top">Compare eras in Legacy →</a></div>',
+                            unsafe_allow_html=True)
             else:
                 st.markdown('<div class="hub-note">No career history on file yet.</div>',
                             unsafe_allow_html=True)
