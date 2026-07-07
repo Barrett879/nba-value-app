@@ -849,8 +849,8 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
 .hub-ladder .lbar {{ flex: 1; height: 13px; background: var(--hairline-soft);
   border-radius: 7px; overflow: hidden; position: relative; }}
-.hub-ladder .lbar::after {{ content: ""; position: absolute; left: 50%; top: 0;
-  bottom: 0; width: 1px; background: var(--fg-5); opacity: 0.55; }}
+.hub-ladder .lbar .tickm {{ position: absolute; top: -1px; bottom: -1px; width: 2px;
+  background: var(--fg-3); opacity: 0.85; z-index: 2; border-radius: 1px; }}
 .hub-ladder .lbar div {{ height: 100%; border-radius: 7px; }}
 .hub-ladder .lbar .lband {{ position: absolute; top: 0; height: 100%;
   background: var(--bar-tint); border-radius: 0; }}
@@ -931,23 +931,28 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                 _pl = _pos_pool(idx=_idx)
                 _av = _avg_of(_pl)
                 _prof.append((_lbl, f"{_v:.1f}", _pct_of(_v, _pl),
-                              f"{_av:.1f}" if _av is not None else ""))
+                              f"{_av:.1f}" if _av is not None else "",
+                              _pct_of(_av, _pl) if _av is not None else None))
         _ts_pool = _pos_pool(col="TS")
         _ts_avg = _avg_of(_ts_pool)
         _prof.append(("TS%", f"{_sel['TS'] * 100:.1f}%", _pct_of(float(_sel["TS"]), _ts_pool),
-                      f"{_ts_avg * 100:.1f}%" if _ts_avg is not None else ""))
+                      f"{_ts_avg * 100:.1f}%" if _ts_avg is not None else "",
+                      _pct_of(_ts_avg, _ts_pool) if _ts_avg is not None else None))
         _dl_pool = _pos_pool(col="DLEB")
         _dl_avg = _avg_of(_dl_pool)
         _prof.append(("D-LEBRON", f"{_sel['DLEB']:+.1f}", _pct_of(float(_sel["DLEB"]), _dl_pool),
-                      f"{_dl_avg:+.1f}" if _dl_avg is not None else ""))
+                      f"{_dl_avg:+.1f}" if _dl_avg is not None else "",
+                      _pct_of(_dl_avg, _dl_pool) if _dl_avg is not None else None))
         _bar_c = _thx or "var(--accent-teal)"
         _ladder = "".join(
             f'<div class="lrow"><span class="ll">{_l}</span>'
-            f'<div class="lbar"><div style="width:{max(2.0, _p):.0f}%;background:{_bar_c};position:relative;z-index:0"></div></div>'
+            f'<div class="lbar">'
+            + (f'<span class="tickm" style="left:{_apct:.0f}%"></span>' if _apct is not None else "")
+            + f'<div style="width:{max(2.0, _p):.0f}%;background:{_bar_c};position:relative;z-index:0"></div></div>'
             f'<span class="lv">{_vtxt}'
             + (f'<span class="avg">avg {_atxt}</span>' if _atxt else "")
             + '</span></div>'
-            for _l, _vtxt, _p, _atxt in _prof)
+            for _l, _vtxt, _p, _atxt, _apct in _prof)
         _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
         _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
         # Named anchors: who owns the paycheck at his production rank, and who
@@ -977,7 +982,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
 </div>
 <div class="hub-ladder">{_ladder}</div>
-<div class="hub-note" style="margin-top:0.3rem">Bar = percentile among {html.escape(_pos_prim)}s this season · tick = median · small number = {html.escape(_pos_prim)} average.</div>
+<div class="hub-note" style="margin-top:0.3rem">Bar = percentile among {html.escape(_pos_prim)}s this season · tick and small number = the average {html.escape(_pos_prim)}.</div>
 <div class="hub-stats" style="margin-top:1.1rem">
   <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
