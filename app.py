@@ -844,11 +844,13 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
 .hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--fg-4); font-weight: 600; margin-top: 0.1rem; }}
 .hub-ladder {{ margin-top: 1.4rem; }}
-.hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; }}
+.hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.42rem; }}
 .hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
-.hub-ladder .lbar {{ flex: 1; height: 16px; background: var(--hairline-soft);
-  border-radius: 8px; overflow: hidden; position: relative; }}
+.hub-ladder .lbar {{ flex: 1; height: 13px; background: var(--hairline-soft);
+  border-radius: 7px; overflow: hidden; position: relative; }}
+.hub-ladder .lbar::after {{ content: ""; position: absolute; left: 50%; top: 0;
+  bottom: 0; width: 1px; background: var(--fg-5); opacity: 0.55; }}
 .hub-ladder .lbar div {{ height: 100%; border-radius: 7px; }}
 .hub-ladder .lbar .lband {{ position: absolute; top: 0; height: 100%;
   background: var(--bar-tint); border-radius: 0; }}
@@ -890,32 +892,44 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                       f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
                       if _ci.get("end_season") else
                       '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
-        # Salary vs market vs model, as scaled bars (the value story at a glance).
-        # Salary carries the team color; the Predicted track shows the 80% band.
-        _lad = [("Salary", _sel["Salary"], _thx or "var(--fg-5)", ""),
-                ("Market", _sel["ProjValue"], "var(--sky)", "")]
-        if _pv.get("pcv_M") is not None:
-            _lad.append(("Predicted", float(_pv["pcv_M"]), "var(--accent-teal)", "band"))
-        _lmx = max((v for _l, v, _c, _b in _lad), default=0) or 1.0
-        _band_html = ""
-        if _pv.get("low_M") is not None and _pv.get("high_M") is not None:
-            _b_l = max(0.0, _pv["low_M"] / _lmx * 100)
-            _b_w = max(1.0, min(100 - _b_l, (_pv["high_M"] - _pv["low_M"]) / _lmx * 100))
-            _band_html = f'<div class="lband" style="left:{_b_l:.0f}%;width:{_b_w:.0f}%"></div>'
+        _bx = _hub_counting().get(_n)
+        # Position profile: each stat as a percentile bar among the player's
+        # primary-position peers this season (tick on the track = median).
+        _pos_prim = str(_sel["Pos"]).split("/")[0].strip()
+        _bx_all = _hub_counting()
+
+        def _pos_pool(idx=None, col=None):
+            _vals = []
+            for _r0 in _hub_rows:
+                if str(_r0["Pos"]).split("/")[0].strip() != _pos_prim:
+                    continue
+                if col is not None:
+                    _vals.append(float(_r0[col]))
+                else:
+                    _b0 = _bx_all.get(_r0["norm"])
+                    if _b0:
+                        _vals.append(float(_b0[idx]))
+            return _vals
+
+        def _pct_of(v, pool):
+            if not pool:
+                return 50.0
+            return sum(1 for x in pool if x < v) / len(pool) * 100
+
+        _prof = []
+        if _bx:
+            for _lbl, _idx in [("Points", 0), ("Rebounds", 1), ("Assists", 2),
+                               ("Steals", 3), ("Blocks", 4)]:
+                _v = float(_bx[_idx])
+                _prof.append((_lbl, f"{_v:.1f}", _pct_of(_v, _pos_pool(idx=_idx))))
+        _prof.append(("TS%", f"{_sel['TS'] * 100:.1f}%", _pct_of(float(_sel["TS"]), _pos_pool(col="TS"))))
+        _prof.append(("D-LEBRON", f"{_sel['DLEB']:+.1f}", _pct_of(float(_sel["DLEB"]), _pos_pool(col="DLEB"))))
+        _bar_c = _thx or "var(--accent-teal)"
         _ladder = "".join(
             f'<div class="lrow"><span class="ll">{_l}</span>'
-            f'<div class="lbar">{_band_html if _b == "band" else ""}'
-            f'<div style="width:{max(2.0, v / _lmx * 100):.0f}%;background:{_c};position:relative"></div></div>'
-            f'<span class="lv">${v:.1f}M</span></div>'
-            for _l, v, _c, _b in _lad)
-        _bx = _hub_counting().get(_n)
-        _box_stats = ""
-        if _bx:
-            _box_stats = (
-                f'<div class="hub-stat"><div class="v">{_bx[0]:.1f}</div><div class="l">Points</div></div>'
-                f'<div class="hub-stat"><div class="v">{_bx[1]:.1f}</div><div class="l">Rebounds</div></div>'
-                f'<div class="hub-stat"><div class="v">{_bx[2]:.1f}</div><div class="l">Assists</div></div>'
-                f'<div class="hub-stat"><div class="v">{_bx[3]:.1f} · {_bx[4]:.1f}</div><div class="l">STL · BLK</div></div>')
+            f'<div class="lbar"><div style="width:{max(2.0, _p):.0f}%;background:{_bar_c};position:relative;z-index:0"></div></div>'
+            f'<span class="lv">{_vtxt}</span></div>'
+            for _l, _vtxt, _p in _prof)
         _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
         _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
         # Named anchors: who owns the paycheck at his production rank, and who
@@ -941,16 +955,13 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
 <div class="hub-stats" style="margin-top:0.7rem">
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">#{_sel["rank"]}</div><div class="l">League rank</div></div>
+  <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
 </div>
-<div class="hub-stats" style="margin-top:1.25rem">
-{_box_stats}
-  <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
-  <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
-  <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel["DLEB"] > 0.5 else ('var(--value-bad)' if _sel["DLEB"] < -0.5 else 'var(--fg-1)')}">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
-</div>
 <div class="hub-ladder">{_ladder}</div>
-<div class="hub-stats" style="margin-top:1.25rem">
+<div class="hub-note" style="margin-top:0.3rem">Bar = percentile among {html.escape(_pos_prim)}s this season · tick = median.</div>
+<div class="hub-stats" style="margin-top:1.1rem">
+  <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
   <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
   <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel.get("Avail", 0) >= 0.85 else ('var(--value-bad)' if 0 < _sel.get("Avail", 0) < 0.6 else 'var(--fg-1)')}">{_avail_txt}</div><div class="l">Availability</div></div>
