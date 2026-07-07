@@ -1938,7 +1938,7 @@ HV_KIT_CSS = ("""
 img.hv-mini-face{width:24px;height:24px;border-radius:50%;object-fit:cover;
     object-position:center 15%;display:block;}
 """
-    + "".join(f".tdot-{k}{{background:{v}}}" for k, v in TEAM_HEX.items())
+    + "".join(f".tdot.tdot-{k}{{background:{v}}}" for k, v in TEAM_HEX.items())
     + "</style>")
 
 
