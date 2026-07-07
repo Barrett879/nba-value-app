@@ -1776,7 +1776,7 @@ COMMON_CSS = """
 
 _NAV_PAGES = [
     ("Current Rankings",   "/Rankings"),
-    ("Search Player",      "/Search"),
+    ("Compare Players",    "/Search"),
     ("Legacy",             "/Legacy"),
     ("Team Analysis",      "/Team_Analysis"),
     # Trades tab removed — page lives at /Trades_disabled.py (kept for

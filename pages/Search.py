@@ -22,10 +22,10 @@ from utils import (
 )
 from urllib.parse import quote
 
-st.set_page_config(page_title="Search Player", page_icon="static/favicon.svg", layout="wide")
+st.set_page_config(page_title="Compare Players", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
 _bootstrap_warm()
-render_nav("Search Player")
+render_nav("Compare Players")
 
 # Playoff toggle sits on the title row, right-aligned (in-page, not the nav bar)
 playoff_mode = bool(st.session_state.get("playoff_mode", False))

@@ -404,7 +404,7 @@ st.markdown("""
 _, _search_col, _ = st.columns([1, 2.6, 1])
 with _search_col:
     st.markdown(
-        '<div class="home-search-label">SEARCH ANY PLAYER · CAREER ARCS · HEAD-TO-HEAD COMPARISONS · 1973 → TODAY</div>',
+        '<div class="home-search-label">SEARCH ANY PLAYER · 1973 → TODAY · CURRENT PLAYERS OPEN RIGHT HERE · LEGENDS OPEN IN COMPARE PLAYERS</div>',
         unsafe_allow_html=True,
     )
     _all_player_names = get_all_player_names() or []
@@ -417,15 +417,22 @@ with _search_col:
         key="home_search_select",
     )
     if _picked:
-        st.session_state["search_player"] = _picked
-        try:
-            st.switch_page("pages/Search.py")
-        except Exception:
-            st.markdown(
-                f'<a href="/Search" target="_top" style="color:var(--sky); text-decoration: underline;">'
-                f'Click here to view {_picked}\'s profile →</a>',
-                unsafe_allow_html=True,
-            )
+        # Current-pool players open the hub panel right here; historical
+        # players (pre-2025-26) go to the full Compare Players page.
+        _cur_norms = {normalize(str(_p)) for _p in build_ranked_projected(SEASONS[0])["Player"]}
+        if normalize(_picked) in _cur_norms:
+            if st.query_params.get("player") != _picked:
+                st.query_params["player"] = _picked
+        else:
+            st.session_state["search_player"] = _picked
+            try:
+                st.switch_page("pages/Search.py")
+            except Exception:
+                st.markdown(
+                    f'<a href="/Search" target="_top" style="color:var(--sky); text-decoration: underline;">'
+                    f'Click here to view {_picked}\'s profile →</a>',
+                    unsafe_allow_html=True,
+                )
 
 st.markdown("<div style='margin-top:0.8rem'></div>", unsafe_allow_html=True)
 
