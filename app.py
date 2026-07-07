@@ -568,6 +568,24 @@ def _hub_counting() -> dict:
         return {}
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_salary_supplement() -> dict:
+    """Verified 2026-27 salaries for players the scraped next-year feed omits
+    (data/salary_supplement_2026_27.csv, hand-verified rows with sources)."""
+    out = {}
+    try:
+        with open(Path(__file__).parent / "data" / "salary_supplement_2026_27.csv") as fh:
+            for r in _csv.DictReader(l for l in fh if l.strip() and not l.lstrip().startswith("#")):
+                if r.get("player") and r.get("salary_M"):
+                    try:
+                        out[normalize(r["player"])] = float(r["salary_M"])
+                    except ValueError:
+                        pass
+    except Exception:
+        pass
+    return out
+
+
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
                   "to_in": "TO Picked Up", "to_out": "TO Declined"}
 
@@ -615,6 +633,14 @@ for _i, _r in _pool.iterrows():
     _nx = _nc.get(_n)
     _next_M = (_sg.get("actual_M") if _sg and _sg.get("actual_M") is not None
                else (float(_nx["salary"]) / 1e6 if _nx and _nx.get("salary") else None))
+    if _next_M is None:
+        # Exercised options carry their figure in the decisions file; last
+        # resort is the hand-verified supplement for feed-omitted players.
+        _d, _fig = _hub_decisions().get(_n, (None, None))
+        if _d in ("po_in", "to_in") and _fig:
+            _next_M = float(_fig)
+        else:
+            _next_M = _hub_salary_supplement().get(_n)
     _hub_rows.append({
         "norm": _n, "Player": _nm, "Team": _r["Team"],
         "Pos": _ts.resolve_position(_nm, _bref_pos.get(_n, ""), _pos2k),

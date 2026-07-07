@@ -1,0 +1,12 @@
+# Verified 2026-27 salaries for players the scraped next-year feed omits.
+# Verified 2026-07-06 via web-search round (Spotrac / Basketball-Reference /
+# HoopsHype + beat reports); update or remove rows if deals change.
+# Verified to have NO 2026-27 NBA contract (the board's dash is correct, do
+# not add rows): E.J. Liddell (QO declined, signed 2yr with Aris B.C. Greece),
+# Jett Howard (ORL declined his $7.34M rookie option Oct 2025, unsigned UFA),
+# Kobe Brown (LAC declined his $4.79M rookie option Oct 2025, unsigned UFA).
+player,salary_M,note
+Donte DiVincenzo,12.535,guaranteed final year (MIN; 4yr NYK July 2023 deal; Spotrac/BBRef/HoopsHype all $12535000)
+Ryan Nembhard,2.15,DAL team option exercised 6/29/26 ($2150917; Stein/Hoops Rumors)
+Jamal Cain,2.58,ORL team option exercised 6/29/26 ($2584539; non-guaranteed until Jan 10 2027)
+Amari Williams,0.68,BOS two-way re-signed 7/1/26 ($678882; standard-deal option declined 6/29/26)
