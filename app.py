@@ -923,14 +923,28 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                         _vals.append(float(_b0[idx]))
             return _vals
 
+        # Center of the position track (the tick + the small number). Flip
+        # _CENTER_STAT between "median" and "mean" to switch the whole profile.
+        _CENTER_STAT = "median"
+        _center_lbl = "med" if _CENTER_STAT == "median" else "avg"
+        _center_word = "median" if _CENTER_STAT == "median" else "average"
+
+        def _avg_of(pool):
+            if not pool:
+                return None
+            if _CENTER_STAT == "median":
+                _s = sorted(pool); _m = len(_s)
+                return _s[_m // 2] if _m % 2 else (_s[_m // 2 - 1] + _s[_m // 2]) / 2
+            return sum(pool) / len(pool)
+
         def _scale_of(v, pool):
-            """0 = position low, 100 = position high, 50 = position AVERAGE.
-            Each half is linear, so bar-vs-center-tick reads as above/below
-            the average player at the position."""
+            """0 = position low, 100 = position high, 50 = position center
+            (mean or median per _CENTER_STAT). Each half is linear, so
+            bar-vs-tick reads as above/below the center player."""
             if not pool:
                 return 50.0
             _lo, _hi = min(pool), max(pool)
-            _av = sum(pool) / len(pool)
+            _av = _avg_of(pool)
             if v >= _hi:
                 return 100.0
             if v <= _lo:
@@ -938,9 +952,6 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
             if v <= _av:
                 return 50.0 * (v - _lo) / (_av - _lo) if _av > _lo else 50.0
             return 50.0 + 50.0 * (v - _av) / (_hi - _av) if _hi > _av else 50.0
-
-        def _avg_of(pool):
-            return (sum(pool) / len(pool)) if pool else None
 
         _prof = []
         if _bx:
@@ -965,7 +976,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
             f'<div class="lbar"><span class="tickm" style="left:50%"></span>'
             f'<div style="width:{max(2.0, _p):.0f}%;background:{_bar_c};position:relative;z-index:0"></div></div>'
             f'<span class="lv">{_vtxt}'
-            + (f'<span class="avg">avg {_atxt}</span>' if _atxt else "")
+            + (f'<span class="avg">{_center_lbl} {_atxt}</span>' if _atxt else "")
             + '</span></div>'
             for _l, _vtxt, _p, _atxt in _prof)
         _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
@@ -997,7 +1008,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
 </div>
 <div class="hub-ladder">{_ladder}</div>
-<div class="hub-note" style="margin-top:0.3rem">Track runs lowest to highest {html.escape(_pos_prim)} this season · middle tick = the average {html.escape(_pos_prim)} (small number).</div>
+<div class="hub-note" style="margin-top:0.3rem">Track runs lowest to highest {html.escape(_pos_prim)} this season · middle tick = the {_center_word} {html.escape(_pos_prim)} (small number).</div>
 <div class="hub-stats" style="margin-top:1.1rem">
   <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
