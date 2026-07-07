@@ -900,11 +900,21 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
         _pos_prim = str(_sel["Pos"]).split("/")[0].strip()
         _bx_all = _hub_counting()
 
+        # Rotation-minutes floor: low-minute players (two-ways, garbage time)
+        # distort the min/avg/max endpoints, especially on rate stats where a
+        # 5-minute fluke sets an unreachable TS% ceiling. Peers must clear
+        # _POS_MPG_MIN; if that leaves too thin a pool, fall back to everyone.
+        _POS_MPG_MIN = 15.0
+        _pos_peers = [_r0 for _r0 in _hub_rows
+                      if str(_r0["Pos"]).split("/")[0].strip() == _pos_prim
+                      and float(_r0.get("MPG") or 0) >= _POS_MPG_MIN]
+        if len(_pos_peers) < 12:
+            _pos_peers = [_r0 for _r0 in _hub_rows
+                          if str(_r0["Pos"]).split("/")[0].strip() == _pos_prim]
+
         def _pos_pool(idx=None, col=None):
             _vals = []
-            for _r0 in _hub_rows:
-                if str(_r0["Pos"]).split("/")[0].strip() != _pos_prim:
-                    continue
+            for _r0 in _pos_peers:
                 if col is not None:
                     _vals.append(float(_r0[col]))
                 else:
