@@ -788,8 +788,8 @@ if not _hub_df.empty:
         _fa_top = _fa_df.iloc[0]
         _cards.append(
             _fp_card("FA watch · 2026", _fa_top["Player"], _fa_top["Team"],
-                     f'<span class="v teal" style="display:block">{len(_fa_df)}</span>',
-                     "free agents this summer · he leads the class"))
+                     f'<span class="v teal" style="display:block">{_fa_top["Barrett Score"]:.2f}</span>',
+                     "best available free agent right now"))
     st.markdown('<div class="fp-grid">' + "".join(_cards) + "</div>", unsafe_allow_html=True)
 
 # ── Selection from ?player= ──────────────────────────────────────────────────
