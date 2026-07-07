@@ -1219,16 +1219,11 @@ def _board():
         _df = _hub_df[_hub_df["norm"].isin(_max_norms)]
     else:
         _df = _hub_df
-    _rail("The board", "2025-26 Player Board", count=f"{len(_df)} players",
-          meta="click a name")
-    _pc, _cc = st.columns([4, 1])
-    with _pc:
-        st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
-                 label_visibility="collapsed")
-    with _cc:
-        _show_all = st.checkbox(f"Show all {len(_hub_df)}", value=False, key="hub_show_all")
+    _rail("The board", "2025-26 Player Board", count=f"{len(_df)} players")
+    st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
+             label_visibility="collapsed")
 
-    _view = _df if (_show_all or _pick != "All") else _df.head(100)
+    _view = _df
     _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",
                    "ProjValue", "DeltaMkt", "Predicted", "Next"]].rename(columns={
         "Barrett Score": "2025-26 Barrett Score", "Salary": "2025-26 Salary",
