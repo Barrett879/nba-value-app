@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import html
+
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -14,6 +16,7 @@ from utils import (
     theme_fig, html_table, render_playoff_toggle,
     render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
+    render_rail, face_img, TEAM_HEX, hex_rgba,
 )
 
 st.set_page_config(page_title="Team Analysis", page_icon="static/favicon.svg", layout="wide")
@@ -103,6 +106,10 @@ team_grp["avg_score"]       = team_grp["avg_score"].round(2)
 
 team_grp = team_grp.sort_values("net_delta")
 
+render_rail("League view", "Payroll Efficiency by Team",
+            count=f"{len(team_grp)} teams",
+            meta="negative = underpaying · positive = overpaying")
+
 fig_teams = px.bar(
     team_grp,
     x="Team", y="net_delta",
@@ -110,7 +117,6 @@ fig_teams = px.bar(
     color_continuous_scale="RdYlGn_r",
     color_continuous_midpoint=0,
     labels={"net_delta": "Net Δ ($M)", "Team": ""},
-    title="Payroll Efficiency by Team  (negative = underpaying, positive = overpaying)",
     height=420,
     text=team_grp["net_delta"].apply(lambda v: f"${v:+.1f}M"),
 )
@@ -122,7 +128,7 @@ fig_teams.update_layout(
     coloraxis_showscale=False,
     xaxis=dict(gridcolor="rgba(255,255,255,0.05)", categoryorder="total ascending"),
     yaxis=dict(gridcolor="rgba(255,255,255,0.08)", tickprefix="$", ticksuffix="M", tickformat=".1f"),
-    margin=dict(t=50, b=20),
+    margin=dict(t=20, b=20),
 )
 st.plotly_chart(theme_fig(fig_teams), use_container_width=True, config={"displayModeBar": False})
 
@@ -149,15 +155,41 @@ def _sty_net(v, _row):
     return ""
 
 
+render_rail("The ledger", "Team-by-Team Value",
+            count=f"{len(team_tbl)} teams",
+            meta=f"{season} playoffs" if playoff_mode else season)
+
+# Avg Score clusters tightly at team level: scale bars 15-100 across visible min-max.
+_as_lo = float(team_tbl["Avg Score"].min())
+_as_rng = (float(team_tbl["Avg Score"].max()) - _as_lo) or 1.0
+
+
+def _face_cell(v):
+    n = str(v)
+    return (f'<span class="hv-mini-wrap">{face_img(n, "hv-mini-face")}</span>'
+            f'{html.escape(n)}')
+
+
 html_table(
     team_tbl,
     formatters={
+        "Team": lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
+                           f'{html.escape(str(v))}'),
         "Actual $M": lambda v: f"${v:.1f}M",
         "Proj. $M":  lambda v: f"${v:.1f}M",
         "Net Δ $M":  lambda v: f"${v:.1f}M",
         "Avg Score": lambda v: f"{v:.2f}",
+        "Best Value": _face_cell,
+        "Worst Value": _face_cell,
     },
-    styles={"Net Δ $M": _sty_net},
+    raw={"Team", "Best Value", "Worst Value"},
+    styles={
+        "Net Δ $M": _sty_net,
+        "Avg Score": lambda v, _r: (
+            f"background:linear-gradient(90deg,var(--bar-tint) "
+            f"{15 + (float(v) - _as_lo) / _as_rng * 85:.0f}%,transparent 0)"
+            if v == v else ""),
+    },
     aligns={"#": "right", "Players": "right", "Actual $M": "right",
             "Proj. $M": "right", "Net Δ $M": "right", "Avg Score": "right"},
     numeric={"#", "Players", "Actual $M", "Proj. $M", "Net Δ $M", "Avg Score"},
@@ -176,7 +208,7 @@ st.caption(
     "Only players in the rankings pool are included; rookies on minimum deals may not appear."
 )
 
-st.divider()
+render_rail("Drill-down", "Team Roster Detail")
 drill_team = st.selectbox("Pick a Team", [""] + sorted(df["Team"].unique().tolist()),
                           key="team_drill")
 if drill_team:
@@ -190,20 +222,50 @@ if drill_team:
     team_players.columns = ["Player", "Barrett Score", "Score Rank",
                               "Salary $M", "Proj. $M", "Δ $M"]
     team_players.insert(0, "#", range(1, len(team_players) + 1))
-    html_table(
-        team_players,
-        formatters={
-            "Barrett Score": lambda v: f"{v:.2f}",
-            "Salary $M":     lambda v: f"${v:.2f}M",
-            "Proj. $M":      lambda v: f"${v:.2f}M",
-            "Δ $M":          lambda v: f"${v:.2f}M",
-        },
-        styles={"Δ $M": _sty_net},
-        aligns={"#": "right", "Barrett Score": "right", "Score Rank": "right",
-                "Salary $M": "right", "Proj. $M": "right", "Δ $M": "right"},
-        numeric={"#", "Barrett Score", "Score Rank", "Salary $M", "Proj. $M", "Δ $M"},
-        height=min(640, len(team_players) * 38 + 46),
-    )
+
+    # Team-accent panel: left border wash + rail bar recolored to the picked team.
+    _thx = TEAM_HEX.get(drill_team, "")
+    if _thx:
+        st.markdown(
+            "<style>"
+            f".st-key-hv_team_panel{{border-left:3px solid {hex_rgba(_thx, 0.55)};"
+            "padding-left:1.1rem;}"
+            f".st-key-hv_team_panel .hv-rail::before{{background:{_thx};}}"
+            "</style>",
+            unsafe_allow_html=True,
+        )
+    _ring = f' style="box-shadow:inset 0 0 0 2px {_thx}"' if _thx else ""
+    _bs_lo = float(team_players["Barrett Score"].min())
+    _bs_rng = (float(team_players["Barrett Score"].max()) - _bs_lo) or 1.0
+
+    with st.container(key="hv_team_panel"):
+        render_rail("The roster", f"{drill_team} Value Board",
+                    count=f"{len(team_players)} players",
+                    meta="sorted by value surplus")
+        html_table(
+            team_players,
+            formatters={
+                "Player": lambda v: (
+                    f'<span class="hv-mini-wrap"{_ring}>{face_img(str(v), "hv-mini-face")}</span>'
+                    f'{html.escape(str(v))}'),
+                "Barrett Score": lambda v: f"{v:.2f}",
+                "Salary $M":     lambda v: f"${v:.2f}M",
+                "Proj. $M":      lambda v: f"${v:.2f}M",
+                "Δ $M":          lambda v: f"${v:.2f}M",
+            },
+            raw={"Player"},
+            styles={
+                "Δ $M": _sty_net,
+                "Barrett Score": lambda v, _r: (
+                    f"background:linear-gradient(90deg,var(--bar-tint) "
+                    f"{15 + (float(v) - _bs_lo) / _bs_rng * 85:.0f}%,transparent 0)"
+                    if v == v else ""),
+            },
+            aligns={"#": "right", "Barrett Score": "right", "Score Rank": "right",
+                    "Salary $M": "right", "Proj. $M": "right", "Δ $M": "right"},
+            numeric={"#", "Barrett Score", "Score Rank", "Salary $M", "Proj. $M", "Δ $M"},
+            height=min(640, len(team_players) * 41 + 48),
+        )
 
 
 from utils import render_footer

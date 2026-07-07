@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import html
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -13,7 +14,7 @@ from utils import (
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract, classify_fa_status,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
-    theme_fig, html_table,
+    theme_fig, html_table, render_rail,
     render_barrett_score_explainer, _bootstrap_warm,
 )
 
@@ -237,7 +238,11 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-st.divider()
+render_rail(
+    "The board", "2026 Free Agent Board",
+    count=f"{len(fa_df)} free agents",
+    meta=f"{_scorecard['n']} signings tracked" if _scorecard else None,
+)
 
 fa_col_a, fa_col_show, fa_col_b, fa_col_c, fa_col_d = st.columns([2, 1, 1, 1, 1])
 with fa_col_a:
@@ -305,9 +310,9 @@ fa_fmt.insert(0, "#", range(1, len(fa_fmt) + 1))
 
 # Predicted = the Contract Predictor's model projection (pcv) for every FA, then the
 # real-signing columns: actual first-year salary + how the projection did, inline once signed.
-fa_fmt["Predicted"] = fa_fmt["Player"].map(
-    lambda p: (lambda v: (("(Max) " if normalize(p) in _max_norms else "") + f"${v:.1f}M")
-               if v is not None else "—")(_predicted_M(p)))
+# Raw numeric here; the gold MAX chip + $ formatting happen in the table formatter so
+# click-to-sort stays on the model figure.
+fa_fmt["Predicted"] = fa_fmt["Player"].map(_predicted_M)
 _np_norm = fa_fmt["Player"].map(normalize)
 fa_fmt["Signed"]   = _np_norm.map(lambda p: f"${_signed[p]['actual_M']:.1f}M" if p in _signed else "—")
 fa_fmt["vs Model"] = _np_norm.map(lambda p: f"{_signed[p]['delta_M']:+.1f}M" if p in _signed else "—")
@@ -365,6 +370,36 @@ def _sty_vs_model(v, _row):
     return ("color:var(--value-good);font-weight:700" if abs(n) <= 4
             else "color:var(--value-bad);font-weight:700")
 
+def _fmt_predicted(v, row):
+    # Model figure with the gold MAX chip prefix; the column stays numeric so
+    # click-to-sort uses the raw dollar value.
+    if v is None or (isinstance(v, float) and v != v):
+        return "—"
+    chip = ('<span class="hv-chip max">MAX</span>'
+            if normalize(str(row.get("Player", ""))) in _max_norms else "")
+    return f"{chip}${float(v):.1f}M"
+
+def _sty_predicted(v, _row):
+    if v is None or (isinstance(v, float) and v != v):
+        return "color:var(--fg-6)"
+    return "color:var(--accent-teal)"
+
+# In-cell score bars scaled 15-100 against the VISIBLE rows (FA scores cluster,
+# so min-max keeps the bars legible).
+_bs_vals = pd.to_numeric(fa_fmt["Barrett Score"], errors="coerce").dropna()
+_bs_lo = float(_bs_vals.min()) if len(_bs_vals) else 0.0
+_bs_hi = float(_bs_vals.max()) if len(_bs_vals) else 1.0
+_bs_rng = (_bs_hi - _bs_lo) or 1.0
+
+def _sty_score(v, _row):
+    try:
+        pct = 15 + (float(v) - _bs_lo) / _bs_rng * 85
+    except (TypeError, ValueError):
+        return ""
+    if pct != pct:  # NaN
+        return ""
+    return f"background:linear-gradient(90deg,var(--bar-tint) {pct:.0f}%,transparent 0)"
+
 if _scorecard:
     st.caption(
         f"Tracking **{_scorecard['n']}** real 2026 signings in this list. The model's projection "
@@ -376,26 +411,31 @@ if _scorecard:
 html_table(
     fa_fmt,
     formatters={
+        "Team":          lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
+                                    f'{html.escape(str(v))}'),
         "Barrett Score": lambda v: f"{v:.2f}",
         "Salary":        lambda v: f"${v:.2f}M",
         "Proj. Value":   lambda v: f"${v:.2f}M",
         "Δ Market":      lambda v: f"${v:.2f}M",
+        "Predicted":     _fmt_predicted,
     },
+    raw={"Team", "Predicted"},
     styles={
-        "Status":    _sty_status,
-        "Outcome":   _sty_outcome,
-        "Δ Market":  _sty_delta,
-        "Salary":    _sty_salary,
-        "Predicted": lambda v, r: "color:var(--fg-6)" if str(v) == "—" else "color:var(--accent-teal)",
-        "Signed":    _sty_signed,
-        "vs Model":  _sty_vs_model,
+        "Status":        _sty_status,
+        "Outcome":       _sty_outcome,
+        "Δ Market":      _sty_delta,
+        "Salary":        _sty_salary,
+        "Barrett Score": _sty_score,
+        "Predicted":     _sty_predicted,
+        "Signed":        _sty_signed,
+        "vs Model":      _sty_vs_model,
     },
     aligns={
         "#": "right", "Barrett Score": "right", "Salary": "right",
         "Proj. Value": "right", "Δ Market": "right",
         "Predicted": "right", "Signed": "right", "vs Model": "right",
     },
-    numeric={"#", "Barrett Score", "Salary", "Proj. Value", "Δ Market"},
+    numeric={"#", "Barrett Score", "Salary", "Proj. Value", "Δ Market", "Predicted"},
     helps={
         "Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
         "Salary": "Current season salary. Purple = rookie-scale contract (1st-round pick, yrs 1–4).",
@@ -428,8 +468,9 @@ with fa_cap_col:
     )
 
 if not fa_display.empty:
-    st.divider()
-    st.subheader("Position breakdown")
+    render_rail("The class", "Position breakdown",
+                count=f"{len(fa_display)} players",
+                meta="stacked by FA status")
     # Collapse compound positions (e.g. "PG/SG", "SF/PF") to the primary/first one
     # so the chart has clean PG/SG/SF/PF/C buckets instead of every slash combo.
     _primary = fa_display["position"].astype(str).str.split("/").str[0].str.strip()

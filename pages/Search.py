@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import html
+
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -15,6 +17,7 @@ from utils import (
     render_nav, render_page_chrome, html_table, stat_cards,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     tier_color, gradient_points,
+    render_rail, face_img, TEAM_HEX, hex_rgba,
     PRE_1990_SALARY_NOTE,
 )
 from urllib.parse import quote
@@ -260,6 +263,28 @@ def _gp_weighted(career: pd.DataFrame, col: str) -> float:
     return float((career[col] * gp).sum() / total_gp)
 
 
+# ── HV-kit table-cell helpers ─────────────────────────────────────────────────
+def _team_cell(v) -> str:
+    """Team abbrev with its team-color dot (raw column: escape the text)."""
+    t = str(v)
+    cls = f" tdot-{t}" if t in TEAM_HEX else ""
+    return f'<span class="tdot{cls}"></span>{html.escape(t)}'
+
+
+def _score_bar_style(vmax: float):
+    """In-cell bar for a Barrett-Score column, scaled 0 -> visible max."""
+    def _style(v, _row, _mx=vmax):
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return ""
+        if f != f or _mx != _mx or _mx <= 0:   # NaN guards
+            return ""
+        pct = max(0.0, min(100.0, f / _mx * 100))
+        return f"background:linear-gradient(90deg,var(--bar-tint) {pct:.0f}%,transparent 0)"
+    return _style
+
+
 # ══════════════════════════════════════════════════════════════════════════════
 # SINGLE-PLAYER VIEW — full career detail
 # ══════════════════════════════════════════════════════════════════════════════
@@ -292,9 +317,45 @@ if len(selected) == 1:
     career_avg_reb   = _gp_weighted(career, "REB")
     total_games      = int(career["GP"].sum())
 
-    st.markdown(f"### {player_name}")
-    st.caption(f"**{career_yrs}** · {n_seasons} seasons · {total_games:,} games · "
-               f"Teams: {' → '.join(teams)}")
+    # ── Masthead: headshot + name + meta, team-color rail (hub-banner style) ──
+    _cur_team = str(teams[-1]) if teams else ""
+    _thx = TEAM_HEX.get(_cur_team, "")
+    _wash = hex_rgba(_thx, 0.08) if _thx else "transparent"
+    _team_css = f"--team:{_thx};" if _thx else ""
+
+    def _team_bit(t) -> str:
+        t = str(t)
+        cls = f" tdot-{t}" if t in TEAM_HEX else ""
+        return f'<span class="tdot{cls}"></span>{html.escape(t)}'
+
+    _teams_html = " → ".join(_team_bit(t) for t in teams)
+    _mast_meta = (f"{html.escape(career_yrs)} · {n_seasons} seasons · "
+                  f"{total_games:,} games · {_teams_html}")
+
+    st.markdown(f"""
+<style>
+.sp-mast {{ display: flex; align-items: center; gap: 1rem;
+  background: linear-gradient(90deg, {_wash}, transparent 45%), var(--panel-solid);
+  border: 1px solid var(--panel-line);
+  border-left: 4px solid var(--team, var(--accent-teal));
+  border-radius: 14px; padding: 0.8rem 1.2rem; box-shadow: var(--shadow-card);
+  margin-bottom: 0.8rem; }}
+.sp-mast img.hub-face {{ width: 60px; height: 60px; border-radius: 50%;
+  object-fit: cover; object-position: center 12%; background: var(--panel-2);
+  border: 2px solid var(--team, var(--panel-line)); flex: 0 0 auto; }}
+.sp-mast .nm {{ display: block; font-size: 1.6rem; font-weight: 800;
+  letter-spacing: -0.01em; color: var(--fg-1); line-height: 1.15; }}
+.sp-mast .meta {{ color: var(--fg-3); font-size: 0.85rem; }}
+.sp-mast .meta .tdot {{ margin-right: 0.28rem; }}
+</style>
+<div class="sp-mast" style="{_team_css}">
+  {face_img(player_name, "hub-face")}
+  <span style="min-width:0">
+    <span class="nm">{html.escape(player_name)}</span>
+    <span class="meta">{_mast_meta}</span>
+  </span>
+</div>
+""", unsafe_allow_html=True)
 
     stat_cards([
         (f"Career Avg {SCORE_LABEL}", f"{career_avg_score:.1f}", "var(--accent-teal)"),
@@ -307,7 +368,7 @@ if len(selected) == 1:
     st.divider()
 
     # ── Career arc chart ───────────────────────────────────────────────────────
-    st.subheader(f"Career arc · {SCORE_LABEL} by season")
+    render_rail("Career arc", f"{SCORE_LABEL} by season", count=f"{n_seasons} seasons")
     fig = go.Figure()
 
     # Color points by absolute Barrett-Score tier (0–10, 10–20, … 50+), so the
@@ -381,7 +442,7 @@ if len(selected) == 1:
     # Decomposes the score into its 6 inputs (scoring / playmaking / rebounding
     # / defense / efficiency / availability) so users can see *why* a player
     # ranks where they do, rather than just trusting the final number.
-    st.subheader("Score Breakdown")
+    render_rail("The formula", "Score Breakdown")
 
     _peak_season = best_season["Season"]
     _bd_seasons = career["Season"].tolist()
@@ -563,7 +624,7 @@ if len(selected) == 1:
 
     if _peer_pos and _peer_pos in {"PG", "SG", "SF", "PF", "C"}:
         st.markdown("")  # small visual gap
-        st.subheader(f"…vs. position peers ({_peer_pos})")
+        render_rail("Peer group", f"vs. position peers ({_peer_pos})")
 
         _peer_dist = fetch_position_peer_distribution(
             _bd_season, _peer_pos, n_seasons_back=1,
@@ -671,7 +732,7 @@ if len(selected) == 1:
     st.divider()
 
     # ── Season-by-season table ─────────────────────────────────────────────────
-    st.subheader("Season by season")
+    render_rail("The log", "Season by Season", count=f"{n_seasons} seasons")
 
     tbl = career[[
         "Season", "Team", "GP", "MPG", "PTS", "AST", "REB", "STL", "BLK", "TOV",
@@ -690,6 +751,7 @@ if len(selected) == 1:
     html_table(
         tbl,
         formatters={
+            "Team": _team_cell,
             "GP": lambda v: str(int(v)),
             "MPG": lambda v: f"{v:.1f}", "PTS": lambda v: f"{v:.1f}",
             "AST": lambda v: f"{v:.1f}", "REB": lambda v: f"{v:.1f}",
@@ -698,6 +760,8 @@ if len(selected) == 1:
             "Barrett Score": lambda v: f"{v:.2f}", "Barrett (Raw)": lambda v: f"{v:.2f}",
             "Salary $M": lambda v: f"${v:.2f}M",
         },
+        raw={"Team"},
+        styles={SCORE_COL: _score_bar_style(float(tbl[SCORE_COL].max()))},
         aligns={c: "right" for c in ["GP", "MPG", "PTS", "AST", "REB", "STL", "BLK",
                                      "TOV", "TS%", "Barrett Score", "Barrett (Raw)", "Salary $M"]},
         numeric={"GP", "MPG", "PTS", "AST", "REB", "STL", "BLK", "TOV", "TS%",
@@ -757,7 +821,7 @@ else:
     st.divider()
 
     # ── Summary metrics — one row per player ──────────────────────────────────
-    st.markdown("#### Career averages")
+    render_rail("Head to head", "Career Averages", count=f"{len(valid_selected)} players")
     rows = []
     for name in valid_selected:
         c = careers[name]
@@ -783,15 +847,40 @@ else:
             "RPG":             _gp_weighted(c, "REB"),
         })
     summary = pd.DataFrame(rows)
+
+    # Avg-score bars: careers cluster in a narrow band, so scale 15-100 against
+    # the visible min-max instead of 0-max (keeps the differences legible).
+    _avg_col = f"Avg {SCORE_LABEL}"
+    _avg_min = float(summary[_avg_col].min())
+    _avg_max = float(summary[_avg_col].max())
+
+    def _avg_bar(v, _row, _lo=_avg_min, _hi=_avg_max):
+        try:
+            f = float(v)
+        except (TypeError, ValueError):
+            return ""
+        if f != f or _hi != _hi:   # NaN guards
+            return ""
+        pct = 15 + (f - _lo) / (_hi - _lo) * 85 if _hi > _lo else 100.0
+        return f"background:linear-gradient(90deg,var(--bar-tint) {pct:.0f}%,transparent 0)"
+
+    def _player_cell(v):
+        n = str(v)
+        return (f'<span class="hv-mini-wrap">{face_img(n, "hv-mini-face")}</span>'
+                f'{html.escape(n)}')
+
     html_table(
         summary,
         formatters={
+            "Player": _player_cell,
             f"Avg {SCORE_LABEL}":  lambda v: f"{v:.2f}",
             f"Peak {SCORE_LABEL}": lambda v: f"{v:.2f}",
             "PPG": lambda v: f"{v:.1f}", "APG": lambda v: f"{v:.1f}",
             "RPG": lambda v: f"{v:.1f}", "Games": lambda v: str(int(v)),
             "Seasons": lambda v: str(int(v)),
         },
+        raw={"Player"},
+        styles={_avg_col: _avg_bar},
         aligns={c: "right" for c in ["Seasons", "Games", f"Avg {SCORE_LABEL}",
                                      f"Peak {SCORE_LABEL}", "PPG", "APG", "RPG"]},
         numeric={"Seasons", "Games", f"Avg {SCORE_LABEL}", f"Peak {SCORE_LABEL}",
@@ -802,7 +891,8 @@ else:
     st.divider()
 
     # ── Overlaid career arc chart ─────────────────────────────────────────────
-    st.subheader(f"{SCORE_LABEL} · career arcs overlaid")
+    render_rail("The overlay", f"{SCORE_LABEL} career arcs",
+                count=f"{len(valid_selected)} players")
 
     fig = go.Figure()
     all_x_vals: list = []
@@ -902,14 +992,17 @@ else:
     st.divider()
 
     # ── Side-by-side season tables ────────────────────────────────────────────
-    st.subheader("Season by season")
+    render_rail("The logs", "Season by Season")
     cols = st.columns(len(valid_selected))
     for col, name in zip(cols, valid_selected):
         with col:
             color = _PALETTE[valid_selected.index(name) % len(_PALETTE)]
             st.markdown(
-                f"<div style='border-left:3px solid {color}; padding-left:0.5rem; "
-                f"font-weight:700; margin-bottom:0.4rem;'>{name}</div>",
+                f"<div style='display:flex; align-items:center; "
+                f"border-left:3px solid {color}; padding-left:0.5rem; "
+                f"font-weight:700; margin-bottom:0.4rem;'>"
+                f'<span class="hv-mini-wrap">{face_img(name, "hv-mini-face")}</span>'
+                f"{html.escape(name)}</div>",
                 unsafe_allow_html=True,
             )
             c = careers[name]
@@ -923,10 +1016,13 @@ else:
             html_table(
                 tbl,
                 formatters={
+                    "Team": _team_cell,
                     "GP": lambda v: str(int(v)),
                     "PTS": lambda v: f"{v:.1f}", "AST": lambda v: f"{v:.1f}",
                     "REB": lambda v: f"{v:.1f}", SCORE_COL: lambda v: f"{v:.2f}",
                 },
+                raw={"Team"},
+                styles={SCORE_COL: _score_bar_style(float(tbl[SCORE_COL].max()))},
                 aligns={c: "right" for c in ["GP", "PTS", "AST", "REB", SCORE_COL]},
                 numeric={"GP", "PTS", "AST", "REB", SCORE_COL},
                 row_style=_peak3,

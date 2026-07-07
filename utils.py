@@ -92,6 +92,7 @@
 ║     always wrapped in try/except + logger.warning so failures surface.   ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 """
+import html
 import logging
 import math
 import re
@@ -1816,6 +1817,141 @@ _HIDE_BADGE_SCRIPT = """
 """
 
 
+# ══════════════════════════════════════════════════════════════════════════════
+# HV visual kit — shared by the homepage and all pages (rails, team colors,
+# headshots, sparklines). Emitted site-wide by render_page_chrome().
+# ══════════════════════════════════════════════════════════════════════════════
+
+# Team accent colors: rails, dots, rings, and low-alpha washes ONLY (never text,
+# never a full background). Brightest recognizable color per team so an 8px dot
+# reads on both the dark and light panel surfaces (navy/black brands swapped for
+# their secondary: BKN/SAS silver, DEN/IND/NOP/UTA gold, MIN lake blue).
+TEAM_HEX = {
+    "ATL": "#E03A3E", "BOS": "#007A33", "BKN": "#8A8D8F", "CHA": "#00788C", "CHI": "#CE1141",
+    "CLE": "#A31D3C", "DAL": "#0064B1", "DEN": "#FEC524", "DET": "#C8102E", "GSW": "#1D428A",
+    "HOU": "#CE1141", "IND": "#FDBB30", "LAC": "#C8102E", "LAL": "#552583", "MEM": "#5D76A9",
+    "MIA": "#B62435", "MIL": "#1E7A44", "MIN": "#236192", "NOP": "#B4975A", "NYK": "#F58426",
+    "OKC": "#007AC1", "ORL": "#0077C0", "PHI": "#006BB6", "PHX": "#E56020", "POR": "#E03A3E",
+    "SAC": "#5A2D81", "SAS": "#8A8D8F", "TOR": "#CE1141", "UTA": "#F9A01B", "WAS": "#E31837",
+}
+
+
+def hex_rgba(h: str, alpha: float) -> str:
+    """'#RRGGBB' -> 'rgba(r,g,b,a)'. Plotly and per-player CSS can't read theme
+    tokens, so team tints are computed server-side from TEAM_HEX."""
+    h = h.lstrip("#")
+    return f"rgba({int(h[0:2], 16)},{int(h[2:4], 16)},{int(h[4:6], 16)},{alpha})"
+
+
+def hex_darken(h: str, f: float = 0.72) -> str:
+    h = h.lstrip("#")
+    return "#" + "".join(f"{int(int(h[i:i + 2], 16) * f):02x}" for i in (0, 2, 4))
+
+
+def hex_is_light(h: str) -> bool:
+    h = h.lstrip("#")
+    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
+    return (0.299 * r + 0.587 * g + 0.114 * b) > 175
+
+
+@st.cache_data(show_spinner=False)
+def _headshot_id_map() -> dict:
+    """normalize(name) -> nba.com player id. nba_api's static players table is a
+    bundled offline json (no network); active players win name collisions."""
+    try:
+        from nba_api.stats.static import players as _np
+        m = {}
+        for p in _np.get_players():
+            k = normalize(p["full_name"])
+            if k not in m or p.get("is_active"):
+                m[k] = p["id"]
+        return m
+    except Exception:
+        return {}
+
+
+def face_img(name: str, css_class: str) -> str:
+    """Lazy circular headshot <img> from the NBA CDN, or '' when the id is
+    unknown. 404s hide themselves via the capture-phase guard in the chrome
+    (Streamlit strips inline onerror= attributes)."""
+    pid = _headshot_id_map().get(normalize(str(name)))
+    if not pid:
+        return ""
+    return (f'<img class="{css_class}" loading="lazy" decoding="async" '
+            f'src="https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png" alt="">')
+
+
+def spark_svg(scores: list, w: int = 72, h: int = 20) -> str:
+    """Tiny inline career-shape polyline."""
+    if not scores or len(scores) < 2:
+        return ""
+    lo, hi = min(scores), max(scores)
+    rng = (hi - lo) or 1.0
+    pts = " ".join(f"{i / (len(scores) - 1) * (w - 2) + 1:.1f},"
+                   f"{h - 2 - (s - lo) / rng * (h - 4):.1f}"
+                   for i, s in enumerate(scores))
+    return (f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" style="vertical-align:middle">'
+            f'<polyline points="{pts}" fill="none" stroke="var(--logo-sage)" '
+            f'stroke-width="1.5" stroke-linejoin="round"/></svg>')
+
+
+def render_rail(kicker: str, title: str, count: str | None = None, meta: str | None = None) -> None:
+    """Ruled section header: kicker + title + optional count pill + right meta."""
+    bits = [f'<span class="k">{html.escape(kicker)}</span>',
+            f'<span class="t">{html.escape(title)}</span>']
+    if count:
+        bits.append(f'<span class="n">{html.escape(count)}</span>')
+    if meta:
+        bits.append(f'<span class="meta">{html.escape(meta)}</span>')
+    st.markdown(f'<div class="hv-rail">{"".join(bits)}</div>', unsafe_allow_html=True)
+
+
+# Rail headers, mini headshots, and the 30 team-dot colors, site-wide.
+HV_KIT_CSS = ("""
+<style>
+.hv-rail{display:flex;align-items:center;gap:.65rem;margin:0;padding:1.6rem 0 .7rem;}
+.hv-rail::before{content:"";width:4px;height:1.05em;background:var(--accent-red);
+    border-radius:2px;flex:0 0 auto;}
+.hv-rail .k{font-size:.64rem;font-weight:800;letter-spacing:.11em;
+    text-transform:uppercase;color:var(--fg-4);white-space:nowrap;}
+.hv-rail .t{font-size:1.02rem;font-weight:800;color:var(--fg-1);white-space:nowrap;}
+.hv-rail .n{font-size:.72rem;font-weight:700;color:var(--fg-4);background:var(--panel-2);
+    border:1px solid var(--panel-line);border-radius:99px;padding:.1rem .55rem;
+    font-variant-numeric:tabular-nums;white-space:nowrap;}
+.hv-rail .meta{font-size:.72rem;color:var(--fg-4);white-space:nowrap;order:10;}
+.hv-rail::after{content:"";flex:1;height:1px;background:var(--hairline);order:9;}
+[data-testid="stMarkdownContainer"]:has(.hv-rail){margin-bottom:0 !important;}
+.hv-mini-wrap{display:inline-block;width:24px;height:24px;border-radius:50%;
+    background:var(--panel-2);margin-right:0.45rem;vertical-align:middle;
+    overflow:hidden;flex:0 0 auto;}
+img.hv-mini-face{width:24px;height:24px;border-radius:50%;object-fit:cover;
+    object-position:center 15%;display:block;}
+"""
+    + "".join(f".tdot-{k}{{background:{v}}}" for k, v in TEAM_HEX.items())
+    + "</style>")
+
+
+# Hide headshots whose CDN image 404s. Runs from a components iframe as a
+# capture-phase listener on the parent document (img error events don't bubble).
+FACE_GUARD_SCRIPT = """
+<script>
+(function () {
+    var doc = window.parent.document;
+    if (doc.__hvFaceGuard) return;
+    doc.__hvFaceGuard = true;
+    doc.addEventListener('error', function (e) {
+        var t = e.target;
+        if (t && t.tagName === 'IMG' &&
+            (t.classList.contains('fp-face') || t.classList.contains('hub-face') ||
+             t.classList.contains('hv-mini-face'))) {
+            t.style.display = 'none';
+        }
+    }, true);
+})();
+</script>
+"""
+
+
 def render_page_chrome() -> None:
     """One-call page chrome: COMMON_CSS + the hide-badge MutationObserver.
 
@@ -1829,8 +1965,10 @@ def render_page_chrome() -> None:
     inject_theme()                       # tokens first — COMMON_CSS references them
     st.markdown(COMMON_CSS, unsafe_allow_html=True)
     st.markdown(HV_TABLE_CSS, unsafe_allow_html=True)
+    st.markdown(HV_KIT_CSS, unsafe_allow_html=True)  # rails, mini faces, team dots
     _components.html(_HIDE_BADGE_SCRIPT, height=0)
     _components.html(_HV_SORT_SCRIPT, height=0)      # delegated click-to-sort
+    _components.html(FACE_GUARD_SCRIPT, height=0)    # hide 404 headshots
 
 
 def render_nav(current: str) -> None:

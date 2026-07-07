@@ -1,3 +1,4 @@
+import html
 import math
 import sys
 from pathlib import Path
@@ -17,7 +18,7 @@ from utils import (
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary, html_table,
-    render_nav, render_page_chrome,
+    render_nav, render_page_chrome, render_rail, face_img, TEAM_HEX,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
 )
@@ -123,18 +124,10 @@ if _is_pre_1990:
 
 _n_under = int((df['value_diff'] < -5_000_000).sum())
 _n_over  = int((df['value_diff'] >  5_000_000).sum())
-st.markdown(
-    f"""
-    <div style="margin-top:0.85rem; margin-bottom:0.35rem;
-                font-size:0.875rem; color:var(--fg-3);">
-        <b style="color:var(--fg-1);">{len(df)}</b> players ranked ·
-        <b style="color:var(--fg-1);">{_n_under}</b> underpaid (earning $5M+ below projection) ·
-        <b style="color:var(--fg-1);">{_n_over}</b> overpaid (earning $5M+ above projection)
-    </div>
-    <hr style="margin-top:0.35rem; margin-bottom:1rem;
-               border:0; border-top:1px solid var(--hairline);" />
-    """,
-    unsafe_allow_html=True,
+render_rail(
+    "The headlines", "Season Standouts",
+    count=f"{len(df)} players",
+    meta=f"{_n_under} underpaid · {_n_over} overpaid by $5M+ vs projection",
 )
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -217,57 +210,84 @@ if _prev_season:
 
 st.markdown("""
 <style>
-.hero-card {
-    border-radius: 12px;
-    padding: 1.1rem 1.3rem;
-    text-align: center;
-    height: 100%;
-}
-.hero-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .08em; opacity: .65; margin-bottom: .25rem; }
-.hero-name  { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
-.hero-sub   { font-size: 0.82rem; margin-top: .35rem; opacity: .75; }
+/* Standout cards: headshot + kicker/name/big value/sub, team-color left rail
+   (mirrors the homepage front-page cards). */
+.hero-card{position:relative;display:flex;align-items:center;gap:.8rem;
+    background:var(--panel-solid);border:1px solid var(--panel-line);
+    border-left:4px solid var(--team,var(--accent-teal));border-radius:12px;
+    padding:.8rem 1rem;box-shadow:var(--shadow-card);min-height:104px;height:100%;}
+img.hero-face{width:52px;height:52px;border-radius:50%;object-fit:cover;
+    object-position:center 12%;background:var(--panel-2);
+    border:2px solid var(--team,var(--panel-line));flex:0 0 auto;}
+.hero-card .k{font-size:.64rem;font-weight:800;letter-spacing:.1em;
+    text-transform:uppercase;color:var(--fg-4);}
+.hero-card .nm{font-size:.95rem;font-weight:800;color:var(--fg-1);line-height:1.15;
+    margin:.1rem 0;}
+.hero-card .v{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums;
+    line-height:1.1;}
+.hero-card .v.good{color:var(--value-good);}
+.hero-card .v.bad{color:var(--value-bad);}
+.hero-card .v.teal{color:var(--accent-teal);}
+.hero-card .v.sky{color:var(--sky);}
+.hero-card .sub{font-size:.72rem;color:var(--fg-3);}
 </style>
 """, unsafe_allow_html=True)
 
+
+def _hero_card(kicker: str, name, team, value_cls: str, value: str, sub: str) -> str:
+    """One standout card. Every data-derived string is escaped; the headshot
+    ('' when unknown, 404s auto-hide) and team rail come from the shared kit."""
+    _hx = TEAM_HEX.get(str(team), "")
+    _style = f' style="--team:{_hx}"' if _hx else ""
+    return (f'<div class="hero-card"{_style}>'
+            f'{face_img(str(name), "hero-face fp-face")}'
+            f'<span style="min-width:0">'
+            f'<span class="k" style="display:block">{html.escape(kicker)}</span>'
+            f'<span class="nm" style="display:block">{html.escape(str(name))}</span>'
+            f'<span class="v {value_cls}" style="display:block">{html.escape(value)}</span>'
+            f'<span class="sub" style="display:block">{html.escape(sub)}</span>'
+            f'</span></div>')
+
+
 h1, h2, h3, h4 = st.columns(4, gap="medium")
 with h1:
-    st.markdown(f"""
-    <div class="hero-card" style="background:var(--tint-good); border:1px solid var(--value-good);">
-        <div class="hero-label">Best Player Right Now</div>
-        <div class="hero-name">{_best_row['Player']}</div>
-        <div class="hero-sub">{_best_row['Team']} · Score {_best_row['barrett_score']:.1f}</div>
-    </div>""", unsafe_allow_html=True)
+    _best_sal = float(_best_row["salary"] or 0) / 1e6
+    _best_sub = (f"{_best_row['Team']} · ${_best_sal:.1f}M salary" if _best_sal > 0
+                 else f"{_best_row['Team']} · League #1 by Barrett Score")
+    st.markdown(_hero_card(
+        "Best player right now", _best_row["Player"], _best_row["Team"],
+        "teal", f"{_best_row['barrett_score']:.2f}", _best_sub,
+    ), unsafe_allow_html=True)
 with h2:
     steal_diff = abs(_steal_row['value_diff'] / 1e6)
-    st.markdown(f"""
-    <div class="hero-card" style="background:var(--tint-good); border:1px solid var(--value-good);">
-        <div class="hero-label">Biggest Steal</div>
-        <div class="hero-name">{_steal_row['Player']}</div>
-        <div class="hero-sub">{_steal_row['Team']} · ${steal_diff:.1f}M below market value</div>
-    </div>""", unsafe_allow_html=True)
+    st.markdown(_hero_card(
+        "Biggest steal", _steal_row["Player"], _steal_row["Team"],
+        "good", f"-${steal_diff:.1f}M",
+        f"paid ${_steal_row['salary'] / 1e6:.1f}M · worth ${_steal_row['projected_salary'] / 1e6:.1f}M",
+    ), unsafe_allow_html=True)
 with h3:
     over_diff = _overpaid_row['value_diff'] / 1e6
-    st.markdown(f"""
-    <div class="hero-card" style="background:var(--tint-bad); border:1px solid var(--value-bad);">
-        <div class="hero-label">Most Overpaid</div>
-        <div class="hero-name">{_overpaid_row['Player']}</div>
-        <div class="hero-sub">{_overpaid_row['Team']} · ${over_diff:.1f}M above market value</div>
-    </div>""", unsafe_allow_html=True)
+    st.markdown(_hero_card(
+        "Most overpaid", _overpaid_row["Player"], _overpaid_row["Team"],
+        "bad", f"+${over_diff:.1f}M",
+        f"paid ${_overpaid_row['salary'] / 1e6:.1f}M · worth ${_overpaid_row['projected_salary'] / 1e6:.1f}M",
+    ), unsafe_allow_html=True)
 with h4:
     if _improved_row is not None:
         _sign = "+" if _improved_delta >= 0 else ""
-        st.markdown(f"""
-        <div class="hero-card" style="background:var(--panel-2); border:1px solid var(--sky);">
-            <div class="hero-label">Most Improved</div>
-            <div class="hero-name">{_improved_row['Player']}</div>
-            <div class="hero-sub">{_improved_row['Team']} · {_sign}{_improved_delta:.1f} pts vs last season</div>
-        </div>""", unsafe_allow_html=True)
+        st.markdown(_hero_card(
+            "Most improved", _improved_row["Player"], _improved_row["Team"],
+            "sky", f"{_sign}{_improved_delta:.1f} pts",
+            f"{_improved_row['prev_score']:.1f} → {_improved_row['barrett_score']:.1f} vs {_prev_season}",
+        ), unsafe_allow_html=True)
     else:
         st.markdown("""
-        <div class="hero-card" style="background:var(--panel-2); border:1px solid var(--sky);">
-            <div class="hero-label">Most Improved</div>
-            <div class="hero-name">, </div>
-            <div class="hero-sub">No prior season to compare</div>
+        <div class="hero-card">
+            <span style="min-width:0">
+                <span class="k" style="display:block">Most improved</span>
+                <span class="nm" style="display:block">—</span>
+                <span class="sub" style="display:block">No prior season to compare</span>
+            </span>
         </div>""", unsafe_allow_html=True)
 
 st.divider()
@@ -275,7 +295,7 @@ st.divider()
 # ══════════════════════════════════════════════════════════════════════════════
 # Top 10 — current season bar chart
 # ══════════════════════════════════════════════════════════════════════════════
-st.subheader("Top 10 Players")
+render_rail("The leaders", "Top 10 Players", meta=season)
 st.caption(f"Current {season} Barrett Score with change vs prior season.")
 
 _top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score", "PLAYER_ID"]].reset_index(drop=True)
@@ -397,12 +417,44 @@ def _hsty_delta(v, _row):
     if n < -5:  return "color:var(--value-good-s)"
     return ""
 
-def _hsty_next(v, _row):
+def _fmt_next_chip(v):
+    """Next-contract cell: money + a status chip (TO/PO/RFA), muted sentinel.
+    Output is trusted HTML — the column must be listed in raw=."""
     s = str(v)
-    if s == "—":   return "color:var(--fg-6)"
-    if " TO" in s: return "color:var(--orange);font-weight:700"
-    if " PO" in s: return "color:var(--blue);font-weight:700"
-    return ""
+    if s == "—":
+        return '<span style="color:var(--fg-6)">—</span>'
+    if s == "RFA":
+        return '<span class="hv-chip rfa">RFA</span>'
+    if s.endswith(" TO"):
+        return f'{html.escape(s[:-3])} <span class="hv-chip to">TO</span>'
+    if s.endswith(" PO"):
+        return f'{html.escape(s[:-3])} <span class="hv-chip po">PO</span>'
+    return html.escape(s)
+
+def _fmt_team_dot(v):
+    """Team cell: team-color dot + abbrev (raw column; unknown teams fall back
+    to the neutral dot color)."""
+    return (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
+            f'{html.escape(str(v))}')
+
+def _score_bar_style(max_val):
+    """In-cell Barrett Score bar scaled against the visible table's max."""
+    try:
+        _mx = float(max_val)
+    except (TypeError, ValueError):
+        _mx = 0.0
+    if _mx != _mx:  # NaN
+        _mx = 0.0
+    def _sty(v, _row):
+        try:
+            n = float(v)
+        except (TypeError, ValueError):
+            return ""
+        if n != n or _mx <= 0:
+            return ""
+        pct = max(0.0, min(n / _mx, 1.0)) * 100
+        return f"background:linear-gradient(90deg,var(--bar-tint) {pct:.0f}%,transparent 0)"
+    return _sty
 
 def _hsty_salary(_v, row):
     if normalize(str(row.get("Player", ""))) in _rookie_scale:
@@ -487,6 +539,8 @@ def render_splits_panel(player_name, season):
                   "Avail ×", "Barrett Score"]
     html_table(
         fmt,
+        formatters={"Team": _fmt_team_dot},
+        raw={"Team"},
         aligns={c: "right" for c in _split_num},
         helps={
             "D-LEBRON": "Defensive LEBRON: points prevented per game vs average.",
@@ -580,7 +634,7 @@ with tog_c:
 
 # ── Graph mode (flexible scatter; defaults match the old Salary view) ─────────
 if show_graph_mode:
-    st.markdown("### Graph mode")
+    render_rail("Explore", "Graph Mode", meta=season)
     st.caption("Plot any two metrics against each other. Pick X, Y, and color, then hover any dot for player detail.")
 
     # Drop rows with no salary data — they cluster at $0 and obscure salary axes.
@@ -704,16 +758,19 @@ if show_graph_mode:
         ascending=(sort_mode == "Most Underpaid")).reset_index(drop=True)
     sc_tbl.insert(0, "#", range(1, len(sc_tbl) + 1))
 
+    _g_bar = _score_bar_style(sc_tbl["Barrett Score"].max())
     html_table(
         sc_tbl,
         formatters={
+            "Team":            _fmt_team_dot,
             "Score Rank":      lambda v: str(int(v)),
             "Barrett Score":   lambda v: f"{v:.2f}",
             "Proj. Salary $M": lambda v: f"${v:.2f}M",
             "Salary $M":       lambda v: f"${v:.2f}M",
             "Δ Market $M":     lambda v: f"${v:.2f}M",
         },
-        styles={"Δ Market $M": _hsty_delta},
+        raw={"Team"},
+        styles={"Δ Market $M": _hsty_delta, "Barrett Score": _g_bar},
         aligns={c: "right" for c in ["#", "Score Rank", "Barrett Score",
                 "Proj. Salary $M", "Salary $M", "Δ Market $M"]},
         numeric={"#", "Score Rank", "Barrett Score", "Proj. Salary $M",
@@ -806,6 +863,8 @@ if show_splits and splits_df is not None:
     _nc_lookup = df.set_index("Player")["next_contract"]
     sdisplay["Next $"] = sdisplay["Player"].map(_nc_lookup).fillna("—")
 
+    render_rail("The board", f"{season} Splits", count=f"{len(sdisplay)} rows")
+
     if advanced:
         sfmt = sdisplay[["Player", "Team", "GP", "MPG",
                           "base_score", "avail_mult", "barrett_score",
@@ -866,9 +925,11 @@ if show_splits and splits_df is not None:
     _s_num = {"#", "GP", "MPG", "Base Score", "Avail ×", "Barrett Score",
               "Score Rank", "Salary", "Proj. Salary", "Δ Market", "Salary Rank",
               "Rank Diff", "D-LEBRON", "TS%"}
+    _s_bar = _score_bar_style(sfmt["Barrett Score"].max())
     html_table(
         sfmt,
         formatters={
+            "Team": _fmt_team_dot, "Next $": _fmt_next_chip,
             "GP": lambda v: str(int(v)), "MPG": lambda v: f"{v:.2f}",
             "Base Score": lambda v: f"{v:.2f}", "Avail ×": lambda v: f"{v:.3f}",
             "Barrett Score": lambda v: f"{v:.2f}", "Score Rank": lambda v: str(int(v)),
@@ -877,8 +938,9 @@ if show_splits and splits_df is not None:
             "Rank Diff": lambda v: f"{int(v):+d}", "D-LEBRON": lambda v: f"{v:.2f}",
             "TS%": lambda v: f"{v:.1f}%",
         },
+        raw={"Team", "Next $"},
         styles={"Rank Diff": _hsty_rankdiff, "Δ Market": _hsty_delta,
-                "Next $": _hsty_next, "Salary": _hsty_salary},
+                "Barrett Score": _s_bar, "Salary": _hsty_salary},
         aligns={c: "right" for c in _s_num},
         numeric=_s_num,
         row_style=lambda rd: ("background:var(--panel-2);font-weight:700"
@@ -900,7 +962,7 @@ if show_splits and splits_df is not None:
             "Players who switched teams mid-season appear as separate stints. "
             "**Δ Market** = Actual − Projected. "
             "Purple salary = rookie scale. "
-            "**Next $**: white = guaranteed · orange (TO) = team option · blue (PO) = player option · gray = UFA."
+            "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA."
         )
 else:
     # ── Rankings table ────────────────────────────────────────────────────
@@ -936,14 +998,21 @@ else:
     if not advanced:
         display_fmt = display_fmt[["#", "Player", "Team", "Barrett Score", "Salary", "Proj. Salary", "Δ Market", "Next $"]]
 
+    render_rail("The board",
+                f"{season} {'Playoff ' if playoff_mode else ''}Rankings",
+                count=f"{len(display_fmt)} players")
+
     # Superset of formatters/styles — html_table only applies those whose column
     # is actually present, so basic + advanced modes both work from one spec.
     _r_num = {"#", "GP", "MPG", "Base Score", "Avail ×", "Barrett Score",
               "Score Rank", "Salary", "Proj. Salary", "Δ Market", "Salary Rank",
               "Rank Diff", "D-LEBRON", "TS%"}
+    _r_bar = _score_bar_style(display_fmt["Barrett Score"].max())
     html_table(
         display_fmt,
         formatters={
+            "Team":          _fmt_team_dot,
+            "Next $":        _fmt_next_chip,
             "GP":            lambda v: str(int(v)),
             "MPG":           lambda v: f"{v:.2f}",
             "Base Score":    lambda v: f"{v:.2f}",
@@ -958,16 +1027,17 @@ else:
             "D-LEBRON":      lambda v: f"{v:.2f}",
             "TS%":           lambda v: f"{v:.1f}%",
         },
+        raw={"Team", "Next $"},
         styles={
-            "Rank Diff": _hsty_rankdiff,
-            "Δ Market":  _hsty_delta,
-            "Next $":    _hsty_next,
-            "Salary":    _hsty_salary,
+            "Rank Diff":     _hsty_rankdiff,
+            "Δ Market":      _hsty_delta,
+            "Barrett Score": _r_bar,
+            "Salary":        _hsty_salary,
         },
         aligns={c: "right" for c in _r_num},
         numeric=_r_num,
         helps={
-            "Next $": "Next season salary. White = guaranteed · orange (TO) = team option · blue (PO) = player option ·, = UFA.",
+            "Next $": "Next season salary. Plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.",
             "Barrett Score": "Base Score × Availability Multiplier.",
             "Salary": "Player's actual salary this season. Purple = rookie-scale contract.",
             "Proj. Salary": "Salary earned by whoever holds the same rank by pay.",
@@ -991,11 +1061,11 @@ else:
         if advanced:
             st.caption("**Rank Diff** = Salary Rank − Score Rank. **Δ Market** = Actual − Projected (red = overpaid, green = underpaid). "
                        "Purple salary = rookie scale contract (1st-round pick, yrs 1–4). "
-                       "**Next $**: white = guaranteed · orange (TO) = team option · blue (PO) = player option · gray = UFA.")
+                       "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.")
         else:
             st.caption("**Proj. Salary** = what this player would earn paid by Barrett Score rank. **Δ Market** = Actual − Projected. "
                        "Purple salary = rookie scale contract (1st-round pick, yrs 1–4). "
-                       "**Next $**: white = guaranteed · orange (TO) = team option · blue (PO) = player option · gray = UFA.")
+                       "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.")
 
 # ── Fill panel placeholder (above multiselect) ────────────────────────────
 new_selected = st.session_state.get("rankings_selected", [])
@@ -1097,7 +1167,7 @@ if new_selected:
                 _solo_dleb   = float(dlebron_lookup.get(_solo_pid, 0.0))
                 _monthly     = fetch_monthly_scores(_solo_pid, season, _solo_dleb, league_avg_ts)
                 if not _monthly.empty:
-                    st.markdown(f"#### {_solo} · {season} Monthly Cumulative Score")
+                    render_rail("Month by month", f"{_solo} Cumulative Score", meta=season)
                     st.caption("Each point is the cumulative season-to-date Barrett Score through end of that month.")
 
                     _season_score = float(df.loc[df["Player"] == _solo, "barrett_score"].iloc[0]) \
@@ -1169,9 +1239,9 @@ if new_selected:
                                     config={"displayModeBar": False})
 
         for name in new_selected:
-            title_col, btn_col = st.columns([20, 1])
+            title_col, btn_col = st.columns([20, 1], vertical_alignment="bottom")
             with title_col:
-                st.subheader(f"{name} · {season}")
+                render_rail("Season splits", name, meta=season)
             with btn_col:
                 if st.button("✕", key=f"x_{name}", help="Remove"):
                     updated = [n for n in new_selected if n != name]

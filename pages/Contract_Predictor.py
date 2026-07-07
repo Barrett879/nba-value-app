@@ -39,6 +39,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import warnings
 warnings.filterwarnings("ignore")
 
+import html
 import numpy as np
 import pandas as pd
 import streamlit as st
@@ -50,6 +51,8 @@ from utils import (
     fetch_bref_positions, fetch_player_positions_detailed, position_to_bucket,
     render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
     html_table,
+    # HV visual kit — rails, headshots, team accents
+    render_rail, face_img, TEAM_HEX, hex_rgba,
     # Calibration constants — single source of truth in utils
     SALARY_CAP_M, cap_dollars,
     CONTRACT_POSITION_MULTIPLIERS as POSITION_MULTIPLIERS,
@@ -2161,6 +2164,22 @@ elif _cur_sal_dollars > 0:
         f'</div>'
     )
 
+# ── Hero visual kit: headshot + team-color accent (matches the homepage banner) ──
+# TEAM_HEX is used only for the left rail / ring / low-alpha wash, never text.
+_hero_team = str(features.get("team") or "").strip()
+_hero_hex = TEAM_HEX.get(_hero_team, "")
+_hero_accent = _hero_hex if _hero_hex else "var(--accent-teal)"
+_hero_wash = hex_rgba(_hero_hex, 0.08) if _hero_hex else "rgba(230,57,70,0.07)"
+# "hub-face" keeps the site-wide 404 auto-hide guard; cp-hero-face carries the
+# page-local sizing + team-color ring.
+_hero_face = face_img(features.get("name", ""), "hub-face cp-hero-face")
+st.markdown(
+    "<style>img.cp-hero-face{width:64px;height:64px;border-radius:50%;"
+    "object-fit:cover;object-position:center 12%;background:var(--panel-2);"
+    f"border:2px solid {_hero_accent};flex:0 0 auto;}}</style>",
+    unsafe_allow_html=True,
+)
+
 if _market_median is not None:
     market_M = _market_median / 1_000_000
     # Fold the market into the confidence band: equal to the model band when
@@ -2199,9 +2218,11 @@ if _market_median is not None:
         _meta_bits.append(_draft_label)
     _player_meta_line = " · ".join(_meta_bits)
     _header_html = f"""
-    <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
-                border:1px solid var(--hairline); border-radius:16px;
+    <div style="background:linear-gradient(135deg, {_hero_wash} 0%, rgba(22,212,193,0.06) 100%);
+                border:1px solid var(--hairline); border-left:4px solid {_hero_accent};
+                border-radius:16px;
                 padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
+      <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
       <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
         {features["name"]}{_score_chip_html}
       </div>
@@ -2211,7 +2232,7 @@ if _market_median is not None:
       </div>
       <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
         {_player_meta_line}
-      </div>{_signing_html}
+      </div>{_signing_html}</div></div>
       <div style="margin-top:1.05rem; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;">
         <div style="line-height:0.9;"><span style="font-size:3.4rem; font-weight:800; color:var(--fg-1); letter-spacing:-0.02em;">${predicted_M:.1f}M</span><span style="font-size:0.95rem; color:var(--fg-4); font-weight:600;"> /yr</span>{_caption_chip}</div>{_raise_html}
       </div>
@@ -2257,9 +2278,11 @@ else:
             'comps). Anchoring the range on current salary instead.'
         )
         _header_html = f"""
-        <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
-                    border:1px solid var(--hairline); border-radius:16px;
+        <div style="background:linear-gradient(135deg, {_hero_wash} 0%, rgba(22,212,193,0.06) 100%);
+                    border:1px solid var(--hairline); border-left:4px solid {_hero_accent};
+                    border-radius:16px;
                     padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
+          <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
           <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
             {features["name"]}{_score_chip_html}
           </div>
@@ -2269,7 +2292,7 @@ else:
           </div>
           <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
             {_player_meta_line}
-          </div>{_signing_html}
+          </div>{_signing_html}</div></div>
           <div style="margin-top:1.05rem; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;">
             <div style="line-height:0.9;"><span style="font-size:3.4rem; font-weight:800; color:var(--fg-1); letter-spacing:-0.02em;">${predicted_M:.1f}M</span><span style="font-size:0.95rem; color:var(--fg-4); font-weight:600;"> /yr</span>{_caption_chip}</div>{_raise_html}
           </div>
@@ -2287,9 +2310,11 @@ else:
         """
     else:
         _header_html = f"""
-        <div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, rgba(22,212,193,0.06) 100%);
-                    border:1px solid var(--hairline); border-radius:16px;
+        <div style="background:linear-gradient(135deg, {_hero_wash} 0%, rgba(22,212,193,0.06) 100%);
+                    border:1px solid var(--hairline); border-left:4px solid {_hero_accent};
+                    border-radius:16px;
                     padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
+          <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
           <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
             {features["name"]}{_score_chip_html}
           </div>
@@ -2299,7 +2324,7 @@ else:
           </div>
           <div style="font-size:0.78rem; color:var(--fg-3); margin-top:0.15rem;">
             {_player_meta_line}
-          </div>{_signing_html}
+          </div>{_signing_html}</div></div>
           <div style="margin-top:1.05rem; display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:0.8rem;">
             <div style="line-height:0.9;"><span style="font-size:3.4rem; font-weight:800; color:var(--fg-1); letter-spacing:-0.02em;">${predicted_M:.1f}M</span><span style="font-size:0.95rem; color:var(--fg-4); font-weight:600;"> /yr</span>{_caption_chip}</div>{_raise_html}
           </div>
@@ -2395,7 +2420,8 @@ _explain_bullets = explain_prediction(
 )
 
 # ── Comparables ──────────────────────────────────────────────────────────────
-st.subheader("Comparable signings")
+render_rail("The market", "Comparable Signings",
+            count=(f"{len(_comps)} comps" if not _comps.empty else None))
 st.caption(
     "Closest matches on trailing-weighted Barrett (last 3 healthy years, "
     "50/30/20) + age + position."
@@ -2414,14 +2440,12 @@ else:
         take = _scouting_take(features, comps)
         if take:
             top3_str = ", ".join(take["top3"])
+            render_rail("Second opinion", "Scouting Take",
+                        meta="weighted by comp closeness")
             scouting_html = f"""
             <div style="background:linear-gradient(135deg, rgba(22,212,193,0.07) 0%, rgba(22,212,193,0.03) 100%);
                         border:1px solid rgba(22,212,193,0.22);
                         border-radius:14px; padding:1.2rem 1.5rem; margin:0.4rem 0 1.1rem 0;">
-              <div style="font-size:0.7rem; color:var(--accent-teal); letter-spacing:0.12em;
-                          text-transform:uppercase; font-weight:700; margin-bottom:0.85rem;">
-                Scouting take · market view
-              </div>
               <div style="display:flex; flex-wrap:wrap; gap:2rem; margin-bottom:0.7rem;
                           align-items:flex-end;">
                 <div>
@@ -2517,13 +2541,39 @@ else:
             "Sign-yr Score":  comps_with_ctx["barrett_score"].round(1).values,
             "Signed for":     [_fmt_money(v) for v in comps_with_ctx["salary_curr"]],
         })
+        # Score bars scale 15-100 across the VISIBLE rows (scores cluster
+        # around the target, so a min-max stretch keeps them readable).
+        _ss_vals = pd.to_numeric(comp_disp["Sign-yr Score"], errors="coerce")
+        _ss_lo = float(_ss_vals.min()) if _ss_vals.notna().any() else 0.0
+        _ss_rng = ((float(_ss_vals.max()) - _ss_lo)
+                   if _ss_vals.notna().any() else 0.0) or 1.0
+
+        def _ss_bar(v, _r):
+            try:
+                fv = float(v)
+            except (TypeError, ValueError):
+                return ""
+            if pd.isna(fv):
+                return ""
+            pct = 15 + 85 * (fv - _ss_lo) / _ss_rng
+            return (f"background:linear-gradient(90deg,var(--bar-tint) "
+                    f"{pct:.0f}%,transparent 0)")
+
         html_table(
             comp_disp,
             formatters={
+                "Player":        lambda v: (
+                    f'<span class="hv-mini-wrap">{face_img(str(v), "hv-mini-face")}</span>'
+                    f'{html.escape(str(v))}'),
                 "Age then":      lambda v: str(int(v)),
+                "Context":       lambda v: (
+                    '<span class="hv-chip max">SUPERMAX</span>'
+                    if str(v) == "Supermax" else html.escape(str(v))),
                 "Career Score":  lambda v: f"{v:.1f}",
                 "Sign-yr Score": lambda v: f"{v:.1f}",
             },
+            raw={"Player", "Context"},
+            styles={"Sign-yr Score": _ss_bar},
             aligns={"Age then": "right", "Career Score": "right",
                     "Sign-yr Score": "right", "Signed for": "right"},
             numeric={"Age then", "Career Score", "Sign-yr Score"},
@@ -2625,24 +2675,29 @@ try:
             if not _ts_rost.empty else []
         )
         if _ts_suitors:
+            # Team dot (global .tdot-XXX classes) + escaped abbrev; first row
+            # skips the hairline so the card top edge stays clean.
             _ts_rows = "".join(
                 f'<div style="display:flex; align-items:baseline; gap:0.7rem; padding:0.45rem 0; '
-                f'border-top:1px solid var(--hairline);">'
-                f'<span style="font-weight:800; color:var(--accent-teal); width:2.6rem;">{_s["team"]}</span>'
+                f'{"border-top:1px solid var(--hairline);" if _i else ""}">'
+                f'<span style="font-weight:800; color:var(--fg-1); width:3.4rem; white-space:nowrap;">'
+                f'<span class="tdot tdot-{html.escape(str(_s["team"]), quote=True)}"></span>'
+                f'{html.escape(str(_s["team"]))}</span>'
                 f'<span style="font-weight:800; color:var(--fg-2); width:3.6rem; '
                 f'white-space:nowrap;">${_s["offer_M"]:.0f}M</span>'
-                f'<span style="color:var(--fg-2); font-size:0.85rem;">{_s["reason"]}</span>'
+                f'<span style="color:var(--fg-2); font-size:0.85rem;">{html.escape(str(_s["reason"]))}</span>'
                 f'<span style="margin-left:auto; color:var(--fg-5); font-size:0.76rem; '
-                f'white-space:nowrap;">{_s["tool"]}</span></div>'
-                for _s in _ts_suitors
+                f'white-space:nowrap;">{html.escape(str(_s["tool"]))}</span></div>'
+                for _i, _s in enumerate(_ts_suitors)
             )
+            render_rail("Free agency", "Likely Suitors",
+                        count=f"{len(_ts_suitors)} teams",
+                        meta=f"projected offers · model value ${predicted_M:.0f}M")
             st.markdown(
                 '<div style="background:linear-gradient(135deg, rgba(230,57,70,0.07) 0%, '
                 'rgba(22,212,193,0.06) 100%); border:1px solid var(--hairline); '
                 'border-radius:14px; padding:1.1rem 1.4rem; margin:0.4rem 0 0.2rem;">'
-                '<div style="font-size:0.7rem; color:var(--accent-teal); letter-spacing:0.12em; '
-                'text-transform:uppercase; font-weight:700; margin-bottom:0.5rem;">'
-                f'Likely suitors, projected offers (model value ${predicted_M:.0f}M)</div>{_ts_rows}</div>',
+                f'{_ts_rows}</div>',
                 unsafe_allow_html=True,
             )
             # Explanatory blurb is rendered in the About expander below (keeps

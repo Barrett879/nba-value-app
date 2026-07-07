@@ -2,6 +2,8 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import html
+
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -15,6 +17,7 @@ from utils import (
     render_nav, render_page_chrome, html_table, stat_cards,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     tier_color, gradient_points,
+    render_rail, face_img, TEAM_HEX, spark_svg,
 )
 
 
@@ -38,6 +41,45 @@ def _hl_fall(v, _row):
     if n < -10: return "color:var(--value-bad);font-weight:700"
     if n < -4:  return "color:var(--value-bad-s)"
     return ""
+
+# ── Kit helpers: team dots, mini faces, in-cell score bars ─────────────────────
+def _team_dot_cell(v):
+    """Team abbrev with the site team dot. Historical abbrevs (SEA, NJN, VAN…)
+    have no .tdot-XXX class, so they get an inline neutral fallback."""
+    t = str(v)
+    fb = "" if t in TEAM_HEX else ' style="background:var(--fg-5)"'
+    return f'<span class="tdot tdot-{html.escape(t, quote=True)}"{fb}></span>{html.escape(t)}'
+
+def _face_cell(v):
+    """24px mini headshot + escaped name for player table cells."""
+    n = str(v)
+    return f'<span class="hv-mini-wrap">{face_img(n, "hv-mini-face")}</span>{html.escape(n)}'
+
+def _bar_style(series):
+    """In-cell score bar, 15–100% scaled to the visible table's min–max."""
+    try:
+        vals = [float(x) for x in series if pd.notna(x)]
+    except (TypeError, ValueError):
+        vals = []
+    lo = min(vals) if vals else 0.0
+    rng = ((max(vals) - lo) if vals else 0.0) or 1.0
+    def _s(v, _r):
+        try:
+            n = float(v)
+        except (TypeError, ValueError):
+            return ""
+        if pd.isna(n):
+            return ""
+        return ("background:linear-gradient(90deg,var(--bar-tint) "
+                f"{15 + (n - lo) / rng * 85:.0f}%,transparent 0)")
+    return _s
+
+def _hero_face(name, team):
+    """Hero-card headshot with a team-color ring (neutral hairline fallback)."""
+    hx = TEAM_HEX.get(str(team), "")
+    ring = f' style="border-color:{hx}"' if hx else ""
+    return (f'<span class="hero-face-wrap"{ring}>'
+            f'{face_img(str(name), "hv-mini-face hero-face")}</span>')
 
 st.set_page_config(page_title="Legacy", page_icon="static/favicon.svg", layout="wide")
 
@@ -130,6 +172,13 @@ _consistent_name  = _consistent.iloc[0]["Player"]  if not _consistent.empty else
 _consistent_avg   = _consistent.iloc[0]["avg_score"] if not _consistent.empty else 0
 _consistent_seas  = int(_consistent.iloc[0]["seasons"]) if not _consistent.empty else 0
 
+# Display-only: latest team for the consistency hero's headshot ring.
+_consistent_team = ""
+if not _consistent.empty:
+    _ct_rows = all_df[all_df["Player"] == _consistent_name]
+    if not _ct_rows.empty:
+        _consistent_team = str(_ct_rows.sort_values("_season_year").iloc[-1]["Team"])
+
 # Most undervalued single season — only count rows with real salary data
 # (pre-1996 has sparse coverage, so $0-salary rows aren't actually "underpaid",
 # they just don't have data and would dominate the ranking with fake gaps).
@@ -150,6 +199,11 @@ st.markdown("""
 .hero-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: .08em; opacity: .65; margin-bottom: .25rem; }
 .hero-name  { font-size: 1.25rem; font-weight: 800; line-height: 1.2; }
 .hero-sub   { font-size: 0.82rem; margin-top: .35rem; opacity: .75; }
+.hero-face-wrap { display: block; width: 56px; height: 56px; border-radius: 50%;
+    background: var(--panel-2); overflow: hidden; margin: 0 auto 0.5rem;
+    border: 2px solid var(--hairline); }
+.legacy-hero img.hero-face { width: 100%; height: 100%; border-radius: 50%;
+    object-fit: cover; object-position: center 15%; display: block; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -157,24 +211,27 @@ lh1, lh2, lh3 = st.columns(3, gap="medium")
 with lh1:
     st.markdown(f"""
     <div class="legacy-hero" style="background:var(--tint-bad); border:1px solid var(--orange);">
+        {_hero_face(_goat_row['Player'], _goat_row['Team'])}
         <div class="hero-label">Greatest Single Season</div>
-        <div class="hero-name">{_goat_row['Player']}</div>
-        <div class="hero-sub">{_goat_row['Season']} · {_goat_row['Team']} · Score {_goat_row['barrett_score']:.1f}</div>
+        <div class="hero-name">{html.escape(str(_goat_row['Player']))}</div>
+        <div class="hero-sub">{html.escape(str(_goat_row['Season']))} · {html.escape(str(_goat_row['Team']))} · Score {_goat_row['barrett_score']:.1f}</div>
     </div>""", unsafe_allow_html=True)
 with lh2:
     st.markdown(f"""
     <div class="legacy-hero" style="background:var(--panel-2); border:1px solid var(--blue);">
+        {_hero_face(_consistent_name, _consistent_team)}
         <div class="hero-label">Most Consistent Career (≥5 seasons)</div>
-        <div class="hero-name">{_consistent_name}</div>
+        <div class="hero-name">{html.escape(str(_consistent_name))}</div>
         <div class="hero-sub">Avg {_consistent_avg:.1f} across {_consistent_seas} seasons</div>
     </div>""", unsafe_allow_html=True)
 with lh3:
     steal_diff = abs(_steal_row["value_diff"] / 1e6)
     st.markdown(f"""
     <div class="legacy-hero" style="background:var(--tint-good); border:1px solid var(--value-good);">
+        {_hero_face(_steal_row['Player'], _steal_row['Team'])}
         <div class="hero-label">Most Underpaid Season Ever</div>
-        <div class="hero-name">{_steal_row['Player']}</div>
-        <div class="hero-sub">{_steal_row['Season']} · {_steal_row['Team']} · ${steal_diff:.1f}M below market</div>
+        <div class="hero-name">{html.escape(str(_steal_row['Player']))}</div>
+        <div class="hero-sub">{html.escape(str(_steal_row['Season']))} · {html.escape(str(_steal_row['Team']))} · ${steal_diff:.1f}M below market</div>
     </div>""", unsafe_allow_html=True)
 
 st.divider()
@@ -198,7 +255,8 @@ tab_rank, tab_arc, tab_era, tab_team, tab_long, tab_rec, tab_draft = st.tabs([
 # Tab 1: All-Time Rankings
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_rank:
-    st.subheader("Best Single-Season Barrett Scores · All Time")
+    render_rail("All-time", "Best Single-Season Barrett Scores",
+                count=f"{len(all_df):,} player-seasons")
     st.caption(
         "Every qualifying player-season from 1973–74 to today, ranked by Barrett Score. "
         "Switch the sort to surface the most underpaid seasons in history."
@@ -262,10 +320,13 @@ with tab_rank:
     html_table(
         rank_tbl,
         formatters={
+            "Team": _team_dot_cell,
             "Barrett Score": lambda v: f"{v:.2f}", "Season Rank": lambda v: str(int(v)),
             "Salary $M": lambda v: f"${v:.2f}M", "Δ Market $M": lambda v: f"${v:.2f}M",
         },
-        styles={"Δ Market $M": _hl_delta},
+        raw={"Team"},
+        styles={"Δ Market $M": _hl_delta,
+                "Barrett Score": _bar_style(rank_tbl["Barrett Score"])},
         aligns={c: "right" for c in ["#", "Barrett Score", "Season Rank", "Salary $M", "Δ Market $M"]},
         numeric={"#", "Barrett Score", "Season Rank", "Salary $M", "Δ Market $M"},
         helps={
@@ -281,7 +342,7 @@ with tab_rank:
 # Tab 2: Career Arc
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_arc:
-    st.subheader("Career Arc")
+    render_rail("Player focus", "Career Arc")
     st.caption(
         "How did a player's Barrett Score evolve over their career? "
         "Every season they appear in the data is shown, including injury years."
@@ -438,10 +499,13 @@ with tab_arc:
                 html_table(
                     arc_tbl,
                     formatters={
+                        "Team": _team_dot_cell,
                         "Barrett Score": lambda v: f"{v:.2f}", "Salary $M": lambda v: f"${v:.2f}M",
                         "Total Min": lambda v: str(int(v)), "GP": lambda v: str(int(v)),
                         "Season Rank": lambda v: str(int(v)),
                     },
+                    raw={"Team"},
+                    styles={"Barrett Score": _bar_style(arc_tbl["Barrett Score"])},
                     aligns={c: "right" for c in ["Barrett Score", "Season Rank", "GP", "Total Min", "Salary $M"]},
                     numeric={"Barrett Score", "Season Rank", "GP", "Total Min", "Salary $M"},
                     helps={"Total Min": "Total minutes played that season.", "GP": "Games played."},
@@ -457,7 +521,7 @@ with tab_arc:
 # Tab 3: Era Leaderboards
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_era:
-    st.subheader("Era Leaderboards")
+    render_rail("Eras", "Era Leaderboards")
     st.caption("Average Barrett Score within each era (GP-weighted), minimum 2 qualifying seasons. "
                "The cards show each era's top 10 at a glance, pick an era below for the full table.")
 
@@ -566,12 +630,18 @@ with tab_era:
     if _pick_board.empty:
         st.info("No players qualified for this era yet.")
     else:
+        # Mini faces only for post-1990 eras — earlier eras are all silhouettes.
+        _era_start = min(_season_year(s) for s in ERAS[_pick])
+        _era_view = _pick_board.head(50)
         html_table(
-            _pick_board.head(50),
+            _era_view,
             formatters={
+                "Player": _face_cell if _era_start >= 1990 else (lambda v: html.escape(str(v))),
                 "Avg Score": lambda v: f"{v:.2f}", "Peak Score": lambda v: f"{v:.2f}",
                 "Seasons": lambda v: str(int(v)),
             },
+            raw={"Player"},
+            styles={"Avg Score": _bar_style(_era_view["Avg Score"])},
             aligns={c: "right" for c in ["#", "Avg Score", "Peak Score", "Seasons"]},
             numeric={"#", "Avg Score", "Peak Score", "Seasons"},
             helps={
@@ -587,7 +657,7 @@ with tab_era:
 # Tab 4: Team Legacy — Mount Rushmore
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_team:
-    st.subheader("Team Legacy · Mount Rushmore")
+    render_rail("Franchise", "Team Legacy · Mount Rushmore")
     st.caption(
         "The four best single-season Barrett Scores in franchise history. "
         "Note: team abbreviations reflect the season they were played (e.g. NJN = Brooklyn)."
@@ -644,22 +714,27 @@ with tab_team:
         rush_tbl.columns = ["Player", "Season", "Barrett Score", "League Rank That Season", "Salary $M", "Δ Market $M"]
         rush_tbl.insert(0, "#", range(1, len(rush_tbl) + 1))
 
+        _rush_hex = TEAM_HEX.get(rush_team, "")
+        _rush_ring = f' style="box-shadow:inset 0 0 0 2px {_rush_hex}"' if _rush_hex else ""
         html_table(
             rush_tbl,
             formatters={
+                "Player": lambda v: (f'<span class="hv-mini-wrap"{_rush_ring}>'
+                                     f'{face_img(str(v), "hv-mini-face")}</span>'
+                                     f'{html.escape(str(v))}'),
                 "Barrett Score": lambda v: f"{v:.2f}",
                 "League Rank That Season": lambda v: str(int(v)),
                 "Salary $M": lambda v: f"${v:.2f}M", "Δ Market $M": lambda v: f"${v:.2f}M",
             },
-            styles={"Δ Market $M": _hl_delta},
+            raw={"Player"},
+            styles={"Δ Market $M": _hl_delta,
+                    "Barrett Score": _bar_style(rush_tbl["Barrett Score"])},
             aligns={c: "right" for c in ["#", "Barrett Score", "League Rank That Season", "Salary $M", "Δ Market $M"]},
             numeric={"#", "Barrett Score", "League Rank That Season", "Salary $M", "Δ Market $M"},
             helps={"League Rank That Season": "Their score rank among all players that year."},
             height=min(560, len(rush_tbl) * 38 + 46),
         )
 
-        st.divider()
-        st.markdown("**Full franchise leaderboard**")
         full_rush = (
             all_df[all_df["Team"] == rush_team]
             .sort_values("barrett_score", ascending=False)
@@ -668,9 +743,12 @@ with tab_team:
         full_rush_tbl = full_rush[["Player", "Season", "barrett_score", "score_rank"]].copy()
         full_rush_tbl.columns = ["Player", "Season", "Barrett Score", "League Rank"]
         full_rush_tbl.insert(0, "#", range(1, len(full_rush_tbl) + 1))
+        render_rail("Franchise", "Full Franchise Leaderboard",
+                    count=f"{len(full_rush_tbl):,} seasons")
         html_table(
             full_rush_tbl,
             formatters={"Barrett Score": lambda v: f"{v:.2f}", "League Rank": lambda v: str(int(v))},
+            styles={"Barrett Score": _bar_style(full_rush_tbl["Barrett Score"])},
             aligns={c: "right" for c in ["#", "Barrett Score", "League Rank"]},
             numeric={"#", "Barrett Score", "League Rank"},
             height=400,
@@ -681,7 +759,7 @@ with tab_team:
 # Tab 5: Sustained Excellence (Longevity)
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_long:
-    st.subheader("Sustained Excellence")
+    render_rail("Longevity", "Sustained Excellence")
     st.caption(
         "Who held elite Barrett Scores the longest? "
         "Average score across all qualifying seasons (≥500 min). "
@@ -745,19 +823,30 @@ with tab_long:
         )
     st.plotly_chart(theme_fig(fig_long), use_container_width=True, config={"displayModeBar": False})
 
+    # Career-shape sparklines (display only) for the players on the board.
+    _long_players = set(long_df["Player"])
+    _long_arcs = {p: spark_svg(g["barrett_score"].tolist())
+                  for p, g in all_df[all_df["Player"].isin(_long_players)]
+                  .sort_values("_season_year").groupby("Player")}
+    _long_view = long_df.copy()
+    _long_view.insert(2, "Arc", _long_view["Player"].map(_long_arcs).fillna(""))
+
     html_table(
-        long_df,
+        _long_view,
         formatters={
             "Avg Score": lambda v: f"{v:.2f}", "Peak Score": lambda v: f"{v:.2f}",
             "Floor Score": lambda v: f"{v:.2f}", "Seasons": lambda v: str(int(v)),
         },
+        raw={"Arc"},
+        styles={"Avg Score": _bar_style(_long_view["Avg Score"])},
         aligns={c: "right" for c in ["#", "Avg Score", "Peak Score", "Floor Score", "Seasons"]},
         numeric={"#", "Avg Score", "Peak Score", "Floor Score", "Seasons"},
         helps={
+            "Arc": "Career shape: Barrett Score by season, oldest to newest.",
             "Avg Score": "Average Barrett Score across all qualifying seasons.",
             "Floor Score": "Their lowest qualifying season score: the floor of their value.",
         },
-        height=min(600, len(long_df) * 38 + 46),
+        height=min(600, len(_long_view) * 38 + 46),
     )
     st.caption(
         f"**{len(long_df)}** players with ≥ {min_seas} qualifying seasons shown. "
@@ -772,7 +861,7 @@ with tab_rec:
     rec_sub1, rec_sub2 = st.tabs(["Most Undervalued Ever", "The Fall"])
 
     with rec_sub1:
-        st.subheader("Most Undervalued Seasons in NBA History")
+        render_rail("Records", "Most Undervalued Seasons in NBA History", count="Top 50")
         st.caption(
             "Biggest gaps between what a player earned and what their Barrett Score rank deserved. "
             "These are the GMs who got away with something."
@@ -800,11 +889,14 @@ with tab_rec:
         html_table(
             uv_tbl,
             formatters={
+                "Player": _face_cell, "Team": _team_dot_cell,
                 "Barrett Score": lambda v: f"{v:.2f}", "Score Rank": lambda v: str(int(v)),
                 "Actual $M": lambda v: f"${v:.2f}M", "Proj. $M": lambda v: f"${v:.2f}M",
                 "Δ Market $M": lambda v: f"${v:.2f}M",
             },
-            styles={"Δ Market $M": _hl_delta},
+            raw={"Player", "Team"},
+            styles={"Δ Market $M": _hl_delta,
+                    "Barrett Score": _bar_style(uv_tbl["Barrett Score"])},
             aligns={c: "right" for c in ["#", "Barrett Score", "Score Rank", "Actual $M", "Proj. $M", "Δ Market $M"]},
             numeric={"#", "Barrett Score", "Score Rank", "Actual $M", "Proj. $M", "Δ Market $M"},
             helps={"Δ Market $M": "Negative = underpaid. The more negative, the bigger the steal."},
@@ -812,7 +904,7 @@ with tab_rec:
         )
 
     with rec_sub2:
-        st.subheader("The Fall · Biggest Single-Season Score Drops")
+        render_rail("Records", "The Fall · Biggest Single-Season Score Drops", count="Top 50")
         st.caption(
             "Players whose Barrett Score fell the most from one season to the next, "
             "injuries, age, system changes, or contract-year motivation."
@@ -833,10 +925,13 @@ with tab_rec:
         html_table(
             fall_tbl,
             formatters={
+                "Player": _face_cell,
                 "Score That Year": lambda v: f"{v:.2f}", "Score Prev. Season": lambda v: f"{v:.2f}",
                 "Δ Score": lambda v: f"{v:.2f}",
             },
-            styles={"Δ Score": _hl_fall},
+            raw={"Player"},
+            styles={"Δ Score": _hl_fall,
+                    "Score That Year": _bar_style(fall_tbl["Score That Year"])},
             aligns={c: "right" for c in ["#", "Score That Year", "Score Prev. Season", "Δ Score"]},
             numeric={"#", "Score That Year", "Score Prev. Season", "Δ Score"},
             helps={"Δ Score": "Negative = score dropped vs prior season. Larger drop = bigger fall."},
@@ -876,7 +971,7 @@ with tab_rec:
 # Tab 7: Draft Class
 # ─────────────────────────────────────────────────────────────────────────────
 with tab_draft:
-    st.subheader("Draft Class Legacy")
+    render_rail("Draft", "Draft Class Legacy")
     st.caption(
         "How did a draft class pan out? Select a draft year to see every player from "
         "that class who appears in our data, with their Barrett Score arcs side by side."
@@ -934,14 +1029,24 @@ with tab_draft:
                 sum_tbl = class_summary[["Player", "OVERALL_PICK", "peak_score", "seasons"]].copy()
                 sum_tbl.columns = ["Player", "Pick #", "Peak Score", "Seasons"]
                 sum_tbl["Peak Score"] = sum_tbl["Peak Score"].round(2)
+                # Career-shape sparklines from the class arcs already loaded.
+                _cls_arcs = {p: spark_svg(g["barrett_score"].tolist())
+                             for p, g in class_arc.sort_values("_season_year").groupby("Player")}
+                sum_tbl.insert(1, "Arc", sum_tbl["Player"].map(_cls_arcs).fillna(""))
+                # Mini faces only for 1990+ classes — earlier ones are all silhouettes.
+                _cls_faces = int(draft_year_sel) >= 1990
                 html_table(
                     sum_tbl,
                     formatters={
+                        "Player": _face_cell if _cls_faces else (lambda v: html.escape(str(v))),
                         "Pick #": lambda v: str(int(v)), "Peak Score": lambda v: f"{v:.2f}",
                         "Seasons": lambda v: str(int(v)),
                     },
+                    raw={"Player", "Arc"},
+                    styles={"Peak Score": _bar_style(sum_tbl["Peak Score"])},
                     aligns={c: "right" for c in ["Pick #", "Peak Score", "Seasons"]},
                     numeric={"Pick #", "Peak Score", "Seasons"},
+                    helps={"Arc": "Career shape: Barrett Score by season, oldest to newest."},
                     height=min(500, len(sum_tbl) * 38 + 46),
                 )
 

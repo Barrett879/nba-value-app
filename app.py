@@ -23,7 +23,7 @@ from utils import (
     _PLAYOFF_HELP,
     inject_theme,
     render_theme_toggle,
-    COMMON_CSS, render_nav,
+    COMMON_CSS, render_nav, TEAM_HEX, HV_KIT_CSS,
 )
 
 # Featured players for the Legacy preview overlay on the home page.
@@ -38,18 +38,6 @@ LEGACY_FEATURED = [
     {"name": "Nikola Jokić",    "id": 203999, "color": "#7ec8e8"},  # blue
 ]
 
-# Team accent colors: rails, dots, rings, and low-alpha washes ONLY (never text,
-# never a full background). Brightest recognizable color per team so an 8px dot
-# reads on both the dark and light panel surfaces (navy/black brands swapped for
-# their secondary: BKN/SAS silver, DEN/IND/NOP/UTA gold, MIN lake blue).
-TEAM_HEX = {
-    "ATL": "#E03A3E", "BOS": "#007A33", "BKN": "#8A8D8F", "CHA": "#00788C", "CHI": "#CE1141",
-    "CLE": "#A31D3C", "DAL": "#0064B1", "DEN": "#FEC524", "DET": "#C8102E", "GSW": "#1D428A",
-    "HOU": "#CE1141", "IND": "#FDBB30", "LAC": "#C8102E", "LAL": "#552583", "MEM": "#5D76A9",
-    "MIA": "#B62435", "MIL": "#1E7A44", "MIN": "#236192", "NOP": "#B4975A", "NYK": "#F58426",
-    "OKC": "#007AC1", "ORL": "#0077C0", "PHI": "#006BB6", "PHX": "#E56020", "POR": "#E03A3E",
-    "SAC": "#5A2D81", "SAS": "#8A8D8F", "TOR": "#CE1141", "UTA": "#F9A01B", "WAS": "#E31837",
-}
 
 # Start warming all season caches the moment the server boots —
 # before any user arrives, so the first visitor doesn't pay the cost.
@@ -64,6 +52,7 @@ inject_theme()
 # Shared chrome CSS (fixed top-nav styling lives here). Injected BEFORE the
 # homepage-specific block below, so the homepage's own overrides still win.
 st.markdown(COMMON_CSS, unsafe_allow_html=True)
+st.markdown(HV_KIT_CSS, unsafe_allow_html=True)  # rails, mini faces, team dots
 
 # ── Page chrome (background, hide Streamlit UI) ────────────────────────────────
 st.markdown("""
@@ -459,6 +448,9 @@ from utils import (
     CACHE_DIR, html_table, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT, get_player_contract_info,
     fetch_league_stats, SALARY_CAP_M, get_max_contract_eligibility,
+    FACE_GUARD_SCRIPT,
+    face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
+    hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
 )
 import streamlit.components.v1 as _components
 import team_suitors as _ts
@@ -469,32 +461,7 @@ import team_suitors as _ts
 st.markdown(HV_TABLE_CSS, unsafe_allow_html=True)
 _components.html(_HV_SORT_SCRIPT, height=0)
 
-# Hide headshots whose CDN image 404s (rookies/two-ways). Streamlit strips
-# inline onerror= attributes, so this runs from the components iframe as a
-# capture-phase listener on the parent document (img error events don't
-# bubble; capture is mandatory).
-_components.html("""
-<script>
-(function () {
-    var doc = window.parent.document;
-    if (doc.__hvFaceGuard) return;
-    doc.__hvFaceGuard = true;
-    doc.addEventListener('error', function (e) {
-        var t = e.target;
-        if (t && t.tagName === 'IMG' &&
-            (t.classList.contains('fp-face') || t.classList.contains('hub-face') ||
-             t.classList.contains('hv-mini-face'))) {
-            t.style.display = 'none';
-        }
-    }, true);
-})();
-</script>
-""", height=0)
-
-# Per-team dot colors for the board's Team column (base .tdot class lives in
-# HV_TABLE_CSS; the 30 background rules come from TEAM_HEX).
-st.markdown("<style>" + "".join(f".tdot-{k}{{background:{v}}}" for k, v in TEAM_HEX.items())
-            + "</style>", unsafe_allow_html=True)
+_components.html(FACE_GUARD_SCRIPT, height=0)     # hide 404 headshots
 
 _HUB_SEASON = SEASONS[0]
 _NEXT_SEASON = f"{int(_HUB_SEASON[:4]) + 1}-{(int(_HUB_SEASON[:4]) + 2) % 100:02d}"
@@ -516,76 +483,6 @@ def _actual_max_norms(candidates: tuple) -> set:
         except Exception:
             pass
     return out
-
-
-@st.cache_data(show_spinner=False)
-def _headshot_ids() -> dict:
-    """normalize(name) -> nba.com player id. nba_api's static players table is a
-    bundled offline json (no network); active players win name collisions."""
-    try:
-        from nba_api.stats.static import players as _np
-        m = {}
-        for p in _np.get_players():
-            k = normalize(p["full_name"])
-            if k not in m or p.get("is_active"):
-                m[k] = p["id"]
-        return m
-    except Exception:
-        return {}
-
-
-def _face_img(name: str, css_class: str) -> str:
-    """Lazy circular headshot <img> from the NBA CDN, or '' when the id is
-    unknown (this year's two-ways). 404s hide themselves via onerror."""
-    pid = _headshot_ids().get(normalize(name))
-    if not pid:
-        return ""
-    return (f'<img class="{css_class}" loading="lazy" decoding="async" '
-            f'src="https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png" '
-            f'onerror="this.style.display=\'none\'" alt="">')
-
-
-def _hex_rgba(h: str, alpha: float) -> str:
-    """'#RRGGBB' -> 'rgba(r,g,b,a)'. Plotly and per-player CSS can't read theme
-    tokens, so team tints are computed server-side from TEAM_HEX."""
-    h = h.lstrip("#")
-    return f"rgba({int(h[0:2], 16)},{int(h[2:4], 16)},{int(h[4:6], 16)},{alpha})"
-
-
-def _hex_darken(h: str, f: float = 0.72) -> str:
-    h = h.lstrip("#")
-    return "#" + "".join(f"{int(int(h[i:i + 2], 16) * f):02x}" for i in (0, 2, 4))
-
-
-def _hex_is_light(h: str) -> bool:
-    h = h.lstrip("#")
-    r, g, b = int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16)
-    return (0.299 * r + 0.587 * g + 0.114 * b) > 175
-
-
-def _spark_svg(scores: list, w: int = 72, h: int = 20) -> str:
-    """Tiny inline career-shape polyline (Career Twins 'Arc' column)."""
-    if not scores or len(scores) < 2:
-        return ""
-    lo, hi = min(scores), max(scores)
-    rng = (hi - lo) or 1.0
-    pts = " ".join(f"{i / (len(scores) - 1) * (w - 2) + 1:.1f},"
-                   f"{h - 2 - (s - lo) / rng * (h - 4):.1f}"
-                   for i, s in enumerate(scores))
-    return (f'<svg width="{w}" height="{h}" viewBox="0 0 {w} {h}" style="vertical-align:middle">'
-            f'<polyline points="{pts}" fill="none" stroke="var(--logo-sage)" '
-            f'stroke-width="1.5" stroke-linejoin="round"/></svg>')
-
-
-def _rail(kicker: str, title: str, count: str | None = None, meta: str | None = None) -> None:
-    """Ruled section header: kicker + title + optional count pill + right meta."""
-    bits = [f'<span class="k">{html.escape(kicker)}</span>',
-            f'<span class="t">{html.escape(title)}</span>']
-    if count:
-        bits.append(f'<span class="n">{html.escape(count)}</span>')
-    if meta:
-        bits.append(f'<span class="meta">{html.escape(meta)}</span>')
-    st.markdown(f'<div class="hv-rail">{"".join(bits)}</div>', unsafe_allow_html=True)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -909,11 +806,6 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
 .hub-stat .v {{ font-size: 1.55rem; font-weight: 800; color: var(--fg-1); }}
 .hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
   color: var(--fg-4); font-weight: 600; margin-top: 0.1rem; }}
-.hv-mini-wrap {{ display: inline-block; width: 24px; height: 24px; border-radius: 50%;
-  background: var(--panel-2); margin-right: 0.45rem; vertical-align: middle;
-  overflow: hidden; flex: 0 0 auto; }}
-img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
-  object-position: center 15%; display: block; }}
 .hub-ladder {{ margin-top: 1.4rem; }}
 .hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; }}
 .hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
