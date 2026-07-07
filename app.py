@@ -458,7 +458,7 @@ import plotly.graph_objects as go
 from utils import (
     CACHE_DIR, html_table, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT, get_player_contract_info,
-    fetch_league_stats,
+    fetch_league_stats, SALARY_CAP_M, get_max_contract_eligibility,
 )
 import streamlit.components.v1 as _components
 import team_suitors as _ts
@@ -497,6 +497,25 @@ st.markdown("<style>" + "".join(f".tdot-{k}{{background:{v}}}" for k, v in TEAM_
             + "</style>", unsafe_allow_html=True)
 
 _HUB_SEASON = SEASONS[0]
+_NEXT_SEASON = f"{int(_HUB_SEASON[:4]) + 1}-{(int(_HUB_SEASON[:4]) + 2) % 100:02d}"
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _actual_max_norms(candidates: tuple) -> set:
+    """Norms whose ACTUAL next-season salary sits at/above their own CBA max
+    (25/30/35% of the 2026-27 cap by service years). Mid-contract max deals
+    with built-in raises exceed the new-deal max, so >= catches them too.
+    Only called for the handful of salaries above the 25% floor."""
+    _cap = SALARY_CAP_M.get(_NEXT_SEASON, 165.0)
+    out = set()
+    for _nm, _player, _nx in candidates:
+        try:
+            _e = get_max_contract_eligibility(_player, _HUB_SEASON)
+            if _nx >= _e["max_pct"] * _cap - 0.05:
+                out.add(_nm)
+        except Exception:
+            pass
+    return out
 
 
 @st.cache_data(show_spinner=False)
@@ -686,6 +705,7 @@ _nc = fetch_next_year_contracts(season_to_espn_year(_HUB_SEASON), cache_v=7)
 _rookies = fetch_rookie_scale_players(_HUB_SEASON)
 _pcv_by = _hub_pcv()
 _max_norms = {n for n, p in _pcv_by.items() if p.get("is_max")}
+_amax_floor = 0.25 * SALARY_CAP_M.get(_NEXT_SEASON, 165.0) - 0.1
 
 _hub_rows = []
 for _i, _r in _pool.iterrows():
@@ -716,6 +736,9 @@ for _i, _r in _pool.iterrows():
     })
 _hub_df = pd.DataFrame(_hub_rows)
 _hub_df.insert(0, "#", range(1, len(_hub_df) + 1))
+_amax_norms = _actual_max_norms(tuple(
+    (r["norm"], r["Player"], float(r["Next"])) for r in _hub_rows
+    if r.get("Next") and r["Next"] >= _amax_floor))
 _by_norm = {r["norm"]: dict(r, rank=i + 1) for i, r in enumerate(_hub_rows)}
 
 _FA_SET = {"UFA", "RFA", "Player Option", "Team Option"}
@@ -1265,8 +1288,10 @@ def _board():
             "2025-26 Salary": lambda v: f"${v:.2f}M",
             "2025-26 Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
                                         else f"${v:.2f}M"),
-            "Actual 2026-27 Salary": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
-                                                else f"${v:.2f}M"),
+            "Actual 2026-27 Salary": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                                   else ('<span class="hv-chip max">MAX</span>'
+                                                         if normalize(str(r.get("Player", ""))) in _amax_norms else "")
+                                                        + f"${v:.2f}M"),
             "+/-": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
                               else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
             "2026-27 Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
@@ -1274,7 +1299,7 @@ def _board():
                                                      if normalize(str(r.get("Player", ""))) in _max_norms else "")
                                                     + f"${v:.1f}M"),
         },
-        raw={"Player", "Team", "2026-27 Predicted"},
+        raw={"Player", "Team", "2026-27 Predicted", "Actual 2026-27 Salary"},
         styles={
             "2025-26 Barrett Score": lambda v, _r: (
                 "" if v is None or (isinstance(v, float) and v != v) else
