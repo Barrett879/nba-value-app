@@ -1017,16 +1017,16 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
 </div>
 {_box_row}
+<div class="hub-stats" style="margin-top:0.7rem">
+  <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
+  <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
+  <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel["DLEB"] > 0.5 else ('var(--value-bad)' if _sel["DLEB"] < -0.5 else 'var(--fg-1)')}">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
+</div>
 <div class="hub-ladder">{_ladder}</div>
 <div class="hub-stats" style="margin-top:1.25rem">
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
   <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
   <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel.get("Avail", 0) >= 0.85 else ('var(--value-bad)' if 0 < _sel.get("Avail", 0) < 0.6 else 'var(--fg-1)')}">{_avail_txt}</div><div class="l">Availability</div></div>
-</div>
-<div class="hub-stats" style="margin-top:1.25rem">
-  <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
-  <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
-  <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel["DLEB"] > 0.5 else ('var(--value-bad)' if _sel["DLEB"] < -0.5 else 'var(--fg-1)')}">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
 </div>
 {_deal_line}
 {_anchor_note}
