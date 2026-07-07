@@ -1156,8 +1156,11 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
                 numeric={"#", "Barrett Score", "Salary", "Predicted"},
                 height=442,
             )
-            st.markdown('<div class="hub-note">Closest current Barrett Scores in the '
-                        '2025-26 pool.</div>', unsafe_allow_html=True)
+            st.markdown('<div class="hub-note hub-go" style="display:flex;justify-content:space-between;'
+                        'align-items:center;gap:0.8rem;flex-wrap:wrap">'
+                        '<span>Closest current Barrett Scores in the 2025-26 pool.</span>'
+                        '<a href="/Rankings" target="_top" style="margin-top:0">Full current rankings →</a>'
+                        '</div>', unsafe_allow_html=True)
 
     with _right:   # ── Quadrant 4: Career Twins (all eras) ──────────────────────
         with st.container(border=True, key="hub_q4"):
@@ -1209,10 +1212,12 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
                     numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
                     height=442,
                 )
-                st.markdown(f'<div class="hub-note">Closest career-average Barrett Scores, every '
-                            f'era (3+ seasons). {html.escape(_sel["Player"])}: {_me["avg"]:.2f} avg '
-                            f'over {int(_me["yrs"])} season{"s" if _me["yrs"] != 1 else ""}.</div>',
-                            unsafe_allow_html=True)
+                st.markdown(f'<div class="hub-note hub-go" style="display:flex;justify-content:space-between;'
+                            f'align-items:center;gap:0.8rem;flex-wrap:wrap">'
+                            f'<span>Closest career averages, all eras: {html.escape(_sel["Player"])} '
+                            f'at {_me["avg"]:.2f} over {int(_me["yrs"])} season{"s" if _me["yrs"] != 1 else ""}.</span>'
+                            f'<a href="/Legacy" target="_top" style="margin-top:0">Compare eras in Legacy →</a>'
+                            f'</div>', unsafe_allow_html=True)
             else:
                 st.markdown('<div class="hub-note">No career history on file yet.</div>',
                             unsafe_allow_html=True)
