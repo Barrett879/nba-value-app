@@ -814,8 +814,6 @@ if _sel:
     _pred_txt = ((('<span class="hv-chip max">MAX</span>' if _pv.get("is_max") else "")
                   + f"${_pv['pcv_M']:.1f}M")
                  if _pv.get("pcv_M") is not None else "—")
-    _band_txt = (f"${_pv['low_M']:.0f}–{_pv['high_M']:.0f}M"
-                 if _pv.get("pcv_M") is not None and _pv.get("low_M") is not None else "")
 
     _team = str(_sel["Team"])
     _thx = TEAM_HEX.get(_team, "")
@@ -916,18 +914,18 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   overflow: hidden; flex: 0 0 auto; }}
 img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: cover;
   object-position: center 15%; display: block; }}
-.hub-ladder {{ margin-top: 1.1rem; }}
-.hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.4rem; }}
+.hub-ladder {{ margin-top: 1.4rem; }}
+.hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.55rem; }}
 .hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
   letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
-.hub-ladder .lbar {{ flex: 1; height: 13px; background: var(--hairline-soft);
-  border-radius: 7px; overflow: hidden; position: relative; }}
+.hub-ladder .lbar {{ flex: 1; height: 16px; background: var(--hairline-soft);
+  border-radius: 8px; overflow: hidden; position: relative; }}
 .hub-ladder .lbar div {{ height: 100%; border-radius: 7px; }}
 .hub-ladder .lbar .lband {{ position: absolute; top: 0; height: 100%;
   background: var(--bar-tint); border-radius: 0; }}
 .hub-ladder .lv {{ width: 72px; text-align: right; font-size: 0.78rem; font-weight: 700;
   color: var(--fg-2); font-variant-numeric: tabular-nums; flex: 0 0 auto; }}
-.hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.55rem; }}
+.hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.8rem; }}
 .hub-go a {{ display: inline-block; margin-top: 0.6rem; background: var(--panel);
   border: 1px solid var(--panel-line); border-radius: 9px; padding: 0.4rem 0.85rem;
   font-size: 0.8rem; font-weight: 700; color: var(--sky); text-decoration: none; }}
@@ -981,16 +979,11 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
             f'<div style="width:{max(2.0, v / _lmx * 100):.0f}%;background:{_c};position:relative"></div></div>'
             f'<span class="lv">${v:.1f}M</span></div>'
             for _l, v, _c, _b in _lad)
-        # Career context (from the same parquet the Career quadrant reads).
-        _yrs = int(_mine["Season"].nunique())
-        _cavg_txt = f"{float(_mine['barrett_score'].mean()):.1f}" if _yrs else "—"
-        _earn = float(_mine["salary"].fillna(0).sum()) / 1e6 if _yrs else 0.0
-        _earn_txt = (f"${_earn / 1000:.2f}B" if _earn >= 1000 else f"${_earn:.0f}M") if _earn > 0 else "—"
         _bx = _hub_counting().get(_n)
         _box_row = ""
         if _bx:
             _box_row = (
-                '<div class="hub-stats" style="margin-top:1.0rem">'
+                '<div class="hub-stats" style="margin-top:1.25rem">'
                 f'<div class="hub-stat"><div class="v">{_bx[0]:.1f}</div><div class="l">Points</div></div>'
                 f'<div class="hub-stat"><div class="v">{_bx[1]:.1f}</div><div class="l">Rebounds</div></div>'
                 f'<div class="hub-stat"><div class="v">{_bx[2]:.1f}</div><div class="l">Assists</div></div>'
@@ -1021,26 +1014,22 @@ img.hv-mini-face {{ width: 24px; height: 24px; border-radius: 50%; object-fit: c
 <div class="hub-stats" style="margin-top:0.7rem">
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">#{_sel["rank"]}</div><div class="l">League rank</div></div>
-  <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
-  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l">Predicted contract{(" · " + _band_txt) if _band_txt else ""}</div></div>
+  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
 </div>
 {_box_row}
 <div class="hub-ladder">{_ladder}</div>
-<div class="hub-stats" style="margin-top:1.0rem">
-  <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} · market value ${_sel["ProjValue"]:.1f}M</div></div>
+<div class="hub-stats" style="margin-top:1.25rem">
+  <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
+  <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
+  <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel.get("Avail", 0) >= 0.85 else ('var(--value-bad)' if 0 < _sel.get("Avail", 0) < 0.6 else 'var(--fg-1)')}">{_avail_txt}</div><div class="l">Availability</div></div>
+</div>
+<div class="hub-stats" style="margin-top:1.25rem">
   <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
   <div class="hub-stat"><div class="v">{_sel["TS"] * 100:.1f}%</div><div class="l">True shooting</div></div>
   <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel["DLEB"] > 0.5 else ('var(--value-bad)' if _sel["DLEB"] < -0.5 else 'var(--fg-1)')}">{_sel["DLEB"]:+.1f}</div><div class="l">D-LEBRON</div></div>
 </div>
-<div class="hub-stats" style="margin-top:1.0rem">
-  <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
-  <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel.get("Avail", 0) >= 0.85 else ('var(--value-bad)' if 0 < _sel.get("Avail", 0) < 0.6 else 'var(--fg-1)')}">{_avail_txt}</div><div class="l">Availability</div></div>
-  <div class="hub-stat"><div class="v">{_cavg_txt}</div><div class="l">Career avg · {_yrs} season{"s" if _yrs != 1 else ""}</div></div>
-  <div class="hub-stat"><div class="v">{_earn_txt}</div><div class="l">Career earnings</div></div>
-</div>
 {_deal_line}
 {_anchor_note}
-<div class="hub-note">Predicted = the model's projection for a NEW deal signed today, at next season's cap.</div>
 <div class="hub-go"><a href="/Contract_Predictor?player={_q}" target="_top">Full contract prediction →</a></div>
 """, unsafe_allow_html=True)
 
