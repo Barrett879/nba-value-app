@@ -24,6 +24,7 @@ from utils import (
     inject_theme,
     render_theme_toggle,
     COMMON_CSS, render_nav, TEAM_HEX, HV_KIT_CSS,
+    render_barrett_score_explainer,
 )
 
 # Featured players for the Legacy preview overlay on the home page.
@@ -441,6 +442,9 @@ with _search_col:
                 )
 
 st.markdown("<div style='margin-top:0.8rem'></div>", unsafe_allow_html=True)
+
+# Same "What is the Barrett Score?" expander every inner page shows.
+render_barrett_score_explainer()
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -1326,6 +1330,33 @@ def _board():
 
 
 _board()
+
+# Hover tooltips for the filter pills (native title=). Runs from a components
+# iframe; MutationObserver re-stamps after fragment re-renders.
+_components.html("""
+<script>
+(function () {
+    var doc = window.parent.document;
+    if (doc.__hvPillTips) return;
+    doc.__hvPillTips = true;
+    var TIPS = {
+        "All": "Every player in the 2025-26 ranking pool.",
+        "Bargains": "Underpaid by $5M or more: 2025-26 salary at least $5M below 2025-26 value.",
+        "Overpays": "Overpaid by $5M or more: 2025-26 salary at least $5M above 2025-26 value.",
+        "Free agents": "Hits the 2026 market: UFA, RFA, or an open player/team option.",
+        "Max tier": "Players whose 2026-27 predicted contract sits at their CBA maximum."
+    };
+    function tag() {
+        doc.querySelectorAll('.st-key-board_view button').forEach(function (b) {
+            var t = (b.textContent || '').trim();
+            if (TIPS[t] && b.title !== TIPS[t]) b.title = TIPS[t];
+        });
+    }
+    tag();
+    new MutationObserver(tag).observe(doc.body, {subtree: true, childList: true});
+})();
+</script>
+""", height=0)
 
 
 # ── Footer ────────────────────────────────────────────────────────────────────
