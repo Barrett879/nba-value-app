@@ -31,7 +31,7 @@ render_nav("Compare Players")
 playoff_mode = bool(st.session_state.get("playoff_mode", False))
 _tcol, _pcol = st.columns([5, 1], vertical_alignment="center")
 with _tcol:
-    st.title("Search Player (Playoff Mode)" if playoff_mode else "Search Player")
+    st.title("Compare Players (Playoff Mode)" if playoff_mode else "Compare Players")
 with _pcol:
     render_playoff_toggle()
 if playoff_mode:
@@ -473,6 +473,61 @@ if len(selected) == 1:
         ("Availability", "#2ecc71", "GP × MPG vs 82-game cap"),
     ]
 
+    def _component_radar(by_label, fmt_value, dark, hover_prefix):
+        """Six-component percentile radar (player DNA). Vertices in a FIXED
+        order so the polygon shape is comparable across players; single accent
+        polygon (the rainbow bars were the thing to kill)."""
+        _order = [c[0] for c in _components]
+        _rr = [by_label[l] for l in _order if l in by_label]
+        _theta = [r["label"] for r in _rr] + [_rr[0]["label"]]      # close loop
+        _rvals = [r["pct"] for r in _rr] + [_rr[0]["pct"]]
+        _cd = [[r["value"], r["formula"], fmt_value(r["label"], r["value"])] for r in _rr]
+        _cd = _cd + _cd[:1]
+        if dark:
+            _line, _fill, _grid = "#16d4c1", "rgba(22,212,193,0.22)", "rgba(255,255,255,0.11)"
+            _catc, _rtick, _txt = "#cdcdd5", "#8a8a93", "#e8e8f0"
+            _hl = dict(bgcolor="#1a1a2e", bordercolor="#2c2c40", font=dict(color="#e8e8f0"))
+        else:
+            _line, _fill, _grid = "#0fae9d", "rgba(15,174,157,0.15)", "rgba(20,22,40,0.12)"
+            _catc, _rtick, _txt = "#3a3d48", "#71757f", "#14142a"
+            _hl = dict(bgcolor="#ffffff", bordercolor="rgba(20,22,40,0.18)", font=dict(color="#14142a"))
+        _fig = go.Figure()
+        _fig.add_trace(go.Scatterpolar(
+            r=_rvals, theta=_theta, mode="lines+markers",
+            fill="toself", fillcolor=_fill,
+            line=dict(color=_line, width=2.5, shape="linear"),
+            marker=dict(color=_line, size=7, line=dict(color=_txt, width=1)),
+            customdata=_cd,
+            hovertemplate=("<b>%{theta}</b><br>" + hover_prefix +
+                           ": <b>%{r:.0f}th</b><br>%{customdata[2]}<br>"
+                           "<i>%{customdata[1]}</i><extra></extra>"),
+            showlegend=False,
+        ))
+        # Percentile labels pulled just inside each vertex (never collide with
+        # the rim axis labels).
+        _fig.add_trace(go.Scatterpolar(
+            r=[max(9.0, v * 0.86) for v in _rvals], theta=_theta,
+            mode="text", text=[f"{v:.0f}" for v in _rvals],
+            textfont=dict(color=_txt, size=12), hoverinfo="skip",
+            showlegend=False, cliponaxis=False,
+        ))
+        _fig.update_layout(
+            height=440, margin=dict(l=70, r=70, t=40, b=40),
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            hoverlabel=_hl,
+            polar=dict(
+                bgcolor="rgba(0,0,0,0)",
+                radialaxis=dict(range=[0, 100], tickvals=[25, 50, 75, 100],
+                                ticktext=["25", "50", "75", ""], angle=90,
+                                tickfont=dict(color=_rtick, size=9),
+                                gridcolor=_grid, linecolor=_grid),
+                angularaxis=dict(rotation=90, direction="clockwise",
+                                 tickfont=dict(color=_catc, size=13),
+                                 gridcolor=_grid, linecolor=_grid),
+            ),
+        )
+        return _fig
+
     if _dist.empty:
         st.info(
             f"No league-wide component data on disk for {_bd_season} yet, "
@@ -520,54 +575,11 @@ if len(selected) == 1:
                 for r in _rows
             ]
 
-            _bd_fig = go.Figure()
-            # Background track for each row so 100% is visually anchored.
-            _bd_fig.add_trace(go.Bar(
-                x=[100] * len(_labels),
-                y=_labels,
-                orientation="h",
-                marker=dict(color="rgba(255,255,255,0.04)",
-                            line=dict(color="rgba(255,255,255,0.06)", width=1)),
-                hoverinfo="skip",
-                showlegend=False,
-            ))
-            # Foreground = actual percentile bar.
-            _bd_fig.add_trace(go.Bar(
-                x=_pcts,
-                y=_labels,
-                orientation="h",
-                marker=dict(color=_colors, line=dict(color="rgba(0,0,0,0)", width=0)),
-                text=_texts,
-                textposition="outside",
-                textfont=dict(color="#fff", size=13),
-                customdata=list(zip(_values, _formulas)),
-                hovertemplate=(
-                    "<b>%{y}</b><br>"
-                    "Percentile: <b>%{x:.0f}th</b><br>"
-                    "Value: %{customdata[0]:.2f}<br>"
-                    "<i>%{customdata[1]}</i><extra></extra>"
-                ),
-                showlegend=False,
-            ))
-            _bd_fig.update_layout(
-                height=320,
-                barmode="overlay",
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#cdcdd5"),
-                margin=dict(l=10, r=80, t=10, b=30),
-                xaxis=dict(
-                    range=[0, 118],
-                    tickvals=[0, 25, 50, 75, 100],
-                    ticktext=["0", "25th", "50th", "75th", "100th"],
-                    gridcolor="rgba(255,255,255,0.06)",
-                    zerolinecolor="rgba(255,255,255,0.15)",
-                    title="Percentile vs. all qualifying players this season",
-                ),
-                yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
-            )
-            st.plotly_chart(theme_fig(_bd_fig), use_container_width=True,
-                            config={"displayModeBar": False})
+            _bd_by = {r["label"]: r for r in _rows}
+            st.plotly_chart(
+                _component_radar(_bd_by, _fmt_value, _pal_dark,
+                                 "Percentile vs. all qualifying players"),
+                use_container_width=True, config={"displayModeBar": False})
 
             # Summary strip: Base × Avail = Barrett Score for transparency.
             _bs = float(_bd_row["Barrett Score"])
@@ -605,9 +617,9 @@ if len(selected) == 1:
             """
             st.markdown(_eq_html, unsafe_allow_html=True)
             st.caption(
-                "Each bar shows where this player ranked among all qualifying players "
+                "Each spoke shows where this player ranked among all qualifying players "
                 f"in {_bd_season}, 90th percentile = better than 90% of the league. "
-                "Hover any bar for the underlying formula and raw value."
+                "Hover any point for the underlying formula and raw value."
             )
 
     # ── Position-peer Score Breakdown ─────────────────────────────────────────
@@ -670,54 +682,11 @@ if len(selected) == 1:
                 for r in _prows
             ]
 
-            _peer_fig = go.Figure()
-            _peer_fig.add_trace(go.Bar(
-                x=[100] * len(_p_labels),
-                y=_p_labels,
-                orientation="h",
-                marker=dict(color="rgba(255,255,255,0.04)",
-                            line=dict(color="rgba(255,255,255,0.06)", width=1)),
-                hoverinfo="skip",
-                showlegend=False,
-            ))
-            _peer_fig.add_trace(go.Bar(
-                x=_p_pcts,
-                y=_p_labels,
-                orientation="h",
-                marker=dict(color=_p_colors,
-                            line=dict(color="rgba(0,0,0,0)", width=0)),
-                text=_p_texts,
-                textposition="outside",
-                textfont=dict(color="#fff", size=13),
-                customdata=list(zip(_p_values, _p_formulas)),
-                hovertemplate=(
-                    "<b>%{y}</b><br>"
-                    f"Percentile vs {_peer_pos}: <b>%{{x:.0f}}th</b><br>"
-                    "Value: %{customdata[0]:.2f}<br>"
-                    "<i>%{customdata[1]}</i><extra></extra>"
-                ),
-                showlegend=False,
-            ))
-            _peer_fig.update_layout(
-                height=320,
-                barmode="overlay",
-                paper_bgcolor="rgba(0,0,0,0)",
-                plot_bgcolor="rgba(0,0,0,0)",
-                font=dict(color="#cdcdd5"),
-                margin=dict(l=10, r=80, t=10, b=30),
-                xaxis=dict(
-                    range=[0, 118],
-                    tickvals=[0, 25, 50, 75, 100],
-                    ticktext=["0", "25th", "50th", "75th", "100th"],
-                    gridcolor="rgba(255,255,255,0.06)",
-                    zerolinecolor="rgba(255,255,255,0.15)",
-                    title=f"Percentile vs. all qualifying {_peer_pos}s "
-                          f"({_bd_season} + previous season)",
-                ),
-                yaxis=dict(gridcolor="rgba(0,0,0,0)", autorange="reversed"),
-            )
-            st.plotly_chart(theme_fig(_peer_fig), use_container_width=True,
-                            config={"displayModeBar": False})
+            _peer_by = {r["label"]: r for r in _prows}
+            st.plotly_chart(
+                _component_radar(_peer_by, _fmt_value, _pal_dark,
+                                 f"Percentile vs {_peer_pos}"),
+                use_container_width=True, config={"displayModeBar": False})
 
             _peer_n = len(_peer_dist)
             st.caption(
