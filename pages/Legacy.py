@@ -71,7 +71,7 @@ def _bar_style(series):
         if pd.isna(n):
             return ""
         return ("background:linear-gradient(90deg,var(--bar-tint) "
-                f"{15 + (n - lo) / rng * 85:.0f}%,transparent 0)")
+                f"{max(2, min(100, n / ((lo + rng) or 1) * 100)):.0f}%,transparent 0)")
     return _s
 
 def _hero_face(name, team):

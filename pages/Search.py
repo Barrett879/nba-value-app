@@ -830,7 +830,7 @@ else:
             return ""
         if f != f or _hi != _hi:   # NaN guards
             return ""
-        pct = 15 + (f - _lo) / (_hi - _lo) * 85 if _hi > _lo else 100.0
+        pct = max(2.0, min(100.0, f / (_hi or 1.0) * 100)) if _hi else 100.0
         return f"background:linear-gradient(90deg,var(--bar-tint) {pct:.0f}%,transparent 0)"
 
     def _player_cell(v):

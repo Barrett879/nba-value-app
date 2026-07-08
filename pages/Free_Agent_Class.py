@@ -393,7 +393,7 @@ _bs_rng = (_bs_hi - _bs_lo) or 1.0
 
 def _sty_score(v, _row):
     try:
-        pct = 15 + (float(v) - _bs_lo) / _bs_rng * 85
+        pct = max(2.0, min(100.0, float(v) / (_bs_hi or 1.0) * 100))
     except (TypeError, ValueError):
         return ""
     if pct != pct:  # NaN

@@ -1135,7 +1135,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                 styles={
                     "Barrett Score": lambda v, _r: (
                         f"background:linear-gradient(90deg,var(--bar-tint) "
-                        f"{15 + (v - _s_lo) / _s_rng * 85:.0f}%,transparent 0)"),
+                        f"{max(2, min(100, v / (_s_hi or 1) * 100)):.0f}%,transparent 0)"),
                     "Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
                                                 else "color:var(--accent-teal)"),
                 },
@@ -1190,7 +1190,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                     styles={
                         "Avg Score": lambda v, _r: (
                             f"background:linear-gradient(90deg,var(--bar-tint) "
-                            f"{15 + (v - _t_lo) / _t_rng * 85:.0f}%,transparent 0)"),
+                            f"{max(2, min(100, v / ((_t_lo + _t_rng) or 1) * 100)):.0f}%,transparent 0)"),
                     },
                     row_style=lambda rd: ((f"background:{_hex_rgba(_thx, 0.10)};font-weight:600" if _thx
                                            else "background:var(--panel-hover);font-weight:600")

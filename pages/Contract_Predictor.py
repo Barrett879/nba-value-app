@@ -2555,7 +2555,7 @@ else:
                 return ""
             if pd.isna(fv):
                 return ""
-            pct = 15 + 85 * (fv - _ss_lo) / _ss_rng
+            pct = max(2.0, min(100.0, fv / ((_ss_lo + _ss_rng) or 1.0) * 100))
             return (f"background:linear-gradient(90deg,var(--bar-tint) "
                     f"{pct:.0f}%,transparent 0)")
 

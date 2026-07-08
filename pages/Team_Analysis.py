@@ -187,7 +187,7 @@ html_table(
         "Net Δ $M": _sty_net,
         "Avg Score": lambda v, _r: (
             f"background:linear-gradient(90deg,var(--bar-tint) "
-            f"{15 + (float(v) - _as_lo) / _as_rng * 85:.0f}%,transparent 0)"
+            f"{max(2, min(100, float(v) / ((_as_lo + _as_rng) or 1) * 100)):.0f}%,transparent 0)"
             if v == v else ""),
     },
     aligns={"#": "right", "Players": "right", "Actual $M": "right",
@@ -258,7 +258,7 @@ if drill_team:
                 "Δ $M": _sty_net,
                 "Barrett Score": lambda v, _r: (
                     f"background:linear-gradient(90deg,var(--bar-tint) "
-                    f"{15 + (float(v) - _bs_lo) / _bs_rng * 85:.0f}%,transparent 0)"
+                    f"{max(2, min(100, float(v) / ((_bs_lo + _bs_rng) or 1) * 100)):.0f}%,transparent 0)"
                     if v == v else ""),
             },
             aligns={"#": "right", "Barrett Score": "right", "Score Rank": "right",
