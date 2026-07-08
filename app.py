@@ -265,25 +265,31 @@ st.markdown("""
     }
     .st-key-playoff_nav_toggle:hover label p { color: var(--fg-1) !important; }
 
-    /* Theme (brightness) button, pinned to the far top-right (home has no nav
-       bar, but the button sits in the same slot as on the inner pages). */
+    /* Theme (brightness) button, pinned top-right and vertically centered in
+       the 3rem-tall nav bar (matches COMMON_CSS on the inner pages). */
     .st-key-theme_nav_toggle {
         position: fixed !important;
-        top: 0.45rem !important;
+        top: 0 !important;
+        height: 3rem !important;
         right: 1rem !important;
         z-index: 10001 !important;
         margin: 0 !important;
         padding: 0 !important;
         width: auto !important;
         background: transparent !important;
+        display: flex !important;
+        align-items: center !important;
     }
     .st-key-theme_nav_toggle button {
         background: transparent !important;
         border: none !important;
         box-shadow: none !important;
-        padding: 0.1rem 0.3rem !important;
-        min-height: 0 !important;
-        height: auto !important;
+        padding: 0 0.3rem !important;
+        height: 3rem !important;
+        min-height: 3rem !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
         line-height: 1 !important;
         font-size: 1.3rem !important;
         color: var(--fg-3) !important;
