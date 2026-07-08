@@ -2221,7 +2221,7 @@ if _market_median is not None:
     <div style="background:linear-gradient(135deg, {_hero_wash} 0%, rgba(22,212,193,0.06) 100%);
                 border:1px solid var(--hairline); border-left:4px solid {_hero_accent};
                 border-radius:16px;
-                padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
+                padding:1.5rem 1.9rem 1.7rem; margin: 1.3rem 0 1.3rem 0;">
       <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
       <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
         {features["name"]}{_score_chip_html}
@@ -2281,7 +2281,7 @@ else:
         <div style="background:linear-gradient(135deg, {_hero_wash} 0%, rgba(22,212,193,0.06) 100%);
                     border:1px solid var(--hairline); border-left:4px solid {_hero_accent};
                     border-radius:16px;
-                    padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
+                    padding:1.5rem 1.9rem 1.7rem; margin: 1.3rem 0 1.3rem 0;">
           <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
           <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
             {features["name"]}{_score_chip_html}
@@ -2313,7 +2313,7 @@ else:
         <div style="background:linear-gradient(135deg, {_hero_wash} 0%, rgba(22,212,193,0.06) 100%);
                     border:1px solid var(--hairline); border-left:4px solid {_hero_accent};
                     border-radius:16px;
-                    padding:1.5rem 1.9rem 1.7rem; margin: 0.5rem 0 1.3rem 0;">
+                    padding:1.5rem 1.9rem 1.7rem; margin: 1.3rem 0 1.3rem 0;">
           <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
           <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
             {features["name"]}{_score_chip_html}

@@ -3,6 +3,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import html
+import math
 
 import pandas as pd
 import streamlit as st
@@ -249,6 +250,95 @@ _PALETTE = [
     "#7ec8e8" if _pal_dark else "#2b8fc7",  # sky   -> deeper blue on light
     "#c8d75e" if _pal_dark else "#7a8a1a",  # lime  -> olive on light
 ]
+
+
+# Fixed radar vertex order (matches the single-player Score Breakdown DNA).
+_RADAR_ORDER = ["Scoring", "Playmaking", "Rebounding", "Defense",
+                "Efficiency", "Availability"]
+
+
+def _peak_components(name, season):
+    """Six-component percentiles for a player in one season, ranked vs that
+    season's whole league (era-fair). None if the season's distribution isn't
+    on disk or the player isn't in it."""
+    try:
+        dist = fetch_season_component_distribution(season, playoffs=playoff_mode)
+    except Exception:
+        return None
+    if dist is None or dist.empty:
+        return None
+    row = dist[dist["Player"].apply(normalize) == normalize(name)]
+    if row.empty:
+        return None
+    r = row.iloc[0]
+    out = {}
+    for lab in _RADAR_ORDER:
+        if lab not in dist.columns:
+            return None
+        vals = dist[lab].astype(float).values
+        if len(vals) == 0:
+            return None
+        v = float(r[lab])
+        out[lab] = ((vals < v).sum() + 0.5 * (vals == v).sum()) / len(vals) * 100
+    return out
+
+
+def _cmp_radar_html(entries, dark):
+    """Overlay radar: one polygon per player (peak-season component
+    percentiles) + a colored legend. Hovering a legend name isolates that
+    player's shape (pure CSS :has, no JS)."""
+    R, cx, cy = 115.0, 190.0, 180.0
+    order = _RADAR_ORDER
+    n = len(order)
+
+    def _pt(i, frac):
+        ang = math.radians(-90 + 360.0 / n * i)
+        return (cx + frac * R * math.cos(ang), cy + frac * R * math.sin(ang))
+
+    _grid = "rgba(255,255,255,0.13)" if dark else "rgba(20,22,40,0.13)"
+    _lbl = "#cdcdd5" if dark else "#3a3d48"
+    _svg = []
+    for frac in (0.25, 0.5, 0.75, 1.0):
+        pts = " ".join(f"{_pt(i, frac)[0]:.1f},{_pt(i, frac)[1]:.1f}" for i in range(n))
+        _svg.append(f'<polygon points="{pts}" fill="none" stroke="{_grid}" stroke-width="1"/>')
+    for i in range(n):
+        x, y = _pt(i, 1.0)
+        _svg.append(f'<line x1="{cx}" y1="{cy}" x2="{x:.1f}" y2="{y:.1f}" stroke="{_grid}" stroke-width="1"/>')
+    for i, lab in enumerate(order):
+        lx, ly = _pt(i, 1.17)
+        anc = "middle" if abs(lx - cx) < 6 else ("end" if lx < cx else "start")
+        _svg.append(f'<text x="{lx:.1f}" y="{ly:.1f}" fill="{_lbl}" font-size="10.5" '
+                    f'font-weight="700" text-anchor="{anc}" dominant-baseline="middle">'
+                    f'{html.escape(lab)}</text>')
+    for idx, e in enumerate(entries):
+        pts = " ".join(
+            "{:.1f},{:.1f}".format(*_pt(i, max(0.0, e["pcts"].get(lab, 0)) / 100.0))
+            for i, lab in enumerate(order))
+        _svg.append(f'<polygon class="rpoly rp-{idx}" points="{pts}" fill="{e["color"]}" '
+                    f'fill-opacity="0.06" stroke="{e["color"]}" stroke-width="2" '
+                    f'stroke-linejoin="round"/>')
+    _legend = "".join(
+        f'<div class="rleg rp-{idx}"><span class="rsw" style="background:{e["color"]}"></span>'
+        f'<span class="rln">{html.escape(e["name"])}'
+        f'<span class="rss">{html.escape(e["season"])}</span></span></div>'
+        for idx, e in enumerate(entries))
+    _hover = "".join(
+        f'.rcmp:has(.rleg.rp-{i}:hover) .rpoly:not(.rp-{i}){{opacity:.07}}'
+        f'.rcmp:has(.rleg.rp-{i}:hover) .rpoly.rp-{i}{{opacity:1;stroke-width:3.2;fill-opacity:.16}}'
+        f'.rcmp:has(.rleg.rp-{i}:hover) .rleg:not(.rp-{i}){{opacity:.4}}'
+        for i in range(len(entries)))
+    _css = ("<style>"
+            ".rcmp{display:flex;gap:1.4rem;align-items:center;flex-wrap:wrap;margin:.3rem 0 .2rem}"
+            ".rsvg{width:380px;height:360px;max-width:100%;flex:0 0 auto}"
+            ".rpoly{opacity:.5;transition:opacity .12s,stroke-width .12s,fill-opacity .12s}"
+            ".rlegwrap{display:flex;flex-direction:column;gap:.4rem;min-width:150px}"
+            ".rleg{display:flex;align-items:center;gap:.55rem;cursor:default;transition:opacity .12s}"
+            ".rsw{width:12px;height:12px;border-radius:3px;flex:0 0 auto}"
+            ".rln{font-size:.86rem;font-weight:700;color:var(--fg-1)}"
+            ".rss{font-size:.7rem;color:var(--fg-4);margin-left:.4rem;font-weight:600}"
+            + _hover + "</style>")
+    return (_css + '<div class="rcmp"><svg viewBox="0 0 380 360" class="rsvg">'
+            + "".join(_svg) + '</svg><div class="rlegwrap">' + _legend + "</div></div>")
 
 
 # ── Career-average helper (games-weighted, like real stat sites) ─────────────
@@ -856,6 +946,33 @@ else:
                  "PPG", "APG", "RPG"},
         height=min(560, max(140, len(summary) * 38 + 46)),
     )
+
+    st.divider()
+
+    # ── Skill radar (player DNA overlay) ──────────────────────────────────────
+    render_rail("Player DNA", "Skill radar", count=f"{len(valid_selected)} players")
+    _radar_entries = []
+    for _ri, _rname in enumerate(valid_selected):
+        _rc = careers[_rname]
+        _rpk = _rc.loc[_rc[SCORE_COL].idxmax(), "Season"]
+        _rpc = _peak_components(_rname, _rpk)
+        if _rpc:
+            _radar_entries.append({"name": _rname, "season": _rpk,
+                                   "color": _PALETTE[_ri % len(_PALETTE)], "pcts": _rpc})
+    if _radar_entries:
+        st.markdown(_cmp_radar_html(_radar_entries, _pal_dark), unsafe_allow_html=True)
+        st.caption(
+            "Each player at their PEAK season, ranked in the six Barrett Score "
+            "components vs that season's whole league (era-fair). Hover a name "
+            "to light up their shape and dim the rest. Bigger hexagon = more "
+            "complete player."
+        )
+        _radar_missing = [n for n in valid_selected
+                          if n not in {e["name"] for e in _radar_entries}]
+        if _radar_missing:
+            st.caption("No component data on disk yet for: " + ", ".join(_radar_missing) + ".")
+    else:
+        st.caption("Component data isn't on disk for these players' peak seasons yet.")
 
     st.divider()
 

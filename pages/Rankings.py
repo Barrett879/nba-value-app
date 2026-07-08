@@ -212,7 +212,8 @@ st.markdown("""
 <style>
 /* Standout cards: headshot + kicker/name/big value/sub, team-color left rail
    (mirrors the homepage front-page cards). */
-.hero-card{position:relative;display:flex;align-items:center;gap:.8rem;
+[data-testid="stHorizontalBlock"]:has(.hero-card){margin-top:0.9rem;}
+    .hero-card{position:relative;display:flex;align-items:center;gap:.8rem;
     background:var(--panel-solid);border:1px solid var(--panel-line);
     border-left:4px solid var(--team,var(--accent-teal));border-radius:12px;
     padding:.8rem 1rem;box-shadow:var(--shadow-card);min-height:104px;height:100%;}
