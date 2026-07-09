@@ -70,7 +70,10 @@ with ctrl_r:
     min_threshold = st.slider(
         "Min total minutes", min_value=0, max_value=slider_max,
         value=default_min_threshold, step=25 if playoff_mode else 50,
-        help="Hides players below this threshold. Ranks are always computed on the full pool.",
+        help="Hides players with fewer total minutes than this (500 is roughly "
+             "six minutes a game over a full season). Ranks never change: they "
+             "are always computed on the full pool, this only trims the list. "
+             "Drag to 0 to show everyone.",
     )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
