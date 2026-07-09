@@ -1025,7 +1025,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
 </div>
 <div class="hub-ladder">{_ladder}</div>
-<div class="hub-note" style="margin-top:0.3rem">Track runs lowest to highest {html.escape(_pos_prim)} this season · middle tick = the {_center_word} {html.escape(_pos_prim)} (small number).</div>
+<div class="hub-note" style="margin-top:0.3rem" title="Low-minute players are excluded so a garbage-time fluke cannot set the scale's endpoints.">Track runs lowest to highest rotation {html.escape(_pos_prim)} (15+ MPG) this season · middle tick = the {_center_word} (small number).</div>
 <div class="hub-stats" style="margin-top:1.1rem">
   <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
   <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
