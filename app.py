@@ -370,20 +370,32 @@ st.markdown("""
 /* logo metals (--logo-copper/-sage/-tag) come from the theme tokens so they
    retune per mode; see utils.THEME_BASE_CSS / THEME_LIGHT_CSS */
 .hv-logo-wrap{display:flex;justify-content:center;padding:0.55rem 0 1.0rem;margin-bottom:0.9rem;}
-.hv-logo{display:inline-flex;flex-direction:column;align-items:center;font-size:46px;gap:3px;user-select:none}
-.hv-wm{display:inline-flex;align-items:center;font-family:"Space Grotesk",sans-serif;font-weight:700;line-height:1;letter-spacing:-.035em}
-.hv-wm .cu{color:var(--logo-copper)}
-.hv-wm .sg{color:var(--logo-sage)}
-.hv-ball{width:.86em;height:.86em;margin:0 -.02em;position:relative;top:.02em;color:var(--logo-copper);flex:0 0 auto}
+.hv-logo{display:inline-flex;flex-direction:column;align-items:center;font-size:46px;gap:6px;user-select:none}
+.hv-swoosh{width:min(540px,94vw);height:auto;display:block}
+.hv-swoosh text{font-family:"Space Grotesk",sans-serif;font-weight:700;letter-spacing:-0.02em}
 .hv-tag{display:flex;align-items:center;gap:.8em;font-family:"Manrope",sans-serif;font-weight:600;font-size:.185em;letter-spacing:.34em;text-transform:uppercase;color:var(--logo-tag);white-space:nowrap}
 .hv-tag::before,.hv-tag::after{content:"";height:1px;width:3.1em;background:currentColor;opacity:.45}
 </style>
 <div class="hv-logo-wrap"><div class="hv-logo">
-  <div class="hv-wm">
-    <span class="cu">HO</span>
-    <svg class="hv-ball" viewBox="0 0 100 100"><g fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"><circle cx="50" cy="50" r="46"/><path d="M50 4 V96 M4 50 H96 M20 14 Q42 50 20 86 M80 14 Q58 50 80 86"/></g></svg>
-    <span class="cu">PS</span><span class="sg">VALUE</span>
-  </div>
+  <svg class="hv-swoosh" viewBox="0 0 980 258" role="img" aria-label="HoopsValue">
+    <defs>
+      <linearGradient id="hvSwooshGrad" x1="0" y1="0" x2="1" y2="0">
+        <stop offset="0"    style="stop-color:var(--logo-navy)"/>
+        <stop offset="0.42" style="stop-color:var(--logo-navy)"/>
+        <stop offset="0.72" style="stop-color:var(--logo-orange)"/>
+        <stop offset="1"    style="stop-color:var(--logo-orange)"/>
+      </linearGradient>
+    </defs>
+    <path d="M 34 148 Q 420 -34 824 58 Q 424 14 40 156 Z" fill="url(#hvSwooshGrad)"/>
+    <g transform="rotate(22 872 78)" fill="none" stroke="var(--logo-orange)" stroke-width="7" stroke-linecap="round">
+      <circle cx="872" cy="78" r="52"/>
+      <path d="M820 78 Q872 62 924 78"/>
+      <path d="M872 26 Q844 78 872 130"/>
+    </g>
+    <text x="46" y="204" transform="skewX(-9)" font-size="124">
+      <tspan fill="var(--logo-navy)">Hoops</tspan><tspan fill="var(--logo-orange)">Value</tspan>
+    </text>
+  </svg>
   <div class="hv-tag">NBA Contract Value</div>
 </div></div>
 """, unsafe_allow_html=True)

@@ -843,6 +843,9 @@ THEME_BASE_CSS = """
         --logo-copper: #b06a38;
         --logo-sage:   #4f8a68;
         --logo-tag:    #8a8d98;
+        /* swoosh wordmark: navy reads as near-white on dark surfaces */
+        --logo-navy:   #e2e9f8;
+        --logo-orange: #f6863a;
         /* elevation */
         --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
         /* table polish (zebra rows + in-cell score bars) */
@@ -988,6 +991,9 @@ THEME_LIGHT_CSS = """
         --logo-copper: #985729;
         --logo-sage:   #3d6f52;
         --logo-tag:    #7a7d88;
+        /* swoosh wordmark: reference navy + orange on light surfaces */
+        --logo-navy:   #1c2c5b;
+        --logo-orange: #f2711d;
         /* elevation -> soft light card shadow */
         --shadow-card: 0 1px 2px rgba(20,22,40,.06), 0 4px 14px rgba(20,22,40,.07);
         /* table polish (zebra rows + in-cell score bars) */
