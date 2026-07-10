@@ -860,16 +860,6 @@ if not _hub_df.empty:
     except Exception:
         pass
     _rail("Front page", "Today around the league", meta=_rail_meta)
-    if _rail_meta:
-        # Link the hard accuracy stat to the About page methodology, so the
-        # number is not a bare claim. render_rail() escapes its meta, so the
-        # link rides just under the rail rather than inside it.
-        st.markdown(
-            '<div style="text-align:right; margin:-0.35rem 0 0.25rem;">'
-            '<a href="/About#accuracy" target="_top" style="font-size:0.68rem; '
-            'color:var(--fg-4); text-decoration:underline; text-underline-offset:2px;">'
-            'How we measure this</a></div>',
-            unsafe_allow_html=True)
 
     _cards = [
         _fp_card("Best right now", _r0["Player"], _r0["Team"],
