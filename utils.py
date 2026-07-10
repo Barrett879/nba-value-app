@@ -1983,9 +1983,15 @@ def spark_svg(scores: list, w: int = 72, h: int = 20) -> str:
 
 
 def render_rail(kicker: str, title: str, count: str | None = None, meta: str | None = None) -> None:
-    """Ruled section header: kicker + title + optional count pill + right meta."""
-    bits = [f'<span class="k">{html.escape(kicker)}</span>',
-            f'<span class="t">{html.escape(title)}</span>']
+    """Ruled section header: kicker + title + optional count pill + right meta.
+
+    An empty kicker is omitted entirely (no stray gap), so callers can hide the
+    eyebrow label by passing "".
+    """
+    bits = []
+    if kicker:
+        bits.append(f'<span class="k">{html.escape(kicker)}</span>')
+    bits.append(f'<span class="t">{html.escape(title)}</span>')
     if count:
         bits.append(f'<span class="n">{html.escape(count)}</span>')
     if meta:

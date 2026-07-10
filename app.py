@@ -865,7 +865,7 @@ if not _hub_df.empty:
     _ovp = _hub_df.loc[_hub_df["DeltaMkt"].idxmax()]
     _fa_df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
 
-    _rail("Front page", "Today around the league")
+    _rail("", "Today around the league")
 
     _cards = [
         _fp_card("Best right now", _r0["Player"], _r0["Team"],
@@ -1452,7 +1452,7 @@ def _board():
         _df = _hub_df[_hub_df["norm"].isin(_max_norms)]
     else:
         _df = _hub_df
-    _rail("The board", "2025-26 Player Board", count=f"{len(_df)} players")
+    _rail("", "2025-26 Player Board", count=f"{len(_df)} players")
     st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
              label_visibility="collapsed")
 
