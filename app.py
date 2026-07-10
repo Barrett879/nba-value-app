@@ -496,19 +496,6 @@ st.markdown("<div style='margin-top:0.8rem'></div>", unsafe_allow_html=True)
 # Same "What is the Barrett Score?" expander every inner page shows.
 render_barrett_score_explainer()
 
-# Compact glossary sibling to the explainer. The board pills and hub ladder
-# also carry these definitions as hover tooltips (title=), but hover is
-# mouse-only; this expander is the keyboard / touch / screen-reader channel.
-with st.expander("What do the stats and filters mean?"):
-    st.markdown(
-        "- **TS%**: true shooting percentage, scoring efficiency counting 2s, 3s and free throws.\n"
-        "- **D-LEBRON**: a defensive impact estimate derived from the public LEBRON metric family, positive is better.\n"
-        "- **Bargains**: underpaid by \\$5M or more, 2025-26 salary at least \\$5M below 2025-26 value.\n"
-        "- **Overpays**: overpaid by \\$5M or more, 2025-26 salary at least \\$5M above 2025-26 value.\n"
-        "- **Free agents**: hits the 2026 market as a UFA, RFA, or an open player/team option.\n"
-        "- **Max tier**: players whose 2026-27 predicted contract sits at their CBA maximum."
-    )
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Player Hub — the homepage IS the player list. Selecting a player (row link or
