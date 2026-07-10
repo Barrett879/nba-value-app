@@ -349,6 +349,11 @@ st.markdown("""
     .fp-card .v.good{color:var(--value-good);}
     .fp-card .v.bad{color:var(--value-bad);}
     .fp-card .v.teal{color:var(--accent-teal);}
+    /* score cards pair the big number with a small unit label so it reads
+       as a Barrett Score, not a bare figure like the $ cards */
+    .fp-card .vrow{display:flex;align-items:baseline;gap:.4rem;flex-wrap:wrap;}
+    .fp-card .vunit{font-size:.6rem;font-weight:800;letter-spacing:.08em;
+        text-transform:uppercase;color:var(--fg-4);}
     .fp-card .sub{font-size:.72rem;color:var(--fg-3);}
 </style>
 """, unsafe_allow_html=True)
@@ -868,7 +873,8 @@ if not _hub_df.empty:
 
     _cards = [
         _fp_card("Best right now", _r0["Player"], _r0["Team"],
-                 f'<span class="v teal" style="display:block">{_r0["Barrett Score"]:.2f}</span>',
+                 f'<span class="vrow"><span class="v teal">{_r0["Barrett Score"]:.2f}</span>'
+                 f'<span class="vunit">Barrett Score</span></span>',
                  f'League #1 · ${_r0["Salary"]:.1f}M salary'),
     ]
     if len(_stl_df):
@@ -885,7 +891,8 @@ if not _hub_df.empty:
         _fa_top = _fa_df.iloc[0]
         _cards.append(
             _fp_card("FA watch · 2026", _fa_top["Player"], _fa_top["Team"],
-                     f'<span class="v teal" style="display:block">{_fa_top["Barrett Score"]:.2f}</span>',
+                     f'<span class="vrow"><span class="v teal">{_fa_top["Barrett Score"]:.2f}</span>'
+                     f'<span class="vunit">Barrett Score</span></span>',
                      "best available free agent right now"))
     st.markdown('<div class="fp-grid">' + "".join(_cards) + "</div>", unsafe_allow_html=True)
 
