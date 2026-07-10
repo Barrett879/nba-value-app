@@ -846,6 +846,8 @@ THEME_BASE_CSS = """
         /* swoosh wordmark: navy reads as near-white on dark surfaces */
         --logo-navy:   #e2e9f8;
         --logo-orange: #f6863a;
+        /* hero wordmark image, dark variant (navy recolored light) */
+        --logo-img: url('/app/static/hoopsvalue_wordmark_dark.png');
         /* elevation */
         --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.35);
         /* table polish (zebra rows + in-cell score bars) */
@@ -994,6 +996,8 @@ THEME_LIGHT_CSS = """
         /* swoosh wordmark: reference navy + orange on light surfaces */
         --logo-navy:   #1c2c5b;
         --logo-orange: #f2711d;
+        /* hero wordmark image, light variant (original navy + orange) */
+        --logo-img: url('/app/static/hoopsvalue_wordmark.png');
         /* elevation -> soft light card shadow */
         --shadow-card: 0 1px 2px rgba(20,22,40,.06), 0 4px 14px rgba(20,22,40,.07);
         /* table polish (zebra rows + in-cell score bars) */

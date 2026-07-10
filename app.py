@@ -370,32 +370,17 @@ st.markdown("""
 /* logo metals (--logo-copper/-sage/-tag) come from the theme tokens so they
    retune per mode; see utils.THEME_BASE_CSS / THEME_LIGHT_CSS */
 .hv-logo-wrap{display:flex;justify-content:center;padding:0.55rem 0 1.0rem;margin-bottom:0.9rem;}
-.hv-logo{display:inline-flex;flex-direction:column;align-items:center;font-size:46px;gap:6px;user-select:none}
-.hv-swoosh{width:min(540px,94vw);height:auto;display:block}
-.hv-swoosh text{font-family:"Space Grotesk",sans-serif;font-weight:700;letter-spacing:-0.02em}
+.hv-logo{display:flex;flex-direction:column;align-items:center;font-size:46px;gap:8px;user-select:none;width:100%}
+/* The wordmark is a raster; --logo-img swaps light/dark per theme (see
+   utils.THEME_BASE_CSS / THEME_LIGHT_CSS). CSS background-image resolves the
+   /app/static path cleanly where an inline <img src> would not. */
+.hv-mark{width:min(520px,86vw);aspect-ratio:1790 / 427;background-image:var(--logo-img);
+  background-size:contain;background-repeat:no-repeat;background-position:center}
 .hv-tag{display:flex;align-items:center;gap:.8em;font-family:"Manrope",sans-serif;font-weight:600;font-size:.185em;letter-spacing:.34em;text-transform:uppercase;color:var(--logo-tag);white-space:nowrap}
 .hv-tag::before,.hv-tag::after{content:"";height:1px;width:3.1em;background:currentColor;opacity:.45}
 </style>
 <div class="hv-logo-wrap"><div class="hv-logo">
-  <svg class="hv-swoosh" viewBox="0 0 980 258" role="img" aria-label="HoopsValue">
-    <defs>
-      <linearGradient id="hvSwooshGrad" x1="0" y1="0" x2="1" y2="0">
-        <stop offset="0"    style="stop-color:var(--logo-navy)"/>
-        <stop offset="0.42" style="stop-color:var(--logo-navy)"/>
-        <stop offset="0.72" style="stop-color:var(--logo-orange)"/>
-        <stop offset="1"    style="stop-color:var(--logo-orange)"/>
-      </linearGradient>
-    </defs>
-    <path d="M 34 148 Q 420 -34 824 58 Q 424 14 40 156 Z" fill="url(#hvSwooshGrad)"/>
-    <g transform="rotate(22 872 78)" fill="none" stroke="var(--logo-orange)" stroke-width="7" stroke-linecap="round">
-      <circle cx="872" cy="78" r="52"/>
-      <path d="M820 78 Q872 62 924 78"/>
-      <path d="M872 26 Q844 78 872 130"/>
-    </g>
-    <text x="46" y="204" transform="skewX(-9)" font-size="124">
-      <tspan fill="var(--logo-navy)">Hoops</tspan><tspan fill="var(--logo-orange)">Value</tspan>
-    </text>
-  </svg>
+  <div class="hv-mark" role="img" aria-label="HoopsValue"></div>
   <div class="hv-tag">NBA Contract Value</div>
 </div></div>
 """, unsafe_allow_html=True)
