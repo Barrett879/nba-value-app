@@ -366,7 +366,28 @@ render_nav("")
 # come from CSS vars so the coming light theme can retune them per mode.
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700&display=swap');
+/* Self-hosted webfonts (latin subset) served from repo ./static via
+   enableStaticServing, so no third-party font CDN call (GDPR + no external
+   dependency). Space Grotesk / Manrope are variable fonts: each family ships
+   one latin woff2, reused across the three weight faces. */
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/app/static/fonts/space-grotesk-500.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:600;font-display:swap;
+  src:url('/app/static/fonts/space-grotesk-600.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Space Grotesk';font-style:normal;font-weight:700;font-display:swap;
+  src:url('/app/static/fonts/space-grotesk-700.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Manrope';font-style:normal;font-weight:500;font-display:swap;
+  src:url('/app/static/fonts/manrope-500.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Manrope';font-style:normal;font-weight:600;font-display:swap;
+  src:url('/app/static/fonts/manrope-600.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
+@font-face{font-family:'Manrope';font-style:normal;font-weight:700;font-display:swap;
+  src:url('/app/static/fonts/manrope-700.woff2') format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD;}
 /* logo metals (--logo-copper/-sage/-tag) come from the theme tokens so they
    retune per mode; see utils.THEME_BASE_CSS / THEME_LIGHT_CSS */
 .hv-logo-wrap{display:flex;justify-content:center;padding:0.55rem 0 1.0rem;margin-bottom:0.9rem;}
@@ -501,7 +522,6 @@ import hashlib as _hashlib
 from urllib.parse import quote as _urlquote
 
 import pandas as pd
-import plotly.express as px
 import plotly.graph_objects as go
 
 from utils import (
@@ -848,6 +868,16 @@ if not _hub_df.empty:
     except Exception:
         pass
     _rail("Front page", "Today around the league", meta=_rail_meta)
+    if _rail_meta:
+        # Link the hard accuracy stat to the About page methodology, so the
+        # number is not a bare claim. render_rail() escapes its meta, so the
+        # link rides just under the rail rather than inside it.
+        st.markdown(
+            '<div style="text-align:right; margin:-0.35rem 0 0.25rem;">'
+            '<a href="/About#accuracy" target="_top" style="font-size:0.68rem; '
+            'color:var(--fg-4); text-decoration:underline; text-underline-offset:2px;">'
+            'How we measure this</a></div>',
+            unsafe_allow_html=True)
 
     _cards = [
         _fp_card("Best right now", _r0["Player"], _r0["Team"],
@@ -965,6 +995,20 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   height: 580px !important; max-height: 580px !important;
   overflow-y: auto !important; padding: 0.55rem 0.8rem 3.3rem !important;
   position: relative; margin-bottom: 0.9rem; }}
+/* Phones: drop the fixed height so the four quadrants flow full-length instead
+   of trapping content in small inner-scroll boxes. Desktop is untouched. */
+@media (max-width: 640px) {{
+  [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
+  [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
+  [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
+  [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
+  [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1),
+  [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2),
+  [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3),
+  [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
+    height: auto !important; max-height: none !important;
+    min-height: 0 !important; overflow-y: visible !important; }}
+}}
 /* Jump buttons pin to the bottom-left of every quadrant card. Streamlit's
    element containers are positioned, which would capture the absolute button,
    so the containers on the button's ancestor chain go static. */

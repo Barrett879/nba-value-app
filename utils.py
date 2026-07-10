@@ -2110,6 +2110,8 @@ _FOOTER_HTML = f"""
   <div class="hv-foot-bottom">
     <div class="hv-foot-left">© 2026 HoopsValue.com. All rights reserved.</div>
     <div class="hv-foot-right">
+      <a href="/About" target="_top">About</a>
+      <span class="sep">|</span>
       <a href="mailto:contact@hoopsvalue.com">contact@hoopsvalue.com</a>
       <span class="sep">|</span>
       <a href="https://x.com/HoopsValue" target="_blank" rel="noopener">@HoopsValue</a>

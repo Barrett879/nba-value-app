@@ -26,8 +26,11 @@ side. No Streamlit / no network: `python team_suitors.py` to demo.
 """
 from __future__ import annotations
 from pathlib import Path
+import logging
 import unicodedata
 import pandas as pd
+
+logger = logging.getLogger(__name__)
 
 _DATA = Path(__file__).parent / "data"
 CSV_PATH = _DATA / "team_landscape_2026.csv"
@@ -180,6 +183,21 @@ def _read_as_of(path: Path | str) -> str:
     return ""
 
 
+def _warn_coerced(df: pd.DataFrame, col: str, coerced: pd.Series, path: Path | str) -> None:
+    """Flag CSV cells that held a non-empty value but coerced to NaN, i.e. a typo
+    that the fillna would otherwise silently swallow (cap_space_M -> $0,
+    exception_M -> the derived default). Logs the file, team and offending value;
+    the caller still applies its fallback, so behavior is unchanged."""
+    raw = df[col]
+    bad = coerced.isna() & raw.notna() & (raw.astype(str).str.strip() != "")
+    if not bad.any():
+        return
+    teams = df.get("team", pd.Series([""] * len(df), index=df.index))
+    for i in df.index[bad]:
+        logger.warning("%s: unparseable %s %r for team %s, using fallback value",
+                       Path(path).name, col, raw.get(i), teams.get(i, "?"))
+
+
 def load_team_landscape(path: Path | str = CSV_PATH) -> pd.DataFrame:
     """Load the cap/context table. The largest exception each team can use is
     derived from `top_exception` (apron-implied: nt_mle $15.05M under the first
@@ -188,12 +206,16 @@ def load_team_landscape(path: Path | str = CSV_PATH) -> pd.DataFrame:
     explicit `exception_M` still overrides. A `# as_of:` line at the top stamps
     the data's age (surfaced in the UI)."""
     df = pd.read_csv(path, comment="#")
-    df["cap_space_M"] = pd.to_numeric(df["cap_space_M"], errors="coerce").fillna(0.0)
+    _cap = pd.to_numeric(df["cap_space_M"], errors="coerce")
+    _warn_coerced(df, "cap_space_M", _cap, path)
+    df["cap_space_M"] = _cap.fillna(0.0)
     tool = (df.get("top_exception", pd.Series(["nt_mle"] * len(df)))
             .fillna("nt_mle").astype(str).str.strip().str.lower())
     derived = tool.map(_EXC_BY_TOOL).fillna(DEFAULT_NT_MLE)
     if "exception_M" in df.columns:
-        df["exception_M"] = pd.to_numeric(df["exception_M"], errors="coerce").fillna(derived)
+        _exc = pd.to_numeric(df["exception_M"], errors="coerce")
+        _warn_coerced(df, "exception_M", _exc, path)
+        df["exception_M"] = _exc.fillna(derived)
     else:
         df["exception_M"] = derived
     df["timeline"] = df.get("timeline", "").fillna("").astype(str)

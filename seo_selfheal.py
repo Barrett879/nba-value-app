@@ -29,8 +29,8 @@ import re
 
 import streamlit
 
-MARKER = "hv-seo-v2"
-_OLD_MARKERS = ("hv-seo-v1",)
+MARKER = "hv-seo-v3"
+_OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2")
 
 TITLE = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
 DESC = ("HoopsValue ranks every NBA player by the Barrett Score, on-court "
@@ -45,6 +45,17 @@ PAGES = [
 ]
 FAVICON_TAG = '<link rel="icon" type="image/svg+xml" href="/app/static/favicon.svg" />'
 
+# Purpose-built 1200x630 share card (link unfurls want a wide image, not the
+# raw square logo). Bundled together so the fresh-patch and older-marker upgrade
+# paths stay in sync.
+OG_IMAGE = "https://hoopsvalue.com/app/static/og_card.png"
+_OG_IMAGE_TAGS = (
+    f'<meta property="og:image" content="{OG_IMAGE}"/>'
+    '<meta property="og:image:width" content="1200"/>'
+    '<meta property="og:image:height" content="630"/>'
+)
+_TWITTER_IMAGE_TAG = f'<meta name="twitter:image" content="{OG_IMAGE}"/>'
+
 _patched_this_process = False  # skip the file read on Streamlit re-runs
 
 
@@ -55,10 +66,22 @@ def seo_html(html: str) -> str:
     if MARKER in html:
         return html
     if any(m in html for m in _OLD_MARKERS):
-        # Head tags + noscript already injected by an older patch: just bump
-        # the marker and apply the newer favicon rewrite below.
+        # Head tags + noscript already injected by an older patch: bump the
+        # marker, repoint the OG image at the wide share card, and apply the
+        # newer favicon rewrite below.
         for m in _OLD_MARKERS:
             html = html.replace(f"<!--{m}-->", f"<!--{MARKER}-->", 1)
+        # Older patches pointed og:image at the raw square logo. Swap that lone
+        # tag for the share card plus its dimension hints (v1/v2 never carried
+        # og:image:width/height, so this never double-injects).
+        html = re.sub(r'<meta property="og:image"[^>]*/?>', _OG_IMAGE_TAGS, html, count=1)
+        if 'name="twitter:image"' not in html:
+            html = html.replace(
+                '<meta name="twitter:card" content="summary_large_image"/>',
+                '<meta name="twitter:card" content="summary_large_image"/>'
+                + _TWITTER_IMAGE_TAG,
+                1,
+            )
     else:
         head = (
             f"<!--{MARKER}-->"
@@ -69,8 +92,9 @@ def seo_html(html: str) -> str:
             f'<meta property="og:description" content="{DESC}"/>'
             '<meta property="og:type" content="website"/>'
             '<meta property="og:url" content="https://hoopsvalue.com/"/>'
-            '<meta property="og:image" content="https://hoopsvalue.com/app/static/hoopsvalue_logo.png"/>'
+            f'{_OG_IMAGE_TAGS}'
             '<meta name="twitter:card" content="summary_large_image"/>'
+            f'{_TWITTER_IMAGE_TAG}'
         )
         nav = "".join(f'<li><a href="/{slug}">{label}</a></li>' for slug, label in PAGES)
         body = (

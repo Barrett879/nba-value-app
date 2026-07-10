@@ -397,6 +397,16 @@ def _sty_salary(_v, row):
         return "color:var(--purple);font-weight:600"
     return ""
 
+def _fmt_salary_rs(v, row):
+    """Salary cell: rookie-scale contracts get a tiny RS superscript so the
+    purple color is not the only signal (colorblind-safe). Output is trusted
+    HTML — the column must be listed in raw=."""
+    s = f"${v:.2f}M"
+    if normalize(str(row.get("Player", ""))) in _rookie_scale:
+        return (s + '<sup style="color:var(--fg-6);font-size:0.62em;'
+                    'margin-left:1px" title="Rookie scale contract">RS</sup>')
+    return s
+
 def _sty_signed(v, _row):
     # Actual signed deal: highlight teal when present, mute the "still on the board" dash.
     return "color:var(--fg-6)" if str(v) == "—" else "color:var(--accent-teal);font-weight:700"
@@ -461,12 +471,12 @@ html_table(
         "Team":          lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
                                     f'{html.escape(str(v))}'),
         "Barrett Score": lambda v: f"{v:.2f}",
-        "Salary":        lambda v: f"${v:.2f}M",
+        "Salary":        _fmt_salary_rs,
         "Proj. Value":   lambda v: f"${v:.2f}M",
         "Δ Market":      lambda v: f"${v:.2f}M",
         "Predicted":     _fmt_predicted,
     },
-    raw={"Team", "Predicted"},
+    raw={"Team", "Predicted", "Salary"},
     styles={
         "Status":        _sty_status,
         "Outcome":       _sty_outcome,
@@ -485,7 +495,7 @@ html_table(
     numeric={"#", "Barrett Score", "Salary", "Proj. Value", "Δ Market", "Predicted"},
     helps={
         "Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
-        "Salary": "Current season salary. Purple = rookie-scale contract (1st-round pick, yrs 1–4).",
+        "Salary": "Current season salary. Purple with the RS mark = rookie-scale contract (1st-round pick, yrs 1–4).",
         "Proj. Value": "What this player would earn if paid by their Barrett Score rank, a market-rate anchor.",
         "Δ Market": "Actual − Projected. Negative (green) = underpaid; positive (red) = overpaid.",
         "Outcome": "What happened to this free agent: PO Opt In / Opt Out (player option), TO Picked Up / Declined (team option), and/or Signed. Falls back to the pending option figure if undecided.",
@@ -511,7 +521,8 @@ with fa_cap_col:
         f"**{len(fa_display)}** free agents shown · "
         "**Proj. Value** = salary of the player at the same Barrett Score rank in the current pool, "
         "a market-rate anchor for what this player should cost. "
-        "**Δ Market**: green = underpaid (will demand raise) · red = overpaid (value risk)."
+        "**Δ Market**: green = underpaid (will demand raise) · red = overpaid (value risk). "
+        "Purple salary with the small RS mark = rookie scale."
     )
 
 if not fa_display.empty:
