@@ -413,7 +413,7 @@ st.markdown("""
 st.markdown("""
 <div style="text-align:center; padding: 0 0 0.4rem 0; margin-bottom: 0.6rem;">
     <div style="font-size:0.8rem; color:var(--fg-2); max-width:820px; margin:0 auto; line-height:1.45;">
-        Every NBA player since 1973, scored by what they're worth.
+        Every NBA player since 1973, scored by their on-court value and held up against their salary, so you can see who's actually worth their contract and who isn't.
     </div>
 </div>
 """, unsafe_allow_html=True)

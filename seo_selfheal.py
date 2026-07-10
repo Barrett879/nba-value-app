@@ -33,10 +33,9 @@ MARKER = "hv-seo-v3"
 _OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2")
 
 TITLE = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
-DESC = ("HoopsValue ranks every NBA player by the Barrett Score, on-court "
-        "production measured against their paycheck, and predicts what any player "
-        "would sign for today. Find the steals, expose the overpays, and run any "
-        "team's free agency.")
+DESC = ("HoopsValue scores every NBA player since 1973 by their on-court value "
+        "and holds it up against their salary, so you can see who's actually "
+        "worth their contract and who isn't.")
 PAGES = [
     ("Contract_Predictor", "Contract Predictor: what any player would sign for today"),
     ("Rankings", "Current Rankings: every NBA player by Barrett Score"),
