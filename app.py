@@ -527,6 +527,20 @@ from utils import (
 import streamlit.components.v1 as _components
 import team_suitors as _ts
 
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _accuracy_note() -> str:
+    """Model accuracy sentence for the 2026-27 Predicted column tooltip."""
+    try:
+        _sc = (_json.loads((Path(__file__).parent / "cache" / "accuracy_tracker_v1.json")
+                           .read_text()).get("scorecard") or {})
+        if _sc.get("n"):
+            return (f" So far {_sc['within_4M']:.0f}% of {_sc['n']} real 2026 signings "
+                    f"land within $4M of the actual deal.")
+    except Exception:
+        pass
+    return ""
+
 # The homepage is self-contained chrome (no render_page_chrome), so it must emit
 # the themed-table CSS itself — without it the table has no overflow container
 # and spills over the footer — plus the delegated click-to-sort script.
@@ -851,15 +865,7 @@ if not _hub_df.empty:
     _ovp = _hub_df.loc[_hub_df["DeltaMkt"].idxmax()]
     _fa_df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
 
-    _rail_meta = None
-    try:
-        _sc = (_json.loads((Path(__file__).parent / "cache" / "accuracy_tracker_v1.json")
-                           .read_text()).get("scorecard") or {})
-        if _sc.get("n"):
-            _rail_meta = f"model: {_sc['within_4M']:.0f}% of {_sc['n']} real 2026 deals within $4M"
-    except Exception:
-        pass
-    _rail("Front page", "Today around the league", meta=_rail_meta)
+    _rail("Front page", "Today around the league")
 
     _cards = [
         _fp_card("Best right now", _r0["Player"], _r0["Team"],
@@ -1499,7 +1505,8 @@ def _board():
             "2025-26 Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
             "2025-26 Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
             "+/-": "2025-26 Salary minus 2025-26 Value. Negative = underpaid.",
-            "2026-27 Predicted": "The Contract Predictor's model projection: what a NEW deal signed today would pay, at next season's cap.",
+            "2026-27 Predicted": ("The Contract Predictor's model projection: what a NEW deal signed today "
+                                  "would pay, at next season's cap." + _accuracy_note()),
             "Actual 2026-27 Salary": "What is really on the books for 2026-27: existing contract, exercised option, or the actual new deal signed this summer. Blank = nothing signed yet.",
         },
         height=min(760, max(260, len(_view) * 38 + 46)),
