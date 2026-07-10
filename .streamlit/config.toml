@@ -1,3 +1,8 @@
+# Don't render tracebacks (internal paths, code) to visitors; full errors
+# still go to the server log. Set to "full" locally if debugging in-page.
+[client]
+showErrorDetails = "none"
+
 [server]
 headless = true
 enableCORS = false

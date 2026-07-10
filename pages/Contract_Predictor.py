@@ -1052,7 +1052,7 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     ~0.1s. The file lands in CACHE_DIR, ships in the committed cache, and
     auto-seeds onto Render's persistent disk like every other cache parquet.
     Rebuilt when stale (1-day TTL) or when the v-tag below is bumped."""
-    from utils import CACHE_DIR, _dc_fresh
+    from utils import CACHE_DIR, _atomic_to_parquet, _dc_fresh
     _path = CACHE_DIR / f"comp_pool_p{n_recent_pairs}_v1.parquet"
     if _dc_fresh(_path, ttl=86_400):
         try:
@@ -1063,7 +1063,7 @@ def load_historical_signings(n_recent_pairs: int = 3) -> pd.DataFrame:
     if not out.empty:
         try:
             CACHE_DIR.mkdir(parents=True, exist_ok=True)
-            out.to_parquet(_path, index=False)
+            _atomic_to_parquet(out, _path)
         except Exception:
             pass
     return out
@@ -2224,7 +2224,7 @@ if _market_median is not None:
                 padding:1.5rem 1.9rem 1.7rem; margin: 1.3rem 0 1.3rem 0;">
       <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
       <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
-        {features["name"]}{_score_chip_html}
+        {html.escape(str(features["name"]))}{_score_chip_html}
       </div>
       <div style="font-size:0.7rem; color:var(--fg-4); text-transform:uppercase;
                   letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
@@ -2284,7 +2284,7 @@ else:
                     padding:1.5rem 1.9rem 1.7rem; margin: 1.3rem 0 1.3rem 0;">
           <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
           <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
-            {features["name"]}{_score_chip_html}
+            {html.escape(str(features["name"]))}{_score_chip_html}
           </div>
           <div style="font-size:0.7rem; color:var(--fg-4); text-transform:uppercase;
                       letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
@@ -2316,7 +2316,7 @@ else:
                     padding:1.5rem 1.9rem 1.7rem; margin: 1.3rem 0 1.3rem 0;">
           <div style="display:flex; align-items:center; gap:0.95rem;">{_hero_face}<div style="min-width:0;">
           <div style="font-size:1.5rem; color:var(--fg-1); font-weight:800; line-height:1.2;">
-            {features["name"]}{_score_chip_html}
+            {html.escape(str(features["name"]))}{_score_chip_html}
           </div>
           <div style="font-size:0.7rem; color:var(--fg-4); text-transform:uppercase;
                       letter-spacing:0.12em; font-weight:600; margin-top:0.45rem;">
@@ -2439,7 +2439,7 @@ else:
         # ── Scouting take card ──────────────────────────────────────────────
         take = _scouting_take(features, comps)
         if take:
-            top3_str = ", ".join(take["top3"])
+            top3_str = ", ".join(html.escape(str(n)) for n in take["top3"])
             render_rail("Second opinion", "Scouting Take",
                         meta="weighted by comp closeness")
             scouting_html = f"""

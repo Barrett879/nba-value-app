@@ -595,10 +595,10 @@ with tab_era:
             rows = ""
             for _, r in board.head(10).iterrows():
                 rows += (
-                    f'<div class="era-row" title="{r["Player"]} · avg {r["Avg Score"]:.1f} · '
+                    f'<div class="era-row" title="{html.escape(str(r["Player"]))} · avg {r["Avg Score"]:.1f} · '
                     f'peak {r["Peak Score"]:.1f} · {int(r["Seasons"])} seasons">'
                     f'<span class="era-rank">{int(r["#"])}</span>'
-                    f'<span class="era-name">{_abbrev(r["Player"])}</span>'
+                    f'<span class="era-name">{html.escape(_abbrev(str(r["Player"])))}</span>'
                     f'<span class="era-score">{r["Avg Score"]:.1f}</span></div>'
                 )
             if not rows:

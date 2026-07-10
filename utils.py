@@ -982,6 +982,8 @@ THEME_LIGHT_CSS = """
         --amber:       #a8730a;
         --orange:      #b45f06;
         --purple:      #7d3fa8;
+        --blue:        #2471a3;   /* accent text: >= 4.5:1 on white/panel-2 */
+        --sky:         #146c94;   /* player-name links + RFA chips, same hue */
         /* logo metals (on light) */
         --logo-copper: #985729;
         --logo-sage:   #3d6f52;
@@ -1313,6 +1315,7 @@ table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;
   font-weight:700;padding:0.6rem 0.7rem;cursor:pointer;white-space:nowrap;
   border-bottom:2px solid var(--panel-line);user-select:none;}
 .hv-table thead th:hover{color:var(--fg-2);}
+.hv-table thead th:focus-visible{outline:2px solid var(--accent-red);outline-offset:-2px;}
 .hv-table thead th .sort-ind{margin-left:0.15em;font-size:0.85em;color:var(--accent-red);}
 .hv-table tbody td{padding:0.5rem 0.7rem;color:var(--fg-2);
   border-bottom:1px solid var(--hairline-soft);white-space:nowrap;}
@@ -1342,18 +1345,18 @@ _HV_SORT_SCRIPT = """
   var doc = window.parent.document;
   if (doc.__hvSortInit) return;
   doc.__hvSortInit = true;
-  doc.addEventListener('click', function (e) {
-    var th = e.target.closest ? e.target.closest('.hv-table th[data-sortable]') : null;
-    if (!th) return;
+  function hvSort(th) {
     var tr = th.parentNode, table = th.closest('table'), tbody = table.querySelector('tbody');
     var idx = Array.prototype.indexOf.call(tr.children, th);
     var numeric = th.hasAttribute('data-num');
     var asc = th.getAttribute('data-dir') !== 'asc';
     Array.prototype.forEach.call(tr.children, function (o) {
       o.removeAttribute('data-dir');
+      o.setAttribute('aria-sort', 'none');
       var s = o.querySelector('.sort-ind'); if (s) s.textContent = '';
     });
     th.setAttribute('data-dir', asc ? 'asc' : 'desc');
+    th.setAttribute('aria-sort', asc ? 'ascending' : 'descending');
     var ind = th.querySelector('.sort-ind'); if (ind) ind.textContent = asc ? ' ▲' : ' ▼';
     var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
     rows.sort(function (a, b) {
@@ -1367,6 +1370,18 @@ _HV_SORT_SCRIPT = """
       return av < bv ? (asc ? -1 : 1) : av > bv ? (asc ? 1 : -1) : 0;
     });
     rows.forEach(function (r) { tbody.appendChild(r); });
+  }
+  doc.addEventListener('click', function (e) {
+    var th = e.target.closest ? e.target.closest('.hv-table th[data-sortable]') : null;
+    if (!th) return;
+    hvSort(th);
+  });
+  doc.addEventListener('keydown', function (e) {
+    if (e.key !== 'Enter' && e.key !== ' ' && e.key !== 'Spacebar') return;
+    var th = e.target.closest ? e.target.closest('.hv-table th[data-sortable]') : null;
+    if (!th) return;
+    if (e.key !== 'Enter') e.preventDefault();  /* Space must not scroll the page */
+    hvSort(th);
   });
 })();
 </script>
@@ -1405,7 +1420,8 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
         num = ' data-num="1"' if c in numeric else ""
         tip = f' title="{html.escape(str(helps[c]), quote=True)}"' if c in helps else ""
         head.append(
-            f'<th data-sortable="1"{num}{tip} style="text-align:{al}">'
+            f'<th data-sortable="1" tabindex="0" scope="col" aria-sort="none"'
+            f'{num}{tip} style="text-align:{al}">'
             f'{html.escape(str(c))}<span class="sort-ind"></span></th>'
         )
     n_total = len(df)
@@ -1572,6 +1588,22 @@ COMMON_CSS = """
         .top-nav a, .top-nav .home-link {
             padding-left: 0.3rem; padding-right: 0.3rem; font-size: 0.67rem;
         }
+    }
+    /* Below ~760px even the shrunken links overflow and the rightmost ones
+       clipped under the fixed theme button. Let the bar scroll sideways
+       (hidden scrollbar) instead; the flex end-spacer guarantees the last
+       link can scroll clear of the toggle even where a scroll container's
+       trailing padding isn't honoured. */
+    @media (max-width: 760px) {
+        .top-nav {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-right: 4rem;
+        }
+        .top-nav::-webkit-scrollbar { display: none; }
+        .top-nav::after { content: ""; flex: 0 0 3.25rem; }
     }
 
     /* Pin the playoff-mode toggle to the top-right of the nav, just left of the
@@ -1807,6 +1839,40 @@ _PLAYOFF_HELP = (
     "so Finals MVPs outrank first-round stars with similar per-game production."
 )
 
+# ══════════════════════════════════════════════════════════════════════════════
+# STREAMLIT-INTERNALS SELECTOR INDEX — check these after any Streamlit upgrade.
+# The site's chrome reaches into Streamlit's private DOM (built against 1.51);
+# none of these are public API and any release can break them. One checklist:
+#
+#   1. stLayoutWrapper :has() container targeting (app.py) — the homepage hub
+#      quadrants and board pills are styled via
+#      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q*) and
+#      [data-testid="stVerticalBlock"]:has(> [data-testid="stLayoutWrapper"]
+#      .st-key-board_view); 1.51 nests columns/fragments under stLayoutWrapper,
+#      so if that wrapper is renamed or the nesting changes, the hub cards and
+#      pills-to-table spacing silently lose their styling.
+#   2. button[kind="pillsActive"] (app.py) — the active board-view pill keys off
+#      the private `kind` attribute Streamlit stamps on st.pills buttons.
+#   3. The hidden "Made with Streamlit" badge hack — three layers must all keep
+#      working: the COMMON_CSS display:none rules ([data-testid=
+#      "stAppViewerBadge"] / stBottom / stToolbar / stDecoration / ...), the
+#      _HIDE_BADGE_SCRIPT MutationObserver below (removes [class*="viewerBadge"]
+#      nodes — HASHED CSS-module class names, matched by prefix only), and the
+#      height-0 iframe collapse rules in COMMON_CSS ([data-testid=
+#      "stCustomComponentV1"]:has(iframe[height="0"]) etc.) that keep the badge/
+#      sort/face-guard component iframes from leaving visible gaps.
+#   4. data-testid + .st-key-* hooks throughout THEME_BASE_CSS / COMMON_CSS —
+#      stMainBlockContainer, stVerticalBlock, stSidebar, stWidgetLabel, the
+#      baseweb select/input internals, stTabs internals, and the keyed-container
+#      pinning (.st-key-theme_nav_toggle / .st-key-playoff_nav_toggle). The
+#      st.container(key=...) class is stable API, but the wrapper chain these
+#      rules style against is not.
+#
+# After upgrading Streamlit: load the homepage + one subpage and verify (a) no
+# sidebar/toolbar/badge flash, (b) hub quadrant cards styled, (c) board pills
+# styled + active pill highlighted, (d) theme + playoff toggles pinned top-right,
+# (e) tables still click-to-sort, (f) no stray empty iframe gaps.
+# ══════════════════════════════════════════════════════════════════════════════
 _HIDE_BADGE_SCRIPT = """
 <script>
     function hideBadge() {
@@ -2139,6 +2205,11 @@ def _fmt_salary(player_name: str, salary_dollars: float) -> str:
 
 
 def fmt_next_contract(player_name: str, next_contracts: dict) -> str:
+    # NOTE: classify_fa_status is coupled to this exact output format. Its
+    # primary path uses this formatter as a consistency check (structured feed
+    # fields are only trusted when they re-format to the caller's string), and
+    # its fallback path PARSES these strings ("—" / "RFA" / trailing " PO" /
+    # " TO"). Change the format here and that fallback parser together.
     info = next_contracts.get(normalize(player_name))
     if info is None:
         return "—"
@@ -2231,26 +2302,81 @@ def _load_option_status() -> dict:
     return _OPTION_STATUS_CACHE
 
 
+# classify_fa_status resolves status PRIMARILY from this memoized structured
+# feed, not from the display string. Memoized per process because per-player
+# classification must never turn into per-player pkl reads — or, when the feed
+# is in its degraded uncached state (partial scrape, nothing written to disk),
+# per-player live scrapes.
+_NEXT_FEED_MEMO: dict = {}          # espn_year -> (monotonic read time, feed dict | None)
+_NEXT_FEED_TTL = 300                # seconds between disk-cache re-reads
+
+
+def _next_year_feed(cur_season: str) -> dict | None:
+    """The structured next-year salary feed for `cur_season`'s offseason
+    ({normalized_name: {"salary": float, "type": ...}} from
+    fetch_next_year_contracts), or None when it can't be read. Bounded: at most
+    one fetch call per _NEXT_FEED_TTL per season per process (normally a fresh
+    disk-cache hit, since every caller fetches the same feed just before
+    classifying), and a failed refresh keeps serving the last good feed
+    (stale-beats-empty)."""
+    try:
+        yr = season_to_espn_year(cur_season)
+    except Exception:
+        return None
+    now = time.monotonic()
+    hit = _NEXT_FEED_MEMO.get(yr)
+    if hit is not None and (now - hit[0]) < _NEXT_FEED_TTL:
+        return hit[1]
+    try:
+        feed = fetch_next_year_contracts(yr, cache_v=7) or None
+    except Exception:
+        feed = None
+    if feed is None and hit is not None:
+        feed = hit[1]               # keep the last good feed on a failed refresh
+    _NEXT_FEED_MEMO[yr] = (now, feed)
+    return feed
+
+
 def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
                        cur_season: str, cross_check: bool = True,
-                       include_rookie_options: bool = False) -> str | None:
+                       include_rookie_options: bool = False,
+                       contract_end_map: dict | None = None) -> str | None:
     """A player's free-agency status THIS offseason: 'UFA' / 'RFA' /
     'Player Option' / 'Team Option', or None when he is NOT a free agent
     (still under contract). THE single source of truth — used by the Free Agent
-    Class page, the home-page FA summary, and scripts/build_fa_board.py, so a
-    player's status can never disagree across them.
+    Class page, the home-page FA summary, the Contract Predictor FA toggle, and
+    scripts/build_fa_board.py, so a player's status can never disagree across
+    them.
 
-    The next-year SALARY feed (`next_contract_str` from fmt_next_contract) is
-    primary, but it OMITS some players who hold options or are signed (2nd-round
-    rookies, two-ways, certain option years) — they read as '—'. For those,
-    cross-check the contract-end scraper (get_player_contract_info):
+    PRIMARY PATH: status comes from the salary feed's STRUCTURED fields
+    (fetch_next_year_contracts -> {"salary", "type"}), fetched internally via
+    _next_year_feed — so a copy tweak to fmt_next_contract's wording can't
+    silently reclassify players. `next_contract_str` (fmt_next_contract's
+    display string) still matters two ways:
+      - consistency gate: the structured fields are trusted only when they
+        re-format to exactly the string the caller is displaying, so the
+        classification can never disagree with what's on screen; and
+      - FALLBACK source: when the feed is unreadable here or the caller worked
+        from a different snapshot, the string itself is parsed (that parser is
+        coupled to fmt_next_contract's exact output format — see the note
+        there).
+
+    The salary feed OMITS some players who hold options or are signed (2nd-round
+    rookies, two-ways, certain option years) — they read as missing/'—'. For
+    those, cross-check the contract-end scraper (get_player_contract_info):
       - deal ends this season             -> UFA (a genuine expiring free agent)
       - option on the upcoming season      -> Player/Team Option
       - signed beyond the upcoming season  -> None (under contract; not an FA)
     e.g. Austin Reaves' player option and Will Richard's rookie deal are both
     missing from the salary feed; the cross-check classifies the first as a
     Player Option and drops the second. cross_check=False skips the scraper
-    (use for non-current seasons, where today's contract data wouldn't apply)."""
+    (use for non-current seasons, where today's contract data wouldn't apply).
+
+    contract_end_map: optional precomputed contract-end dict (same shape as
+    fetch_contract_end_years' result, e.g. the player-hub build cache's
+    contract_end key). When given, the cross-check reads it INSTEAD of
+    get_player_contract_info, so request-path callers can never fall through
+    to the live ~30-page BBRef scrape on a lapsed pkl TTL."""
     # Authoritative option source first: a stable precomputed cache from the contract
     # scraper, because the live salary feed mislabels options as 'guaranteed' (so option
     # holders like Brook Lopez / Kuminga / Dort would otherwise read as "under contract"
@@ -2268,16 +2394,18 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
                 return "Player Option"
             if _opt.get("type") == "team_option":
                 return "Team Option"
-    s = next_contract_str
-    if s == "RFA":
-        return "RFA"
-    if s == "—":
+
+    def _missing() -> str | None:
+        # No feed entry for the player: rookie-scale -> RFA; otherwise cross-check
+        # the contract-end scraper for feed-omitted option-holders / signed players.
         if normalize(name) in rookie_set:
             return "RFA"
         if cross_check:
             _cs = int(cur_season[:4]) + 1
             _contract_season = f"{_cs}-{(_cs + 1) % 100:02d}"   # upcoming season
-            ci = get_player_contract_info(name) or {}
+            ci = (contract_end_map.get(normalize(name))
+                  if contract_end_map is not None
+                  else get_player_contract_info(name)) or {}
             end, last = ci.get("end_season"), ci.get("last_year_type")
             if end and end > cur_season:
                 if end == _contract_season and last == "player_option":
@@ -2286,10 +2414,39 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
                     return "Team Option"
                 return None        # signed beyond this offseason -> not an FA
         return "UFA"
+
+    s = next_contract_str
+    # PRIMARY: the feed's structured fields — but only when they re-format to
+    # the exact string the caller passed (same snapshot), so status and the
+    # displayed string can never disagree.
+    feed = _next_year_feed(cur_season)
+    if feed is not None and fmt_next_contract(name, feed) == s:
+        info = feed.get(normalize(name))
+        if info is None:
+            return _missing()
+        t = info.get("type")
+        if t == "rfa":
+            return "RFA"
+        if t == "player_option":
+            return "Player Option"
+        if t == "team_option":
+            return "Team Option"
+        return None                # "guaranteed" -> under contract, not an FA
+    # FALLBACK: parse the display string (feed unreadable, or the caller's
+    # snapshot differs). Coupled to fmt_next_contract's exact output format.
+    if s == "RFA":
+        return "RFA"
+    if s == "—":
+        return _missing()
     if " PO" in s:
         return "Player Option"
     if " TO" in s:
         return "Team Option"
+    if not re.fullmatch(r"\$\d+(\.\d+)?M", s or ""):
+        # Not a string fmt_next_contract produces — a format drift would land
+        # here and silently read as "under contract", so make it loud.
+        logger.warning("classify_fa_status: unrecognized next-contract string %r "
+                       "for %s — treating as under contract", s, name)
     return None
 
 
@@ -2332,12 +2489,21 @@ def _pkl_load(path: Path):
     return pickle.loads(path.read_bytes())
 
 def _pkl_save(path: Path, obj) -> None:
+    # Atomic write (tmp sibling + os.replace), mirroring _atomic_to_parquet:
+    # a writer killed mid-write (deploy SIGTERM) would otherwise leave a
+    # truncated pkl whose fresh mtime makes stale-beats-empty trust it.
+    tmp = path.with_suffix(path.suffix + f".tmp{os.getpid()}-{threading.get_ident()}")
     try:
-        path.write_bytes(pickle.dumps(obj))
+        tmp.write_bytes(pickle.dumps(obj))
+        os.replace(tmp, path)
     except Exception as e:
         # A full/unwritable cache disk silently degrades every scraper to
         # "never caches" — surface it in the logs rather than failing silently.
         logger.warning("cache write failed for %s: %s", path, e)
+        try:
+            tmp.unlink(missing_ok=True)
+        except OSError:
+            pass
 
 
 def _atomic_to_parquet(df: pd.DataFrame, path: Path) -> None:

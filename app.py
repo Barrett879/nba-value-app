@@ -1,10 +1,17 @@
 import sys
+import datetime
 import html
+import logging
 import math
+import re
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import streamlit as st
+
+import seo_selfheal
+seo_selfheal.ensure_seo_patched()  # SEO shell self-heal for bare "streamlit run" starts
+
 from utils import (
     _bootstrap_warm,
     THEME_DEFAULT_DARK,
@@ -26,6 +33,8 @@ from utils import (
     COMMON_CSS, render_nav, TEAM_HEX, HV_KIT_CSS,
     render_barrett_score_explainer,
 )
+
+logger = logging.getLogger(__name__)
 
 # Featured players for the Legacy preview overlay on the home page.
 # IDs come from nba_api.stats.static.players. One per major era — five eras:
@@ -415,6 +424,19 @@ with _search_col:
         unsafe_allow_html=True,
     )
     _all_player_names = get_all_player_names() or []
+    # Mirror a ?player= deep link into the search box: resolve the param the
+    # same way the hub does (normalized-name match) and seed the widget key
+    # ONCE, before the box is built, so box and hub agree on shared-link
+    # loads. After that the widget key owns the state (same seed-once
+    # discipline as Contract_Predictor's picker); never write it again this
+    # run, and never reorder the options.
+    _qp_option = None
+    if "player" in st.query_params:
+        _qp_norm = normalize(st.query_params.get("player", ""))
+        _qp_option = next(
+            (str(n) for n in _all_player_names if normalize(str(n)) == _qp_norm), None)
+    if _qp_option and "home_search_select" not in st.session_state:
+        st.session_state["home_search_select"] = _qp_option
     _picked = st.selectbox(
         "Search any player",
         options=_all_player_names,
@@ -432,6 +454,10 @@ with _search_col:
                 st.query_params["player"] = _picked
         else:
             st.session_state["search_player"] = _picked
+            # Clear any lingering ?player= deep link so Search.py resolves the
+            # picked legend, not a stale current-player selection.
+            if "player" in st.query_params:
+                del st.query_params["player"]
             try:
                 st.switch_page("pages/Search.py")
             except Exception:
@@ -440,11 +466,30 @@ with _search_col:
                     f'Click here to view {_picked}\'s profile →</a>',
                     unsafe_allow_html=True,
                 )
+    elif _qp_option and "player" in st.query_params:
+        # Box cleared (x) while a deep link is set: drop the param so the hub
+        # resets with the box. A param the box can't display (no matching
+        # option, so it was never seeded) is left alone; the hub resolves it
+        # by normalized name and stays up, which is the consistent state.
+        del st.query_params["player"]
 
 st.markdown("<div style='margin-top:0.8rem'></div>", unsafe_allow_html=True)
 
 # Same "What is the Barrett Score?" expander every inner page shows.
 render_barrett_score_explainer()
+
+# Compact glossary sibling to the explainer. The board pills and hub ladder
+# also carry these definitions as hover tooltips (title=), but hover is
+# mouse-only; this expander is the keyboard / touch / screen-reader channel.
+with st.expander("What do the stats and filters mean?"):
+    st.markdown(
+        "- **TS%**: true shooting percentage, scoring efficiency counting 2s, 3s and free throws.\n"
+        "- **D-LEBRON**: a defensive impact estimate derived from the public LEBRON metric family, positive is better.\n"
+        "- **Bargains**: underpaid by \\$5M or more, 2025-26 salary at least \\$5M below 2025-26 value.\n"
+        "- **Overpays**: overpaid by \\$5M or more, 2025-26 salary at least \\$5M above 2025-26 value.\n"
+        "- **Free agents**: hits the 2026 market as a UFA, RFA, or an open player/team option.\n"
+        "- **Max tier**: players whose 2026-27 predicted contract sits at their CBA maximum."
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -455,6 +500,7 @@ render_barrett_score_explainer()
 # ══════════════════════════════════════════════════════════════════════════════
 import json as _json
 import csv as _csv
+import hashlib as _hashlib
 from urllib.parse import quote as _urlquote
 
 import pandas as pd
@@ -463,8 +509,8 @@ import plotly.graph_objects as go
 
 from utils import (
     CACHE_DIR, html_table, theme_fig, get_player_draft_info,
-    fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT, get_player_contract_info,
-    fetch_league_stats, SALARY_CAP_M, get_max_contract_eligibility,
+    fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
+    fetch_league_stats, SALARY_CAP_M, _pkl_load,
     FACE_GUARD_SCRIPT,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
@@ -485,33 +531,57 @@ _NEXT_SEASON = f"{int(_HUB_SEASON[:4]) + 1}-{(int(_HUB_SEASON[:4]) + 2) % 100:02
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def _actual_max_norms(candidates: tuple) -> set:
-    """Norms whose ACTUAL next-season salary sits at/above their own CBA max
-    (25/30/35% of the 2026-27 cap by service years). Mid-contract max deals
-    with built-in raises exceed the new-deal max, so >= catches them too.
-    Only called for the handful of salaries above the 25% floor."""
-    _cap = SALARY_CAP_M.get(_NEXT_SEASON, 165.0)
-    out = set()
-    for _nm, _player, _nx in candidates:
-        try:
-            _e = get_max_contract_eligibility(_player, _HUB_SEASON)
-            if _nx >= _e["max_pct"] * _cap - 0.05:
-                out.add(_nm)
-        except Exception:
-            pass
-    return out
+def _hub_cache() -> dict:
+    """Parsed player-hub build cache (scripts/build_player_hub.py): players (pcv +
+    max_pct), contract_end map, built_at, model_stamp. {} if absent. v2 filename:
+    /data on Render only seeds MISSING files, so new KEYS in the old name would
+    never reach production — a new filename does."""
+    try:
+        # REPO copy, not CACHE_DIR: /data on Render only seeds MISSING files, so it
+        # keeps serving the stale first-ever copy of repo-authored caches like this one.
+        return _json.loads((Path(__file__).parent / "cache" / "player_hub_pcv_v2.json")
+                           .read_text())
+    except Exception:
+        return {}
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def _hub_pcv() -> dict:
     """Full-pool predicted contracts (scripts/build_player_hub.py). {} if absent."""
+    return _hub_cache().get("players", {}) or {}
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_contract_end() -> dict:
+    """Contract-end info {norm: {end_season, signing_season, ...}} precomputed by
+    scripts/build_player_hub.py. Fallback when the key is missing: read the
+    contract scraper's own on-disk pkl directly — NEVER fetch_contract_end_years
+    here, whose TTL lapse would run a ~30-page Basketball-Reference scrape inside
+    a visitor's request."""
+    m = _hub_cache().get("contract_end")
+    if isinstance(m, dict) and m:
+        return m
     try:
-        # REPO copy, not CACHE_DIR: /data on Render only seeds MISSING files, so it
-        # keeps serving the stale first-ever copy of repo-authored caches like this one.
-        return _json.loads((Path(__file__).parent / "cache" / "player_hub_pcv_v1.json")
-                           .read_text()).get("players", {})
+        return _pkl_load(CACHE_DIR / "contract_end_years_v1.pkl") or {}
     except Exception:
         return {}
+
+
+@st.cache_resource(show_spinner=False)
+def _hub_model_stamp_check() -> None:
+    """Log-only staleness signal, once per process: warn when the hub cache was
+    built from a different model artifact than the deployed joblib."""
+    stamp = _hub_cache().get("model_stamp")
+    if not stamp:
+        return
+    try:
+        live = _hashlib.sha1((Path(__file__).parent / "models" /
+                              "contract_histgbm_v2.joblib").read_bytes()).hexdigest()[:12]
+    except OSError:
+        return
+    if live != stamp:
+        logger.warning("player hub cache built from model %s but live model is %s "
+                       "- rerun scripts/build_player_hub.py", stamp, live)
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -535,6 +605,9 @@ def _hub_decisions() -> dict:
                     try:
                         fig = float(r.get("figure_M") or 0) or None
                     except ValueError:
+                        logger.warning(
+                            "option_decisions_2026.csv: unparseable figure_M %r for player %s",
+                            r.get("figure_M"), r["player"])
                         fig = None
                     out[normalize(r["player"])] = ((r.get("decision") or "").strip(), fig)
     except Exception:
@@ -544,29 +617,41 @@ def _hub_decisions() -> dict:
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def _hub_career() -> pd.DataFrame:
-    """Per-season score/rank/salary for every player 1973→today (combined parquet)."""
-    cols = ["Player", "Season", "barrett_score", "score_rank", "salary"]
+    """Per-season score/rank/salary for every player 1973→today (combined parquet).
+    Carries PLAYER_ID so distinct players sharing a normalized name (two Chris
+    Johnsons, two Marcus Williamses) stay distinct."""
+    cols = ["PLAYER_ID", "Player", "Season", "barrett_score", "score_rank", "salary"]
     try:
         df = pd.read_parquet(CACHE_DIR / "all_seasons_0_v7.parquet", columns=cols)
-        df["norm"] = df["Player"].map(normalize)
-        return df
     except Exception:
-        return pd.DataFrame(columns=cols + ["norm"])
+        try:
+            # Older cache copy without the id column (Render's disk keeps the
+            # first-ever seeded file): synthesize name-keyed ids so the hub
+            # degrades to the pre-fix behavior instead of an empty career.
+            df = pd.read_parquet(CACHE_DIR / "all_seasons_0_v7.parquet", columns=cols[1:])
+            df["PLAYER_ID"] = df["Player"].map(normalize).factorize()[0]
+        except Exception:
+            return pd.DataFrame(columns=cols + ["norm"])
+    df["norm"] = df["Player"].map(normalize)
+    return df
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def _hub_career_agg() -> pd.DataFrame:
     """Career aggregates per player (for the Career Twins quadrant): seasons played,
-    average + peak Barrett Score, peak season, best rank, top salary."""
+    average + peak Barrett Score, peak season, best rank, top salary. Keyed on
+    PLAYER_ID, not normalized name, so same-name players never merge into one
+    phantom career; each id carries its most-recent-season name + norm."""
     car = _hub_career()
     if car.empty:
         return pd.DataFrame()
-    g = car.groupby("norm").agg(
-        Player=("Player", "last"), yrs=("Season", "nunique"),
+    car = car.sort_values("Season")
+    g = car.groupby("PLAYER_ID").agg(
+        Player=("Player", "last"), norm=("norm", "last"), yrs=("Season", "nunique"),
         avg=("barrett_score", "mean"), peak=("barrett_score", "max"),
         best_rank=("score_rank", "min"), top_sal=("salary", "max"),
     )
-    peak_season = car.loc[car.groupby("norm")["barrett_score"].idxmax()].set_index("norm")["Season"]
+    peak_season = car.loc[car.groupby("PLAYER_ID")["barrett_score"].idxmax()].set_index("PLAYER_ID")["Season"]
     g["peak_season"] = peak_season
     return g.reset_index()
 
@@ -597,10 +682,47 @@ def _hub_salary_supplement() -> dict:
                     try:
                         out[normalize(r["player"])] = float(r["salary_M"])
                     except ValueError:
-                        pass
+                        logger.warning(
+                            "salary_supplement_2026_27.csv: unparseable salary_M %r for player %s",
+                            r.get("salary_M"), r["player"])
     except Exception:
         pass
     return out
+
+
+def _offseason_as_of() -> str:
+    """Freshness stamp for the hand-maintained offseason files (real signings +
+    option decisions + salary supplement): the newest "# Verified <date>" leading
+    comment, falling back to file mtime. Same approach as Free_Agent_Class's
+    _offseason_as_of / team_suitors._read_as_of."""
+    best = None
+    for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv",
+                "salary_supplement_2026_27.csv"):
+        _p = Path(__file__).parent / "data" / _fn
+        d = None
+        try:
+            with open(_p) as _vfh:
+                for _line in _vfh:
+                    if not _line.lstrip().startswith("#"):
+                        break
+                    if "verified" in _line.lower():
+                        _m = re.search(r"(\d{4}-\d{2}-\d{2})", _line)
+                        if _m:
+                            try:
+                                d = datetime.date.fromisoformat(_m.group(1))
+                            except ValueError:
+                                d = None
+                            break
+        except OSError:
+            continue
+        if d is None:
+            try:
+                d = datetime.date.fromtimestamp(_p.stat().st_mtime)
+            except OSError:
+                continue
+        if best is None or d > best:
+            best = d
+    return f"{best.strftime('%B')} {best.day}, {best.year}" if best else ""
 
 
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
@@ -636,14 +758,19 @@ _pos2k = _ts.load_player_positions()
 _nc = fetch_next_year_contracts(season_to_espn_year(_HUB_SEASON), cache_v=7)
 _rookies = fetch_rookie_scale_players(_HUB_SEASON)
 _pcv_by = _hub_pcv()
+_hub_model_stamp_check()
 _max_norms = {n for n, p in _pcv_by.items() if p.get("is_max")}
 _amax_floor = 0.25 * SALARY_CAP_M.get(_NEXT_SEASON, 165.0) - 0.1
+_hub_cey = _hub_contract_end()
 
 _hub_rows = []
 for _i, _r in _pool.iterrows():
     _nm = str(_r["Player"])
     _n = normalize(_nm)
-    _status = classify_fa_status(_nm, fmt_next_contract(_nm, _nc), _rookies, _HUB_SEASON)
+    # contract_end_map: the precomputed contract-end dict, so the status
+    # cross-check never falls through to the live BBRef scraper mid-request.
+    _status = classify_fa_status(_nm, fmt_next_contract(_nm, _nc), _rookies, _HUB_SEASON,
+                                 contract_end_map=_hub_cey)
     if _status is None and _n in _hub_signings():
         _status = "Signed"          # tracked 2026 signing that came off the board
     _sg = _hub_signings().get(_n)
@@ -660,6 +787,9 @@ for _i, _r in _pool.iterrows():
             _next_M = _hub_salary_supplement().get(_n)
     _hub_rows.append({
         "norm": _n, "Player": _nm, "Team": _r["Team"],
+        # The pool's own nba_api id: the career quadrants key on it so a current
+        # player never inherits a retired namesake's seasons.
+        "PID": (int(_r["PLAYER_ID"]) if pd.notna(_r.get("PLAYER_ID")) else None),
         "Pos": _ts.resolve_position(_nm, _bref_pos.get(_n, ""), _pos2k),
         "Status": _status or "—",
         "Barrett Score": float(_r["barrett_score"]),
@@ -676,9 +806,19 @@ for _i, _r in _pool.iterrows():
     })
 _hub_df = pd.DataFrame(_hub_rows)
 _hub_df.insert(0, "#", range(1, len(_hub_df) + 1))
-_amax_norms = _actual_max_norms(tuple(
-    (r["norm"], r["Player"], float(r["Next"])) for r in _hub_rows
-    if r.get("Next") and r["Next"] >= _amax_floor))
+# MAX chips on ACTUAL next-season salaries: norms whose salary sits at/above
+# their own CBA max (25/30/35% of the 2026-27 cap by service years; mid-contract
+# raises exceed the new-deal max, so >= catches them too). max_pct comes
+# precomputed from the hub build cache — recomputing eligibility here was
+# seconds of service-year lookups inside the request. Records without max_pct
+# (pre-v2 cache) simply get no chip: cosmetic, so degrade silently.
+_amax_cap = SALARY_CAP_M.get(_NEXT_SEASON, 165.0)
+_amax_norms = set()
+for _ar in _hub_rows:
+    if _ar.get("Next") and float(_ar["Next"]) >= _amax_floor:
+        _mp = (_pcv_by.get(_ar["norm"]) or {}).get("max_pct")
+        if _mp and float(_ar["Next"]) >= float(_mp) * _amax_cap - 0.05:
+            _amax_norms.add(_ar["norm"])
 _by_norm = {r["norm"]: dict(r, rank=i + 1) for i, r in enumerate(_hub_rows)}
 
 _FA_SET = {"UFA", "RFA", "Player Option", "Team Option"}
@@ -698,8 +838,7 @@ if not _hub_df.empty:
                 f'</span></a>')
 
     _r0 = _hub_df.iloc[0]
-    _stl = _hub_df[_hub_df["Salary"] >= 2.0]          # keep rookie-min noise off the card
-    _stl = _stl.loc[_stl["DeltaMkt"].idxmin()]
+    _stl_df = _hub_df[_hub_df["Salary"] >= 2.0]       # keep rookie-min noise off the card
     _ovp = _hub_df.loc[_hub_df["DeltaMkt"].idxmax()]
     _fa_df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
 
@@ -717,13 +856,17 @@ if not _hub_df.empty:
         _fp_card("Best right now", _r0["Player"], _r0["Team"],
                  f'<span class="v teal" style="display:block">{_r0["Barrett Score"]:.2f}</span>',
                  f'League #1 · ${_r0["Salary"]:.1f}M salary'),
-        _fp_card("Biggest steal", _stl["Player"], _stl["Team"],
-                 f'<span class="v good" style="display:block">-${abs(_stl["DeltaMkt"]):.1f}M</span>',
-                 f'paid ${_stl["Salary"]:.1f}M · worth ${_stl["ProjValue"]:.1f}M'),
+    ]
+    if len(_stl_df):
+        _stl = _stl_df.loc[_stl_df["DeltaMkt"].idxmin()]
+        _cards.append(
+            _fp_card("Biggest steal", _stl["Player"], _stl["Team"],
+                     f'<span class="v good" style="display:block">-${abs(_stl["DeltaMkt"]):.1f}M</span>',
+                     f'paid ${_stl["Salary"]:.1f}M · worth ${_stl["ProjValue"]:.1f}M'))
+    _cards.append(
         _fp_card("Most overpaid", _ovp["Player"], _ovp["Team"],
                  f'<span class="v bad" style="display:block">+${_ovp["DeltaMkt"]:.1f}M</span>',
-                 f'paid ${_ovp["Salary"]:.1f}M · worth ${_ovp["ProjValue"]:.1f}M'),
-    ]
+                 f'paid ${_ovp["Salary"]:.1f}M · worth ${_ovp["ProjValue"]:.1f}M'))
     if len(_fa_df):
         _fa_top = _fa_df.iloc[0]
         _cards.append(
@@ -896,7 +1039,16 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
 """, unsafe_allow_html=True)
 
     _car = _hub_career()
-    _mine = _car[_car["norm"] == _n].sort_values("Season")
+    # Resolve the selected player's career rows by PLAYER_ID, not name: distinct
+    # players can share a normalized name, and a norm lookup would splice their
+    # careers together. Prefer the pool's own id; fall back to the id whose
+    # latest season is newest (the current player beats a retired namesake).
+    _pid = _sel.get("PID")
+    if _pid is None or not (_car["PLAYER_ID"] == _pid).any():
+        _same = _car[_car["norm"] == _n]
+        _pid = int(_same.groupby("PLAYER_ID")["Season"].max().idxmax()) if len(_same) else None
+    _mine = (_car[_car["PLAYER_ID"] == _pid] if _pid is not None
+             else _car.iloc[0:0]).sort_values("Season")
 
     _left, _right = st.columns(2)
 
@@ -906,7 +1058,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
         _d_color = "var(--value-good)" if _dm < 0 else ("var(--value-bad)" if _dm > 0 else "var(--fg-2)")
         _d_txt = f"{'+' if _dm > 0 else '−' if _dm < 0 else ''}${abs(_dm):.1f}M"
         _d_lbl = "Underpaid" if _dm < 0 else ("Overpaid" if _dm > 0 else "At market")
-        _ci = get_player_contract_info(_sel["Player"]) or {}
+        _ci = _hub_contract_end().get(_n) or {}
         _deal_line = (f'<div class="hub-note">Current deal runs through <b>{html.escape(str(_ci["end_season"]))}</b>'
                       f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
                       if _ci.get("end_season") else
@@ -1165,21 +1317,21 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
             st.markdown('<div class="hub-qh">Career twins · <b>1973 → today</b></div>',
                         unsafe_allow_html=True)
             _agg = _hub_career_agg()
-            if not _agg.empty and (_agg["norm"] == _n).any():
-                _me = _agg[_agg["norm"] == _n].iloc[0]
-                _tw = (_agg[(_agg["norm"] != _n) & (_agg["yrs"] >= 3)]
+            if not _agg.empty and _pid is not None and (_agg["PLAYER_ID"] == _pid).any():
+                _me = _agg[_agg["PLAYER_ID"] == _pid].iloc[0]
+                _tw = (_agg[(_agg["PLAYER_ID"] != _pid) & (_agg["yrs"] >= 3)]
                        .assign(_d=lambda d: (d["avg"] - _me["avg"]).abs())
                        .nsmallest(10, "_d"))
                 # Pin the selected player among his twins.
-                _tw = (pd.concat([_tw, _agg[_agg["norm"] == _n]])
+                _tw = (pd.concat([_tw, _agg[_agg["PLAYER_ID"] == _pid]])
                        .sort_values("avg", ascending=False))
                 # Career-shape sparklines, from the same parquet (one groupby pass).
-                _arc_norms = set(_tw["norm"])
-                _arcs = {nm: _spark_svg(g.sort_values("Season")["barrett_score"].tolist())
-                         for nm, g in _car[_car["norm"].isin(_arc_norms)].groupby("norm")}
-                _tw_view = _tw[["Player", "norm", "avg", "peak", "best_rank", "top_sal"]].copy()
-                _tw_view["Arc"] = _tw_view["norm"].map(_arcs).fillna("")
-                _tw_view = _tw_view.drop(columns=["norm"])[
+                _arc_ids = set(_tw["PLAYER_ID"])
+                _arcs = {pid: _spark_svg(g.sort_values("Season")["barrett_score"].tolist())
+                         for pid, g in _car[_car["PLAYER_ID"].isin(_arc_ids)].groupby("PLAYER_ID")}
+                _tw_view = _tw[["Player", "PLAYER_ID", "avg", "peak", "best_rank", "top_sal"]].copy()
+                _tw_view["Arc"] = _tw_view["PLAYER_ID"].map(_arcs).fillna("")
+                _tw_view = _tw_view.drop(columns=["PLAYER_ID"])[
                     ["Player", "Arc", "avg", "peak", "best_rank", "top_sal"]]
                 _tw_view.columns = ["Player", "Arc", "Avg Score", "Peak", "Best Rank", "Top Salary"]
                 _tw_view["Top Salary"] = _tw_view["Top Salary"] / 1e6
@@ -1330,6 +1482,12 @@ def _board():
 
 
 _board()
+
+# Freshness stamp for the hand-verified offseason columns on the board (signings,
+# option decisions, supplemented salaries).
+_as_of = _offseason_as_of()
+if _as_of:
+    st.caption(f"Offseason signings, options and salaries verified as of {_as_of}.")
 
 # Hover tooltips for the filter pills (native title=). Runs from a components
 # iframe; MutationObserver re-stamps after fragment re-renders.

@@ -17,7 +17,7 @@ from utils import (
     fetch_dlebron, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
-    color_rank_diff, color_value_diff, color_next_contract, style_rookie_salary, html_table,
+    html_table,
     render_nav, render_page_chrome, render_rail, face_img, TEAM_HEX,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
@@ -393,11 +393,6 @@ st.caption("▲ / ▼ = change in Barrett Score vs prior season")
 
 st.divider()
 
-# ── Rookie-scale style helper (closes over _rookie_scale) ──────────────────────
-def _style_rookie_salary(row):
-    return style_rookie_salary(row, _rookie_scale)
-
-
 # ── Token-based cell styles for the themed html_table (follow light/dark) ──────
 def _hsty_rankdiff(v, _row):
     try:
@@ -464,6 +459,16 @@ def _hsty_salary(_v, row):
     if normalize(str(row.get("Player", ""))) in _rookie_scale:
         return "color:var(--purple);font-weight:600"
     return ""
+
+def _fmt_salary_rs(v, row):
+    """Salary cell: rookie-scale contracts get a tiny RS superscript so the
+    purple color is not the only signal (colorblind-safe). Output is trusted
+    HTML — the column must be listed in raw=."""
+    s = f"${v:.2f}M"
+    if normalize(str(row.get("Player", ""))) in _rookie_scale:
+        return (s + '<sup style="color:var(--fg-6);font-size:0.62em;'
+                    'margin-left:1px" title="Rookie scale contract">RS</sup>')
+    return s
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Rankings content
@@ -606,7 +611,7 @@ with col_d:
 
 display = df.copy()
 if search:
-    display = display[display["Player"].str.contains(search, case=False)]
+    display = display[display["Player"].str.contains(search, case=False, regex=False)]
 if team_filter != "All":
     display = display[display["Team"] == team_filter]
 if pos_filter != "All":
@@ -722,7 +727,7 @@ if show_graph_mode:
         fig_scatter.update_yaxes(range=[0, axis_max])
 
     if graph_search:
-        hi = gd[gd["Player"].str.contains(graph_search, case=False)]
+        hi = gd[gd["Player"].str.contains(graph_search, case=False, regex=False)]
         if not hi.empty:
             fig_scatter.add_traces(px.scatter(
                 hi, x=x_axis, y=y_axis, text="Player",
@@ -794,7 +799,7 @@ if show_splits:
 if show_splits and splits_df is not None:
     # ── Splits table ──────────────────────────────────────────────────────
     if search:
-        matched = splits_df[splits_df["Player"].str.contains(search, case=False)]["Player"].unique()
+        matched = splits_df[splits_df["Player"].str.contains(search, case=False, regex=False)]["Player"].unique()
         sdisplay = splits_df[splits_df["Player"].isin(matched)].copy()
     else:
         sdisplay = splits_df[splits_df["total_min"] >= min_threshold].copy()
@@ -857,13 +862,6 @@ if show_splits and splits_df is not None:
     s_col, s_asc = s_sort_map[view]
     sdisplay = sdisplay.sort_values(s_col, ascending=s_asc).reset_index(drop=True)
 
-    def highlight_tot_row(row):
-        if row["Team"] == "TOT":
-            return ["font-weight: bold; background-color: #1e2a1e"] * len(row)
-        if row["Player"] in traded_players:
-            return ["background-color: #1a1f2e; color: #a0b0d0"] * len(row)
-        return [""] * len(row)
-
     _nc_lookup = df.set_index("Player")["next_contract"]
     sdisplay["Next $"] = sdisplay["Player"].map(_nc_lookup).fillna("—")
 
@@ -883,26 +881,6 @@ if show_splits and splits_df is not None:
                         "Score Rank", "Salary", "Proj. Salary", "Δ Market",
                         "Salary Rank", "Rank Diff", "D-LEBRON", "TS%", "Next $"]
         sfmt.insert(0, "#", range(1, len(sfmt) + 1))
-        s_style = sfmt.style.map(color_value_diff, subset=["Δ Market"]) \
-                            .map(color_rank_diff, subset=["Rank Diff"]) \
-                            .map(color_next_contract, subset=["Next $"]) \
-                            .apply(_style_rookie_salary, axis=1) \
-                            .apply(highlight_tot_row, axis=1)
-        s_col_config = {
-            "Next $":        st.column_config.TextColumn("Next $",
-                help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray, = UFA.",
-                width="medium"),
-            "MPG":           st.column_config.NumberColumn(format="%.2f"),
-            "Base Score":    st.column_config.NumberColumn(format="%.2f"),
-            "Avail ×":       st.column_config.NumberColumn(format="%.3f"),
-            "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-            "Salary":        st.column_config.NumberColumn(format="$%.2fM",
-                help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
-            "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
-            "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
-            "D-LEBRON":      st.column_config.NumberColumn(format="%.2f"),
-            "TS%":           st.column_config.NumberColumn(format="%.1f%%"),
-        }
     else:
         sfmt = sdisplay[["Player", "Team", "barrett_score", "salary",
                           "projected_salary", "value_diff", "Next $"]].copy()
@@ -911,20 +889,6 @@ if show_splits and splits_df is not None:
         sfmt["value_diff"]       = sfmt["value_diff"] / 1_000_000
         sfmt.columns = ["Player", "Team", "Barrett Score", "Salary", "Proj. Salary", "Δ Market", "Next $"]
         sfmt.insert(0, "#", range(1, len(sfmt) + 1))
-        s_style = sfmt.style.map(color_value_diff, subset=["Δ Market"]) \
-                            .map(color_next_contract, subset=["Next $"]) \
-                            .apply(_style_rookie_salary, axis=1) \
-                            .apply(highlight_tot_row, axis=1)
-        s_col_config = {
-            "Next $":        st.column_config.TextColumn("Next $",
-                help="Next season salary. White = guaranteed. Orange (TO) = team option. Blue (PO) = player option. Gray, = UFA.",
-                width="medium"),
-            "Barrett Score": st.column_config.NumberColumn(format="%.2f"),
-            "Salary":        st.column_config.NumberColumn(format="$%.2fM",
-                help="Player's actual salary this season. Purple = rookie scale contract (first-round pick, years 1–4)."),
-            "Proj. Salary":  st.column_config.NumberColumn(format="$%.2fM"),
-            "Δ Market":      st.column_config.NumberColumn(format="$%.2fM"),
-        }
 
     _s_num = {"#", "GP", "MPG", "Base Score", "Avail ×", "Barrett Score",
               "Score Rank", "Salary", "Proj. Salary", "Δ Market", "Salary Rank",
@@ -937,12 +901,12 @@ if show_splits and splits_df is not None:
             "GP": lambda v: str(int(v)), "MPG": lambda v: f"{v:.2f}",
             "Base Score": lambda v: f"{v:.2f}", "Avail ×": lambda v: f"{v:.3f}",
             "Barrett Score": lambda v: f"{v:.2f}", "Score Rank": lambda v: str(int(v)),
-            "Salary": lambda v: f"${v:.2f}M", "Proj. Salary": lambda v: f"${v:.2f}M",
+            "Salary": _fmt_salary_rs, "Proj. Salary": lambda v: f"${v:.2f}M",
             "Δ Market": lambda v: f"${v:.2f}M", "Salary Rank": lambda v: str(int(v)),
             "Rank Diff": lambda v: f"{int(v):+d}", "D-LEBRON": lambda v: f"{v:.2f}",
             "TS%": lambda v: f"{v:.1f}%",
         },
-        raw={"Team", "Next $"},
+        raw={"Team", "Next $", "Salary"},
         styles={"Rank Diff": _hsty_rankdiff, "Δ Market": _hsty_delta,
                 "Barrett Score": _s_bar, "Salary": _hsty_salary},
         aligns={c: "right" for c in _s_num},
@@ -965,7 +929,7 @@ if show_splits and splits_df is not None:
             f"{len(sdisplay)} rows shown. **TOT** = full season combined. "
             "Players who switched teams mid-season appear as separate stints. "
             "**Δ Market** = Actual − Projected. "
-            "Purple salary = rookie scale. "
+            "Purple salary with the small RS mark = rookie scale. "
             "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA."
         )
 else:
@@ -1023,7 +987,7 @@ else:
             "Avail ×":       lambda v: f"{v:.3f}",
             "Barrett Score": lambda v: f"{v:.2f}",
             "Score Rank":    lambda v: str(int(v)),
-            "Salary":        lambda v: f"${v:.2f}M",
+            "Salary":        _fmt_salary_rs,
             "Proj. Salary":  lambda v: f"${v:.2f}M",
             "Δ Market":      lambda v: f"${v:.2f}M",
             "Salary Rank":   lambda v: str(int(v)),
@@ -1031,7 +995,7 @@ else:
             "D-LEBRON":      lambda v: f"{v:.2f}",
             "TS%":           lambda v: f"{v:.1f}%",
         },
-        raw={"Team", "Next $"},
+        raw={"Team", "Next $", "Salary"},
         styles={
             "Rank Diff":     _hsty_rankdiff,
             "Δ Market":      _hsty_delta,
@@ -1043,7 +1007,7 @@ else:
         helps={
             "Next $": "Next season salary. Plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.",
             "Barrett Score": "Base Score × Availability Multiplier.",
-            "Salary": "Player's actual salary this season. Purple = rookie-scale contract.",
+            "Salary": "Player's actual salary this season. Purple with the RS mark = rookie-scale contract.",
             "Proj. Salary": "Salary earned by whoever holds the same rank by pay.",
             "Δ Market": "Actual − Projected. Positive (red) = overpaid; negative (green) = underpaid.",
             "Rank Diff": "Salary Rank − Score Rank. Positive (green) = underpaid.",
@@ -1064,11 +1028,11 @@ else:
     with cap_col_r:
         if advanced:
             st.caption("**Rank Diff** = Salary Rank − Score Rank. **Δ Market** = Actual − Projected (red = overpaid, green = underpaid). "
-                       "Purple salary = rookie scale contract (1st-round pick, yrs 1–4). "
+                       "Purple salary with the small RS mark = rookie scale contract (1st-round pick, yrs 1–4). "
                        "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.")
         else:
             st.caption("**Proj. Salary** = what this player would earn paid by Barrett Score rank. **Δ Market** = Actual − Projected. "
-                       "Purple salary = rookie scale contract (1st-round pick, yrs 1–4). "
+                       "Purple salary with the small RS mark = rookie scale contract (1st-round pick, yrs 1–4). "
                        "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.")
 
 # ── Fill panel placeholder (above multiselect) ────────────────────────────

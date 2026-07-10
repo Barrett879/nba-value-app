@@ -2,7 +2,7 @@
  "season": "2025-26",
  "contract_season": "2026-27",
  "cap_M": 165.0,
- "n": 98,
+ "n": 85,
  "accuracy": {
   "top1_recent": 50,
   "top5_recent": 59,
@@ -12,23 +12,23 @@
  "teams": {
   "ATL": {
    "name": "Atlanta Hawks",
-   "committed_M": 153,
-   "resign_cost_M": 25,
+   "committed_M": 150,
+   "resign_cost_M": 9,
    "room": "full mid-level",
-   "under_contract": 8,
+   "under_contract": 9,
    "picks": 2
   },
   "BKN": {
    "name": "Brooklyn Nets",
-   "committed_M": 121,
+   "committed_M": 110,
    "resign_cost_M": 0,
-   "room": "$35M cap room",
-   "under_contract": 9,
+   "room": "$46M cap room",
+   "under_contract": 11,
    "picks": 1
   },
   "BOS": {
    "name": "Boston Celtics",
-   "committed_M": 178,
+   "committed_M": 181,
    "resign_cost_M": 10,
    "room": "full mid-level",
    "under_contract": 9,
@@ -37,9 +37,9 @@
   "CHA": {
    "name": "Charlotte Hornets",
    "committed_M": 148,
-   "resign_cost_M": 16,
-   "room": "full mid-level",
-   "under_contract": 12,
+   "resign_cost_M": 0,
+   "room": "$8M cap room",
+   "under_contract": 13,
    "picks": 2
   },
   "CHI": {
@@ -47,28 +47,28 @@
    "committed_M": 93,
    "resign_cost_M": 29,
    "room": "$27M cap room",
-   "under_contract": 8,
+   "under_contract": 9,
    "picks": 2
   },
   "CLE": {
    "name": "Cleveland Cavaliers",
-   "committed_M": 222,
+   "committed_M": 180,
    "resign_cost_M": 0,
-   "room": "minimums only",
+   "room": "full mid-level",
    "under_contract": 9,
    "picks": 1
   },
   "DAL": {
    "name": "Dallas Mavericks",
    "committed_M": 107,
-   "resign_cost_M": 22,
-   "room": "$26M cap room",
-   "under_contract": 9,
+   "resign_cost_M": 19,
+   "room": "$29M cap room",
+   "under_contract": 10,
    "picks": 2
   },
   "DEN": {
    "name": "Denver Nuggets",
-   "committed_M": 216,
+   "committed_M": 213,
    "resign_cost_M": 0,
    "room": "taxpayer mid-level",
    "under_contract": 9,
@@ -76,26 +76,26 @@
   },
   "DET": {
    "name": "Detroit Pistons",
-   "committed_M": 130,
+   "committed_M": 137,
    "resign_cost_M": 80,
    "room": "taxpayer mid-level",
-   "under_contract": 9,
+   "under_contract": 10,
    "picks": 1
   },
   "GSW": {
    "name": "Golden State Warriors",
-   "committed_M": 176,
-   "resign_cost_M": 36,
-   "room": "taxpayer mid-level",
-   "under_contract": 6,
+   "committed_M": 179,
+   "resign_cost_M": 20,
+   "room": "full mid-level",
+   "under_contract": 7,
    "picks": 1
   },
   "HOU": {
    "name": "Houston Rockets",
-   "committed_M": 160,
+   "committed_M": 162,
    "resign_cost_M": 10,
    "room": "full mid-level",
-   "under_contract": 8,
+   "under_contract": 9,
    "picks": 0
   },
   "IND": {
@@ -103,23 +103,23 @@
    "committed_M": 152,
    "resign_cost_M": 0,
    "room": "$13M cap room",
-   "under_contract": 12,
+   "under_contract": 13,
    "picks": 0
   },
   "LAC": {
    "name": "LA Clippers",
-   "committed_M": 162,
+   "committed_M": 140,
    "resign_cost_M": 40,
-   "room": "taxpayer mid-level",
-   "under_contract": 7,
+   "room": "full mid-level",
+   "under_contract": 9,
    "picks": 1
   },
   "LAL": {
    "name": "Los Angeles Lakers",
-   "committed_M": 93,
-   "resign_cost_M": 113,
+   "committed_M": 90,
+   "resign_cost_M": 117,
    "room": "taxpayer mid-level",
-   "under_contract": 6,
+   "under_contract": 8,
    "picks": 1
   },
   "MEM": {
@@ -127,36 +127,36 @@
    "committed_M": 142,
    "resign_cost_M": 0,
    "room": "full mid-level",
-   "under_contract": 13,
+   "under_contract": 14,
    "picks": 2
   },
   "MIA": {
    "name": "Miami Heat",
-   "committed_M": 163,
+   "committed_M": 162,
    "resign_cost_M": 19,
    "room": "full mid-level",
-   "under_contract": 9,
+   "under_contract": 10,
    "picks": 1
   },
   "MIL": {
    "name": "Milwaukee Bucks",
-   "committed_M": 138,
-   "resign_cost_M": 34,
+   "committed_M": 147,
+   "resign_cost_M": 30,
    "room": "full mid-level",
    "under_contract": 6,
    "picks": 1
   },
   "MIN": {
    "name": "Minnesota Timberwolves",
-   "committed_M": 175,
+   "committed_M": 178,
    "resign_cost_M": 28,
-   "room": "full mid-level",
-   "under_contract": 8,
+   "room": "taxpayer mid-level",
+   "under_contract": 9,
    "picks": 1
   },
   "NOP": {
    "name": "New Orleans Pelicans",
-   "committed_M": 196,
+   "committed_M": 188,
    "resign_cost_M": 0,
    "room": "full mid-level",
    "under_contract": 12,
@@ -164,10 +164,10 @@
   },
   "NYK": {
    "name": "New York Knicks",
-   "committed_M": 206,
-   "resign_cost_M": 0,
+   "committed_M": 201,
+   "resign_cost_M": 15,
    "room": "taxpayer mid-level",
-   "under_contract": 8,
+   "under_contract": 9,
    "picks": 1
   },
   "OKC": {
@@ -183,7 +183,7 @@
    "committed_M": 215,
    "resign_cost_M": 0,
    "room": "taxpayer mid-level",
-   "under_contract": 11,
+   "under_contract": 13,
    "picks": 0
   },
   "PHI": {
@@ -191,15 +191,15 @@
    "committed_M": 180,
    "resign_cost_M": 32,
    "room": "taxpayer mid-level",
-   "under_contract": 8,
+   "under_contract": 9,
    "picks": 1
   },
   "PHX": {
    "name": "Phoenix Suns",
-   "committed_M": 160,
+   "committed_M": 162,
    "resign_cost_M": 43,
    "room": "full mid-level",
-   "under_contract": 10,
+   "under_contract": 11,
    "picks": 0
   },
   "POR": {
@@ -215,12 +215,12 @@
    "committed_M": 206,
    "resign_cost_M": 5,
    "room": "taxpayer mid-level",
-   "under_contract": 9,
+   "under_contract": 10,
    "picks": 1
   },
   "SAS": {
    "name": "San Antonio Spurs",
-   "committed_M": 153,
+   "committed_M": 165,
    "resign_cost_M": 15,
    "room": "full mid-level",
    "under_contract": 8,
@@ -231,7 +231,7 @@
    "committed_M": 190,
    "resign_cost_M": 9,
    "room": "full mid-level",
-   "under_contract": 9,
+   "under_contract": 10,
    "picks": 1
   },
   "UTA": {
@@ -247,7 +247,7 @@
    "committed_M": 175,
    "resign_cost_M": 5,
    "room": "full mid-level",
-   "under_contract": 11,
+   "under_contract": 12,
    "picks": 1
   }
  },
@@ -268,7 +268,7 @@
     "confidence": "Medium",
     "offer_M": 15.0,
     "tool": "mid-level exception",
-    "reason": "would start over Derrick White (28.4 vs 32.5) \u00b7 title",
+    "reason": "would start over Derrick White (28.5 vs 32.5) \u00b7 title",
     "alts": [
      {
       "team": "CLE",
@@ -289,7 +289,7 @@
    "player": "Jalen Duren",
    "pos": "C",
    "age": 22,
-   "barrett": 28.2,
+   "barrett": 28.3,
    "value_M": 49.5,
    "status": "RFA",
    "incumbent": "DET",
@@ -310,8 +310,8 @@
       "tool": "cap room"
      },
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
       "offer_M": 49.5,
       "tool": "cap room"
      }
@@ -322,7 +322,7 @@
    "player": "Austin Reaves",
    "pos": "SG/PG",
    "age": 28,
-   "barrett": 28.9,
+   "barrett": 29.0,
    "value_M": 41.2,
    "status": "Player Option",
    "incumbent": "LAL",
@@ -355,7 +355,7 @@
    "player": "LeBron James",
    "pos": "PF/SF",
    "age": 41,
-   "barrett": 30.2,
+   "barrett": 30.3,
    "value_M": 39.8,
    "status": "UFA",
    "incumbent": "LAL",
@@ -372,7 +372,7 @@
      {
       "team": "DET",
       "team_name": "Detroit Pistons",
-      "offer_M": 35.3,
+      "offer_M": 27.8,
       "tool": "cap room"
      },
      {
@@ -388,7 +388,7 @@
    "player": "Kevin Porter Jr.",
    "pos": "PG/SG",
    "age": 26,
-   "barrett": 22.9,
+   "barrett": 23.0,
    "value_M": 20.7,
    "status": "Player Option",
    "incumbent": "MIL",
@@ -407,9 +407,9 @@
   {
    "player": "Bennedict Mathurin",
    "pos": "SF/PF",
-   "age": 23,
-   "barrett": 17.5,
-   "value_M": 19.7,
+   "age": 24,
+   "barrett": 17.6,
+   "value_M": 19.5,
    "status": "RFA",
    "incumbent": "LAC",
    "incumbent_name": "LA Clippers",
@@ -418,20 +418,20 @@
     "predicted_name": "LA Clippers",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 19.7,
+    "offer_M": 19.5,
     "tool": "Bird rights",
     "reason": "can match any offer (restricted FA) \u00b7 rebuild",
     "alts": [
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
-      "offer_M": 17.7,
+      "offer_M": 17.6,
       "tool": "cap room"
      },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
-      "offer_M": 17.7,
+      "offer_M": 17.6,
       "tool": "cap room"
      }
     ]
@@ -441,7 +441,7 @@
    "player": "John Collins",
    "pos": "PF/C",
    "age": 28,
-   "barrett": 16.7,
+   "barrett": 16.8,
    "value_M": 19.5,
    "status": "UFA",
    "incumbent": "LAC",
@@ -474,7 +474,7 @@
    "player": "Mark Williams",
    "pos": "C",
    "age": 24,
-   "barrett": 17.5,
+   "barrett": 17.6,
    "value_M": 19.1,
    "status": "RFA",
    "incumbent": "PHX",
@@ -495,8 +495,8 @@
       "tool": "cap room"
      },
      {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
+      "team": "LAC",
+      "team_name": "LA Clippers",
       "offer_M": 17.2,
       "tool": "cap room"
      }
@@ -507,7 +507,7 @@
    "player": "Norman Powell",
    "pos": "SG/SF",
    "age": 33,
-   "barrett": 22.0,
+   "barrett": 22.1,
    "value_M": 18.7,
    "status": "UFA",
    "incumbent": "MIA",
@@ -541,7 +541,7 @@
    "pos": "PG/SG",
    "age": 26,
    "barrett": 17.6,
-   "value_M": 18.3,
+   "value_M": 18.4,
    "status": "UFA",
    "incumbent": "MIN",
    "incumbent_name": "Minnesota Timberwolves",
@@ -557,109 +557,23 @@
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
-      "offer_M": 18.3,
+      "offer_M": 18.4,
       "tool": "cap room"
      },
      {
       "team": "GSW",
       "team_name": "Golden State Warriors",
-      "offer_M": 14.3,
+      "offer_M": 14.4,
       "tool": "mid-level exception"
      }
     ]
-   }
-  },
-  {
-   "player": "Deandre Ayton",
-   "pos": "C",
-   "age": 27,
-   "barrett": 18.4,
-   "value_M": 18.3,
-   "status": "Player Option",
-   "incumbent": "LAL",
-   "incumbent_name": "Los Angeles Lakers",
-   "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 18,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
-    "alts": [
-     {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 18.3,
-      "tool": "cap room"
-     },
-     {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 16.5,
-      "tool": "cap room"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Coby White",
-   "pos": "PG/SG",
-   "age": 26,
-   "barrett": 14.9,
-   "value_M": 16.4,
-   "status": "UFA",
-   "incumbent": "CHA",
-   "incumbent_name": "Charlotte Hornets",
-   "realistic": {
-    "predicted": "CHA",
-    "predicted_name": "Charlotte Hornets",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 16,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
-    "alts": [
-     {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 16.4,
-      "tool": "cap room"
-     },
-     {
-      "team": "GSW",
-      "team_name": "Golden State Warriors",
-      "offer_M": 12.8,
-      "tool": "mid-level exception"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Rui Hachimura",
-   "pos": "SF/PF",
-   "age": 28,
-   "barrett": 10.5,
-   "value_M": 16.2,
-   "status": "UFA",
-   "incumbent": "LAL",
-   "incumbent_name": "Los Angeles Lakers",
-   "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 13.0,
-    "tool": "Bird rights",
-    "reason": "official signing (reported)",
-    "alts": []
    }
   },
   {
    "player": "Quentin Grimes",
    "pos": "SG/SF",
    "age": 26,
-   "barrett": 15.2,
+   "barrett": 15.3,
    "value_M": 15.8,
    "status": "UFA",
    "incumbent": "PHI",
@@ -689,44 +603,11 @@
    }
   },
   {
-   "player": "Kristaps Porzi\u0146\u0123is",
-   "pos": "PF/C",
-   "age": 30,
-   "barrett": 15.2,
-   "value_M": 15.7,
-   "status": "UFA",
-   "incumbent": "GSW",
-   "incumbent_name": "Golden State Warriors",
-   "realistic": {
-    "predicted": "GSW",
-    "predicted_name": "Golden State Warriors",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 15.7,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
-    "alts": [
-     {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 14.1,
-      "tool": "cap room"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 12.2,
-      "tool": "cap room"
-     }
-    ]
-   }
-  },
-  {
    "player": "Peyton Watson",
    "pos": "SF/PF",
    "age": 23,
-   "barrett": 15.5,
-   "value_M": 15.4,
+   "barrett": 15.6,
+   "value_M": 15.6,
    "status": "RFA",
    "incumbent": "DEN",
    "incumbent_name": "Denver Nuggets",
@@ -735,31 +616,51 @@
     "predicted_name": "Brooklyn Nets",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 13.9,
+    "offer_M": 14.0,
     "tool": "cap room",
-    "reason": "upgrades over Noah Clowney (10.9 vs 15.5) \u00b7 rebuild",
+    "reason": "upgrades over Noah Clowney (10.9 vs 15.6) \u00b7 rebuild",
     "alts": [
      {
       "team": "DEN",
       "team_name": "Denver Nuggets",
-      "offer_M": 15.4,
+      "offer_M": 15.6,
       "tool": "Bird rights"
      },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
-      "offer_M": 13.9,
+      "offer_M": 14.0,
       "tool": "cap room"
      }
     ]
    }
   },
   {
+   "player": "Rui Hachimura",
+   "pos": "SF/PF",
+   "age": 28,
+   "barrett": 10.6,
+   "value_M": 15.3,
+   "status": "UFA",
+   "incumbent": "LAL",
+   "incumbent_name": "Los Angeles Lakers",
+   "realistic": {
+    "predicted": "LAL",
+    "predicted_name": "Los Angeles Lakers",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 13.0,
+    "tool": "Bird rights",
+    "reason": "official signing (reported)",
+    "alts": []
+   }
+  },
+  {
    "player": "Anfernee Simons",
    "pos": "PG/SG",
-   "age": 26,
+   "age": 27,
    "barrett": 12.7,
-   "value_M": 15.3,
+   "value_M": 15.2,
    "status": "UFA",
    "incumbent": "CHI",
    "incumbent_name": "Chicago Bulls",
@@ -775,7 +676,7 @@
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
-      "offer_M": 15.3,
+      "offer_M": 15.2,
       "tool": "cap room"
      },
      {
@@ -788,11 +689,44 @@
    }
   },
   {
+   "player": "Collin Gillespie",
+   "pos": "PG",
+   "age": 27,
+   "barrett": 21.6,
+   "value_M": 15.1,
+   "status": "UFA",
+   "incumbent": "PHX",
+   "incumbent_name": "Phoenix Suns",
+   "realistic": {
+    "predicted": "PHX",
+    "predicted_name": "Phoenix Suns",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 15,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
+    "alts": [
+     {
+      "team": "GSW",
+      "team_name": "Golden State Warriors",
+      "offer_M": 13.6,
+      "tool": "mid-level exception"
+     },
+     {
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
+      "offer_M": 15.1,
+      "tool": "cap room"
+     }
+    ]
+   }
+  },
+  {
    "player": "Harrison Barnes",
    "pos": "PF/SF",
    "age": 34,
    "barrett": 12.4,
-   "value_M": 15.0,
+   "value_M": 14.8,
    "status": "UFA",
    "incumbent": "SAS",
    "incumbent_name": "San Antonio Spurs",
@@ -801,20 +735,20 @@
     "predicted_name": "San Antonio Spurs",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 15.0,
+    "offer_M": 14.8,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
-      "offer_M": 13.5,
+      "offer_M": 13.3,
       "tool": "cap room"
      },
      {
-      "team": "IND",
-      "team_name": "Indiana Pacers",
-      "offer_M": 13.5,
+      "team": "CLE",
+      "team_name": "Cleveland Cavaliers",
+      "offer_M": 13.3,
       "tool": "mid-level exception"
      }
     ]
@@ -824,63 +758,30 @@
    "player": "Mitchell Robinson",
    "pos": "C",
    "age": 28,
-   "barrett": 13.1,
+   "barrett": 13.2,
    "value_M": 14.7,
    "status": "UFA",
    "incumbent": "NYK",
    "incumbent_name": "New York Knicks",
    "realistic": {
-    "predicted": "CHI",
-    "predicted_name": "Chicago Bulls",
-    "is_resign": false,
-    "confidence": "Medium",
-    "offer_M": 14.7,
-    "tool": "mid-level exception",
-    "reason": "would start over Jalen Smith (12.6 vs 13.1) \u00b7 rebuild",
-    "alts": [
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 14.7,
-      "tool": "Bird rights"
-     },
-     {
-      "team": "ATL",
-      "team_name": "Atlanta Hawks",
-      "offer_M": 13.2,
-      "tool": "mid-level exception"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Collin Gillespie",
-   "pos": "PG",
-   "age": 26,
-   "barrett": 21.6,
-   "value_M": 14.6,
-   "status": "UFA",
-   "incumbent": "PHX",
-   "incumbent_name": "Phoenix Suns",
-   "realistic": {
-    "predicted": "PHX",
-    "predicted_name": "Phoenix Suns",
+    "predicted": "NYK",
+    "predicted_name": "New York Knicks",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 14.6,
+    "offer_M": 14.7,
     "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
+    "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
-      "team": "GSW",
-      "team_name": "Golden State Warriors",
-      "offer_M": 13.1,
-      "tool": "mid-level exception"
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 14.7,
+      "tool": "cap room"
      },
      {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 14.6,
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 13.2,
       "tool": "cap room"
      }
     ]
@@ -911,8 +812,8 @@
       "tool": "cap room"
      },
      {
-      "team": "PHI",
-      "team_name": "Philadelphia 76ers",
+      "team": "CLE",
+      "team_name": "Cleveland Cavaliers",
       "offer_M": 13.0,
       "tool": "mid-level exception"
      }
@@ -973,43 +874,10 @@
    }
   },
   {
-   "player": "CJ McCollum",
-   "pos": "SG/PG",
-   "age": 34,
-   "barrett": 20.5,
-   "value_M": 13.8,
-   "status": "UFA",
-   "incumbent": "ATL",
-   "incumbent_name": "Atlanta Hawks",
-   "realistic": {
-    "predicted": "ATL",
-    "predicted_name": "Atlanta Hawks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 13.8,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
-    "alts": [
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 10.8,
-      "tool": "cap room"
-     },
-     {
-      "team": "MIN",
-      "team_name": "Minnesota Timberwolves",
-      "offer_M": 12.4,
-      "tool": "mid-level exception"
-     }
-    ]
-   }
-  },
-  {
    "player": "Robert Williams III",
    "pos": "C",
    "age": 28,
-   "barrett": 14.6,
+   "barrett": 14.7,
    "value_M": 12.6,
    "status": "UFA",
    "incumbent": "POR",
@@ -1042,8 +910,8 @@
    "player": "Kelly Oubre Jr.",
    "pos": "SF/PF",
    "age": 30,
-   "barrett": 12.4,
-   "value_M": 12.4,
+   "barrett": 12.5,
+   "value_M": 12.3,
    "status": "UFA",
    "incumbent": "PHI",
    "incumbent_name": "Philadelphia 76ers",
@@ -1059,13 +927,13 @@
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
-      "offer_M": 11.2,
+      "offer_M": 11.1,
       "tool": "cap room"
      },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
-      "offer_M": 11.2,
+      "offer_M": 11.1,
       "tool": "cap room"
      }
     ]
@@ -1075,7 +943,7 @@
    "player": "Nikola Vu\u010devi\u0107",
    "pos": "C/PF",
    "age": 35,
-   "barrett": 19.7,
+   "barrett": 19.8,
    "value_M": 10.4,
    "status": "UFA",
    "incumbent": "BOS",
@@ -1108,7 +976,7 @@
    "player": "Kevin Huerter",
    "pos": "SG/SF",
    "age": 27,
-   "barrett": 11.0,
+   "barrett": 11.1,
    "value_M": 10.3,
    "status": "UFA",
    "incumbent": "DET",
@@ -1141,8 +1009,8 @@
    "player": "Tari Eason",
    "pos": "SF/SG",
    "age": 25,
-   "barrett": 11.2,
-   "value_M": 10.1,
+   "barrett": 11.3,
+   "value_M": 10.2,
    "status": "RFA",
    "incumbent": "HOU",
    "incumbent_name": "Houston Rockets",
@@ -1156,15 +1024,15 @@
     "reason": "can match any offer (restricted FA) \u00b7 title",
     "alts": [
      {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 9.1,
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 9.2,
       "tool": "cap room"
      },
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 9.1,
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
+      "offer_M": 9.2,
       "tool": "cap room"
      }
     ]
@@ -1175,7 +1043,7 @@
    "pos": "PF/C",
    "age": 26,
    "barrett": 13.1,
-   "value_M": 9.8,
+   "value_M": 9.7,
    "status": "UFA",
    "incumbent": "SAC",
    "incumbent_name": "Sacramento Kings",
@@ -1184,21 +1052,21 @@
     "predicted_name": "Chicago Bulls",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 8.8,
+    "offer_M": 8.7,
     "tool": "cap room",
     "reason": "upgrades over Jalen Smith (12.6 vs 13.1) \u00b7 rebuild",
     "alts": [
      {
       "team": "SAC",
       "team_name": "Sacramento Kings",
-      "offer_M": 9.8,
+      "offer_M": 9.7,
       "tool": "Bird rights"
      },
      {
       "team": "GSW",
       "team_name": "Golden State Warriors",
       "offer_M": 6.0,
-      "tool": "taxpayer MLE"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -1207,7 +1075,7 @@
    "player": "Sandro Mamukelashvili",
    "pos": "C/PF",
    "age": 27,
-   "barrett": 15.7,
+   "barrett": 15.8,
    "value_M": 9.1,
    "status": "Player Option",
    "incumbent": "TOR",
@@ -1273,7 +1141,7 @@
    "player": "Lonzo Ball",
    "pos": "PG/SG",
    "age": 28,
-   "barrett": 5.4,
+   "barrett": 5.5,
    "value_M": 8.5,
    "status": "UFA",
    "incumbent": "CLE",
@@ -1285,7 +1153,7 @@
     "confidence": "Low",
     "offer_M": 6.6,
     "tool": "mid-level exception",
-    "reason": "rotation piece over Josh Okogie (UFA, 5.3 vs 5.4) \u00b7 title",
+    "reason": "rotation piece over Josh Okogie (UFA, 5.4 vs 5.5) \u00b7 title",
     "alts": [
      {
       "team": "ORL",
@@ -1307,7 +1175,7 @@
    "pos": "PG/SG",
    "age": 28,
    "barrett": 12.3,
-   "value_M": 8.4,
+   "value_M": 8.3,
    "status": "Player Option",
    "incumbent": "GSW",
    "incumbent_name": "Golden State Warriors",
@@ -1323,13 +1191,13 @@
      {
       "team": "BKN",
       "team_name": "Brooklyn Nets",
-      "offer_M": 8.4,
+      "offer_M": 8.3,
       "tool": "cap room"
      },
      {
       "team": "NYK",
       "team_name": "New York Knicks",
-      "offer_M": 6.6,
+      "offer_M": 6.5,
       "tool": "mid-level exception"
      }
     ]
@@ -1339,8 +1207,8 @@
    "player": "Jusuf Nurki\u0107",
    "pos": "C",
    "age": 31,
-   "barrett": 17.4,
-   "value_M": 8.1,
+   "barrett": 17.5,
+   "value_M": 8.0,
    "status": "UFA",
    "incumbent": "UTA",
    "incumbent_name": "Utah Jazz",
@@ -1349,20 +1217,20 @@
     "predicted_name": "Utah Jazz",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 8,
+    "offer_M": 8.0,
     "tool": "Bird rights",
     "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
-      "offer_M": 8.1,
+      "offer_M": 8.0,
       "tool": "cap room"
      },
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
-      "offer_M": 7.3,
+      "offer_M": 7.2,
       "tool": "cap room"
      }
     ]
@@ -1372,7 +1240,7 @@
    "player": "Brandon Williams",
    "pos": "PG/SG",
    "age": 26,
-   "barrett": 15.0,
+   "barrett": 15.1,
    "value_M": 7.7,
    "status": "UFA",
    "incumbent": "DAL",
@@ -1411,13 +1279,13 @@
    "incumbent": "DEN",
    "incumbent_name": "Denver Nuggets",
    "realistic": {
-    "predicted": "NYK",
-    "predicted_name": "New York Knicks",
+    "predicted": "IND",
+    "predicted_name": "Indiana Pacers",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 6.0,
-    "tool": "taxpayer MLE",
-    "reason": "rotation piece over Miles McBride (11.5 vs 12.7) \u00b7 title",
+    "offer_M": 6.9,
+    "tool": "cap room",
+    "reason": "upgrades over Aaron Nesmith (11.4 vs 12.7) \u00b7 title",
     "alts": [
      {
       "team": "DEN",
@@ -1426,43 +1294,10 @@
       "tool": "Bird rights"
      },
      {
-      "team": "IND",
-      "team_name": "Indiana Pacers",
-      "offer_M": 6.9,
-      "tool": "cap room"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Khris Middleton",
-   "pos": "SF/PF",
-   "age": 34,
-   "barrett": 9.0,
-   "value_M": 7.5,
-   "status": "UFA",
-   "incumbent": "DAL",
-   "incumbent_name": "Dallas Mavericks",
-   "realistic": {
-    "predicted": "DAL",
-    "predicted_name": "Dallas Mavericks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 7.5,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
-    "alts": [
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 4.7,
-      "tool": "cap room"
-     },
-     {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 6.8,
-      "tool": "cap room"
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 6.0,
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -1471,9 +1306,9 @@
    "player": "Marcus Smart",
    "pos": "SG/PG",
    "age": 32,
-   "barrett": 13.5,
+   "barrett": 13.6,
    "value_M": 7.5,
-   "status": "Player Option",
+   "status": "UFA",
    "incumbent": "LAL",
    "incumbent_name": "Los Angeles Lakers",
    "realistic": {
@@ -1501,33 +1336,66 @@
    }
   },
   {
-   "player": "Luke Kennard",
-   "pos": "SG/PG",
-   "age": 29,
-   "barrett": 10.0,
-   "value_M": 7.1,
+   "player": "Khris Middleton",
+   "pos": "SF/PF",
+   "age": 34,
+   "barrett": 9.1,
+   "value_M": 6.8,
    "status": "UFA",
-   "incumbent": "LAL",
-   "incumbent_name": "Los Angeles Lakers",
+   "incumbent": "DAL",
+   "incumbent_name": "Dallas Mavericks",
    "realistic": {
-    "predicted": "BKN",
-    "predicted_name": "Brooklyn Nets",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 6.4,
-    "tool": "cap room",
-    "reason": "upgrades over Terance Mann (8.3 vs 10.0) \u00b7 rebuild",
+    "predicted": "DAL",
+    "predicted_name": "Dallas Mavericks",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 6.8,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
      {
       "team": "LAL",
       "team_name": "Los Angeles Lakers",
-      "offer_M": 7.1,
-      "tool": "Bird rights"
+      "offer_M": 4.2,
+      "tool": "cap room"
+     },
+     {
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 6.1,
+      "tool": "cap room"
+     }
+    ]
+   }
+  },
+  {
+   "player": "Luke Kennard",
+   "pos": "SG/PG",
+   "age": 30,
+   "barrett": 10.1,
+   "value_M": 6.8,
+   "status": "UFA",
+   "incumbent": "LAL",
+   "incumbent_name": "Los Angeles Lakers",
+   "realistic": {
+    "predicted": "LAL",
+    "predicted_name": "Los Angeles Lakers",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 6.8,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 title",
+    "alts": [
+     {
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
+      "offer_M": 6.1,
+      "tool": "cap room"
      },
      {
       "team": "DAL",
       "team_name": "Dallas Mavericks",
-      "offer_M": 5.5,
+      "offer_M": 5.3,
       "tool": "cap room"
      }
     ]
@@ -1537,19 +1405,19 @@
    "player": "Dean Wade",
    "pos": "SF/PF",
    "age": 29,
-   "barrett": 9.1,
+   "barrett": 9.2,
    "value_M": 6.7,
    "status": "UFA",
    "incumbent": "CLE",
    "incumbent_name": "Cleveland Cavaliers",
    "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
+    "predicted": "CHI",
+    "predicted_name": "Chicago Bulls",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 4.2,
-    "tool": "taxpayer MLE",
-    "reason": "depth piece over Jarred Vanderbilt (5.6 vs 9.1) \u00b7 title",
+    "offer_M": 6.0,
+    "tool": "cap room",
+    "reason": "upgrades over Isaac Okoro (8.5 vs 9.2) \u00b7 rebuild",
     "alts": [
      {
       "team": "CLE",
@@ -1558,10 +1426,10 @@
       "tool": "Bird rights"
      },
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 6.0,
-      "tool": "cap room"
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 4.2,
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -1600,33 +1468,33 @@
    }
   },
   {
-   "player": "Simone Fontecchio",
-   "pos": "SF/PF",
+   "player": "Jock Landale",
+   "pos": "C",
    "age": 30,
-   "barrett": 6.9,
-   "value_M": 6.4,
+   "barrett": 11.8,
+   "value_M": 6.5,
    "status": "UFA",
-   "incumbent": "MIA",
-   "incumbent_name": "Miami Heat",
+   "incumbent": "ATL",
+   "incumbent_name": "Atlanta Hawks",
    "realistic": {
-    "predicted": "ORL",
-    "predicted_name": "Orlando Magic",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 3.2,
-    "tool": "taxpayer MLE",
-    "reason": "depth piece over Jamal Cain (4.8 vs 6.9) \u00b7 playoff",
+    "predicted": "ATL",
+    "predicted_name": "Atlanta Hawks",
+    "is_resign": true,
+    "confidence": "High",
+    "offer_M": 6,
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
-     {
-      "team": "MIA",
-      "team_name": "Miami Heat",
-      "offer_M": 6.4,
-      "tool": "Bird rights"
-     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
-      "offer_M": 5.0,
+      "offer_M": 5.9,
+      "tool": "cap room"
+     },
+     {
+      "team": "LAC",
+      "team_name": "LA Clippers",
+      "offer_M": 5.9,
       "tool": "cap room"
      }
     ]
@@ -1660,39 +1528,39 @@
       "team": "LAC",
       "team_name": "LA Clippers",
       "offer_M": 5.6,
-      "tool": "mid-level exception"
+      "tool": "cap room"
      }
     ]
    }
   },
   {
-   "player": "Jock Landale",
-   "pos": "C",
-   "age": 30,
-   "barrett": 11.7,
-   "value_M": 6.2,
+   "player": "Javonte Green",
+   "pos": "SG/SF",
+   "age": 32,
+   "barrett": 11.4,
+   "value_M": 5.9,
    "status": "UFA",
-   "incumbent": "ATL",
-   "incumbent_name": "Atlanta Hawks",
+   "incumbent": "DET",
+   "incumbent_name": "Detroit Pistons",
    "realistic": {
-    "predicted": "ATL",
-    "predicted_name": "Atlanta Hawks",
+    "predicted": "DET",
+    "predicted_name": "Detroit Pistons",
     "is_resign": true,
     "confidence": "High",
-    "offer_M": 6,
+    "offer_M": 5.9,
     "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
+    "reason": "could re-sign him (Bird rights) \u00b7 title",
     "alts": [
      {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 5.6,
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 3.7,
       "tool": "cap room"
      },
      {
-      "team": "GSW",
-      "team_name": "Golden State Warriors",
-      "offer_M": 4.8,
+      "team": "NYK",
+      "team_name": "New York Knicks",
+      "offer_M": 3.7,
       "tool": "mid-level exception"
      }
     ]
@@ -1714,7 +1582,7 @@
     "confidence": "Low",
     "offer_M": 4.6,
     "tool": "cap room",
-    "reason": "rotation piece over Nolan Traore (6.3 vs 6.6) \u00b7 rebuild",
+    "reason": "rotation piece over Nolan Traore (6.4 vs 6.6) \u00b7 rebuild",
     "alts": [
      {
       "team": "HOU",
@@ -1741,13 +1609,13 @@
    "incumbent": "CHI",
    "incumbent_name": "Chicago Bulls",
    "realistic": {
-    "predicted": "PHX",
-    "predicted_name": "Phoenix Suns",
+    "predicted": "ORL",
+    "predicted_name": "Orlando Magic",
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 4.5,
-    "tool": "mid-level exception",
-    "reason": "rotation piece over Khaman Maluach (2.2 vs 4.6) \u00b7 playoff",
+    "tool": "taxpayer MLE",
+    "reason": "rotation piece over Moritz Wagner (4.5 vs 4.6) \u00b7 playoff",
     "alts": [
      {
       "team": "CHI",
@@ -1798,43 +1666,10 @@
    }
   },
   {
-   "player": "Javonte Green",
-   "pos": "SG/SF",
-   "age": 32,
-   "barrett": 11.3,
-   "value_M": 5.6,
-   "status": "UFA",
-   "incumbent": "DET",
-   "incumbent_name": "Detroit Pistons",
-   "realistic": {
-    "predicted": "DET",
-    "predicted_name": "Detroit Pistons",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 5.6,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 title",
-    "alts": [
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 3.5,
-      "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 3.5,
-      "tool": "mid-level exception"
-     }
-    ]
-   }
-  },
-  {
    "player": "Gary Payton II",
    "pos": "SG/SF",
    "age": 33,
-   "barrett": 10.1,
+   "barrett": 10.2,
    "value_M": 5.5,
    "status": "UFA",
    "incumbent": "GSW",
@@ -1867,31 +1702,31 @@
    "player": "Ousmane Dieng",
    "pos": "PF/C",
    "age": 23,
-   "barrett": 6.3,
+   "barrett": 6.4,
    "value_M": 5.5,
    "status": "RFA",
    "incumbent": "MIL",
    "incumbent_name": "Milwaukee Bucks",
    "realistic": {
-    "predicted": "SAS",
-    "predicted_name": "San Antonio Spurs",
+    "predicted": "CLE",
+    "predicted_name": "Cleveland Cavaliers",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 2.8,
+    "offer_M": 3.4,
     "tool": "mid-level exception",
-    "reason": "depth piece over Kelly Olynyk (3.2 vs 6.3) \u00b7 title",
+    "reason": "depth piece over Thomas Bryant (UFA, 6.4 vs 6.4) \u00b7 title",
     "alts": [
+     {
+      "team": "MIL",
+      "team_name": "Milwaukee Bucks",
+      "offer_M": 5.5,
+      "tool": "Bird rights"
+     },
      {
       "team": "CHI",
       "team_name": "Chicago Bulls",
       "offer_M": 3.4,
       "tool": "cap room"
-     },
-     {
-      "team": "CHA",
-      "team_name": "Charlotte Hornets",
-      "offer_M": 2.8,
-      "tool": "mid-level exception"
      }
     ]
    }
@@ -1900,7 +1735,7 @@
    "player": "Russell Westbrook",
    "pos": "PG/SG",
    "age": 37,
-   "barrett": 19.6,
+   "barrett": 19.7,
    "value_M": 5.4,
    "status": "UFA",
    "incumbent": "SAC",
@@ -1944,7 +1779,7 @@
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.5,
-    "tool": "taxpayer MLE",
+    "tool": "mid-level exception",
     "reason": "depth piece over Kobe Sanders (7.0 vs 9.2) \u00b7 rebuild",
     "alts": [
      {
@@ -1986,25 +1821,31 @@
    "player": "Guerschon Yabusele",
    "pos": "PF/C",
    "age": 30,
-   "barrett": 4.1,
-   "value_M": 4.5,
+   "barrett": 4.2,
+   "value_M": 4.9,
    "status": "UFA",
    "incumbent": "CHI",
    "incumbent_name": "Chicago Bulls",
    "realistic": {
-    "predicted": "SAS",
-    "predicted_name": "San Antonio Spurs",
+    "predicted": "NYK",
+    "predicted_name": "New York Knicks",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 2.2,
-    "tool": "minimum",
-    "reason": "depth piece over Kelly Olynyk (3.2 vs 4.1) \u00b7 title",
+    "offer_M": 3.0,
+    "tool": "taxpayer MLE",
+    "reason": "depth piece over Jeremy Sochan (3.0 vs 4.2) \u00b7 title",
     "alts": [
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 2.8,
-      "tool": "taxpayer MLE"
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 4.9,
+      "tool": "cap room"
+     },
+     {
+      "team": "SAS",
+      "team_name": "San Antonio Spurs",
+      "offer_M": 2.5,
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -2032,32 +1873,32 @@
   {
    "player": "Jordan Clarkson",
    "pos": "PG/SG",
-   "age": 33,
-   "barrett": 4.9,
-   "value_M": 4.3,
+   "age": 34,
+   "barrett": 5.0,
+   "value_M": 4.4,
    "status": "UFA",
    "incumbent": "NYK",
    "incumbent_name": "New York Knicks",
    "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
+    "predicted": "DEN",
+    "predicted_name": "Denver Nuggets",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 2.1,
-    "tool": "minimum",
-    "reason": "depth piece over Nick Smith Jr. (3.7 vs 4.9) \u00b7 title",
+    "offer_M": 2.2,
+    "tool": "taxpayer MLE",
+    "reason": "depth piece over Jalen Pickett (3.5 vs 5.0) \u00b7 title",
     "alts": [
      {
       "team": "NYK",
       "team_name": "New York Knicks",
-      "offer_M": 4.3,
+      "offer_M": 4.4,
       "tool": "Bird rights"
      },
      {
-      "team": "BOS",
-      "team_name": "Boston Celtics",
-      "offer_M": 2.7,
-      "tool": "mid-level exception"
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 2.2,
+      "tool": "taxpayer MLE"
      }
     ]
    }
@@ -2067,7 +1908,7 @@
    "pos": "PF/C",
    "age": 27,
    "barrett": 12.1,
-   "value_M": 4.3,
+   "value_M": 4.4,
    "status": "UFA",
    "incumbent": "DAL",
    "incumbent_name": "Dallas Mavericks",
@@ -2099,7 +1940,7 @@
    "player": "Thomas Bryant",
    "pos": "C",
    "age": 28,
-   "barrett": 6.3,
+   "barrett": 6.4,
    "value_M": 4.1,
    "status": "UFA",
    "incumbent": "CLE",
@@ -2116,98 +1957,12 @@
    }
   },
   {
-   "player": "Jett Howard",
-   "pos": "SF/PF",
-   "age": 22,
-   "barrett": 1.9,
-   "value_M": 4.0,
-   "status": "RFA",
-   "incumbent": "ORL",
-   "incumbent_name": "Orlando Magic",
-   "realistic": {
-    "predicted": "HOU",
-    "predicted_name": "Houston Rockets",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 2.0,
-    "tool": "minimum",
-    "reason": "depth piece over Jae'Sean Tate (1.9 vs 1.9) \u00b7 title",
-    "alts": []
-   }
-  },
-  {
-   "player": "Spencer Jones",
-   "pos": "SF/PF",
-   "age": 24,
-   "barrett": 7.4,
-   "value_M": 4.0,
-   "status": "RFA",
-   "incumbent": "DEN",
-   "incumbent_name": "Denver Nuggets",
-   "realistic": {
-    "predicted": "MIA",
-    "predicted_name": "Miami Heat",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 2.0,
-    "tool": "mid-level exception",
-    "reason": "depth piece over Simone Fontecchio (UFA, 6.9 vs 7.4) \u00b7 retooling",
-    "alts": [
-     {
-      "team": "DEN",
-      "team_name": "Denver Nuggets",
-      "offer_M": 4.0,
-      "tool": "Bird rights"
-     },
-     {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 3.1,
-      "tool": "cap room"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Taurean Prince",
-   "pos": "SF/SG",
-   "age": 32,
-   "barrett": 7.4,
-   "value_M": 4.0,
-   "status": "Player Option",
-   "incumbent": "MIL",
-   "incumbent_name": "Milwaukee Bucks",
-   "realistic": {
-    "predicted": "MIL",
-    "predicted_name": "Milwaukee Bucks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 4.0,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
-    "alts": [
-     {
-      "team": "IND",
-      "team_name": "Indiana Pacers",
-      "offer_M": 3.1,
-      "tool": "cap room"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 2.0,
-      "tool": "mid-level exception"
-     }
-    ]
-   }
-  },
-  {
    "player": "Tyrese Martin",
    "pos": "PG/SG",
    "age": 27,
    "barrett": 4.2,
    "value_M": 4.0,
-   "status": "RFA",
+   "status": "UFA",
    "incumbent": "PHI",
    "incumbent_name": "Philadelphia 76ers",
    "realistic": {
@@ -2238,7 +1993,7 @@
    "player": "Andre Drummond",
    "pos": "C",
    "age": 32,
-   "barrett": 8.1,
+   "barrett": 8.2,
    "value_M": 3.9,
    "status": "UFA",
    "incumbent": "PHI",
@@ -2277,14 +2032,27 @@
    "incumbent": "DAL",
    "incumbent_name": "Dallas Mavericks",
    "realistic": {
-    "predicted": "CLE",
-    "predicted_name": "Cleveland Cavaliers",
+    "predicted": "SAS",
+    "predicted_name": "San Antonio Spurs",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 2.3,
-    "tool": "minimum",
-    "reason": "minimum deal to fill a roster need",
-    "alts": []
+    "offer_M": 3.0,
+    "tool": "mid-level exception",
+    "reason": "rotation piece over Kelly Olynyk (3.2 vs 5.9) \u00b7 title",
+    "alts": [
+     {
+      "team": "DAL",
+      "team_name": "Dallas Mavericks",
+      "offer_M": 3.9,
+      "tool": "cap room"
+     },
+     {
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 3.0,
+      "tool": "taxpayer MLE"
+     }
+    ]
    }
   },
   {
@@ -2297,34 +2065,21 @@
    "incumbent": "UTA",
    "incumbent_name": "Utah Jazz",
    "realistic": {
-    "predicted": "DEN",
-    "predicted_name": "Denver Nuggets",
-    "is_resign": false,
+    "predicted": "UTA",
+    "predicted_name": "Utah Jazz",
+    "is_resign": true,
     "confidence": "Low",
-    "offer_M": 2.4,
-    "tool": "taxpayer MLE",
-    "reason": "depth piece over DaRon Holmes II (4.0 vs 6.0) \u00b7 title",
-    "alts": [
-     {
-      "team": "UTA",
-      "team_name": "Utah Jazz",
-      "offer_M": 3.9,
-      "tool": "Bird rights"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 2.4,
-      "tool": "taxpayer MLE"
-     }
-    ]
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "back on a minimum",
+    "alts": []
    }
   },
   {
    "player": "Kyle Anderson",
    "pos": "SF/PF",
    "age": 32,
-   "barrett": 8.6,
+   "barrett": 8.7,
    "value_M": 3.9,
    "status": "UFA",
    "incumbent": "MIN",
@@ -2363,36 +2118,23 @@
    "incumbent": "MIN",
    "incumbent_name": "Minnesota Timberwolves",
    "realistic": {
-    "predicted": "DET",
-    "predicted_name": "Detroit Pistons",
-    "is_resign": false,
+    "predicted": "MIN",
+    "predicted_name": "Minnesota Timberwolves",
+    "is_resign": true,
     "confidence": "Low",
-    "offer_M": 3.0,
-    "tool": "taxpayer MLE",
-    "reason": "rotation piece over Marcus Sasser (3.8 vs 5.3) \u00b7 title",
-    "alts": [
-     {
-      "team": "MIN",
-      "team_name": "Minnesota Timberwolves",
-      "offer_M": 3.9,
-      "tool": "Bird rights"
-     },
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 2.4,
-      "tool": "taxpayer MLE"
-     }
-    ]
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "back on a minimum",
+    "alts": []
    }
   },
   {
    "player": "Quinten Post",
    "pos": "PF/C",
    "age": 26,
-   "barrett": 7.7,
+   "barrett": 7.8,
    "value_M": 3.9,
-   "status": "RFA",
+   "status": "UFA",
    "incumbent": "GSW",
    "incumbent_name": "Golden State Warriors",
    "realistic": {
@@ -2402,7 +2144,7 @@
     "confidence": "High",
     "offer_M": 3.9,
     "tool": "Bird rights",
-    "reason": "can match any offer (restricted FA) \u00b7 playoff",
+    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
       "team": "CHI",
@@ -2420,10 +2162,43 @@
    }
   },
   {
+   "player": "Spencer Jones",
+   "pos": "SF/PF",
+   "age": 25,
+   "barrett": 7.4,
+   "value_M": 3.9,
+   "status": "RFA",
+   "incumbent": "DEN",
+   "incumbent_name": "Denver Nuggets",
+   "realistic": {
+    "predicted": "NYK",
+    "predicted_name": "New York Knicks",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 1.9,
+    "tool": "minimum",
+    "reason": "depth piece over Jeremy Sochan (3.0 vs 7.4) \u00b7 title",
+    "alts": [
+     {
+      "team": "DEN",
+      "team_name": "Denver Nuggets",
+      "offer_M": 3.9,
+      "tool": "Bird rights"
+     },
+     {
+      "team": "CHI",
+      "team_name": "Chicago Bulls",
+      "offer_M": 3.0,
+      "tool": "cap room"
+     }
+    ]
+   }
+  },
+  {
    "player": "Tyus Jones",
    "pos": "PG",
    "age": 30,
-   "barrett": 1.5,
+   "barrett": 1.6,
    "value_M": 3.9,
    "status": "UFA",
    "incumbent": "DEN",
@@ -2435,7 +2210,7 @@
     "confidence": "Low",
     "offer_M": 2.4,
     "tool": "mid-level exception",
-    "reason": "depth piece over Gabe Vincent (UFA, 0.9 vs 1.5) \u00b7 playoff",
+    "reason": "depth piece over Gabe Vincent (UFA, 0.9 vs 1.6) \u00b7 playoff",
     "alts": [
      {
       "team": "DEN",
@@ -2486,108 +2261,22 @@
    }
   },
   {
-   "player": "Gary Trent Jr.",
-   "pos": "SG/SF",
-   "age": 27,
-   "barrett": 3.3,
-   "value_M": 3.5,
-   "status": "Player Option",
-   "incumbent": "MIL",
-   "incumbent_name": "Milwaukee Bucks",
-   "realistic": {
-    "predicted": "MIL",
-    "predicted_name": "Milwaukee Bucks",
-    "is_resign": true,
-    "confidence": "Low",
-    "offer_M": 2.3,
-    "tool": "minimum",
-    "reason": "back on a minimum",
-    "alts": []
-   }
-  },
-  {
-   "player": "Jalen Wilson",
-   "pos": "SF/PF",
-   "age": 25,
-   "barrett": 3.5,
-   "value_M": 3.5,
-   "status": "RFA",
-   "incumbent": "BKN",
-   "incumbent_name": "Brooklyn Nets",
-   "realistic": {
-    "predicted": "NYK",
-    "predicted_name": "New York Knicks",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 1.8,
-    "tool": "minimum",
-    "reason": "depth piece over Jeremy Sochan (3.0 vs 3.5) \u00b7 title",
-    "alts": [
-     {
-      "team": "HOU",
-      "team_name": "Houston Rockets",
-      "offer_M": 1.8,
-      "tool": "mid-level exception"
-     },
-     {
-      "team": "SAS",
-      "team_name": "San Antonio Spurs",
-      "offer_M": 1.8,
-      "tool": "mid-level exception"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Jevon Carter",
+   "player": "Jose Alvarado",
    "pos": "PG/SG",
-   "age": 30,
-   "barrett": 4.5,
-   "value_M": 3.5,
-   "status": "UFA",
-   "incumbent": "ORL",
-   "incumbent_name": "Orlando Magic",
+   "age": 28,
+   "barrett": 7.7,
+   "value_M": 3.8,
+   "status": "Player Option",
+   "incumbent": "NYK",
+   "incumbent_name": "New York Knicks",
    "realistic": {
-    "predicted": "TOR",
-    "predicted_name": "Toronto Raptors",
+    "predicted": "SAS",
+    "predicted_name": "San Antonio Spurs",
     "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 2.2,
-    "tool": "minimum",
-    "reason": "depth piece over Gradey Dick (3.4 vs 4.5) \u00b7 playoff",
-    "alts": [
-     {
-      "team": "ORL",
-      "team_name": "Orlando Magic",
-      "offer_M": 3.5,
-      "tool": "Bird rights"
-     },
-     {
-      "team": "LAL",
-      "team_name": "Los Angeles Lakers",
-      "offer_M": 1.8,
-      "tool": "taxpayer MLE"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Josh Okogie",
-   "pos": "SG/SF",
-   "age": 27,
-   "barrett": 5.3,
-   "value_M": 3.5,
-   "status": "UFA",
-   "incumbent": "HOU",
-   "incumbent_name": "Houston Rockets",
-   "realistic": {
-    "predicted": "HOU",
-    "predicted_name": "Houston Rockets",
-    "is_resign": true,
     "confidence": "Low",
     "offer_M": 2.3,
     "tool": "minimum",
-    "reason": "back on a minimum",
+    "reason": "minimum deal to fill a roster need",
     "alts": []
    }
   },
@@ -2625,17 +2314,17 @@
    }
   },
   {
-   "player": "Jaylen Clark",
+   "player": "Gary Trent Jr.",
    "pos": "SG/SF",
-   "age": 24,
-   "barrett": 2.3,
-   "value_M": 3.3,
-   "status": "RFA",
-   "incumbent": "MIN",
-   "incumbent_name": "Minnesota Timberwolves",
+   "age": 27,
+   "barrett": 3.3,
+   "value_M": 3.5,
+   "status": "Player Option",
+   "incumbent": "MIL",
+   "incumbent_name": "Milwaukee Bucks",
    "realistic": {
-    "predicted": "MIN",
-    "predicted_name": "Minnesota Timberwolves",
+    "predicted": "MIL",
+    "predicted_name": "Milwaukee Bucks",
     "is_resign": true,
     "confidence": "Low",
     "offer_M": 2.3,
@@ -2645,43 +2334,63 @@
    }
   },
   {
-   "player": "Mohamed Diawara",
-   "pos": "PF/SF",
-   "age": 21,
-   "barrett": 2.7,
-   "value_M": 3.2,
-   "status": "RFA",
-   "incumbent": "NYK",
-   "incumbent_name": "New York Knicks",
+   "player": "Jalen Wilson",
+   "pos": "SF/PF",
+   "age": 25,
+   "barrett": 3.6,
+   "value_M": 3.5,
+   "status": "UFA",
+   "incumbent": "BKN",
+   "incumbent_name": "Brooklyn Nets",
    "realistic": {
-    "predicted": "PHX",
-    "predicted_name": "Phoenix Suns",
+    "predicted": "NYK",
+    "predicted_name": "New York Knicks",
     "is_resign": false,
     "confidence": "Low",
-    "offer_M": 1.6,
+    "offer_M": 1.8,
     "tool": "minimum",
-    "reason": "depth piece over Koby Brea (2.6 vs 2.7) \u00b7 playoff",
+    "reason": "depth piece over Jeremy Sochan (3.0 vs 3.6) \u00b7 title",
     "alts": [
      {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 3.2,
-      "tool": "Bird rights"
+      "team": "HOU",
+      "team_name": "Houston Rockets",
+      "offer_M": 1.8,
+      "tool": "mid-level exception"
      },
      {
-      "team": "CHA",
-      "team_name": "Charlotte Hornets",
-      "offer_M": 1.6,
+      "team": "SAS",
+      "team_name": "San Antonio Spurs",
+      "offer_M": 1.8,
       "tool": "mid-level exception"
      }
     ]
    }
   },
   {
+   "player": "Josh Okogie",
+   "pos": "SG/SF",
+   "age": 27,
+   "barrett": 5.4,
+   "value_M": 3.5,
+   "status": "UFA",
+   "incumbent": "HOU",
+   "incumbent_name": "Houston Rockets",
+   "realistic": {
+    "predicted": "HOU",
+    "predicted_name": "Houston Rockets",
+    "is_resign": true,
+    "confidence": "Low",
+    "offer_M": 2.3,
+    "tool": "minimum",
+    "reason": "back on a minimum",
+    "alts": []
+   }
+  },
+  {
    "player": "Anthony Gill",
    "pos": "PF/C",
    "age": 33,
-   "barrett": 6.8,
+   "barrett": 6.9,
    "value_M": 3.1,
    "status": "UFA",
    "incumbent": "WAS",
@@ -2702,10 +2411,10 @@
       "tool": "mid-level exception"
      },
      {
-      "team": "HOU",
-      "team_name": "Houston Rockets",
+      "team": "CLE",
+      "team_name": "Cleveland Cavaliers",
       "offer_M": 1.9,
-      "tool": "cap room"
+      "tool": "mid-level exception"
      }
     ]
    }
@@ -2753,14 +2462,27 @@
    "incumbent": "SAC",
    "incumbent_name": "Sacramento Kings",
    "realistic": {
-    "predicted": "SAC",
-    "predicted_name": "Sacramento Kings",
-    "is_resign": true,
+    "predicted": "PHX",
+    "predicted_name": "Phoenix Suns",
+    "is_resign": false,
     "confidence": "Low",
-    "offer_M": 2.3,
-    "tool": "minimum",
-    "reason": "back on a minimum",
-    "alts": []
+    "offer_M": 2.4,
+    "tool": "mid-level exception",
+    "reason": "rotation piece over Khaman Maluach (2.3 vs 5.7) \u00b7 playoff",
+    "alts": [
+     {
+      "team": "SAC",
+      "team_name": "Sacramento Kings",
+      "offer_M": 3.1,
+      "tool": "Bird rights"
+     },
+     {
+      "team": "LAL",
+      "team_name": "Los Angeles Lakers",
+      "offer_M": 2.4,
+      "tool": "taxpayer MLE"
+     }
+    ]
    }
   },
   {
@@ -2800,7 +2522,7 @@
    "player": "Cam Thomas",
    "pos": "SG",
    "age": 24,
-   "barrett": 6.9,
+   "barrett": 7.0,
    "value_M": 2.9,
    "status": "UFA",
    "incumbent": "MIL",
@@ -2815,15 +2537,15 @@
     "reason": "could re-sign him (Bird rights) \u00b7 playoff",
     "alts": [
      {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
+      "team": "LAC",
+      "team_name": "LA Clippers",
       "offer_M": 2.3,
       "tool": "cap room"
      },
      {
-      "team": "LAC",
-      "team_name": "LA Clippers",
-      "offer_M": 1.8,
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
+      "offer_M": 2.3,
       "tool": "cap room"
      }
     ]
@@ -2832,7 +2554,7 @@
   {
    "player": "Gabe Vincent",
    "pos": "PG/SG",
-   "age": 29,
+   "age": 30,
    "barrett": 0.9,
    "value_M": 2.9,
    "status": "UFA",
@@ -2863,45 +2585,12 @@
    }
   },
   {
-   "player": "Kobe Brown",
-   "pos": "SF/PF",
-   "age": 26,
-   "barrett": 4.4,
-   "value_M": 2.8,
-   "status": "RFA",
-   "incumbent": "IND",
-   "incumbent_name": "Indiana Pacers",
-   "realistic": {
-    "predicted": "LAL",
-    "predicted_name": "Los Angeles Lakers",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 1.4,
-    "tool": "minimum",
-    "reason": "depth piece over Drew Timme (3.8 vs 4.4) \u00b7 title",
-    "alts": [
-     {
-      "team": "NYK",
-      "team_name": "New York Knicks",
-      "offer_M": 1.4,
-      "tool": "taxpayer MLE"
-     },
-     {
-      "team": "CHI",
-      "team_name": "Chicago Bulls",
-      "offer_M": 1.4,
-      "tool": "cap room"
-     }
-    ]
-   }
-  },
-  {
    "player": "Caleb Love",
    "pos": "PG/SG",
    "age": 24,
    "barrett": 5.6,
    "value_M": 2.6,
-   "status": "RFA",
+   "status": "UFA",
    "incumbent": "POR",
    "incumbent_name": "Portland Trail Blazers",
    "realistic": {
@@ -2911,17 +2600,17 @@
     "confidence": "High",
     "offer_M": 2.6,
     "tool": "Bird rights",
-    "reason": "can match any offer (restricted FA) \u00b7 retooling",
+    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
      {
-      "team": "LAC",
-      "team_name": "LA Clippers",
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
       "offer_M": 1.3,
       "tool": "cap room"
      },
      {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
+      "team": "LAC",
+      "team_name": "LA Clippers",
       "offer_M": 1.3,
       "tool": "cap room"
      }
@@ -2929,32 +2618,12 @@
    }
   },
   {
-   "player": "Dalen Terry",
-   "pos": "SG/SF",
-   "age": 23,
-   "barrett": 3.7,
-   "value_M": 2.6,
-   "status": "RFA",
-   "incumbent": "PHI",
-   "incumbent_name": "Philadelphia 76ers",
-   "realistic": {
-    "predicted": "PHI",
-    "predicted_name": "Philadelphia 76ers",
-    "is_resign": true,
-    "confidence": "Low",
-    "offer_M": 2.3,
-    "tool": "minimum",
-    "reason": "back on a minimum",
-    "alts": []
-   }
-  },
-  {
    "player": "Pat Spencer",
    "pos": "PG/SG",
    "age": 29,
-   "barrett": 6.8,
+   "barrett": 6.9,
    "value_M": 2.5,
-   "status": "RFA",
+   "status": "UFA",
    "incumbent": "GSW",
    "incumbent_name": "Golden State Warriors",
    "realistic": {
@@ -2963,9 +2632,22 @@
     "is_resign": true,
     "confidence": "High",
     "offer_M": 2,
-    "reason": "re-signs (Team Builder plan)",
-    "alts": [],
-    "tool": "Bird rights"
+    "tool": "Bird rights",
+    "reason": "could re-sign him (Bird rights) \u00b7 playoff",
+    "alts": [
+     {
+      "team": "BKN",
+      "team_name": "Brooklyn Nets",
+      "offer_M": 2.0,
+      "tool": "cap room"
+     },
+     {
+      "team": "HOU",
+      "team_name": "Houston Rockets",
+      "offer_M": 2.0,
+      "tool": "cap room"
+     }
+    ]
    }
   },
   {
@@ -2974,12 +2656,12 @@
    "age": 22,
    "barrett": 2.8,
    "value_M": 2.5,
-   "status": "RFA",
+   "status": "UFA",
    "incumbent": "MEM",
    "incumbent_name": "Memphis Grizzlies",
    "realistic": {
-    "predicted": "CLE",
-    "predicted_name": "Cleveland Cavaliers",
+    "predicted": "BOS",
+    "predicted_name": "Boston Celtics",
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.3,
@@ -2998,8 +2680,8 @@
    "incumbent": "MEM",
    "incumbent_name": "Memphis Grizzlies",
    "realistic": {
-    "predicted": "CLE",
-    "predicted_name": "Cleveland Cavaliers",
+    "predicted": "SAS",
+    "predicted_name": "San Antonio Spurs",
     "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.3,
@@ -3009,111 +2691,12 @@
    }
   },
   {
-   "player": "Keaton Wallace",
-   "pos": "PG/SG",
-   "age": 27,
-   "barrett": 2.6,
-   "value_M": 2.2,
-   "status": "RFA",
-   "incumbent": "ATL",
-   "incumbent_name": "Atlanta Hawks",
-   "realistic": {
-    "predicted": "ATL",
-    "predicted_name": "Atlanta Hawks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 2,
-    "tool": "Bird rights",
-    "reason": "can match any offer (restricted FA) \u00b7 playoff",
-    "alts": [
-     {
-      "team": "BOS",
-      "team_name": "Boston Celtics",
-      "offer_M": 1.4,
-      "tool": "mid-level exception"
-     },
-     {
-      "team": "ORL",
-      "team_name": "Orlando Magic",
-      "offer_M": 1.1,
-      "tool": "taxpayer MLE"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Ryan Nembhard",
-   "pos": "PG",
-   "age": 23,
-   "barrett": 6.7,
-   "value_M": 2.2,
-   "status": "UFA",
-   "incumbent": "DAL",
-   "incumbent_name": "Dallas Mavericks",
-   "realistic": {
-    "predicted": "DAL",
-    "predicted_name": "Dallas Mavericks",
-    "is_resign": true,
-    "confidence": "High",
-    "offer_M": 2,
-    "tool": "Bird rights",
-    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
-    "alts": [
-     {
-      "team": "BKN",
-      "team_name": "Brooklyn Nets",
-      "offer_M": 2.0,
-      "tool": "cap room"
-     },
-     {
-      "team": "LAC",
-      "team_name": "LA Clippers",
-      "offer_M": 1.7,
-      "tool": "cap room"
-     }
-    ]
-   }
-  },
-  {
-   "player": "Daeqwon Plowden",
-   "pos": "SG/SF",
-   "age": 27,
-   "barrett": 7.9,
-   "value_M": 2.2,
-   "status": "RFA",
-   "incumbent": "SAC",
-   "incumbent_name": "Sacramento Kings",
-   "realistic": {
-    "predicted": "NYK",
-    "predicted_name": "New York Knicks",
-    "is_resign": false,
-    "confidence": "Low",
-    "offer_M": 1.1,
-    "tool": "minimum",
-    "reason": "depth piece over Jose Alvarado (7.6 vs 7.9) \u00b7 title",
-    "alts": [
-     {
-      "team": "LAC",
-      "team_name": "LA Clippers",
-      "offer_M": 1.1,
-      "tool": "taxpayer MLE"
-     },
-     {
-      "team": "POR",
-      "team_name": "Portland Trail Blazers",
-      "offer_M": 1.1,
-      "tool": "mid-level exception"
-     }
-    ]
-   }
-  },
-  {
    "player": "Elijah Harkless",
    "pos": "SG/SF",
    "age": 26,
    "barrett": 4.9,
    "value_M": 2.2,
-   "status": "RFA",
+   "status": "UFA",
    "incumbent": "UTA",
    "incumbent_name": "Utah Jazz",
    "realistic": {
@@ -3137,13 +2720,33 @@
    "incumbent": "IND",
    "incumbent_name": "Indiana Pacers",
    "realistic": {
-    "predicted": "IND",
-    "predicted_name": "Indiana Pacers",
-    "is_resign": true,
+    "predicted": "SAS",
+    "predicted_name": "San Antonio Spurs",
+    "is_resign": false,
     "confidence": "Low",
     "offer_M": 2.2,
     "tool": "minimum",
-    "reason": "back on a minimum",
+    "reason": "minimum deal to fill a roster need",
+    "alts": []
+   }
+  },
+  {
+   "player": "Keaton Wallace",
+   "pos": "SF/PF",
+   "age": 27,
+   "barrett": 2.7,
+   "value_M": 2.2,
+   "status": "UFA",
+   "incumbent": "ATL",
+   "incumbent_name": "Atlanta Hawks",
+   "realistic": {
+    "predicted": "HOU",
+    "predicted_name": "Houston Rockets",
+    "is_resign": false,
+    "confidence": "Low",
+    "offer_M": 1.1,
+    "tool": "minimum",
+    "reason": "depth piece over Jae'Sean Tate (1.9 vs 2.7) \u00b7 title",
     "alts": []
    }
   },
@@ -3163,7 +2766,7 @@
     "confidence": "Low",
     "offer_M": 1.4,
     "tool": "minimum",
-    "reason": "depth piece over Yanic Konan Niederh\u00e4user (5.2 vs 6.2) \u00b7 rebuild",
+    "reason": "depth piece over Yanic Konan Niederh\u00e4user (5.3 vs 6.2) \u00b7 rebuild",
     "alts": [
      {
       "team": "DAL",
@@ -3216,10 +2819,10 @@
   {
    "player": "Sharife Cooper",
    "pos": "PG",
-   "age": 24,
+   "age": 25,
    "barrett": 6.6,
    "value_M": 2.2,
-   "status": "RFA",
+   "status": "UFA",
    "incumbent": "WAS",
    "incumbent_name": "Washington Wizards",
    "realistic": {
@@ -3229,7 +2832,7 @@
     "confidence": "High",
     "offer_M": 2,
     "tool": "Bird rights",
-    "reason": "can match any offer (restricted FA) \u00b7 retooling",
+    "reason": "could re-sign him (Bird rights) \u00b7 retooling",
     "alts": [
      {
       "team": "BKN",

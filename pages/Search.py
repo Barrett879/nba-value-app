@@ -49,9 +49,10 @@ if not all_names:
     st.stop()
 
 # Pre-select if we arrived here from one of three sources, in priority order:
-#   1. ?player=Name (or ?player=A&player=B...) query-string deep link — used
+#   1. session_state hand-off from the home-page search bar — an explicit
+#      pick beats whatever ?player= happens to linger in the URL
+#   2. ?player=Name (or ?player=A&player=B...) query-string deep link — used
 #      for sharing direct URLs (e.g. /Search?player=Jok%C4%87)
-#   2. session_state hand-off from the home-page search bar
 #   3. nothing — empty state
 _default: list[str] = []
 
@@ -69,16 +70,19 @@ def _resolve_qs_name(qs_name: str) -> str | None:
             return full
     return None
 
-for _qsp in _qs_players[:10]:
-    _resolved = _resolve_qs_name(_qsp)
-    if _resolved and _resolved not in _default:
-        _default.append(_resolved)
-
-# Fall back to home-page hand-off if no query string match.
-if not _default:
-    _handed_off = st.session_state.pop("search_player", None)
-    if _handed_off and _handed_off in all_names:
-        _default = [_handed_off]
+# Home-page hand-off wins over the query string: a stale ?player= can
+# linger in the URL, and letting it beat an explicit pick would show the
+# wrong player. Pop the hand-off so it can't replay on later reruns, and
+# point the URL at the player actually shown.
+_handed_off = st.session_state.pop("search_player", None)
+if _handed_off and _handed_off in all_names:
+    _default = [_handed_off]
+    st.query_params["player"] = _handed_off
+else:
+    for _qsp in _qs_players[:10]:
+        _resolved = _resolve_qs_name(_qsp)
+        if _resolved and _resolved not in _default:
+            _default.append(_resolved)
 
 selected = st.multiselect(
     "Type a player name…  (add up to 10 to compare)",
@@ -719,7 +723,7 @@ if len(selected) == 1:
     # elite vs other PGs; this view makes that legible.
     _peer_pos_lookup = {}
     try:
-        _peer_pos_lookup = fetch_player_positions_detailed(_bd_season, cache_v=2)
+        _peer_pos_lookup = fetch_player_positions_detailed(_bd_season, cache_v=3)
     except Exception:
         pass
     _peer_pos = _peer_pos_lookup.get(normalize(player_name))

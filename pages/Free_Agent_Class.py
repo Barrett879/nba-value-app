@@ -2,7 +2,10 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import datetime
 import html
+import logging
+import re
 import pandas as pd
 import streamlit as st
 import streamlit.components.v1 as components
@@ -17,6 +20,8 @@ from utils import (
     theme_fig, html_table, render_rail,
     render_barrett_score_explainer, _bootstrap_warm,
 )
+
+logger = logging.getLogger(__name__)
 
 st.set_page_config(page_title="Free Agent Class", page_icon="static/favicon.svg", layout="wide")
 
@@ -111,10 +116,46 @@ try:
                 try:
                     _fig = float(_r.get("figure_M") or 0) or None
                 except ValueError:
+                    logger.warning(
+                        "option_decisions_2026.csv: unparseable figure_M %r for player %s",
+                        _r.get("figure_M"), _r["player"])
                     _fig = None
                 _decisions[normalize(_r["player"])] = ((_r.get("decision") or "").strip(), _fig)
 except Exception:
     _decisions = {}
+
+
+def _offseason_as_of() -> str:
+    """Freshness stamp for the hand-maintained offseason files (real signings +
+    option decisions): the newest "# Verified <date>" leading comment, falling
+    back to file mtime. Same idea as team_suitors._read_as_of."""
+    best = None
+    for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv"):
+        _p = _Path(__file__).parent.parent / "data" / _fn
+        d = None
+        try:
+            with open(_p) as _vfh:
+                for _line in _vfh:
+                    if not _line.lstrip().startswith("#"):
+                        break
+                    if "verified" in _line.lower():
+                        _m = re.search(r"(\d{4}-\d{2}-\d{2})", _line)
+                        if _m:
+                            try:
+                                d = datetime.date.fromisoformat(_m.group(1))
+                            except ValueError:
+                                d = None
+                            break
+        except OSError:
+            continue
+        if d is None:
+            try:
+                d = datetime.date.fromtimestamp(_p.stat().st_mtime)
+            except OSError:
+                continue
+        if best is None or d > best:
+            best = d
+    return f"{best.strftime('%B')} {best.day}, {best.year}" if best else ""
 
 def _signing_status(name: str) -> str:
     """FA status to show for a tracked 2026 signing the salary feed would otherwise drop."""
@@ -190,7 +231,9 @@ def _load_pcv(rel: str) -> dict:
 _pcv_by = {}
 _max_norms: set = set()
 try:
-    _hub = _json.loads((_Path(__file__).parent.parent / "cache" / "player_hub_pcv_v1.json").read_text())
+    # v2 filename (adds contract_end/max_pct/model stamp; players key unchanged):
+    # Render's /data disk only seeds MISSING files, so the bump is what deploys it.
+    _hub = _json.loads((_Path(__file__).parent.parent / "cache" / "player_hub_pcv_v2.json").read_text())
     _pcv_by = {n: p["pcv_M"] for n, p in _hub.get("players", {}).items() if p.get("pcv_M") is not None}
     _max_norms = {n for n, p in _hub.get("players", {}).items() if p.get("is_max")}
 except Exception:
@@ -407,6 +450,10 @@ if _scorecard:
         f"(median miss \\${_scorecard['median_err_M']}M). Set **Show** to **Signed** to see just those "
         "(or **Available** for who's still on the market); the **Signed** and **vs Model** columns fill in as deals land."
     )
+
+_as_of = _offseason_as_of()
+if _as_of:
+    st.caption(f"Signings and option decisions verified as of {_as_of}.")
 
 html_table(
     fa_fmt,

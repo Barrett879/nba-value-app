@@ -36,6 +36,8 @@ _log("heavy modules in sys.modules")
 import utils  # noqa: E402  (seeds /data/cache from the repo copies on first boot)
 _log("utils imported, disk cache seeded")
 
+import seo_selfheal  # noqa: E402  (canonical SEO transform, shared with the build patch)
+
 # ── 2. Warm the current season synchronously ──────────────────────────────────
 # Bare mode means build_raw is fresh-or-block, so the parquet and supporting
 # caches are hot AND current the moment traffic flips to this container.
@@ -126,71 +128,19 @@ def _self_warm() -> None:
 threading.Thread(target=_self_warm, daemon=True).start()
 
 # ── 2.9 SEO: patch Streamlit's static index.html ─────────────────────────────
-# Streamlit serves a generic SPA shell — <title>Streamlit</title>, no meta
-# description, and no body text (content arrives later over the websocket) — so
+# Streamlit serves a generic SPA shell (<title>Streamlit</title>, no meta
+# description, and no body text; content arrives later over the websocket) so
 # Googlebot sees a blank page that never says "HoopsValue", and the site is
-# invisible to search. Inject a real title, meta/OpenGraph tags, and a <noscript>
-# content block with internal links into the file Streamlit serves at "/".
+# invisible to search. The canonical transform lives in seo_selfheal.py; here
+# we apply it to the file on disk AND install an in-process Tornado fallback.
 # Best-effort + idempotent: a failure (e.g. read-only site-packages) just logs
 # and serving continues unaffected. Changes nothing a JS-browser visitor sees.
-def _seo_html(html: str) -> str:
-    """Inject a real <title>, meta/OpenGraph tags, and a crawlable <noscript> block
-    (replacing Streamlit's default 'enable JavaScript' one) into the shell HTML."""
-    import re as _re
-    if "hv-seo-v1" in html:
-        return html
-    title = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
-    desc = ("HoopsValue ranks every NBA player by the Barrett Score — on-court "
-            "production measured against their paycheck — and predicts what any "
-            "player would sign for today. Find the steals, expose the overpays, and "
-            "run any team's free agency.")
-    head = (
-        "<!--hv-seo-v1-->"
-        f'<meta name="description" content="{desc}"/>'
-        '<meta name="robots" content="index, follow"/>'
-        '<link rel="canonical" href="https://hoopsvalue.com/"/>'
-        f'<meta property="og:title" content="{title}"/>'
-        f'<meta property="og:description" content="{desc}"/>'
-        '<meta property="og:type" content="website"/>'
-        '<meta property="og:url" content="https://hoopsvalue.com/"/>'
-        '<meta property="og:image" content="https://hoopsvalue.com/app/static/hoopsvalue_logo.png"/>'
-        '<meta name="twitter:card" content="summary_large_image"/>'
-    )
-    nav = "".join(
-        f'<li><a href="/{slug}">{label}</a></li>' for slug, label in [
-            ("Contract_Predictor", "Contract Predictor — what any player would sign for today"),
-            ("Rankings", "Current Rankings — every NBA player by Barrett Score"),
-            ("Search", "Player Search"),
-            ("Legacy", "Legacy — the best players ever by Barrett Score"),
-        ])
-    body = (
-        "<noscript><header><h1>HoopsValue</h1>"
-        "<p>NBA player value, contract predictions, and rankings.</p></header>"
-        f"<main><p>{desc}</p><ul>{nav}</ul></main></noscript>"
-    )
-    if "<title>Streamlit</title>" in html:
-        html = html.replace("<title>Streamlit</title>", f"<title>{title}</title>{head}")
-    else:
-        html = html.replace("</head>", f"<title>{title}</title>{head}</head>", 1)
-    if "<noscript" in html:
-        html = _re.sub(r"<noscript>.*?</noscript>", body, html, count=1, flags=_re.S)
-    else:
-        html = html.replace("<body>", f"<body>{body}", 1)
-    return html
-
-
 def _patch_seo() -> None:
     """Write the patched index.html to disk (works where site-packages is writable)."""
-    try:
-        import pathlib
-        import streamlit as _st
-        idx = pathlib.Path(_st.__file__).parent / "static" / "index.html"
-        html = idx.read_text(encoding="utf-8")
-        if "hv-seo-v1" not in html:
-            idx.write_text(_seo_html(html), encoding="utf-8")
-            _log("SEO: patched index.html on disk")
-    except Exception as e:
-        _log(f"SEO disk patch skipped: {e}")
+    if seo_selfheal.ensure_seo_patched():
+        _log("SEO: index.html on disk is patched")
+    else:
+        _log("SEO disk patch skipped (read-only or unexpected shell)")
 
 
 def _patch_seo_inprocess() -> None:
@@ -203,7 +153,7 @@ def _patch_seo_inprocess() -> None:
         import tornado.web
         import streamlit as _st
         idx = (pathlib.Path(_st.__file__).parent / "static" / "index.html").resolve()
-        data = _seo_html(idx.read_text(encoding="utf-8")).encode("utf-8")
+        data = seo_selfheal.seo_html(idx.read_text(encoding="utf-8")).encode("utf-8")
         if b"<title>HoopsValue" not in data or b"</html>" not in data.lower():
             _log("SEO in-process: transform looked invalid, skipping")
             return
@@ -233,8 +183,81 @@ def _patch_seo_inprocess() -> None:
         _log(f"SEO in-process patch skipped: {e}")
 
 
-_patch_seo()            # disk write (works where site-packages is writable)
-_patch_seo_inprocess()  # Tornado override (works on read-only runtime fs too)
+# ── 2.95 Real /robots.txt and /sitemap.xml + duplicate-host noindex ──────────
+# Streamlit's catch-all StaticFileHandler answers ANY unknown path with the SPA
+# shell, so /robots.txt and /sitemap.xml returned HTML. Streamlit builds its
+# route table internally, so we wrap tornado.web.Application's constructor
+# (only Streamlit constructs one in this process) to prepend our two handlers
+# ahead of the catch-all. The same hook appends a header-only transform that
+# marks responses on the duplicate *.onrender.com host with X-Robots-Tag:
+# noindex, so Google folds the origin host into hoopsvalue.com. Header only:
+# a redirect there would break the websocket handshake through Render.
+_SITEMAP_PATHS = [
+    "/", "/Rankings", "/Search", "/Legacy", "/Team_Analysis",
+    "/Contract_Predictor", "/Free_Agent_Class",
+]
+
+
+def _install_extra_routes() -> None:
+    try:
+        import tornado.web
+
+        class _RobotsHandler(tornado.web.RequestHandler):
+            def get(self):
+                self.set_header("Content-Type", "text/plain; charset=utf-8")
+                self.write("User-agent: *\nAllow: /\n\n"
+                           "Sitemap: https://hoopsvalue.com/sitemap.xml\n")
+
+            head = get  # crawlers HEAD these; tornado drops the body itself
+
+        class _SitemapHandler(tornado.web.RequestHandler):
+            def get(self):
+                urls = "".join(
+                    f"<url><loc>https://hoopsvalue.com{p}</loc></url>"
+                    for p in _SITEMAP_PATHS)
+                self.set_header("Content-Type", "application/xml; charset=utf-8")
+                self.write('<?xml version="1.0" encoding="UTF-8"?>'
+                           '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
+                           f"{urls}</urlset>")
+
+            head = get
+
+        class _NoindexTransform:
+            """Tornado output transform: add X-Robots-Tag: noindex when the
+            request came in on the *.onrender.com origin host. Skips websocket
+            handshakes (101) and touches nothing else."""
+
+            def __init__(self, request):
+                host = (request.headers.get("Host") or "").split(":")[0].lower()
+                self._noindex = host.endswith(".onrender.com")
+
+            def transform_first_chunk(self, status_code, headers, chunk, finishing):
+                if self._noindex and status_code != 101:
+                    headers["X-Robots-Tag"] = "noindex"
+                return status_code, headers, chunk
+
+            def transform_chunk(self, chunk, finishing):
+                return chunk
+
+        _orig_app_init = tornado.web.Application.__init__
+
+        def _app_init(self, handlers=None, *args, **kwargs):
+            if handlers:
+                handlers = [
+                    (r"/robots\.txt", _RobotsHandler),
+                    (r"/sitemap\.xml", _SitemapHandler),
+                ] + list(handlers)
+            _orig_app_init(self, handlers, *args, **kwargs)
+            self.transforms.append(_NoindexTransform)
+        tornado.web.Application.__init__ = _app_init
+        _log("extra routes installed: /robots.txt /sitemap.xml + onrender noindex header")
+    except Exception as e:  # never block serving over SEO routes
+        _log(f"extra routes skipped: {e}")
+
+
+_patch_seo()             # disk write (works where site-packages is writable)
+_patch_seo_inprocess()   # Tornado override (works on read-only runtime fs too)
+_install_extra_routes()  # robots/sitemap + duplicate-host noindex header
 
 # ── 3. Open the port (traffic flips to this container now) ───────────────────
 _log("starting streamlit, port opens next")

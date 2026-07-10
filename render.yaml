@@ -1,3 +1,12 @@
+# NOTE: the live service (nba-value-app.onrender.com, apex hoopsvalue.com) was
+# created from the dashboard BEFORE this blueprint existed, so Render ignores
+# this file for it (the barrett-score URL this blueprint would create 404s).
+# Production only serves the SEO-patched shell + robots/sitemap/noindex routes
+# if the DASHBOARD settings match the commands below:
+#   Build Command: pip install -r requirements.txt && python scripts/seo_patch.py
+#   Start Command: python serve.py
+# A bare `streamlit run app.py` start command never runs serve.py or the build
+# patch and leaves the stock <title>Streamlit</title> shell in search results.
 services:
   - type: web
     name: barrett-score
