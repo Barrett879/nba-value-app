@@ -413,7 +413,7 @@ st.markdown("""
 st.markdown("""
 <div style="text-align:center; padding: 0 0 0.4rem 0; margin-bottom: 0.6rem;">
     <div style="font-size:0.8rem; color:var(--fg-2); max-width:820px; margin:0 auto; line-height:1.45;">
-        Compare NBA players' on-court performance to their contracts.
+        Compare NBA players' on-court performance to their contracts
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -495,12 +495,6 @@ with _search_col:
         # option, so it was never seeded) is left alone; the hub resolves it
         # by normalized name and stays up, which is the consistent state.
         del st.query_params["player"]
-
-st.markdown("<div style='margin-top:1.4rem'></div>", unsafe_allow_html=True)
-
-# Same "What is the Barrett Score?" expander every inner page shows.
-render_barrett_score_explainer()
-
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Player Hub — the homepage IS the player list. Selecting a player (row link or
@@ -1455,6 +1449,10 @@ def _board():
     _rail("", "2025-26 Player Board", count=f"{len(_df)} players")
     st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
              label_visibility="collapsed")
+
+    # The score column is the board's main event, so its explainer lives here
+    # (same expander every inner page shows), not up in the hero.
+    render_barrett_score_explainer()
 
     _view = _df
     _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",
