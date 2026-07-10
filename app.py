@@ -1422,13 +1422,15 @@ st.markdown("""
 [data-testid="stMarkdownContainer"]:has(.hv-rail),
 [data-testid="stMarkdownContainer"]:has(.fp-grid),
 [data-testid="stMarkdownContainer"]:has(.hub-banner){margin-bottom:0 !important;}
-/* Board fragment: its inner block keeps the default 1rem gap (1.51 nests the
-   columns row under a stLayoutWrapper). Tighten pills-to-table; the :not
-   guard keeps the rule off the root block, whose gap must stay 0. */
-[data-testid="stVerticalBlock"]:not(:has(.st-key-theme_nav_toggle)):has(> [data-testid="stLayoutWrapper"] .st-key-board_view){
-    gap:0.35rem !important;}
-[data-testid="stVerticalBlock"]:not(:has(.st-key-theme_nav_toggle)):has(> [data-testid="stLayoutWrapper"] .st-key-board_view) .hv-table-wrap{
-    margin-top:0.25rem;}
+/* Board fragment: tighten rail-to-pills and pills-to-table. The pills'
+   element container (.st-key-board_view) is a DIRECT child of the fragment's
+   inner stVerticalBlock in 1.51, so target that block's gap; the old
+   "> stLayoutWrapper" form matched an outer zero-height block and did
+   nothing. */
+[data-testid="stVerticalBlock"]:has(> .st-key-board_view){
+    gap:0.45rem !important;}
+[data-testid="stVerticalBlock"]:has(> .st-key-board_view) .hv-table-wrap{
+    margin-top:0.2rem;}
 </style>
 """, unsafe_allow_html=True)
 
