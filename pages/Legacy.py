@@ -105,7 +105,6 @@ else:
         "ranked, compared, and put in context."
     )
 
-render_barrett_score_explainer()
 
 # ── Load combined data ─────────────────────────────────────────────────────────
 # build_all_seasons_combined is @st.cache_resource (no copy on hit) — must copy before mutating

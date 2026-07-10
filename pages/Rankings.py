@@ -52,7 +52,6 @@ st.markdown("""
   }
 </style>
 """, unsafe_allow_html=True)
-render_barrett_score_explainer()
 
 # ── Season selector ──────────────────────────────────────────────────────────
 # playoff_mode lives in the top nav bar (rendered by render_nav above) and is

@@ -40,7 +40,6 @@ st.caption(
     "Positive = overpaying (inefficient)."
 )
 
-render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])

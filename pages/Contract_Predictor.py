@@ -2894,7 +2894,6 @@ with st.expander("About this prediction"):
     )
     st.markdown(_breakdown_html, unsafe_allow_html=True)
 
-    render_barrett_score_explainer()
     st.markdown(
         """
         ### How the number is built

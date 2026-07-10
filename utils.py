@@ -1613,7 +1613,8 @@ COMMON_CSS = """
             padding-right: 4rem;
         }
         .top-nav::-webkit-scrollbar { display: none; }
-        .top-nav::after { content: ""; flex: 0 0 3.25rem; }
+        /* clearance for BOTH pinned buttons (theme toggle + score help) */
+        .top-nav::after { content: ""; flex: 0 0 5rem; }
     }
 
     /* Pin the playoff-mode toggle to the top-right of the nav, just left of the
@@ -1686,6 +1687,51 @@ COMMON_CSS = """
         box-shadow: none !important; background: transparent !important; color: var(--fg-1) !important;
     }
 
+    /* "?" Barrett Score help popover, pinned just left of the theme button. */
+    .st-key-score_help_nav {
+        position: fixed !important;
+        top: 0 !important;
+        height: 3rem !important;
+        right: 3.4rem !important;
+        z-index: 10001 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        background: transparent !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+    .st-key-score_help_nav button {
+        background: transparent !important;
+        border: 1.5px solid var(--fg-4) !important;
+        border-radius: 50% !important;
+        box-shadow: none !important;
+        width: 1.35rem !important;
+        height: 1.35rem !important;
+        min-height: 1.35rem !important;
+        padding: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        line-height: 1 !important;
+        font-size: 0.78rem !important;
+        font-weight: 700 !important;
+        color: var(--fg-3) !important;
+    }
+    .st-key-score_help_nav button p { font-size: 0.78rem !important; font-weight: 700 !important; line-height: 1 !important; }
+    /* Hide the popover button's dropdown caret (a raw svg, no testid); the ?
+       is the whole affordance. */
+    .st-key-score_help_nav button svg,
+    .st-key-score_help_nav button [data-testid="stIconMaterial"] { display: none !important; }
+    .st-key-score_help_nav button:hover,
+    .st-key-score_help_nav button:active,
+    .st-key-score_help_nav button:focus,
+    .st-key-score_help_nav button:focus-visible {
+        box-shadow: none !important; background: transparent !important;
+        color: var(--fg-1) !important; border-color: var(--fg-1) !important;
+    }
+    .st-key-score_help_nav [data-testid="stPopoverBody"] { min-width: 320px; max-width: 380px; }
+
     /* In-page Playoff-mode toggle (on the title row): push it to the right edge
        of its column so it lines up under the brightness button. The toggle's
        wrapper gets class .st-key-playoff_mode from its widget key. */
@@ -1706,7 +1752,11 @@ COMMON_CSS = """
     .element-container:has(.st-key-theme_nav_toggle),
     [data-testid="element-container"]:has(.st-key-theme_nav_toggle),
     [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-theme_nav_toggle),
-    [data-testid="stVerticalBlock"]:has(.st-key-theme_nav_toggle):not(.st-key-theme_nav_toggle) {
+    [data-testid="stVerticalBlock"]:has(.st-key-theme_nav_toggle):not(.st-key-theme_nav_toggle),
+    .element-container:has(.st-key-score_help_nav),
+    [data-testid="element-container"]:has(.st-key-score_help_nav),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-score_help_nav),
+    [data-testid="stVerticalBlock"]:has(.st-key-score_help_nav):not(.st-key-score_help_nav) {
         display: contents !important;
     }
 
@@ -2085,6 +2135,13 @@ def render_nav(current: str) -> None:
     with st.container(key="theme_nav_toggle"):
         render_theme_toggle()
 
+    # "?" help popover, pinned just left of the theme button: the Barrett
+    # Score explainer's permanent, site-wide home.
+    with st.container(key="score_help_nav"):
+        with st.popover("?", help="What is the Barrett Score?"):
+            st.markdown("**What is the Barrett Score?**")
+            st.markdown(BARRETT_EXPLAINER_MD)
+
 
 _FOOTER_X_PATH = ("M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83"
                   "L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z")
@@ -2151,22 +2208,24 @@ def render_playoff_toggle() -> bool:
     )
 
 
-def render_barrett_score_explainer() -> None:
-    """Drop-in "What is the Barrett Score?" expander used on every page.
+BARRETT_EXPLAINER_MD = (
+    "The Barrett Score combines scoring, playmaking, rebounding, defense, efficiency, "
+    "and availability into one player value metric. Each player's score is compared "
+    "against real NBA contracts by matching the highest scores with the highest "
+    "salaries, creating an estimated contract value for every player. The result "
+    "shows who is underpaid, overpaid, or being paid roughly in line with their "
+    "on-court value."
+)
 
-    Single source of truth so the copy stays in sync sitewide. Called near
-    the top of each page (under the page title / caption) on Rankings,
-    Search, Legacy, Team Analysis, and Free Agent Class.
+
+def render_barrett_score_explainer() -> None:
+    """Drop-in "What is the Barrett Score?" expander.
+
+    The explainer's permanent home is now the header help popover
+    (render_nav); this stays for any page that wants an inline copy too.
     """
     with st.expander("What is the Barrett Score?"):
-        st.markdown(
-            "The Barrett Score combines scoring, playmaking, rebounding, defense, efficiency, "
-            "and availability into one player value metric. Each player's score is compared "
-            "against real NBA contracts by matching the highest scores with the highest "
-            "salaries, creating an estimated contract value for every player. The result "
-            "shows who is underpaid, overpaid, or being paid roughly in line with their "
-            "on-court value."
-        )
+        st.markdown(BARRETT_EXPLAINER_MD)
 
 
 # ── Name matching ──────────────────────────────────────────────────────────────

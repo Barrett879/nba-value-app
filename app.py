@@ -1452,7 +1452,6 @@ def _board():
 
     # The score column is the board's main event, so its explainer lives here
     # (same expander every inner page shows), not up in the hero.
-    render_barrett_score_explainer()
 
     _view = _df
     _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",

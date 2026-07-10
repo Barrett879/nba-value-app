@@ -37,7 +37,6 @@ st.caption(
     "and team options (team may decline). Ranked by Barrett Score."
 )
 
-render_barrett_score_explainer()
 
 # ── Season selector ────────────────────────────────────────────────────────────
 # Free agency (next-year contracts, options, signings) only makes sense for the
