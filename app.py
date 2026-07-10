@@ -413,7 +413,7 @@ st.markdown("""
 st.markdown("""
 <div style="text-align:center; padding: 0 0 0.4rem 0; margin-bottom: 0.6rem;">
     <div style="font-size:0.8rem; color:var(--fg-2); max-width:820px; margin:0 auto; line-height:1.45;">
-        Every NBA player since 1973, scored by their on-court value and held up against their salary, so you can see who's actually worth their contract and who isn't.
+        Compare NBA players' on-court performance to their contracts.
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -430,11 +430,22 @@ st.markdown("""
 [data-testid="stSelectbox"]:focus-within div[role="combobox"] {
     border: 2px solid var(--sky) !important;
 }
+.home-search-label {
+    font-size: 0.7rem;
+    color: var(--fg-2);
+    text-align: center;
+    margin: 0.6rem 0 0.3rem;
+    letter-spacing: 0.04em;
+}
 </style>
 """, unsafe_allow_html=True)
 
 _, _search_col, _ = st.columns([1, 2.6, 1])
 with _search_col:
+    st.markdown(
+        '<div class="home-search-label">SEARCH ANY PLAYER · 1973 → TODAY</div>',
+        unsafe_allow_html=True,
+    )
     _all_player_names = get_all_player_names() or []
     # Mirror a ?player= deep link into the search box: resolve the param the
     # same way the hub does (normalized-name match) and seed the widget key
