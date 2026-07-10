@@ -1613,8 +1613,9 @@ COMMON_CSS = """
             padding-right: 4rem;
         }
         .top-nav::-webkit-scrollbar { display: none; }
-        /* clearance for BOTH pinned buttons (theme toggle + score help) */
-        .top-nav::after { content: ""; flex: 0 0 5rem; }
+        /* clearance for BOTH pinned controls (theme toggle + the score-help
+           text button), so the last link can scroll out from under them */
+        .top-nav::after { content: ""; flex: 0 0 13rem; }
     }
 
     /* Pin the playoff-mode toggle to the top-right of the nav, just left of the
@@ -1687,12 +1688,13 @@ COMMON_CSS = """
         box-shadow: none !important; background: transparent !important; color: var(--fg-1) !important;
     }
 
-    /* "?" Barrett Score help popover, pinned just left of the theme button. */
+    /* Barrett Score help popover, pinned just left of the theme button and
+       styled to sit on the nav's baseline like another nav item. */
     .st-key-score_help_nav {
         position: fixed !important;
         top: 0 !important;
         height: 3rem !important;
-        right: 3.4rem !important;
+        right: 3.1rem !important;
         z-index: 10001 !important;
         margin: 0 !important;
         padding: 0 !important;
@@ -1701,26 +1703,35 @@ COMMON_CSS = """
         display: flex !important;
         align-items: center !important;
     }
+    /* Streamlit wraps the button in an extra popover div; make every layer of
+       the chain full-height flex so the label centers on the 3rem bar. */
+    .st-key-score_help_nav [data-testid="stPopover"] {
+        height: 3rem !important;
+        display: flex !important;
+        align-items: center !important;
+    }
     .st-key-score_help_nav button {
         background: transparent !important;
-        border: 1.5px solid var(--fg-4) !important;
-        border-radius: 50% !important;
+        border: none !important;
+        border-radius: 20px !important;
         box-shadow: none !important;
-        width: 1.35rem !important;
-        height: 1.35rem !important;
-        min-height: 1.35rem !important;
-        padding: 0 !important;
+        height: auto !important;
+        min-height: 0 !important;
+        padding: 0.3rem 0.85rem !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        line-height: 1 !important;
-        font-size: 0.78rem !important;
-        font-weight: 700 !important;
+        line-height: 1.6 !important;
         color: var(--fg-3) !important;
     }
-    .st-key-score_help_nav button p { font-size: 0.78rem !important; font-weight: 700 !important; line-height: 1 !important; }
-    /* Hide the popover button's dropdown caret (a raw svg, no testid); the ?
-       is the whole affordance. */
+    .st-key-score_help_nav button p {
+        font-size: 0.82rem !important;
+        font-weight: 600 !important;
+        line-height: 1.6 !important;
+        white-space: nowrap !important;
+    }
+    /* Hide the popover button's dropdown caret (a raw svg, no testid); the
+       label is the whole affordance. */
     .st-key-score_help_nav button svg,
     .st-key-score_help_nav button [data-testid="stIconMaterial"] { display: none !important; }
     .st-key-score_help_nav button:hover,
@@ -1728,9 +1739,15 @@ COMMON_CSS = """
     .st-key-score_help_nav button:focus,
     .st-key-score_help_nav button:focus-visible {
         box-shadow: none !important; background: transparent !important;
-        color: var(--fg-1) !important; border-color: var(--fg-1) !important;
+        color: var(--fg-1) !important;
     }
     .st-key-score_help_nav [data-testid="stPopoverBody"] { min-width: 320px; max-width: 380px; }
+    /* Narrow desktop: shrink so the pinned label doesn't collide with the
+       last nav links; under 760px the nav itself scrolls behind it. */
+    @media (max-width: 1200px) {
+        .st-key-score_help_nav button p { font-size: 0.72rem !important; }
+        .st-key-score_help_nav { right: 2.8rem !important; }
+    }
 
     /* In-page Playoff-mode toggle (on the title row): push it to the right edge
        of its column so it lines up under the brightness button. The toggle's
@@ -2135,11 +2152,10 @@ def render_nav(current: str) -> None:
     with st.container(key="theme_nav_toggle"):
         render_theme_toggle()
 
-    # "?" help popover, pinned just left of the theme button: the Barrett
-    # Score explainer's permanent, site-wide home.
+    # Help popover pinned just left of the theme button: the Barrett Score
+    # explainer's permanent, site-wide home. The button reads like a nav item.
     with st.container(key="score_help_nav"):
-        with st.popover("?", help="What is the Barrett Score?"):
-            st.markdown("**What is the Barrett Score?**")
+        with st.popover("What is the Barrett Score?"):
             st.markdown(BARRETT_EXPLAINER_MD)
 
 
