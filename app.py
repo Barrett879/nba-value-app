@@ -434,7 +434,7 @@ st.markdown("""
     font-size: 0.7rem;
     color: var(--fg-2);
     text-align: center;
-    margin: 0.6rem 0 0.3rem;
+    margin: 0.6rem 0 -0.35rem;
     letter-spacing: 0.04em;
 }
 </style>
@@ -496,7 +496,7 @@ with _search_col:
         # by normalized name and stays up, which is the consistent state.
         del st.query_params["player"]
 
-st.markdown("<div style='margin-top:0.8rem'></div>", unsafe_allow_html=True)
+st.markdown("<div style='margin-top:1.4rem'></div>", unsafe_allow_html=True)
 
 # Same "What is the Barrett Score?" expander every inner page shows.
 render_barrett_score_explainer()
