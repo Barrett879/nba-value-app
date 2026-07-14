@@ -182,6 +182,14 @@ if _miss.any():
     fa_df.loc[_miss, "Status"] = fa_df.loc[_miss, "Player"].map(_signing_status)
 fa_df = fa_df[fa_df["Status"].notna()].copy()
 
+# This is a FREE AGENT board: drop players who never actually reached the market
+# because they opted INTO a player option (po_in) or had a team option PICKED UP
+# (to_in). Everyone who genuinely became a free agent stays -- UFAs, RFAs, PO
+# opt-outs, TO declines -- whether still available or since re-signed.
+_stayed = fa_df["Player"].map(
+    lambda p: _decisions.get(normalize(p), (None, None))[0] in ("po_in", "to_in"))
+fa_df = fa_df[~_stayed].copy()
+
 n_ufa = (fa_df["Status"] == "UFA").sum()
 n_rfa = (fa_df["Status"] == "RFA").sum()
 n_po  = (fa_df["Status"] == "Player Option").sum()
