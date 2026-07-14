@@ -20,7 +20,6 @@
 player,team,years,total_M,yr1_M,type,signed_date,source,note
 Collin Gillespie,PHX,4,48,10.71,resign,2026-07,SalarySwish + Spotrac (4yr/$48M; 2026-27 = $10;714;286),corrected via Spotrac verify: Marginal overstatement. Team/type/years/total ($48M) all correct; but actual 202
 Jordan Goodwin,PHX,3,19,5.8,resign,2026-06,NBC,3yr/$19M re-sign (starts $5.8M; yr3 player option $6.8M)
-CJ McCollum,ATL,1,21,21.0,extension,2026-06,NBA,1yr/$21M extension to stay in Atlanta (trade kicker)
 Trae Young,WAS,4,212,47.3,resign,2026-06,ESPN,declined option; 4yr/$212M max re-sign (yr1 ~8% raises) - VERIFY
 Ayo Dosunmu,MIN,5,112,19.31,resign,2026-07,Spotrac + SalarySwish (2026-27 base $19;310;345; 8% ascendin,corrected via Spotrac verify: Recorded $20.4M assumes ~5% raises; this is a Bird re-sign with 8% raises; so th
 Austin Reaves,LAL,4,180,41.24,resign,2026-07,SalarySwish ($41;240;250) / ESPN / CBS / Heavy (starts at $4,corrected via Spotrac verify: Actual 2026-27 first-year salary is $41;240;250 ($41.24M); not $41.98M — a $0.74
@@ -28,7 +27,6 @@ Coby White,CHA,3,74,26.81,resign,2026-07,SalarySwish + Spotrac (2026-27 base $26
 Mark Williams,PHX,3,38,12.1,rfa,2026-06,ESPN,3yr/$38M RFA re-sign with Phoenix (fully guaranteed)
 Al Horford,GSW,2,14,6.8,resign,2026-06,ESPN,2yr/$14M re-sign with Golden State (yr2 structure disputed: option vs guaranteed)
 Mohamed Diawara,NYK,4,11.28,2.6,resign,2026-07,Spotrac (id 99263); Hoops Rumors 'Knicks; Mohamed Diawara Fi,corrected via Spotrac verify: Recorded as 2yr/$3.6M with yr1 $1.8M; but Diawara signed a 4-year; $11;278;738 s
-Isaiah Hartenstein,OKC,3,75,23.15,extension,2026-07,Spotrac (2026 cap hit $23;148;148); ESPN / NBA.com / Bleache,corrected via Spotrac verify: Actual 2026-27 salary is $23;148;148 (~$23.15M) per Spotrac; ascending 8% over t
 Jose Alvarado,NYK,3,14,4.3,resign,2026-06,ESPN,3yr/$14M re-sign (declined $4.5M option); yr1 ~$4.293M per report
 Day'Ron Sharpe,BKN,2,20,9.8,resign,2026-06,ESPN,2yr/$20M re-sign (declined $6.25M option; yr2 team option); yr1 est
 Josh Minott,BKN,2,9,4.4,resign,2026-06,ESPN,2yr/$9M re-sign (yr2 team option); yr1 est
@@ -78,12 +76,8 @@ DeAndre Jordan,NOP,1,3.88,3.88,ufa,2026-07,Spotrac,1yr vet-minimum with New Orle
 Larry Nance Jr.,IND,1,4,4,ufa,2026-07,ESPN,1yr/$4M with Indiana
 Trey Lyles,MIN,1,3.88,3.88,ufa,2026-07,ESPN,1yr/$3.88M with Minnesota
 Josh Okogie,UTA,2,12,5.9,ufa,2026-07,ESPN,2yr/$12M with Utah; yr1 est
-Donovan Mitchell,CLE,4,273,50.11,extension,2026-07,Spotrac / SalarySwish / NBA.com. 2026-27 salary = $50;105;62,corrected via Spotrac verify: Extension error. The extension does NOT pay out in 2026-27 - his actual 2026-27 
-Victor Wembanyama,SAS,5,252,16.9,extension,2026-07,ESPN/NBC Sports: extension begins 2027-28; Wemby earns $16.9,corrected via Spotrac verify: Extension-start trap: recorded $45.61M is the FIRST YEAR OF THE EXTENSION (2027-
 Tari Eason,HOU,5,81.5,14.05,rfa,2026-07,SalarySwish year-by-year (2026-27 base $14;053;356; total $8,corrected via Spotrac verify: Recorded $14.75M assumes ~5% raises ($81.5M/5.5); actual 2026-27 base is $14.05M
 Gary Trent Jr.,MIL,4,64,14.85,resign,2026-07,multi,4-yr $64M re-sign (NBA.com)
-Andrew Wiggins,MIA,3,64,30.2,extension,2026-07,ESPN / NBA.com / HotHotHoops / ClutchPoints / Yahoo: opted i,corrected via Spotrac verify: Recorded $20.3M is not the actual 2026-27 salary. This is an opt-in-and-extend: 
-Neemias Queta,BOS,4,56,2.67,extension,2026-07,Spotrac + HoopsRumors + ESPN (option $2;667;944 for 2026-27;,corrected via Spotrac verify: Extension-starts-in-future-season error. The 4yr/$56M extension does NOT begin u
 Rui Hachimura,LAC,2,28,13.66,ufa,2026-07,multi,2-yr $28M (from Lakers)
 Jordan Miller,LAC,3,15.3,4.85,resign,2026-07,multi,3-yr $15.3M re-sign (NBA.com roundup card)
 Anfernee Simons,PHI,2,12.25,6.12,ufa,2026-07,multi,2-yr $12;247;178; player option yr2; yr1 ~$6.12M

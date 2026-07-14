@@ -1,11 +1,11 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 86,
-  "within_4M": 76,
-  "within_5cap": 91,
-  "median_err_M": 1.9,
-  "bias_M": 0.2
+  "n": 80,
+  "within_4M": 80,
+  "within_5cap": 94,
+  "median_err_M": 1.8,
+  "bias_M": -0.2
  },
  "signings": [
   {
@@ -85,22 +85,6 @@
    "low_M": 0.5,
    "high_M": 5.9,
    "delta_M": 0.6,
-   "in4": true,
-   "in5cap": true
-  },
-  {
-   "player": "Isaiah Hartenstein",
-   "team": "OKC",
-   "deal": "3yr/$75M",
-   "years": 3,
-   "total_M": 75.0,
-   "actual_M": 23.1,
-   "type": "extension",
-   "date": "2026-07",
-   "model_M": 23.3,
-   "low_M": 15.4,
-   "high_M": 31.2,
-   "delta_M": 0.2,
    "in4": true,
    "in5cap": true
   },
@@ -676,38 +660,6 @@
    "in5cap": true
   },
   {
-   "player": "Donovan Mitchell",
-   "team": "CLE",
-   "deal": "4yr/$273M",
-   "years": 4,
-   "total_M": 273.0,
-   "actual_M": 50.1,
-   "type": "extension",
-   "date": "2026-07",
-   "model_M": 57.8,
-   "low_M": 51.9,
-   "high_M": 63.6,
-   "delta_M": 7.7,
-   "in4": false,
-   "in5cap": true
-  },
-  {
-   "player": "Victor Wembanyama",
-   "team": "SAS",
-   "deal": "5yr/$252M",
-   "years": 5,
-   "total_M": 252.0,
-   "actual_M": 16.9,
-   "type": "extension",
-   "date": "2026-07",
-   "model_M": 49.5,
-   "low_M": 43.6,
-   "high_M": 55.4,
-   "delta_M": 32.6,
-   "in4": false,
-   "in5cap": false
-  },
-  {
    "player": "Tari Eason",
    "team": "HOU",
    "deal": "5yr/$81.5M",
@@ -736,38 +688,6 @@
    "low_M": 0.6,
    "high_M": 6.5,
    "delta_M": -11.3,
-   "in4": false,
-   "in5cap": false
-  },
-  {
-   "player": "Andrew Wiggins",
-   "team": "MIA",
-   "deal": "3yr/$64M",
-   "years": 3,
-   "total_M": 64.0,
-   "actual_M": 30.2,
-   "type": "extension",
-   "date": "2026-07",
-   "model_M": 19.1,
-   "low_M": 10.2,
-   "high_M": 27.9,
-   "delta_M": -11.1,
-   "in4": false,
-   "in5cap": false
-  },
-  {
-   "player": "Neemias Queta",
-   "team": "BOS",
-   "deal": "4yr/$56M",
-   "years": 4,
-   "total_M": 56.0,
-   "actual_M": 2.7,
-   "type": "extension",
-   "date": "2026-07",
-   "model_M": 18.8,
-   "low_M": 9.9,
-   "high_M": 27.7,
-   "delta_M": 16.1,
    "in4": false,
    "in5cap": false
   },
@@ -1132,22 +1052,6 @@
    "high_M": 15.1,
    "delta_M": 3.0,
    "in4": true,
-   "in5cap": true
-  },
-  {
-   "player": "CJ McCollum",
-   "team": "ATL",
-   "deal": "1yr/$21M",
-   "years": 1,
-   "total_M": 21.0,
-   "actual_M": 21.0,
-   "type": "extension",
-   "date": "2026-06",
-   "model_M": 13.8,
-   "low_M": 5.6,
-   "high_M": 22.0,
-   "delta_M": -7.2,
-   "in4": false,
    "in5cap": true
   },
   {
