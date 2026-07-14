@@ -1,10 +1,10 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 80,
+  "n": 81,
   "within_4M": 80,
   "within_5cap": 94,
-  "median_err_M": 1.8,
+  "median_err_M": 1.7,
   "bias_M": -0.2
  },
  "signings": [
@@ -1035,6 +1035,22 @@
    "low_M": 0.3,
    "high_M": 5.3,
    "delta_M": 2.2,
+   "in4": true,
+   "in5cap": true
+  },
+  {
+   "player": "Isaiah Hartenstein",
+   "team": "OKC",
+   "deal": "3yr/$75M",
+   "years": 3,
+   "total_M": 75.0,
+   "actual_M": 23.1,
+   "type": "resign",
+   "date": "2026-07",
+   "model_M": 23.3,
+   "low_M": 15.4,
+   "high_M": 31.2,
+   "delta_M": 0.2,
    "in4": true,
    "in5cap": true
   },
