@@ -16,6 +16,7 @@
 #   note        = free text
 #
 # Add a row each time a real signing is reported. Lines starting with # are ignored.
+# Verified 2026-07-10 (deals through July 10, 2026; Spotrac/ESPN/Hoops Rumors).
 player,team,years,total_M,yr1_M,type,signed_date,source,note
 Collin Gillespie,PHX,4,48,11.2,resign,2026-06,ESPN,4yr/$48M return to Phoenix (undrafted, 3 yrs two-way)
 Jordan Goodwin,PHX,3,19,5.8,resign,2026-06,NBC,3yr/$19M re-sign (starts $5.8M; yr3 player option $6.8M)
@@ -70,3 +71,8 @@ Jaxson Hayes,UTA,2,12,5.9,ufa,2026-07,ESPN,2yr/$12M with Utah (yr2 team option);
 Alijah Martin,TOR,2,4.8,2.3,resign,2026-07,ESPN,2yr/$4.8M RFA re-sign with Toronto (off two-way); yr1 est
 Kobe Sanders,LAC,4,11.2,2.7,resign,2026-07,ESPN,4yr/$11.2M re-sign with the Clippers (TO declined; first 2 yrs gtd); yr1 est
 Bogdan Bogdanović,HOU,1,3.6,3.6,ufa,2026-07,ESPN,1yr vet-minimum with Houston (~$3.6M CBA figure; LAC declined $16M TO)
+Khris Middleton,WAS,3,17.6,5.59,ufa,2026-07,ESPN,3yr/$17.6M S&T from Dallas; yr1 $5.59M fully gtd (yr2 partial, yr3 non-gtd)
+Quinten Post,MEM,3,30,9.5,rfa,2026-07,ESPN,3yr/$30M offer sheet; GSW declined to match; yr1 est
+Ayo Dosunmu,MIN,5,112,20.4,ufa,2026-07,ESPN,5yr/$112M with Minnesota; yr1 est (~5% raises)
+Kevin Huerter,DET,3,27,8.6,ufa,2026-07,ESPN,3yr/$27M with Detroit; yr1 est
+Jusuf Nurkić,UTA,2,22,10.7,ufa,2026-07,ESPN,2yr/$22M return to Utah; yr1 est

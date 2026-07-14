@@ -2,10 +2,25 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import json
+
 import streamlit as st
 from utils import (
     render_nav, render_page_chrome, render_rail, render_footer, _bootstrap_warm,
 )
+
+
+def _accuracy_phrase() -> str:
+    """Live "N% of M deals within $4M" phrase from the accuracy tracker, so the
+    About copy never drifts from the homepage figure."""
+    try:
+        sc = (json.loads((Path(__file__).parent.parent / "cache"
+                          / "accuracy_tracker_v1.json").read_text()).get("scorecard") or {})
+        if sc.get("n"):
+            return f"about {sc['within_4M']:.0f}% of the {sc['n']} tracked deals so far come in"
+    except Exception:
+        pass
+    return "most tracked deals so far come in"
 
 st.set_page_config(page_title="About", page_icon="static/favicon.svg", layout="wide")
 
@@ -41,7 +56,7 @@ st.markdown(
     "toward comparable players so each estimate stays anchored to the market. We "
     "test it the fair way, on deals it never saw during training, using "
     "expanding-window temporal cross-validation, and we score it against real "
-    "2026 signings as they land. So far about 75% of tracked deals come in within "
+    f"2026 signings as they land. So far {_accuracy_phrase()} within "
     "\\$4M of the actual contract, a figure that updates as the offseason tracker "
     "grows."
 )
