@@ -346,7 +346,9 @@ for _rk, (_, _r) in enumerate(_top10.iterrows(), start=1):
 
 st.markdown("""
 <style>
-.t10-wrap{display:flex;flex-direction:column;margin:.2rem 0 .4rem;}
+/* bottom padding oversized to outrun Streamlit 1.51's -16px stMarkdownContainer
+   margin, netting ~20px of visible air above the caption */
+.t10-wrap{display:flex;flex-direction:column;margin:.2rem 0 0;padding-bottom:2.3rem;}
 a.t10-row{display:flex;align-items:center;gap:.6rem;padding:.34rem .4rem;
     border-radius:8px;text-decoration:none;}
 a.t10-row:hover{background:var(--panel-hover);}
