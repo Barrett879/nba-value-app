@@ -297,6 +297,9 @@ color:var(--muted);font-weight:700;padding:12px 12px;border-bottom:1px solid var
 padding:2px 8px;border-radius:20px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
 .rc-rs{color:var(--teal);border-color:var(--teal)}
 .rc-ns{color:var(--orange);border-color:var(--orange)}
+.rc-pj{border-style:dashed}
+.uns{color:var(--muted);font-size:13.5px;margin:14px 2px 0}
+.uns b{color:var(--ink)}
 .note{color:var(--muted);font-size:13px;margin:16px 2px 30px;max-width:680px}
 .teams{margin-top:34px;padding-top:20px;border-top:1px solid var(--line)}
 .teams h2{font-size:13px;letter-spacing:.5px;text-transform:uppercase;
@@ -308,10 +311,16 @@ footer{margin-top:40px;color:var(--muted);font-size:13px;text-align:center}
 """.strip()
 
 
-_ROLE_LABEL = {"Under contract": ("Under contract", ""),
-               "Re-sign": ("Re-sign", " rc-rs"),
-               "New signing": ("New signing", " rc-ns"),
-               "Draft pick": ("Rookie", "")}
+def _role_chip(role: str, real: bool):
+    """Status chip label+class. Real deals read as facts ('Re-signed'/'Signed');
+    a model guess for a still-unsigned FA is explicitly 'Projected' (dashed)."""
+    if role == "Re-sign":
+        return ("Re-signed", " rc-rs") if real else ("Projected re-sign", " rc-rs rc-pj")
+    if role == "New signing":
+        return ("Signed", " rc-ns") if real else ("Projected signing", " rc-ns rc-pj")
+    if role == "Draft pick":
+        return ("Rookie", "")
+    return (role, "")
 
 
 def team_page_html(abbr: str):
@@ -329,8 +338,10 @@ def team_page_html(abbr: str):
         esc = lambda s: _html.escape(str(s), quote=True)  # noqa: E731
 
         rows = []
+        n_proj = sum(1 for p in team["players"]
+                     if p.get("role") in ("Re-sign", "New signing") and not p.get("real", True))
         for i, p in enumerate(team["players"], start=1):
-            rlabel, rcls = _ROLE_LABEL.get(p.get("role", ""), (p.get("role", ""), ""))
+            rlabel, rcls = _role_chip(p.get("role", ""), p.get("real", True))
             bar = p.get("barrett")
             bcell = (f'<span class="sc">{bar:.1f}</span>' if isinstance(bar, (int, float))
                      else '<span class="fair">&mdash;</span>')
@@ -365,10 +376,10 @@ def team_page_html(abbr: str):
                       else f'{_money(-room)} over the second apron')
         else:
             aproom = ""
-        title = f"{name} Projected {cseason} Roster, Salaries & Value | HoopsValue"
-        desc = (f"The projected {cseason} {name} roster: every player, what they are paid, "
-                f"and what they are worth by the Barrett Score. See the bargains and "
-                f"overpays heading into next season.")
+        title = f"{name} {cseason} Roster, Salaries & Value | HoopsValue"
+        desc = (f"The {cseason} {name} roster: every contract and reported signing, what "
+                f"each player is paid, and what they are worth by the Barrett Score. See "
+                f"the bargains and overpays heading into next season.")
         t_e, d_e = esc(title), esc(desc)
         url = f"https://hoopsvalue.com/team/{abbr}"
 
@@ -394,14 +405,16 @@ def team_page_html(abbr: str):
             '<nav class="top"><a href="/Rankings">Rankings</a>'
             '<a href="/Team_Analysis">Team Analysis</a>'
             '<a href="/Free_Agent_Class">Free Agents</a></nav></header>'
-            f"<h1>{esc(name)} &mdash; Projected {esc(cseason)} Roster</h1>"
-            f'<p class="sub">Every player projected on the {esc(name)} for {esc(cseason)}, '
-            f"what they are paid, and how that stacks up against their value. Value reflects "
-            f"each player&rsquo;s {esc(vseason)} season, the latest one played &mdash; "
-            f"{esc(cseason)} has not started yet.</p>"
+            f"<h1>{esc(name)} &mdash; {esc(cseason)} Roster</h1>"
+            f'<p class="sub">The {esc(name)} roster for {esc(cseason)}: contracts on the '
+            f"books and reported free-agency signings"
+            + (", plus the model&rsquo;s projection for spots still unfilled" if n_proj else "")
+            + f". Value reflects each player&rsquo;s {esc(vseason)} season, the latest one "
+            f"played &mdash; {esc(cseason)} has not started yet.</p>"
             f'<p class="tot">{team["size"]} players <span>·</span> '
-            f'{_money(team["payroll"])} projected payroll'
-            + (f' <span>·</span> {aproom}' if aproom else "") + '</p>'
+            f'{_money(team["payroll"])} payroll'
+            + (f' <span>·</span> {aproom}' if aproom else "")
+            + (f' <span>·</span> {n_proj} still projected' if n_proj else "") + '</p>'
             '<table class="tbl"><thead><tr>'
             '<th class="num">#</th><th>Player</th><th>Status</th>'
             '<th class="num">Barrett Score</th>'
@@ -409,12 +422,22 @@ def team_page_html(abbr: str):
             '<th class="num">Value</th></tr></thead><tbody>'
             + "".join(rows) +
             "</tbody></table>"
-            '<p class="note">Roster and salaries are projected for '
-            f"{esc(cseason)} (under contract, re-signs, signings, and draft picks). The "
-            "Barrett Score and value reflect each player&rsquo;s "
+            + ("".join([
+                '<p class="uns">Still unsigned: ' + ", ".join(
+                    f'<b><a href="/?player={_urlq(u["n"])}">{esc(u["n"])}</a></b>'
+                    + (f' ({u["barrett"]:.1f} Barrett Score)'
+                       if isinstance(u.get("barrett"), (int, float)) else "")
+                    for u in team.get("unsigned", [])) +
+                " &mdash; no reported deal yet, and no open roster spot here.</p>"])
+               if team.get("unsigned") else "")
+            + '<p class="note">Roster and salaries reflect real '
+            f"{esc(cseason)} contracts and free-agency signings reported so far"
+            + ("; moves marked Projected are the model&rsquo;s best guess for spots "
+               "not yet filled" if n_proj else "")
+            + ". The Barrett Score and value reflect each player&rsquo;s "
             f"{esc(vseason)} on-court production &mdash; the most recent season played &mdash; "
             "since next season&rsquo;s games have not happened. Value is what that production "
-            "is worth at the going rate; the verdict compares it to the projected salary. "
+            "is worth at the going rate; the verdict compares it to the salary. "
             "Click any player for their full contract prediction.</p>"
             f'<div class="teams"><h2>Browse every team</h2>{others}</div>'
             '<footer><a href="/">HoopsValue</a> · NBA player value and contract '

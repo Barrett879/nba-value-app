@@ -1,13 +1,14 @@
-"""Precompute crawlable team-page data: each team's PROJECTED 2026-27 roster.
+"""Precompute crawlable team-page data: each team's 2026-27 roster, reality-first.
 
 Source of truth is scripts/export_fa_spreadsheet.py, which assembles the
-cap-aware 2026-27 rosters (under contract + re-signs + new signings + draft
-picks, 15-man cap, apron rules) and dumps cache/team_rosters_2627.json. This
-script joins each player's market value so the page can show a value verdict,
-then writes cache/team_pages.json for serve.py to render at /team/<ABBR>.
+2026-27 rosters from real contracts + REPORTED real signings (the verified
+tracker), with the model projecting only still-unsigned spots, and dumps
+cache/team_rosters_2627.json. This script joins each player's market value so
+the page can show a value verdict, then writes cache/team_pages.json for
+serve.py to render at /team/<ABBR>.
 
-Roster and salaries are 2026-27; value/Barrett Score reflect 2025-26 (the latest
-season actually played -- next season hasn't happened yet).
+Roster and salaries are 2026-27 (real where reported, marked projected where
+not); value/Barrett Score reflect 2025-26 (the latest season actually played).
 
 Pipeline: run export_fa_spreadsheet.py FIRST (it dumps the roster JSON), then
 this. Re-run both after the FA projection / signings update.
@@ -47,10 +48,12 @@ def main() -> None:
                 "salary": sal,
                 "value": round(val, 1) if val is not None else None,
                 "vd": vd,  # salary - market value; >0 overpay, <0 bargain
+                "real": p.get("real", True),  # False = projected move for an unsigned FA
             })
         players.sort(key=lambda x: -(x["salary"] or 0))  # stars first
         teams[abbr] = {"abbr": abbr, "name": t["name"], "size": t["size"],
-                       "payroll": t["total"], "room": t["room"], "players": players}
+                       "payroll": t["total"], "room": t["room"], "players": players,
+                       "unsigned": t.get("unsigned", [])}
 
     payload = {
         "value_season": ros["value_season"],

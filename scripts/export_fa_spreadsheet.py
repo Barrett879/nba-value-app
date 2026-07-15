@@ -194,6 +194,41 @@ if _ms.exists():
             "status": "UFA", "incumbent": inc, "_forced": True,
             "realistic": {"predicted": tm, "is_resign": resign, "offer_M": round(offer, 1), "alts": []}})
 
+# ── REAL 2026 signings (data/real_signings_2026.csv): reported deals are FACTS,
+# not projections. A real deal overrides the model's projected destination
+# outright: the player goes to his actual team at his actual first-year salary,
+# flagged _real so he can never be trimmed or re-routed, and the page can label
+# him "Signed" instead of "Projected". The sim keeps projecting only the
+# still-unsigned pool. The projection MODEL stays pure — this layers reality on
+# top for roster display, exactly what the tracker was built to enable.
+real_set = set()
+_rs = ROOT / "data" / "real_signings_2026.csv"
+if _rs.exists():
+    for r in csv.DictReader([l for l in _rs.read_text().splitlines() if not l.lstrip().startswith("#")]):
+        pl = (r.get("player") or "").strip()
+        tm = ABBR_FIX.get((r.get("team") or "").strip(), (r.get("team") or "").strip())
+        rtyp = (r.get("type") or "").strip().lower()
+        if not pl or tm not in TEAMS or rtyp == "extension":   # extensions: already under contract
+            continue
+        n = normalize(pl)
+        if n in real_set:
+            continue
+        try:
+            yr1 = float((r.get("yr1_M") or "").strip())
+        except ValueError:
+            continue
+        real_set.add(n)
+        fa_pool.add(n)                              # drops any stale under-contract row (decline-and-resign)
+        for t2 in list(sim_by_team):                # kill the model's projected placement anywhere
+            sim_by_team[t2] = [p for p in sim_by_team[t2] if normalize(p["player"]) != n]
+        inc = cur_team(n) or tm
+        sim_by_team[tm].append({
+            "player": disp.get(n, pl), "pos": pos_map.get(n, "—"), "barrett": bar_map.get(n),
+            "status": "UFA", "incumbent": inc, "_forced": True, "_real": True,
+            "realistic": {"predicted": tm, "is_resign": rtyp == "resign" or inc == tm,
+                          "offer_M": round(yr1, 1), "alts": []}})
+print(f"real signings layered onto rosters: {len(real_set)}")
+
 _STAT = {"guaranteed": "Signed", "player_option": "Player Option", "team_option": "Team Option"}
 
 # ── COMPLETE under-contract roster: every 2026-27 contract that isn't a free agent ──
@@ -243,21 +278,28 @@ for tm in team_order:
     # re-routes apron-aware. Re-signs (Bird) and minimums are apron-exempt and stay.
     base = sum(x[2] for x in uc) + sum((m.get("cost_M") or 0) for m in kept_first + seconds)
     plan_uc[tm], plan_picks[tm] = uc, kept_first + seconds
-    kept = ranked[:spots]
-    overflow.extend(ranked[spots:])
+    # Real deals are FACTS: they always stick, even past the 15-man count (an
+    # over-15 roster is the audit's signal that the under-contract feed is stale
+    # -- fix via roster_corrections -- not a reason to drop a reported signing).
+    # Projected moves fill only the spots reality leaves open.
+    real_mv = [p for p in ranked if p.get("_real")]
+    proj_mv = [p for p in ranked if not p.get("_real")]
+    kept = real_mv + proj_mv[:max(0, spots - len(real_mv))]
+    overflow.extend(proj_mv[max(0, spots - len(real_mv)):])
     base = round(base + sum(p["realistic"]["offer_M"] for p in kept), 1)
     # Hard cap: a non-minimum OUTSIDE signing can't leave the team over the 2nd apron
     # (no exception exists up there). Pull the cheapest such signing until the team is
     # legal; it overflows and re-routes apron-aware. Bird re-signs and veteran minimums
     # over the apron are allowed, so they're never cut.
     while base > AP2:
-        cuts = [p for p in kept if not p["realistic"]["is_resign"] and p["realistic"]["offer_M"] > MIN_FILL]
+        cuts = [p for p in kept if not p.get("_real")   # a reported real deal is a fact, never trimmed
+                and not p["realistic"]["is_resign"] and p["realistic"]["offer_M"] > MIN_FILL]
         if not cuts:
             break
         worst = min(cuts, key=lambda p: p["realistic"]["offer_M"])
         kept.remove(worst); overflow.append(worst); base = round(base - worst["realistic"]["offer_M"], 1)
     plan_moves[tm] = kept
-    open_left[tm] = spots - len(kept)
+    open_left[tm] = max(0, spots - len(kept))
     team_total[tm] = base
 overflow.extend(displaced)                                                       # manually-bumped players re-route too
 overflow.extend(blocked_players)                                                 # blocked signings re-route elsewhere
@@ -290,6 +332,12 @@ def _bump_share(t, pos):
         if q in (pos or ""):
             share[t][q] += 1
 for p in sorted(overflow, key=lambda p: -p["realistic"]["offer_M"]):
+    # Reality-first: a PROJECTED move displaced by real deals is just an unsigned
+    # free agent -- inventing a new team for him (the pre-July re-route) reads as
+    # nonsense once actual rosters are set. He falls through to the unsigned
+    # list instead. Only manual force-signings still re-route.
+    if not p.get("_forced"):
+        continue
     inc = ABBR(p["incumbent"]); prim = _prim(p["pos"])
     alts = {a["team"]: a["offer_M"] for a in p["realistic"].get("alts", [])}
     base_off = p["realistic"]["offer_M"]
@@ -351,26 +399,6 @@ for tm in team_order:
                "total": round(sum(r[7] or 0 for r in rs), 1), "size": len(rs) - len(twoway),
                "room": round(AP2 - sum(r[7] or 0 for r in rs), 1)}
 
-# ── Dump the assembled projected 2026-27 rosters for the crawlable /team/<ABBR>
-# pages (scripts/build_team_pages.py renders from this, so the pages and this
-# workbook stay one source of truth). Written here, before the xlsx save, so it
-# still lands if the workbook write is blocked. ───────────────────────────────────
-import json as _json
-_ros = {"value_season": sim.get("season", "2025-26"),
-        "contract_season": sim.get("contract_season", "2026-27"),
-        "cap_M": CAP, "apron2_M": AP2, "teams": {}}
-for _tm in team_order:
-    _rows = [r for r in detail if r[0] == _tm]
-    _ros["teams"][_tm] = {
-        "abbr": _tm, "name": TEAMS[_tm]["name"],
-        "total": agg[_tm]["total"], "size": agg[_tm]["size"], "room": agg[_tm]["room"],
-        "players": [{"n": r[1], "role": r[3], "pos": r[2], "prev": r[5],
-                     "barrett": r[6], "salary": r[7]} for r in _rows],
-    }
-_ros_path = Path(__file__).resolve().parent.parent / "cache" / "team_rosters_2627.json"
-_ros_path.write_text(_json.dumps(_ros, separators=(",", ":")))
-print(f"wrote {_ros_path.name} ({len(team_order)} teams, {len(detail)} roster rows)")
-
 # ── 2026 free agents NOT on a 15-man roster ───────────────────────────────────────
 # Every player the main roster sheet can't show: free agents the projection pool
 # never ranked (depth / minimum / two-way level), plus any projected signing the
@@ -398,6 +426,37 @@ for _tm, _nm in declined:                                                       
             if opt else "team option declined - now a free agent")
     fa_rows.append([_tm, disp.get(n, _nm), pos_map.get(n, "—"), bar_map.get(n), None, None, note])
 fa_rows.sort(key=lambda r: (r[0], -(r[4] or r[3] or 0)))
+
+# ── Dump the assembled 2026-27 rosters for the crawlable /team/<ABBR> pages
+# (scripts/build_team_pages.py renders from this, so the pages and this workbook
+# stay one source of truth). Sits after fa_rows so each team also carries its
+# notable STILL-UNSIGNED free agents (e.g. an incumbent star without a reported
+# deal whose old team is already full). Before the xlsx save, so it still lands
+# when the workbook write is blocked. ─────────────────────────────────────────────
+import json as _json
+_ros = {"value_season": sim.get("season", "2025-26"),
+        "contract_season": sim.get("contract_season", "2026-27"),
+        "cap_M": CAP, "apron2_M": AP2, "teams": {}}
+for _tm in team_order:
+    _rows = [r for r in detail if r[0] == _tm]
+    _uns = [{"n": x[1], "barrett": x[3]} for x in fa_rows
+            if x[0] == _tm and (x[3] or 0) >= 8.0]        # rotation-level only
+    _ros["teams"][_tm] = {
+        "abbr": _tm, "name": TEAMS[_tm]["name"],
+        "total": agg[_tm]["total"], "size": agg[_tm]["size"], "room": agg[_tm]["room"],
+        "players": [{"n": r[1], "role": r[3], "pos": r[2], "prev": r[5],
+                     "barrett": r[6], "salary": r[7],
+                     # signings/re-signs: True = reported real deal, False = model
+                     # projection for a still-unsigned FA. Contracts/picks are facts.
+                     "real": (normalize(r[1]) in real_set
+                              if r[3] in ("Re-sign", "New signing") else True)}
+                    for r in _rows],
+        "unsigned": sorted(_uns, key=lambda u: -(u["barrett"] or 0)),
+    }
+_ros_path = Path(__file__).resolve().parent.parent / "cache" / "team_rosters_2627.json"
+_ros_path.write_text(_json.dumps(_ros, separators=(",", ":")))
+print(f"wrote {_ros_path.name} ({len(team_order)} teams, {len(detail)} roster rows, "
+      f"{sum(len(t['unsigned']) for t in _ros['teams'].values())} notable unsigned)")
 
 # ── styles ──────────────────────────────────────────────────────────────────────
 FONT = "Arial"
@@ -635,15 +694,28 @@ if _epath.exists():
         n = normalize(p["player"])
         if p["value_M"] >= ROT and n not in rostered_n and n not in held:        # held-out players are intentional
             n_roster = sum(1 for m, pk in p["picks"].items() if pk["team"])      # lenses that place him
-            issues.append(f"UNSIGNED rotation FA: {p['player']} (${p['value_M']}M, {n_roster} models roster him)")
+            if n in fa_n:
+                # Reality-first: he's ON the unsigned list, which mid-offseason is a
+                # FACT (no reported deal yet), not projection nonsense. Info, not issue.
+                print(f"  still unsigned (reality): {p['player']} (${p['value_M']}M value, no reported deal)")
+            else:
+                issues.append(f"GHOST rotation FA (on no roster AND no unsigned list): "
+                              f"{p['player']} (${p['value_M']}M, {n_roster} models roster him)")
 for tm in team_order:
     if agg[tm]["size"] > 15:
         issues.append(f"ROSTER OVER 15: {tm} = {agg[tm]['size']}")
 for r in detail:
     # over the 2nd apron a team has NO exceptions, so a non-minimum new signing there is illegal
     # (Bird re-signs and veteran minimums over the apron are allowed and not flagged).
+    # A REPORTED real deal is exempt: reality is legal by definition, so an apron overage
+    # there means OUR payroll data has drifted (stale under-contract feed), not that the
+    # signing is nonsense -- surfaced as drift, not as a projection error.
     if r[3] == "New signing" and (r[7] or 0) > 3.0 and agg[r[0]]["total"] > AP2 + 0.5:
-        issues.append(f"OVER 2ND APRON via a ${r[7]}M signing: {r[1]} on {r[0]} (team ${agg[r[0]]['total']}M, no exception over the apron)")
+        if normalize(r[1]) in real_set:
+            print(f"  payroll drift note: real signing {r[1]} on {r[0]} shows team at "
+                  f"${agg[r[0]]['total']}M (> 2nd apron) -- check under-contract feed for {r[0]}")
+        else:
+            issues.append(f"OVER 2ND APRON via a ${r[7]}M signing: {r[1]} on {r[0]} (team ${agg[r[0]]['total']}M, no exception over the apron)")
     if r[3] == "Under contract" and r[4] == "Signed":
         info = cey.get(normalize(r[1])) or {}
         if info.get("end_season") and info["end_season"] < "2026-27":
