@@ -1,0 +1,79 @@
+{
+ "cur_season": "2025-26",
+ "prev_season": "2024-25",
+ "min_floor": 1000,
+ "risers": [
+  {
+   "player": "Nickeil Alexander-Walker",
+   "team": "ATL",
+   "cur": 26.05,
+   "prev": 12.48,
+   "delta": 13.58
+  },
+  {
+   "player": "Stephon Castle",
+   "team": "SAS",
+   "cur": 26.47,
+   "prev": 14.12,
+   "delta": 12.35
+  },
+  {
+   "player": "Kawhi Leonard",
+   "team": "LAC",
+   "cur": 33.97,
+   "prev": 22.01,
+   "delta": 11.96
+  },
+  {
+   "player": "Jalen Johnson",
+   "team": "ATL",
+   "cur": 35.33,
+   "prev": 24.36,
+   "delta": 10.97
+  },
+  {
+   "player": "Donovan Clingan",
+   "team": "POR",
+   "cur": 22.89,
+   "prev": 12.01,
+   "delta": 10.87
+  }
+ ],
+ "fallers": [
+  {
+   "player": "Giannis Antetokounmpo",
+   "team": "MIL",
+   "cur": 28.53,
+   "prev": 44.76,
+   "delta": -16.23
+  },
+  {
+   "player": "Ivica Zubac",
+   "team": "IND",
+   "cur": 17.63,
+   "prev": 31.24,
+   "delta": -13.61
+  },
+  {
+   "player": "Malik Monk",
+   "team": "SAC",
+   "cur": 9.88,
+   "prev": 23.07,
+   "delta": -13.19
+  },
+  {
+   "player": "Tyler Herro",
+   "team": "MIA",
+   "cur": 18.5,
+   "prev": 30.56,
+   "delta": -12.06
+  },
+  {
+   "player": "Coby White",
+   "team": "CHA",
+   "cur": 14.87,
+   "prev": 25.82,
+   "delta": -10.95
+  }
+ ]
+}
