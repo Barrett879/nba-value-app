@@ -29,18 +29,38 @@ import re
 
 import streamlit
 
-MARKER = "hv-seo-v3"
-_OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2")
+MARKER = "hv-seo-v4"
+_OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2", "hv-seo-v3")
 
 TITLE = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
 DESC = ("HoopsValue scores every NBA player since 1973 by their on-court value "
         "and holds it up against their salary, so you can see who's actually "
         "worth their contract and who isn't.")
+# Crawlable body copy for the no-JS shell: this is most of the text Google reads
+# on a Streamlit SPA, so it carries the value prop in natural language (not
+# keyword stuffing) covering the searches the site actually answers.
+_BODY_COPY = (
+    "HoopsValue rates every NBA player with the Barrett Score, a single value "
+    "metric built from scoring, playmaking, rebounding, defense, efficiency, and "
+    "availability, then holds it up against the player's salary to reveal who is "
+    "underpaid, overpaid, or paid about right. Browse current NBA player rankings "
+    "by value, predict any player's next contract, follow the 2026 NBA free agency "
+    "class and free-agent signings, compare any two players head to head, rank "
+    "every team's roster by value, and trace player value and salaries back to 1973."
+)
+_BODY_Q = (
+    "HoopsValue helps answer questions like: which NBA players are the most "
+    "underpaid and overpaid, what a player is worth on the open market, how much a "
+    "free agent will sign for, and who offers the best contract value in the NBA."
+)
 PAGES = [
-    ("Contract_Predictor", "Contract Predictor: what any player would sign for today"),
-    ("Rankings", "Current Rankings: every NBA player by Barrett Score"),
-    ("Search", "Player Search"),
-    ("Legacy", "Legacy: the best players ever by Barrett Score"),
+    ("Contract_Predictor", "Contract Predictor: what any NBA player would sign for today"),
+    ("Rankings", "Current Rankings: every NBA player ranked by Barrett Score value"),
+    ("Free_Agent_Class", "2026 NBA Free Agent Class: who is available and what they are worth"),
+    ("Team_Analysis", "Team Analysis: every NBA roster ranked by value"),
+    ("Search", "Compare Players: head-to-head NBA player value"),
+    ("Legacy", "Legacy: the best NBA players ever by Barrett Score"),
+    ("About", "About HoopsValue and the Barrett Score"),
 ]
 FAVICON_TAG = '<link rel="icon" type="image/svg+xml" href="/app/static/favicon.svg" />'
 
@@ -97,9 +117,10 @@ def seo_html(html: str) -> str:
         )
         nav = "".join(f'<li><a href="/{slug}">{label}</a></li>' for slug, label in PAGES)
         body = (
-            "<noscript><header><h1>HoopsValue</h1>"
-            "<p>NBA player value, contract predictions, and rankings.</p></header>"
-            f"<main><p>{DESC}</p><ul>{nav}</ul></main></noscript>"
+            f"<noscript><header><h1>{TITLE}</h1>"
+            "<p>NBA player value, contract predictions, salary analysis, and rankings.</p></header>"
+            f"<main><p>{DESC}</p><p>{_BODY_COPY}</p><p>{_BODY_Q}</p>"
+            f"<ul>{nav}</ul></main></noscript>"
         )
         if "<title>Streamlit</title>" in html:
             html = html.replace("<title>Streamlit</title>", f"<title>{TITLE}</title>{head}")
