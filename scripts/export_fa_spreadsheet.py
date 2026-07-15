@@ -351,6 +351,26 @@ for tm in team_order:
                "total": round(sum(r[7] or 0 for r in rs), 1), "size": len(rs) - len(twoway),
                "room": round(AP2 - sum(r[7] or 0 for r in rs), 1)}
 
+# ── Dump the assembled projected 2026-27 rosters for the crawlable /team/<ABBR>
+# pages (scripts/build_team_pages.py renders from this, so the pages and this
+# workbook stay one source of truth). Written here, before the xlsx save, so it
+# still lands if the workbook write is blocked. ───────────────────────────────────
+import json as _json
+_ros = {"value_season": sim.get("season", "2025-26"),
+        "contract_season": sim.get("contract_season", "2026-27"),
+        "cap_M": CAP, "apron2_M": AP2, "teams": {}}
+for _tm in team_order:
+    _rows = [r for r in detail if r[0] == _tm]
+    _ros["teams"][_tm] = {
+        "abbr": _tm, "name": TEAMS[_tm]["name"],
+        "total": agg[_tm]["total"], "size": agg[_tm]["size"], "room": agg[_tm]["room"],
+        "players": [{"n": r[1], "role": r[3], "pos": r[2], "prev": r[5],
+                     "barrett": r[6], "salary": r[7]} for r in _rows],
+    }
+_ros_path = Path(__file__).resolve().parent.parent / "cache" / "team_rosters_2627.json"
+_ros_path.write_text(_json.dumps(_ros, separators=(",", ":")))
+print(f"wrote {_ros_path.name} ({len(team_order)} teams, {len(detail)} roster rows)")
+
 # ── 2026 free agents NOT on a 15-man roster ───────────────────────────────────────
 # Every player the main roster sheet can't show: free agents the projection pool
 # never ranked (depth / minimum / two-way level), plus any projected signing the

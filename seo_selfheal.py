@@ -293,6 +293,10 @@ color:var(--muted);font-weight:700;padding:12px 12px;border-bottom:1px solid var
 .sc{font-weight:700;color:var(--teal)}
 .good{color:var(--good);font-weight:600}.bad{color:var(--bad);font-weight:600}
 .fair{color:var(--muted)}
+.rc{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.02em;
+padding:2px 8px;border-radius:20px;white-space:nowrap;border:1px solid var(--line);color:var(--muted)}
+.rc-rs{color:var(--teal);border-color:var(--teal)}
+.rc-ns{color:var(--orange);border-color:var(--orange)}
 .note{color:var(--muted);font-size:13px;margin:16px 2px 30px;max-width:680px}
 .teams{margin-top:34px;padding-top:20px;border-top:1px solid var(--line)}
 .teams h2{font-size:13px;letter-spacing:.5px;text-transform:uppercase;
@@ -304,24 +308,38 @@ footer{margin-top:40px;color:var(--muted);font-size:13px;text-align:center}
 """.strip()
 
 
+_ROLE_LABEL = {"Under contract": ("Under contract", ""),
+               "Re-sign": ("Re-sign", " rc-rs"),
+               "New signing": ("New signing", " rc-ns"),
+               "Draft pick": ("Rookie", "")}
+
+
 def team_page_html(abbr: str):
-    """Return a full crawlable HTML page for the team abbreviation, or None if
-    the team is unknown. Never raises (returns None on any failure)."""
+    """Return a full crawlable HTML page for the team's PROJECTED 2026-27 roster,
+    or None if the team is unknown. Never raises (returns None on any failure)."""
     try:
         data = team_pages()
         abbr = (abbr or "").upper()
         team = data.get("teams", {}).get(abbr)
         if not team:
             return None
-        season = data.get("season", "")
+        vseason = data.get("value_season", "2025-26")
+        cseason = data.get("contract_season", "2026-27")
         name = team["name"]
-        tot = team["tot"]
         esc = lambda s: _html.escape(str(s), quote=True)  # noqa: E731
 
         rows = []
         for i, p in enumerate(team["players"], start=1):
-            vd = p["vd"]  # salary - market; >0 overpaid
-            if vd <= -2:
+            rlabel, rcls = _ROLE_LABEL.get(p.get("role", ""), (p.get("role", ""), ""))
+            bar = p.get("barrett")
+            bcell = (f'<span class="sc">{bar:.1f}</span>' if isinstance(bar, (int, float))
+                     else '<span class="fair">&mdash;</span>')
+            sal = p.get("salary")
+            scell = _money(sal) if isinstance(sal, (int, float)) else "&mdash;"
+            vd = p.get("vd")
+            if vd is None:
+                verdict = '<span class="fair">&mdash;</span>'
+            elif vd <= -2:
                 verdict = f'<span class="good">Underpaid {_money(-vd)}</span>'
             elif vd >= 2:
                 verdict = f'<span class="bad">Overpaid {_money(vd)}</span>'
@@ -331,9 +349,9 @@ def team_page_html(abbr: str):
             rows.append(
                 f'<tr><td class="num">{i}</td>'
                 f'<td><a class="pl" href="{href}">{esc(p["n"])}</a></td>'
-                f'<td class="num"><span class="sc">{p["s"]:.1f}</span></td>'
-                f'<td class="num">{_money(p["sal"])}</td>'
-                f'<td class="num">{_money(p["val"])}</td>'
+                f'<td><span class="rc{rcls}">{esc(rlabel)}</span></td>'
+                f'<td class="num">{bcell}</td>'
+                f'<td class="num">{scell}</td>'
                 f'<td class="num">{verdict}</td></tr>')
 
         # cross-links to every other team (link graph for crawlers)
@@ -341,10 +359,16 @@ def team_page_html(abbr: str):
             f'<a href="/team/{a}">{esc(t["abbr"])}</a>'
             for a, t in sorted(data.get("teams", {}).items()))
 
-        title = f"{name} Player Value & Contracts ({season}) | HoopsValue"
-        desc = (f"Every {name} player ranked by the Barrett Score and measured against "
-                f"their salary. See who is underpaid, overpaid, and what each player is "
-                f"worth on the {season} roster.")
+        room = team.get("room")
+        if isinstance(room, (int, float)):
+            aproom = (f'{_money(room)} under the second apron' if room >= 0
+                      else f'{_money(-room)} over the second apron')
+        else:
+            aproom = ""
+        title = f"{name} Projected {cseason} Roster, Salaries & Value | HoopsValue"
+        desc = (f"The projected {cseason} {name} roster: every player, what they are paid, "
+                f"and what they are worth by the Barrett Score. See the bargains and "
+                f"overpays heading into next season.")
         t_e, d_e = esc(title), esc(desc)
         url = f"https://hoopsvalue.com/team/{abbr}"
 
@@ -355,7 +379,7 @@ def team_page_html(abbr: str):
             f'<meta name="description" content="{d_e}"/>'
             '<meta name="robots" content="index, follow"/>'
             f'<link rel="canonical" href="{url}"/>'
-            '<link rel="icon" type="image/svg+xml" href="/app/static/favicon.svg"/>'
+            '<link rel="icon" type="image/svg+xml" href="/favicon.svg?v=2"/>'
             '<meta property="og:type" content="website"/>'
             f'<meta property="og:title" content="{t_e}"/>'
             f'<meta property="og:description" content="{d_e}"/>'
@@ -370,22 +394,28 @@ def team_page_html(abbr: str):
             '<nav class="top"><a href="/Rankings">Rankings</a>'
             '<a href="/Team_Analysis">Team Analysis</a>'
             '<a href="/Free_Agent_Class">Free Agents</a></nav></header>'
-            f"<h1>{esc(name)} Player Value &amp; Contracts</h1>"
-            f'<p class="sub">Every player on the {esc(name)} ranked by the Barrett Score '
-            f"and held up against what they are paid, {esc(season)}.</p>"
-            f'<p class="tot">{tot["n"]} players <span>·</span> {_money(tot["sal"])} payroll '
-            f'<span>·</span> {_money(tot["val"])} market value</p>'
+            f"<h1>{esc(name)} &mdash; Projected {esc(cseason)} Roster</h1>"
+            f'<p class="sub">Every player projected on the {esc(name)} for {esc(cseason)}, '
+            f"what they are paid, and how that stacks up against their value. Value reflects "
+            f"each player&rsquo;s {esc(vseason)} season, the latest one played &mdash; "
+            f"{esc(cseason)} has not started yet.</p>"
+            f'<p class="tot">{team["size"]} players <span>·</span> '
+            f'{_money(team["payroll"])} projected payroll'
+            + (f' <span>·</span> {aproom}' if aproom else "") + '</p>'
             '<table class="tbl"><thead><tr>'
-            '<th class="num">#</th><th>Player</th><th class="num">Barrett Score</th>'
-            '<th class="num">Salary</th><th class="num">Market Value</th>'
-            '<th class="num">Verdict</th></tr></thead><tbody>'
+            '<th class="num">#</th><th>Player</th><th>Status</th>'
+            '<th class="num">Barrett Score</th>'
+            f'<th class="num">{esc(cseason)} Salary</th>'
+            '<th class="num">Value</th></tr></thead><tbody>'
             + "".join(rows) +
             "</tbody></table>"
-            '<p class="note">The Barrett Score rates a player\'s on-court value from '
-            "scoring, playmaking, rebounding, defense, efficiency, and availability. "
-            "Market value is what that production is worth at the going rate; the verdict "
-            "compares it to actual salary. Click any player for their full contract "
-            "prediction.</p>"
+            '<p class="note">Roster and salaries are projected for '
+            f"{esc(cseason)} (under contract, re-signs, signings, and draft picks). The "
+            "Barrett Score and value reflect each player&rsquo;s "
+            f"{esc(vseason)} on-court production &mdash; the most recent season played &mdash; "
+            "since next season&rsquo;s games have not happened. Value is what that production "
+            "is worth at the going rate; the verdict compares it to the projected salary. "
+            "Click any player for their full contract prediction.</p>"
             f'<div class="teams"><h2>Browse every team</h2>{others}</div>'
             '<footer><a href="/">HoopsValue</a> · NBA player value and contract '
             "predictions</footer></div></body></html>")
