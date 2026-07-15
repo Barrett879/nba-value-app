@@ -1,6 +1,7 @@
 import html
 import math
 import sys
+from urllib.parse import quote
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -300,9 +301,8 @@ st.divider()
 # Top 10 — current season bar chart
 # ══════════════════════════════════════════════════════════════════════════════
 render_rail("The leaders", "Top 10 Players", meta=season)
-st.caption(f"Current {season} Barrett Score with change vs prior season.")
 
-_top10 = df.nsmallest(10, "score_rank")[["Player", "barrett_score", "PLAYER_ID"]].reset_index(drop=True)
+_top10 = df.nsmallest(10, "score_rank")[["Player", "Team", "barrett_score", "PLAYER_ID"]].reset_index(drop=True)
 
 # Same two-tier attachment as the Most-Improved hero card — PLAYER_ID
 # (dtype-coerced) primary, name-normalize fallback. Anyone who's still
@@ -313,83 +313,64 @@ if _prev_df is not None:
 else:
     _top10["delta"] = float("nan")
 
-# Sort descending so the best player is at the top of the horizontal chart
-_top10 = _top10.sort_values("barrett_score", ascending=True)  # ascending=True → top at top in h-bar
+# Themed leaderboard rows (site kit style), best first: rank · headshot ·
+# name+team (links to the player hub) · teal score bar · score · delta chip.
+# Teal is the site's Barrett Score color; deltas are never color-alone (each
+# carries a triangle glyph and a signed number).
+_top10 = _top10.sort_values("barrett_score", ascending=False)
+_score_max = float(_top10["barrett_score"].max()) or 1.0
 
-def _delta_label(row):
-    if pd.isna(row["delta"]):
-        return f"{row['barrett_score']:.1f}"
-    sign = "▲" if row["delta"] >= 0 else "▼"
-    color = "#2ecc71" if row["delta"] >= 0 else "#e74c3c"
-    return f"{row['barrett_score']:.1f}  <span style='color:{color};font-size:0.8em'>{sign} {abs(row['delta']):.1f}</span>"
+_t10_rows = []
+for _rk, (_, _r) in enumerate(_top10.iterrows(), start=1):
+    _nm = str(_r["Player"])
+    _tm = str(_r["Team"])
+    _sc = float(_r["barrett_score"])
+    _d = _r["delta"]
+    if pd.isna(_d):
+        _chip = '<span class="t10-d t10-na" title="Did not qualify last season">&ndash;</span>'
+        _tip = f"{_sc:.1f} Barrett Score"
+    else:
+        _up = _d >= 0
+        _chip = (f'<span class="t10-d {"t10-up" if _up else "t10-dn"}">'
+                 f'{"&#9650;" if _up else "&#9660;"} {_d:+.1f}</span>')
+        _tip = f"{_sc:.1f} Barrett Score, {_d:+.1f} vs prior season"
+    _t10_rows.append(
+        f'<a class="t10-row" href="/?player={quote(_nm)}" target="_top" title="{html.escape(_tip, quote=True)}">'
+        f'<span class="t10-rk">{_rk}</span>'
+        f'{face_img(_nm, "t10-face")}'
+        f'<span class="t10-who"><span class="t10-name">{html.escape(_nm)}</span>'
+        f'<span class="t10-team">{html.escape(_tm)}</span></span>'
+        f'<span class="t10-track"><span class="t10-bar" style="width:{_sc / _score_max * 100:.1f}%"></span></span>'
+        f'<span class="t10-score">{_sc:.1f}</span>'
+        f'{_chip}</a>')
 
-# Bar colors: red for #1, fading to muted for #10
-_bar_colors = [
-    f"rgba(230,57,70,{0.5 + 0.05*i})" for i in range(len(_top10))
-]
-
-_fig_bar = go.Figure()
-_fig_bar.add_trace(go.Bar(
-    x=_top10["barrett_score"],
-    y=_top10["Player"],
-    orientation="h",
-    marker=dict(
-        color=_bar_colors,
-        line=dict(width=0),
-    ),
-    text=[
-        (f"▲ +{d:.1f}" if d >= 0 else f"▼ {d:.1f}") if not pd.isna(d) else ""
-        for d in _top10["delta"]
-    ],
-    textposition="outside",
-    textfont=dict(
-        size=11,
-        color=[
-            ("#2ecc71" if (not pd.isna(d) and d >= 0) else "#e74c3c") if not pd.isna(d) else "#888"
-            for d in _top10["delta"]
-        ],
-    ),
-    # Pass customdata as a 2D column so %{customdata[0]} in the
-    # hovertemplate resolves correctly (a flat 1D array would make the
-    # [0] index return nothing — which was the actual bug behind every
-    # 'vs last season: -' tooltip, NOT a merge failure).
-    customdata=[[d] for d in _top10["delta"].apply(
-        lambda v: f"{v:+.1f}" if not pd.isna(v) else "—"
-    )],
-    hovertemplate=(
-        "<b>%{y}</b><br>"
-        "Barrett Score: %{x:.1f}<br>"
-        "vs last season: %{customdata[0]}"
-        "<extra></extra>"
-    ),
-))
-
-_score_max = _top10["barrett_score"].max()
-_fig_bar.update_layout(
-    paper_bgcolor="rgba(0,0,0,0)",
-    plot_bgcolor="rgba(0,0,0,0)",
-    font_color="white",
-    height=360,
-    margin=dict(l=10, r=80, t=10, b=30),
-    showlegend=False,
-    xaxis=dict(
-        range=[0, _score_max * 1.18],
-        gridcolor="rgba(255,255,255,0.06)",
-        showticklabels=True,
-        tickformat=".1f",
-        title="",
-    ),
-    yaxis=dict(
-        gridcolor="rgba(0,0,0,0)",
-        title="",
-        tickfont=dict(size=12),
-    ),
-    hovermode="closest",
-    bargap=0.25,
-)
-
-st.plotly_chart(theme_fig(_fig_bar), use_container_width=True, config={"displayModeBar": False})
-st.caption("▲ / ▼ = change in Barrett Score vs prior season")
+st.markdown("""
+<style>
+.t10-wrap{display:flex;flex-direction:column;margin:.2rem 0 .4rem;}
+a.t10-row{display:flex;align-items:center;gap:.6rem;padding:.34rem .4rem;
+    border-radius:8px;text-decoration:none;}
+a.t10-row:hover{background:var(--panel-hover);}
+a.t10-row:hover .t10-name{color:var(--accent-teal);}
+.t10-rk{flex:0 0 1.2rem;text-align:right;font-size:.74rem;font-weight:700;
+    color:var(--fg-5);font-variant-numeric:tabular-nums;}
+.t10-face{flex:0 0 30px;width:30px;height:30px;border-radius:50%;object-fit:cover;
+    object-position:top;background:var(--panel-2);}
+.t10-who{flex:0 0 200px;min-width:0;display:flex;align-items:baseline;gap:.45rem;overflow:hidden;}
+.t10-name{font-size:.86rem;font-weight:700;color:var(--fg-1);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis;}
+.t10-team{font-size:.68rem;font-weight:600;color:var(--fg-5);}
+.t10-track{flex:1;height:9px;border-radius:0 4px 4px 0;background:var(--panel-2);
+    overflow:hidden;}
+.t10-bar{display:block;height:100%;background:var(--accent-teal);border-radius:0 4px 4px 0;}
+.t10-score{flex:0 0 2.6rem;text-align:right;font-size:.88rem;font-weight:800;
+    color:var(--accent-teal);font-variant-numeric:tabular-nums;}
+.t10-d{flex:0 0 3.4rem;text-align:right;font-size:.72rem;font-weight:700;
+    font-variant-numeric:tabular-nums;white-space:nowrap;}
+.t10-up{color:var(--value-good);} .t10-dn{color:var(--value-bad);} .t10-na{color:var(--fg-5);}
+@media (max-width:640px){.t10-who{flex-basis:120px;}.t10-team{display:none;}}
+</style>
+<div class="t10-wrap">""" + "".join(_t10_rows) + "</div>", unsafe_allow_html=True)
+st.caption("Bar = current Barrett Score · ▲ / ▼ = change vs prior season")
 
 st.divider()
 
