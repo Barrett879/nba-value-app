@@ -1350,6 +1350,9 @@ table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;
 /* Team-color dot (per-team background classes are emitted by the page). */
 .tdot{display:inline-block;width:8px;height:8px;border-radius:50%;
   margin-right:0.4rem;background:var(--fg-5);vertical-align:baseline;}
+/* Team abbreviation link to /team/<ABBR>: reads as plain text, reveals on hover. */
+.hv-tlink{color:inherit;text-decoration:none;}
+.hv-tlink:hover{color:var(--sky);text-decoration:underline;}
 </style>
 """
 
@@ -1400,6 +1403,37 @@ _HV_SORT_SCRIPT = """
 })();
 </script>
 """
+
+
+_TEAM_PAGE_SET = None
+
+
+def _team_page_set():
+    """Set of team abbreviations that have a crawlable /team/<ABBR> page
+    (from cache/team_pages.json). Cached; empty on any failure."""
+    global _TEAM_PAGE_SET
+    if _TEAM_PAGE_SET is None:
+        import json
+        try:
+            p = Path(__file__).resolve().parent / "cache" / "team_pages.json"
+            _TEAM_PAGE_SET = set(json.loads(p.read_text(encoding="utf-8"))["teams"].keys())
+        except Exception:
+            _TEAM_PAGE_SET = set()
+    return _TEAM_PAGE_SET
+
+
+def team_cell(v) -> str:
+    """Team table cell: team-color dot + abbreviation, linked to that team's
+    value page when one exists. Reads as plain text, reveals as a link on hover.
+    Unknown/historical teams (no page) fall back to plain text -- so this is safe
+    on any table. Returns raw HTML; use in a `raw` column."""
+    ab = str(v)
+    esc = html.escape(ab)
+    escq = html.escape(ab, quote=True)
+    dot = f'<span class="tdot tdot-{escq}"></span>'
+    if ab in _team_page_set():
+        return f'{dot}<a class="hv-tlink" href="/team/{escq}" target="_top">{esc}</a>'
+    return f"{dot}{esc}"
 
 
 def html_table(df, *, formatters=None, styles=None, aligns=None,

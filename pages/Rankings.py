@@ -18,6 +18,7 @@ from utils import (
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     html_table,
+    team_cell,
     render_nav, render_page_chrome, render_rail, face_img, TEAM_HEX,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
@@ -430,10 +431,9 @@ def _fmt_next_chip(v):
     return html.escape(s)
 
 def _fmt_team_dot(v):
-    """Team cell: team-color dot + abbrev (raw column; unknown teams fall back
-    to the neutral dot color)."""
-    return (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
-            f'{html.escape(str(v))}')
+    """Team cell: team-color dot + abbrev, linked to that team's value page when
+    one exists (raw column; unknown teams fall back to plain text)."""
+    return team_cell(v)
 
 def _score_bar_style(max_val):
     """In-cell Barrett Score bar scaled against the visible table's max."""

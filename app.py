@@ -529,7 +529,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from utils import (
-    CACHE_DIR, html_table, theme_fig, get_player_draft_info,
+    CACHE_DIR, html_table, team_cell, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
     fetch_league_stats, SALARY_CAP_M, _pkl_load,
     FACE_GUARD_SCRIPT,
@@ -1356,8 +1356,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                 _sim_view,
                 formatters={
                     "Player": _sim_player_cell,
-                    "Team": lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
-                                       f'{html.escape(str(v))}'),
+                    "Team": team_cell,
                     "Barrett Score": lambda v: f"{v:.2f}",
                     "Salary": lambda v: f"${v:.1f}M",
                     "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
@@ -1513,8 +1512,7 @@ def _board():
         formatters={
             "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
                                  f'target="_top">{html.escape(str(v))}</a>'),
-            "Team": lambda v: (f'<span class="tdot tdot-{html.escape(str(v), quote=True)}"></span>'
-                               f'{html.escape(str(v))}'),
+            "Team": team_cell,
             "2025-26 Barrett Score": lambda v: f"{v:.2f}",
             "2025-26 Salary": lambda v: f"${v:.2f}M",
             "2025-26 Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
