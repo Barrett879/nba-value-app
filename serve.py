@@ -216,6 +216,40 @@ def _install_extra_routes() -> None:
         except Exception as _e:
             _log(f"root player-OG handler: base shell unavailable ({_e})")
 
+        # Favicon / app-icon assets served from ROOT paths with correct
+        # content-types. Streamlit serves /app/static/*.svg as text/plain, which
+        # Google and iOS reject; these handlers return the right type so the
+        # icon actually shows instead of a generic fallback.
+        _STATIC = pathlib.Path(__file__).parent / "static"
+        _ASSETS = {
+            "/favicon.ico": ("favicon.ico", "image/x-icon"),
+            "/favicon.svg": ("favicon.svg", "image/svg+xml"),
+            "/favicon-32.png": ("favicon-32.png", "image/png"),
+            "/favicon-16.png": ("favicon-16.png", "image/png"),
+            "/apple-touch-icon.png": ("apple-touch-icon.png", "image/png"),
+            "/apple-touch-icon-precomposed.png": ("apple-touch-icon.png", "image/png"),
+            "/icon-192.png": ("icon-192.png", "image/png"),
+            "/icon-512.png": ("icon-512.png", "image/png"),
+            "/site.webmanifest": ("site.webmanifest", "application/manifest+json"),
+        }
+
+        class _AssetHandler(tornado.web.RequestHandler):
+            def initialize(self, fname, ctype):
+                self._fname = fname
+                self._ctype = ctype
+
+            def get(self):
+                try:
+                    data = (_STATIC / self._fname).read_bytes()
+                except Exception:
+                    self.set_status(404)
+                    return
+                self.set_header("Content-Type", self._ctype)
+                self.set_header("Cache-Control", "public, max-age=86400")
+                self.write(data)
+
+            head = get
+
         class _RobotsHandler(tornado.web.RequestHandler):
             def get(self):
                 self.set_header("Content-Type", "text/plain; charset=utf-8")
@@ -306,6 +340,11 @@ def _install_extra_routes() -> None:
                     (r"/sitemap\.xml", _SitemapHandler),
                     (r"/team/([A-Za-z]{2,4})", _TeamHandler),
                 ]
+                # favicon/app-icon assets on their canonical root paths
+                # (escape the dots; these paths carry no other regex metachars)
+                for _p, (_f, _c) in _ASSETS.items():
+                    extra.append((_p.replace(".", r"\."), _AssetHandler,
+                                  dict(fname=_f, ctype=_c)))
                 if _base_shell:  # exact "/" only; every other path stays Streamlit's
                     extra.append((r"/", _RootHandler))
                 handlers = extra + list(handlers)

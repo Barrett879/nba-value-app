@@ -32,8 +32,8 @@ import unicodedata
 
 import streamlit
 
-MARKER = "hv-seo-v4"
-_OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2", "hv-seo-v3")
+MARKER = "hv-seo-v5"
+_OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2", "hv-seo-v3", "hv-seo-v4")
 
 TITLE = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
 DESC = ("HoopsValue scores every NBA player since 1973 by their on-court value "
@@ -65,7 +65,18 @@ PAGES = [
     ("Legacy", "Legacy: the best NBA players ever by Barrett Score"),
     ("About", "About HoopsValue and the Barrett Score"),
 ]
-FAVICON_TAG = '<link rel="icon" type="image/svg+xml" href="/app/static/favicon.svg" />'
+# Full icon set on ROOT paths (served with correct content-types by serve.py;
+# Streamlit mis-serves .svg as text/plain, which crawlers/Google reject). The
+# .ico covers Google + legacy, the SVG covers modern tabs, the PNGs cover the
+# rest, apple-touch covers iOS, and the manifest covers PWA/Android.
+FAVICON_TAG = (
+    '<link rel="icon" href="/favicon.ico" sizes="any"/>'
+    '<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>'
+    '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>'
+    '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>'
+    '<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>'
+    '<link rel="manifest" href="/site.webmanifest"/>'
+)
 
 # Purpose-built 1200x630 share card (link unfurls want a wide image, not the
 # raw square logo). Bundled together so the fresh-patch and older-marker upgrade
@@ -133,9 +144,15 @@ def seo_html(html: str) -> str:
             html = re.sub(r"<noscript>.*?</noscript>", body, html, count=1, flags=re.S)
         else:
             html = html.replace("<body>", f"<body>{body}", 1)
-    # Swap Streamlit's favicon for the HoopsValue icon (crawlers and the
-    # pre-boot shell; the running app swaps it again via page_icon).
-    html = re.sub(r'<link rel="shortcut icon"[^>]*>', FAVICON_TAG, html, count=1)
+    # Swap the favicon for the HoopsValue icon set (crawlers and the pre-boot
+    # shell; the running app swaps it again via page_icon). Strip Streamlit's
+    # icon link and any icon/apple/manifest links an older patch left, then
+    # inject ours once so re-runs and marker upgrades never double up.
+    html = re.sub(
+        r'<link[^>]*rel="(?:shortcut icon|icon|apple-touch-icon|manifest)"[^>]*/?>',
+        "", html, flags=re.I)
+    if 'rel="apple-touch-icon"' not in html:
+        html = html.replace("</head>", FAVICON_TAG + "</head>", 1)
     return html
 
 
