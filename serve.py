@@ -277,6 +277,14 @@ def _install_extra_routes() -> None:
 
             head = get
 
+        # Team pages are PARKED (Barrett, 2026-07-15): the feature is built and the
+        # data pipeline works, but it's on the backburner. With the flag off the
+        # route 404s (an explicit 404, so any crawled URL drops cleanly out of the
+        # index) and the sitemap excludes the /team/ entries. To re-enable, set
+        # HV_TEAM_PAGES=1 in the environment (Render dashboard or local shell) --
+        # no code change needed. utils.team_cell reads the same flag for links.
+        _team_pages_on = os.environ.get("HV_TEAM_PAGES", "").strip() == "1"
+
         class _TeamHandler(tornado.web.RequestHandler):
             """Serve a crawlable per-team value page at /team/<ABBR>. Unknown
             abbreviations 404 (not the SPA shell) so junk paths stay out of the
@@ -284,7 +292,7 @@ def _install_extra_routes() -> None:
             reads and ranks for '<team> player value' searches."""
 
             def get(self, abbr):
-                page = seo_selfheal.team_page_html(abbr)
+                page = seo_selfheal.team_page_html(abbr) if _team_pages_on else None
                 if not page:
                     self.set_status(404)
                     self.set_header("Content-Type", "text/html; charset=utf-8")
@@ -301,11 +309,12 @@ def _install_extra_routes() -> None:
         class _SitemapHandler(tornado.web.RequestHandler):
             def get(self):
                 paths = list(_SITEMAP_PATHS)
-                try:  # one entry per crawlable team page
-                    paths += [f"/team/{a}"
-                              for a in seo_selfheal.team_pages().get("teams", {})]
-                except Exception:
-                    pass
+                if _team_pages_on:
+                    try:  # one entry per crawlable team page
+                        paths += [f"/team/{a}"
+                                  for a in seo_selfheal.team_pages().get("teams", {})]
+                    except Exception:
+                        pass
                 urls = "".join(
                     f"<url><loc>https://hoopsvalue.com{p}</loc></url>"
                     for p in paths)

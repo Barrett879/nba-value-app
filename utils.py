@@ -1424,14 +1424,15 @@ def _team_page_set():
 
 def team_cell(v) -> str:
     """Team table cell: team-color dot + abbreviation, linked to that team's
-    value page when one exists. Reads as plain text, reveals as a link on hover.
-    Unknown/historical teams (no page) fall back to plain text -- so this is safe
-    on any table. Returns raw HTML; use in a `raw` column."""
+    value page when the PARKED team-pages feature is enabled (HV_TEAM_PAGES=1,
+    same flag serve.py's route reads -- with it off the links would 404, so the
+    cell renders as plain text). Unknown/historical teams always fall back to
+    plain text. Returns raw HTML; use in a `raw` column."""
     ab = str(v)
     esc = html.escape(ab)
     escq = html.escape(ab, quote=True)
     dot = f'<span class="tdot tdot-{escq}"></span>'
-    if ab in _team_page_set():
+    if os.environ.get("HV_TEAM_PAGES", "").strip() == "1" and ab in _team_page_set():
         return f'{dot}<a class="hv-tlink" href="/team/{escq}" target="_top">{esc}</a>'
     return f"{dot}{esc}"
 
