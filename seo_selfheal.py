@@ -69,12 +69,16 @@ PAGES = [
 # Streamlit mis-serves .svg as text/plain, which crawlers/Google reject). The
 # .ico covers Google + legacy, the SVG covers modern tabs, the PNGs cover the
 # rest, apple-touch covers iOS, and the manifest covers PWA/Android.
+# The ?v= suffix is a cache-buster: Cloudflare edge-caches these assets, so a
+# bump here forces a fresh fetch of a changed icon instead of a stale one.
+# Bump the number whenever the icon art changes.
+_ICON_V = "2"
 FAVICON_TAG = (
-    '<link rel="icon" href="/favicon.ico" sizes="any"/>'
-    '<link rel="icon" type="image/svg+xml" href="/favicon.svg"/>'
-    '<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"/>'
-    '<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png"/>'
-    '<link rel="apple-touch-icon" href="/apple-touch-icon.png"/>'
+    f'<link rel="icon" href="/favicon.ico?v={_ICON_V}" sizes="any"/>'
+    f'<link rel="icon" type="image/svg+xml" href="/favicon.svg?v={_ICON_V}"/>'
+    f'<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v={_ICON_V}"/>'
+    f'<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png?v={_ICON_V}"/>'
+    f'<link rel="apple-touch-icon" href="/apple-touch-icon.png?v={_ICON_V}"/>'
     '<link rel="manifest" href="/site.webmanifest"/>'
 )
 

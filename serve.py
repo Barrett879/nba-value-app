@@ -245,7 +245,9 @@ def _install_extra_routes() -> None:
                     self.set_status(404)
                     return
                 self.set_header("Content-Type", self._ctype)
-                self.set_header("Cache-Control", "public, max-age=86400")
+                # short TTL: the icon is still being iterated, and Cloudflare
+                # honors this at the edge — a long max-age pins a stale icon.
+                self.set_header("Cache-Control", "public, max-age=3600")
                 self.write(data)
 
             head = get
