@@ -1329,6 +1329,10 @@ table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;
 .hv-table thead th .sort-ind{margin-left:0.15em;font-size:0.85em;color:var(--accent-red);}
 .hv-table tbody td{padding:0.5rem 0.7rem;color:var(--fg-2);
   border-bottom:1px solid var(--hairline-soft);white-space:nowrap;}
+/* Column alignment as classes (default left) so we don't stamp an inline
+   text-align on all ~5k cells -- cuts the board payload by ~130KB. */
+.hv-table td.tar,.hv-table th.tar{text-align:right;}
+.hv-table td.tac,.hv-table th.tac{text-align:center;}
 .hv-table tbody tr:nth-child(even) td{background:var(--row-tint);}
 .hv-table tbody tr:hover td{background:var(--panel-hover);}  /* must follow zebra */
 .hv-table tbody tr:last-child td{border-bottom:none;}
@@ -1424,6 +1428,7 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     raw = set(raw or [])
     cols = list(df.columns)
 
+    _acl = {"right": ' class="tar"', "center": ' class="tac"'}   # left is default
     head = []
     for c in cols:
         al = aligns.get(c, "left")
@@ -1431,7 +1436,7 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
         tip = f' title="{html.escape(str(helps[c]), quote=True)}"' if c in helps else ""
         head.append(
             f'<th data-sortable="1" tabindex="0" scope="col" aria-sort="none"'
-            f'{num}{tip} style="text-align:{al}">'
+            f'{num}{tip}{_acl.get(al, "")}>'
             f'{html.escape(str(c))}<span class="sort-ind"></span></th>'
         )
     n_total = len(df)
@@ -1462,12 +1467,20 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
                 disp = str(v)
             al = aligns.get(c, "left")
             stl = styles[c](v, rd) if c in styles else ""
-            sv = v if c in numeric else disp
-            extra = f";{stl}" if stl else ""
+            # Sort/filter key: raw numeric for numeric cols; plain TEXT for HTML
+            # (raw) cols -- storing the full markup bloated data-v AND made the
+            # column sort on its tags instead of the name.
+            if c in numeric:
+                sv = v
+            elif c in raw:
+                sv = re.sub(r"<[^>]+>", "", disp)
+            else:
+                sv = disp
+            style_attr = f' style="{stl}"' if stl else ""
             cell = disp if c in raw else html.escape(disp)
             tds.append(
-                f'<td data-v="{html.escape(str(sv), quote=True)}" '
-                f'style="text-align:{al}{extra}">{cell}</td>'
+                f'<td data-v="{html.escape(str(sv), quote=True)}"'
+                f'{_acl.get(al, "")}{style_attr}>{cell}</td>'
             )
         rstyle = row_style(rd) if row_style else ""
         tr_open = f'<tr style="{rstyle}">' if rstyle else "<tr>"
