@@ -2098,14 +2098,13 @@ def spark_svg(scores: list, w: int = 72, h: int = 20) -> str:
 
 
 def render_rail(kicker: str, title: str, count: str | None = None, meta: str | None = None) -> None:
-    """Ruled section header: kicker + title + optional count pill + right meta.
+    """Ruled section header: red bar + title + optional count pill + right meta.
 
-    An empty kicker is omitted entirely (no stray gap), so callers can hide the
-    eyebrow label by passing "".
+    The uppercase eyebrow (kicker) is intentionally NOT rendered -- Barrett
+    removed the labels site-wide (2026-07-15), keeping the red rail. The
+    parameter stays so call sites keep their labels for an easy restore.
     """
     bits = []
-    if kicker:
-        bits.append(f'<span class="k">{html.escape(kicker)}</span>')
     bits.append(f'<span class="t">{html.escape(title)}</span>')
     if count:
         bits.append(f'<span class="n">{html.escape(count)}</span>')
