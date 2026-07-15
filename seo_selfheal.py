@@ -24,8 +24,11 @@ ensure_seo_patched() is idempotent (marker check) and NEVER raises: any
 failure (read-only site-packages, unexpected shell markup) is a silent no-op
 so it can sit on the request path without ever taking the site down.
 """
+import html as _html
+import json
 import pathlib
 import re
+import unicodedata
 
 import streamlit
 
@@ -157,3 +160,219 @@ def ensure_seo_patched() -> bool:
         return True
     except Exception:
         return False  # e.g. read-only site-packages: silent no-op
+
+
+# --- Per-player share metadata -------------------------------------------------
+# A shared /?player=X link should unfurl with THAT player's Barrett Score and
+# contract, not the generic homepage card. serve.py's root handler calls
+# player_shell() per request; the lookup table is precomputed by
+# scripts/build_share_meta.py (no model work on the request path).
+_SHARE_META = None  # lazy {normalized_name: {"t": title, "d": desc}}
+
+
+def _share_norm(name: str) -> str:
+    """Match scripts/build_share_meta.py's key (utils.normalize): NFKD-fold
+    accents, lowercase, strip. Kept dependency-free so serve.py stays light."""
+    nfkd = unicodedata.normalize("NFKD", name)
+    return "".join(c for c in nfkd if not unicodedata.combining(c)).lower().strip()
+
+
+def _share_meta() -> dict:
+    global _SHARE_META
+    if _SHARE_META is None:
+        try:
+            p = pathlib.Path(__file__).parent / "cache" / "share_meta.json"
+            _SHARE_META = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            _SHARE_META = {}  # cache absent: every lookup is a clean miss
+    return _SHARE_META
+
+
+def player_shell(base_html: str, player_name: str) -> str:
+    """Return base_html with the title/description/OG tags swapped for the named
+    player's, or base_html unchanged when the name is unknown. Rewrites whatever
+    currently occupies those four tags (pattern-based, not coupled to the exact
+    TITLE/DESC constants), so it survives base-shell drift. Never raises."""
+    try:
+        rec = _share_meta().get(_share_norm(player_name or ""))
+        if not rec:
+            return base_html
+        t = _html.escape(rec["t"], quote=True)
+        d = _html.escape(rec["d"], quote=True)
+        # lambda replacements: keep re.sub from interpreting \g / backslashes in
+        # the player text as group references.
+        out = re.sub(r"<title>[^<]*</title>", lambda m: f"<title>{t}</title>",
+                     base_html, count=1)
+        out = re.sub(r'(<meta name="description" content=")[^"]*(")',
+                     lambda m: m.group(1) + d + m.group(2), out, count=1)
+        out = re.sub(r'(<meta property="og:title" content=")[^"]*(")',
+                     lambda m: m.group(1) + t + m.group(2), out, count=1)
+        out = re.sub(r'(<meta property="og:description" content=")[^"]*(")',
+                     lambda m: m.group(1) + d + m.group(2), out, count=1)
+        return out
+    except Exception:
+        return base_html
+
+
+# --- Crawlable team pages ------------------------------------------------------
+# Real, indexable HTML at /team/<ABBR> (one landing page per NBA team). Rendered
+# from cache/team_pages.json (scripts/build_team_pages.py) so the request path is
+# a pure lookup + string format -- no model work. serve.py routes /team/<ABBR>
+# here; unknown abbreviations return None so the handler can 404.
+_TEAM_PAGES = None  # lazy {"season": str, "teams": {abbr: {...}}}
+
+
+def team_pages() -> dict:
+    global _TEAM_PAGES
+    if _TEAM_PAGES is None:
+        try:
+            p = pathlib.Path(__file__).parent / "cache" / "team_pages.json"
+            _TEAM_PAGES = json.loads(p.read_text(encoding="utf-8"))
+        except Exception:
+            _TEAM_PAGES = {"season": "", "teams": {}}
+    return _TEAM_PAGES
+
+
+def _money(x: float) -> str:
+    return f"${x:.1f}M"
+
+
+_TEAM_CSS = """
+:root{--bg:#f4f6f8;--panel:#fff;--line:#e3e6eb;--ink:#16233f;--muted:#6b7280;
+--navy:#16233f;--orange:#e8792b;--teal:#0fae9d;--good:#16a34a;--bad:#e0483a;
+--row:#fafbfc;--logo:url('/app/static/hoopsvalue_wordmark_v2.png')}
+@media (prefers-color-scheme:dark){:root{--bg:#0a0a14;--panel:#15171d;
+--line:#262a33;--ink:#e6e9f2;--muted:#9aa0ac;--navy:#e2e9f8;--row:#101219;
+--logo:url('/app/static/hoopsvalue_wordmark_dark_v2.png')}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+font:16px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:940px;margin:0 auto;padding:22px 18px 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:16px;
+flex-wrap:wrap;padding-bottom:18px;border-bottom:1px solid var(--line)}
+.brand{display:block;width:190px;height:46px;background:var(--logo) left center/contain no-repeat}
+nav.top a{color:var(--muted);font-weight:600;font-size:14px;margin-left:18px}
+nav.top a:hover{color:var(--orange)}
+h1{font-size:30px;line-height:1.15;margin:30px 0 6px;letter-spacing:-.4px}
+.sub{color:var(--muted);margin:0 0 4px;max-width:640px}
+.tot{color:var(--ink);font-weight:600;margin:14px 0 20px;font-size:15px}
+.tot span{color:var(--muted);font-weight:500}
+.tbl{width:100%;border-collapse:collapse;background:var(--panel);
+border:1px solid var(--line);border-radius:12px;overflow:hidden;font-size:15px}
+.tbl th{text-align:left;font-size:12px;letter-spacing:.4px;text-transform:uppercase;
+color:var(--muted);font-weight:700;padding:12px 12px;border-bottom:1px solid var(--line)}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--line)}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:nth-child(even){background:var(--row)}
+.tbl td.num,.tbl th.num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl a.pl{font-weight:600}
+.tbl a.pl:hover{color:var(--orange)}
+.sc{font-weight:700;color:var(--teal)}
+.good{color:var(--good);font-weight:600}.bad{color:var(--bad);font-weight:600}
+.fair{color:var(--muted)}
+.note{color:var(--muted);font-size:13px;margin:16px 2px 30px;max-width:680px}
+.teams{margin-top:34px;padding-top:20px;border-top:1px solid var(--line)}
+.teams h2{font-size:13px;letter-spacing:.5px;text-transform:uppercase;
+color:var(--muted);margin:0 0 12px}
+.teams a{display:inline-block;font-size:13px;font-weight:600;color:var(--muted);
+padding:5px 9px;margin:0 6px 8px 0;border:1px solid var(--line);border-radius:7px}
+.teams a:hover{color:var(--orange);border-color:var(--orange)}
+footer{margin-top:40px;color:var(--muted);font-size:13px;text-align:center}
+""".strip()
+
+
+def team_page_html(abbr: str):
+    """Return a full crawlable HTML page for the team abbreviation, or None if
+    the team is unknown. Never raises (returns None on any failure)."""
+    try:
+        data = team_pages()
+        abbr = (abbr or "").upper()
+        team = data.get("teams", {}).get(abbr)
+        if not team:
+            return None
+        season = data.get("season", "")
+        name = team["name"]
+        tot = team["tot"]
+        esc = lambda s: _html.escape(str(s), quote=True)  # noqa: E731
+
+        rows = []
+        for i, p in enumerate(team["players"], start=1):
+            vd = p["vd"]  # salary - market; >0 overpaid
+            if vd <= -2:
+                verdict = f'<span class="good">Underpaid {_money(-vd)}</span>'
+            elif vd >= 2:
+                verdict = f'<span class="bad">Overpaid {_money(vd)}</span>'
+            else:
+                verdict = '<span class="fair">Fair</span>'
+            href = "/?player=" + _urlq(p["n"])
+            rows.append(
+                f'<tr><td class="num">{i}</td>'
+                f'<td><a class="pl" href="{href}">{esc(p["n"])}</a></td>'
+                f'<td class="num"><span class="sc">{p["s"]:.1f}</span></td>'
+                f'<td class="num">{_money(p["sal"])}</td>'
+                f'<td class="num">{_money(p["val"])}</td>'
+                f'<td class="num">{verdict}</td></tr>')
+
+        # cross-links to every other team (link graph for crawlers)
+        others = "".join(
+            f'<a href="/team/{a}">{esc(t["abbr"])}</a>'
+            for a, t in sorted(data.get("teams", {}).items()))
+
+        title = f"{name} Player Value & Contracts ({season}) | HoopsValue"
+        desc = (f"Every {name} player ranked by the Barrett Score and measured against "
+                f"their salary. See who is underpaid, overpaid, and what each player is "
+                f"worth on the {season} roster.")
+        t_e, d_e = esc(title), esc(desc)
+        url = f"https://hoopsvalue.com/team/{abbr}"
+
+        return (
+            "<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"/>"
+            "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/>"
+            f"<title>{t_e}</title>"
+            f'<meta name="description" content="{d_e}"/>'
+            '<meta name="robots" content="index, follow"/>'
+            f'<link rel="canonical" href="{url}"/>'
+            '<link rel="icon" type="image/svg+xml" href="/app/static/favicon.svg"/>'
+            '<meta property="og:type" content="website"/>'
+            f'<meta property="og:title" content="{t_e}"/>'
+            f'<meta property="og:description" content="{d_e}"/>'
+            f'<meta property="og:url" content="{url}"/>'
+            f'<meta property="og:image" content="{OG_IMAGE}"/>'
+            '<meta property="og:image:width" content="1200"/>'
+            '<meta property="og:image:height" content="630"/>'
+            '<meta name="twitter:card" content="summary_large_image"/>'
+            f'<meta name="twitter:image" content="{OG_IMAGE}"/>'
+            f"<style>{_TEAM_CSS}</style></head><body><div class=\"wrap\">"
+            '<header><a class="brand" href="/" aria-label="HoopsValue home"></a>'
+            '<nav class="top"><a href="/Rankings">Rankings</a>'
+            '<a href="/Team_Analysis">Team Analysis</a>'
+            '<a href="/Free_Agent_Class">Free Agents</a></nav></header>'
+            f"<h1>{esc(name)} Player Value &amp; Contracts</h1>"
+            f'<p class="sub">Every player on the {esc(name)} ranked by the Barrett Score '
+            f"and held up against what they are paid, {esc(season)}.</p>"
+            f'<p class="tot">{tot["n"]} players <span>·</span> {_money(tot["sal"])} payroll '
+            f'<span>·</span> {_money(tot["val"])} market value</p>'
+            '<table class="tbl"><thead><tr>'
+            '<th class="num">#</th><th>Player</th><th class="num">Barrett Score</th>'
+            '<th class="num">Salary</th><th class="num">Market Value</th>'
+            '<th class="num">Verdict</th></tr></thead><tbody>'
+            + "".join(rows) +
+            "</tbody></table>"
+            '<p class="note">The Barrett Score rates a player\'s on-court value from '
+            "scoring, playmaking, rebounding, defense, efficiency, and availability. "
+            "Market value is what that production is worth at the going rate; the verdict "
+            "compares it to actual salary. Click any player for their full contract "
+            "prediction.</p>"
+            f'<div class="teams"><h2>Browse every team</h2>{others}</div>'
+            '<footer><a href="/">HoopsValue</a> · NBA player value and contract '
+            "predictions</footer></div></body></html>")
+    except Exception:
+        return None
+
+
+def _urlq(s: str) -> str:
+    """Minimal query-safe encoding for the ?player= link target."""
+    import urllib.parse
+    return urllib.parse.quote(str(s))

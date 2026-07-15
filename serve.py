@@ -200,7 +200,21 @@ _SITEMAP_PATHS = [
 
 def _install_extra_routes() -> None:
     try:
+        import pathlib
         import tornado.web
+        import streamlit as _st
+
+        # Base homepage shell served for "/" — identical to what the in-process
+        # StaticFileHandler patch returns, so human visitors get the same booting
+        # SPA. Precomputed once; per-request work is only the OG-tag swap.
+        _base_shell = None
+        try:
+            _idx = (pathlib.Path(_st.__file__).parent / "static" / "index.html").resolve()
+            _cand = seo_selfheal.seo_html(_idx.read_text(encoding="utf-8"))
+            if "<title>HoopsValue" in _cand and "</html>" in _cand.lower():
+                _base_shell = _cand
+        except Exception as _e:
+            _log(f"root player-OG handler: base shell unavailable ({_e})")
 
         class _RobotsHandler(tornado.web.RequestHandler):
             def get(self):
@@ -210,11 +224,55 @@ def _install_extra_routes() -> None:
 
             head = get  # crawlers HEAD these; tornado drops the body itself
 
+        class _RootHandler(tornado.web.RequestHandler):
+            """Serve the homepage shell, swapping in the shared player's OG/title
+            tags when the URL carries a single known ?player=. Humans still get
+            the identical booting SPA; crawlers and link unfurlers read that
+            player's Barrett Score and contract instead of the generic card."""
+
+            def get(self):
+                names = self.get_arguments("player")  # decoded; [] when absent
+                out = _base_shell
+                if len(names) == 1:  # a head-to-head (?player=A&player=B) stays generic
+                    out = seo_selfheal.player_shell(_base_shell, names[0])
+                self.set_header("Content-Type", "text/html; charset=utf-8")
+                self.set_header("Cache-Control", "no-cache")
+                self.write(out)
+
+            head = get
+
+        class _TeamHandler(tornado.web.RequestHandler):
+            """Serve a crawlable per-team value page at /team/<ABBR>. Unknown
+            abbreviations 404 (not the SPA shell) so junk paths stay out of the
+            index. A real HTTP 200 page here, not the JS app, is what Google
+            reads and ranks for '<team> player value' searches."""
+
+            def get(self, abbr):
+                page = seo_selfheal.team_page_html(abbr)
+                if not page:
+                    self.set_status(404)
+                    self.set_header("Content-Type", "text/html; charset=utf-8")
+                    self.write('<!doctype html><meta charset="utf-8"><title>Not found'
+                               '</title><p>No such team. <a href="/">HoopsValue home'
+                               "</a></p>")
+                    return
+                self.set_header("Content-Type", "text/html; charset=utf-8")
+                self.set_header("Cache-Control", "public, max-age=3600")
+                self.write(page)
+
+            head = get
+
         class _SitemapHandler(tornado.web.RequestHandler):
             def get(self):
+                paths = list(_SITEMAP_PATHS)
+                try:  # one entry per crawlable team page
+                    paths += [f"/team/{a}"
+                              for a in seo_selfheal.team_pages().get("teams", {})]
+                except Exception:
+                    pass
                 urls = "".join(
                     f"<url><loc>https://hoopsvalue.com{p}</loc></url>"
-                    for p in _SITEMAP_PATHS)
+                    for p in paths)
                 self.set_header("Content-Type", "application/xml; charset=utf-8")
                 self.write('<?xml version="1.0" encoding="UTF-8"?>'
                            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
@@ -243,14 +301,20 @@ def _install_extra_routes() -> None:
 
         def _app_init(self, handlers=None, *args, **kwargs):
             if handlers:
-                handlers = [
+                extra = [
                     (r"/robots\.txt", _RobotsHandler),
                     (r"/sitemap\.xml", _SitemapHandler),
-                ] + list(handlers)
+                    (r"/team/([A-Za-z]{2,4})", _TeamHandler),
+                ]
+                if _base_shell:  # exact "/" only; every other path stays Streamlit's
+                    extra.append((r"/", _RootHandler))
+                handlers = extra + list(handlers)
             _orig_app_init(self, handlers, *args, **kwargs)
             self.transforms.append(_NoindexTransform)
         tornado.web.Application.__init__ = _app_init
-        _log("extra routes installed: /robots.txt /sitemap.xml + onrender noindex header")
+        _log("extra routes installed: /robots.txt /sitemap.xml /team/*"
+             + (" / (player OG)" if _base_shell else "")
+             + " + onrender noindex header")
     except Exception as e:  # never block serving over SEO routes
         _log(f"extra routes skipped: {e}")
 
