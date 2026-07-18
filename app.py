@@ -355,24 +355,6 @@ st.markdown("""
     .fp-card .vunit{font-size:.6rem;font-weight:800;letter-spacing:.08em;
         text-transform:uppercase;color:var(--fg-4);}
     .fp-card .sub{font-size:.72rem;color:var(--fg-3);}
-    /* Biggest movers: two compact lists (risers / fallers). */
-    .mv-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:.2rem 0 .3rem;}
-    @media(max-width:700px){.mv-grid{grid-template-columns:1fr;}}
-    .mv-col{background:var(--panel-solid);border:1px solid var(--panel-line);
-        border-radius:12px;box-shadow:var(--shadow-card);padding:.5rem .8rem;}
-    .mv-h{font-size:.62rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
-        margin:.15rem 0 .3rem;}
-    .mv-h.up{color:var(--value-good);}
-    .mv-h.down{color:var(--value-bad);}
-    a.mv-row{display:flex;align-items:center;gap:.5rem;padding:.3rem .1rem;
-        text-decoration:none !important;border-top:1px solid var(--hairline-soft);}
-    a.mv-row:first-of-type{border-top:none;}
-    a.mv-row:hover .mv-name{color:var(--fg-1);}
-    .mv-name{flex:1;min-width:0;font-size:.82rem;font-weight:600;color:var(--fg-2);
-        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .mv-d{font-size:.82rem;font-weight:800;font-variant-numeric:tabular-nums;}
-    .mv-d.up{color:var(--value-good);}
-    .mv-d.down{color:var(--value-bad);}
 </style>
 """, unsafe_allow_html=True)
 
@@ -905,33 +887,9 @@ if not _hub_df.empty:
     st.markdown('<div class="fp-grid">' + "".join(_cards) + "</div>", unsafe_allow_html=True)
 
 
-# ── Biggest movers vs last season (precomputed cache; no request-path work) ────
-@st.cache_data(ttl=3600, show_spinner=False)
-def _movers_data() -> dict:
-    try:
-        return _json.loads((Path(__file__).parent / "cache" / "movers_v1.json").read_text())
-    except Exception:
-        return {}
-
-_mv = _movers_data()
-if _mv.get("risers") and _mv.get("fallers"):
-    def _mv_col(_title: str, _items: list, _cls: str) -> str:
-        _rows = ""
-        for _it in _items:
-            _n, _t, _d = str(_it["player"]), str(_it["team"]), float(_it["delta"])
-            _sgn = "+" if _d >= 0 else ""
-            _rows += (f'<a class="mv-row" href="/?player={_urlquote(_n)}" target="_top">'
-                      f'<span class="tdot tdot-{html.escape(_t, quote=True)}"></span>'
-                      f'<span class="mv-name">{html.escape(_n)}</span>'
-                      f'<span class="mv-d {_cls}">{_sgn}{_d:.1f}</span></a>')
-        return f'<div class="mv-col"><div class="mv-h {_cls}">{_title}</div>{_rows}</div>'
-
-    _rail("", "Biggest movers",
-          meta=f'{_mv.get("cur_season","")} Barrett Score vs {_mv.get("prev_season","")}')
-    st.markdown('<div class="mv-grid">'
-                + _mv_col("Risers", _mv["risers"], "up")
-                + _mv_col("Fallers", _mv["fallers"], "down")
-                + '</div>', unsafe_allow_html=True)
+# (Biggest-movers section removed 2026-07-15 at Barrett's request; the
+#  precomputed cache/movers_v1.json + scripts/build_movers.py stay parked
+#  in the repo if it ever comes back.)
 
 # ── Selection from ?player= ──────────────────────────────────────────────────
 _sel = None
