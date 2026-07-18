@@ -1,10 +1,19 @@
-"""Production entrypoint: warm everything BEFORE the port opens.
+"""Production entrypoint: open the port FAST, warm in the background.
 
-Render keeps the previous deploy serving until the new container starts
-listening, so every second of import and cache warm-up done here is a second
-no visitor ever pays. The old startCommand (`streamlit run app.py`) opened the
-port immediately and made the first visitor after every deploy sit through the
-whole import chain on a half-CPU box.
+The live Render service has a persistent disk attached (/data), and a disk can
+mount to only ONE instance at a time, so Render cannot do zero-downtime
+deploys here: the old container is stopped BEFORE the new one starts. Every
+second this file spends before the port opens is therefore a second of hard
+downtime on every deploy -- the opposite of the original design assumption
+(pre-port warming is free only on disk-less services, where the old deploy
+keeps serving until the new port opens). Barrett hit a ~30s dead window
+mid-deploy on 2026-07-15; that was this file warming with the port closed.
+
+So the boot order is inverted: install the SEO/serving patches (milliseconds),
+open the port (~2-3s), and do ALL warming in one background thread -- heavy
+imports, the /data seed, a synthetic first session that races human clicks,
+then an idempotent cache sweep. A visitor who lands mid-warm gets the app
+shell with a spinner instead of a dead site.
 
 `streamlit run app.py` stays the dev path; Render runs `python serve.py`.
 """
@@ -20,48 +29,9 @@ def _log(msg: str) -> None:
     print(f"[serve] {time.time() - _t0:5.1f}s  {msg}", flush=True)
 
 
-# ── 1. Pre-import the heavy modules into sys.modules ─────────────────────────
-# Streamlit's script runner imports app code in THIS process, so anything
-# loaded here is already hot when the first session runs.
-_log("pre-importing heavy modules")
-import pandas  # noqa: F401,E402
-import plotly.express  # noqa: F401,E402  (chart pages use it)
-import joblib  # noqa: F401,E402
-import sklearn.ensemble  # noqa: F401,E402  (contract model deps)
-import nba_api.stats.endpoints  # noqa: F401,E402  (~1s: every endpoint module)
-import nba_api.stats.static.players  # noqa: F401,E402
-import nba_api.stats.static.teams  # noqa: F401,E402
-_log("heavy modules in sys.modules")
-
-import utils  # noqa: E402  (seeds /data/cache from the repo copies on first boot)
-_log("utils imported, disk cache seeded")
-
-import seo_selfheal  # noqa: E402  (canonical SEO transform, shared with the build patch)
-
-# ── 2. Warm the current season synchronously ──────────────────────────────────
-# Bare mode means build_raw is fresh-or-block, so the parquet and supporting
-# caches are hot AND current the moment traffic flips to this container.
-for _label, _fn in [
-    ("rankings frame", lambda: utils.build_ranked_projected(utils.SEASONS[0])),
-    ("bref positions", lambda: utils.fetch_bref_positions(
-        utils.season_to_espn_year(utils.SEASONS[0]), cache_v=3)),
-    ("next-year contracts", lambda: utils.fetch_next_year_contracts(
-        utils.season_to_espn_year(utils.SEASONS[0]), cache_v=7)),
-    ("rookie scale", lambda: utils.fetch_rookie_scale_players(utils.SEASONS[0])),
-    ("d-lebron", lambda: utils.fetch_dlebron(utils.SEASONS[0])),
-    ("player name index", utils.get_all_player_names),
-    # Every season's raw frame + rankings — the career loop inside the Contract
-    # Predictor's feature builder touches all of them; warming here means the
-    # FIRST prediction after a deploy doesn't pay ~30-60s of cold compute.
-    ("all-season frames", lambda: utils.build_all_seasons_combined(min_threshold=0)),
-]:
-    try:
-        _fn()
-        _log(f"warm: {_label}")
-    except Exception as _e:  # a failed warm should never block serving
-        _log(f"warm FAILED ({_label}): {_e}")
-
 _port = os.environ.get("PORT", "8501")
+
+import seo_selfheal  # noqa: E402  (imports only streamlit, which the CLI needs anyway)
 
 
 # ── 2.5 Self-warm the first session the instant the port opens ───────────────
@@ -71,7 +41,9 @@ _port = os.environ.get("PORT", "8501")
 # (the same handshake the frontend sends; XSRF is disabled in config.toml).
 # Render flips traffic on port-open, so this races ahead of any human click
 # and they land on warm runtime caches instead.
-def _self_warm() -> None:
+def _self_warm(stage: str, budget: int = 120) -> None:
+    """Drive one synthetic websocket session so a real visitor lands on warm
+    Streamlit runtime caches. stage: "home" or "predictor"."""
     import socket
 
     deadline = time.time() + 180
@@ -82,7 +54,7 @@ def _self_warm() -> None:
         except OSError:
             time.sleep(0.25)
     else:
-        _log("self-warm: port never opened")
+        _log(f"self-warm {stage}: port never opened")
         return
     try:
         import websocket
@@ -94,38 +66,79 @@ def _self_warm() -> None:
         ws = websocket.create_connection(
             f"ws://127.0.0.1:{_port}/_stcore/stream",
             subprotocols=["streamlit", "PLACEHOLDER_AUTH_TOKEN"],
-            timeout=120,
+            timeout=budget,
         )
-        def _run(state, label, budget):
-            bm = BackMsg()
-            bm.rerun_script.CopyFrom(state)
-            ws.send_binary(bm.SerializeToString())
-            end = time.time() + budget
-            while time.time() < end:
-                raw = ws.recv()
-                if isinstance(raw, (bytes, bytearray)):
-                    fm = ForwardMsg()
-                    fm.ParseFromString(raw)
-                    if fm.WhichOneof("type") == "script_finished":
-                        return True
-            return False
-
-        _run(ClientState(), "home", 120)
-        _log(f"self-warm home finished in {time.time() - t:.1f}s")
-        # One throwaway prediction so the first real predictor user lands warm:
-        # primes the model, comp pool, and the 50-season career path in-page.
-        t2 = time.time()
-        stc = ClientState()
-        stc.page_name = "Contract_Predictor"
-        stc.query_string = "player=LeBron%20James"
-        ok = _run(stc, "predictor", 180)
-        _log(f"self-warm predictor {'finished' if ok else 'TIMED OUT'} in {time.time() - t2:.1f}s")
+        state = ClientState()
+        if stage == "predictor":
+            # One throwaway prediction so the first real predictor user lands
+            # warm: primes the model, comp pool, and the career path in-page.
+            state.page_name = "Contract_Predictor"
+            state.query_string = "player=LeBron%20James"
+        bm = BackMsg()
+        bm.rerun_script.CopyFrom(state)
+        ws.send_binary(bm.SerializeToString())
+        ok = False
+        end = time.time() + budget
+        while time.time() < end:
+            raw = ws.recv()
+            if isinstance(raw, (bytes, bytearray)):
+                fm = ForwardMsg()
+                fm.ParseFromString(raw)
+                if fm.WhichOneof("type") == "script_finished":
+                    ok = True
+                    break
         ws.close()
+        _log(f"self-warm {stage} {'finished' if ok else 'TIMED OUT'} in {time.time() - t:.1f}s")
     except Exception as e:
-        _log(f"self-warm failed (visitors just get the old cold first run): {e}")
+        _log(f"self-warm {stage} failed (visitors just get the old cold first run): {e}")
 
 
-threading.Thread(target=_self_warm, daemon=True).start()
+def _background_warm() -> None:
+    """All the heavy boot work, off the port-open path. Order matters: heavy
+    module pre-imports (so the first script run doesn't pay them), utils import
+    (seeds /data/cache on first boot), the synthetic warm sessions (race any
+    human click through the real page code paths), then an idempotent data-cache
+    sweep for anything the two warmed pages didn't touch. Any failure logs and
+    moves on -- a failed warm must never take the site down."""
+    try:
+        _log("bg: pre-importing heavy modules")
+        import pandas  # noqa: F401
+        import plotly.express  # noqa: F401  (chart pages use it)
+        import joblib  # noqa: F401
+        import sklearn.ensemble  # noqa: F401  (contract model deps)
+        import nba_api.stats.endpoints  # noqa: F401  (~1s: every endpoint module)
+        import nba_api.stats.static.players  # noqa: F401
+        import nba_api.stats.static.teams  # noqa: F401
+        import utils
+        _log("bg: utils imported, disk cache seeded")
+    except Exception as e:
+        _log(f"bg: import warm failed ({e}); sessions will import cold")
+        return
+    # Home session first (most visitors land there), then the data sweep does
+    # the heavy compute directly, then the predictor session -- which is fast
+    # once the sweep has built the all-season frames it depends on.
+    _self_warm("home")
+    for _label, _fn in [
+        ("rankings frame", lambda: utils.build_ranked_projected(utils.SEASONS[0])),
+        ("bref positions", lambda: utils.fetch_bref_positions(
+            utils.season_to_espn_year(utils.SEASONS[0]), cache_v=3)),
+        ("next-year contracts", lambda: utils.fetch_next_year_contracts(
+            utils.season_to_espn_year(utils.SEASONS[0]), cache_v=7)),
+        ("rookie scale", lambda: utils.fetch_rookie_scale_players(utils.SEASONS[0])),
+        ("d-lebron", lambda: utils.fetch_dlebron(utils.SEASONS[0])),
+        ("player name index", utils.get_all_player_names),
+        ("all-season frames", lambda: utils.build_all_seasons_combined(min_threshold=0)),
+    ]:
+        try:
+            _fn()
+            _log(f"bg sweep: {_label}")
+        except Exception as e:
+            _log(f"bg sweep FAILED ({_label}): {e}")
+    _self_warm("predictor", budget=180)
+    _log("bg: warm complete")
+
+
+threading.Thread(target=_background_warm, daemon=True).start()
 
 # ── 2.9 SEO: patch Streamlit's static index.html ─────────────────────────────
 # Streamlit serves a generic SPA shell (<title>Streamlit</title>, no meta
