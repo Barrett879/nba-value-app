@@ -1180,21 +1180,36 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
             for _l, _vtxt, _p, _atxt in _prof)
         _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
         _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
-        # Named anchors: who owns the paycheck at his production rank, and who
-        # produces at his pay rank. Turns the abstract footnote into people.
+        # Named anchors, plain-English: the player who performs nearest to him
+        # (production rank +/-1, closest score) and the player who gets paid
+        # nearest to him (salary rank +/-1, closest paycheck). Replaced the old
+        # cross-rank mapping ("value = the #13 paycheck"), which read like a
+        # riddle (Barrett, 2026-07-15).
         _anchor_note = ""
         try:
-            _mk = _hub_df[_hub_df["SalRank"] == _sel["rank"]]
-            _pd_ = _hub_df.iloc[_sel["SalRank"] - 1] if 0 < _sel["SalRank"] <= len(_hub_df) else None
-            _mk_nm = str(_mk.iloc[0]["Player"]) if len(_mk) else ""
-            _pd_nm = str(_pd_["Player"]) if _pd_ is not None else ""
-            _bits = []
-            if _mk_nm and normalize(_mk_nm) != _n:
-                _bits.append(f"market value = the #{_sel['rank']} paycheck ({html.escape(_mk_nm)}'s money)")
-            if _pd_nm and normalize(_pd_nm) != _n:
-                _bits.append(f"his own salary is #{_sel['SalRank']}: {html.escape(_pd_nm)} territory")
-            if _bits:
-                _anchor_note = '<div class="hub-note">In names: ' + " · ".join(_bits) + ".</div>"
+            _rk = int(_sel["rank"])
+            _sr = int(_sel.get("SalRank") or 0)
+            _me_sc = float(_sel["Barrett Score"])
+            _me_sal = float(_sel["Salary"])
+            _pf_c = [_hub_df.iloc[i] for i in (_rk - 2, _rk) if 0 <= i < len(_hub_df)]
+            _pf_c = [c for c in _pf_c if normalize(str(c["Player"])) != _n]
+            _pf = min(_pf_c, key=lambda c: abs(float(c["Barrett Score"]) - _me_sc), default=None)
+            _sl_c = []
+            for _d in (-1, 1):
+                _m = _hub_df[_hub_df["SalRank"] == _sr + _d] if _sr else _hub_df.iloc[0:0]
+                if len(_m):
+                    _sl_c.append(_m.iloc[0])
+            _sl_c = [c for c in _sl_c if normalize(str(c["Player"])) != _n]
+            _sl = min(_sl_c, key=lambda c: abs(float(c["Salary"]) - _me_sal), default=None)
+            _lines = []
+            if _pf is not None:
+                _lines.append(f'Similar 2025-26 performance: <b>{html.escape(str(_pf["Player"]))}</b> '
+                              f'({float(_pf["Barrett Score"]):.1f} Barrett Score)')
+            if _sl is not None:
+                _lines.append(f'Similar 2025-26 salary: <b>{html.escape(str(_sl["Player"]))}</b> '
+                              f'(&#36;{float(_sl["Salary"]):.1f}M)')
+            if _lines:
+                _anchor_note = '<div class="hub-note">' + "<br>".join(_lines) + "</div>"
         except Exception:
             _anchor_note = ""
         with st.container(border=True, key="hub_q1"):
