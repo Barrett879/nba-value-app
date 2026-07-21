@@ -136,6 +136,24 @@ def _background_warm() -> None:
             _log(f"bg sweep FAILED ({_label}): {e}")
     _self_warm("predictor", budget=180)
     _log("bg: warm complete")
+    # ── Keep-warm loop: the homepage path is covered by ~10 one-hour
+    # st.cache_data TTLs, so after any quiet hour the NEXT visitor pays the
+    # full rebuild (~10s). With visits spaced out, that "next visitor" is
+    # effectively every visitor. Re-running the synthetic session every 20
+    # minutes means a cache entry always re-fills inside a robot session
+    # before a human can hit it expired. Cost when warm: ~1s per cycle.
+    # The predictor re-warms hourly (every 3rd cycle, heavier caches).
+    interval = int(os.environ.get("HV_KEEPWARM_SECS", "1200"))
+    cycle = 0
+    while True:
+        time.sleep(interval)
+        cycle += 1
+        try:
+            _self_warm("home", budget=120)
+            if cycle % 3 == 0:
+                _self_warm("predictor", budget=180)
+        except Exception as e:  # never let one bad cycle kill the loop
+            _log(f"keep-warm cycle failed: {e}")
 
 
 threading.Thread(target=_background_warm, daemon=True).start()
