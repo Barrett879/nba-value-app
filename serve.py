@@ -308,6 +308,21 @@ def _install_extra_routes() -> None:
 
             head = get
 
+        class _TradeMachineHandler(tornado.web.RequestHandler):
+            """Serve the SPA shell for /Trade_Machine, swapping in per-trade OG
+            tags when a ?trade= share token is present, so shared trades unfurl
+            as 'NBA Trade Proposal: LAL / BKN' with the legs. Humans get the
+            byte-identical booting SPA either way."""
+
+            def get(self):
+                token = self.get_argument("trade", "")
+                out = seo_selfheal.trade_shell(_base_shell, token) if token else _base_shell
+                self.set_header("Content-Type", "text/html; charset=utf-8")
+                self.set_header("Cache-Control", "no-cache")
+                self.write(out)
+
+            head = get
+
         # Team pages are PARKED (Barrett, 2026-07-15): the feature is built and the
         # data pipeline works, but it's on the backburner. With the flag off the
         # route 404s (an explicit 404, so any crawled URL drops cleanly out of the
@@ -389,6 +404,7 @@ def _install_extra_routes() -> None:
                                   dict(fname=_f, ctype=_c)))
                 if _base_shell:  # exact "/" only; every other path stays Streamlit's
                     extra.append((r"/", _RootHandler))
+                    extra.append((r"/Trade_Machine", _TradeMachineHandler))
                 handlers = extra + list(handlers)
             _orig_app_init(self, handlers, *args, **kwargs)
             self.transforms.append(_NoindexTransform)

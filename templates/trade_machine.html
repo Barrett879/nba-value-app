@@ -80,6 +80,12 @@ body{background:transparent;color:var(--fg1);
 .winline{margin-top:.5rem;font-size:.8rem;color:var(--fg3)}
 .parity-fail{background:var(--tintb);color:var(--bad);border:1px solid var(--bad);
   border-radius:10px;padding:.6rem .9rem;font-weight:700;font-size:.82rem;margin-bottom:10px}
+.sharerow{display:flex;gap:.5rem;align-items:center;margin-top:.7rem;flex-wrap:wrap}
+.sharerow button{background:var(--teal);color:#fff;border:none;border-radius:9px;
+  padding:.45rem .9rem;font-weight:800;font-size:.8rem;cursor:pointer}
+.sharerow button:hover{filter:brightness(1.08)}
+.sharerow input{flex:1;min-width:220px;background:var(--card);color:var(--fg3);
+  border:1px solid var(--line);border-radius:8px;padding:.4rem .55rem;font-size:.72rem}
 </style>
 <script>
 const DATA = __DATA__;
@@ -254,6 +260,61 @@ function validateTrade(trade){
 const state={teams:DATA.default_teams.slice(),moves:{},cash:{}};
 // moves: playerKey/pickKey -> destination abbr (absence = stays home)
 
+// ── shareable-link serialization ─────────────────────────────────────────────
+// {v:1,t:[teams],m:[[kind,src,id,dest]...],c:[[abbr,amt]...]} -> base64url.
+// Players serialize by NAME and picks by "year:origin" so links survive
+// ledger reindexing. Mirrored by trade_token.py for the OG unfurl.
+function b64uEnc(s){return btoa(unescape(encodeURIComponent(s))).replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"")}
+function b64uDec(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+="=";
+  return decodeURIComponent(escape(atob(s)))}
+function serialize(){
+  const m=[];
+  for(const [key,dest] of Object.entries(state.moves)){
+    const [kind,src,id]=key.split("|");
+    if(kind==="P") m.push(["P",src,id,dest]);
+    else{const pk=DATA.teams[src].picks[Number(id)];
+      if(pk) m.push(["K",src,pk.year+":"+pk.origin,dest]);}
+  }
+  const c=state.teams.filter(a=>Number(state.cash[a]||0)>0).map(a=>[a,Number(state.cash[a])]);
+  if(!m.length&&!c.length) return null;
+  return b64uEnc(JSON.stringify({v:1,t:state.teams,m,c}));
+}
+function restore(token){
+  try{
+    const o=JSON.parse(b64uDec(token));
+    if(o.v!==1||!Array.isArray(o.t)) return;
+    const t=o.t.filter(a=>DATA.teams[a]).slice(0,4);
+    if(t.length<2) return;
+    state.teams=t; state.moves={}; state.cash={};
+    for(const [kind,src,id,dest] of (o.m||[])){
+      if(!DATA.teams[src]||!DATA.teams[dest]||!t.includes(src)||!t.includes(dest)) continue;
+      if(kind==="P"){
+        if(DATA.teams[src].players.some(p=>p.n===id)) state.moves["P|"+src+"|"+id]=dest;
+      }else{
+        const [yr,org]=String(id).split(":");
+        const idx=DATA.teams[src].picks.findIndex(p=>String(p.year)===yr&&p.origin===org);
+        if(idx>=0) state.moves["K|"+src+"|"+idx]=dest;
+      }
+    }
+    for(const [a,amt] of (o.c||[]))
+      if(t.includes(a)&&amt>0) state.cash[a]=amt;
+  }catch(e){/* bad token: start clean */}
+}
+function shareURL(){
+  const tok=serialize();
+  let base=DATA.share_base;
+  try{ base=window.parent.location.origin+"/Trade_Machine"; }catch(e){}
+  return tok?base+"?trade="+tok:base;
+}
+function syncParentURL(){
+  try{
+    const tok=serialize();
+    const u=new URL(window.parent.location.href);
+    if(tok) u.searchParams.set("trade",tok); else u.searchParams.delete("trade");
+    window.parent.history.replaceState(null,"",u.toString());
+  }catch(e){/* cross-origin embed: share button still works via DATA.share_base */}
+}
+
 const fmtM=x=>"$"+x.toFixed(1)+"M";
 function playerKey(abbr,n){return "P|"+abbr+"|"+n}
 function pickKey(abbr,i){return "K|"+abbr+"|"+i}
@@ -392,10 +453,13 @@ function render(){
     const best=Object.entries(deltas).sort((x,y)=>y[1]-x[1])[0];
     if(res.legal&&best&&Math.abs(best[1])>1)
       html+=`<div class="winline">By HoopsValue market value, ${esc(DATA.teams[best[0]].name)} win this trade, adding ${fmtM(best[1])} in surplus value.</div>`;
+    html+=`<div class="sharerow"><button id="sharebtn">Copy trade link</button>
+      <input id="shareurl" readonly value="${esc(shareURL())}"></div>`;
   }
   html+=`</div>`;
   root.innerHTML=html;
   wire();
+  syncParentURL();
 }
 
 function findOwner(name){
@@ -452,6 +516,15 @@ function wire(){
   root.querySelectorAll("input[data-cash]").forEach(inp=>{
     inp.onchange=()=>{state.cash[inp.dataset.cash]=inp.value; render();};
   });
+  const sh=document.getElementById("sharebtn");
+  if(sh) sh.onclick=()=>{
+    const url=document.getElementById("shareurl");
+    url.select();
+    const done=()=>{sh.textContent="Copied";setTimeout(()=>sh.textContent="Copy trade link",1400);};
+    if(navigator.clipboard&&navigator.clipboard.writeText)
+      navigator.clipboard.writeText(url.value).then(done).catch(()=>{document.execCommand("copy");done();});
+    else{document.execCommand("copy");done();}
+  };
   // drag and drop
   root.querySelectorAll(".card").forEach(c=>{
     c.addEventListener("dragstart",e=>{
@@ -487,5 +560,6 @@ function wire(){
     });
   });
 }
+if(DATA.initial) restore(DATA.initial);
 render();
 </script>

@@ -450,3 +450,62 @@ def _urlq(s: str) -> str:
     """Minimal query-safe encoding for the ?player= link target."""
     import urllib.parse
     return urllib.parse.quote(str(s))
+
+
+# --- Shareable trade links (Trade Machine phase 4) -----------------------------
+# /Trade_Machine?trade=<b64url of {v:1,t:[teams],m:[[kind,src,id,dest]...],c:...}>
+# (format mirrored from templates/trade_machine.html serialize()). The unfurl
+# describes the legs from the token alone -- player names ride in the payload,
+# so no roster lookups happen on the request path. Never raises.
+
+def _trade_decode(token: str):
+    import base64
+    s = token.replace("-", "+").replace("_", "/")
+    s += "=" * (-len(s) % 4)
+    o = json.loads(base64.b64decode(s).decode("utf-8"))
+    if o.get("v") != 1 or not isinstance(o.get("t"), list):
+        raise ValueError("bad token")
+    return o
+
+
+def trade_shell(base_html: str, token: str) -> str:
+    """Return base_html with title/description/OG swapped for a shared trade,
+    or base_html unchanged when the token is missing/invalid."""
+    try:
+        if not token:
+            return base_html
+        o = _trade_decode(token)
+        teams = [str(t)[:4] for t in o["t"][:4]]
+        sends = {t: [] for t in teams}
+        for mv in o.get("m", []):
+            if len(mv) == 4 and mv[1] in sends:
+                kind, src, ident, _dest = mv
+                if kind == "P":
+                    sends[src].append(str(ident))
+                else:
+                    yr = str(ident).split(":")[0]
+                    sends[src].append(f"a {yr} first-round pick")
+        legs = []
+        for t in teams:
+            names = sends[t][:3]
+            if not names:
+                continue
+            extra = len(sends[t]) - len(names)
+            legs.append(f"{t} send " + ", ".join(names)
+                        + (f" and {extra} more" if extra > 0 else ""))
+        title = f"NBA Trade Proposal: {' / '.join(teams)} | HoopsValue"
+        desc = (("; ".join(legs) + ". ") if legs else "") + \
+            "See whether this trade works under the 2023 CBA and who wins it on value."
+        t_e = _html.escape(title, quote=True)
+        d_e = _html.escape(desc[:290], quote=True)
+        out = re.sub(r"<title>[^<]*</title>", lambda m: f"<title>{t_e}</title>",
+                     base_html, count=1)
+        out = re.sub(r'(<meta name="description" content=")[^"]*(")',
+                     lambda m: m.group(1) + d_e + m.group(2), out, count=1)
+        out = re.sub(r'(<meta property="og:title" content=")[^"]*(")',
+                     lambda m: m.group(1) + t_e + m.group(2), out, count=1)
+        out = re.sub(r'(<meta property="og:description" content=")[^"]*(")',
+                     lambda m: m.group(1) + d_e + m.group(2), out, count=1)
+        return out
+    except Exception:
+        return base_html

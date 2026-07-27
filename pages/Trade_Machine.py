@@ -94,6 +94,15 @@ def _payload() -> str:
     }, separators=(",", ":"))
 
 
+def _payload_with_request_state() -> str:
+    """Splice per-request fields (share token from the URL, share base) into
+    the cached static payload without reparsing it."""
+    token = st.query_params.get("trade", "")
+    extras = (',"initial":' + json.dumps(token or None)
+              + ',"share_base":"https://hoopsvalue.com/Trade_Machine"}')
+    return _payload()[:-1] + extras
+
+
 _DARK = """--panel:#15171d;--card:#1b1f28;--line:#262a33;--track:#242833;
 --fg1:#e6e9f2;--fg2:#c3c8d4;--fg3:#a7adbb;--fg4:#8a8f9c;--fg5:#6b7079;
 --teal:#16d4c1;--good:#2ecc71;--bad:#e74c3c;--amberc:#f0b35b;
@@ -106,7 +115,7 @@ _LIGHT = """--panel:#ffffff;--card:#f7f8fa;--line:#e3e6eb;--track:#eceef2;
 _theme = _DARK if st.session_state.get("theme_dark", True) else _LIGHT
 _html = ((_ROOT / "templates" / "trade_machine.html").read_text()
          .replace("__THEME__", _theme)
-         .replace("__DATA__", _payload()))
+         .replace("__DATA__", _payload_with_request_state()))
 components.html(_html, height=1150, scrolling=True)
 
 st.caption(
