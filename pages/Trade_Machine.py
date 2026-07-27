@@ -116,7 +116,9 @@ _theme = _DARK if st.session_state.get("theme_dark", True) else _LIGHT
 _html = ((_ROOT / "templates" / "trade_machine.html").read_text()
          .replace("__THEME__", _theme)
          .replace("__DATA__", _payload_with_request_state()))
-components.html(_html, height=1150, scrolling=True)
+# Initial height only: the component resizes its own frame to fit the full
+# rosters (window.frameElement, same-origin srcdoc), so nothing scrolls inside.
+components.html(_html, height=1000, scrolling=False)
 
 st.caption(
     "Legality uses the verified 2023 CBA rules; ambiguous edge cases resolve "

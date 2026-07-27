@@ -37,7 +37,7 @@ body{background:transparent;color:var(--fg1);
 .zone .zl{font-size:.62rem;font-weight:800;letter-spacing:.07em;color:var(--fg5);
   text-transform:uppercase;padding:.1rem .2rem}
 .zone.over{border-color:var(--teal);background:var(--tintg)}
-.roster{max-height:340px;overflow-y:auto;padding-right:2px}
+.roster{padding-right:2px}
 .card{display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--line);
   border-radius:10px;padding:.32rem .5rem;margin:.28rem 0;cursor:grab;user-select:none}
 .card:active{cursor:grabbing}
@@ -460,7 +460,19 @@ function render(){
   root.innerHTML=html;
   wire();
   syncParentURL();
+  fitFrame();
 }
+
+// Same-origin srcdoc iframe: size our own frame to the content so nothing
+// scrolls inside the component (full rosters stay visible, like the picks).
+function fitFrame(){
+  try{
+    const h=document.documentElement.scrollHeight+24;
+    if(window.frameElement) window.frameElement.style.height=h+"px";
+  }catch(e){}
+}
+try{ new ResizeObserver(fitFrame).observe(document.body); }catch(e){}
+window.addEventListener("load",fitFrame);
 
 function findOwner(name){
   for(const a of Object.keys(DATA.teams)){
