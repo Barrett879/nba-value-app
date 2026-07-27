@@ -1,0 +1,491 @@
+<!-- Trade Machine interactive component. Rendered into a srcdoc iframe by
+pages/Trade_Machine.py with __DATA__ and __THEME__ injected. The JS rules
+engine is a line-for-line port of trade_rules.py (the verified source of
+truth); parity vectors exported from the Python engine run on load and any
+mismatch shows a loud red banner. No network calls except headshot images. -->
+<div id="tm-root"></div>
+<style>
+:root { __THEME__ }
+*{box-sizing:border-box;margin:0}
+body{background:transparent;color:var(--fg1);
+  font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+#tm-root{padding:2px 2px 14px}
+.pickrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
+.pickrow select{background:var(--panel);color:var(--fg1);border:1px solid var(--line);
+  border-radius:9px;padding:.45rem .6rem;font-size:.88rem;font-weight:600}
+.pickrow .add{background:none;border:1px dashed var(--line);color:var(--fg4);border-radius:9px;
+  padding:.45rem .7rem;cursor:pointer;font-size:.82rem;font-weight:700}
+.pickrow .add:hover{color:var(--teal);border-color:var(--teal)}
+.boards{display:grid;gap:12px}
+.boards.n2{grid-template-columns:1fr 1fr}
+.boards.n3{grid-template-columns:1fr 1fr 1fr}
+.boards.n4{grid-template-columns:1fr 1fr 1fr 1fr}
+@media(max-width:900px){.boards{grid-template-columns:1fr !important}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:.7rem .7rem .8rem;min-width:0}
+.phead{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:2px}
+.pname{font-weight:800;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ppay{font-size:.72rem;color:var(--fg4);font-variant-numeric:tabular-nums;white-space:nowrap}
+.capbar{position:relative;height:7px;border-radius:4px;background:var(--track);margin:.35rem 0 .15rem;overflow:hidden}
+.capbar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--teal);border-radius:4px}
+.capbar .fill.warn{background:var(--amberc)} .capbar .fill.bad{background:var(--bad)}
+.capticks{position:relative;height:12px;font-size:.56rem;color:var(--fg5);margin-bottom:.35rem}
+.capticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.zone{border:1.5px dashed var(--line);border-radius:11px;min-height:52px;padding:.35rem;
+  margin:.4rem 0 .55rem;transition:border-color .12s, background .12s}
+.zone .zl{font-size:.62rem;font-weight:800;letter-spacing:.07em;color:var(--fg5);
+  text-transform:uppercase;padding:.1rem .2rem}
+.zone.over{border-color:var(--teal);background:var(--tintg)}
+.roster{max-height:340px;overflow-y:auto;padding-right:2px}
+.card{display:flex;align-items:center;gap:.5rem;background:var(--card);border:1px solid var(--line);
+  border-radius:10px;padding:.32rem .5rem;margin:.28rem 0;cursor:grab;user-select:none}
+.card:active{cursor:grabbing}
+.card.dragging{opacity:.45}
+.card img{width:30px;height:30px;border-radius:50%;object-fit:cover;object-position:top;
+  background:var(--track);flex:0 0 30px}
+.card .noimg{width:30px;height:30px;border-radius:50%;background:var(--track);flex:0 0 30px}
+.card .who{flex:1;min-width:0}
+.card .nm{font-size:.8rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.card .sub{font-size:.66rem;color:var(--fg4);font-variant-numeric:tabular-nums}
+.card .mv{border:none;background:var(--track);color:var(--fg3);font-size:.68rem;font-weight:800;
+  border-radius:7px;padding:.22rem .45rem;cursor:pointer;white-space:nowrap}
+.card .mv:hover{background:var(--teal);color:#fff}
+.card.pick{cursor:grab;background:var(--card)}
+.card.pick .nm{color:var(--fg2)}
+.cashrow{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--fg4);margin-top:.3rem}
+.cashrow input{width:72px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
+  border-radius:7px;padding:.25rem .4rem;font-size:.78rem}
+.secl{font-size:.62rem;font-weight:800;letter-spacing:.07em;color:var(--fg5);
+  text-transform:uppercase;margin:.5rem 0 .1rem}
+.verdict{margin-top:14px}
+.vband{border-radius:12px;padding:.75rem 1rem;font-weight:800;font-size:1rem;border:1px solid}
+.vband.ok{color:var(--teal);border-color:var(--teal);background:var(--tintg)}
+.vband.no{color:var(--bad);border-color:var(--bad);background:var(--tintb)}
+.vband.idle{color:var(--fg4);border-color:var(--line);background:var(--panel)}
+.vio{border-left:3px solid var(--bad);background:var(--panel);border-radius:0 9px 9px 0;
+  padding:.45rem .75rem;margin:.35rem 0;font-size:.84rem}
+.vio .cite{color:var(--fg5);font-size:.68rem;margin-top:.1rem}
+.note{border-left:3px solid var(--amberc);background:var(--panel);border-radius:0 9px 9px 0;
+  padding:.42rem .75rem;margin:.35rem 0;font-size:.8rem;color:var(--fg2)}
+.impacts{display:grid;gap:10px;margin-top:10px}
+.impacts.n2{grid-template-columns:1fr 1fr}.impacts.n3{grid-template-columns:1fr 1fr 1fr}
+.impacts.n4{grid-template-columns:1fr 1fr 1fr 1fr}
+@media(max-width:900px){.impacts{grid-template-columns:1fr !important}}
+.icard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:.6rem .8rem}
+.icard .h{font-weight:800;font-size:.8rem;margin-bottom:.3rem}
+.icard .r{display:flex;justify-content:space-between;font-size:.78rem;padding:.1rem 0;
+  font-variant-numeric:tabular-nums}
+.icard .lab{color:var(--fg4)} .gd{color:var(--good);font-weight:700} .bd{color:var(--bad);font-weight:700}
+.winline{margin-top:.5rem;font-size:.8rem;color:var(--fg3)}
+.parity-fail{background:var(--tintb);color:var(--bad);border:1px solid var(--bad);
+  border-radius:10px;padding:.6rem .9rem;font-weight:700;font-size:.82rem;margin-bottom:10px}
+</style>
+<script>
+const DATA = __DATA__;
+const CFG = DATA.cfg;
+
+// ── engine: line-for-line port of trade_rules.py ─────────────────────────────
+function matchingLimit(out){
+  const expanded = Math.min(CFG.match_pct_high*out + CFG.match_cushion, out + CFG.match_flat_add);
+  return Math.max(expanded, CFG.match_pct_low*out + CFG.match_cushion);
+}
+const nonTwo = ps => ps.filter(p=>!p.two_way);
+const salOut = t => nonTwo(t.out_players).reduce((s,p)=>s+p.salary,0);
+const salIn  = t => nonTwo(t.in_players).reduce((s,p)=>s+p.salary,0);
+const matchIn = t => t.in_players.filter(p=>!p.two_way && p.signed_via!=="min").reduce((s,p)=>s+p.salary,0);
+const payAfter = t => t.payroll - salOut(t) + salIn(t);
+const countedOut = t => nonTwo(t.out_players);
+function addMonths(iso, months){
+  const [y0,m0,d0]=iso.split("-").map(Number);
+  let y=y0, m=m0+months; y+=Math.floor((m-1)/12); m=((m-1)%12)+1;
+  const leap=(y%4===0&&(y%100!==0||y%400===0));
+  const dim=[31,leap?29:28,31,30,31,30,31,31,30,31,30,31][m-1];
+  const d=Math.min(d0,dim);
+  return `${y}-${String(m).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+}
+function isOffseason(iso){
+  const [,m,d]=iso.split("-").map(Number);
+  return (m>7 || (m===7&&d>=1)) && (m<10 || (m===10&&d<21));
+}
+function validateTrade(trade){
+  const V=[], N=[];
+  const vio=(code,team,message,cite)=>V.push({code,team,message,cite});
+  const note=(code,team,message)=>N.push({code,team,message});
+  const teams=trade.teams;
+  // matching (post-trade regime)
+  for(const t of teams){
+    const need=matchIn(t); if(need<=0) continue;
+    const after=payAfter(t), out=salOut(t);
+    if(after<=CFG.cap+CFG.room_buffer) continue;
+    if(after>CFG.apron1){
+      const limit=CFG.apron_match_pct*out;
+      if(need>limit+1e-9){
+        const which=after>CFG.apron2?"second apron":"first apron";
+        vio("MATCH_APRON",t.abbr,`${t.abbr} would finish above the ${which} and can take back at most 100% of the salary it sends out ($${limit.toFixed(1)}M); it is taking back $${need.toFixed(1)}M.`,"CBA Art. VII 6(j)(1); 6(j)(3)");
+      }
+    }else{
+      const roomAllow=Math.max(0,CFG.cap-t.payroll)+CFG.room_buffer+salOut(t);
+      const limit=Math.max(matchingLimit(out),roomAllow);
+      if(need>limit+1e-9){
+        vio("MATCH_BELOW_APRON",t.abbr,`${t.abbr} sends out $${out.toFixed(1)}M, which allows taking back at most $${limit.toFixed(1)}M; it is taking back $${need.toFixed(1)}M.`,"CBA Art. VII 6(j)(1)(iv)");
+      }else if(need>CFG.apron_match_pct*out+1e-9){
+        const sliver=need<=CFG.apron_match_pct*out+CFG.match_cushion+1e-9;
+        note("HARDCAP_APRON1",t.abbr,`Taking back more salary than it sends hard-caps ${t.abbr} at the first apron ($${CFG.apron1.toFixed(1)}M) for the rest of the season.`+(sliver?" (Within the $250K cushion this is contested; treated conservatively as a hard cap.)":""));
+      }
+    }
+  }
+  // apron 2
+  for(const t of teams){
+    const after=payAfter(t);
+    if(after>CFG.apron2){
+      if(countedOut(t).length>=2 && matchIn(t)>0)
+        vio("APRON2_AGGREGATION",t.abbr,`${t.abbr} would finish above the second apron ($${CFG.apron2.toFixed(1)}M) and cannot combine two or more outgoing salaries to take salary back.`,"CBA Art. VII 6(j)(1)(ii); 2(e)(4) row H");
+      if(t.cash_out>0)
+        vio("APRON2_CASH",t.abbr,`${t.abbr} would finish above the second apron and cannot send cash in a trade.`,"CBA Art. VII 2(e)(4) row I");
+    }else{
+      if(countedOut(t).length>=2 && matchIn(t)>0)
+        note("HARDCAP_APRON2_AGG",t.abbr,`Aggregating salaries hard-caps ${t.abbr} at the second apron ($${CFG.apron2.toFixed(1)}M) for the rest of the season.`);
+      if(t.cash_out>0)
+        note("HARDCAP_APRON2_CASH",t.abbr,`Sending cash hard-caps ${t.abbr} at the second apron ($${CFG.apron2.toFixed(1)}M) for the rest of the season.`);
+    }
+  }
+  // existing hard caps
+  for(const t of teams){
+    if(t.hard_cap!=null && payAfter(t)>t.hard_cap+1e-9)
+      vio("HARD_CAP_EXCEEDED",t.abbr,`${t.abbr} is hard-capped at $${t.hard_cap.toFixed(1)}M this season and this trade would put it at $${payAfter(t).toFixed(1)}M. A hard cap cannot be exceeded for any reason.`,"CBA Art. VII 2(e)(2)");
+  }
+  // stepien (delta) + horizon
+  const horizonLast=CFG.next_draft_year+CFG.pick_trade_horizon_drafts-1;
+  for(const t of teams){
+    for(const p of [...t.out_picks,...t.in_picks])
+      if(p.year>horizonLast)
+        vio("PICK_HORIZON",t.abbr,`The ${p.year} pick is beyond the seven-draft limit (latest tradable draft: ${horizonLast}).`,"NBA By-Laws / CBA pick-trading horizon");
+    const sendsFirst=t.out_picks.some(p=>p.round===1&&!p.swap);
+    if(!sendsFirst) continue;
+    if(!t.owned_future_firsts.length){
+      note("STEPIEN_UNKNOWN",t.abbr,`${t.abbr}'s future first-round ownership is not loaded, so the Stepien rule was not checked for this trade.`);
+      continue;
+    }
+    const before=new Set(t.owned_future_firsts), covered=new Set(before);
+    for(const p of t.out_picks) if(p.round===1&&!p.swap) covered.delete(p.year);
+    for(const p of t.in_picks) if(p.round===1&&!p.swap&&!p.protection) covered.add(p.year);
+    const years=[]; for(let y=CFG.next_draft_year;y<=horizonLast;y++) years.push(y);
+    const pairs=cov=>{const run=years.filter(y=>!cov.has(y));const s=new Set();
+      for(let i=0;i+1<run.length;i++) if(run[i+1]===run[i]+1) s.add(run[i]+":"+run[i+1]); return s;};
+    const np=[...pairs(covered)].filter(x=>!pairs(before).has(x));
+    if(np.length){
+      const [a,b]=np.sort()[0].split(":");
+      vio("STEPIEN",t.abbr,`${t.abbr} could be left without a first-round pick in ${a} and ${b}, two consecutive future drafts. Teams must keep a first in at least every other future draft.`,"NBA By-Laws sec. 7 (Stepien rule)");
+    }
+  }
+  // sign-and-trade
+  for(const t of teams){
+    const snt=t.in_players.filter(p=>p.signed_via==="sign_and_trade");
+    if(!snt.length) continue;
+    if(!isOffseason(trade.trade_date))
+      vio("SNT_SEASON",t.abbr,"Sign-and-trades are only allowed before the regular season starts.","CBA Art. VII 8(e)(1)(v)");
+    if(payAfter(t)>CFG.apron1)
+      vio("SNT_APRON1",t.abbr,`${t.abbr} cannot finish a sign-and-trade above the first apron ($${CFG.apron1.toFixed(1)}M); this trade puts it at $${payAfter(t).toFixed(1)}M.`,"CBA Art. VII 2(e)(4) row C");
+    else
+      note("HARDCAP_APRON1_SNT",t.abbr,`Acquiring a sign-and-trade player hard-caps ${t.abbr} at the first apron ($${CFG.apron1.toFixed(1)}M) for the rest of the season.`);
+  }
+  // eligibility
+  const td=trade.trade_date, dec15=CFG.recently_signed_floor, jan15=CFG.jan15_floor;
+  for(const t of teams){
+    for(const p of t.out_players){
+      if(p.signed_date){
+        let okFrom=null, cite="";
+        if(p.two_way||p.signed_via==="draftee"){
+          const [y,m,d]=p.signed_date.split("-").map(Number);
+          const dt=new Date(Date.UTC(y,m-1,d)); dt.setUTCDate(dt.getUTCDate()+CFG.draftee_wait_days);
+          okFrom=dt.toISOString().slice(0,10); cite="CBA 30-day rule";
+        }else if(p.signed_via==="bird_resign"&&(p.raise_pct||0)>20.0){
+          const a=addMonths(p.signed_date,CFG.recently_signed_months);
+          okFrom=a>jan15?a:jan15; cite="CBA Art. VII 8(d)(iii) (Jan 15 rule)";
+        }else if(p.signed_via!=="sign_and_trade"){
+          const a=addMonths(p.signed_date,CFG.recently_signed_months);
+          okFrom=a>dec15?a:dec15; cite="CBA Art. VII 8(d) (Dec 15 rule)";
+        }
+        if(okFrom&&td<okFrom)
+          vio("RECENTLY_SIGNED",t.abbr,`${p.name} signed on ${p.signed_date} and cannot be traded until ${okFrom}.`,cite);
+      }
+      if(p.consent_required)
+        note("CONSENT",t.abbr,`${p.name} must consent to this trade (no-trade rights).`);
+      if(p.acquired_date&&countedOut(t).length>=2){
+        const waitUntil=addMonths(p.acquired_date,CFG.aggregation_wait_months);
+        if(td<waitUntil)
+          vio("AGGREGATION_WAIT",t.abbr,`${p.name} was acquired on ${p.acquired_date} and cannot be combined with other salaries until ${waitUntil}.`,"CBA Art. VII 6(j)(4)(i)");
+      }
+    }
+  }
+  // cash + roster
+  const maxRoster=isOffseason(td)?CFG.roster_max_offseason:CFG.roster_max_inseason;
+  for(const t of teams){
+    if(t.cash_out>0&&t.cash_sent_ytd+t.cash_out>CFG.cash_annual_limit+1e-9)
+      vio("CASH_LIMIT",t.abbr,`${t.abbr} would exceed the $${CFG.cash_annual_limit.toFixed(3)}M annual cash-in-trades limit ($${t.cash_sent_ytd.toFixed(1)}M already sent + $${t.cash_out.toFixed(1)}M here).`,"CBA Art. VII 8(a)");
+    const stdDelta=t.in_players.filter(p=>!p.two_way).length-t.out_players.filter(p=>!p.two_way).length;
+    const rosterAfter=t.roster_size+stdDelta;
+    if(rosterAfter>maxRoster)
+      vio("ROSTER_MAX",t.abbr,`${t.abbr} would have ${rosterAfter} standard contracts; the limit is ${maxRoster} ${maxRoster===CFG.roster_max_offseason?"in the offseason":"during the season"}. Waive or include another player first.`,"roster limits (15+3 in season, 21 offseason)");
+    if(rosterAfter<CFG.roster_min)
+      note("ROSTER_MIN",t.abbr,`${t.abbr} drops to ${rosterAfter} standard contracts; below ${CFG.roster_min} is only allowed for two weeks at a time.`);
+  }
+  const impact=teams.map(t=>({abbr:t.abbr,before:t.payroll,after:payAfter(t),
+    roster:t.roster_size+t.in_players.filter(p=>!p.two_way).length-t.out_players.filter(p=>!p.two_way).length}));
+  return {legal:V.length===0,violations:V,notes:N,impact};
+}
+
+// ── parity vectors ───────────────────────────────────────────────────────────
+(function(){
+  const fails=[];
+  for(const v of DATA.vectors){
+    const r=validateTrade(v.trade);
+    const codes=[...new Set(r.violations.map(x=>x.code))].sort();
+    const notes=[...new Set(r.notes.map(x=>x.code))].sort();
+    if(r.legal!==v.legal||JSON.stringify(codes)!==JSON.stringify(v.violation_codes)
+       ||JSON.stringify(notes)!==JSON.stringify(v.note_codes))
+      fails.push(v.name+" (js:"+codes.join(",")+" py:"+v.violation_codes.join(",")+")");
+  }
+  window.__parity={total:DATA.vectors.length,fails};
+})();
+
+// ── UI state ─────────────────────────────────────────────────────────────────
+const state={teams:DATA.default_teams.slice(),moves:{},cash:{}};
+// moves: playerKey/pickKey -> destination abbr (absence = stays home)
+
+const fmtM=x=>"$"+x.toFixed(1)+"M";
+function playerKey(abbr,n){return "P|"+abbr+"|"+n}
+function pickKey(abbr,i){return "K|"+abbr+"|"+i}
+
+function buildTrade(){
+  const tt={};
+  for(const a of state.teams){
+    tt[a]={abbr:a,payroll:DATA.teams[a].payroll,roster_size:DATA.teams[a].size,
+      out_players:[],in_players:[],out_picks:[],in_picks:[],
+      cash_out:0,cash_in:0,cash_sent_ytd:0,
+      owned_future_firsts:DATA.teams[a].covered.slice(),hard_cap:null};
+  }
+  for(const [key,dest] of Object.entries(state.moves)){
+    const [kind,abbr,id]=key.split("|");
+    if(!tt[abbr]||!tt[dest]||abbr===dest) continue;
+    if(kind==="P"){
+      const p=DATA.teams[abbr].players.find(x=>x.n===id); if(!p) continue;
+      const tp={name:p.n,salary:p.salary,signed_date:p.signed_date||null,
+        signed_via:p.signed_via||"standard",raise_pct:null,acquired_date:null,
+        consent_required:false,two_way:false};
+      tt[abbr].out_players.push(tp); tt[dest].in_players.push(tp);
+    }else{
+      const pk=DATA.teams[abbr].picks[Number(id)]; if(!pk) continue;
+      const tpk={year:pk.year,round:1,protection:pk.protection||"",swap:false};
+      tt[abbr].out_picks.push(tpk); tt[dest].in_picks.push(tpk);
+    }
+  }
+  for(const a of state.teams){
+    const c=Number(state.cash[a]||0);
+    if(c>0){
+      const dest=state.teams.find(x=>x!==a);
+      tt[a].cash_out+=c; tt[dest].cash_in+=c;
+    }
+  }
+  return {trade_date:DATA.today,teams:state.teams.map(a=>tt[a])};
+}
+
+// ── rendering ────────────────────────────────────────────────────────────────
+const root=document.getElementById("tm-root");
+function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
+
+function capbar(after){
+  const max=CFG.apron2*1.06;
+  const pct=Math.max(2,Math.min(100,after/max*100));
+  const cls=after>CFG.apron2?"bad":(after>CFG.apron1?"warn":"");
+  const tick=v=>`<span style="left:${v/max*100}%">${v===CFG.tax_line?"tax":(v===CFG.apron1?"apron 1":"apron 2")}</span>`;
+  return `<div class="capbar"><div class="fill ${cls}" style="width:${pct}%"></div></div>
+    <div class="capticks">${tick(CFG.tax_line)}${tick(CFG.apron1)}${tick(CFG.apron2)}</div>`;
+}
+
+function render(){
+  const n=state.teams.length;
+  const trade=buildTrade();
+  const anyMove=Object.keys(state.moves).length>0||state.teams.some(a=>Number(state.cash[a]||0)>0);
+  const res=anyMove?validateTrade(trade):null;
+
+  let html="";
+  if(window.__parity.fails.length)
+    html+=`<div class="parity-fail">Engine parity check failed for: ${esc(window.__parity.fails.join("; "))}. Verdicts may be wrong; reload or report this.</div>`;
+
+  html+=`<div class="pickrow">`+state.teams.map((a,i)=>
+    `<select data-slot="${i}">`+DATA.abbrs.map(x=>
+      `<option value="${x}" ${x===a?"selected":""} ${state.teams.includes(x)&&x!==a?"disabled":""}>${x} - ${esc(DATA.teams[x].name)}</option>`).join("")+`</select>`
+  ).join("")+
+  (n<4?`<button class="add" id="addteam">+ Add team</button>`:"")+
+  (n>2?`<button class="add" id="dropteam">- Remove team</button>`:"")+`</div>`;
+
+  html+=`<div class="boards n${n}">`;
+  for(const a of state.teams){
+    const T=DATA.teams[a];
+    const tt=trade.teams.find(x=>x.abbr===a);
+    const after=tt?(tt.payroll-tt.out_players.reduce((s,p)=>s+p.salary,0)+tt.in_players.reduce((s,p)=>s+p.salary,0)):T.payroll;
+    const incoming=Object.entries(state.moves).filter(([k,d])=>d===a);
+    html+=`<div class="panel" data-team="${a}">
+      <div class="phead"><span class="pname">${esc(T.name)}</span>
+      <span class="ppay">${fmtM(T.payroll)} &rarr; <b>${fmtM(after)}</b></span></div>
+      ${capbar(after)}
+      <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;
+    for(const [key,dest] of incoming){
+      const [kind,src,id]=key.split("|");
+      if(kind==="P"){
+        const p=DATA.teams[src].players.find(x=>x.n===id);
+        html+=cardHTML(p,src,key,true);
+      }else{
+        const pk=DATA.teams[src].picks[Number(id)];
+        html+=pickHTML(pk,src,key,true);
+      }
+    }
+    html+=`</div><div class="secl">Roster</div><div class="roster">`;
+    for(const p of T.players){
+      const key=playerKey(a,p.n);
+      if(state.moves[key]) continue;           // moved away
+      html+=cardHTML(p,a,key,false);
+    }
+    html+=`</div><div class="secl">Picks</div>`;
+    T.picks.forEach((pk,i)=>{
+      const key=pickKey(a,i);
+      if(state.moves[key]) return;
+      html+=pickHTML(pk,a,key,false);
+    });
+    html+=`<div class="cashrow">Cash out <input type="number" min="0" max="${CFG.cash_annual_limit}"
+      step="0.5" value="${state.cash[a]||""}" data-cash="${a}" placeholder="0"> $M</div></div>`;
+  }
+  html+=`</div>`;
+
+  html+=`<div class="verdict">`;
+  if(!anyMove){
+    html+=`<div class="vband idle">Drag a player or pick to another team to see the verdict.</div>`;
+  }else if(res.legal){
+    html+=`<div class="vband ok">TRADE WORKS under the 2023 CBA</div>`;
+  }else{
+    html+=`<div class="vband no">ILLEGAL TRADE: ${res.violations.length} rule violation${res.violations.length>1?"s":""}</div>`;
+    for(const v of res.violations)
+      html+=`<div class="vio">${esc(v.message)}<div class="cite">${esc(v.cite)}</div></div>`;
+  }
+  if(res) for(const x of res.notes)
+    html+=`<div class="note">${esc(x.message)}</div>`;
+  if(res){
+    html+=`<div class="impacts n${n}">`;
+    const deltas={};
+    for(const tt of trade.teams){
+      const vIn=tt.in_players.reduce((s,p)=>{const src=findOwner(p.name);return s+((src&&src.value)||0)},0);
+      const vOut=tt.out_players.reduce((s,p)=>{const src=findOwner(p.name);return s+((src&&src.value)||0)},0);
+      const dv=vIn-vOut; deltas[tt.abbr]=dv;
+      const ds=tt.in_players.reduce((s,p)=>s+p.salary,0)-tt.out_players.reduce((s,p)=>s+p.salary,0);
+      const imp=res.impact.find(x=>x.abbr===tt.abbr);
+      const cls=dv>1?"gd":(dv<-1?"bd":"");
+      html+=`<div class="icard"><div class="h">${esc(DATA.teams[tt.abbr].name)}</div>
+        <div class="r"><span class="lab">Payroll</span><span>${fmtM(imp.before)} &rarr; ${fmtM(imp.after)}</span></div>
+        <div class="r"><span class="lab">Salary delta</span><span>${ds>=0?"+":"-"}${fmtM(Math.abs(ds)).slice(1)}</span></div>
+        <div class="r"><span class="lab">Room to first apron</span><span>${CFG.apron1-imp.after<0?"-":""}${fmtM(Math.abs(CFG.apron1-imp.after)).slice(1)}</span></div>
+        <div class="r"><span class="lab">Roster</span><span>${imp.roster} players</span></div>
+        <div class="r"><span class="lab">Market value delta</span><span class="${cls}">${dv>=0?"+":"-"}${fmtM(Math.abs(dv)).slice(1)}</span></div></div>`;
+    }
+    html+=`</div>`;
+    const best=Object.entries(deltas).sort((x,y)=>y[1]-x[1])[0];
+    if(res.legal&&best&&Math.abs(best[1])>1)
+      html+=`<div class="winline">By HoopsValue market value, ${esc(DATA.teams[best[0]].name)} win this trade, adding ${fmtM(best[1])} in surplus value.</div>`;
+  }
+  html+=`</div>`;
+  root.innerHTML=html;
+  wire();
+}
+
+function findOwner(name){
+  for(const a of Object.keys(DATA.teams)){
+    const p=DATA.teams[a].players.find(x=>x.n===name);
+    if(p) return p;
+  }
+  return null;
+}
+
+function cardHTML(p,src,key,inZone){
+  const img=p.headshot?`<img loading="lazy" src="${p.headshot}" alt="">`:`<div class="noimg"></div>`;
+  const others=state.teams.filter(x=>x!==(inZone?null:src)&&x!==src);
+  const btn=inZone
+    ?`<button class="mv" data-return="${key}">&larr; return</button>`
+    :(others.length===1?`<button class="mv" data-send="${key}" data-to="${others[0]}">&rarr; ${others[0]}</button>`
+      :others.map(o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`).join(""));
+  return `<div class="card" draggable="true" data-key="${key}">${img}
+    <div class="who"><div class="nm">${esc(p.n)}</div>
+    <div class="sub">${fmtM(p.salary)}${p.barrett!=null?" &middot; "+p.barrett.toFixed(1)+" BS":""}</div></div>${btn}</div>`;
+}
+function pickHTML(pk,src,key,inZone){
+  const others=state.teams.filter(x=>x!==src);
+  const btn=inZone
+    ?`<button class="mv" data-return="${key}">&larr; return</button>`
+    :(others.length===1?`<button class="mv" data-send="${key}" data-to="${others[0]}">&rarr; ${others[0]}</button>`
+      :others.map(o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`).join(""));
+  const lbl=`${pk.year} ${pk.origin===src?"own":pk.origin} 1st${pk.protection?" (protected)":""}`;
+  return `<div class="card pick" draggable="true" data-key="${key}"><div class="noimg" style="border-radius:6px"></div>
+    <div class="who"><div class="nm">${esc(lbl)}</div><div class="sub">draft pick</div></div>${btn}</div>`;
+}
+
+function wire(){
+  root.querySelectorAll("select[data-slot]").forEach(sel=>{
+    sel.onchange=()=>{
+      const i=Number(sel.dataset.slot);
+      state.teams[i]=sel.value; state.moves={}; state.cash={};
+      render();
+    };
+  });
+  const add=document.getElementById("addteam");
+  if(add) add.onclick=()=>{
+    const next=DATA.abbrs.find(x=>!state.teams.includes(x));
+    state.teams.push(next); state.moves={}; state.cash={}; render();
+  };
+  const drop=document.getElementById("dropteam");
+  if(drop) drop.onclick=()=>{state.teams.pop(); state.moves={}; state.cash={}; render();};
+  root.querySelectorAll("[data-send]").forEach(b=>{
+    b.onclick=()=>{state.moves[b.dataset.send]=b.dataset.to; render();};
+  });
+  root.querySelectorAll("[data-return]").forEach(b=>{
+    b.onclick=()=>{delete state.moves[b.dataset.return]; render();};
+  });
+  root.querySelectorAll("input[data-cash]").forEach(inp=>{
+    inp.onchange=()=>{state.cash[inp.dataset.cash]=inp.value; render();};
+  });
+  // drag and drop
+  root.querySelectorAll(".card").forEach(c=>{
+    c.addEventListener("dragstart",e=>{
+      e.dataTransfer.setData("text/plain",c.dataset.key);
+      e.dataTransfer.effectAllowed="move";
+      c.classList.add("dragging");
+    });
+    c.addEventListener("dragend",()=>c.classList.remove("dragging"));
+  });
+  root.querySelectorAll("[data-drop]").forEach(z=>{
+    z.addEventListener("dragover",e=>{e.preventDefault();z.classList.add("over");});
+    z.addEventListener("dragleave",()=>z.classList.remove("over"));
+    z.addEventListener("drop",e=>{
+      e.preventDefault(); z.classList.remove("over");
+      const key=e.dataTransfer.getData("text/plain");
+      if(!key) return;
+      const src=key.split("|")[1], dest=z.dataset.drop;
+      if(dest===src){ delete state.moves[key]; }   // dropped back home = return
+      else state.moves[key]=dest;
+      render();
+    });
+  });
+  // panels also accept drops (drop anywhere on the receiving team)
+  root.querySelectorAll(".panel").forEach(p=>{
+    p.addEventListener("dragover",e=>e.preventDefault());
+    p.addEventListener("drop",e=>{
+      const key=e.dataTransfer.getData("text/plain");
+      if(!key) return;
+      e.preventDefault();
+      const src=key.split("|")[1], dest=p.dataset.team;
+      if(dest===src) delete state.moves[key]; else state.moves[key]=dest;
+      render();
+    });
+  });
+}
+render();
+</script>
