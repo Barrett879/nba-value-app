@@ -215,6 +215,37 @@ a.out_players = [TradePlayer("Ghost", 10.0)]        # nobody receives him
 assert "UNBALANCED_PLAYERS" in codes(validate(two_team(a, b), CFG))
 print("ok  structural balance")
 
+# ── Stepien is a DELTA rule: pre-existing gaps do not block unrelated trades ──
+gappy = team("DEN2", 160.0, owned_future_firsts=[2031, 2032, 2033])  # 27-30 gap exists
+b = team("CHA", 130.0, owned_future_firsts=list(range(2027, 2034)))
+gappy.out_picks = [TradePick(2033, 1)]
+b.in_picks = list(gappy.out_picks)
+assert validate(two_team(gappy, b), CFG).legal      # 2033 out: no NEW pair (2032 covers)
+gappy = team("DEN2", 160.0, owned_future_firsts=[2031, 2032, 2033])
+b = team("CHA", 130.0, owned_future_firsts=list(range(2027, 2034)))
+gappy.out_picks = [TradePick(2031, 1)]
+b.in_picks = list(gappy.out_picks)
+r = validate(two_team(gappy, b), CFG)               # creates NEW 2030+2031 pair
+assert "STEPIEN" in codes(r)
+gappy = team("DEN2", 160.0, owned_future_firsts=[2031, 2032, 2033])
+b = team("CHA", 130.0, owned_future_firsts=list(range(2027, 2034)))
+gappy.out_picks = [TradePick(2032, 1)]              # 2031+2033 still cover neighbors
+b.in_picks = list(gappy.out_picks)
+assert validate(two_team(gappy, b), CFG).legal
+print("ok  Stepien delta semantics")
+
+# ── integration: real ledger drives coverage ──────────────────────────────────
+import json
+ledger = json.loads((Path(__file__).resolve().parent.parent / "cache" / "pick_ledger.json").read_text())
+okc = ledger["teams"]["OKC"]["covered"]
+assert len(ledger["teams"]) == 30
+assert all(2027 <= y <= 2033 for t in ledger["teams"].values() for y in t["covered"])
+a = team("OKC", 170.0, owned_future_firsts=list(okc))
+b = team("CHA", 130.0, owned_future_firsts=list(range(2027, 2034)))
+r = validate(two_team(a, b), CFG)                   # no picks moved: always legal
+assert r.legal
+print(f"ok  ledger integration (OKC covered years: {okc})")
+
 # ── BYC helper (Kessler example from the spec) ────────────────────────────────
 assert abs(byc_outgoing(4.878938, 30.108821) - 15.0544105) < 1e-6
 print("ok  BYC outgoing (Kessler example)")

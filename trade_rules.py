@@ -340,24 +340,33 @@ def check_stepien(trade: Trade, cfg: CBAConfig):
                 f"{t.abbr}'s future first-round ownership is not loaded, so the "
                 f"Stepien rule was not checked for this trade."))
             continue
-        covered = set(t.owned_future_firsts)
+        before = set(t.owned_future_firsts)
+        covered = set(before)
         for p in t.out_picks:
             if p.round == 1 and not p.swap:
                 covered.discard(p.year)          # swap = year stays covered (5.5)
         for p in t.in_picks:
             if p.round == 1 and not p.swap and not p.protection:
                 covered.add(p.year)              # protected does not cover (S9.15)
+        # The rule bars trades that CREATE a consecutive-gap pair. A team whose
+        # ledger already shows a conservative gap (protection structures the
+        # league approved) is not violated by unrelated pick trades -- only a
+        # NEW consecutive pair introduced by this trade counts.
         years = range(cfg.next_draft_year, horizon_last + 1)
-        run = [y for y in years if y not in covered]
-        for a, b in zip(run, run[1:]):
-            if b == a + 1:
-                v.append(Violation(
-                    "STEPIEN", t.abbr,
-                    f"{t.abbr} could be left without a first-round pick in "
-                    f"{a} and {b}, two consecutive future drafts. Teams must keep a "
-                    f"first in at least every other future draft.",
-                    "NBA By-Laws sec. 7 (Stepien rule)"))
-                break
+
+        def _pairs(cov):
+            run = [y for y in years if y not in cov]
+            return {(a, b) for a, b in zip(run, run[1:]) if b == a + 1}
+
+        new_pairs = _pairs(covered) - _pairs(before)
+        if new_pairs:
+            a, b = sorted(new_pairs)[0]
+            v.append(Violation(
+                "STEPIEN", t.abbr,
+                f"{t.abbr} could be left without a first-round pick in "
+                f"{a} and {b}, two consecutive future drafts. Teams must keep a "
+                f"first in at least every other future draft.",
+                "NBA By-Laws sec. 7 (Stepien rule)"))
     return v, n
 
 
