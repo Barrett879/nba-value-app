@@ -62,6 +62,8 @@ body{background:transparent;color:var(--fg1);
 .hcap{display:inline-block;margin-left:.55rem;padding:.08rem .45rem;border:1px solid var(--amberc);
   color:var(--amberc);border-radius:99px;font-size:.66rem;font-weight:800;vertical-align:2px;
   letter-spacing:.02em;white-space:nowrap;cursor:help}
+.tpeline{margin:.1rem 0 .15rem;font-size:.72rem;color:var(--fg4);cursor:help}
+.tpeline .tpewho{color:var(--fg5)}
 .card .mv.sw{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.sw:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .cashrow{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--fg4);margin-top:.3rem}
@@ -408,10 +410,13 @@ function render(){
     const hcChip=T.hard_cap!=null
       ?`<span class="hcap" title="${esc(T.hard_cap_why||"")}">Hard-capped: ${esc(T.hard_cap_label||"")} (${fmtM(T.hard_cap)})</span>`
       :"";
+    const tpeLine=T.tpes&&T.tpes.length
+      ?`<div class="tpeline" title="${esc(T.tpes.map(t=>"$"+t.amt.toFixed(2)+"M ("+t.player+(t.expires?", expires "+t.expires:"")+")").join("; "))}. A trade exception absorbs an incoming salary without matching; verdicts do not model this route yet.">Trade exceptions: ${T.tpes.map(t=>"$"+t.amt.toFixed(1)+"M").join(" + ")} <span class="tpewho">(${esc(T.tpes[0].player)}${T.tpes.length>1?" and "+(T.tpes.length-1)+" more":""})</span></div>`
+      :"";
     html+=`<div class="panel" data-team="${a}">
       <div class="phead"><span class="pname">${esc(T.name)}${hcChip}</span>
       <span class="ppay">${fmtM(T.payroll)} &rarr; <b>${fmtM(after)}</b></span></div>
-      ${capbar(after)}
+      ${capbar(after)}${tpeLine}
       <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;
     for(const [key,mv] of incoming){
       const [kind,src,id]=key.split("|");

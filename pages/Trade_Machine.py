@@ -60,6 +60,20 @@ def _payload() -> str:
                     hard_caps[r["team"].strip()] = {
                         "cap": r["cap"].strip(),
                         "why": (r.get("trigger") or "").strip()}
+    # verified master list of outstanding traded-player exceptions; shown as
+    # info on team panels (verdicts do not model TPE absorption yet)
+    tpes = {}
+    tpe_path = _ROOT / "data" / "trade_exceptions_2026_27.csv"
+    if tpe_path.exists():
+        with tpe_path.open() as f:
+            for r in csv.DictReader(x for x in f if not x.lstrip().startswith("#")):
+                if r.get("team") and r.get("amount_M"):
+                    tpes.setdefault(r["team"].strip(), []).append({
+                        "amt": float(r["amount_M"]),
+                        "player": (r.get("player") or "").strip(),
+                        "expires": (r.get("expires") or "").strip()})
+    for v in tpes.values():
+        v.sort(key=lambda x: -x["amt"])
     signings = {}
     with (_ROOT / "data" / "real_signings_2026.csv").open() as f:
         for r in csv.DictReader(x for x in f if not x.lstrip().startswith("#")):
@@ -106,7 +120,8 @@ def _payload() -> str:
                        "hard_cap_label": ({"apron1": "1st apron",
                                            "apron2": "2nd apron"}[hc["cap"]]
                                           if hc else None),
-                       "hard_cap_why": hc["why"] if hc else None}
+                       "hard_cap_why": hc["why"] if hc else None,
+                       "tpes": tpes.get(abbr, [])}
     from nba_api.stats.static import teams as _nbat
     logos = {t["abbreviation"]:
              f"https://cdn.nba.com/logos/nba/{t['id']}/global/L/logo.svg"
