@@ -32,8 +32,8 @@ _TODAY = "2026-07-27"
 
 st.title("Trade Machine")
 st.caption(
-    "Pick two to four teams, then drag players and picks between them (or use "
-    "the arrow buttons). The verdict updates instantly under the 2023 CBA: "
+    "Pick two to four teams, then drag players and picks between them. "
+    "The verdict updates instantly under the 2023 CBA: "
     "salary matching, apron rules, hard caps, the Stepien rule, and trade "
     "timing, each explained in plain English. Rosters are the real 2026-27 "
     "books; projected (unsigned) players are not tradable."

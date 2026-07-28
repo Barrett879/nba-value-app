@@ -626,12 +626,10 @@ function render(){
       for(const f of fas){
         const key="F|"+a+"|"+f.n;
         const img=f.headshot?`<img loading="lazy" src="${f.headshot}" alt="">`:`<div class="noimg"></div>`;
-        const btns=state.teams.filter(x=>x!==a)
-          .map(o=>`<button class="mv" data-fasend="${key}" data-to="${o}">&rarr; ${o}</button>`).join("");
-        html+=`<div class="card fa" data-key="${key}">${img}
+        html+=`<div class="card fa" draggable="true" data-key="${key}">${img}
           <div class="who"><div class="nm">${esc(f.n)}</div>
           <div class="sub">free agent${f.pos?" &middot; "+esc(f.pos):""} &middot; est ${fmtM(f.value)}</div></div>
-          <input class="fasal" type="number" min="1" step="0.5" value="${f.value}" title="Starting salary of the new deal ($M)">${btns}</div>`;
+          <input class="fasal" type="number" min="1" step="0.5" value="${f.value}" title="Starting salary of the new deal ($M)"></div>`;
       }
     }
     html+=`<div class="cashrow">Cash out <input type="number" min="0" max="${CFG.cash_annual_limit}"
@@ -742,8 +740,7 @@ function cardHTML(p,src,key,inZone,tpe){
   const others=state.teams.filter(x=>x!==(inZone?null:src)&&x!==src);
   let btn=inZone
     ?`<button class="mv" data-return="${key}">&larr; return</button>`
-    :(others.length===1?`<button class="mv" data-send="${key}" data-to="${others[0]}">&rarr; ${others[0]}</button>`
-      :others.map(o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`).join(""));
+    :"";
   if(inZone&&tpe&&tpe.has)
     btn=`<button class="mv tp${tpe.on?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`+btn;
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
@@ -769,12 +766,8 @@ function pickHTML(pk,src,key,inZone,asSwap){
   if(inZone){
     btn=`<button class="mv" data-return="${key}">&larr; return</button>`;
   }else{
-    const send=o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`;
     const swp=o=>(rnd===1&&!isRight)?`<button class="mv sw" data-swap="${key}" data-to="${o}" title="Trade as a swap right (worse of the two picks)">&#8644; swap</button>`:"";
-    btn=swapOnly
-      ?others.map(o=>swp(o)).join("")
-      :(others.length===1?send(others[0])+swp(others[0])
-        :others.map(o=>send(o)).join("")+((rnd===1&&!isRight)?others.map(o=>swp(o)).join(""):""));
+    btn=(rnd===1&&!isRight)?others.map(o=>swp(o)).join(""):"";
   }
   const lbl=isRight
     ?`${pk.year} ${pk.origin} swap`+(pk.protection?" (protected)":"")
@@ -813,9 +806,6 @@ function wire(){
   if(rst) rst.onclick=()=>{state.moves={}; state.cash={}; state.order={}; render();};
   const drop=document.getElementById("dropteam");
   if(drop) drop.onclick=()=>{state.teams.pop(); state.moves={}; state.cash={}; state.order={}; render();};
-  root.querySelectorAll("[data-send]").forEach(b=>{
-    b.onclick=()=>{state.moves[b.dataset.send]={to:b.dataset.to,swap:false}; render();};
-  });
   root.querySelectorAll("[data-swap]").forEach(b=>{
     b.onclick=()=>{state.moves[b.dataset.swap]={to:b.dataset.to,swap:true}; render();};
   });
@@ -825,14 +815,6 @@ function wire(){
   root.querySelectorAll("[data-tpe]").forEach(b=>{
     b.onclick=()=>{const mv=state.moves[b.dataset.tpe];
       if(mv){mv.tpe=!mv.tpe; render();}};
-  });
-  root.querySelectorAll("[data-fasend]").forEach(b=>{
-    b.onclick=()=>{
-      const inp=b.closest(".card").querySelector("input.fasal");
-      const sal=Math.round(Math.max(1,Number(inp&&inp.value)||0)*10)/10;
-      if(!sal) return;
-      state.moves[b.dataset.fasend]={to:b.dataset.to,swap:false,salary:sal};
-      render();};
   });
   root.querySelectorAll("input[data-cash]").forEach(inp=>{
     inp.onchange=()=>{state.cash[inp.dataset.cash]=inp.value; render();};
@@ -852,6 +834,8 @@ function wire(){
       e.dataTransfer.setData("text/plain",c.dataset.key);
       e.dataTransfer.effectAllowed="move";
       c.classList.add("dragging");
+      const inp=c.querySelector("input.fasal");
+      state._faSal=inp?Math.round(Math.max(1,Number(inp.value)||0)*10)/10:null;
     });
     c.addEventListener("dragend",()=>c.classList.remove("dragging"));
   });
@@ -903,7 +887,12 @@ function moveTo(key,dest){
   if(dest===src){ delete state.moves[key]; }
   else{
     const prev=state.moves[key]||{};
-    state.moves[key]={...prev,to:dest,swap:prev.swap||false};
+    const mv={...prev,to:dest,swap:prev.swap||false};
+    if(key[0]==="F"&&mv.salary==null){
+      const fa=(DATA.fas&&DATA.fas[src]||[]).find(x=>"F|"+src+"|"+x.n===key);
+      mv.salary=state._faSal||(fa?fa.value:2.1);
+    }
+    state.moves[key]=mv;
   }
   render();
 }
