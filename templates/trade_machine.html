@@ -422,7 +422,7 @@ function render(){
 
   html+=`<div class="verdict">`;
   if(!anyMove){
-    html+=`<div class="vband idle">Drag a player or pick to another team to see the verdict.</div>`;
+    // nothing staged: no verdict UI at all (idle banner removed per Barrett)
   }else if(res.legal){
     html+=`<div class="vband ok">TRADE WORKS under the 2023 CBA</div>`;
   }else{
@@ -465,10 +465,20 @@ function render(){
 
 // Same-origin srcdoc iframe: size our own frame to the content so nothing
 // scrolls inside the component (full rosters stay visible, like the picks).
+// Streamlit's wrapper containers keep their own fixed height, so grow them
+// too -- otherwise the page content below renders at the ORIGINAL height and
+// collides with the overflowing iframe.
 function fitFrame(){
   try{
     const h=document.documentElement.scrollHeight+24;
-    if(window.frameElement) window.frameElement.style.height=h+"px";
+    const fe=window.frameElement;
+    if(!fe) return;
+    fe.style.height=h+"px";
+    let el=fe.parentElement;
+    for(let i=0;el&&i<4;i++){
+      if(el.style&&el.offsetHeight&&el.offsetHeight<h) el.style.height=h+"px";
+      el=el.parentElement;
+    }
   }catch(e){}
 }
 try{ new ResizeObserver(fitFrame).observe(document.body); }catch(e){}
