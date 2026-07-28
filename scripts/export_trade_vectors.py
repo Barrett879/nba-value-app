@@ -144,6 +144,26 @@ swap(a, b, [TradePlayer("Out", 15.0)],
 a.in_players[1].via_tpe = True
 vectors.append(V("tpe mixed with matching", a, b))
 
+def snt_player(name, new, prior=None):
+    return TradePlayer(name, new, signed_via="sign_and_trade",
+                       snt_out=True, prior_salary=prior)
+
+a, b = team("DET", 130.0), team("CHA", 150.0)
+swap(a, b, [snt_player("FA", 20.0, prior=5.0)], [TradePlayer("Back", 18.0)])
+vectors.append(V("snt builder under-cap legal", a, b))
+
+a, b = team("MIA", 170.0), team("CHA", 150.0)
+swap(a, b, [snt_player("FA", 20.0, prior=5.0)], [TradePlayer("Back", 20.0)])
+vectors.append(V("snt builder byc blocks take-back", a, b))
+
+a, b = team("MIA", 170.0), team("CHA", 150.0)
+swap(a, b, [snt_player("FA", 20.0, prior=18.0)], [TradePlayer("Back", 20.0)])
+vectors.append(V("snt builder no byc under 20pct raise", a, b))
+
+a, b = team("UTA", 140.0), team("BOS", 205.0)
+swap(a, b, [snt_player("FA", 20.0, prior=5.0)], [TradePlayer("Back", 10.0)])
+vectors.append(V("snt builder receiver above apron1", a, b))
+
 out = ROOT / "cache" / "trade_vectors.json"
 out.write_text(json.dumps(vectors, separators=(",", ":")))
 print(f"wrote {out.name}: {len(vectors)} vectors, "

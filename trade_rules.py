@@ -87,6 +87,10 @@ class TradePlayer:
     consent_required: bool = False   # implicit veto / NTC (7.3-7.4)
     two_way: bool = False
     via_tpe: bool = False            # incoming: absorb into a trade exception (2.x)
+    snt_out: bool = False            # outgoing: a NEW signing by this team being
+                                     # signed-and-traded (never on its books)
+    prior_salary: float | None = None  # last season's salary, for BYC (6.6);
+                                       # None = unknown -> conservative BYC
 
 
 @dataclass
@@ -123,8 +127,27 @@ class TradeTeam:
     tpes: list[TradeException] = field(default_factory=list)
 
     @property
-    def salary_out(self) -> float:   # two-ways count $0 both directions (1.8)
-        return sum(p.salary for p in self.out_players if not p.two_way)
+    def salary_out(self) -> float:
+        """Payroll actually leaving the books. Two-ways count $0 both
+        directions (1.8); an snt_out player was NEVER on the books (he signs
+        and is traded in one motion), so he vacates nothing."""
+        return sum(p.salary for p in self.out_players
+                   if not p.two_way and not p.snt_out)
+
+    def out_credit(self, p: TradePlayer, cfg: "CBAConfig") -> float:
+        """One outgoing player's matching credit. An snt_out player counts at
+        his BYC number when base year compensation applies (6.6): the signing
+        team is over the cap and the raise exceeds 20% (unknown prior salary
+        is treated as triggering, conservatively)."""
+        if (p.snt_out and self.payroll > cfg.cap
+                and (p.prior_salary is None or p.salary > 1.2 * p.prior_salary)):
+            return max(p.prior_salary or 0.0, 0.5 * p.salary)
+        return p.salary
+
+    def matching_out(self, cfg: "CBAConfig") -> float:
+        """Outgoing salary credit available for matching."""
+        return sum(self.out_credit(p, cfg) for p in self.out_players
+                   if not p.two_way)
 
     @property
     def salary_in(self) -> float:
@@ -241,7 +264,7 @@ def check_salary_matching(trade: Trade, cfg: CBAConfig):
         if need <= 0:
             continue
         after = t.payroll_after()
-        out = t.salary_out
+        out = t.matching_out(cfg)
         if after <= cfg.cap + cfg.room_buffer:
             continue  # fits under the cap + room buffer: no matching needed (1.9)
         if after > cfg.apron1:
@@ -471,6 +494,16 @@ def check_sign_and_trade(trade: Trade, cfg: CBAConfig):
     v, n = [], []
     td = _iso(trade.trade_date)
     for t in trade.teams:
+        for p in t.out_players:
+            if p.snt_out:
+                credit = t.out_credit(p, cfg)
+                n.append(CapNote(
+                    "SNT_BUILDER", t.abbr,
+                    f"{p.name} signs a new deal (${p.salary:.1f}M starting salary) "
+                    f"with {t.abbr} and is traded immediately"
+                    + (f"; base year compensation counts that as only "
+                       f"${credit:.1f}M of outgoing salary for {t.abbr}'s "
+                       f"matching." if credit < p.salary - 1e-9 else ".")))
         snt_in = [p for p in t.in_players if p.signed_via == "sign_and_trade"]
         if not snt_in:
             continue
@@ -551,7 +584,8 @@ def check_cash_and_roster(trade: Trade, cfg: CBAConfig):
                 f"(${t.cash_sent_ytd:.1f}M already sent + ${t.cash_out:.1f}M here).",
                 "CBA Art. VII 8(a)"))
         std_delta = (len([p for p in t.in_players if not p.two_way])
-                     - len([p for p in t.out_players if not p.two_way]))
+                     - len([p for p in t.out_players
+                            if not p.two_way and not p.snt_out]))
         roster_after = t.roster_size + std_delta
         if roster_after > max_roster:
             v.append(Violation(
@@ -605,7 +639,7 @@ def validate(trade: Trade, cfg: CBAConfig) -> TradeVerdict:
             room_to_apron2=round(cfg.apron2 - t.payroll_after(), 1),
             roster_after=t.roster_size
             + len([p for p in t.in_players if not p.two_way])
-            - len([p for p in t.out_players if not p.two_way]),
+            - len([p for p in t.out_players if not p.two_way and not p.snt_out]),
             hard_cap_triggered=hardcap_notes.get(t.abbr),
         )
         for t in trade.teams

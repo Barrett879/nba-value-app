@@ -126,13 +126,31 @@ def _payload() -> str:
                                           if hc else None),
                        "hard_cap_why": hc["why"] if hc else None,
                        "tpes": tpes.get(abbr, [])}
+    # free agents each team can sign-and-trade (its OWN FAs; est value seeds
+    # the editable starting salary, minimum-level guys default to the vet min)
+    fas = {}
+    fa_path = _ROOT / "cache" / "fa_pool_v1.json"
+    if fa_path.exists():
+        for f in json.loads(fa_path.read_text())["fas"]:
+            ab = f.get("team", "")
+            if ab not in teams or not f.get("n"):
+                continue
+            pid = heads.get(normalize(f["n"]))
+            fas.setdefault(ab, []).append({
+                "n": f["n"], "pos": (f.get("pos") or "").strip("—- "),
+                "value": round(f.get("value") or 2.1, 1),
+                "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
+                             if pid else None)})
+        for v in fas.values():
+            v.sort(key=lambda x: -x["value"])
     from nba_api.stats.static import teams as _nbat
     logos = {t["abbreviation"]:
              f"https://cdn.nba.com/logos/nba/{t['id']}/global/L/logo.svg"
              for t in _nbat.get_teams()}
     return json.dumps({
         "abbrs": sorted(teams), "teams": teams, "cfg": cfg, "vectors": vectors,
-        "logos": logos, "today": _TODAY, "default_teams": ["LAL", "BKN"],
+        "logos": logos, "fas": fas, "today": _TODAY,
+        "default_teams": ["LAL", "BKN"],
     }, separators=(",", ":"))
 
 

@@ -482,6 +482,9 @@ def trade_shell(base_html: str, token: str) -> str:
                 kind, src, ident, _dest = mv
                 if kind in ("P", "T"):
                     sends[src].append(str(ident))
+                elif kind in ("F", "G"):
+                    nm = str(ident).rsplit("@", 1)[0]
+                    sends[src].append(f"{nm} (sign-and-trade)")
                 else:
                     parts = str(ident).split(":")
                     yr = parts[0]

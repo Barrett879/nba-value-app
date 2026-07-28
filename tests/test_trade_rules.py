@@ -330,6 +330,50 @@ a.in_players[1].via_tpe = True
 assert "MATCH_APRON" in codes(validate(two_team(a, b), CFG))
 print("ok  mixed TPE + matching structure (both apron regimes)")
 
+# ── S&T builder: new signing traded out, BYC matching, payroll semantics ──────
+def snt_player(name, new, prior=None):
+    return TradePlayer(name, new, signed_via="sign_and_trade",
+                       snt_out=True, prior_salary=prior)
+
+# under-cap sender: full credit, and the new deal never touches its payroll
+a, b = team("DET", 130.0), team("CHA", 150.0)
+swap(a, b, [snt_player("FA", 20.0, prior=5.0)], [TradePlayer("Back", 18.0)])
+r = validate(two_team(a, b), CFG)
+assert r.legal and "SNT_BUILDER" in note_codes(r)
+imp = {i.abbr: i for i in r.impact}
+assert abs(imp["DET"].payroll_after - 148.0) < 1e-6   # 130 + 18, NOT -20
+assert imp["DET"].roster_after == 16                  # FA never left its roster
+assert imp["CHA"].roster_after == 15                  # -1 Back +1 FA
+assert "HARDCAP_APRON1_SNT" in note_codes(r)          # CHA receives an S&T player
+print("ok  S&T builder payroll + roster semantics")
+
+# over-cap sender: BYC halves the credit; the take-back stops matching
+a, b = team("MIA", 170.0), team("CHA", 150.0)
+swap(a, b, [snt_player("FA", 20.0, prior=5.0)], [TradePlayer("Back", 20.0)])
+r = validate(two_team(a, b), CFG)                     # credit 10 -> limit 19.096
+assert "MATCH_BELOW_APRON" in codes(r)
+# same raise below 20% (no BYC): full credit, legal
+a, b = team("MIA", 170.0), team("CHA", 150.0)
+swap(a, b, [snt_player("FA", 20.0, prior=18.0)], [TradePlayer("Back", 20.0)])
+r = validate(two_team(a, b), CFG)
+assert r.legal
+# unknown prior salary: conservative BYC applies
+a, b = team("MIA", 170.0), team("CHA", 150.0)
+swap(a, b, [snt_player("FA", 20.0)], [TradePlayer("Back", 20.0)])
+assert "MATCH_BELOW_APRON" in codes(validate(two_team(a, b), CFG))
+# the incoming take-back still counts toward post-trade payroll, so a big
+# take-back can flip the sender into the over-apron flat matching regime
+a, b = team("MIA", 190.0), team("CHA", 150.0)
+swap(a, b, [snt_player("FA", 20.0, prior=5.0)], [TradePlayer("Back", 20.0)])
+assert "MATCH_APRON" in codes(validate(two_team(a, b), CFG))   # after 210 > apron1
+print("ok  BYC credit (over-cap, raise >20%, unknown prior, apron flip)")
+
+# receiving team must finish below apron 1 (existing rule via the builder path)
+a, b = team("UTA", 140.0), team("BOS", 205.0)
+swap(a, b, [snt_player("FA", 20.0, prior=5.0)], [TradePlayer("Back", 10.0)])
+assert "SNT_APRON1" in codes(validate(two_team(a, b), CFG))
+print("ok  S&T builder receiver apron rule")
+
 # ── BYC helper (Kessler example from the spec) ────────────────────────────────
 assert abs(byc_outgoing(4.878938, 30.108821) - 15.0544105) < 1e-6
 print("ok  BYC outgoing (Kessler example)")

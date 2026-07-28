@@ -75,6 +75,10 @@ body{background:transparent;color:var(--fg1);
 .card .mv.tp{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.tp:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .card .mv.tp.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.fasal{width:58px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
+  border-radius:7px;padding:.25rem .3rem;font-size:.72rem;flex:0 0 auto}
+.seclhint{font-weight:400;color:var(--fg5);text-transform:none;letter-spacing:0;
+  font-size:.66rem;margin-left:.4rem}
 .cashrow{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--fg4);margin-top:.3rem}
 .cashrow input{width:72px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
   border-radius:7px;padding:.25rem .4rem;font-size:.78rem}
@@ -119,8 +123,17 @@ function matchingLimit(out){
   return Math.max(expanded, CFG.match_pct_low*out + CFG.match_cushion);
 }
 const nonTwo = ps => ps.filter(p=>!p.two_way);
-const salOut = t => nonTwo(t.out_players).reduce((s,p)=>s+p.salary,0);
+// payroll leaving the books: an snt_out player was never on them
+const salOut = t => t.out_players.filter(p=>!p.two_way&&!p.snt_out).reduce((s,p)=>s+p.salary,0);
 const salIn  = t => nonTwo(t.in_players).reduce((s,p)=>s+p.salary,0);
+function outCredit(t,p){
+  // BYC (6.6): over-cap signing team + raise above 20% (unknown prior salary
+  // treated as triggering, conservatively)
+  if(p.snt_out&&t.payroll>CFG.cap&&(p.prior_salary==null||p.salary>1.2*p.prior_salary))
+    return Math.max(p.prior_salary||0,0.5*p.salary);
+  return p.salary;
+}
+const matchingOut = t => nonTwo(t.out_players).reduce((s,p)=>s+outCredit(t,p),0);
 const matchIn = t => t.in_players.filter(p=>!p.two_way && p.signed_via!=="min" && !p.via_tpe).reduce((s,p)=>s+p.salary,0);
 function assignTpes(t){
   // mirror of trade_rules._assign_tpes: largest salary first, prefer a
@@ -165,7 +178,7 @@ function validateTrade(trade){
   // matching (post-trade regime)
   for(const t of teams){
     const need=matchIn(t); if(need<=0) continue;
-    const after=payAfter(t), out=salOut(t);
+    const after=payAfter(t), out=matchingOut(t);
     if(after<=CFG.cap+CFG.room_buffer) continue;
     if(after>CFG.apron1){
       const limit=CFG.apron_match_pct*out;
@@ -259,6 +272,12 @@ function validateTrade(trade){
   }
   // sign-and-trade
   for(const t of teams){
+    for(const p of t.out_players){
+      if(p.snt_out){
+        const credit=outCredit(t,p);
+        note("SNT_BUILDER",t.abbr,`${p.name} signs a new deal ($${p.salary.toFixed(1)}M starting salary) with ${t.abbr} and is traded immediately`+(credit<p.salary-1e-9?`; base year compensation counts that as only $${credit.toFixed(1)}M of outgoing salary for ${t.abbr}'s matching.`:"."));
+      }
+    }
     const snt=t.in_players.filter(p=>p.signed_via==="sign_and_trade");
     if(!snt.length) continue;
     if(!isOffseason(trade.trade_date))
@@ -302,7 +321,8 @@ function validateTrade(trade){
   for(const t of teams){
     if(t.cash_out>0&&t.cash_sent_ytd+t.cash_out>CFG.cash_annual_limit+1e-9)
       vio("CASH_LIMIT",t.abbr,`${t.abbr} would exceed the $${CFG.cash_annual_limit.toFixed(3)}M annual cash-in-trades limit ($${t.cash_sent_ytd.toFixed(1)}M already sent + $${t.cash_out.toFixed(1)}M here).`,"CBA Art. VII 8(a)");
-    const stdDelta=t.in_players.filter(p=>!p.two_way).length-t.out_players.filter(p=>!p.two_way).length;
+    const stdDelta=t.in_players.filter(p=>!p.two_way).length
+      -t.out_players.filter(p=>!p.two_way&&!p.snt_out).length;
     const rosterAfter=t.roster_size+stdDelta;
     if(rosterAfter>maxRoster)
       vio("ROSTER_MAX",t.abbr,`${t.abbr} would have ${rosterAfter} standard contracts; the limit is ${maxRoster} ${maxRoster===CFG.roster_max_offseason?"in the offseason":"during the season"}. Waive or include another player first.`,"roster limits (15+3 in season, 21 offseason)");
@@ -310,7 +330,8 @@ function validateTrade(trade){
       note("ROSTER_MIN",t.abbr,`${t.abbr} drops to ${rosterAfter} standard contracts; below ${CFG.roster_min} is only allowed for two weeks at a time.`);
   }
   const impact=teams.map(t=>({abbr:t.abbr,before:t.payroll,after:payAfter(t),
-    roster:t.roster_size+t.in_players.filter(p=>!p.two_way).length-t.out_players.filter(p=>!p.two_way).length}));
+    roster:t.roster_size+t.in_players.filter(p=>!p.two_way).length
+      -t.out_players.filter(p=>!p.two_way&&!p.snt_out).length}));
   return {legal:V.length===0,violations:V,notes:N,impact};
 }
 
@@ -344,6 +365,7 @@ function serialize(){
   for(const [key,mv] of Object.entries(state.moves)){
     const [kind,src,id]=key.split("|");
     if(kind==="P") m.push([mv.tpe?"T":"P",src,id,mv.to]);
+    else if(kind==="F") m.push([mv.tpe?"G":"F",src,id+"@"+mv.salary,mv.to]);
     else{const pk=DATA.teams[src].picks[Number(id)];
       if(pk) m.push([mv.swap?"S":"K",src,
                      pk.year+":"+pk.origin+":"+(pk.round||1),mv.to]);}
@@ -364,6 +386,11 @@ function restore(token){
       if(kind==="P"||kind==="T"){
         if(DATA.teams[src].players.some(p=>p.n===id))
           state.moves["P|"+src+"|"+id]={to:dest,swap:false,tpe:kind==="T"};
+      }else if(kind==="F"||kind==="G"){
+        const at=String(id).lastIndexOf("@");
+        const nm=String(id).slice(0,at), sal=Number(String(id).slice(at+1));
+        if(at>0&&sal>0&&(DATA.fas&&DATA.fas[src]||[]).some(x=>x.n===nm))
+          state.moves["F|"+src+"|"+nm]={to:dest,swap:false,salary:sal,tpe:kind==="G"};
       }else{
         const [yr,org,rnd]=String(id).split(":");
         const idx=DATA.teams[src].picks.findIndex(p=>String(p.year)===yr&&p.origin===org
@@ -414,6 +441,13 @@ function buildTrade(){
       const tp={name:p.n,salary:p.salary,signed_date:p.signed_date||null,
         signed_via:p.signed_via||"standard",raise_pct:null,acquired_date:null,
         consent_required:false,two_way:false,via_tpe:!!mv.tpe};
+      tt[abbr].out_players.push(tp); tt[dest].in_players.push(tp);
+    }else if(kind==="F"){
+      const fa=(DATA.fas&&DATA.fas[abbr]||[]).find(x=>x.n===id); if(!fa) continue;
+      const tp={name:fa.n,salary:mv.salary,signed_date:DATA.today,
+        signed_via:"sign_and_trade",raise_pct:null,acquired_date:null,
+        consent_required:false,two_way:false,via_tpe:!!mv.tpe,
+        snt_out:true,prior_salary:null};
       tt[abbr].out_players.push(tp); tt[dest].in_players.push(tp);
     }else{
       const pk=DATA.teams[abbr].picks[Number(id)]; if(!pk) continue;
@@ -480,7 +514,7 @@ function render(){
   for(const a of state.teams){
     const T=DATA.teams[a];
     const tt=trade.teams.find(x=>x.abbr===a);
-    const after=tt?(tt.payroll-tt.out_players.reduce((s,p)=>s+p.salary,0)+tt.in_players.reduce((s,p)=>s+p.salary,0)):T.payroll;
+    const after=tt?payAfter(tt):T.payroll;
     const incoming=Object.entries(state.moves).filter(([k,mv])=>mv.to===a);
     const hcChip=T.hard_cap!=null
       ?`<span class="hcap" title="${esc(T.hard_cap_why||"")}">Hard-capped: ${esc(T.hard_cap_label||"")} (${fmtM(T.hard_cap)})</span>`
@@ -506,6 +540,16 @@ function render(){
         const p=DATA.teams[src].players.find(x=>x.n===id);
         html+=cardHTML(p,src,key,true,
           {has:(T.tpes||[]).length>0,on:!!mv.tpe});
+      }else if(kind==="F"){
+        const fa=(DATA.fas&&DATA.fas[src]||[]).find(x=>x.n===id);
+        const img=fa&&fa.headshot?`<img loading="lazy" src="${fa.headshot}" alt="">`:`<div class="noimg"></div>`;
+        let btn="";
+        if((T.tpes||[]).length)
+          btn+=`<button class="mv tp${mv.tpe?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`;
+        btn+=`<button class="mv" data-return="${key}">&larr; return</button>`;
+        html+=`<div class="card" data-key="${key}">${img}
+          <div class="who"><div class="nm">${esc(id)}</div>
+          <div class="sub">${fmtM(mv.salary)} &middot; sign and trade from ${src}</div></div>${btn}</div>`;
       }else{
         const pk=DATA.teams[src].picks[Number(id)];
         html+=pickHTML(pk,src,key,true,mv.swap);
@@ -523,6 +567,20 @@ function render(){
       if(state.moves[key]) return;
       html+=pickHTML(pk,a,key,false);
     });
+    const fas=(DATA.fas&&DATA.fas[a]||[]).filter(f=>!state.moves["F|"+a+"|"+f.n]);
+    if(fas.length){
+      html+=`<div class="secl">Sign and trade <span class="seclhint">their free agents; set the starting salary, minimum 3-year deal</span></div>`;
+      for(const f of fas){
+        const key="F|"+a+"|"+f.n;
+        const img=f.headshot?`<img loading="lazy" src="${f.headshot}" alt="">`:`<div class="noimg"></div>`;
+        const btns=state.teams.filter(x=>x!==a)
+          .map(o=>`<button class="mv" data-fasend="${key}" data-to="${o}">&rarr; ${o}</button>`).join("");
+        html+=`<div class="card fa" data-key="${key}">${img}
+          <div class="who"><div class="nm">${esc(f.n)}</div>
+          <div class="sub">free agent${f.pos?" &middot; "+esc(f.pos):""} &middot; est ${fmtM(f.value)}</div></div>
+          <input class="fasal" type="number" min="1" step="0.5" value="${f.value}" title="Starting salary of the new deal ($M)">${btns}</div>`;
+      }
+    }
     html+=`<div class="cashrow">Cash out <input type="number" min="0" max="${CFG.cash_annual_limit}"
       step="0.5" value="${state.cash[a]||""}" data-cash="${a}" placeholder="0"> $M</div></div>`;
   }
@@ -677,6 +735,14 @@ function wire(){
   root.querySelectorAll("[data-tpe]").forEach(b=>{
     b.onclick=()=>{const mv=state.moves[b.dataset.tpe];
       if(mv){mv.tpe=!mv.tpe; render();}};
+  });
+  root.querySelectorAll("[data-fasend]").forEach(b=>{
+    b.onclick=()=>{
+      const inp=b.closest(".card").querySelector("input.fasal");
+      const sal=Math.round(Math.max(1,Number(inp&&inp.value)||0)*10)/10;
+      if(!sal) return;
+      state.moves[b.dataset.fasend]={to:b.dataset.to,swap:false,salary:sal};
+      render();};
   });
   root.querySelectorAll("input[data-cash]").forEach(inp=>{
     inp.onchange=()=>{state.cash[inp.dataset.cash]=inp.value; render();};

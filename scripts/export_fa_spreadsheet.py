@@ -464,6 +464,16 @@ for _tm, _nm in declined:                                                       
     fa_rows.append([_tm, disp.get(n, _nm), pos_map.get(n, "—"), bar_map.get(n), None, None, note])
 fa_rows.sort(key=lambda r: (r[0], -(r[4] or r[3] or 0)))
 
+# ── Dump the FA pool for the Trade Machine's sign-and-trade builder ────────────
+# (each team can sign-and-trade its OWN free agents; value_M seeds the default
+# starting salary, None = minimum-level). Read by pages/Trade_Machine.py.
+import json as _json0
+(ROOT / "cache" / "fa_pool_v1.json").write_text(_json0.dumps({
+    "asof": "2026-07-28",
+    "fas": [{"team": r[0], "n": r[1], "pos": r[2], "barrett": r[3],
+             "value": r[4]} for r in fa_rows],
+}, separators=(",", ":")))
+
 # ── Dump the assembled 2026-27 rosters for the crawlable /team/<ABBR> pages
 # (scripts/build_team_pages.py renders from this, so the pages and this workbook
 # stay one source of truth). Sits after fa_rows so each team also carries its
