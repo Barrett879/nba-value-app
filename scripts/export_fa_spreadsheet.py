@@ -466,12 +466,20 @@ fa_rows.sort(key=lambda r: (r[0], -(r[4] or r[3] or 0)))
 
 # ── Dump the FA pool for the Trade Machine's sign-and-trade builder ────────────
 # (each team can sign-and-trade its OWN free agents; value_M seeds the default
-# starting salary, None = minimum-level). Read by pages/Trade_Machine.py.
+# starting salary). Rows with no sheet value (declined options, deep bench)
+# fall back to the player hub's projected contract value so a rotation FA does
+# not default to the minimum. Read by pages/Trade_Machine.py.
 import json as _json0
+try:
+    _hub = {k: v.get("pcv_M") for k, v in _json0.loads(
+        (ROOT / "cache" / "player_hub_pcv_v2.json").read_text())["players"].items()}
+except Exception:
+    _hub = {}
 (ROOT / "cache" / "fa_pool_v1.json").write_text(_json0.dumps({
     "asof": "2026-07-28",
     "fas": [{"team": r[0], "n": r[1], "pos": r[2], "barrett": r[3],
-             "value": r[4]} for r in fa_rows],
+             "value": r[4] if r[4] is not None else _hub.get(normalize(r[1]))}
+            for r in fa_rows],
 }, separators=(",", ":")))
 
 # ── Dump the assembled 2026-27 rosters for the crawlable /team/<ABBR> pages
