@@ -803,26 +803,36 @@ function pickHTML(pk,src,key,inZone,asSwap){
     <div class="sub">${sub}</div></div>${btn}</div>`;
 }
 
+function pruneTeam(abbr){
+  // drop ONLY what involves this team: assets it was sending, assets headed
+  // to it, its cash and its arranged order. Everything else survives.
+  for(const [key,mv] of Object.entries(state.moves))
+    if(key.split("|")[1]===abbr||mv.to===abbr) delete state.moves[key];
+  delete state.cash[abbr];
+  delete state.order[abbr];
+}
+
 function wire(){
   root.querySelectorAll("select[data-slot]").forEach(sel=>{
     sel.onchange=()=>{
       const i=Number(sel.dataset.slot);
-      state.teams[i]=sel.value; state.moves={}; state.cash={}; state.order={};
+      pruneTeam(state.teams[i]);            // the team being swapped out
+      state.teams[i]=sel.value;
       render();
     };
   });
   const add=document.getElementById("addteam");
-  if(add) add.onclick=()=>{
+  if(add) add.onclick=()=>{                      // adding disturbs nothing
     const next=DATA.abbrs.find(x=>!state.teams.includes(x));
-    state.teams.push(next); state.moves={}; state.cash={}; state.order={}; render();
+    state.teams.push(next); render();
   };
   const rst=document.getElementById("resetbtn");
   if(rst) rst.onclick=()=>{state.moves={}; state.cash={}; state.order={}; render();};
   root.querySelectorAll("[data-rm]").forEach(b=>{
     b.onclick=()=>{
       if(state.teams.length<=2) return;          // a trade needs two teams
-      state.teams.splice(Number(b.dataset.rm),1);
-      state.moves={}; state.cash={}; state.order={}; render();
+      pruneTeam(state.teams.splice(Number(b.dataset.rm),1)[0]);
+      render();
     };
   });
   root.querySelectorAll("[data-swap]").forEach(b=>{
