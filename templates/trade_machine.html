@@ -19,6 +19,11 @@ body{background:transparent;color:var(--fg1);
   padding:.45rem .7rem;cursor:pointer;font-size:.82rem;font-weight:700}
 .pickrow .add:hover{color:var(--teal);border-color:var(--teal)}
 .pickrow .reset:hover{color:var(--bad);border-color:var(--bad)}
+.teampick{display:inline-flex;align-items:center;gap:4px}
+.rmteam{background:none;border:1px solid var(--line);color:var(--fg5);border-radius:8px;
+  width:26px;height:26px;line-height:1;font-size:1rem;font-weight:700;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;padding:0}
+.rmteam:hover{color:var(--bad);border-color:var(--bad)}
 .boards{display:grid;gap:12px}
 .boards.n2{grid-template-columns:1fr 1fr}
 .boards.n3{grid-template-columns:1fr 1fr 1fr}
@@ -549,11 +554,12 @@ function render(){
     html+=`<div class="parity-fail">Engine parity check failed for: ${esc(window.__parity.fails.join("; "))}. Verdicts may be wrong; reload or report this.</div>`;
 
   html+=`<div class="pickrow">`+state.teams.map((a,i)=>
-    `<select data-slot="${i}">`+DATA.abbrs.map(x=>
+    `<span class="teampick"><select data-slot="${i}">`+DATA.abbrs.map(x=>
       `<option value="${x}" ${x===a?"selected":""} ${state.teams.includes(x)&&x!==a?"disabled":""}>${x} - ${esc(DATA.teams[x].name)}</option>`).join("")+`</select>`
+    +(n>2?`<button class="rmteam" data-rm="${i}" title="Remove ${esc(DATA.teams[a].name)} from this trade">&times;</button>`:"")
+    +`</span>`
   ).join("")+
   (n<4?`<button class="add" id="addteam">+ Add team</button>`:"")+
-  (n>2?`<button class="add" id="dropteam">- Remove team</button>`:"")+
   (anyMove||Object.keys(state.order).length
     ?`<button class="add reset" id="resetbtn" title="Clear every move, cash amount, and arranged order; keeps the selected teams">Reset trade</button>`:"")
   +`</div>`;
@@ -812,8 +818,13 @@ function wire(){
   };
   const rst=document.getElementById("resetbtn");
   if(rst) rst.onclick=()=>{state.moves={}; state.cash={}; state.order={}; render();};
-  const drop=document.getElementById("dropteam");
-  if(drop) drop.onclick=()=>{state.teams.pop(); state.moves={}; state.cash={}; state.order={}; render();};
+  root.querySelectorAll("[data-rm]").forEach(b=>{
+    b.onclick=()=>{
+      if(state.teams.length<=2) return;          // a trade needs two teams
+      state.teams.splice(Number(b.dataset.rm),1);
+      state.moves={}; state.cash={}; state.order={}; render();
+    };
+  });
   root.querySelectorAll("[data-swap]").forEach(b=>{
     b.onclick=()=>{state.moves[b.dataset.swap]={to:b.dataset.to,swap:true}; render();};
   });
