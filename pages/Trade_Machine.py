@@ -120,6 +120,7 @@ def _payload() -> str:
                 # two); it can move, but ONLY as a further swap right so the
                 # year stays Stepien-covered
                 entry["swap_only"] = True
+                entry["swap_with"] = pk.get("swap_with", "").strip()
             picks.append(entry)
         hc = hard_caps.get(abbr)
         teams[abbr] = {"name": t["name"], "payroll": t["payroll"], "size": t["size"],

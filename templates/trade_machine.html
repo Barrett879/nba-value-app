@@ -786,8 +786,10 @@ function pickHTML(pk,src,key,inZone,asSwap){
   const logo=DATA.logos&&DATA.logos[pk.origin]
     ?`<div class="pkwrap"><img loading="lazy" src="${DATA.logos[pk.origin]}" alt="">${badge}</div>`
     :`<div class="noimg" style="border-radius:6px"></div>`;
-  const sub=isRight?"pick swap right"
-    :(swapOnly&&!inZone?"swap-encumbered residual, moves only as a swap"
+  const sub=isRight
+    ?(inZone?"pick swap right":`swap right, best pick between ${src} and ${pk.origin}`)
+    :(swapOnly&&!inZone
+      ?`worst pick between ${src} and ${pk.swap_with||"the swap holder"}, moves only as a swap`
       :(asSwap?"pick swap":"draft pick"));
   return `<div class="card pick" draggable="true" data-key="${key}">${logo}
     <div class="who"><div class="nm">${esc(lbl)}</div>
