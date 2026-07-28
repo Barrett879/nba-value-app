@@ -97,6 +97,7 @@ def _payload() -> str:
             pid = heads.get(n)
             players.append({
                 "n": p["n"], "salary": float(p["salary"]),
+                "pos": (p.get("pos") or "").split("/")[0],
                 "value": p.get("value"), "barrett": p.get("barrett"),
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None),
@@ -166,11 +167,11 @@ def _payload_with_request_state() -> str:
 _DARK = """--panel:#15171d;--card:#1b1f28;--line:#262a33;--track:#242833;
 --fg1:#e6e9f2;--fg2:#c3c8d4;--fg3:#a7adbb;--fg4:#8a8f9c;--fg5:#6b7079;
 --teal:#16d4c1;--good:#2ecc71;--bad:#e74c3c;--amberc:#f0b35b;--blue:#4c8dff;
---tintg:rgba(22,212,193,.08);--tintb:rgba(231,76,60,.10);"""
+--tintg:rgba(22,212,193,.08);--tintb:rgba(231,76,60,.10);--tintz:rgba(255,255,255,.02);"""
 _LIGHT = """--panel:#ffffff;--card:#f7f8fa;--line:#e3e6eb;--track:#eceef2;
 --fg1:#16233f;--fg2:#3a4150;--fg3:#5b6472;--fg4:#6b7280;--fg5:#9aa0ac;
 --teal:#0fae9d;--good:#16a34a;--bad:#e0483a;--amberc:#b97f24;--blue:#2563eb;
---tintg:rgba(15,174,157,.08);--tintb:rgba(224,72,58,.08);"""
+--tintg:rgba(15,174,157,.08);--tintb:rgba(224,72,58,.08);--tintz:rgba(22,35,63,.025);"""
 
 _theme = _DARK if st.session_state.get("theme_dark", True) else _LIGHT
 _html = ((_ROOT / "templates" / "trade_machine.html").read_text()
