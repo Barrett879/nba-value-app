@@ -81,6 +81,7 @@ body{background:transparent;color:var(--fg1);
   background:var(--teal);color:#fff;font-size:.62rem;font-weight:800;line-height:15px;
   text-align:center;border:1.5px solid var(--card)}
 .pkrnd.r2{background:var(--fg4)}
+.pkrnd.sw{background:var(--blue);font-size:.7rem;cursor:help}
 .hcap{display:inline-block;margin-left:.55rem;padding:.08rem .45rem;border:1px solid var(--amberc);
   color:var(--amberc);border-radius:99px;font-size:.66rem;font-weight:800;vertical-align:2px;
   letter-spacing:.02em;white-space:nowrap;cursor:help}
@@ -411,7 +412,7 @@ function serialize(){
     if(kind==="P") m.push([mv.tpe?"T":"P",src,id,mv.to]);
     else if(kind==="F") m.push([mv.tpe?"G":"F",src,id+"@"+mv.salary,mv.to]);
     else{const pk=DATA.teams[src].picks[Number(id)];
-      if(pk) m.push([mv.swap?"S":"K",src,
+      if(pk) m.push([(mv.swap||pk.swap_right)?"S":"K",src,
                      pk.year+":"+pk.origin+":"+(pk.round||1),mv.to]);}
   }
   const c=state.teams.filter(a=>Number(state.cash[a]||0)>0).map(a=>[a,Number(state.cash[a])]);
@@ -496,7 +497,7 @@ function buildTrade(){
     }else{
       const pk=DATA.teams[abbr].picks[Number(id)]; if(!pk) continue;
       const tpk={year:pk.year,round:pk.round||1,protection:pk.protection||"",
-                 swap:!!mv.swap};
+                 swap:!!mv.swap||!!pk.swap_right};
       tt[abbr].out_picks.push(tpk); tt[dest].in_picks.push(tpk);
     }
   }
@@ -757,24 +758,30 @@ function cardHTML(p,src,key,inZone,tpe){
 function pickHTML(pk,src,key,inZone,asSwap){
   const others=state.teams.filter(x=>x!==src);
   const rnd=pk.round||1;
+  const isRight=!!pk.swap_right;
   let btn;
   if(inZone){
     btn=`<button class="mv" data-return="${key}">&larr; return</button>`;
   }else{
     const send=o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`;
-    const swp=o=>rnd===1?`<button class="mv sw" data-swap="${key}" data-to="${o}" title="Trade as a swap right (worse of the two picks)">&#8644; swap</button>`:"";
+    const swp=o=>(rnd===1&&!isRight)?`<button class="mv sw" data-swap="${key}" data-to="${o}" title="Trade as a swap right (worse of the two picks)">&#8644; swap</button>`:"";
     btn=others.length===1?send(others[0])+swp(others[0])
-        :others.map(o=>send(o)).join("")+(rnd===1?others.map(o=>swp(o)).join(""):"");
+        :others.map(o=>send(o)).join("")+((rnd===1&&!isRight)?others.map(o=>swp(o)).join(""):"");
   }
-  const lbl=`${pk.year} ${pk.origin===src&&!inZone?"own":pk.origin} ${rnd===1?"1st":"2nd"}`
-    +(pk.protection?" (protected)":"")+(asSwap?" (swap)":"");
+  const lbl=isRight
+    ?`${pk.year} ${pk.origin} swap`+(pk.protection?" (protected)":"")
+    :`${pk.year} ${pk.origin===src&&!inZone?"own":pk.origin} ${rnd===1?"1st":"2nd"}`
+      +(pk.protection?" (protected)":"")+(asSwap?" (swap)":"");
+  const badge=isRight
+    ?`<div class="pkrnd sw" title="Right to the more favorable of the two firsts">&#8644;</div>`
+    :`<div class="pkrnd${rnd===2?" r2":""}">${rnd}</div>`;
   const logo=DATA.logos&&DATA.logos[pk.origin]
-    ?`<div class="pkwrap"><img loading="lazy" src="${DATA.logos[pk.origin]}" alt="">`
-     +`<div class="pkrnd${rnd===2?" r2":""}">${rnd}</div></div>`
+    ?`<div class="pkwrap"><img loading="lazy" src="${DATA.logos[pk.origin]}" alt="">${badge}</div>`
     :`<div class="noimg" style="border-radius:6px"></div>`;
+  const sub=isRight?"swap right, better of the two firsts":(asSwap?"pick swap":"draft pick");
   return `<div class="card pick" draggable="true" data-key="${key}">${logo}
     <div class="who"><div class="nm">${esc(lbl)}</div>
-    <div class="sub">${asSwap?"pick swap":"draft pick"}</div></div>${btn}</div>`;
+    <div class="sub">${sub}</div></div>${btn}</div>`;
 }
 
 function wire(){
