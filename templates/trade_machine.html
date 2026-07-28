@@ -24,19 +24,24 @@ body{background:transparent;color:var(--fg1);
   width:26px;height:26px;line-height:1;font-size:1rem;font-weight:700;cursor:pointer;
   display:flex;align-items:center;justify-content:center;padding:0}
 .rmteam:hover{color:var(--bad);border-color:var(--bad)}
-.boards{display:grid;gap:12px}
+.boards{display:grid;gap:12px;grid-template-rows:repeat(5,auto)}
 .boards.n2{grid-template-columns:1fr 1fr}
 .boards.n3{grid-template-columns:1fr 1fr 1fr}
 .boards.n4{grid-template-columns:1fr 1fr 1fr 1fr}
 @media(max-width:900px){.boards{grid-template-columns:1fr !important}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
   padding:.75rem .75rem .85rem;min-width:0;border-top:3px solid var(--tc,var(--teal));
-  box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.05)}
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.05);
+  /* every panel spans the same five rows, so headers, cap bars, note lines,
+     receive zones and rosters line up across teams even when only some have
+     trade exceptions or apron warnings */
+  display:grid;grid-template-rows:subgrid;grid-row:span 5;align-content:start}
+.pnotes{align-self:start} .pbody{min-width:0}
 .phead{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:2px}
 .pname{font-weight:800;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   display:flex;align-items:center;gap:.45rem;min-width:0}
 .plogo{width:26px;height:26px;object-fit:contain;flex:0 0 26px}
-.pname .pnametxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pname .pnametxt{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
 .ppay{font-size:.72rem;color:var(--fg4);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
 .paynow{font-size:.95rem;font-weight:800;line-height:1.15}
 .paynow.rest{color:var(--blue)} .paynow.live{color:var(--good)} .paynow.live.over{color:var(--bad)}
@@ -87,7 +92,7 @@ body{background:transparent;color:var(--fg1);
   text-align:center;border:1.5px solid var(--card)}
 .pkrnd.r2{background:var(--fg4)}
 .pkrnd.sw{background:var(--blue);font-size:.7rem;cursor:help}
-.hcap{display:inline-block;margin-left:.55rem;padding:.08rem .45rem;border:1px solid var(--amberc);
+.hcap{display:inline-block;flex:0 0 auto;margin-left:.55rem;padding:.08rem .45rem;border:1px solid var(--amberc);
   color:var(--amberc);border-radius:99px;font-size:.66rem;font-weight:800;vertical-align:2px;
   letter-spacing:.02em;white-space:nowrap;cursor:help}
 .tpeline{margin:.1rem 0 .15rem;font-size:.72rem;color:var(--fg4);cursor:help}
@@ -538,9 +543,9 @@ function capbar(T,after,active){
     :after>CFG.apron1+1e-9
     ?`Above the 1st apron: can take back at most 100% of outgoing salary, no sign-and-trade acquisitions, no bi-annual or full midlevel, no prior-year trade exceptions`
     :"";
-  return `<div class="capbar"><div class="fill ${cls}" style="width:${pct.toFixed(1)}%"></div>${ticks}</div>
-    <div class="capticks"><span class="capend ${cls}">${cap}</span></div>
-    ${warn?`<div class="apronwarn">${warn}</div>`:""}`;
+  return {bar:`<div class="capbar"><div class="fill ${cls}" style="width:${pct.toFixed(1)}%"></div>${ticks}</div>
+    <div class="capticks"><span class="capend ${cls}">${cap}</span></div>`,
+    warn:warn?`<div class="apronwarn">${warn}</div>`:""};
 }
 
 function render(){
@@ -571,7 +576,9 @@ function render(){
     const after=tt?payAfter(tt):T.payroll;
     const incoming=Object.entries(state.moves).filter(([k,mv])=>mv.to===a);
     const hcChip=T.hard_cap!=null
-      ?`<span class="hcap" title="${esc(T.hard_cap_why||"")}">Hard-capped: ${esc(T.hard_cap_label||"")} (${fmtM(T.hard_cap)})</span>`
+      ?`<span class="hcap" title="Hard-capped at ${esc(T.hard_cap_label||"")} ${fmtM(T.hard_cap)}. ${esc(T.hard_cap_why||"")}">`
+        +(n<=2?`Hard-capped: ${esc(T.hard_cap_label||"")} (${fmtM(T.hard_cap)})`
+              :`Hard cap: ${esc(T.hard_cap_label||"")}`)+`</span>`
       :"";
     const tpeLine=T.tpes&&T.tpes.length
       ?`<div class="tpeline" title="${esc(T.tpes.map(t=>"$"+t.amt.toFixed(2)+"M ("+t.player+(t.expires?", expires "+t.expires:"")+")").join("; "))}. Toggle via TPE on an incoming player to absorb his salary into an exception instead of matching.">Trade exceptions: ${T.tpes.map(t=>"$"+t.amt.toFixed(1)+"M").join(" + ")} <span class="tpewho">(${esc(T.tpes[0].player)}${T.tpes.length>1?" and "+(T.tpes.length-1)+" more":""})</span></div>`
@@ -585,10 +592,12 @@ function render(){
       :`<span class="ppay"><b class="paynow rest">${fmtM(T.payroll)}</b></span>`;
     const logo=DATA.logos&&DATA.logos[a]
       ?`<img class="plogo" loading="lazy" src="${DATA.logos[a]}" alt="">`:"";
+    const cb=capbar(T,after,active);
     html+=`<div class="panel" data-team="${a}" style="--tc:${TEAM_COLORS[a]||"var(--teal)"}">
       <div class="phead"><span class="pname">${logo}<span class="pnametxt">${esc(T.name)}</span>${hcChip}</span>
       ${pay}</div>
-      ${capbar(T,after,active)}${tpeLine}
+      <div class="capwrap">${cb.bar}</div>
+      <div class="pnotes">${cb.warn}${tpeLine}</div>
       <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;
     for(const [key,mv] of incoming){
       const [kind,src,id]=key.split("|");
@@ -597,7 +606,7 @@ function render(){
         html+=pickHTML(pk,src,key,true,isSwapMove(pk,mv));
       }
     }
-    html+=`</div><div class="secl">Roster</div><div class="roster">`;
+    html+=`</div><div class="pbody"><div class="secl">Roster</div><div class="roster">`;
     for(const key of displayOrder(a)){
       const [kind,src,id]=key.split("|");
       const mv=state.moves[key];
@@ -639,7 +648,7 @@ function render(){
       }
     }
     html+=`<div class="cashrow">Cash out <input type="number" min="0" max="${CFG.cash_annual_limit}"
-      step="0.5" value="${state.cash[a]||""}" data-cash="${a}" placeholder="0"> $M</div></div>`;
+      step="0.5" value="${state.cash[a]||""}" data-cash="${a}" placeholder="0"> $M</div></div></div>`;
   }
   html+=`</div>`;
 
