@@ -19,8 +19,8 @@ import json
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils import (_headshot_id_map, normalize, render_nav, render_page_chrome,
-                   _bootstrap_warm)
+from utils import (_headshot_id_map, fetch_dlebron, normalize, render_nav,
+                   render_page_chrome, _bootstrap_warm)
 
 st.set_page_config(page_title="Trade Machine", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
@@ -49,6 +49,20 @@ def _payload() -> str:
         (_ROOT / "data" / "cba_config_2026_27.json").read_text()).items()
         if not k.startswith("_")}
     heads = _headshot_id_map()
+    # last season's per-game line + D-LEBRON, shown on cards in 2-team trades
+    import pandas as pd
+    _box = {}
+    try:
+        _ls = pd.read_parquet(_ROOT / "cache" / "league_stats_2025_26.parquet")
+        _dl = fetch_dlebron("2025-26")
+        for _r in _ls.itertuples():
+            _box[normalize(_r.PLAYER_NAME)] = {
+                "ppg": round(float(_r.PTS), 1), "apg": round(float(_r.AST), 1),
+                "rpg": round(float(_r.REB), 1),
+                "dl": (round(float(_dl[_r.PLAYER_ID]), 1)
+                       if _dl.get(_r.PLAYER_ID) else None)}
+    except Exception:
+        pass
     # verified master list of 2026-27 hard caps (apron caps triggered by
     # offseason mechanics); missing file or team = not hard-capped
     hard_caps = {}
@@ -99,6 +113,7 @@ def _payload() -> str:
                 "n": p["n"], "salary": float(p["salary"]),
                 "pos": (p.get("pos") or "").split("/")[0],
                 "value": p.get("value"), "barrett": p.get("barrett"),
+                **(_box.get(n) or {}),
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None),
                 "signed_date": (sig or {}).get("date"),

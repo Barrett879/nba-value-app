@@ -744,12 +744,15 @@ function cardHTML(p,src,key,inZone,tpe){
   if(inZone&&tpe&&tpe.has)
     btn=`<button class="mv tp${tpe.on?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`+btn;
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
-  // stat depth scales with panel width: 2 teams = salary + Barrett score +
-  // market value; 3 teams = salary + score; 4 teams = salary only
+  // salary + Barrett score always; 2-team trades add last season's
+  // points/assists/rebounds line and D-LEBRON
   const nT=state.teams.length;
   const stats=[fmtM(p.salary)];
-  if(nT<=3&&p.barrett!=null) stats.push(p.barrett.toFixed(1)+" BS");
-  if(nT===2&&p.value!=null) stats.push("val "+fmtM(p.value));
+  if(p.barrett!=null) stats.push(p.barrett.toFixed(1)+" BS");
+  if(nT===2){
+    if(p.ppg!=null) stats.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`);
+    if(p.dl!=null) stats.push("DLEB "+(p.dl>0?"+":"")+p.dl.toFixed(1));
+  }
   const sub=inZone&&tpe&&tpe.on
     ?`${chip}${fmtM(p.salary)} &middot; absorbed into a trade exception`
     :`${chip}${stats.join(" &middot; ")}`+(inZone?` &middot; from ${src}`:"");
