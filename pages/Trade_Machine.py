@@ -127,18 +127,28 @@ def _payload() -> str:
                                           if hc else None),
                        "hard_cap_why": hc["why"] if hc else None,
                        "tpes": tpes.get(abbr, [])}
-    # held SWAP RIGHTS: a ledger row like "LAL 2028 own first, swap_with UTA"
-    # means UTA holds the right to the better of the two picks. Surface that
-    # right as a tradable card on the HOLDER's panel (clean two-team swaps
-    # only; favorability webs stay in notes). The origin's encumbered own
-    # pick remains hidden from its panel as before.
+    # held SWAP RIGHTS: surface each right as a tradable card on the HOLDER's
+    # panel. swap_with names the COUNTERPARTY, not the holder -- two-team
+    # swaps are often recorded on BOTH origins' rows, and reading swap_with
+    # as the holder once flipped the Kessler swaps (a false "LAL holds UTA
+    # 2030 swap" card). Resolution order: an explicit swap_holder wins; a
+    # single-sided swap_with means that team holds the right; a reciprocal
+    # recording with no explicit holder emits nothing (ambiguous webs stay
+    # in notes). The origin's encumbered own pick stays hidden as before.
+    _swaps = {(p["origin"], p["year"]): (p.get("swap_with") or "").strip()
+              for led in ledger.values() for p in led.get("controls", [])
+              if p.get("round", 1) == 1 and p["controlled_by"] == p["origin"]}
     for abbr, led in ledger.items():
         for pk in led.get("controls", []):
+            if pk["controlled_by"] != pk["origin"] or pk.get("round", 1) != 1:
+                continue
             sw = (pk.get("swap_with") or "").strip()
-            if (sw in teams and sw != pk["origin"]
-                    and pk["controlled_by"] == pk["origin"]
-                    and pk.get("round", 1) == 1):
-                teams[sw]["picks"].append({
+            holder = (pk.get("swap_holder") or "").strip()
+            if not holder and sw in teams and sw != pk["origin"]:
+                reciprocal = _swaps.get((sw, pk["year"])) == pk["origin"]
+                holder = "" if reciprocal else sw
+            if holder in teams and holder != pk["origin"]:
+                teams[holder]["picks"].append({
                     "year": pk["year"], "origin": pk["origin"], "round": 1,
                     "protection": pk.get("protection", ""), "swap_right": True})
     for t in teams.values():

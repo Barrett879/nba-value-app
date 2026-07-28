@@ -53,6 +53,9 @@ def main() -> None:
                 "controlled_by": r["controlled_by"].strip(),
                 "protection": r.get("protection", "").strip(),
                 "swap_with": r.get("swap_with", "").strip(),
+                # explicit right holder for two-sided swap recordings
+                # (swap_with alone is the COUNTERPARTY, not the holder)
+                "swap_holder": (r.get("swap_holder") or "").strip(),
                 "notes": r.get("notes", "").strip(),
             }
             key = (origin, year)

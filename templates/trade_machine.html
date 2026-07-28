@@ -773,12 +773,12 @@ function pickHTML(pk,src,key,inZone,asSwap){
     :`${pk.year} ${pk.origin===src&&!inZone?"own":pk.origin} ${rnd===1?"1st":"2nd"}`
       +(pk.protection?" (protected)":"")+(asSwap?" (swap)":"");
   const badge=isRight
-    ?`<div class="pkrnd sw" title="Right to the more favorable of the two firsts">&#8644;</div>`
+    ?`<div class="pkrnd sw" title="Holds the right to swap first-round picks with this team">&#8644;</div>`
     :`<div class="pkrnd${rnd===2?" r2":""}">${rnd}</div>`;
   const logo=DATA.logos&&DATA.logos[pk.origin]
     ?`<div class="pkwrap"><img loading="lazy" src="${DATA.logos[pk.origin]}" alt="">${badge}</div>`
     :`<div class="noimg" style="border-radius:6px"></div>`;
-  const sub=isRight?"swap right, better of the two firsts":(asSwap?"pick swap":"draft pick");
+  const sub=isRight?"pick swap right":(asSwap?"pick swap":"draft pick");
   return `<div class="card pick" draggable="true" data-key="${key}">${logo}
     <div class="who"><div class="nm">${esc(lbl)}</div>
     <div class="sub">${sub}</div></div>${btn}</div>`;
