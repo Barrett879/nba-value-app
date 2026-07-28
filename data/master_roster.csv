@@ -520,3 +520,116 @@ asof,team,player,salary_M,kind,pos,notes
 ,WAS,Jamir Watkins,0,two_way,SG,"2025 2nd round No. 43; two-way, 50% gtd first day of season"
 ,WAS,Julian Reese,0,two_way,PF,two-way; QO due 6/29/27
 ,WAS,Felix Okpara,0,two_way,C,"2026 2nd round No. 46; two-way, 50% gtd first day of season"
+# ── FREE AGENTS (kind=free_agent): every verified UNSIGNED 2026 free agent,
+# listed under the team that holds his rights. NOT counted in rosters or
+# payrolls; feeds the Trade Machine sign-and-trade list and the FA pool.
+# pos here is the canonical position source. est value in notes = model's
+# projected contract value at the time of the 2026-07-28 sweep.
+,ATL,Jonathan Kuminga,0,free_agent,SF/PF,unsigned free agent; est value $12.3M
+,ATL,Caleb Houstan,0,free_agent,SG/SF,unsigned free agent; est value $4.3M
+,ATL,Christian Koloko,0,free_agent,C,unsigned free agent; est value $3.5M
+,ATL,Gabe Vincent,0,free_agent,PG/SG,unsigned free agent; est value $2.9M
+,ATL,N'Faly Dante,0,free_agent,C,unsigned free agent; est value $2.8M
+,ATL,Duop Reath,0,free_agent,C,unsigned free agent; est value $2.7M
+,ATL,Keaton Wallace,0,free_agent,SF/PF,unsigned free agent; est value $2.2M
+,ATL,Nikola Djurisic,0,free_agent,SF/PF,unsigned free agent
+,BKN,Ochai Agbaji,0,free_agent,SG/SF,unsigned free agent; est value $5.0M
+,BKN,Hunter Tyson,0,free_agent,PF/SF,unsigned free agent; est value $3.7M
+,BKN,Dariq Whitehead,0,free_agent,SG/SF,unsigned free agent; est value $3.4M
+,BKN,Malachi Smith,0,free_agent,SG/PG,unsigned free agent; est value $2.3M
+,BKN,Keon Johnson,0,free_agent,PG/SG,unsigned free agent
+,BKN,Tre Scott,0,free_agent,SF/PF,unsigned free agent
+,BKN,Grant Nelson,0,free_agent,SF/PF,unsigned free agent
+,BOS,Max Shulga,0,free_agent,G,unsigned free agent; est value $2.2M
+,CHA,Malaki Branham,0,free_agent,PG/SG,unsigned free agent; est value $4.8M
+,CHA,Nick Smith Jr.,0,free_agent,PG/SG,unsigned free agent; est value $4.0M
+,CHA,Antonio Reeves,0,free_agent,SG,unsigned free agent; est value $3.1M
+,CHA,Xavier Tillman Sr.,0,free_agent,SF/PF,unsigned free agent
+,CHI,Jaden Ivey,0,free_agent,PG/SG,unsigned free agent; est value $14.3M
+,CHI,Nick Richards,0,free_agent,C,unsigned free agent; est value $5.8M
+,CHI,Guerschon Yabusele,0,free_agent,PF/C,unsigned free agent; est value $4.9M
+,CHI,Yuki Kawamura,0,free_agent,G,unsigned free agent; est value $2.5M
+,CHI,Mac McClung,0,free_agent,PG,unsigned free agent; est value $2.2M
+,CLE,James Harden,0,free_agent,PG/SG,unsigned free agent; est value $54.5M
+,CLE,Lonzo Ball,0,free_agent,PG/SG,unsigned free agent; est value $8.5M
+,CLE,Olivier Sarr,0,free_agent,C,unsigned free agent
+,DAL,Brandon Williams,0,free_agent,PG/SG,unsigned free agent; est value $7.7M
+,DAL,Dwight Powell,0,free_agent,C,unsigned free agent; est value $3.9M
+,DAL,Jeremiah Robinson-Earl,0,free_agent,PF/C,unsigned free agent; est value $2.9M
+,DEN,Peyton Watson,0,free_agent,SF/PF,unsigned free agent; est value $15.6M
+,DEN,Bruce Brown,0,free_agent,PG/SG,unsigned free agent; est value $4.4M
+,DEN,Jalen Pickett,0,free_agent,SG,unsigned free agent; est value $3.1M
+,DEN,Curtis Jones,0,free_agent,G,unsigned free agent; est value $2.9M
+,DEN,David Roddy,0,free_agent,PF,unsigned free agent
+,DET,Jalen Duren,0,free_agent,C,unsigned free agent; est value $49.5M
+,DET,Dario Saric,0,free_agent,PF/C,unsigned free agent; est value $3.5M
+,DET,Wendell Moore Jr.,0,free_agent,SG,unsigned free agent
+,GSW,Gary Payton II,0,free_agent,SG/SF,unsigned free agent; est value $5.5M
+,GSW,Seth Curry,0,free_agent,SG/PG,unsigned free agent; est value $3.9M
+,HOU,Jeff Green,0,free_agent,PF/C,unsigned free agent; est value $3.9M
+,HOU,Aaron Holiday,0,free_agent,PG/SG,unsigned free agent; est value $3.5M
+,IND,Tony Bradley,0,free_agent,C,unsigned free agent; est value $3.5M
+,IND,James Wiseman,0,free_agent,C,unsigned free agent; est value $2.9M
+,IND,Garrison Mathews,0,free_agent,SG/SF,unsigned free agent; est value $2.9M
+,IND,Monte Morris,0,free_agent,SF/PF,unsigned free agent
+,IND,Gabe Mcglothan,0,free_agent,SF/PF,unsigned free agent
+,LAC,Bennedict Mathurin,0,free_agent,SF/PF,unsigned free agent; est value $19.5M
+,LAC,Bradley Beal,0,free_agent,SG/PG,unsigned free agent; est value $4.8M
+,LAC,TyTy Washington Jr.,0,free_agent,PG,unsigned free agent; est value $2.5M
+,LAC,Dalano Banton,0,free_agent,PG/SG,unsigned free agent
+,LAC,Norchad Omier,0,free_agent,F,unsigned free agent
+,LAL,Maxi Kleber,0,free_agent,C/PF,unsigned free agent; est value $3.5M
+,LAL,Lachlan Olbrich,0,free_agent,C,unsigned free agent; est value $2.7M
+,LAL,Drew Timme,0,free_agent,PF/C,unsigned free agent; est value $2.5M
+,MEM,Eric Gordon,0,free_agent,SF/SG,unsigned free agent; est value $3.9M
+,MEM,Georges Niang,0,free_agent,PF,unsigned free agent
+,MEM,Adama-Alpha Bal,0,free_agent,SF/PF,unsigned free agent
+,MEM,Lawson Lovering,0,free_agent,SF/PF,unsigned free agent
+,MEM,Lucas Williamson,0,free_agent,SF/PF,unsigned free agent
+,MIA,Keshad Johnson,0,free_agent,SF/PF,unsigned free agent; est value $3.2M
+,MIA,Jahmir Young,0,free_agent,PG,unsigned free agent; est value $2.2M
+,MIA,Terry Rozier,0,free_agent,SF/PF,unsigned free agent
+,MIA,Trevor Keels,0,free_agent,SG,unsigned free agent
+,MIL,Thanasis Antetokounmpo,0,free_agent,SF,unsigned free agent; est value $3.3M
+,MIL,Cole Anthony,0,free_agent,PG/SG,unsigned free agent; est value $3.1M
+,MIL,Cam Thomas,0,free_agent,SG,unsigned free agent; est value $2.9M
+,MIL,Andre Jackson Jr.,0,free_agent,SG/SF,unsigned free agent; est value $2.6M
+,MIL,Nigel Hayes-Davis,0,free_agent,SF/PF,unsigned free agent; est value $2.2M
+,MIN,Joe Ingles,0,free_agent,SF/PF,unsigned free agent; est value $3.9M
+,MIN,Julian Phillips,0,free_agent,SF/PF,unsigned free agent; est value $2.8M
+,NOP,Jaden Springer,0,free_agent,SF/PF,unsigned free agent
+,NYK,Dillon Jones,0,free_agent,SF,unsigned free agent; est value $2.8M
+,NYK,Trey Jemison,0,free_agent,PF,unsigned free agent
+,PHI,Tyrese Martin,0,free_agent,PG/SG,unsigned free agent; est value $4.0M
+,PHI,Kyle Lowry,0,free_agent,PG,unsigned free agent; est value $3.9M
+,PHI,Cameron Payne,0,free_agent,PG/SG,unsigned free agent; est value $3.9M
+,PHI,MarJon Beauchamp,0,free_agent,SG,unsigned free agent; est value $3.0M
+,PHI,Trendon Watford,0,free_agent,PF/SF,unsigned free agent; est value $2.9M
+,PHI,Dalen Terry,0,free_agent,SG/SF,unsigned free agent; est value $2.6M
+,PHX,Amir Coffey,0,free_agent,SG/SF,unsigned free agent; est value $2.9M
+,PHX,Isaiah Livers,0,free_agent,SF/PF,unsigned free agent; est value $2.9M
+,SAC,DeMar DeRozan,0,free_agent,SF/SG,unsigned free agent; est value $15.7M
+,SAC,Killian Hayes,0,free_agent,PG,unsigned free agent; est value $6.2M
+,SAC,Russell Westbrook,0,free_agent,PG/SG,unsigned free agent; est value $5.4M
+,SAC,Doug McDermott,0,free_agent,SF/PF,unsigned free agent; est value $3.9M
+,SAC,Drew Eubanks,0,free_agent,C,unsigned free agent; est value $3.1M
+,SAC,Patrick Baldwin Jr.,0,free_agent,SF/PF,unsigned free agent
+,SAS,Mason Plumlee,0,free_agent,C,unsigned free agent; est value $3.9M
+,SAS,Kelly Olynyk,0,free_agent,PF/C,unsigned free agent; est value $3.9M
+,SAS,Bismack Biyombo,0,free_agent,C,unsigned free agent; est value $3.9M
+,SAS,Jeremy Sochan,0,free_agent,PF/SF,unsigned free agent; est value $2.8M
+,SAS,Lindy Waters III,0,free_agent,SG/SF,unsigned free agent; est value $2.6M
+,TOR,Garrett Temple,0,free_agent,SG/PG,unsigned free agent; est value $3.9M
+,TOR,Chris Paul,0,free_agent,PG,unsigned free agent; est value $3.9M
+,UTA,Vince Williams Jr.,0,free_agent,PG/SG,unsigned free agent; est value $5.9M
+,UTA,Kevin Love,0,free_agent,C/PF,unsigned free agent; est value $3.9M
+,UTA,Chris Boucher,0,free_agent,PF/C,unsigned free agent; est value $3.5M
+,UTA,Bez Mbeng,0,free_agent,G,unsigned free agent; est value $2.7M
+,UTA,Hayden Gray,0,free_agent,G,unsigned free agent
+,WAS,Anthony Gill,0,free_agent,PF/C,unsigned free agent; est value $3.1M
+,WAS,Blake Wesley,0,free_agent,PG/SG,unsigned free agent; est value $3.0M
+,WAS,Sharife Cooper,0,free_agent,PG,unsigned free agent; est value $2.2M
+,WAS,Dante Exum,0,free_agent,SG/SF,unsigned free agent
+,WAS,Skal Labissiere,0,free_agent,SF/PF,unsigned free agent
+,WAS,Alondes Williams,0,free_agent,SF/PF,unsigned free agent
+,WAS,Kadary Richmond,0,free_agent,SF/PF,unsigned free agent

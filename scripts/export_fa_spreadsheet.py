@@ -498,15 +498,34 @@ for p in sim["players"]:
         _pool.append({"team": inc, "n": p["player"], "pos": p.get("pos"),
                       "barrett": p.get("barrett"),
                       "value": _hub.get(_pn0)})
-# period-proof final filter: nobody actually signed (master roster incl.
-# two-ways and Exhibit 10s, or the tracker) may appear in the pool under a
-# name variant ("CJ McCollum" vs "C.J. McCollum" once double-listed a
-# rostered player). master_names is standard-only, so re-read every row.
+# master_roster.csv is ALSO the FA registry (kind=free_agent, team = rights
+# holder): overlay those rows so the master file's team + position are
+# canonical for the pool, and any hand-added FA appears without code changes
+_master_fa = {}
 _all_master = set()
 for _r0 in csv.DictReader([l for l in _mr.read_text().splitlines()
                            if not l.lstrip().startswith("#")]):
-    if _r0.get("player"):
+    if not _r0.get("player"):
+        continue
+    if (_r0.get("kind") or "").strip() == "free_agent":
+        _master_fa[normalize(_r0["player"])] = _r0
+    else:
         _all_master.add(normalize(_r0["player"]))
+_by_name = {normalize(x["n"]): x for x in _pool}
+for _n0, _r0 in _master_fa.items():
+    row = _by_name.get(_n0)
+    if row is None:
+        _pool.append({"team": _r0["team"], "n": _r0["player"],
+                      "pos": (_r0.get("pos") or "").strip(),
+                      "barrett": bar_map.get(_n0), "value": _hub.get(_n0)})
+    else:
+        row["team"] = _r0["team"]
+        if (_r0.get("pos") or "").strip():
+            row["pos"] = _r0["pos"].strip()
+# period-proof final filter: nobody actually signed (master roster incl.
+# two-ways and Exhibit 10s, or the tracker) may appear in the pool under a
+# name variant ("CJ McCollum" vs "C.J. McCollum" once double-listed a
+# rostered player)
 _signed_pn = {x.replace(".", "").replace(" jr", "").replace(" sr", "")
               for x in (_all_master | master_pending | set(tracker_type))}
 _pool = [x for x in _pool

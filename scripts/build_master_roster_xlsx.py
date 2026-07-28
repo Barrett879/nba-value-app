@@ -31,6 +31,7 @@ band = PatternFill("solid", fgColor="EEF2F7")
 team_fill = PatternFill("solid", fgColor="DCE6F2")
 pend_font = Font(name=FONT, size=10, italic=True, color="8A6D1A")
 two_font = Font(name=FONT, size=10, color="4F6B8A")
+fa_font = Font(name=FONT, size=10, italic=True, color="6B7280")
 
 
 def main() -> None:
@@ -41,7 +42,7 @@ def main() -> None:
             if r.get("asof"):
                 asof = r["asof"] or asof
             rows.append(r)
-    rows.sort(key=lambda r: (r["team"], {"standard": 0, "two_way": 1, "pending": 2}[r["kind"]],
+    rows.sort(key=lambda r: (r["team"], {"standard": 0, "two_way": 1, "pending": 2, "free_agent": 3}[r["kind"]],
                              -float(r["salary_M"] or 0)))
 
     wb = Workbook()
@@ -55,7 +56,8 @@ def main() -> None:
         cell = ws.cell(1, c)
         cell.font = hdr_font
         cell.fill = hdr_fill
-    kind_label = {"standard": "Standard", "two_way": "Two-Way", "pending": "PENDING"}
+    kind_label = {"standard": "Standard", "two_way": "Two-Way", "pending": "PENDING",
+                  "free_agent": "Free Agent"}
     prev_team = None
     for i, r in enumerate(rows, start=2):
         ws.append([r["team"], r["player"], r["pos"],
@@ -65,7 +67,8 @@ def main() -> None:
         for c in range(1, len(heads) + 1):
             cell = ws.cell(i, c)
             cell.font = (pend_font if r["kind"] == "pending"
-                         else two_font if r["kind"] == "two_way" else base)
+                         else two_font if r["kind"] == "two_way"
+                         else fa_font if r["kind"] == "free_agent" else base)
             if first_of_team:
                 cell.fill = team_fill
             elif i % 2 == 0:
@@ -80,8 +83,8 @@ def main() -> None:
 
     # ── Team Summary ─────────────────────────────────────────────────────────
     ts = wb.create_sheet("Team Summary")
-    ts.append(["Team", "Standard", "Two-Way", "Pending", "Payroll ($M)", "Top salaries"])
-    for c in range(1, 7):
+    ts.append(["Team", "Standard", "Two-Way", "Pending", "Free Agents", "Payroll ($M)", "Top salaries"])
+    for c in range(1, 8):
         ts.cell(1, c).font = hdr_font
         ts.cell(1, c).fill = hdr_fill
     per = defaultdict(list)
@@ -91,18 +94,19 @@ def main() -> None:
         std = [r for r in per[t] if r["kind"] == "standard"]
         tw = [r for r in per[t] if r["kind"] == "two_way"]
         pend = [r for r in per[t] if r["kind"] == "pending"]
+        fa = [r for r in per[t] if r["kind"] == "free_agent"]
         pay = sum(float(r["salary_M"] or 0) for r in std)
         top = ", ".join(f'{r["player"]} {float(r["salary_M"]):.1f}'
                         for r in sorted(std, key=lambda x: -float(x["salary_M"] or 0))[:3])
-        ts.append([t, len(std), len(tw), len(pend), round(pay, 1), top])
-        for c in range(1, 7):
+        ts.append([t, len(std), len(tw), len(pend), len(fa), round(pay, 1), top])
+        for c in range(1, 8):
             ts.cell(i, c).font = base
             if i % 2 == 0:
                 ts.cell(i, c).fill = band
         ts.cell(i, 1).font = bold
         if len(std) > 15:
             ts.cell(i, 2).font = Font(name=FONT, size=10, bold=True, color="B00020")
-    for j, w in enumerate([7, 10, 9, 9, 13, 58], 1):
+    for j, w in enumerate([7, 10, 9, 9, 12, 13, 58], 1):
         ts.column_dimensions[get_column_letter(j)].width = w
     ts.freeze_panes = "A2"
 
@@ -116,7 +120,9 @@ def main() -> None:
         ("Compiled by six division research agents from Spotrac (canonical),", base),
         ("cross-checked against ESPN and RealGM; conflicts resolved with", base),
         ("transaction-level checks. PENDING rows are agreed-but-not-official", base),
-        ("deals and do not count toward roster limits.", base),
+        ("deals and do not count toward roster limits. FREE AGENT rows are the", base),
+        ("verified unsigned 2026 FA registry, listed under the team holding", base),
+        ("their rights; they feed the Trade Machine sign-and-trade lists.", base),
         ("", base),
         ("To maintain: edit data/master_roster.csv as trades and signings", base),
         ("happen, then re-run scripts/build_master_roster_xlsx.py.", base),
@@ -131,7 +137,9 @@ def main() -> None:
     n_std = sum(1 for r in rows if r["kind"] == "standard")
     n_tw = sum(1 for r in rows if r["kind"] == "two_way")
     n_p = sum(1 for r in rows if r["kind"] == "pending")
-    print(f"wrote {OUT} ({len(rows)} rows: {n_std} standard, {n_tw} two-way, {n_p} pending)")
+    n_fa = sum(1 for r in rows if r["kind"] == "free_agent")
+    print(f"wrote {OUT} ({len(rows)} rows: {n_std} standard, {n_tw} two-way, "
+          f"{n_p} pending, {n_fa} free agents)")
 
 
 if __name__ == "__main__":
