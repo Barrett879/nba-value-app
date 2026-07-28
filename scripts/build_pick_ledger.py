@@ -1,9 +1,10 @@
 """Build the engine-ready pick ledger from data/pick_ledger.csv.
 
 The CSV holds ONLY deviations from default ownership (a team owning its own
-unencumbered first emits no row); this script generates the defaults, enforces
-the ledger invariants, computes each team's Stepien coverage per the verified
-spec, and writes cache/pick_ledger.json for the trade machine.
+unencumbered pick emits no row) for BOTH rounds; this script generates the
+defaults, enforces the ledger invariants, computes each team's Stepien coverage
+per the verified spec (firsts only -- seconds are Stepien-exempt), and writes
+cache/pick_ledger.json for the trade machine.
 
 Coverage semantics (docs/plan_trade_machine.md 5.1-5.5 + S9.15, conservative):
   - unprotected pick controlled by T        -> T covered for that year
@@ -36,7 +37,7 @@ YEARS = list(range(2027, 2034))
 
 def main() -> None:
     rows = {}
-    seconds = []          # round-2 picks: explicit rows only, Stepien-exempt
+    rows2 = {}            # round-2 picks: full league-wide coverage, Stepien-exempt
     asof = ""
     with SRC.open() as f:
         for r in csv.DictReader(x for x in f if not x.lstrip().startswith("#")):
@@ -54,16 +55,14 @@ def main() -> None:
                 "swap_with": r.get("swap_with", "").strip(),
                 "notes": r.get("notes", "").strip(),
             }
-            if rnd == 2:
-                seconds.append(rec)
-                continue
             key = (origin, year)
-            assert key not in rows, f"duplicate ledger row for {key}"
-            rows[key] = rec
+            bucket = rows2 if rnd == 2 else rows
+            assert key not in bucket, f"duplicate ledger row for r{rnd} {key}"
+            bucket[key] = rec
 
-    # defaults: every unlisted (origin, year) FIRST is an unencumbered own pick.
-    # Seconds get NO defaults -- league-wide round-2 ownership is unverified, so
-    # only explicitly listed second-round rows exist.
+    # defaults: every unlisted (origin, year) pick -- first AND second -- is an
+    # unencumbered own pick. The round-2 side of the CSV is verified league-wide
+    # (2026-07-27 workflow), so like firsts it lists only deviations.
     all_picks = []
     for y in YEARS:
         for t in TEAMS:
@@ -71,9 +70,15 @@ def main() -> None:
                 "year": y, "origin": t, "controlled_by": t, "round": 1,
                 "protection": "", "swap_with": "", "notes": "",
             })
-    per_year = {y: sum(1 for p in all_picks if p["year"] == y) for y in YEARS}
-    assert all(n == 30 for n in per_year.values()), f"pick count broken: {per_year}"
-    all_picks.extend(seconds)
+            all_picks.append(rows2.get((t, y)) or {
+                "year": y, "origin": t, "controlled_by": t, "round": 2,
+                "protection": "", "swap_with": "", "notes": "",
+            })
+    for rnd in (1, 2):
+        per_year = {y: sum(1 for p in all_picks
+                           if p["year"] == y and p["round"] == rnd) for y in YEARS}
+        assert all(n == 30 for n in per_year.values()), \
+            f"round-{rnd} pick count broken: {per_year}"
 
     teams = {t: {"covered": [], "controls": []} for t in TEAMS}
     for p in all_picks:
@@ -101,8 +106,8 @@ def main() -> None:
                       f"(legal only if pre-existing; new trades must not worsen it)")
 
     OUT.write_text(json.dumps({"asof": asof, "teams": teams}, separators=(",", ":")))
-    n_dev = len(rows)
-    print(f"wrote {OUT.name}: 210 picks, {n_dev} encumbered, "
+    print(f"wrote {OUT.name}: 420 picks (210 firsts + 210 seconds), "
+          f"{len(rows)} + {len(rows2)} encumbered, "
           f"{sum(len(d['covered']) for d in teams.values())} covered team-years")
 
 
