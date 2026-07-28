@@ -744,10 +744,15 @@ function cardHTML(p,src,key,inZone,tpe){
   if(inZone&&tpe&&tpe.has)
     btn=`<button class="mv tp${tpe.on?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`+btn;
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
+  // stat depth scales with panel width: 2 teams = salary + Barrett score +
+  // market value; 3 teams = salary + score; 4 teams = salary only
+  const nT=state.teams.length;
+  const stats=[fmtM(p.salary)];
+  if(nT<=3&&p.barrett!=null) stats.push(p.barrett.toFixed(1)+" BS");
+  if(nT===2&&p.value!=null) stats.push("val "+fmtM(p.value));
   const sub=inZone&&tpe&&tpe.on
     ?`${chip}${fmtM(p.salary)} &middot; absorbed into a trade exception`
-    :`${chip}${fmtM(p.salary)}${p.barrett!=null?" &middot; "+p.barrett.toFixed(1)+" BS":""}`
-      +(inZone?` &middot; from ${src}`:"");
+    :`${chip}${stats.join(" &middot; ")}`+(inZone?` &middot; from ${src}`:"");
   return `<div class="card${inZone?" inc":""}" draggable="true" data-key="${key}">${img}
     <div class="who"><div class="nm">${esc(p.n)}</div>
     <div class="sub">${sub}</div></div>${btn}</div>`;
