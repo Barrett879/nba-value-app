@@ -53,11 +53,11 @@ if _rc.exists():
     _rc_lines = [l for l in _rc.read_text().splitlines() if not l.lstrip().startswith("#")]
     for r in csv.DictReader(_rc_lines):
         act = (r.get("action") or "").strip().lower()
-        if act in ("waived", "decline_option") and r.get("player"):
+        if act in ("waived", "decline_option", "free_agent") and r.get("player"):
             _tm = ABBR_FIX.get((r.get("team") or "").strip(), (r.get("team") or "").strip())
             dropped.add((_tm, normalize(r["player"])))
-            if act == "decline_option":                  # off the roster but now a free agent
-                declined.append((_tm, r["player"].strip()))
+            if act in ("decline_option", "free_agent"):  # off the roster but now a free agent
+                declined.append((_tm, r["player"].strip(), act))
 
 import re
 _SUF = re.compile(r"\s+(jr|sr|ii|iii|iv|v)$")
@@ -454,13 +454,16 @@ for p in sim["players"]:                                                        
         fa_rows.append([p["incumbent"], p["player"], p["pos"], p.get("barrett"),
                         None, p["realistic"]["predicted"],
                         f"projected {kind} - no room on 15-man roster"])
-for _tm, _nm in declined:                                                         # team options the team declined
+for _tm, _nm, _act in declined:               # declined options + verified missing FAs
     n = normalize(_nm)
     if n in rostered:
         continue
-    opt = (nc.get(n) or {}).get("salary")
-    note = (f"team option declined (${round(opt / 1e6, 1)}M option) - now a free agent"
-            if opt else "team option declined - now a free agent")
+    if _act == "free_agent":
+        note = "unsigned free agent (verified sweep 2026-07-28)"
+    else:
+        opt = (nc.get(n) or {}).get("salary")
+        note = (f"team option declined (${round(opt / 1e6, 1)}M option) - now a free agent"
+                if opt else "team option declined - now a free agent")
     fa_rows.append([_tm, disp.get(n, _nm), pos_map.get(n, "—"), bar_map.get(n), None, None, note])
 fa_rows.sort(key=lambda r: (r[0], -(r[4] or r[3] or 0)))
 
@@ -475,12 +478,42 @@ try:
         (ROOT / "cache" / "player_hub_pcv_v2.json").read_text())["players"].items()}
 except Exception:
     _hub = {}
+_pool = [{"team": r[0], "n": r[1], "pos": r[2], "barrett": r[3],
+          "value": r[4] if r[4] is not None else _hub.get(normalize(r[1]))}
+         for r in fa_rows]
+# A sim-projected signing is still UNSIGNED in reality: the model just guessed
+# his landing spot. The trade machine's sign-and-trade list is reality-first,
+# so add every remaining projection under the team that holds his RIGHTS.
+_pool_names = {normalize(x["n"]) for x in _pool}
+for p in sim["players"]:
+    _pn0 = normalize(p["player"])
+    # skip anyone actually signed (master roster or the signings tracker):
+    # the sim cache can lag reality (e.g. a July signing after its build)
+    if (not p["realistic"]["predicted"] or _pn0 in _pool_names
+            or _pn0 in master_names or _pn0 in master_pending
+            or _pn0 in tracker_type):
+        continue
+    inc = p.get("incumbent")
+    if inc in TEAMS:
+        _pool.append({"team": inc, "n": p["player"], "pos": p.get("pos"),
+                      "barrett": p.get("barrett"),
+                      "value": _hub.get(_pn0)})
+# period-proof final filter: nobody actually signed (master roster incl.
+# two-ways and Exhibit 10s, or the tracker) may appear in the pool under a
+# name variant ("CJ McCollum" vs "C.J. McCollum" once double-listed a
+# rostered player). master_names is standard-only, so re-read every row.
+_all_master = set()
+for _r0 in csv.DictReader([l for l in _mr.read_text().splitlines()
+                           if not l.lstrip().startswith("#")]):
+    if _r0.get("player"):
+        _all_master.add(normalize(_r0["player"]))
+_signed_pn = {x.replace(".", "").replace(" jr", "").replace(" sr", "")
+              for x in (_all_master | master_pending | set(tracker_type))}
+_pool = [x for x in _pool
+         if normalize(x["n"]).replace(".", "").replace(" jr", "").replace(" sr", "")
+         not in _signed_pn]
 (ROOT / "cache" / "fa_pool_v1.json").write_text(_json0.dumps({
-    "asof": "2026-07-28",
-    "fas": [{"team": r[0], "n": r[1], "pos": r[2], "barrett": r[3],
-             "value": r[4] if r[4] is not None else _hub.get(normalize(r[1]))}
-            for r in fa_rows],
-}, separators=(",", ":")))
+    "asof": "2026-07-28", "fas": _pool}, separators=(",", ":")))
 
 # ── Dump the assembled 2026-27 rosters for the crawlable /team/<ABBR> pages
 # (scripts/build_team_pages.py renders from this, so the pages and this workbook
