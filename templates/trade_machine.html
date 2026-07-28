@@ -17,6 +17,7 @@ body{background:transparent;color:var(--fg1);
 .pickrow .add{background:none;border:1px dashed var(--line);color:var(--fg4);border-radius:9px;
   padding:.45rem .7rem;cursor:pointer;font-size:.82rem;font-weight:700}
 .pickrow .add:hover{color:var(--teal);border-color:var(--teal)}
+.pickrow .reset:hover{color:var(--bad);border-color:var(--bad)}
 .boards{display:grid;gap:12px}
 .boards.n2{grid-template-columns:1fr 1fr}
 .boards.n3{grid-template-columns:1fr 1fr 1fr}
@@ -554,7 +555,10 @@ function render(){
       `<option value="${x}" ${x===a?"selected":""} ${state.teams.includes(x)&&x!==a?"disabled":""}>${x} - ${esc(DATA.teams[x].name)}</option>`).join("")+`</select>`
   ).join("")+
   (n<4?`<button class="add" id="addteam">+ Add team</button>`:"")+
-  (n>2?`<button class="add" id="dropteam">- Remove team</button>`:"")+`</div>`;
+  (n>2?`<button class="add" id="dropteam">- Remove team</button>`:"")+
+  (anyMove||Object.keys(state.order).length
+    ?`<button class="add reset" id="resetbtn" title="Clear every move, cash amount, and arranged order; keeps the selected teams">Reset trade</button>`:"")
+  +`</div>`;
 
   html+=`<div class="boards n${n}">`;
   for(const a of state.teams){
@@ -774,6 +778,8 @@ function wire(){
     const next=DATA.abbrs.find(x=>!state.teams.includes(x));
     state.teams.push(next); state.moves={}; state.cash={}; state.order={}; render();
   };
+  const rst=document.getElementById("resetbtn");
+  if(rst) rst.onclick=()=>{state.moves={}; state.cash={}; state.order={}; render();};
   const drop=document.getElementById("dropteam");
   if(drop) drop.onclick=()=>{state.teams.pop(); state.moves={}; state.cash={}; state.order={}; render();};
   root.querySelectorAll("[data-send]").forEach(b=>{
