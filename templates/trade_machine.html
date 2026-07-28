@@ -744,12 +744,12 @@ function cardHTML(p,src,key,inZone,tpe){
   if(inZone&&tpe&&tpe.has)
     btn=`<button class="mv tp${tpe.on?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`+btn;
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
-  // salary + Barrett score always; 2-team trades add last season's
-  // points/assists/rebounds line and D-LEBRON
+  // salary + Barrett score always; 2- and 3-team trades add last season's
+  // points/assists/rebounds line and D-LEBRON (only 4-team drops them)
   const nT=state.teams.length;
   const stats=[fmtM(p.salary)];
   if(p.barrett!=null) stats.push(p.barrett.toFixed(1)+" BS");
-  if(nT===2){
+  if(nT<=3){
     if(p.ppg!=null) stats.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`);
     if(p.dl!=null) stats.push("DLEB "+(p.dl>0?"+":"")+p.dl.toFixed(1));
   }
