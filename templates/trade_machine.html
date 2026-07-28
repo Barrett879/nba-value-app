@@ -474,13 +474,24 @@ function fitFrame(){
     const fe=window.frameElement;
     if(!fe) return;
     fe.style.height=h+"px";
+    // Grow EVERY wrapper up to Streamlit's scroll root with min-height (not
+    // height: min-height cooperates with flex layout and containers that hold
+    // more than the component). Stopping short of the root left the page's
+    // scrollable height capped below the component bottom.
+    const pdoc=fe.ownerDocument;
     let el=fe.parentElement;
-    for(let i=0;el&&i<4;i++){
-      if(el.style&&el.offsetHeight&&el.offsetHeight<h) el.style.height=h+"px";
+    while(el&&el!==pdoc.body){
+      const tid=el.getAttribute&&el.getAttribute("data-testid");
+      if(tid==="stAppViewContainer"||tid==="stMain") break;
+      if(el.style){
+        el.style.minHeight=h+"px";
+        if(el.style.height&&parseInt(el.style.height)<h) el.style.height="auto";
+      }
       el=el.parentElement;
     }
   }catch(e){}
 }
+setInterval(fitFrame,1000);   // survive Streamlit re-layouts resetting wrappers
 try{ new ResizeObserver(fitFrame).observe(document.body); }catch(e){}
 window.addEventListener("load",fitFrame);
 
