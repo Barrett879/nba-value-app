@@ -84,13 +84,18 @@ def _payload() -> str:
             if pk.get("swap_with") and pk["origin"] == abbr:
                 continue
             picks.append({"year": pk["year"], "origin": pk["origin"],
+                          "round": pk.get("round", 1),
                           "protection": pk.get("protection", "")})
         teams[abbr] = {"name": t["name"], "payroll": t["payroll"], "size": t["size"],
                        "covered": ledger.get(abbr, {}).get("covered", []),
                        "players": players, "picks": picks}
+    from nba_api.stats.static import teams as _nbat
+    logos = {t["abbreviation"]:
+             f"https://cdn.nba.com/logos/nba/{t['id']}/global/L/logo.svg"
+             for t in _nbat.get_teams()}
     return json.dumps({
         "abbrs": sorted(teams), "teams": teams, "cfg": cfg, "vectors": vectors,
-        "today": _TODAY, "default_teams": ["LAL", "BKN"],
+        "logos": logos, "today": _TODAY, "default_teams": ["LAL", "BKN"],
     }, separators=(",", ":"))
 
 

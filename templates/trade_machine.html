@@ -53,6 +53,14 @@ body{background:transparent;color:var(--fg1);
 .card .mv:hover{background:var(--teal);color:#fff}
 .card.pick{cursor:grab;background:var(--card)}
 .card.pick .nm{color:var(--fg2)}
+.pkwrap{position:relative;flex:0 0 30px;width:30px;height:30px}
+.pkwrap img{width:30px;height:30px;object-fit:contain}
+.pkrnd{position:absolute;bottom:-3px;right:-5px;width:15px;height:15px;border-radius:50%;
+  background:var(--teal);color:#fff;font-size:.62rem;font-weight:800;line-height:15px;
+  text-align:center;border:1.5px solid var(--card)}
+.pkrnd.r2{background:var(--fg4)}
+.card .mv.sw{background:transparent;border:1px solid var(--line);color:var(--fg4)}
+.card .mv.sw:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .cashrow{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--fg4);margin-top:.3rem}
 .cashrow input{width:72px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
   border-radius:7px;padding:.25rem .4rem;font-size:.78rem}
@@ -269,11 +277,12 @@ function b64uDec(s){s=s.replace(/-/g,"+").replace(/_/g,"/");while(s.length%4)s+=
   return decodeURIComponent(escape(atob(s)))}
 function serialize(){
   const m=[];
-  for(const [key,dest] of Object.entries(state.moves)){
+  for(const [key,mv] of Object.entries(state.moves)){
     const [kind,src,id]=key.split("|");
-    if(kind==="P") m.push(["P",src,id,dest]);
+    if(kind==="P") m.push(["P",src,id,mv.to]);
     else{const pk=DATA.teams[src].picks[Number(id)];
-      if(pk) m.push(["K",src,pk.year+":"+pk.origin,dest]);}
+      if(pk) m.push([mv.swap?"S":"K",src,
+                     pk.year+":"+pk.origin+":"+(pk.round||1),mv.to]);}
   }
   const c=state.teams.filter(a=>Number(state.cash[a]||0)>0).map(a=>[a,Number(state.cash[a])]);
   if(!m.length&&!c.length) return null;
@@ -289,11 +298,13 @@ function restore(token){
     for(const [kind,src,id,dest] of (o.m||[])){
       if(!DATA.teams[src]||!DATA.teams[dest]||!t.includes(src)||!t.includes(dest)) continue;
       if(kind==="P"){
-        if(DATA.teams[src].players.some(p=>p.n===id)) state.moves["P|"+src+"|"+id]=dest;
+        if(DATA.teams[src].players.some(p=>p.n===id))
+          state.moves["P|"+src+"|"+id]={to:dest,swap:false};
       }else{
-        const [yr,org]=String(id).split(":");
-        const idx=DATA.teams[src].picks.findIndex(p=>String(p.year)===yr&&p.origin===org);
-        if(idx>=0) state.moves["K|"+src+"|"+idx]=dest;
+        const [yr,org,rnd]=String(id).split(":");
+        const idx=DATA.teams[src].picks.findIndex(p=>String(p.year)===yr&&p.origin===org
+          &&(!rnd||String(p.round||1)===rnd));
+        if(idx>=0) state.moves["K|"+src+"|"+idx]={to:dest,swap:kind==="S"};
       }
     }
     for(const [a,amt] of (o.c||[]))
@@ -327,8 +338,9 @@ function buildTrade(){
       cash_out:0,cash_in:0,cash_sent_ytd:0,
       owned_future_firsts:DATA.teams[a].covered.slice(),hard_cap:null};
   }
-  for(const [key,dest] of Object.entries(state.moves)){
+  for(const [key,mv] of Object.entries(state.moves)){
     const [kind,abbr,id]=key.split("|");
+    const dest=mv.to;
     if(!tt[abbr]||!tt[dest]||abbr===dest) continue;
     if(kind==="P"){
       const p=DATA.teams[abbr].players.find(x=>x.n===id); if(!p) continue;
@@ -338,7 +350,8 @@ function buildTrade(){
       tt[abbr].out_players.push(tp); tt[dest].in_players.push(tp);
     }else{
       const pk=DATA.teams[abbr].picks[Number(id)]; if(!pk) continue;
-      const tpk={year:pk.year,round:1,protection:pk.protection||"",swap:false};
+      const tpk={year:pk.year,round:pk.round||1,protection:pk.protection||"",
+                 swap:!!mv.swap};
       tt[abbr].out_picks.push(tpk); tt[dest].in_picks.push(tpk);
     }
   }
@@ -387,20 +400,20 @@ function render(){
     const T=DATA.teams[a];
     const tt=trade.teams.find(x=>x.abbr===a);
     const after=tt?(tt.payroll-tt.out_players.reduce((s,p)=>s+p.salary,0)+tt.in_players.reduce((s,p)=>s+p.salary,0)):T.payroll;
-    const incoming=Object.entries(state.moves).filter(([k,d])=>d===a);
+    const incoming=Object.entries(state.moves).filter(([k,mv])=>mv.to===a);
     html+=`<div class="panel" data-team="${a}">
       <div class="phead"><span class="pname">${esc(T.name)}</span>
       <span class="ppay">${fmtM(T.payroll)} &rarr; <b>${fmtM(after)}</b></span></div>
       ${capbar(after)}
       <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;
-    for(const [key,dest] of incoming){
+    for(const [key,mv] of incoming){
       const [kind,src,id]=key.split("|");
       if(kind==="P"){
         const p=DATA.teams[src].players.find(x=>x.n===id);
         html+=cardHTML(p,src,key,true);
       }else{
         const pk=DATA.teams[src].picks[Number(id)];
-        html+=pickHTML(pk,src,key,true);
+        html+=pickHTML(pk,src,key,true,mv.swap);
       }
     }
     html+=`</div><div class="secl">Roster</div><div class="roster">`;
@@ -514,15 +527,27 @@ function cardHTML(p,src,key,inZone){
     <div class="who"><div class="nm">${esc(p.n)}</div>
     <div class="sub">${fmtM(p.salary)}${p.barrett!=null?" &middot; "+p.barrett.toFixed(1)+" BS":""}</div></div>${btn}</div>`;
 }
-function pickHTML(pk,src,key,inZone){
+function pickHTML(pk,src,key,inZone,asSwap){
   const others=state.teams.filter(x=>x!==src);
-  const btn=inZone
-    ?`<button class="mv" data-return="${key}">&larr; return</button>`
-    :(others.length===1?`<button class="mv" data-send="${key}" data-to="${others[0]}">&rarr; ${others[0]}</button>`
-      :others.map(o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`).join(""));
-  const lbl=`${pk.year} ${pk.origin===src?"own":pk.origin} 1st${pk.protection?" (protected)":""}`;
-  return `<div class="card pick" draggable="true" data-key="${key}"><div class="noimg" style="border-radius:6px"></div>
-    <div class="who"><div class="nm">${esc(lbl)}</div><div class="sub">draft pick</div></div>${btn}</div>`;
+  const rnd=pk.round||1;
+  let btn;
+  if(inZone){
+    btn=`<button class="mv" data-return="${key}">&larr; return</button>`;
+  }else{
+    const send=o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`;
+    const swp=o=>rnd===1?`<button class="mv sw" data-swap="${key}" data-to="${o}" title="Trade as a swap right (worse of the two picks)">&#8644; swap</button>`:"";
+    btn=others.length===1?send(others[0])+swp(others[0])
+        :others.map(o=>send(o)).join("")+(rnd===1?others.map(o=>swp(o)).join(""):"");
+  }
+  const lbl=`${pk.year} ${pk.origin===src&&!inZone?"own":pk.origin} ${rnd===1?"1st":"2nd"}`
+    +(pk.protection?" (protected)":"")+(asSwap?" (swap)":"");
+  const logo=DATA.logos&&DATA.logos[pk.origin]
+    ?`<div class="pkwrap"><img loading="lazy" src="${DATA.logos[pk.origin]}" alt="">`
+     +`<div class="pkrnd${rnd===2?" r2":""}">${rnd}</div></div>`
+    :`<div class="noimg" style="border-radius:6px"></div>`;
+  return `<div class="card pick" draggable="true" data-key="${key}">${logo}
+    <div class="who"><div class="nm">${esc(lbl)}</div>
+    <div class="sub">${asSwap?"pick swap":"draft pick"}</div></div>${btn}</div>`;
 }
 
 function wire(){
@@ -541,7 +566,10 @@ function wire(){
   const drop=document.getElementById("dropteam");
   if(drop) drop.onclick=()=>{state.teams.pop(); state.moves={}; state.cash={}; render();};
   root.querySelectorAll("[data-send]").forEach(b=>{
-    b.onclick=()=>{state.moves[b.dataset.send]=b.dataset.to; render();};
+    b.onclick=()=>{state.moves[b.dataset.send]={to:b.dataset.to,swap:false}; render();};
+  });
+  root.querySelectorAll("[data-swap]").forEach(b=>{
+    b.onclick=()=>{state.moves[b.dataset.swap]={to:b.dataset.to,swap:true}; render();};
   });
   root.querySelectorAll("[data-return]").forEach(b=>{
     b.onclick=()=>{delete state.moves[b.dataset.return]; render();};
@@ -576,7 +604,7 @@ function wire(){
       if(!key) return;
       const src=key.split("|")[1], dest=z.dataset.drop;
       if(dest===src){ delete state.moves[key]; }   // dropped back home = return
-      else state.moves[key]=dest;
+      else state.moves[key]={to:dest,swap:false};
       render();
     });
   });
@@ -588,7 +616,7 @@ function wire(){
       if(!key) return;
       e.preventDefault();
       const src=key.split("|")[1], dest=p.dataset.team;
-      if(dest===src) delete state.moves[key]; else state.moves[key]=dest;
+      if(dest===src) delete state.moves[key]; else state.moves[key]={to:dest,swap:false};
       render();
     });
   });

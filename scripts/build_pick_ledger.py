@@ -36,40 +36,51 @@ YEARS = list(range(2027, 2034))
 
 def main() -> None:
     rows = {}
+    seconds = []          # round-2 picks: explicit rows only, Stepien-exempt
     asof = ""
     with SRC.open() as f:
         for r in csv.DictReader(x for x in f if not x.lstrip().startswith("#")):
             if r.get("asof"):
                 asof = r["asof"]
             year, origin = int(r["year"]), r["origin"].strip()
-            key = (origin, year)
-            assert key not in rows, f"duplicate ledger row for {key}"
+            rnd = int(r.get("round") or 1)
             assert origin in TEAMS, f"bad origin {origin!r}"
             assert r["controlled_by"].strip() in TEAMS, f"bad controller in {r}"
             assert year in YEARS, f"year out of range in {r}"
-            rows[key] = {
-                "year": year, "origin": origin,
+            rec = {
+                "year": year, "origin": origin, "round": rnd,
                 "controlled_by": r["controlled_by"].strip(),
                 "protection": r.get("protection", "").strip(),
                 "swap_with": r.get("swap_with", "").strip(),
                 "notes": r.get("notes", "").strip(),
             }
+            if rnd == 2:
+                seconds.append(rec)
+                continue
+            key = (origin, year)
+            assert key not in rows, f"duplicate ledger row for {key}"
+            rows[key] = rec
 
-    # defaults: every unlisted (origin, year) is an unencumbered own pick
+    # defaults: every unlisted (origin, year) FIRST is an unencumbered own pick.
+    # Seconds get NO defaults -- league-wide round-2 ownership is unverified, so
+    # only explicitly listed second-round rows exist.
     all_picks = []
     for y in YEARS:
         for t in TEAMS:
             all_picks.append(rows.get((t, y)) or {
-                "year": y, "origin": t, "controlled_by": t,
+                "year": y, "origin": t, "controlled_by": t, "round": 1,
                 "protection": "", "swap_with": "", "notes": "",
             })
     per_year = {y: sum(1 for p in all_picks if p["year"] == y) for y in YEARS}
     assert all(n == 30 for n in per_year.values()), f"pick count broken: {per_year}"
+    all_picks.extend(seconds)
 
     teams = {t: {"covered": [], "controls": []} for t in TEAMS}
     for p in all_picks:
         ctrl = p["controlled_by"]
         teams[ctrl]["controls"].append(p)
+        if p.get("round", 1) == 2:
+            continue                       # seconds: tradable, Stepien-exempt
         if p["protection"]:
             continue                       # protected: covers nobody (S9.15)
         if p["swap_with"] and ctrl == p["origin"]:

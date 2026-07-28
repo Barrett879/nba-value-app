@@ -483,8 +483,13 @@ def trade_shell(base_html: str, token: str) -> str:
                 if kind == "P":
                     sends[src].append(str(ident))
                 else:
-                    yr = str(ident).split(":")[0]
-                    sends[src].append(f"a {yr} first-round pick")
+                    parts = str(ident).split(":")
+                    yr = parts[0]
+                    rnd = "second" if parts[2:3] == ["2"] else "first"
+                    if kind == "S":
+                        sends[src].append(f"a {yr} pick swap")
+                    else:
+                        sends[src].append(f"a {yr} {rnd}-round pick")
         legs = []
         for t in teams:
             names = sends[t][:3]
