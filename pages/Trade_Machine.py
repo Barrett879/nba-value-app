@@ -111,11 +111,16 @@ def _payload() -> str:
             low = (pk.get("notes") or "").lower()
             if "frozen" in low or "untradeable" in low or "untradable" in low:
                 continue
-            if pk.get("swap_with") and pk["origin"] == abbr:
-                continue
-            picks.append({"year": pk["year"], "origin": pk["origin"],
-                          "round": pk.get("round", 1),
-                          "protection": pk.get("protection", "")})
+            swap_only = bool(pk.get("swap_with")) and pk["origin"] == abbr
+            entry = {"year": pk["year"], "origin": pk["origin"],
+                     "round": pk.get("round", 1),
+                     "protection": pk.get("protection", "")}
+            if swap_only:
+                # a swap-encumbered own pick is the residual (worse of the
+                # two); it can move, but ONLY as a further swap right so the
+                # year stays Stepien-covered
+                entry["swap_only"] = True
+            picks.append(entry)
         hc = hard_caps.get(abbr)
         teams[abbr] = {"name": t["name"], "payroll": t["payroll"], "size": t["size"],
                        "covered": ledger.get(abbr, {}).get("covered", []),

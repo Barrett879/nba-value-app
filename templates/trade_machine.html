@@ -412,7 +412,7 @@ function serialize(){
     if(kind==="P") m.push([mv.tpe?"T":"P",src,id,mv.to]);
     else if(kind==="F") m.push([mv.tpe?"G":"F",src,id+"@"+mv.salary,mv.to]);
     else{const pk=DATA.teams[src].picks[Number(id)];
-      if(pk) m.push([(mv.swap||pk.swap_right)?"S":"K",src,
+      if(pk) m.push([isSwapMove(pk,mv)?"S":"K",src,
                      pk.year+":"+pk.origin+":"+(pk.round||1),mv.to]);}
   }
   const c=state.teams.filter(a=>Number(state.cash[a]||0)>0).map(a=>[a,Number(state.cash[a])]);
@@ -497,7 +497,7 @@ function buildTrade(){
     }else{
       const pk=DATA.teams[abbr].picks[Number(id)]; if(!pk) continue;
       const tpk={year:pk.year,round:pk.round||1,protection:pk.protection||"",
-                 swap:!!mv.swap||!!pk.swap_right};
+                 swap:isSwapMove(pk,mv)};
       tt[abbr].out_picks.push(tpk); tt[dest].in_picks.push(tpk);
     }
   }
@@ -588,7 +588,7 @@ function render(){
       const [kind,src,id]=key.split("|");
       if(kind!=="P"&&kind!=="F"){               // players land in the roster grid
         const pk=DATA.teams[src].picks[Number(id)];
-        html+=pickHTML(pk,src,key,true,mv.swap);
+        html+=pickHTML(pk,src,key,true,isSwapMove(pk,mv));
       }
     }
     html+=`</div><div class="secl">Roster</div><div class="roster">`;
@@ -755,18 +755,26 @@ function cardHTML(p,src,key,inZone,tpe){
     <div class="who"><div class="nm">${esc(p.n)}</div>
     <div class="sub">${sub}</div></div>${btn}</div>`;
 }
+function isSwapMove(pk,mv){
+  // a move of a swap-right card or a swap-encumbered residual is ALWAYS a
+  // swap, regardless of how it was staged (button or drag)
+  return !!(mv&&mv.swap)||!!pk.swap_right||!!pk.swap_only;
+}
 function pickHTML(pk,src,key,inZone,asSwap){
   const others=state.teams.filter(x=>x!==src);
   const rnd=pk.round||1;
   const isRight=!!pk.swap_right;
+  const swapOnly=!!pk.swap_only;
   let btn;
   if(inZone){
     btn=`<button class="mv" data-return="${key}">&larr; return</button>`;
   }else{
     const send=o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`;
     const swp=o=>(rnd===1&&!isRight)?`<button class="mv sw" data-swap="${key}" data-to="${o}" title="Trade as a swap right (worse of the two picks)">&#8644; swap</button>`:"";
-    btn=others.length===1?send(others[0])+swp(others[0])
-        :others.map(o=>send(o)).join("")+((rnd===1&&!isRight)?others.map(o=>swp(o)).join(""):"");
+    btn=swapOnly
+      ?others.map(o=>swp(o)).join("")
+      :(others.length===1?send(others[0])+swp(others[0])
+        :others.map(o=>send(o)).join("")+((rnd===1&&!isRight)?others.map(o=>swp(o)).join(""):""));
   }
   const lbl=isRight
     ?`${pk.year} ${pk.origin} swap`+(pk.protection?" (protected)":"")
@@ -778,7 +786,9 @@ function pickHTML(pk,src,key,inZone,asSwap){
   const logo=DATA.logos&&DATA.logos[pk.origin]
     ?`<div class="pkwrap"><img loading="lazy" src="${DATA.logos[pk.origin]}" alt="">${badge}</div>`
     :`<div class="noimg" style="border-radius:6px"></div>`;
-  const sub=isRight?"pick swap right":(asSwap?"pick swap":"draft pick");
+  const sub=isRight?"pick swap right"
+    :(swapOnly&&!inZone?"swap-encumbered residual, moves only as a swap"
+      :(asSwap?"pick swap":"draft pick"));
   return `<div class="card pick" draggable="true" data-key="${key}">${logo}
     <div class="who"><div class="nm">${esc(lbl)}</div>
     <div class="sub">${sub}</div></div>${btn}</div>`;
