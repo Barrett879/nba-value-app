@@ -202,6 +202,7 @@ if _ms.exists():
 # still-unsigned pool. The projection MODEL stays pure — this layers reality on
 # top for roster display, exactly what the tracker was built to enable.
 real_set = set()
+tracker_type = {}                    # norm -> "resign" | other (for roster role chips)
 _rs = ROOT / "data" / "real_signings_2026.csv"
 if _rs.exists():
     for r in csv.DictReader([l for l in _rs.read_text().splitlines() if not l.lstrip().startswith("#")]):
@@ -218,6 +219,7 @@ if _rs.exists():
         except ValueError:
             continue
         real_set.add(n)
+        tracker_type[n] = rtyp
         fa_pool.add(n)                              # drops any stale under-contract row (decline-and-resign)
         for t2 in list(sim_by_team):                # kill the model's projected placement anywhere
             sim_by_team[t2] = [p for p in sim_by_team[t2] if normalize(p["player"]) != n]
@@ -231,19 +233,52 @@ print(f"real signings layered onto rosters: {len(real_set)}")
 
 _STAT = {"guaranteed": "Signed", "player_option": "Player Option", "team_option": "Team Option"}
 
-# ── COMPLETE under-contract roster: every 2026-27 contract that isn't a free agent ──
+# ── COMPLETE roster base: data/master_roster.csv is the SOURCE OF TRUTH ─────────
+# The league-wide verified roster (Spotrac-canonical, cross-checked, reconciled)
+# replaces the laggy ESPN contract feed that caused the Ayton-class drift: a
+# player traded away lingered here for weeks while his replacement was missing.
+# The nc feed is now used only to label contract STATUS (player/team option).
+# Rules: kind=standard only (pending deals are not official; two-ways carry no
+# standard spot); salary 0 rows are Exhibit-10 camp deals, excluded from the
+# 15-man projection but kept in the master list itself.
 under = defaultdict(list)                                                         # team -> [(name,pos,sal,type,bar)]
-for n, info in nc.items():
-    typ = info.get("type")
-    if typ not in _STAT or n in fa_pool or n in held:
+master_names = set()                                                              # every signed (standard) player
+master_rookies = set()                                                            # 2026 draftees (role: Draft pick)
+master_pending = set()                                                            # agreed-not-official: NOT rostered
+_mr = ROOT / "data" / "master_roster.csv"
+for r in csv.DictReader([l for l in _mr.read_text().splitlines() if not l.lstrip().startswith("#")]):
+    if r["kind"] == "pending":
+        master_pending.add(normalize(r["player"]))
         continue
-    tm = ABBR_FIX.get(cur_team(n), cur_team(n))                            # correction > board > season stats > cey
+    if r["kind"] != "standard" or float(r["salary_M"] or 0) <= 0:
+        continue
+    tm = ABBR_FIX.get(r["team"].strip(), r["team"].strip())
     if tm not in TEAMS:
         continue
-    if (tm, n) in dropped or (tm, _strip(n)) in dropped:                   # waived / declined option -> off roster
+    n = normalize(r["player"])
+    if n in held:
         continue
-    under[tm].append((disp.get(n, n.title()), pos_map.get(n, "—"),
-                      round((info.get("salary") or 0) / 1e6, 1), typ, bar_map.get(n)))
+    master_names.add(n)
+    _nl = r["notes"].lower()
+    if "2026" in r["notes"] and any(k in _nl for k in
+            ("1st round", "1st-round", "first round", "first-round",
+             "2nd round", "2nd-round", "second-round pick")):
+        master_rookies.add(n)
+    typ = (nc.get(n) or {}).get("type")
+    if typ not in _STAT:
+        typ = "guaranteed"                     # status label only; master decides membership
+    under[tm].append((r["player"], r["pos"] or pos_map.get(n, "—"),
+                      round(float(r["salary_M"]), 1), typ, bar_map.get(n)))
+
+# The sim must not project anyone the master roster says is already signed
+# (its pre-July-1 pool still lists players who since re-signed), and a
+# master-PENDING deal keeps the player off rosters even if the signings
+# tracker carries the agreement -- master's official/pending call wins
+# (this is what keeps Wagner/Thybulle treatment consistent).
+for _t2 in list(sim_by_team):
+    sim_by_team[_t2] = [p for p in sim_by_team[_t2]
+                        if normalize(p["player"]) not in master_names
+                        and normalize(p["player"]) not in master_pending]
 
 team_order = sorted(TEAMS, key=lambda t: TEAMS[t]["name"])
 
@@ -266,9 +301,11 @@ plan_uc, plan_picks, plan_moves, open_left, team_total = {}, {}, {}, {}, {}
 overflow = []
 for tm in team_order:
     uc = sorted(under.get(tm, []), key=lambda x: -x[2])
-    allp = sorted((m for m in TEAMS[tm]["plan"] if m.get("kind") == "pick"), key=lambda m: m.get("overall", 99))
-    firsts = [m for m in allp if m.get("round") == 1]
-    seconds = [m for m in allp if m.get("round") != 1]               # 2nd-round = two-way, no standard spot
+    # Draft-pick placeholders retired: the master roster carries every SIGNED
+    # 2026 draftee as a real row (name + exact rookie-scale salary), so the
+    # generic "2026 Pick #N" plan rows would double-count them.
+    firsts = []
+    seconds = []
     kept_first = firsts[:max(0, ROSTER_MAX - len(uc))]
     spots = max(0, ROSTER_MAX - len(uc) - len(kept_first))
     ranked = sorted(sim_by_team.get(tm, []),                                     # forced manual signings kept first
@@ -444,13 +481,21 @@ for _tm in team_order:
     _ros["teams"][_tm] = {
         "abbr": _tm, "name": TEAMS[_tm]["name"],
         "total": agg[_tm]["total"], "size": agg[_tm]["size"], "room": agg[_tm]["room"],
-        "players": [{"n": r[1], "role": r[3], "pos": r[2], "prev": r[5],
-                     "barrett": r[6], "salary": r[7],
-                     # signings/re-signs: True = reported real deal, False = model
-                     # projection for a still-unsigned FA. Contracts/picks are facts.
-                     "real": (normalize(r[1]) in real_set
-                              if r[3] in ("Re-sign", "New signing") else True)}
-                    for r in _rows],
+        "players": [
+            # Roles for display: master-based rows land as "Under contract",
+            # but a tracker deal should chip as Re-signed/Signed and a 2026
+            # draftee as a rookie -- override here from the tracker + master.
+            (lambda _n, _role: {
+                "n": r[1],
+                "role": ("Draft pick" if _n in master_rookies and _role == "Under contract"
+                         else ("Re-sign" if tracker_type.get(_n) == "resign" else "New signing")
+                         if _n in tracker_type and _role == "Under contract"
+                         else _role),
+                "pos": r[2], "prev": r[5], "barrett": r[6], "salary": r[7],
+                "real": (normalize(r[1]) in real_set or _n in master_names
+                         if _role in ("Re-sign", "New signing") else True),
+            })(normalize(r[1]), r[3])
+            for r in _rows],
         "unsigned": sorted(_uns, key=lambda u: -(u["barrett"] or 0)),
     }
 _ros_path = Path(__file__).resolve().parent.parent / "cache" / "team_rosters_2627.json"
@@ -685,13 +730,14 @@ if _ens.exists():
 # contract, an over-stuffed roster, money that doesn't add up). The ensemble is the
 # cross-check: a player several models would roster should never end up unsigned.
 ROT = 8.0                                  # value at/above this -> rotation-level, must not go unsigned
-rostered_n = {normalize(r[1]) for r in detail}
-fa_n = {normalize(x[1]) for x in fa_rows}
+_pn = lambda s: normalize(s).replace(".", "")   # period-proof compare (CJ vs C.J. McCollum)
+rostered_n = {_pn(r[1]) for r in detail}
+fa_n = {_pn(x[1]) for x in fa_rows}
 issues = []
 _epath = ROOT / "cache" / "fa_ensemble_v1.json"
 if _epath.exists():
     for p in json.loads(_epath.read_text())["players"]:
-        n = normalize(p["player"])
+        n = _pn(p["player"])
         if p["value_M"] >= ROT and n not in rostered_n and n not in held:        # held-out players are intentional
             n_roster = sum(1 for m, pk in p["picks"].items() if pk["team"])      # lenses that place him
             if n in fa_n:
@@ -702,8 +748,14 @@ if _epath.exists():
                 issues.append(f"GHOST rotation FA (on no roster AND no unsigned list): "
                               f"{p['player']} (${p['value_M']}M, {n_roster} models roster him)")
 for tm in team_order:
-    if agg[tm]["size"] > 15:
-        issues.append(f"ROSTER OVER 15: {tm} = {agg[tm]['size']}")
+    # Offseason rosters may legally carry up to 21; over 15 in July is a real
+    # state (teams trim by opening night), not data drift, now that membership
+    # comes from the verified master roster. Only >21 is impossible.
+    if agg[tm]["size"] > 21:
+        issues.append(f"ROSTER OVER 21 (impossible): {tm} = {agg[tm]['size']}")
+    elif agg[tm]["size"] > 15:
+        print(f"  offseason note: {tm} carries {agg[tm]['size']} standard deals; "
+              f"must trim to 15 by opening night")
 for r in detail:
     # over the 2nd apron a team has NO exceptions, so a non-minimum new signing there is illegal
     # (Bird re-signs and veteran minimums over the apron are allowed and not flagged).
@@ -716,14 +768,24 @@ for r in detail:
                   f"${agg[r[0]]['total']}M (> 2nd apron) -- check under-contract feed for {r[0]}")
         else:
             issues.append(f"OVER 2ND APRON via a ${r[7]}M signing: {r[1]} on {r[0]} (team ${agg[r[0]]['total']}M, no exception over the apron)")
+    # Master-roster rows are source-verified (Spotrac + 2 cross-checks), so a
+    # disagreement with the stale cey/stats feeds indicts the FEEDS, not the
+    # roster: surface as info, never as an issue.
     if r[3] == "Under contract" and r[4] == "Signed":
         info = cey.get(normalize(r[1])) or {}
         if info.get("end_season") and info["end_season"] < "2026-27":
-            issues.append(f"GHOST (guaranteed but contract ended {info['end_season']}): {r[1]} {r[0]}")
+            if normalize(r[1]) in master_names:
+                print(f"  feed drift note: cey says {r[1]}'s contract ended "
+                      f"{info['end_season']} but the master roster has him signed on {r[0]}")
+            else:
+                issues.append(f"GHOST (guaranteed but contract ended {info['end_season']}): {r[1]} {r[0]}")
     if r[3] == "Under contract":                                                  # team-of-record sanity (caught Rui's class)
         st = stats_team.get(normalize(r[1]))
         if st and r[0] != st and normalize(r[1]) not in team_corr:
-            issues.append(f"TEAM MISMATCH (review): {r[1]} shown on {r[0]} but played for {st} this season")
+            if normalize(r[1]) in master_names:
+                pass                          # verified July trade; last-season team differing is expected
+            else:
+                issues.append(f"TEAM MISMATCH (review): {r[1]} shown on {r[0]} but played for {st} this season")
     if normalize(r[1]) in fa_n:
         issues.append(f"DOUBLE-LISTED (on a roster AND the FA sheet): {r[1]}")
 print(f"PLAUSIBILITY AUDIT: {len(issues)} issue(s)")
