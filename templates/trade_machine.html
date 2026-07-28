@@ -90,6 +90,8 @@ body{background:transparent;color:var(--fg1);
 .card .mv.tp{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.tp:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .card .mv.tp.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.card.inc{border-left:3px solid var(--good);background:var(--tintg)}
+.card.dovr{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
 .fasal{width:58px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
   border-radius:7px;padding:.25rem .3rem;font-size:.72rem;flex:0 0 auto}
 .seclhint{font-weight:400;color:var(--fg5);text-transform:none;letter-spacing:0;
@@ -376,8 +378,23 @@ function validateTrade(trade){
 })();
 
 // ── UI state ─────────────────────────────────────────────────────────────────
-const state={teams:DATA.default_teams.slice(),moves:{},cash:{}};
-// moves: playerKey/pickKey -> destination abbr (absence = stays home)
+const state={teams:DATA.default_teams.slice(),moves:{},cash:{},order:{}};
+// moves: playerKey/pickKey -> {to,swap,...} (absence = stays home)
+// order: abbr -> display order of roster card keys (cosmetic, user-arranged)
+
+function displayOrder(a){
+  // the roster shows the team's own remaining players PLUS incoming players
+  // (traded or signed-and-traded here), in the user's arranged order; new
+  // arrivals go on top, unarranged own players keep payload (salary) order
+  const own=DATA.teams[a].players.map(p=>"P|"+a+"|"+p.n);
+  const inc=Object.entries(state.moves)
+    .filter(([k,mv])=>mv.to===a&&(k[0]==="P"||k[0]==="F")).map(([k])=>k);
+  const valid=k=>(own.includes(k)&&!state.moves[k])||inc.includes(k);
+  const kept=(state.order[a]||[]).filter(valid);
+  const newInc=inc.filter(k=>!kept.includes(k));
+  const newOwn=own.filter(k=>!state.moves[k]&&!kept.includes(k));
+  return [...newInc,...kept,...newOwn];
+}
 
 // ── shareable-link serialization ─────────────────────────────────────────────
 // {v:1,t:[teams],m:[[kind,src,id,dest]...],c:[[abbr,amt]...]} -> base64url.
@@ -406,7 +423,7 @@ function restore(token){
     if(o.v!==1||!Array.isArray(o.t)) return;
     const t=o.t.filter(a=>DATA.teams[a]).slice(0,4);
     if(t.length<2) return;
-    state.teams=t; state.moves={}; state.cash={};
+    state.teams=t; state.moves={}; state.cash={}; state.order={};
     for(const [kind,src,id,dest] of (o.m||[])){
       if(!DATA.teams[src]||!DATA.teams[dest]||!t.includes(src)||!t.includes(dest)) continue;
       if(kind==="P"||kind==="T"){
@@ -564,30 +581,32 @@ function render(){
       <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;
     for(const [key,mv] of incoming){
       const [kind,src,id]=key.split("|");
-      if(kind==="P"){
+      if(kind!=="P"&&kind!=="F"){               // players land in the roster grid
+        const pk=DATA.teams[src].picks[Number(id)];
+        html+=pickHTML(pk,src,key,true,mv.swap);
+      }
+    }
+    html+=`</div><div class="secl">Roster</div><div class="roster">`;
+    for(const key of displayOrder(a)){
+      const [kind,src,id]=key.split("|");
+      const mv=state.moves[key];
+      if(mv&&kind==="P"){                       // acquired via trade
         const p=DATA.teams[src].players.find(x=>x.n===id);
-        html+=cardHTML(p,src,key,true,
-          {has:(T.tpes||[]).length>0,on:!!mv.tpe});
-      }else if(kind==="F"){
+        html+=cardHTML(p,src,key,true,{has:(T.tpes||[]).length>0,on:!!mv.tpe});
+      }else if(mv&&kind==="F"){                 // acquired via sign-and-trade
         const fa=(DATA.fas&&DATA.fas[src]||[]).find(x=>x.n===id);
         const img=fa&&fa.headshot?`<img loading="lazy" src="${fa.headshot}" alt="">`:`<div class="noimg"></div>`;
         let btn="";
         if((T.tpes||[]).length)
           btn+=`<button class="mv tp${mv.tpe?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`;
         btn+=`<button class="mv" data-return="${key}">&larr; return</button>`;
-        html+=`<div class="card" data-key="${key}">${img}
+        html+=`<div class="card inc" draggable="true" data-key="${key}">${img}
           <div class="who"><div class="nm">${esc(id)}</div>
           <div class="sub">${fmtM(mv.salary)} &middot; sign and trade from ${src}</div></div>${btn}</div>`;
       }else{
-        const pk=DATA.teams[src].picks[Number(id)];
-        html+=pickHTML(pk,src,key,true,mv.swap);
+        const p=DATA.teams[a].players.find(x=>x.n===id);
+        if(p) html+=cardHTML(p,a,key,false);
       }
-    }
-    html+=`</div><div class="secl">Roster</div><div class="roster">`;
-    for(const p of T.players){
-      const key=playerKey(a,p.n);
-      if(state.moves[key]) continue;           // moved away
-      html+=cardHTML(p,a,key,false);
     }
     html+=`</div><div class="secl">Picks</div><div class="pickgrid">`;
     T.picks.forEach((pk,i)=>{
@@ -710,8 +729,9 @@ function cardHTML(p,src,key,inZone,tpe){
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
   const sub=inZone&&tpe&&tpe.on
     ?`${chip}${fmtM(p.salary)} &middot; absorbed into a trade exception`
-    :`${chip}${fmtM(p.salary)}${p.barrett!=null?" &middot; "+p.barrett.toFixed(1)+" BS":""}`;
-  return `<div class="card" draggable="true" data-key="${key}">${img}
+    :`${chip}${fmtM(p.salary)}${p.barrett!=null?" &middot; "+p.barrett.toFixed(1)+" BS":""}`
+      +(inZone?` &middot; from ${src}`:"");
+  return `<div class="card${inZone?" inc":""}" draggable="true" data-key="${key}">${img}
     <div class="who"><div class="nm">${esc(p.n)}</div>
     <div class="sub">${sub}</div></div>${btn}</div>`;
 }
@@ -742,17 +762,17 @@ function wire(){
   root.querySelectorAll("select[data-slot]").forEach(sel=>{
     sel.onchange=()=>{
       const i=Number(sel.dataset.slot);
-      state.teams[i]=sel.value; state.moves={}; state.cash={};
+      state.teams[i]=sel.value; state.moves={}; state.cash={}; state.order={};
       render();
     };
   });
   const add=document.getElementById("addteam");
   if(add) add.onclick=()=>{
     const next=DATA.abbrs.find(x=>!state.teams.includes(x));
-    state.teams.push(next); state.moves={}; state.cash={}; render();
+    state.teams.push(next); state.moves={}; state.cash={}; state.order={}; render();
   };
   const drop=document.getElementById("dropteam");
-  if(drop) drop.onclick=()=>{state.teams.pop(); state.moves={}; state.cash={}; render();};
+  if(drop) drop.onclick=()=>{state.teams.pop(); state.moves={}; state.cash={}; state.order={}; render();};
   root.querySelectorAll("[data-send]").forEach(b=>{
     b.onclick=()=>{state.moves[b.dataset.send]={to:b.dataset.to,swap:false}; render();};
   });
@@ -802,10 +822,26 @@ function wire(){
       e.preventDefault(); z.classList.remove("over");
       const key=e.dataTransfer.getData("text/plain");
       if(!key) return;
-      const src=key.split("|")[1], dest=z.dataset.drop;
-      if(dest===src){ delete state.moves[key]; }   // dropped back home = return
-      else state.moves[key]={to:dest,swap:false};
-      render();
+      moveTo(key,z.dataset.drop);
+    });
+  });
+  // roster cards accept drops for REARRANGING within the same team's board
+  root.querySelectorAll(".roster .card").forEach(c=>{
+    c.addEventListener("dragover",e=>{e.preventDefault();c.classList.add("dovr");});
+    c.addEventListener("dragleave",()=>c.classList.remove("dovr"));
+    c.addEventListener("drop",e=>{
+      c.classList.remove("dovr");
+      const key=e.dataTransfer.getData("text/plain");
+      if(!key) return;
+      const team=c.closest(".panel").dataset.team;
+      const shows=k=>displayOrder(team).includes(k);
+      if(key!==c.dataset.key&&shows(key)&&shows(c.dataset.key)){
+        e.preventDefault(); e.stopPropagation();       // reorder, not a trade
+        const ord=displayOrder(team).filter(k=>k!==key);
+        ord.splice(ord.indexOf(c.dataset.key),0,key);
+        state.order[team]=ord;
+        render();
+      }                                                // else bubble: panel drop
     });
   });
   // panels also accept drops (drop anywhere on the receiving team)
@@ -815,11 +851,21 @@ function wire(){
       const key=e.dataTransfer.getData("text/plain");
       if(!key) return;
       e.preventDefault();
-      const src=key.split("|")[1], dest=p.dataset.team;
-      if(dest===src) delete state.moves[key]; else state.moves[key]={to:dest,swap:false};
-      render();
+      moveTo(key,p.dataset.team);
     });
   });
+}
+
+function moveTo(key,dest){
+  // route an asset to dest, keeping its extras (swap, salary, tpe) intact;
+  // dropping it back on its own team is a return
+  const src=key.split("|")[1];
+  if(dest===src){ delete state.moves[key]; }
+  else{
+    const prev=state.moves[key]||{};
+    state.moves[key]={...prev,to:dest,swap:prev.swap||false};
+  }
+  render();
 }
 if(DATA.initial) restore(DATA.initial);
 render();
