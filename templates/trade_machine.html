@@ -26,12 +26,18 @@ body{background:transparent;color:var(--fg1);
   padding:.7rem .7rem .8rem;min-width:0}
 .phead{display:flex;justify-content:space-between;align-items:baseline;gap:6px;margin-bottom:2px}
 .pname{font-weight:800;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ppay{font-size:.72rem;color:var(--fg4);font-variant-numeric:tabular-nums;white-space:nowrap}
+.ppay{font-size:.72rem;color:var(--fg4);font-variant-numeric:tabular-nums;white-space:nowrap;text-align:right}
+.paynow{font-size:.95rem;font-weight:800;line-height:1.15}
+.paynow.rest{color:var(--blue)} .paynow.live{color:var(--good)} .paynow.live.over{color:var(--bad)}
+.paywas{display:block;font-size:.66rem;color:var(--fg4);font-weight:400}
 .capbar{position:relative;height:7px;border-radius:4px;background:var(--track);margin:.35rem 0 .15rem;overflow:hidden}
-.capbar .fill{position:absolute;left:0;top:0;bottom:0;background:var(--teal);border-radius:4px}
-.capbar .fill.warn{background:var(--amberc)} .capbar .fill.bad{background:var(--bad)}
-.capticks{position:relative;height:12px;font-size:.56rem;color:var(--fg5);margin-bottom:.35rem}
-.capticks span{position:absolute;transform:translateX(-50%);white-space:nowrap}
+.capbar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px}
+.capbar .fill.rest{background:var(--blue)} .capbar .fill.live{background:var(--good)}
+.capbar .fill.bad{background:var(--bad)}
+.capbar .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--panel);opacity:.9;cursor:help}
+.capticks{display:flex;justify-content:flex-end;font-size:.6rem;margin-bottom:.3rem;font-variant-numeric:tabular-nums}
+.capend.rest{color:var(--blue)} .capend.live{color:var(--good)} .capend.bad{color:var(--bad)}
+.apronwarn{font-size:.68rem;color:var(--amberc);margin:0 0 .3rem}
 .zone{border:1.5px dashed var(--line);border-radius:11px;min-height:52px;padding:.35rem;
   margin:.4rem 0 .55rem;transition:border-color .12s, background .12s}
 .zone .zl{font-size:.62rem;font-weight:800;letter-spacing:.07em;color:var(--fg5);
@@ -375,13 +381,27 @@ function buildTrade(){
 const root=document.getElementById("tm-root");
 function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
 
-function capbar(after){
-  const max=CFG.apron2*1.06;
-  const pct=Math.max(2,Math.min(100,after/max*100));
-  const cls=after>CFG.apron2?"bad":(after>CFG.apron1?"warn":"");
-  const tick=v=>`<span style="left:${v/max*100}%">${v===CFG.tax_line?"tax":(v===CFG.apron1?"apron 1":"apron 2")}</span>`;
-  return `<div class="capbar"><div class="fill ${cls}" style="width:${pct}%"></div></div>
-    <div class="capticks">${tick(CFG.tax_line)}${tick(CFG.apron1)}${tick(CFG.apron2)}</div>`;
+function capbar(T,after,active){
+  // scale is RELATIVE to the team: the right edge is its own hard cap, or the
+  // 2nd apron for uncapped teams (nothing above it is reachable without one)
+  const scale=T.hard_cap!=null?T.hard_cap:CFG.apron2;
+  const pct=Math.max(2,Math.min(100,after/scale*100));
+  const over=after>scale+1e-9;
+  const cls=active?(over?"bad":"live"):"rest";
+  const ticks=[["tax",CFG.tax_line],["apron 1",CFG.apron1],["apron 2",CFG.apron2]]
+    .filter(([n,v])=>v<scale-1e-9)
+    .map(([n,v])=>`<div class="tick" style="left:${(v/scale*100).toFixed(1)}%" title="${n} ${fmtM(v)}"></div>`)
+    .join("");
+  const cap=T.hard_cap!=null
+    ?`hard cap ${fmtM(scale)}`:`2nd apron ${fmtM(scale)}`;
+  const warn=after>CFG.apron2+1e-9
+    ?`Above the 2nd apron: no aggregating salaries, no cash in trades, 100% matching only, no sign-and-trade acquisitions, midlevel unavailable`
+    :after>CFG.apron1+1e-9
+    ?`Above the 1st apron: can take back at most 100% of outgoing salary, no sign-and-trade acquisitions, no bi-annual or full midlevel, no prior-year trade exceptions`
+    :"";
+  return `<div class="capbar"><div class="fill ${cls}" style="width:${pct.toFixed(1)}%"></div>${ticks}</div>
+    <div class="capticks"><span class="capend ${cls}">${cap}</span></div>
+    ${warn?`<div class="apronwarn">${warn}</div>`:""}`;
 }
 
 function render(){
@@ -413,10 +433,17 @@ function render(){
     const tpeLine=T.tpes&&T.tpes.length
       ?`<div class="tpeline" title="${esc(T.tpes.map(t=>"$"+t.amt.toFixed(2)+"M ("+t.player+(t.expires?", expires "+t.expires:"")+")").join("; "))}. A trade exception absorbs an incoming salary without matching; verdicts do not model this route yet.">Trade exceptions: ${T.tpes.map(t=>"$"+t.amt.toFixed(1)+"M").join(" + ")} <span class="tpewho">(${esc(T.tpes[0].player)}${T.tpes.length>1?" and "+(T.tpes.length-1)+" more":""})</span></div>`
       :"";
+    const active=!!tt&&(tt.out_players.length>0||tt.in_players.length>0
+      ||tt.out_picks.length>0||tt.in_picks.length>0||Number(state.cash[a]||0)>0);
+    const scaleEnd=T.hard_cap!=null?T.hard_cap:CFG.apron2;
+    const capLbl=T.hard_cap!=null?`cap ${fmtM(T.hard_cap)}`:`2nd apron ${fmtM(CFG.apron2)}`;
+    const pay=active
+      ?`<span class="ppay"><span class="paywas">was ${fmtM(T.payroll)} &middot; ${capLbl}</span><b class="paynow live${after>scaleEnd+1e-9?" over":""}">${fmtM(after)}</b></span>`
+      :`<span class="ppay"><b class="paynow rest">${fmtM(T.payroll)}</b></span>`;
     html+=`<div class="panel" data-team="${a}">
       <div class="phead"><span class="pname">${esc(T.name)}${hcChip}</span>
-      <span class="ppay">${fmtM(T.payroll)} &rarr; <b>${fmtM(after)}</b></span></div>
-      ${capbar(after)}${tpeLine}
+      ${pay}</div>
+      ${capbar(T,after,active)}${tpeLine}
       <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;
     for(const [key,mv] of incoming){
       const [kind,src,id]=key.split("|");
