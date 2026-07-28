@@ -173,9 +173,13 @@ _LIGHT = """--panel:#ffffff;--card:#f7f8fa;--line:#e3e6eb;--track:#eceef2;
 --teal:#0fae9d;--good:#16a34a;--bad:#e0483a;--amberc:#b97f24;--blue:#2563eb;
 --tintg:rgba(15,174,157,.08);--tintb:rgba(224,72,58,.08);--tintz:rgba(22,35,63,.025);"""
 
-_theme = _DARK if st.session_state.get("theme_dark", True) else _LIGHT
+# BOTH palettes ship in one byte-stable srcdoc and the component detects the
+# parent's theme at runtime. Injecting only the active palette made the html
+# change on every theme toggle, which forced Streamlit to remount the iframe;
+# racing remounts during quick light/dark cycling could leave it blank.
 _html = ((_ROOT / "templates" / "trade_machine.html").read_text()
-         .replace("__THEME__", _theme)
+         .replace("__THEME__", _DARK)
+         .replace("__THEME_LIGHT__", _LIGHT)
          .replace("__DATA__", _payload_with_request_state()))
 # Initial height only: the component resizes its own frame to fit the full
 # rosters (window.frameElement, same-origin srcdoc), so nothing scrolls inside.

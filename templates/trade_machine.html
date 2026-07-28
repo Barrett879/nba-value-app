@@ -6,6 +6,7 @@ mismatch shows a loud red banner. No network calls except headshot images. -->
 <div id="tm-root"></div>
 <style>
 :root { __THEME__ }
+body.light { __THEME_LIGHT__ }
 *{box-sizing:border-box;margin:0}
 body{background:transparent;color:var(--fg1);
   font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
@@ -708,7 +709,22 @@ function fitFrame(){
     }
   }catch(e){}
 }
-setInterval(fitFrame,1000);   // survive Streamlit re-layouts resetting wrappers
+function themeSync(){
+  // follow the parent app's theme at runtime (same-origin srcdoc): sample the
+  // painted background's luminance rather than remounting with new tokens
+  try{
+    // the app paints its background as a gradient image (backgroundColor is
+    // transparent everywhere), so sample the TEXT color instead: dark text
+    // means the light theme, light text means the dark theme
+    const m=getComputedStyle(window.parent.document.body).color.match(/\d+(\.\d+)?/g);
+    if(m&&m.length>=3){
+      const lum=.299*m[0]+.587*m[1]+.114*m[2];
+      document.body.classList.toggle("light",lum<=128);
+    }
+  }catch(e){}
+}
+themeSync();
+setInterval(()=>{fitFrame();themeSync();},1000);   // survive Streamlit re-layouts resetting wrappers
 try{ new ResizeObserver(fitFrame).observe(document.body); }catch(e){}
 window.addEventListener("load",fitFrame);
 
