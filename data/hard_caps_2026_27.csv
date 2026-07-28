@@ -1,0 +1,54 @@
+# 2026-27 hard caps (apron caps) master list -- THE source of truth for which
+# teams are hard-capped this league year and why. Verified 2026-07-27 by a
+# 16-agent research workflow: 6 division sweeps + 3 mechanism sweeps (MLE/BAE,
+# sign-and-trade, trade mechanics), every claimed cap adversarially confirmed
+# against a second independent source (Spotrac team cap pages, Hoops Rumors
+# hard-cap tracker, SalarySwish tracker, Yossi Gozlan, beat reporters), plus a
+# completeness critic diffing league-wide trackers.
+#
+# cap: apron1 ($209.015M) | apron2 ($221.686M) | none. Binding cap = LOWEST
+# apron triggered. Being over an apron by payroll does NOT hard-cap a team;
+# only using a mechanism does. First-apron triggers: sign-and-trade acquisition,
+# non-taxpayer MLE, bi-annual exception, waived-player >NT-MLE signing, taking
+# back >100% in a trade (expanded matching), prior-season TPE use. Second-apron
+# triggers: taxpayer MLE, aggregating salaries in a trade, sending cash.
+#
+# trigger = tooltip text shown in the Trade Machine (no double quotes -- it is
+# injected into an HTML title attribute). Maintain like real_signings: edit
+# rows as transactions happen; all 30 teams listed so a status change is a row
+# edit, never an addition. Rows for GSW and TOR follow the master-roster
+# promotions of 2026-07-27 (pending deals treated as official per Barrett);
+# reverse them if a deal is voided. CHI is listed by the Hoops Rumors tracker
+# via the prior-season TPE rule but disputed by Bleacher Report; kept capped
+# per the conservative doctrine.
+asof,team,cap,trigger,source,notes
+2026-07-27,ATL,apron1,Used the prior-season Capela trade exception to absorb Devin Carter and signed Jock Landale with the non-taxpayer midlevel,hoopsrumors.com hard-cap tracker,confirmed by verifier
+2026-07-27,BKN,none,,,verified none
+2026-07-27,BOS,apron1,Signed Mitchell Robinson with the full non-taxpayer midlevel (3yr/$47.4M first year $15.04M Jul 6),x.com/YossiGozlan/status/2072342199329857979,confirmed by verifier
+2026-07-27,CHA,apron1,Absorbed Dorian Finney-Smith into the non-taxpayer midlevel in the Rockets trade (Jul 3),hoopsrumors.com hard-cap tracker,confirmed by verifier
+2026-07-27,CHI,apron1,Used the prior-season Coby White trade exception to acquire Kam Jones (Jun 25) which hard-caps the following league year,hoopsrumors.com hard-cap tracker,tracker lists it; Bleacher Report disputes; kept capped per conservative doctrine
+2026-07-27,CLE,none,,,verified none
+2026-07-27,DAL,apron1,Used the bi-annual on Marcus Sasser and took back more than 100% of outgoing salary acquiring Santi Aldama (six-team trade Jul 8),spotrac.com/nba/dallas-mavericks/cap,confirmed by verifier
+2026-07-27,DEN,none,,,verified none
+2026-07-27,DET,apron1,Acquired John Collins via sign-and-trade and absorbed Isaiah Joe into the non-taxpayer midlevel (six-team trade Jul 8),hoopsrumors.com six-team trade story,confirmed by verifier
+2026-07-27,GSW,apron1,Signed De'Anthony Melton with the bi-annual exception (2yr/$11M; deal promoted to official with the master roster),Yossi Gozlan via critic agent,pending-official deal promoted per Barrett 2026-07-27; reverse if it falls through
+2026-07-27,HOU,apron2,Signed Marcus Smart with the taxpayer midlevel (2yr/$13M Jul 10),spotrac.com/nba/houston-rockets/cap,confirmed by verifier
+2026-07-27,IND,apron1,Signed Kelly Oubre Jr. with the non-taxpayer midlevel (2yr/$16.5M Jul 1),hoopsrumors.com hard-cap tracker,confirmed by verifier
+2026-07-27,LAC,apron1,Signed Rui Hachimura with the non-taxpayer midlevel (2yr/~$28M Jul 6),sportingtribune.com via Jake Fischer,confirmed by verifier
+2026-07-27,LAL,apron1,Acquired Walker Kessler from Utah via sign-and-trade (4yr/$130M Jul 1),x.com/YossiGozlan + ESPN,confirmed by verifier
+2026-07-27,MEM,apron1,Took back more than 100% of outgoing salary in the six-team trade (Stewart + Russell + Johnson in for Aldama) and used the non-taxpayer midlevel on Quinten Post,spotrac.com/nba/memphis-grizzlies/cap,confirmed by verifier
+2026-07-27,MIA,apron1,Took back more than 100% of outgoing salary in the Giannis trade with expanded matching; also used a prior-year exception on Bobby Portis and the taxpayer midlevel on Tim Hardaway Jr.,hoopsrumors.com hard-cap tracker,confirmed by verifier; apron1 binds (lowest apron triggered)
+2026-07-27,MIL,apron1,Took back more than 100% of outgoing salary acquiring Caris LeVert for Prince and Harris (six-team trade),hoopsrumors.com six-team trade story,confirmed by verifier
+2026-07-27,MIN,apron2,Aggregated Julius Randle and Naz Reid salaries in the LaMelo Ball trade (Jul 10),hoopsrumors.com hard-cap tracker,confirmed by verifier
+2026-07-27,NOP,none,,,verified none
+2026-07-27,NYK,none,,,verified none
+2026-07-27,OKC,none,,,verified none
+2026-07-27,ORL,none,,,verified none
+2026-07-27,PHI,apron1,Split the non-taxpayer midlevel between Dean Wade ($9M) and Anfernee Simons ($6M); also used part of the bi-annual on Ariel Hukporti,x.com/SixersAdam/status/2072147139728126068,confirmed by verifier
+2026-07-27,PHX,apron2,Sent cash in the four-team draft-night trade with the Knicks for pick 30,hoopsrumors.com hard-cap tracker,confirmed by verifier
+2026-07-27,POR,apron1,Took back more than 100% of outgoing salary acquiring Ja Morant for Grant and Murray with expanded matching,Yahoo Sports (Kelly Iko),confirmed by verifier
+2026-07-27,SAC,apron1,Signed Precious Achiuwa with the full bi-annual exception ($5.48M),spotrac.com/nba/sacramento-kings/cap,confirmed by verifier
+2026-07-27,SAS,apron1,Signed Tobias Harris with the full non-taxpayer midlevel (2yr/$31M Jul 6),salaryswish.com hard-cap tracker,confirmed by verifier
+2026-07-27,TOR,apron1,Aggregated Ingram and Dick and took back more than 100% of outgoing salary in the Kawhi Leonard trade (promoted to official with the master roster),hoopsrumors.com tracker (expected on official),pending-official trade promoted per Barrett 2026-07-27; reverse if the NBA voids it
+2026-07-27,UTA,apron1,Split the non-taxpayer midlevel between Jaxson Hayes ($6M) and Josh Okogie ($6M),x.com/YossiGozlan,confirmed by verifier
+2026-07-27,WAS,apron1,Used the prior-year Olynyk trade exception to acquire Deandre Ayton and acquired Khris Middleton via sign-and-trade (Jul 8),hoopsrumors.com hard-cap tracker,confirmed by verifier

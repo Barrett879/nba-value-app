@@ -59,6 +59,9 @@ body{background:transparent;color:var(--fg1);
   background:var(--teal);color:#fff;font-size:.62rem;font-weight:800;line-height:15px;
   text-align:center;border:1.5px solid var(--card)}
 .pkrnd.r2{background:var(--fg4)}
+.hcap{display:inline-block;margin-left:.55rem;padding:.08rem .45rem;border:1px solid var(--amberc);
+  color:var(--amberc);border-radius:99px;font-size:.66rem;font-weight:800;vertical-align:2px;
+  letter-spacing:.02em;white-space:nowrap;cursor:help}
 .card .mv.sw{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.sw:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .cashrow{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--fg4);margin-top:.3rem}
@@ -336,7 +339,8 @@ function buildTrade(){
     tt[a]={abbr:a,payroll:DATA.teams[a].payroll,roster_size:DATA.teams[a].size,
       out_players:[],in_players:[],out_picks:[],in_picks:[],
       cash_out:0,cash_in:0,cash_sent_ytd:0,
-      owned_future_firsts:DATA.teams[a].covered.slice(),hard_cap:null};
+      owned_future_firsts:DATA.teams[a].covered.slice(),
+      hard_cap:DATA.teams[a].hard_cap!=null?DATA.teams[a].hard_cap:null};
   }
   for(const [key,mv] of Object.entries(state.moves)){
     const [kind,abbr,id]=key.split("|");
@@ -401,8 +405,11 @@ function render(){
     const tt=trade.teams.find(x=>x.abbr===a);
     const after=tt?(tt.payroll-tt.out_players.reduce((s,p)=>s+p.salary,0)+tt.in_players.reduce((s,p)=>s+p.salary,0)):T.payroll;
     const incoming=Object.entries(state.moves).filter(([k,mv])=>mv.to===a);
+    const hcChip=T.hard_cap!=null
+      ?`<span class="hcap" title="${esc(T.hard_cap_why||"")}">Hard-capped: ${esc(T.hard_cap_label||"")} (${fmtM(T.hard_cap)})</span>`
+      :"";
     html+=`<div class="panel" data-team="${a}">
-      <div class="phead"><span class="pname">${esc(T.name)}</span>
+      <div class="phead"><span class="pname">${esc(T.name)}${hcChip}</span>
       <span class="ppay">${fmtM(T.payroll)} &rarr; <b>${fmtM(after)}</b></span></div>
       ${capbar(after)}
       <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;

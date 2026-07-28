@@ -49,6 +49,17 @@ def _payload() -> str:
         (_ROOT / "data" / "cba_config_2026_27.json").read_text()).items()
         if not k.startswith("_")}
     heads = _headshot_id_map()
+    # verified master list of 2026-27 hard caps (apron caps triggered by
+    # offseason mechanics); missing file or team = not hard-capped
+    hard_caps = {}
+    hc_path = _ROOT / "data" / "hard_caps_2026_27.csv"
+    if hc_path.exists():
+        with hc_path.open() as f:
+            for r in csv.DictReader(x for x in f if not x.lstrip().startswith("#")):
+                if r.get("team") and r.get("cap", "").strip() in ("apron1", "apron2"):
+                    hard_caps[r["team"].strip()] = {
+                        "cap": r["cap"].strip(),
+                        "why": (r.get("trigger") or "").strip()}
     signings = {}
     with (_ROOT / "data" / "real_signings_2026.csv").open() as f:
         for r in csv.DictReader(x for x in f if not x.lstrip().startswith("#")):
@@ -86,9 +97,16 @@ def _payload() -> str:
             picks.append({"year": pk["year"], "origin": pk["origin"],
                           "round": pk.get("round", 1),
                           "protection": pk.get("protection", "")})
+        hc = hard_caps.get(abbr)
         teams[abbr] = {"name": t["name"], "payroll": t["payroll"], "size": t["size"],
                        "covered": ledger.get(abbr, {}).get("covered", []),
-                       "players": players, "picks": picks}
+                       "players": players, "picks": picks,
+                       "hard_cap": (cfg["apron1"] if hc["cap"] == "apron1"
+                                    else cfg["apron2"]) if hc else None,
+                       "hard_cap_label": ({"apron1": "1st apron",
+                                           "apron2": "2nd apron"}[hc["cap"]]
+                                          if hc else None),
+                       "hard_cap_why": hc["why"] if hc else None}
     from nba_api.stats.static import teams as _nbat
     logos = {t["abbreviation"]:
              f"https://cdn.nba.com/logos/nba/{t['id']}/global/L/logo.svg"
