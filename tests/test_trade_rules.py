@@ -246,6 +246,90 @@ r = validate(two_team(a, b), CFG)                   # no picks moved: always leg
 assert r.legal
 print(f"ok  ledger integration (OKC covered years: {okc})")
 
+# ── TPE absorption: no matching needed, fit + apron semantics ─────────────────
+from trade_rules import TradeException
+
+# legal absorb into a same-season TPE: no matching, no hard-cap note
+a, b = team("CHA", 175.0), team("LAL", 200.0)
+a.tpes = [TradeException(40.77, "LaMelo Ball", prior_season=False)]
+swap(b, a, [TradePlayer("Big", 30.0)], [])          # CHA takes Big for nothing
+a.in_players[0].via_tpe = True
+r = validate(two_team(a, b), CFG)
+assert r.legal and "TPE_ABSORB" in note_codes(r)
+assert "HARDCAP_APRON1_TPE" not in note_codes(r)
+print("ok  TPE absorb, same-season, no matching")
+
+# same trade WITHOUT the TPE flag dies on matching (CHA sends nothing out)
+a, b = team("CHA", 175.0), team("LAL", 200.0)
+a.tpes = [TradeException(40.77, "LaMelo Ball", prior_season=False)]
+swap(b, a, [TradePlayer("Big", 30.0)], [])
+assert "MATCH_BELOW_APRON" in codes(validate(two_team(a, b), CFG))
+print("ok  same trade without the flag needs matching")
+
+# prior-season TPE: legal but hard-caps at apron 1
+a, b = team("BOS", 195.0), team("LAL", 200.0)
+a.tpes = [TradeException(27.68, "Anfernee Simons", prior_season=True)]
+swap(b, a, [TradePlayer("Mid", 10.0)], [])
+a.in_players[0].via_tpe = True
+r = validate(two_team(a, b), CFG)
+assert r.legal and "HARDCAP_APRON1_TPE" in note_codes(r)
+print("ok  prior-season TPE hard-caps at apron 1")
+
+# prior-season TPE finishing above apron 1: illegal
+a, b = team("BOS", 205.0), team("LAL", 200.0)
+a.tpes = [TradeException(27.68, "Anfernee Simons", prior_season=True)]
+swap(b, a, [TradePlayer("Big", 10.0)], [])
+a.in_players[0].via_tpe = True
+assert "TPE_PRIOR_APRON1" in codes(validate(two_team(a, b), CFG))
+print("ok  prior-season TPE above apron 1 illegal")
+
+# fit: player larger than every exception + allowance
+a, b = team("CLE", 170.0), team("LAL", 200.0)
+a.tpes = [TradeException(10.0, "Lonzo Ball", prior_season=True)]
+swap(b, a, [TradePlayer("Big", 10.3)], [])
+a.in_players[0].via_tpe = True
+assert "TPE_FIT" in codes(validate(two_team(a, b), CFG))
+# ...but 10.2 fits inside amount + the $0.25M allowance
+a, b = team("CLE", 170.0), team("LAL", 200.0)
+a.tpes = [TradeException(10.0, "Lonzo Ball", prior_season=True)]
+swap(b, a, [TradePlayer("Big", 10.2)], [])
+a.in_players[0].via_tpe = True
+assert validate(two_team(a, b), CFG).legal
+print("ok  TPE fit boundary (amount + allowance)")
+
+# two players share one exception; a third does not fit; no TPE at all
+a, b = team("CHA", 150.0), team("LAL", 200.0)
+a.tpes = [TradeException(20.0, "X", prior_season=False)]
+swap(b, a, [TradePlayer("P1", 12.0), TradePlayer("P2", 8.0),
+            TradePlayer("P3", 5.0)], [])
+for p in a.in_players:
+    p.via_tpe = True
+r = validate(two_team(a, b), CFG)
+assert "TPE_FIT" in codes(r)                        # P3 has nowhere to go
+a, b = team("NOP", 150.0), team("LAL", 200.0)
+swap(b, a, [TradePlayer("P1", 5.0)], [])
+a.in_players[0].via_tpe = True
+assert "TPE_NONE" in codes(validate(two_team(a, b), CFG))
+print("ok  shared exception + overflow + no-TPE cases")
+
+# mixed structure: one player via TPE, another matched by outgoing salary
+a, b = team("MIL", 170.0), team("LAL", 200.0)
+a.tpes = [TradeException(25.46, "Giannis Antetokounmpo", prior_season=False)]
+swap(a, b, [TradePlayer("Out", 15.0)],
+     [TradePlayer("Matched", 16.0), TradePlayer("Absorbed", 20.0)])
+a.in_players[1].via_tpe = True                      # Absorbed rides the TPE
+r = validate(two_team(a, b), CFG)                   # after: 191, below apron 1
+assert r.legal and "TPE_ABSORB" in note_codes(r)    # 16.0 matches vs 15.0 out
+# the SAME structure at a higher payroll flips to the flat over-apron regime
+# (the absorbed salary still counts toward post-trade payroll): illegal
+a, b = team("MIL", 190.0), team("LAL", 200.0)
+a.tpes = [TradeException(25.46, "Giannis Antetokounmpo", prior_season=False)]
+swap(a, b, [TradePlayer("Out", 15.0)],
+     [TradePlayer("Matched", 16.0), TradePlayer("Absorbed", 20.0)])
+a.in_players[1].via_tpe = True
+assert "MATCH_APRON" in codes(validate(two_team(a, b), CFG))
+print("ok  mixed TPE + matching structure (both apron regimes)")
+
 # ── BYC helper (Kessler example from the spec) ────────────────────────────────
 assert abs(byc_outgoing(4.878938, 30.108821) - 15.0544105) < 1e-6
 print("ok  BYC outgoing (Kessler example)")

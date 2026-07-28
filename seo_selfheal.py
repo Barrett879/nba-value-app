@@ -480,7 +480,7 @@ def trade_shell(base_html: str, token: str) -> str:
         for mv in o.get("m", []):
             if len(mv) == 4 and mv[1] in sends:
                 kind, src, ident, _dest = mv
-                if kind == "P":
+                if kind in ("P", "T"):
                     sends[src].append(str(ident))
                 else:
                     parts = str(ident).split(":")

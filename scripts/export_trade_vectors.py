@@ -15,7 +15,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
-from trade_rules import CBAConfig, Trade, TradePick, TradePlayer, TradeTeam, validate  # noqa: E402
+from trade_rules import (CBAConfig, Trade, TradeException, TradePick,  # noqa: E402
+                         TradePlayer, TradeTeam, validate)
 
 CFG = CBAConfig.load("2026-27")
 JULY = "2026-07-27"
@@ -111,6 +112,37 @@ a, b = team("HOU", 170.0, roster=21), team("CHA", 130.0, roster=14)
 swap(a, b, [TradePlayer("A", 10.0)],
      [TradePlayer("B", 4.0), TradePlayer("C", 3.0), TradePlayer("D", 2.0)])
 vectors.append(V("roster max offseason", a, b))
+
+a, b = team("CHA", 175.0), team("LAL", 200.0)
+a.tpes = [TradeException(40.77, "LaMelo Ball", prior_season=False)]
+swap(b, a, [TradePlayer("Big", 30.0)], [])
+a.in_players[0].via_tpe = True
+vectors.append(V("tpe absorb same-season legal", a, b))
+
+a, b = team("BOS", 195.0), team("LAL", 200.0)
+a.tpes = [TradeException(27.68, "Anfernee Simons", prior_season=True)]
+swap(b, a, [TradePlayer("Mid", 10.0)], [])
+a.in_players[0].via_tpe = True
+vectors.append(V("tpe prior-season hardcap note", a, b))
+
+a, b = team("BOS", 205.0), team("LAL", 200.0)
+a.tpes = [TradeException(27.68, "Anfernee Simons", prior_season=True)]
+swap(b, a, [TradePlayer("Big", 10.0)], [])
+a.in_players[0].via_tpe = True
+vectors.append(V("tpe prior-season above apron1 illegal", a, b))
+
+a, b = team("CLE", 170.0), team("LAL", 200.0)
+a.tpes = [TradeException(10.0, "Lonzo Ball", prior_season=True)]
+swap(b, a, [TradePlayer("Big", 10.3)], [])
+a.in_players[0].via_tpe = True
+vectors.append(V("tpe does not fit", a, b))
+
+a, b = team("MIL", 170.0), team("LAL", 200.0)
+a.tpes = [TradeException(25.46, "Giannis Antetokounmpo", prior_season=False)]
+swap(a, b, [TradePlayer("Out", 15.0)],
+     [TradePlayer("Matched", 16.0), TradePlayer("Absorbed", 20.0)])
+a.in_players[1].via_tpe = True
+vectors.append(V("tpe mixed with matching", a, b))
 
 out = ROOT / "cache" / "trade_vectors.json"
 out.write_text(json.dumps(vectors, separators=(",", ":")))

@@ -86,6 +86,16 @@ class TradePlayer:
     acquired_date: str | None = None # for the 2-month aggregation freeze (1.11)
     consent_required: bool = False   # implicit veto / NTC (7.3-7.4)
     two_way: bool = False
+    via_tpe: bool = False            # incoming: absorb into a trade exception (2.x)
+
+
+@dataclass
+class TradeException:
+    """An outstanding traded-player exception the receiving team holds."""
+    amount: float                    # $M remaining on the exception
+    label: str = ""                  # departed player it is named for
+    prior_season: bool = True        # created before this league year; unknown
+                                     # defaults conservative (hard-cap trigger)
 
 
 @dataclass
@@ -110,6 +120,7 @@ class TradeTeam:
     cash_sent_ytd: float = 0.0       # against the annual limit (8.1)
     owned_future_firsts: list[int] = field(default_factory=list)  # draft years
     hard_cap: float | None = None    # $M if already hard-capped this cap year
+    tpes: list[TradeException] = field(default_factory=list)
 
     @property
     def salary_out(self) -> float:   # two-ways count $0 both directions (1.8)
@@ -120,9 +131,10 @@ class TradeTeam:
         return sum(p.salary for p in self.in_players if not p.two_way)
 
     def matchable_in(self) -> float:
-        """Incoming that needs matching: min-exception arrivals need none (1.7)."""
+        """Incoming that needs matching: min-exception arrivals need none (1.7);
+        players absorbed into a trade exception need none either (2.x)."""
         return sum(p.salary for p in self.in_players
-                   if not p.two_way and p.signed_via != "min")
+                   if not p.two_way and p.signed_via != "min" and not p.via_tpe)
 
     def payroll_after(self) -> float:
         return self.payroll - self.salary_out + self.salary_in
@@ -264,6 +276,89 @@ def check_salary_matching(trade: Trade, cfg: CBAConfig):
                     f"first apron (${cfg.apron1:.1f}M) for the rest of the season."
                     + (" (Within the $250K cushion this is contested; treated "
                        "conservatively as a hard cap.)" if sliver else "")))
+    return v, n
+
+
+def _assign_tpes(t: TradeTeam, cfg: CBAConfig):
+    """Deterministically assign via_tpe incoming players to the team's
+    exceptions. Fit = exception amount + the $250K allowance, SHARED by every
+    player absorbed into that exception. Players are placed largest-salary
+    first into the exception that fits with, in order of preference, no
+    prior-season hard-cap trigger, then the tightest remaining capacity.
+    Mirrored line-for-line by the JS engine; keep both in sync."""
+    flagged = sorted((p for p in t.in_players if p.via_tpe and not p.two_way),
+                     key=lambda p: (-p.salary, p.name))
+    cap = [tpe.amount + cfg.match_cushion for tpe in t.tpes]
+    assign, unfit = [], []
+    for p in flagged:
+        best = -1
+        for i, tpe in enumerate(t.tpes):
+            if cap[i] + 1e-9 < p.salary:
+                continue
+            if best < 0 or ((tpe.prior_season, cap[i])
+                            < (t.tpes[best].prior_season, cap[best])):
+                best = i
+        if best < 0:
+            unfit.append(p)
+        else:
+            cap[best] -= p.salary
+            assign.append((p, best))
+    return assign, unfit
+
+
+def check_tpe_usage(trade: Trade, cfg: CBAConfig):
+    """Spec 2.x: an incoming player may be absorbed into an outstanding
+    traded-player exception INSTEAD of salary matching. Using an exception
+    created in a prior season hard-caps the team at the first apron, so a team
+    finishing above it cannot use one at all (S9 conservative reading of
+    Art. VII 2(e)(4) row F)."""
+    v, n = [], []
+    for t in trade.teams:
+        flagged = [p for p in t.in_players if p.via_tpe and not p.two_way]
+        if not flagged:
+            continue
+        if not t.tpes:
+            v.append(Violation(
+                "TPE_NONE", t.abbr,
+                f"{t.abbr} has no outstanding trade exception to absorb "
+                f"{flagged[0].name} into.",
+                "CBA Art. VII 6(j)(2)"))
+            continue
+        assign, unfit = _assign_tpes(t, cfg)
+        for p in unfit:
+            biggest = max(tpe.amount for tpe in t.tpes)
+            v.append(Violation(
+                "TPE_FIT", t.abbr,
+                f"{p.name} (${p.salary:.1f}M) does not fit in {t.abbr}'s remaining "
+                f"trade exceptions (largest: ${biggest:.2f}M plus the "
+                f"${cfg.match_cushion:.2f}M allowance).",
+                "CBA Art. VII 6(j)(2)"))
+        used: dict[int, list[TradePlayer]] = {}
+        for p, i in assign:
+            used.setdefault(i, []).append(p)
+        for i in sorted(used):
+            tpe, ps = t.tpes[i], used[i]
+            names = " and ".join(p.name for p in ps)
+            total = sum(p.salary for p in ps)
+            n.append(CapNote(
+                "TPE_ABSORB", t.abbr,
+                f"{names} (${total:.1f}M) fits into {t.abbr}'s ${tpe.amount:.2f}M "
+                + (f"{tpe.label} " if tpe.label else "")
+                + "trade exception, so no salary matching is needed there."))
+        if any(t.tpes[i].prior_season for i in used):
+            if t.payroll_after() > cfg.apron1 + 1e-9:
+                v.append(Violation(
+                    "TPE_PRIOR_APRON1", t.abbr,
+                    f"{t.abbr} cannot use a trade exception created last season "
+                    f"while finishing above the first apron (${cfg.apron1:.1f}M); "
+                    f"this trade puts it at ${t.payroll_after():.1f}M.",
+                    "CBA Art. VII 2(e)(4) row F"))
+            else:
+                n.append(CapNote(
+                    "HARDCAP_APRON1_TPE", t.abbr,
+                    f"Using a trade exception created last season hard-caps "
+                    f"{t.abbr} at the first apron (${cfg.apron1:.1f}M) for the "
+                    f"rest of the season."))
     return v, n
 
 
@@ -476,6 +571,7 @@ def check_cash_and_roster(trade: Trade, cfg: CBAConfig):
 CHECKS = [
     check_balanced_legs,
     check_salary_matching,
+    check_tpe_usage,
     check_apron2_restrictions,
     check_hard_caps,
     check_stepien,

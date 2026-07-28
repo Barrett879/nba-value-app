@@ -68,10 +68,14 @@ def _payload() -> str:
         with tpe_path.open() as f:
             for r in csv.DictReader(x for x in f if not x.lstrip().startswith("#")):
                 if r.get("team") and r.get("amount_M"):
+                    created = (r.get("created") or "").strip()
                     tpes.setdefault(r["team"].strip(), []).append({
                         "amt": float(r["amount_M"]),
                         "player": (r.get("player") or "").strip(),
-                        "expires": (r.get("expires") or "").strip()})
+                        "expires": (r.get("expires") or "").strip(),
+                        # created before this league year (or unknown, taken
+                        # conservatively) = prior-season -> apron-1 trigger
+                        "prior": not created or created < "2026-07"})
     for v in tpes.values():
         v.sort(key=lambda x: -x["amt"])
     signings = {}

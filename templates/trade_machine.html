@@ -72,6 +72,9 @@ body{background:transparent;color:var(--fg1);
 .tpeline .tpewho{color:var(--fg5)}
 .card .mv.sw{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.sw:hover{border-color:var(--teal);color:var(--teal);background:transparent}
+.card .mv.tp{background:transparent;border:1px solid var(--line);color:var(--fg4)}
+.card .mv.tp:hover{border-color:var(--teal);color:var(--teal);background:transparent}
+.card .mv.tp.on{background:var(--teal);border-color:var(--teal);color:#fff}
 .cashrow{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--fg4);margin-top:.3rem}
 .cashrow input{width:72px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
   border-radius:7px;padding:.25rem .4rem;font-size:.78rem}
@@ -118,7 +121,28 @@ function matchingLimit(out){
 const nonTwo = ps => ps.filter(p=>!p.two_way);
 const salOut = t => nonTwo(t.out_players).reduce((s,p)=>s+p.salary,0);
 const salIn  = t => nonTwo(t.in_players).reduce((s,p)=>s+p.salary,0);
-const matchIn = t => t.in_players.filter(p=>!p.two_way && p.signed_via!=="min").reduce((s,p)=>s+p.salary,0);
+const matchIn = t => t.in_players.filter(p=>!p.two_way && p.signed_via!=="min" && !p.via_tpe).reduce((s,p)=>s+p.salary,0);
+function assignTpes(t){
+  // mirror of trade_rules._assign_tpes: largest salary first, prefer a
+  // same-season exception, then the tightest remaining capacity
+  const flagged=t.in_players.filter(p=>p.via_tpe&&!p.two_way)
+    .slice().sort((a,b)=>b.salary-a.salary||(a.name<b.name?-1:1));
+  const tpes=t.tpes||[];
+  const cap=tpes.map(x=>x.amount+CFG.match_cushion);
+  const assign=[],unfit=[];
+  for(const p of flagged){
+    let best=-1;
+    for(let i=0;i<tpes.length;i++){
+      if(cap[i]+1e-9<p.salary) continue;
+      if(best<0||((tpes[i].prior_season?1:0)<(tpes[best].prior_season?1:0))
+         ||((tpes[i].prior_season?1:0)===(tpes[best].prior_season?1:0)&&cap[i]<cap[best]))
+        best=i;
+    }
+    if(best<0) unfit.push(p);
+    else{cap[best]-=p.salary; assign.push([p,best]);}
+  }
+  return {assign,unfit};
+}
 const payAfter = t => t.payroll - salOut(t) + salIn(t);
 const countedOut = t => nonTwo(t.out_players);
 function addMonths(iso, months){
@@ -158,6 +182,35 @@ function validateTrade(trade){
         const sliver=need<=CFG.apron_match_pct*out+CFG.match_cushion+1e-9;
         note("HARDCAP_APRON1",t.abbr,`Taking back more salary than it sends hard-caps ${t.abbr} at the first apron ($${CFG.apron1.toFixed(1)}M) for the rest of the season.`+(sliver?" (Within the $250K cushion this is contested; treated conservatively as a hard cap.)":""));
       }
+    }
+  }
+  // TPE absorption (mirror of check_tpe_usage)
+  for(const t of teams){
+    const flagged=t.in_players.filter(p=>p.via_tpe&&!p.two_way);
+    if(!flagged.length) continue;
+    const tpes=t.tpes||[];
+    if(!tpes.length){
+      vio("TPE_NONE",t.abbr,`${t.abbr} has no outstanding trade exception to absorb ${flagged[0].name} into.`,"CBA Art. VII 6(j)(2)");
+      continue;
+    }
+    const {assign,unfit}=assignTpes(t);
+    for(const p of unfit){
+      const biggest=Math.max(...tpes.map(x=>x.amount));
+      vio("TPE_FIT",t.abbr,`${p.name} ($${p.salary.toFixed(1)}M) does not fit in ${t.abbr}'s remaining trade exceptions (largest: $${biggest.toFixed(2)}M plus the $${CFG.match_cushion.toFixed(2)}M allowance).`,"CBA Art. VII 6(j)(2)");
+    }
+    const used={};
+    for(const [p,i] of assign){(used[i]=used[i]||[]).push(p);}
+    for(const i of Object.keys(used).map(Number).sort((a,b)=>a-b)){
+      const tpe=tpes[i],ps=used[i];
+      const names=ps.map(p=>p.name).join(" and ");
+      const total=ps.reduce((s,p)=>s+p.salary,0);
+      note("TPE_ABSORB",t.abbr,`${names} ($${total.toFixed(1)}M) fits into ${t.abbr}'s $${tpe.amount.toFixed(2)}M ${tpe.label?tpe.label+" ":""}trade exception, so no salary matching is needed there.`);
+    }
+    if(Object.keys(used).some(i=>tpes[Number(i)].prior_season)){
+      if(payAfter(t)>CFG.apron1+1e-9)
+        vio("TPE_PRIOR_APRON1",t.abbr,`${t.abbr} cannot use a trade exception created last season while finishing above the first apron ($${CFG.apron1.toFixed(1)}M); this trade puts it at $${payAfter(t).toFixed(1)}M.`,"CBA Art. VII 2(e)(4) row F");
+      else
+        note("HARDCAP_APRON1_TPE",t.abbr,`Using a trade exception created last season hard-caps ${t.abbr} at the first apron ($${CFG.apron1.toFixed(1)}M) for the rest of the season.`);
     }
   }
   // apron 2
@@ -290,7 +343,7 @@ function serialize(){
   const m=[];
   for(const [key,mv] of Object.entries(state.moves)){
     const [kind,src,id]=key.split("|");
-    if(kind==="P") m.push(["P",src,id,mv.to]);
+    if(kind==="P") m.push([mv.tpe?"T":"P",src,id,mv.to]);
     else{const pk=DATA.teams[src].picks[Number(id)];
       if(pk) m.push([mv.swap?"S":"K",src,
                      pk.year+":"+pk.origin+":"+(pk.round||1),mv.to]);}
@@ -308,9 +361,9 @@ function restore(token){
     state.teams=t; state.moves={}; state.cash={};
     for(const [kind,src,id,dest] of (o.m||[])){
       if(!DATA.teams[src]||!DATA.teams[dest]||!t.includes(src)||!t.includes(dest)) continue;
-      if(kind==="P"){
+      if(kind==="P"||kind==="T"){
         if(DATA.teams[src].players.some(p=>p.n===id))
-          state.moves["P|"+src+"|"+id]={to:dest,swap:false};
+          state.moves["P|"+src+"|"+id]={to:dest,swap:false,tpe:kind==="T"};
       }else{
         const [yr,org,rnd]=String(id).split(":");
         const idx=DATA.teams[src].picks.findIndex(p=>String(p.year)===yr&&p.origin===org
@@ -348,7 +401,9 @@ function buildTrade(){
       out_players:[],in_players:[],out_picks:[],in_picks:[],
       cash_out:0,cash_in:0,cash_sent_ytd:0,
       owned_future_firsts:DATA.teams[a].covered.slice(),
-      hard_cap:DATA.teams[a].hard_cap!=null?DATA.teams[a].hard_cap:null};
+      hard_cap:DATA.teams[a].hard_cap!=null?DATA.teams[a].hard_cap:null,
+      tpes:(DATA.teams[a].tpes||[]).map(x=>({amount:x.amt,label:x.player,
+        prior_season:!!x.prior}))};
   }
   for(const [key,mv] of Object.entries(state.moves)){
     const [kind,abbr,id]=key.split("|");
@@ -358,7 +413,7 @@ function buildTrade(){
       const p=DATA.teams[abbr].players.find(x=>x.n===id); if(!p) continue;
       const tp={name:p.n,salary:p.salary,signed_date:p.signed_date||null,
         signed_via:p.signed_via||"standard",raise_pct:null,acquired_date:null,
-        consent_required:false,two_way:false};
+        consent_required:false,two_way:false,via_tpe:!!mv.tpe};
       tt[abbr].out_players.push(tp); tt[dest].in_players.push(tp);
     }else{
       const pk=DATA.teams[abbr].picks[Number(id)]; if(!pk) continue;
@@ -431,7 +486,7 @@ function render(){
       ?`<span class="hcap" title="${esc(T.hard_cap_why||"")}">Hard-capped: ${esc(T.hard_cap_label||"")} (${fmtM(T.hard_cap)})</span>`
       :"";
     const tpeLine=T.tpes&&T.tpes.length
-      ?`<div class="tpeline" title="${esc(T.tpes.map(t=>"$"+t.amt.toFixed(2)+"M ("+t.player+(t.expires?", expires "+t.expires:"")+")").join("; "))}. A trade exception absorbs an incoming salary without matching; verdicts do not model this route yet.">Trade exceptions: ${T.tpes.map(t=>"$"+t.amt.toFixed(1)+"M").join(" + ")} <span class="tpewho">(${esc(T.tpes[0].player)}${T.tpes.length>1?" and "+(T.tpes.length-1)+" more":""})</span></div>`
+      ?`<div class="tpeline" title="${esc(T.tpes.map(t=>"$"+t.amt.toFixed(2)+"M ("+t.player+(t.expires?", expires "+t.expires:"")+")").join("; "))}. Toggle via TPE on an incoming player to absorb his salary into an exception instead of matching.">Trade exceptions: ${T.tpes.map(t=>"$"+t.amt.toFixed(1)+"M").join(" + ")} <span class="tpewho">(${esc(T.tpes[0].player)}${T.tpes.length>1?" and "+(T.tpes.length-1)+" more":""})</span></div>`
       :"";
     const active=!!tt&&(tt.out_players.length>0||tt.in_players.length>0
       ||tt.out_picks.length>0||tt.in_picks.length>0||Number(state.cash[a]||0)>0);
@@ -449,7 +504,8 @@ function render(){
       const [kind,src,id]=key.split("|");
       if(kind==="P"){
         const p=DATA.teams[src].players.find(x=>x.n===id);
-        html+=cardHTML(p,src,key,true);
+        html+=cardHTML(p,src,key,true,
+          {has:(T.tpes||[]).length>0,on:!!mv.tpe});
       }else{
         const pk=DATA.teams[src].picks[Number(id)];
         html+=pickHTML(pk,src,key,true,mv.swap);
@@ -555,16 +611,21 @@ function findOwner(name){
   return null;
 }
 
-function cardHTML(p,src,key,inZone){
+function cardHTML(p,src,key,inZone,tpe){
   const img=p.headshot?`<img loading="lazy" src="${p.headshot}" alt="">`:`<div class="noimg"></div>`;
   const others=state.teams.filter(x=>x!==(inZone?null:src)&&x!==src);
-  const btn=inZone
+  let btn=inZone
     ?`<button class="mv" data-return="${key}">&larr; return</button>`
     :(others.length===1?`<button class="mv" data-send="${key}" data-to="${others[0]}">&rarr; ${others[0]}</button>`
       :others.map(o=>`<button class="mv" data-send="${key}" data-to="${o}">&rarr; ${o}</button>`).join(""));
+  if(inZone&&tpe&&tpe.has)
+    btn=`<button class="mv tp${tpe.on?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`+btn;
+  const sub=inZone&&tpe&&tpe.on
+    ?`${fmtM(p.salary)} &middot; absorbed into a trade exception`
+    :`${fmtM(p.salary)}${p.barrett!=null?" &middot; "+p.barrett.toFixed(1)+" BS":""}`;
   return `<div class="card" draggable="true" data-key="${key}">${img}
     <div class="who"><div class="nm">${esc(p.n)}</div>
-    <div class="sub">${fmtM(p.salary)}${p.barrett!=null?" &middot; "+p.barrett.toFixed(1)+" BS":""}</div></div>${btn}</div>`;
+    <div class="sub">${sub}</div></div>${btn}</div>`;
 }
 function pickHTML(pk,src,key,inZone,asSwap){
   const others=state.teams.filter(x=>x!==src);
@@ -612,6 +673,10 @@ function wire(){
   });
   root.querySelectorAll("[data-return]").forEach(b=>{
     b.onclick=()=>{delete state.moves[b.dataset.return]; render();};
+  });
+  root.querySelectorAll("[data-tpe]").forEach(b=>{
+    b.onclick=()=>{const mv=state.moves[b.dataset.tpe];
+      if(mv){mv.tpe=!mv.tpe; render();}};
   });
   root.querySelectorAll("input[data-cash]").forEach(inp=>{
     inp.onchange=()=>{state.cash[inp.dataset.cash]=inp.value; render();};
