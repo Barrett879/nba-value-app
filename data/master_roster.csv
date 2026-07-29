@@ -168,7 +168,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,GSW,Jimmy Butler,56.83,standard,SF/PF,final year of 2yr/$111M vet-max extension
 ,GSW,Draymond Green,27.7,standard,PF/C,"Declined $27.7M player option 6/29 to aid LeBron pursuit; after LeBron chose PHI, re-signing at ~$28M reported imminent (Athletic, 7/25-26) but NOT official as of 7/27; currently a $38.84M cap hold; final terms UNCONFIRMED (reported ~$28M); PROMOTED to official per Barrett 2026-07-27"
 ,GSW,Kristaps Porzingis,20,standard,C/PF,"2yr/$40M extension; 2026-27 $20M fully guaranteed Jul 7, 2026"
-,GSW,Moses Moody,12.5,standard,SG/SF,rookie extension
+,GSW,Moses Moody,12.5,standard,SF/SG,rookie extension
 ,GSW,Al Horford,6.82,standard,C/PF,"re-signed 2yr/$13.99M Jul 6, 2026; 2027-28 player option"
 ,GSW,Yaxel Lendeborg,6.1,standard,PF,2026 draft pick No. 11; rookie scale 4yr/$28.1M
 ,GSW,Brandin Podziemski,5.68,standard,SG/PG,4th year of rookie scale
@@ -188,7 +188,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,HOU,Reed Sheppard,11.11,standard,PG/SG,Rookie scale yr 3; 2027-28 club option due 10/31/26
 ,HOU,Clint Capela,7.04,standard,C,Yr 2 of 3yr deal (2025 sign-and-trade)
 ,HOU,Marcus Smart,6.06,standard,SG/PG,Signed with part of NT-MLE; 2027-28 player option $6.4M
-,HOU,J.D. Davison,2.58,standard,SF/PF,Non-guaranteed until 1/10/27
+,HOU,J.D. Davison,2.58,standard,PG/SG,Non-guaranteed until 1/10/27
 ,HOU,Bogdan Bogdanovic,2.45,standard,SF/SG,"Vet-minimum FA signing, July 2026"
 ,HOU,Jae'Sean Tate,2.45,standard,SF/PF,Re-signed minimum; guarantee date 1/10/27
 ,HOU,Isaiah Crawford,2.45,standard,SF,Multi-year minimum; partial guarantee at opening night
@@ -259,7 +259,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,D'Angelo Russell,5.97,standard,PG/SG,"Acquired in July 8 six-team trade (expiring, final year ~$5.9-6.0M); MEM and Russell working toward trade or buyout per RealGM/Yahoo (7/23), still on roster as of 7/27"
 ,MEM,Kris Murray,5.32,standard,SF/PF,"Acquired from POR June 30, 2026 in Ja Morant trade"
 ,MEM,Walter Clayton Jr.,4.19,standard,PG/SG,Acquired from UTA Feb 2026 in JJJ trade; 2027-28 club option due 10/31/26
-,MEM,Taj Gibson,3.82,standard,PF/SF,"Real signing, verified: 2yr vet-min signed Feb 2026 at age 40 (now 41); 2026-27 non-guaranteed until 1/10/27; named by Hoops Rumors as MEM's most obvious waive candidate in the roster crunch"
+,MEM,Taj Gibson,3.82,standard,C/PF,"Real signing, verified: 2yr vet-min signed Feb 2026 at age 40 (now 41); 2026-27 non-guaranteed until 1/10/27; named by Hoops Rumors as MEM's most obvious waive candidate in the roster crunch"
 ,MEM,AJ Johnson,3.24,standard,SG/SF,"WAS to DAL (Feb, AD deal) to MEM (July 8 six-team trade); 2027-28 club option due 10/31/26"
 ,MEM,Olivier-Maxence Prosper,2.5,standard,PF/C,Signed after DAL waived him (DAL carries stretched dead money)
 ,MEM,Scotty Pippen Jr.,2.46,standard,PG/SG,2027-28 club option
@@ -435,12 +435,12 @@ asof,team,player,salary_M,kind,pos,notes
 ,POR,Sidy Cissoko,2.5,standard,SF/SG,Rest-of-season deal (2025-26) running through 2026-27
 ,POR,Branden Carlson,2.45,standard,C,Re-signed 1yr minimum July 2026
 ,POR,John Tonje,0,two_way,SG,2025 No. 53 pick; two-way signed 2026 covering 2026-27 (+2027-28)
-,POR,Jayson Kent,0,two_way,SG,"2-yr two-way signed 2025, covers 2026-27"
-,POR,Chris Youngblood,0,two_way,SG,"2-yr two-way signed 2025, covers 2026-27"
+,POR,Jayson Kent,0,two_way,PF/SF,"2-yr two-way signed 2025, covers 2026-27"
+,POR,Chris Youngblood,0,two_way,SF/SG,"2-yr two-way signed 2025, covers 2026-27"
 ,SAC,Zach LaVine,48.97,standard,SG/SF,exercised $48.97M player option June 2026; final year of 2022 max
 ,SAC,Domantas Sabonis,45.47,standard,C/PF,veteran extension; $2.6M unlikely incentives on top
 ,SAC,De'Andre Hunter,24.91,standard,SF/PF,final year of 4yr/$90M rookie extension
-,SAC,Keegan Murray,24.14,standard,SF/PF,year 1 of 5yr/$140M rookie extension
+,SAC,Keegan Murray,24.14,standard,PF/SF,year 1 of 5yr/$140M rookie extension
 ,SAC,Malik Monk,20.19,standard,PG/SG,Spotrac $20.19M vs ESPN $21.19M; Spotrac (canonical) used
 ,SAC,Darius Acuff Jr.,8.02,standard,PG,2026 draft pick No. 8 (Arkansas); rookie scale 4yr/$36.47M
 ,SAC,Precious Achiuwa,5.48,standard,PF/C,"signed 2yr/$11.23M Jul 7, 2026 via bi-annual exception"
@@ -492,7 +492,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,UTA,Ace Bailey,9.52,standard,SF/PF,"2025 No. 5 pick, year 2 rookie scale"
 ,UTA,Keyonte George,6.56,standard,PG/SG,Final rookie-scale year (RFA 2027)
 ,UTA,John Konchar,6.17,standard,SG/SF,Acquired from MEM in the Feb 2026 JJJ trade; final year
-,UTA,Cody Williams,6.02,standard,SG/SF,Year 3 rookie scale (2024 No. 10); TO decision 2027
+,UTA,Cody Williams,6.02,standard,SF/SG,Year 3 rookie scale (2024 No. 10); TO decision 2027
 ,UTA,Jaxson Hayes,6,standard,C,Signed 2yr/$12M July 2026 (2nd year TO)
 ,UTA,Josh Okogie,6,standard,SG/SF,Signed 2yr/$12M July 2026 (2nd year TO)
 ,UTA,Brice Sensabaugh,4.86,standard,SG/SF,Final rookie-scale year (RFA 2027)
