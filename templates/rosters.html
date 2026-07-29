@@ -114,6 +114,17 @@ body{background:transparent;color:var(--fg1);
   padding:.35rem .6rem;font-size:.74rem;font-weight:700;cursor:pointer}
 .sortbtn:hover{color:var(--fg1);border-color:var(--tc,var(--teal))}
 .sortbtn.on{background:var(--tc,var(--teal));border-color:var(--tc,var(--teal));color:var(--tfg,#fff)}
+/* v- prefixed because `.depth` is already the depth-chart grid container:
+   an unprefixed `.depth` button inherits display:grid and stretches
+   the two view buttons are a pair, not peers: the depth chart is the primary
+   way to read a roster and carries the accent, the list is the secondary and
+   stays neutral, in both the active and the resting state */
+.vbtn.v-depth{border-color:var(--teal);color:var(--teal)}
+.vbtn.v-depth:hover{background:var(--tintg)}
+.vbtn.v-depth.on{background:var(--teal);border-color:var(--teal);color:#fff}
+.vbtn.v-list{border-color:var(--line);color:var(--fg4)}
+.vbtn.v-list:hover{border-color:var(--fg4);color:var(--fg2);background:transparent}
+.vbtn.v-list.on{background:var(--fg4);border-color:var(--fg4);color:var(--panel)}
 
 .roster{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 @media(max-width:1180px){.roster{grid-template-columns:1fr}}
@@ -255,7 +266,7 @@ body:not(.light) .tbtn:not(.on){background:rgba(255,255,255,.05)}
 <script>
 const DATA = __DATA__;
 const T = DATA.teams, CFG = DATA.cfg;
-const state = {team: null, sort: "salary", lsort: "pay", q: "", view: "list"};
+const state = {team: null, sort: "salary", lsort: "pay", q: "", view: "depth"};
 
 // Streamlit sandboxes component iframes without allow-top-navigation, so a
 // link in here cannot open a page even with target="_top". Hand the path to
@@ -494,8 +505,10 @@ function rosterPanel(t){
 
   let h = `<div class="panel"><div class="tools">
     <input type="text" id="q" placeholder="Filter this roster" value="${esc(state.q)}">
-    <button class="sortbtn${state.view === "list" ? " on" : ""}" data-view="list">List</button>
-    <button class="sortbtn${state.view === "depth" ? " on" : ""}" data-view="depth">Depth chart</button>
+    <button class="sortbtn vbtn v-depth${state.view === "depth" ? " on" : ""}"
+      data-view="depth">Depth chart</button>
+    <button class="sortbtn vbtn v-list${state.view === "list" ? " on" : ""}"
+      data-view="list">List</button>
   </div>`;
   if (state.view === "list") h += `<div class="tools" style="margin-top:-.2rem">
     <span style="font-size:.66rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
