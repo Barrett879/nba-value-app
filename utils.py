@@ -1626,6 +1626,32 @@ COMMON_CSS = """
     .top-nav .home-link:hover { color: var(--fg-1); border: none; }
     .top-nav .divider { color: var(--nav-divider); font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 
+    /* Search box in the top row. The right margin clears the two pinned
+       controls (the score-help button and the brightness toggle), which are
+       position:fixed against the viewport edge. */
+    .nav-search { margin-left: auto; margin-right: 14rem; display: flex; }
+    .nav-search input {
+        width: 200px;
+        max-width: 26vw;
+        background: var(--panel-solid);
+        color: var(--fg-1);
+        border: 1px solid var(--nav-border);
+        border-radius: 20px;
+        padding: 0.28rem 0.8rem;
+        font-size: 0.8rem;
+        font-family: inherit;
+        transition: border-color 0.15s, width 0.15s;
+    }
+    .nav-search input::placeholder { color: var(--fg-6); }
+    .nav-search input:focus {
+        outline: none;
+        border-color: var(--accent-red);
+        width: 240px;
+    }
+    /* below this the links themselves are already tight; the homepage search
+       is one click away, so the nav box steps aside rather than crowding */
+    @media (max-width: 1000px) { .nav-search { display: none; } }
+
     /* Second nav row: the tabs within the current section. Underline tabs, not
        pills, so the two rows never read as the same level of navigation. */
     .sub-nav {
@@ -2228,6 +2254,32 @@ def render_page_chrome() -> None:
     _components.html(FACE_GUARD_SCRIPT, height=0)    # hide 404 headshots
 
 
+_NAV_NAMES = None
+
+
+def _nav_player_names() -> list:
+    """Current players for the nav search box, best first.
+
+    Read from cache/player_hub_pcv_v2.json rather than the model: the nav
+    renders on every page and this must not cost model work. Current pool only
+    (524 names, about 15KB of datalist), because /?player= opens the homepage
+    hub and the hub only knows this season's players. A legend typed by hand
+    still works: the homepage seeds its own box from the full 1973-on list and
+    forwards to Compare Players.
+    """
+    global _NAV_NAMES
+    if _NAV_NAMES is None:
+        try:
+            import json
+            p = Path(__file__).resolve().parent / "cache" / "player_hub_pcv_v2.json"
+            players = json.loads(p.read_text(encoding="utf-8"))["players"].values()
+            _NAV_NAMES = [r["player"] for r in
+                          sorted(players, key=lambda r: -(r.get("pcv_M") or 0))]
+        except Exception:                       # never break the nav over this
+            _NAV_NAMES = []
+    return _NAV_NAMES
+
+
 def render_nav(current: str) -> None:
     """Render the top nav bar with the playoff toggle pinned right.
 
@@ -2243,7 +2295,22 @@ def render_nav(current: str) -> None:
     for name, home, _tabs in _NAV_GROUPS:
         css_class = "active" if group and group[0] == name else ""
         links += f'<a class="{css_class}" href="{home}" target="_top">{name}</a>'
-    st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
+    # Search box, right side of the top row. A plain GET form, so picking a
+    # player is a normal navigation to /?player=<name> (the homepage hub) with
+    # no Streamlit rerun and no JS -- st.markdown strips <script>, but it keeps
+    # form/input/datalist, so the browser's own autocomplete does the work.
+    names = _nav_player_names()
+    search = ""
+    if names:
+        opts = "".join(f'<option value="{html.escape(n, quote=True)}"></option>'
+                       for n in names)
+        search = (
+            '<form class="nav-search" action="/" method="get" role="search">'
+            '<input type="search" name="player" list="hv-nav-players" '
+            'placeholder="Search a player" aria-label="Search a player" '
+            'autocomplete="off" spellcheck="false"></form>'
+            f'<datalist id="hv-nav-players">{opts}</datalist>')
+    st.markdown(f'<div class="top-nav">{links}{search}</div>', unsafe_allow_html=True)
 
     # Second row: the tabs inside the section you are in. Home and About sit
     # outside the sections, so they get no second row -- and the extra top
