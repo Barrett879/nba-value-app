@@ -15,6 +15,9 @@ body{background:transparent;color:var(--fg1);
 .pickrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .pickrow select{background:var(--panel);color:var(--fg1);border:1px solid var(--line);
   border-radius:9px;padding:.45rem .6rem;font-size:.88rem;font-weight:600}
+.pickrow select.unset{color:var(--fg4);border-style:dashed}
+.emptyhint{border:1.5px dashed var(--line);border-radius:14px;padding:2rem 1.2rem;
+  text-align:center;color:var(--fg4);font-size:.92rem;background:var(--tintz)}
 .pickrow .add{background:none;border:1px dashed var(--line);color:var(--fg4);border-radius:9px;
   padding:.45rem .7rem;cursor:pointer;font-size:.82rem;font-weight:700}
 .pickrow .add:hover{color:var(--teal);border-color:var(--teal)}
@@ -390,7 +393,9 @@ function validateTrade(trade){
 })();
 
 // ── UI state ─────────────────────────────────────────────────────────────────
-const state={teams:DATA.default_teams.slice(),moves:{},cash:{},order:{}};
+const state={teams:["",""],moves:{},cash:{},order:{}};
+// slots can be empty until the user picks a team; picked() is the real list
+const picked=()=>state.teams.filter(Boolean);
 // moves: playerKey/pickKey -> {to,swap,...} (absence = stays home)
 // order: abbr -> display order of roster card keys (cosmetic, user-arranged)
 
@@ -425,9 +430,9 @@ function serialize(){
       if(pk) m.push([isSwapMove(pk,mv)?"S":"K",src,
                      pk.year+":"+pk.origin+":"+(pk.round||1),mv.to]);}
   }
-  const c=state.teams.filter(a=>Number(state.cash[a]||0)>0).map(a=>[a,Number(state.cash[a])]);
+  const c=picked().filter(a=>Number(state.cash[a]||0)>0).map(a=>[a,Number(state.cash[a])]);
   if(!m.length&&!c.length) return null;
-  return b64uEnc(JSON.stringify({v:1,t:state.teams,m,c}));
+  return b64uEnc(JSON.stringify({v:1,t:picked(),m,c}));
 }
 function restore(token){
   try{
@@ -478,7 +483,7 @@ function pickKey(abbr,i){return "K|"+abbr+"|"+i}
 
 function buildTrade(){
   const tt={};
-  for(const a of state.teams){
+  for(const a of picked()){
     tt[a]={abbr:a,payroll:DATA.teams[a].payroll,roster_size:DATA.teams[a].size,
       out_players:[],in_players:[],out_picks:[],in_picks:[],
       cash_out:0,cash_in:0,cash_sent_ytd:0,
@@ -511,14 +516,14 @@ function buildTrade(){
       tt[abbr].out_picks.push(tpk); tt[dest].in_picks.push(tpk);
     }
   }
-  for(const a of state.teams){
+  for(const a of picked()){
     const c=Number(state.cash[a]||0);
     if(c>0){
-      const dest=state.teams.find(x=>x!==a);
+      const dest=picked().find(x=>x!==a);
       tt[a].cash_out+=c; tt[dest].cash_in+=c;
     }
   }
-  return {trade_date:DATA.today,teams:state.teams.map(a=>tt[a])};
+  return {trade_date:DATA.today,teams:picked().map(a=>tt[a])};
 }
 
 // ── rendering ────────────────────────────────────────────────────────────────
@@ -549,9 +554,9 @@ function capbar(T,after,active){
 }
 
 function render(){
-  const n=state.teams.length;
+  const teams=picked(), n=teams.length;
   const trade=buildTrade();
-  const anyMove=Object.keys(state.moves).length>0||state.teams.some(a=>Number(state.cash[a]||0)>0);
+  const anyMove=Object.keys(state.moves).length>0||teams.some(a=>Number(state.cash[a]||0)>0);
   const res=anyMove?validateTrade(trade):null;
 
   let html="";
@@ -559,18 +564,25 @@ function render(){
     html+=`<div class="parity-fail">Engine parity check failed for: ${esc(window.__parity.fails.join("; "))}. Verdicts may be wrong; reload or report this.</div>`;
 
   html+=`<div class="pickrow">`+state.teams.map((a,i)=>
-    `<span class="teampick"><select data-slot="${i}">`+DATA.abbrs.map(x=>
+    `<span class="teampick"><select data-slot="${i}" class="${a?"":"unset"}">`
+    +`<option value="" ${a?"":"selected"}>Select a team</option>`
+    +DATA.abbrs.map(x=>
       `<option value="${x}" ${x===a?"selected":""} ${state.teams.includes(x)&&x!==a?"disabled":""}>${x} - ${esc(DATA.teams[x].name)}</option>`).join("")+`</select>`
-    +(n>2?`<button class="rmteam" data-rm="${i}" title="Remove ${esc(DATA.teams[a].name)} from this trade">&times;</button>`:"")
+    +(state.teams.length>2?`<button class="rmteam" data-rm="${i}" title="${a?"Remove "+esc(DATA.teams[a].name)+" from this trade":"Remove this slot"}">&times;</button>`:"")
     +`</span>`
   ).join("")+
-  (n<4?`<button class="add" id="addteam">+ Add team</button>`:"")+
+  (state.teams.length<4?`<button class="add" id="addteam">+ Add team</button>`:"")+
   (anyMove||Object.keys(state.order).length
     ?`<button class="add reset" id="resetbtn" title="Clear every move, cash amount, and arranged order; keeps the selected teams">Reset trade</button>`:"")
   +`</div>`;
 
+  if(n<2){
+    html+=`<div class="emptyhint">Pick ${n===0?"two teams":"one more team"} above to start building a trade.
+      Then drag players and picks between them.</div>`;
+    root.innerHTML=html; wire(); fitFrame(); syncParentURL(); return;
+  }
   html+=`<div class="boards n${n}">`;
-  for(const a of state.teams){
+  for(const a of teams){
     const T=DATA.teams[a];
     const tt=trade.teams.find(x=>x.abbr===a);
     const after=tt?payAfter(tt):T.payroll;
@@ -753,7 +765,7 @@ function findOwner(name){
 function statBits(p,salary){
   // one stat line for every player card: position chip + salary + Barrett
   // score, plus last season's box line and D-LEBRON on 2- and 3-team boards
-  const nT=state.teams.length;
+  const nT=picked().length;
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
   const out=[fmtM(salary!=null?salary:p.salary)];
   if(p.barrett!=null) out.push(p.barrett.toFixed(1)+" BS"+(p.bs_yr?` (${p.bs_yr})`:""));
@@ -765,7 +777,7 @@ function statBits(p,salary){
 }
 function cardHTML(p,src,key,inZone,tpe){
   const img=p.headshot?`<img loading="lazy" src="${p.headshot}" alt="">`:`<div class="noimg"></div>`;
-  const others=state.teams.filter(x=>x!==(inZone?null:src)&&x!==src);
+  const others=picked().filter(x=>x!==(inZone?null:src)&&x!==src);
   let btn=inZone
     ?`<button class="mv" data-return="${key}">&larr; return</button>`
     :"";
@@ -785,7 +797,7 @@ function isSwapMove(pk,mv){
   return !!(mv&&mv.swap)||!!pk.swap_right||!!pk.swap_only;
 }
 function pickHTML(pk,src,key,inZone,asSwap){
-  const others=state.teams.filter(x=>x!==src);
+  const others=picked().filter(x=>x!==src);
   const rnd=pk.round||1;
   const isRight=!!pk.swap_right;
   const swapOnly=!!pk.swap_only;
@@ -829,22 +841,22 @@ function wire(){
   root.querySelectorAll("select[data-slot]").forEach(sel=>{
     sel.onchange=()=>{
       const i=Number(sel.dataset.slot);
-      pruneTeam(state.teams[i]);            // the team being swapped out
+      if(state.teams[i]) pruneTeam(state.teams[i]);   // team being swapped out
       state.teams[i]=sel.value;
       render();
     };
   });
   const add=document.getElementById("addteam");
   if(add) add.onclick=()=>{                      // adding disturbs nothing
-    const next=DATA.abbrs.find(x=>!state.teams.includes(x));
-    state.teams.push(next); render();
+    state.teams.push(""); render();
   };
   const rst=document.getElementById("resetbtn");
   if(rst) rst.onclick=()=>{state.moves={}; state.cash={}; state.order={}; render();};
   root.querySelectorAll("[data-rm]").forEach(b=>{
     b.onclick=()=>{
-      if(state.teams.length<=2) return;          // a trade needs two teams
-      pruneTeam(state.teams.splice(Number(b.dataset.rm),1)[0]);
+      if(state.teams.length<=2) return;          // a trade needs two slots
+      const gone=state.teams.splice(Number(b.dataset.rm),1)[0];
+      if(gone) pruneTeam(gone);
       render();
     };
   });
