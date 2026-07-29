@@ -22,7 +22,7 @@ ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 
-from utils import normalize  # noqa: E402
+from utils import NameIndex  # noqa: E402
 import fetch_bref_position_pct as B  # noqa: E402
 
 OUT = ROOT / "exports" / "HoopsValue_Position_Estimates.xlsx"
@@ -83,10 +83,14 @@ def build() -> list:
     career, hist = B.career_pcts(B.FIRST_SEASON_END, B.SEASON_END)
     print(f"career: {len(career)} players across "
           f"{B.FIRST_SEASON_END - 1}-{B.SEASON_END}")
+    # BBRef writes "PJ Hall" where the roster says "P.J. Hall"; a bare key lookup
+    # drops 14 players on punctuation and suffixes alone, and a player with no
+    # career row silently reads as "no data" instead of a disagreement.
+    idx = NameIndex({k: k for k in career})
     rows = []
     for r in roster():
         name = r["player"].strip()
-        key = normalize(name)
+        key = idx.get(name)
         car = career.get(key) or {}
         end, rec = B.recent_qualifying(hist.get(key), FLOOR)
         rec = rec or {}
