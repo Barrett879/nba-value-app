@@ -93,6 +93,7 @@
 ╚══════════════════════════════════════════════════════════════════════════╝
 """
 import html
+import json
 import logging
 import math
 import re
@@ -1626,31 +1627,69 @@ COMMON_CSS = """
     .top-nav .home-link:hover { color: var(--fg-1); border: none; }
     .top-nav .divider { color: var(--nav-divider); font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 
-    /* Search box in the top row. The right margin clears the two pinned
-       controls (the score-help button and the brightness toggle), which are
-       position:fixed against the viewport edge. */
-    .nav-search { margin-left: auto; margin-right: 14rem; display: flex; }
-    .nav-search input {
-        width: 200px;
-        max-width: 26vw;
+    /* Player search: in the nav's own flex row, so it sits flush against the
+       last section link. The dropdown is absolutely positioned off the box, so
+       it overflows the bar instead of being clipped by it. */
+    .hv-ns { position: relative; margin-left: 0.9rem; display: flex; }
+    .hv-ns > input {
+        width: 210px;
         background: var(--panel-solid);
         color: var(--fg-1);
         border: 1px solid var(--nav-border);
         border-radius: 20px;
-        padding: 0.28rem 0.8rem;
+        padding: 0.28rem 0.85rem;
         font-size: 0.8rem;
         font-family: inherit;
         transition: border-color 0.15s, width 0.15s;
     }
-    .nav-search input::placeholder { color: var(--fg-6); }
-    .nav-search input:focus {
-        outline: none;
-        border-color: var(--accent-red);
-        width: 240px;
+    .hv-ns > input::placeholder { color: var(--fg-6); }
+    .hv-ns > input:focus { outline: none; border-color: var(--accent-red); width: 250px; }
+    #hv-ns-list {
+        position: absolute;
+        top: calc(100% + 8px); left: 0;
+        width: 310px;
+        z-index: 10002;
+        background: var(--panel-solid);
+        border: 1px solid var(--panel-line);
+        border-radius: 12px;
+        box-shadow: 0 14px 38px rgba(0,0,0,0.28);
+        padding: 0.3rem;
     }
+    #hv-ns-list[hidden] { display: none; }
+    .hv-ns-row {
+        display: flex; align-items: center; gap: 0.55rem;
+        padding: 0.3rem 0.4rem; border-radius: 9px;
+        border-left: 3px solid transparent;
+        text-decoration: none !important; cursor: pointer;
+    }
+    .hv-ns-row:hover, .hv-ns-row.on {
+        background: var(--panel-hover); border-left-color: var(--tc, var(--accent-red));
+    }
+    .hv-ns-face {
+        width: 30px; height: 30px; border-radius: 50%; flex: 0 0 30px;
+        object-fit: cover; object-position: top; background: var(--panel-2);
+    }
+    .hv-ns-who { flex: 1; min-width: 0; }
+    .hv-ns-nm {
+        display: block; font-size: 0.82rem; font-weight: 700; color: var(--fg-1);
+        white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .hv-ns-sub {
+        display: flex; align-items: center; gap: 0.3rem;
+        font-size: 0.68rem; color: var(--fg-4); white-space: nowrap;
+    }
+    .hv-ns-team {
+        font-size: 0.62rem; font-weight: 800; letter-spacing: 0.02em;
+        padding: 0 0.3em; border-radius: 4px; color: #fff;
+        background: var(--tc, var(--fg-4));
+    }
+    .hv-ns-score { flex: 0 0 auto; text-align: right; font-variant-numeric: tabular-nums; }
+    .hv-ns-bs { display: block; font-size: 0.8rem; font-weight: 800; color: var(--fg-2); line-height: 1.1; }
+    .hv-ns-rk { display: block; font-size: 0.62rem; color: var(--fg-5); }
+    .hv-ns-none { padding: 0.45rem 0.5rem; font-size: 0.76rem; color: var(--fg-5); }
     /* below this the links themselves are already tight; the homepage search
        is one click away, so the nav box steps aside rather than crowding */
-    @media (max-width: 1000px) { .nav-search { display: none; } }
+    @media (max-width: 1000px) { .hv-ns { display: none; } }
 
     /* Second nav row: the tabs within the current section. Underline tabs, not
        pills, so the two rows never read as the same level of navigation. */
@@ -2254,30 +2293,150 @@ def render_page_chrome() -> None:
     _components.html(FACE_GUARD_SCRIPT, height=0)    # hide 404 headshots
 
 
-_NAV_NAMES = None
+_NAV_ROWS = None
 
 
-def _nav_player_names() -> list:
-    """Current players for the nav search box, best first.
+def _nav_search_rows() -> str:
+    """The search index as a JSON string, read once per process.
 
-    Read from cache/player_hub_pcv_v2.json rather than the model: the nav
-    renders on every page and this must not cost model work. Current pool only
-    (524 names, about 15KB of datalist), because /?player= opens the homepage
-    hub and the hub only knows this season's players. A legend typed by hand
-    still works: the homepage seeds its own box from the full 1973-on list and
-    forwards to Compare Players.
+    Precomputed by scripts/build_nav_search.py: name, team, position, Barrett
+    Score, league rank, headshot id. The nav renders on every page, so this
+    must never cost model work.
     """
-    global _NAV_NAMES
-    if _NAV_NAMES is None:
+    global _NAV_ROWS
+    if _NAV_ROWS is None:
         try:
-            import json
-            p = Path(__file__).resolve().parent / "cache" / "player_hub_pcv_v2.json"
-            players = json.loads(p.read_text(encoding="utf-8"))["players"].values()
-            _NAV_NAMES = [r["player"] for r in
-                          sorted(players, key=lambda r: -(r.get("pcv_M") or 0))]
+            p = Path(__file__).resolve().parent / "cache" / "nav_search_v1.json"
+            _NAV_ROWS = json.dumps(json.loads(p.read_text(encoding="utf-8"))["players"],
+                                   separators=(",", ":"))
         except Exception:                       # never break the nav over this
-            _NAV_NAMES = []
-    return _NAV_NAMES
+            _NAV_ROWS = ""
+    return _NAV_ROWS
+
+
+# The box and its dropdown are ordinary markup in the MAIN document, so they
+# sit in the nav's own flex row (flush against the last section link) and the
+# dropdown can overflow the bar. Only the behaviour needs a component iframe:
+# st.markdown strips <script>, so the iframe injects the handler into
+# parent.document, the same reach render_page_chrome already uses for the
+# badge. That also fixes navigation -- a component iframe is sandboxed without
+# allow-top-navigation, so a click inside one cannot open the player page,
+# while a script running in the parent just sets location.
+_NAV_SEARCH_MARKUP = (
+    '<div class="hv-ns">'
+    '<input id="hv-ns-input" type="search" placeholder="Search a player" '
+    'autocomplete="off" spellcheck="false" aria-label="Search a player" '
+    'role="combobox" aria-expanded="false" aria-controls="hv-ns-list">'
+    '<div id="hv-ns-list" role="listbox" hidden></div>'
+    "</div>")
+
+
+_NAV_SEARCH_HANDLER = """
+(function(){
+  if (window.__hvNavSearchOn) return;
+  window.__hvNavSearchOn = true;
+  const P = __ROWS__, MAX = 7;
+  const fold = s => s.normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
+  for (const p of P) p._k = fold(p.n);
+  const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
+    c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  let items = [], cursor = -1;
+  const inp = () => document.getElementById("hv-ns-input");
+  const list = () => document.getElementById("hv-ns-list");
+
+  function match(q){
+    const k = fold(q.trim());
+    if (!k) return [];
+    const starts = [], later = [], rest = [];
+    for (const p of P){
+      const i = p._k.indexOf(k);
+      if (i < 0) continue;
+      (i === 0 ? starts : p._k[i-1] === " " ? later : rest).push(p);
+    }
+    return starts.concat(later, rest).slice(0, MAX);
+  }
+
+  function draw(){
+    const el = list(); if (!el) return;
+    if (!items.length){
+      const typed = (inp().value || "").trim();
+      el.innerHTML = typed ? '<div class="hv-ns-none">No player by that name.</div>' : "";
+      el.hidden = !typed;
+    } else {
+      el.innerHTML = items.map(function(p, i){
+        return '<a class="hv-ns-row' + (i === cursor ? " on" : "") + '" data-i="' + i + '"'
+          + ' href="/?player=' + encodeURIComponent(p.n) + '"'
+          + (p.c ? ' style="--tc:' + p.c + '"' : "") + '>'
+          + (p.h ? '<img class="hv-ns-face" loading="lazy" alt="" src="https://cdn.nba.com/headshots/nba/latest/260x190/' + p.h + '.png">'
+                 : '<span class="hv-ns-face"></span>')
+          + '<span class="hv-ns-who"><span class="hv-ns-nm">' + esc(p.n) + '</span>'
+          + '<span class="hv-ns-sub">' + (p.t ? '<span class="hv-ns-team">' + esc(p.t) + '</span>' : "")
+          + esc(p.p || "") + '</span></span>'
+          + '<span class="hv-ns-score"><span class="hv-ns-bs">' + p.s.toFixed(1) + '</span>'
+          + '<span class="hv-ns-rk">#' + p.r + '</span></span></a>';
+      }).join("");
+      el.hidden = false;
+    }
+    inp().setAttribute("aria-expanded", String(!el.hidden));
+  }
+
+  function paint(){
+    list().querySelectorAll(".hv-ns-row").forEach(function(el, i){
+      el.classList.toggle("on", i === cursor);
+    });
+  }
+  function close(){ const el = list(); if (el) el.hidden = true; cursor = -1; }
+
+  document.addEventListener("input", function(ev){
+    if (ev.target.id !== "hv-ns-input") return;
+    items = match(ev.target.value); cursor = items.length ? 0 : -1; draw();
+  });
+  document.addEventListener("keydown", function(ev){
+    if (ev.target.id !== "hv-ns-input") return;
+    if (ev.key === "ArrowDown" || ev.key === "ArrowUp"){
+      if (!items.length) return;
+      ev.preventDefault();
+      cursor = (cursor + (ev.key === "ArrowDown" ? 1 : items.length - 1)) % items.length;
+      paint();
+    } else if (ev.key === "Enter"){
+      ev.preventDefault();
+      const p = items[cursor >= 0 ? cursor : 0];
+      if (p) location.href = "/?player=" + encodeURIComponent(p.n);
+    } else if (ev.key === "Escape"){ close(); ev.target.blur(); }
+  });
+  // rows are real anchors, so a click needs no handler; this only closes the
+  // list when the click lands anywhere else
+  document.addEventListener("mousedown", function(ev){
+    if (!(ev.target.closest && ev.target.closest(".hv-ns"))) close();
+  });
+  document.addEventListener("mouseover", function(ev){
+    const row = ev.target.closest && ev.target.closest(".hv-ns-row");
+    if (row){ cursor = +row.dataset.i; paint(); }
+  });
+})();
+"""
+
+
+def _nav_search_script(rows: str) -> str:
+    """Iframe payload that installs the search handler in the PARENT page.
+
+    It injects a real <script> element rather than attaching listeners across
+    the frame boundary, and the difference is not cosmetic: a component iframe
+    is sandboxed without allow-top-navigation, so a callback belonging to the
+    iframe cannot open the player page even though it can read and write the
+    parent's DOM. Injected as an element, the same code runs in the parent's
+    own realm, where setting location is an ordinary navigation.
+    """
+    handler = _NAV_SEARCH_HANDLER.replace("__ROWS__", rows or "[]")
+    return (
+        "<script>(function(){"
+        "  var D = window.parent.document;"
+        "  if (window.parent.__hvNavSearchInstalled) return;"
+        "  window.parent.__hvNavSearchInstalled = true;"
+        "  var el = D.createElement('script');"
+        f" el.textContent = {json.dumps(handler)};"
+        "  D.head.appendChild(el);"
+        "})();</script>")
 
 
 def render_nav(current: str) -> None:
@@ -2295,22 +2454,12 @@ def render_nav(current: str) -> None:
     for name, home, _tabs in _NAV_GROUPS:
         css_class = "active" if group and group[0] == name else ""
         links += f'<a class="{css_class}" href="{home}" target="_top">{name}</a>'
-    # Search box, right side of the top row. A plain GET form, so picking a
-    # player is a normal navigation to /?player=<name> (the homepage hub) with
-    # no Streamlit rerun and no JS -- st.markdown strips <script>, but it keeps
-    # form/input/datalist, so the browser's own autocomplete does the work.
-    names = _nav_player_names()
-    search = ""
-    if names:
-        opts = "".join(f'<option value="{html.escape(n, quote=True)}"></option>'
-                       for n in names)
-        search = (
-            '<form class="nav-search" action="/" method="get" role="search">'
-            '<input type="search" name="player" list="hv-nav-players" '
-            'placeholder="Search a player" aria-label="Search a player" '
-            'autocomplete="off" spellcheck="false"></form>'
-            f'<datalist id="hv-nav-players">{opts}</datalist>')
+    rows = _nav_search_rows()
+    search = _NAV_SEARCH_MARKUP if rows else ""
     st.markdown(f'<div class="top-nav">{links}{search}</div>', unsafe_allow_html=True)
+    if rows:
+        import streamlit.components.v1 as _components
+        _components.html(_nav_search_script(rows), height=0)
 
     # Second row: the tabs inside the section you are in. Home and About sit
     # outside the sections, so they get no second row -- and the extra top
