@@ -347,7 +347,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NYK,Miles McBride,3.96,standard,PG/SG,
 ,NYK,Pacome Dadiet,2.98,standard,SF/PF,2027-28 club option decision due 10/31/2026
 ,NYK,Mohamed Diawara,2.62,standard,PF/SF,Re-signed multi-year 7/6/2026; partial guarantees
-,NYK,Jordan Clarkson,2.45,standard,PG/SG,Re-signed vet-min 7/10/2026; discounted cap hit
+,NYK,Jordan Clarkson,2.45,standard,SG/PG,Re-signed vet-min 7/10/2026; discounted cap hit
 ,NYK,Andre Drummond,2.45,standard,C,Signed vet-min FA 7/6/2026; discounted cap hit
 ,NYK,Tyler Kolek,2.3,standard,PG/SG,2027-28 team option
 ,OKC,Chet Holmgren,41.24,standard,PF/C,Rookie-max extension begins 2026-27 (25% of cap)
@@ -388,7 +388,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,PHI,Jaylen Brown,57.74,standard,SF/SG,Acquired from BOS 7/6/2026 for Paul George + 2 firsts (incl PHI 2031) + 2 seconds
 ,PHI,Tyrese Maxey,40.77,standard,PG/SG,Extension-eligible 7/7/2027
 ,PHI,VJ Edgecombe,11.66,standard,SG/SF,2025 No.3 pick; 2027-28 club option decision due 10/31/2026
-,PHI,Dean Wade,9,standard,PF/SF,Signed multi-year FA 7/6/2026
+,PHI,Dean Wade,9,standard,SF/PF,Signed multi-year FA 7/6/2026
 ,PHI,Anfernee Simons,6,standard,PG/SG,"Signed FA 7/6/2026; 2027-28 player option $6.3M (was BOS, traded to CHI 2/5/2026, then FA)"
 ,PHI,Kentavious Caldwell-Pope,3.9,standard,SG/SF,"Reported 1yr/$3.9M after MEM buyout finalized 7/25/2026; must clear waivers, not yet official (ESPN lists him early, Spotrac does not); PROMOTED to official per Barrett 2026-07-27"
 ,PHI,LeBron James,3.88,standard,PF/SF,Signed vet-min 1+1 on 7/26/2026; 2027-28 player option $4.07M
