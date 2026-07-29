@@ -37,6 +37,7 @@ body{background:transparent;color:var(--fg1);
 .topt:hover:not(.dis){background:var(--tc);color:var(--tfg);border-left-color:var(--tc)}
 .topt:hover:not(.dis) .tabbr{color:var(--tfg);opacity:.85}
 .topt.dis{opacity:.32;cursor:not-allowed}
+.topt[hidden],.tmenu[hidden]{display:none}
 .topt.sel{background:var(--track);border-left-color:var(--tc)}
 .emptyhint{border:1.5px dashed var(--line);border-radius:14px;padding:2rem 1.2rem;
   text-align:center;color:var(--fg4);font-size:.92rem;background:var(--tintz)}
@@ -916,8 +917,13 @@ function wire(){
       render();
     };
   });
-  document.addEventListener("click",closeMenus);
-  document.addEventListener("keydown",e=>{if(e.key==="Escape")closeMenus();});
+  if(!window.__menuClosersBound){                 // wire() reruns each render
+    window.__menuClosersBound=true;
+    document.addEventListener("click",()=>
+      root.querySelectorAll(".tmenu").forEach(m=>{m.hidden=true;}));
+    document.addEventListener("keydown",e=>{
+      if(e.key==="Escape") root.querySelectorAll(".tmenu").forEach(m=>{m.hidden=true;});});
+  }
   const add=document.getElementById("addteam");
   if(add) add.onclick=()=>{                      // adding disturbs nothing
     state.teams.push(""); render();
