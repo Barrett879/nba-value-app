@@ -202,7 +202,8 @@ body:not(.light) .tbtn:not(.on){background:rgba(255,255,255,.05)}
 .dcol .empty{font-size:.72rem}
 /* depth-chart cards are their own shape: a five-column grid is far too narrow
    for the list card's headshot + name + stats + money row */
-.dcard{display:block;text-align:center;background:var(--card);border:1px solid var(--line);
+.depthhint{font-size:.7rem;color:var(--fg5);margin:-.15rem 0 .45rem .1rem}
+.dcard{position:relative;display:block;text-align:center;background:var(--card);border:1px solid var(--line);
   border-top:3px solid transparent;border-radius:11px;padding:.5rem .4rem .45rem;margin-bottom:6px;
   transition:border-color .12s,box-shadow .12s,transform .12s}
 .dcard:hover{border-color:var(--tc,var(--teal));box-shadow:0 2px 10px rgba(0,0,0,.09);
@@ -218,6 +219,10 @@ body:not(.light) .tbtn:not(.on){background:rgba(255,255,255,.05)}
 .dcard .sal{font-size:.8rem;font-weight:800;font-variant-numeric:tabular-nums;margin-top:.2rem}
 .dcard .bs{font-size:.66rem;color:var(--fg4);font-variant-numeric:tabular-nums}
 .dcard .vd{font-size:.64rem;font-weight:700;font-variant-numeric:tabular-nums}
+.drank{position:absolute;top:.3rem;left:.35rem;min-width:1.15em;height:1.15em;line-height:1.15em;
+  border-radius:4px;background:var(--track);color:var(--fg5);font-size:.62rem;font-weight:800;
+  text-align:center}
+.drank.top{background:var(--teal);color:#fff}
 .ltable{width:100%;border-collapse:collapse;font-size:.8rem}
 .ltable th{position:sticky;top:0;background:var(--panel);text-align:right;font-size:.63rem;
   font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--fg5);
@@ -399,7 +404,7 @@ function optChip(p){
     .replace("Team option ", "TO ").replace("Player option ", "PO ").toUpperCase())}</span>`;
 }
 
-function depthCard(p){
+function depthCard(p, rank){
   const img = p.headshot
     ? `<img src="${esc(p.headshot)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
   const cls = p.kind === "two_way" ? " tw"
@@ -411,6 +416,7 @@ function depthCard(p){
     : p.vd >= 1 ? `<div class="vd bad">${fmtM(p.vd)} over</div>`
     : `<div class="vd flat">at value</div>`;
   return `<div class="dcard${cls}" title="${esc(p.note)}">
+    ${rank ? `<span class="drank${rank === 1 ? " top" : ""}">${rank}</span>` : ""}
     ${img}
     <a class="nm" href="/Contract_Predictor?player=${encodeURIComponent(p.n)}"
        target="_top">${esc(p.n)}</a>
@@ -490,13 +496,19 @@ function rosterPanel(t){
       data-sort="${k}">${esc(lbl)}</button>`).join("")}
   </div>`;
   if (state.view === "depth"){
-    const cmpD = (a, b) => (b.salary - a.salary) || (b.barrett || 0) - (a.barrett || 0);
+    // each column reads top down like a real depth chart: best Barrett Score
+    // first, salary only as a tiebreak, and anyone with no score at the bottom
+    // (a rookie has not played, so he has nothing to rank on)
+    const cmpD = (a, b) => (b.barrett == null ? -1e9 : b.barrett)
+                         - (a.barrett == null ? -1e9 : a.barrett)
+                         || (b.salary - a.salary);
     const pool = t.players.filter(p => p.kind !== "free_agent" && match(p));
-    h += `<div class="depth">`;
+    h += `<div class="depthhint">Each column is ranked by Barrett Score, best first.</div>
+      <div class="depth">`;
     for (const pos of POS){
       const list = pool.filter(p => p.slot === pos).sort(cmpD);
       h += `<div class="dcol"><div class="dhead">${pos}<span class="cnt">${list.length}</span></div>`;
-      h += list.length ? list.map(depthCard).join("")
+      h += list.length ? list.map((p, i) => depthCard(p, i + 1)).join("")
         : `<div class="empty">${q ? "No match." : "Nobody listed."}</div>`;
       h += `</div>`;
     }
