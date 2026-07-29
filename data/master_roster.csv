@@ -251,7 +251,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Jerami Grant,34.21,standard,PF/SF,"Acquired from POR June 30, 2026 in Ja Morant trade; 2027-28 player option $36.4M"
 ,MEM,Isaiah Stewart,15,standard,C/PF,"Acquired from DET in July 8, 2026 six-team trade; 2027-28 team option $15.0M"
 ,MEM,Cameron Boozer,11.85,standard,PF,2026 lottery pick (scale fits No. 3); rookie deal officially signed
-,MEM,Ty Jerome,9.22,standard,PG/SG,Yr 2 of 3yr deal; 2027-28 player option $9.7M
+,MEM,Ty Jerome,9.22,standard,SG/PG,Yr 2 of 3yr deal; 2027-28 player option $9.7M
 ,MEM,Quinten Post,9,standard,C,"Signed via MLE July 2026; sources conflict on cap hit (Spotrac $9.00M, BBRef $8.29M)"
 ,MEM,Taylor Hendricks,7.81,standard,C/PF,Acquired from UTA Feb 2026 in Jaren Jackson Jr. trade; 2027 RFA
 ,MEM,Zach Edey,6.33,standard,C,2027-28 club option due 10/31/26
@@ -264,8 +264,8 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Olivier-Maxence Prosper,2.5,standard,PF/C,Signed after DAL waived him (DAL carries stretched dead money)
 ,MEM,Scotty Pippen Jr.,2.46,standard,PG/SG,2027-28 club option
 ,MEM,Cam Spencer,2.41,standard,PG/SG,Multi-year; 2028-29 club option
-,MEM,G.G. Jackson,2.41,standard,SF/PF,Final year
-,MEM,Jaylen Wells,2.3,standard,SG/SF,Non-guaranteed until opening night 10/19/26
+,MEM,G.G. Jackson,2.41,standard,PF/SF,Final year
+,MEM,Jaylen Wells,2.3,standard,SF/SG,Non-guaranteed until opening night 10/19/26
 ,MEM,Javon Small,0.68,two_way,PG,2025 No. 48 pick; re-signed two-way 7/10/26
 ,MEM,Jahmai Mashack,0.68,two_way,SG,On two-way since Nov 2025
 ,MEM,Karim Lopez,3.10,standard,PF,"2026 No. 21 pick (rights from DET draft night for Ebuka Okorie + 3 2nds); UNSIGNED as of 7/27, KCP buyout cleared the roster spot; scale yr 1 ~$3.1M (hold $3.75M); salary = rookie-scale estimate, confirm on signing; PROMOTED to official per Barrett 2026-07-27"
