@@ -1,0 +1,740 @@
+<!-- Rosters component. Rendered into a srcdoc iframe by pages/Rosters.py with
+__DATA__, __THEME__ and __THEME_LIGHT__ injected. All 30 teams ship in one
+payload, so switching teams is instant and costs no server round trip. Both
+palettes ship in one byte-stable srcdoc and themeSync() follows the parent at
+runtime -- baking the active palette in would remount the iframe on every
+theme toggle. No network calls except headshot and logo images. -->
+<div id="ro-root"></div>
+<style>
+:root { __THEME__ }
+body.light { __THEME_LIGHT__ }
+*{box-sizing:border-box;margin:0}
+body{background:transparent;color:var(--fg1);
+  font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+#ro-root{padding:2px 2px 16px}
+
+/* ── team strip ─────────────────────────────────────────────────────────── */
+.stripwrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:.5rem .7rem .6rem;margin-bottom:12px}
+.striphead{display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem}
+.striphead .lbl{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--fg5)}
+.strip{display:flex;gap:10px 16px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+/* one group per division, five logos across: six groups fill the row on a wide
+   screen and wrap by division on a narrow one, so the grouping never breaks */
+.confgrp{flex:0 0 auto}
+.conflabel{font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
+  color:var(--fg5);margin:0 0 .3rem .15rem;white-space:nowrap}
+.conflabel .cf{color:var(--fg4);opacity:.55;margin-left:.3rem;letter-spacing:.04em}
+.logos{display:grid;grid-template-columns:repeat(5,40px);gap:3px}
+@media(max-width:420px){.logos{grid-template-columns:repeat(5,38px)}
+  .tbtn{width:38px;height:38px} .tbtn img{width:26px;height:26px}}
+.tbtn{position:relative;display:flex;align-items:center;justify-content:center;
+  width:40px;height:40px;border-radius:10px;border:1px solid transparent;background:none;
+  cursor:pointer;padding:0;transition:background .12s,border-color .12s,transform .12s}
+.tbtn img{width:27px;height:27px;object-fit:contain;transition:filter .12s,transform .12s}
+/* the abbreviation sits under the logo and is hidden the moment the image
+   paints. A hung CDN request never fires onerror, so waiting on it would leave
+   a wall of blank buttons; this way the picker is always readable. */
+.tbtn .tabbr{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:.68rem;font-weight:800;letter-spacing:.02em;color:var(--fg3)}
+.tbtn.on .tabbr,.tbtn:hover .tabbr{color:var(--tfg,#fff)}
+.pk .pkabbr{font-size:.62rem;font-weight:800;color:var(--fg5);width:18px;text-align:center;
+  flex:0 0 18px}
+.tbtn:hover{background:var(--tc);border-color:var(--tc);transform:translateY(-1px)}
+.tbtn:hover img{transform:scale(1.06)}
+.tbtn.on{background:var(--tc);border-color:var(--tc);box-shadow:0 2px 10px rgba(0,0,0,.16)}
+.tbtn.on::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
+  width:0;height:0;border:5px solid transparent;border-top-color:var(--tc)}
+
+/* ── header ─────────────────────────────────────────────────────────────── */
+.thead{position:relative;overflow:hidden;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;border-top:3px solid var(--tc,var(--teal));
+  padding:.85rem .95rem .95rem;margin-bottom:12px;
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.05)}
+/* ghosted abbreviation, the site's established team-identity device */
+.thead::after{content:attr(data-team);position:absolute;left:50%;top:-.45rem;
+  transform:translateX(-50%);font-size:4.4rem;font-weight:800;letter-spacing:-.04em;
+  color:var(--tc,var(--teal));opacity:.06;pointer-events:none;line-height:1}
+@media(max-width:760px){.thead::after{display:none}}
+.thtop{display:flex;align-items:center;gap:.7rem;flex-wrap:wrap}
+.thlogo{width:46px;height:46px;object-fit:contain;flex:0 0 46px}
+.thname{font-size:1.25rem;font-weight:800;line-height:1.15}
+.thsub{font-size:.74rem;color:var(--fg4);margin-top:.1rem}
+.thpay{margin-left:auto;text-align:right;font-variant-numeric:tabular-nums}
+.thpay .big{font-size:1.5rem;font-weight:800;line-height:1.1}
+.thpay .lbl{font-size:.68rem;color:var(--fg4);letter-spacing:.04em;text-transform:uppercase;
+  font-weight:700}
+.thpay .big.under{color:var(--blue)} .thpay .big.tax{color:var(--amberc)}
+.thpay .big.apron{color:var(--bad)}
+
+.capbar{position:relative;height:9px;border-radius:5px;background:var(--track);
+  margin:.85rem 0 .2rem;overflow:hidden}
+.capbar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;background:var(--blue);
+  transition:width .25s}
+.capbar .fill.tax{background:var(--amberc)} .capbar .fill.apron{background:var(--bad)}
+.capbar .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--panel);opacity:.95}
+/* the four thresholds sit within 25% of each other at the top of the bar, so
+   positional labels would overprint: the bar carries unlabelled ticks and the
+   numbers ride in a legend line underneath */
+.caplegend{display:flex;flex-wrap:wrap;gap:.1rem 1rem;font-size:.66rem;color:var(--fg5);
+  font-variant-numeric:tabular-nums;margin-top:.3rem}
+.caplegend span{white-space:nowrap}
+.caplegend b{font-weight:800;color:var(--fg4)}
+.caplegend span.hit b,.caplegend span.hit{color:var(--amberc)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:.55rem}
+.chip{display:inline-flex;align-items:center;gap:.3rem;padding:.16rem .5rem;border-radius:99px;
+  border:1px solid var(--line);background:var(--card);font-size:.7rem;font-weight:700;
+  color:var(--fg3);white-space:nowrap}
+.chip b{font-weight:800;color:var(--fg1);font-variant-numeric:tabular-nums}
+.chip.warn{border-color:var(--amberc);color:var(--amberc)}
+.chip.bad{border-color:var(--bad);color:var(--bad)}
+.chip.good{border-color:var(--teal);color:var(--teal)}
+.chip.help{cursor:help}
+
+/* ── body grid ──────────────────────────────────────────────────────────── */
+.cols{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(0,1fr);gap:12px;align-items:start}
+@media(max-width:920px){.cols{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:.75rem .8rem .85rem;min-width:0;
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.05)}
+.panel + .panel{margin-top:12px}
+.secl{display:flex;align-items:center;gap:.4rem;font-size:.64rem;font-weight:800;
+  letter-spacing:.09em;color:var(--fg4);text-transform:uppercase;margin:.1rem 0 .5rem}
+.secl .bar{width:3px;height:12px;border-radius:2px;background:var(--tc,var(--teal))}
+.secl .cnt{margin-left:auto;color:var(--fg5);font-weight:700;letter-spacing:.02em}
+.secl.mid{margin-top:1rem}
+
+.tools{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:.6rem}
+.tools input[type=text]{flex:1 1 150px;min-width:120px;background:var(--card);color:var(--fg1);
+  border:1px solid var(--line);border-radius:9px;padding:.4rem .55rem;font-size:.82rem}
+.tools input[type=text]:focus{outline:none;border-color:var(--tc,var(--teal))}
+.sortbtn{background:var(--card);border:1px solid var(--line);color:var(--fg3);border-radius:9px;
+  padding:.35rem .6rem;font-size:.74rem;font-weight:700;cursor:pointer}
+.sortbtn:hover{color:var(--fg1);border-color:var(--tc,var(--teal))}
+.sortbtn.on{background:var(--tc,var(--teal));border-color:var(--tc,var(--teal));color:var(--tfg,#fff)}
+
+.roster{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+@media(max-width:1180px){.roster{grid-template-columns:1fr}}
+.card{display:flex;align-items:center;gap:.6rem;background:var(--card);
+  border:1px solid var(--line);border-left:3px solid transparent;border-radius:11px;
+  padding:.5rem .6rem;min-width:0;transition:border-color .12s,box-shadow .12s,transform .12s}
+.card:hover{border-color:var(--tc,var(--teal));border-left-color:var(--tc,var(--teal));
+  box-shadow:0 2px 10px rgba(0,0,0,.09);transform:translateY(-1px)}
+.card img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top;
+  background:var(--track);flex:0 0 44px;box-shadow:0 0 0 2px var(--track)}
+.card .noimg{width:44px;height:44px;border-radius:50%;background:var(--track);flex:0 0 44px}
+.card .who{flex:1;min-width:0}
+.card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;display:block;color:var(--fg1);text-decoration:none}
+.card .nm:hover{color:var(--tc,var(--teal))}
+.card .sub{font-size:.755rem;color:var(--fg4);font-variant-numeric:tabular-nums;line-height:1.3}
+.card .deal{font-size:.7rem;color:var(--fg5);white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis;margin-top:.06rem}
+.poschip{display:inline-block;min-width:1.5em;text-align:center;padding:0 .32em;margin-right:.35em;
+  border-radius:5px;background:var(--track);color:var(--fg3);font-size:.67rem;font-weight:800;
+  vertical-align:1px;letter-spacing:.02em}
+.optchip{display:inline-block;margin-left:.35em;padding:0 .35em;border-radius:5px;
+  border:1px solid var(--line);background:var(--panel);color:var(--fg4);
+  font-size:.6rem;font-weight:800;letter-spacing:.03em;vertical-align:1px;cursor:help}
+.optchip.in{border-color:var(--teal);color:var(--teal)}
+.optchip.out{border-color:var(--amberc);color:var(--amberc)}
+.money{flex:0 0 auto;text-align:right;font-variant-numeric:tabular-nums;min-width:78px}
+.money .sal{font-size:.92rem;font-weight:800;line-height:1.15}
+.money .vd{font-size:.68rem;font-weight:700;white-space:nowrap;cursor:help}
+.vd.good{color:var(--teal)} .vd.bad{color:var(--bad)} .vd.flat{color:var(--fg5)}
+.card.tw .money .sal{font-size:.74rem;font-weight:700;color:var(--fg4)}
+.card.fa{border-style:dashed}
+.card.fa .money .sal{color:var(--fg3)}
+.empty{color:var(--fg5);font-size:.8rem;padding:.35rem .1rem}
+
+/* ── rail ───────────────────────────────────────────────────────────────── */
+.kv{display:flex;justify-content:space-between;gap:.5rem;font-size:.78rem;padding:.25rem 0;
+  border-bottom:1px dashed var(--line)}
+.kv:last-child{border-bottom:none}
+.kv .k{color:var(--fg4)} .kv .v{font-weight:800;font-variant-numeric:tabular-nums}
+.kv .v.good{color:var(--teal)} .kv .v.bad{color:var(--bad)}
+.tpe{display:flex;align-items:baseline;gap:.4rem;font-size:.78rem;padding:.22rem 0}
+.tpe .amt{font-weight:800;font-variant-numeric:tabular-nums;min-width:64px}
+.tpe .who{color:var(--fg4);font-size:.72rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pk{display:flex;align-items:center;gap:.45rem;font-size:.78rem;padding:.24rem 0;
+  border-bottom:1px dashed var(--line)}
+.pk:last-child{border-bottom:none}
+.pk .yr{font-weight:800;font-variant-numeric:tabular-nums;flex:0 0 auto}
+.pk img{width:18px;height:18px;object-fit:contain;flex:0 0 18px}
+.pk .lbl{color:var(--fg3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pk .tag{margin-left:auto;font-size:.63rem;font-weight:800;letter-spacing:.03em;
+  padding:.02rem .35rem;border-radius:5px;background:var(--track);color:var(--fg4);
+  flex:0 0 auto;cursor:help}
+.pk .tag.sw{background:var(--blue);color:#fff}
+.pk .tag.swout{background:var(--bad);color:#fff}
+.pk .tag.swq{background:var(--fg5);color:#fff}
+.pk .tag.pr{background:var(--amberc);color:#fff}
+.rnd{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;
+  border-radius:50%;background:var(--teal);color:#fff;font-size:.62rem;font-weight:800;flex:0 0 16px}
+.rnd.r2{background:var(--fg4)}
+.note{font-size:.7rem;color:var(--fg5);margin-top:.5rem;line-height:1.4}
+
+/* monochrome logos (BKN, SAS) vanish on the dark panel without a backdrop */
+body:not(.light) .tbtn:not(.on){background:rgba(255,255,255,.05)}
+
+/* ── league overview (no team picked) ───────────────────────────────────── */
+.sumrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;
+  margin-bottom:12px}
+.sumcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;
+  padding:.55rem .7rem;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.sumcard .lbl{font-size:.6rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--fg5)}
+.sumcard .big{font-size:1.25rem;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums;
+  margin-top:.1rem}
+.sumcard .sub{font-size:.68rem;color:var(--fg4);margin-top:.05rem}
+
+/* ── depth chart view ───────────────────────────────────────────────────── */
+.depth{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+@media(max-width:1080px){.depth{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:620px){.depth{grid-template-columns:1fr}}
+.dcol{min-width:0}
+.dhead{font-size:.64rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--fg4);padding:.15rem .1rem .35rem;border-bottom:2px solid var(--tc,var(--teal));
+  margin-bottom:.4rem;display:flex;align-items:center;gap:.35rem}
+.dhead .cnt{margin-left:auto;color:var(--fg5)}
+.dcol .empty{font-size:.72rem}
+/* depth-chart cards are their own shape: a five-column grid is far too narrow
+   for the list card's headshot + name + stats + money row */
+.dcard{display:block;text-align:center;background:var(--card);border:1px solid var(--line);
+  border-top:3px solid transparent;border-radius:11px;padding:.5rem .4rem .45rem;margin-bottom:6px;
+  transition:border-color .12s,box-shadow .12s,transform .12s}
+.dcard:hover{border-color:var(--tc,var(--teal));box-shadow:0 2px 10px rgba(0,0,0,.09);
+  transform:translateY(-1px)}
+.dcard.good{border-top-color:var(--teal)} .dcard.bad{border-top-color:var(--bad)}
+.dcard.tw{border-style:dashed}
+.dcard img,.dcard .noimg{width:42px;height:42px;border-radius:50%;object-fit:cover;
+  object-position:top;background:var(--track);margin:0 auto .25rem;display:block;
+  box-shadow:0 0 0 2px var(--track)}
+.dcard .nm{display:block;font-size:.78rem;font-weight:700;color:var(--fg1);text-decoration:none;
+  line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.dcard .nm:hover{color:var(--tc,var(--teal))}
+.dcard .sal{font-size:.8rem;font-weight:800;font-variant-numeric:tabular-nums;margin-top:.2rem}
+.dcard .bs{font-size:.66rem;color:var(--fg4);font-variant-numeric:tabular-nums}
+.dcard .vd{font-size:.64rem;font-weight:700;font-variant-numeric:tabular-nums}
+.ltable{width:100%;border-collapse:collapse;font-size:.8rem}
+.ltable th{position:sticky;top:0;background:var(--panel);text-align:right;font-size:.63rem;
+  font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--fg5);
+  padding:.4rem .45rem;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;
+  user-select:none}
+.ltable th:first-child{text-align:left}
+.ltable th.on{color:var(--teal)}
+.ltable td{padding:.34rem .45rem;border-bottom:1px solid var(--line);text-align:right;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.ltable td:first-child{text-align:left}
+.ltable tr{cursor:pointer}
+.ltable tbody tr:hover td{background:var(--tintz)}
+.ltable tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--tc)}
+.lteam{display:flex;align-items:center;gap:.5rem;min-width:0}
+.lteam img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
+.lteam b{font-weight:700}
+.lteam .ab{color:var(--fg5);font-size:.7rem;font-weight:800;letter-spacing:.03em}
+.pill{display:inline-block;padding:.02rem .4rem;border-radius:99px;font-size:.66rem;font-weight:800;
+  border:1px solid var(--line);color:var(--fg4)}
+.pill.under{border-color:var(--blue);color:var(--blue)}
+.pill.tax{border-color:var(--amberc);color:var(--amberc)}
+.pill.apron{border-color:var(--bad);color:var(--bad)}
+.good{color:var(--teal)} .bad{color:var(--bad)}
+.backbtn{background:var(--card);border:1px solid var(--line);color:var(--fg3);border-radius:9px;
+  padding:.3rem .6rem;font-size:.72rem;font-weight:700;cursor:pointer;align-self:center}
+.backbtn:hover{color:var(--fg1);border-color:var(--teal)}
+</style>
+<script>
+const DATA = __DATA__;
+const T = DATA.teams, CFG = DATA.cfg;
+const state = {team: null, sort: "salary", lsort: "pay", q: "", view: "list"};
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtM = v => (v == null ? "" : (v < 0 ? "-" : "") + "$" + Math.abs(v).toFixed(1) + "M");
+const root = document.getElementById("ro-root");
+
+// readable text color on a team-colored background
+function onColor(hex){
+  const h = (hex || "").replace("#", "");
+  if (h.length !== 6) return "#fff";
+  const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+  return (.299*r + .587*g + .114*b) > 150 ? "#10131a" : "#ffffff";
+}
+
+function capState(pay){
+  if (pay >= CFG.apron2) return "apron";
+  if (pay >= CFG.tax_line) return "tax";
+  return "under";
+}
+
+function teamStrip(){
+  let h = `<div class="stripwrap"><div class="striphead">
+    <span class="lbl">${state.team ? "Switch team" : "Pick a team"}</span>
+    ${state.team ? `<button class="backbtn" id="back" style="margin-left:auto"
+      title="Back to the league table">All 30 teams</button>` : ""}
+  </div><div class="strip">`;
+  for (const [conf, divs] of Object.entries(DATA.divs))
+    for (const [div, abbrs] of Object.entries(divs)){
+      h += `<div class="confgrp"><div class="conflabel">${esc(div)}
+        <span class="cf">${esc(conf)}</span></div><div class="logos">`;
+      for (const ab of abbrs){
+        const t = T[ab]; if (!t) continue;
+        const c = DATA.colors[ab] || "var(--teal)";
+        h += `<button class="tbtn${ab === state.team ? " on" : ""}" data-team="${ab}"
+          style="--tc:${c};--tfg:${onColor(c)}" title="${esc(t.name)}, ${fmtM(t.payroll)} committed">
+          <span class="tabbr">${ab}</span>${DATA.logos[ab]
+            ? `<img src="${esc(DATA.logos[ab])}" alt="${esc(t.name)}" loading="lazy"
+                 onload="this.previousElementSibling.style.display='none'"
+                 onerror="this.remove()">` : ""}</button>`;
+      }
+      h += `</div></div>`;
+    }
+  return h + "</div></div>";
+}
+
+function capBar(t){
+  const pay = t.payroll, top = Math.max(CFG.apron2 * 1.06, pay * 1.04);
+  const pct = v => Math.max(0, Math.min(100, v / top * 100));
+  const st = capState(pay);
+  const ticks = [["cap", CFG.cap, "Salary cap"], ["tax", CFG.tax_line, "Luxury tax line"],
+                 ["ap1", CFG.apron1, "First apron"], ["ap2", CFG.apron2, "Second apron"]];
+  let bar = `<div class="capbar"><div class="fill ${st}" style="width:${pct(pay)}%"></div>`;
+  for (const [, v] of ticks) bar += `<div class="tick" style="left:${pct(v)}%"></div>`;
+  bar += `</div><div class="caplegend">`;
+  for (const [, v, lbl] of ticks)
+    bar += `<span class="${pay >= v ? "hit" : ""}">${esc(lbl)} <b>${fmtM(v)}</b></span>`;
+  return bar + `</div>`;
+}
+
+const ORD = n => n + (["th", "st", "nd", "rd"][(n % 100 - n % 10 !== 10) * (n % 10)] || "th");
+function payrollRank(t){
+  const sorted = Object.values(T).slice().sort((a, b) => b.payroll - a.payroll);
+  return ORD(sorted.findIndex(x => x.abbr === t.abbr) + 1);
+}
+
+function headerBlock(t){
+  const c = DATA.colors[t.abbr] || "var(--teal)";
+  const st = capState(t.payroll);
+  const room = CFG.cap - t.payroll;
+  const chips = [];
+  // the offseason limit is 21 bodies; 15 is the opening-night limit, so a team
+  // at 16 in July is not in violation, it just has a cut coming
+  const overMax = t.counts.std > CFG.roster_max_inseason;
+  chips.push(`<span class="chip help" title="Offseason limit is ${CFG.roster_max_offseason};
+    rosters must be down to ${CFG.roster_max_inseason} by opening night.">Roster
+    <b>${t.counts.std}</b> <span style="color:var(--fg5)">signed</span></span>`);
+  const twOver = t.counts.tw > CFG.two_way_slots;
+  chips.push(`<span class="chip ${twOver ? "warn help" : ""}"${twOver
+    ? ` title="Only ${CFG.two_way_slots} two-way contracts may be active at once. A fourth on the
+        books means one is unresolved in our roster record."` : ""}>Two-way <b>${t.counts.tw}</b>
+    <span style="color:var(--fg5)">of ${CFG.two_way_slots}</span></span>`);
+  if (!overMax && t.counts.std < CFG.roster_max_inseason)
+    chips.push(`<span class="chip">Open spots
+      <b>${CFG.roster_max_inseason - t.counts.std}</b></span>`);
+  chips.push(room >= 0
+    ? `<span class="chip good help" title="Committed salary against the cap. Real spending room
+       is lower: cap holds for the team's own free agents and empty-roster charges count too.">Under the cap by
+       <b>${fmtM(room)}</b></span>`
+    : `<span class="chip ${st === "under" ? "" : st === "tax" ? "warn" : "bad"}">Over the cap by
+       <b>${fmtM(-room)}</b></span>`);
+  if (t.payroll >= CFG.tax_line)
+    chips.push(`<span class="chip warn">Over the tax by <b>${fmtM(t.payroll - CFG.tax_line)}</b></span>`);
+  if (t.payroll >= CFG.apron1)
+    chips.push(`<span class="chip bad">Over the first apron</span>`);
+  if (t.hard_cap)
+    chips.push(t.hard_cap_conflict
+      ? `<span class="chip bad help" title="Our records disagree: the hard cap is recorded as
+         ${esc(t.hard_cap_label)} (${fmtM(t.hard_cap)}) because of this move, but the signed
+         contracts on the books already add up to more than that, which the CBA does not allow.
+         Trigger on record: ${esc(t.hard_cap_why || "unknown")}">Hard cap conflict:
+         ${esc(t.hard_cap_label)} <b>${fmtM(t.hard_cap)}</b></span>`
+      : `<span class="chip warn help" title="${esc(t.hard_cap_why || "")}">Hard-capped:
+         ${esc(t.hard_cap_label)} <b>${fmtM(t.hard_cap)}</b></span>`);
+  if (overMax)
+    chips.push(`<span class="chip warn help" title="Not a violation now: teams may carry up to
+      ${CFG.roster_max_offseason} in the offseason. It has to be ${CFG.roster_max_inseason} on opening night.">
+      <b>${t.counts.std - CFG.roster_max_inseason}</b> over the opening-night limit</span>`);
+
+  return `<div class="thead" data-team="${esc(t.abbr)}" style="--tc:${c}">
+    <div class="thtop">
+      <img class="thlogo" src="${esc(DATA.logos[t.abbr] || "")}" alt=""
+        onerror="this.style.display='none'">
+      <div style="min-width:0">
+        <div class="thname">${esc(t.name)}</div>
+        <div class="thsub">${esc(t.conf)} conference, ${esc(t.div)} division
+          &middot; ${payrollRank(t)} highest payroll
+          &middot; ${esc(DATA.season)} books as of ${esc(DATA.asof)}</div>
+      </div>
+      <div class="thpay">
+        <div class="lbl">Committed salary</div>
+        <div class="big ${st}">${fmtM(t.payroll)}</div>
+      </div>
+    </div>
+    ${capBar(t)}
+    <div class="chips">${chips.join("")}</div>
+  </div>`;
+}
+
+function statLine(p){
+  const bits = [];
+  if (p.age != null)
+    bits.push(`<span title="Age during the 2025-26 season">${p.age} yo</span>`);
+  if (p.barrett != null) bits.push(p.barrett.toFixed(1) + " BS" + (p.bs_yr ? ` (${p.bs_yr})` : ""));
+  if (p.ppg != null) bits.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`);
+  if (p.dl != null) bits.push("DLEB " + (p.dl > 0 ? "+" : "") + p.dl.toFixed(1));
+  if (!bits.length) bits.push("no NBA minutes on record");
+  return bits.join(" &middot; ");
+}
+
+const OPT = {to_in: ["Team option exercised", "in"], to_out: ["Team option declined", "out"],
+             po_in: ["Player option exercised", "in"], po_out: ["Player option declined", "out"]};
+function optChip(p){
+  const o = OPT[p.opt];
+  if (!o) return "";
+  return `<span class="optchip ${o[1]}" title="${esc(p.opt_note || o[0])}">${esc(o[0]
+    .replace("Team option ", "TO ").replace("Player option ", "PO ").toUpperCase())}</span>`;
+}
+
+function depthCard(p){
+  const img = p.headshot
+    ? `<img src="${esc(p.headshot)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
+  const cls = p.kind === "two_way" ? " tw"
+    : p.vd == null ? "" : p.vd <= -1 ? " good" : p.vd >= 1 ? " bad" : "";
+  const money = p.kind === "two_way" ? `<div class="sal" style="font-size:.7rem;color:var(--fg4)">
+      Two-way</div>` : `<div class="sal">${fmtM(p.salary)}</div>`;
+  const vd = p.vd == null ? "" : p.vd <= -1
+    ? `<div class="vd good">${fmtM(-p.vd)} under</div>`
+    : p.vd >= 1 ? `<div class="vd bad">${fmtM(p.vd)} over</div>`
+    : `<div class="vd flat">at value</div>`;
+  return `<div class="dcard${cls}" title="${esc(p.note)}">
+    ${img}
+    <a class="nm" href="/Contract_Predictor?player=${encodeURIComponent(p.n)}"
+       target="_top">${esc(p.n)}</a>
+    <div class="bs">${p.barrett == null ? "no score" : p.barrett.toFixed(1) + " BS"}</div>
+    ${money}${vd}
+  </div>`;
+}
+
+function playerCard(p){
+  const pos = p.pos ? `<span class="poschip">${esc(p.pos.split("/")[0])}</span>` : "";
+  const img = p.headshot
+    ? `<img src="${esc(p.headshot)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
+  let money;
+  if (p.kind === "standard"){
+    const vd = p.vd;
+    const cls = vd == null ? "flat" : vd <= -1 ? "good" : vd >= 1 ? "bad" : "flat";
+    const txt = vd == null ? "no model value"
+      : vd <= -1 ? fmtM(-vd) + " under value"
+      : vd >= 1 ? fmtM(vd) + " over value" : "at market value";
+    money = `<div class="sal">${fmtM(p.salary)}</div>
+      <div class="vd ${cls}" title="Model value ${p.value == null ? "n/a" : fmtM(p.value)}">${txt}</div>`;
+  } else if (p.kind === "two_way"){
+    money = `<div class="sal">Two-way</div>`;
+  } else {
+    money = `<div class="sal">${p.value == null ? "Free agent" : fmtM(p.value)}</div>
+      <div class="vd flat">model value</div>`;
+  }
+  const cls = p.kind === "two_way" ? " tw" : p.kind === "free_agent" ? " fa" : "";
+  return `<div class="card${cls}">
+    ${img}
+    <div class="who">
+      <a class="nm" href="/Contract_Predictor?player=${encodeURIComponent(p.n)}"
+         target="_top" title="Open ${esc(p.n)} in the Contract Predictor">${esc(p.n)}</a>${optChip(p)}
+      <div class="sub">${pos}${statLine(p)}</div>
+      <div class="deal" title="${esc(p.note)}">${esc(p.note)}</div>
+    </div>
+    <div class="money">${money}</div>
+  </div>`;
+}
+
+const SORTS = [
+  ["salary", "Salary", (a, b) => (b.salary - a.salary) || (b.barrett || 0) - (a.barrett || 0)],
+  ["score", "Barrett Score", (a, b) => (b.barrett || -99) - (a.barrett || -99)],
+  ["value", "Value surplus", (a, b) => (a.vd == null ? 99 : a.vd) - (b.vd == null ? 99 : b.vd)],
+  ["pos", "Position", (a, b) => (POS.indexOf(a.slot) - POS.indexOf(b.slot))
+      || (b.salary - a.salary)],
+  ["name", "Name", (a, b) => a.n.localeCompare(b.n)],
+];
+const POS = ["PG", "SG", "SF", "PF", "C"];
+
+function rosterPanel(t){
+  const cmp = (SORTS.find(s => s[0] === state.sort) || SORTS[0])[2];
+  const q = state.q.trim().toLowerCase();
+  const match = p => !q || p.n.toLowerCase().includes(q) || (p.pos || "").toLowerCase().includes(q)
+    || (p.note || "").toLowerCase().includes(q);
+  const group = k => t.players.filter(p => p.kind === k && match(p)).slice().sort(cmp);
+  const sec = (label, list, hint) => {
+    let x = `<div class="secl${label === "Under contract" ? "" : " mid"}"><span class="bar"></span>
+      ${esc(label)}${hint ? `<span style="font-weight:600;letter-spacing:0;text-transform:none;
+      color:var(--fg5);margin-left:.35rem">${esc(hint)}</span>` : ""}
+      <span class="cnt">${list.length}</span></div>`;
+    x += list.length
+      ? `<div class="roster">${list.map(playerCard).join("")}</div>`
+      : `<div class="empty">${q ? "No match on this roster." : "None."}</div>`;
+    return x;
+  };
+
+  let h = `<div class="panel"><div class="tools">
+    <input type="text" id="q" placeholder="Filter this roster" value="${esc(state.q)}">
+    <button class="sortbtn${state.view === "list" ? " on" : ""}" data-view="list">List</button>
+    <button class="sortbtn${state.view === "depth" ? " on" : ""}" data-view="depth">Depth chart</button>
+  </div>`;
+  if (state.view === "list") h += `<div class="tools" style="margin-top:-.2rem">
+    <span style="font-size:.66rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+      color:var(--fg5)">Sort</span>
+    ${SORTS.map(([k, lbl]) => `<button class="sortbtn${state.sort === k ? " on" : ""}"
+      data-sort="${k}">${esc(lbl)}</button>`).join("")}
+  </div>`;
+  if (state.view === "depth"){
+    const cmpD = (a, b) => (b.salary - a.salary) || (b.barrett || 0) - (a.barrett || 0);
+    const pool = t.players.filter(p => p.kind !== "free_agent" && match(p));
+    h += `<div class="depth">`;
+    for (const pos of POS){
+      const list = pool.filter(p => p.slot === pos).sort(cmpD);
+      h += `<div class="dcol"><div class="dhead">${pos}<span class="cnt">${list.length}</span></div>`;
+      h += list.length ? list.map(depthCard).join("")
+        : `<div class="empty">${q ? "No match." : "Nobody listed."}</div>`;
+      h += `</div>`;
+    }
+    h += `</div>`;
+    const other = pool.filter(p => !POS.includes(p.slot));
+    if (other.length){
+      h += `<div class="secl mid"><span class="bar"></span>No listed position
+        <span class="cnt">${other.length}</span></div>
+        <div class="roster">${other.sort(cmpD).map(playerCard).join("")}</div>`;
+    }
+    const fas = group("free_agent");
+    h += sec("Own free agents", fas, "unsigned, model value shown");
+    return h + `</div>`;
+  }
+  const std = group("standard"), tw = group("two_way"), fa = group("free_agent");
+  h += sec("Under contract", std);
+  h += sec("Two-way", tw, "does not count against the cap");
+  h += sec("Own free agents", fa, "unsigned, model value shown");
+  return h + `</div>`;
+}
+
+function railPanel(t){
+  const surplus = t.surplus, up = t.unpriced || {n: 0, salary: 0};
+  let h = `<div class="panel">
+    <div class="secl"><span class="bar"></span>Value check</div>
+    <div class="kv"><span class="k">Committed salary</span><span class="v">${fmtM(t.payroll)}</span></div>`;
+  if (up.n) h += `<div class="kv"><span class="k">Priced by the model</span>
+      <span class="v">${fmtM(t.pay_priced)}</span></div>`;
+  h += `<div class="kv"><span class="k">Model value of that salary</span>
+      <span class="v">${fmtM(t.value_total)}</span></div>
+    <div class="kv"><span class="k">Surplus</span>
+      <span class="v ${surplus >= 0 ? "good" : "bad"}">${(surplus >= 0 ? "+" : "") + fmtM(surplus)}</span></div>
+    <div class="note">Surplus is what the model says the roster is worth minus what it costs.
+      Positive means the team is paying under market for its production.${up.n
+        ? ` ${up.n} player${up.n > 1 ? "s" : ""} worth ${fmtM(up.salary)} ${up.n > 1 ? "are" : "is"}
+          left out of both sides: the model has no 2026-27 value for a player with no minutes
+          last season.` : ""}</div>
+  </div>`;
+
+  h += `<div class="panel"><div class="secl"><span class="bar"></span>Trade exceptions
+    <span class="cnt">${t.tpes.length}</span></div>`;
+  h += t.tpes.length
+    ? t.tpes.map(x => `<div class="tpe"><span class="amt">${fmtM(x.amt)}</span>
+        <span class="who">${esc(x.player)}${x.expires ? ", expires " + esc(x.expires) : ""}</span></div>`).join("")
+    : `<div class="empty">None outstanding.</div>`;
+  h += `</div>`;
+
+  const firsts = t.picks.filter(p => p.round === 1), seconds = t.picks.filter(p => p.round === 2);
+  const pickRow = p => {
+    const tag = p.swap === "out"
+      ? `<span class="tag swout" title="${esc(p.swap_holder)} holds swap rights on this pick: they
+         can take it if it lands better than theirs. A liability, not an asset.">SWAP OUT</span>`
+      : p.swap === "in"
+      ? `<span class="tag sw" title="This team holds the swap right over
+         ${esc(p.swap_with || "another team")}.">SWAP IN</span>`
+      : p.swap === "unknown"
+      ? `<span class="tag swq" title="Swap rights recorded with ${esc(p.swap_with || "another team")};
+         which side holds them is not recorded in our ledger.">SWAP</span>`
+      : p.protection ? `<span class="tag pr" title="${esc(p.protection)}">PROT</span>` : "";
+    const who = p.own ? "Own" : p.origin;
+    return `<div class="pk"><span class="rnd${p.round === 2 ? " r2" : ""}">${p.round}</span>
+      <span class="yr">${p.year}</span>
+      <img src="${esc(DATA.logos[p.origin] || "")}" alt=""
+        onerror="this.outerHTML='<span class=&quot;pkabbr&quot;>${p.origin}</span>'">
+      <span class="lbl">${esc(who)}</span>${tag}</div>`;
+  };
+  h += `<div class="panel"><div class="secl"><span class="bar"></span>Draft picks
+    <span class="cnt">${t.picks.length}</span></div>`;
+  h += firsts.length ? firsts.map(pickRow).join("") : `<div class="empty">No first-round picks.</div>`;
+  if (seconds.length){
+    h += `<div class="secl mid"><span class="bar"></span>Second round
+      <span class="cnt">${seconds.length}</span></div>`;
+    h += seconds.map(pickRow).join("");
+  }
+  h += `<div class="note">Picks the team controls through ${CFG.next_draft_year + 6}.
+    Swap tags mean the year carries swap rights.</div></div>`;
+  return h;
+}
+
+const LSORTS = {
+  team:   (a, b) => a.name.localeCompare(b.name),
+  pay:    (a, b) => b.payroll - a.payroll,
+  size:   (a, b) => b.counts.std - a.counts.std,
+  val:    (a, b) => b.value_total - a.value_total,
+  sur:    (a, b) => b.surplus - a.surplus,
+  picks:  (a, b) => (b.picks.filter(p => p.round === 1).length
+                     - a.picks.filter(p => p.round === 1).length) || (b.picks.length - a.picks.length),
+  tpe:    (a, b) => b.tpes.reduce((s, x) => s + x.amt, 0) - a.tpes.reduce((s, x) => s + x.amt, 0),
+};
+
+function leagueSummary(){
+  const ts = Object.values(T);
+  const contracts = ts.reduce((n, t) => n + t.counts.std + t.counts.tw, 0);
+  const std = ts.reduce((n, t) => n + t.counts.std, 0);
+  const tw = ts.reduce((n, t) => n + t.counts.tw, 0);
+  const total = ts.reduce((n, t) => n + t.payroll, 0);
+  const overTax = ts.filter(t => t.payroll >= CFG.tax_line).length;
+  const overAp1 = ts.filter(t => t.payroll >= CFG.apron1).length;
+  const overAp2 = ts.filter(t => t.payroll >= CFG.apron2).length;
+  const open = ts.reduce((n, t) => n + Math.max(0, CFG.roster_max_inseason - t.counts.std), 0);
+  const full = ts.filter(t => t.counts.std >= CFG.roster_max_inseason).length;
+  let best = null;
+  for (const t of ts) for (const p of t.players)
+    if (p.kind === "standard" && p.vd != null && (!best || p.vd < best.p.vd)) best = {p, t};
+  const cards = [
+    ["Contracts on the books", contracts, `${std} standard, ${tw} two-way`, ""],
+    ["Salary committed", "$" + (total / 1000).toFixed(2) + "B", "across all 30 teams", ""],
+    ["Over the tax line", overTax, `${overAp1} over the first apron, ${overAp2} over the second`,
+      overTax ? "color:var(--amberc)" : ""],
+    ["Open roster spots", open, `${full} teams already at or over ${CFG.roster_max_inseason}`, ""],
+    ["Biggest bargain", best ? fmtM(-best.p.vd) : "n/a",
+      best ? `${best.p.n}, ${best.t.abbr}` : "", "color:var(--teal)"],
+  ];
+  return `<div class="sumrow">` + cards.map(([lbl, big, sub, st]) =>
+    `<div class="sumcard"><div class="lbl">${esc(lbl)}</div>
+      <div class="big" style="${st}">${esc(String(big))}</div>
+      <div class="sub">${esc(sub)}</div></div>`).join("") + `</div>`;
+}
+
+function leagueTable(){
+  const rows = Object.values(T).slice().sort(LSORTS[state.lsort] || LSORTS.pay);
+  const cols = [["team", "Team"], ["pay", "Committed"], ["size", "Roster"],
+                ["val", "Model value"], ["sur", "Surplus"], ["tpe", "Exceptions"],
+                ["picks", "Picks, 1st / 2nd"]];
+  let h = `<div class="panel"><div class="secl"><span class="bar"></span>All 30 teams
+    <span class="cnt">click a team for its full roster</span></div>
+    <div style="overflow-x:auto"><table class="ltable"><thead><tr>`;
+  for (const [k, lbl] of cols)
+    h += `<th class="${state.lsort === k ? "on" : ""}" data-lsort="${k}">${esc(lbl)}</th>`;
+  h += `</tr></thead><tbody>`;
+  for (const t of rows){
+    const st = capState(t.payroll);
+    const tpe = t.tpes.reduce((s, x) => s + x.amt, 0);
+    h += `<tr data-team="${t.abbr}" style="--tc:${DATA.colors[t.abbr] || "var(--teal)"}">
+      <td><span class="lteam"><img src="${esc(DATA.logos[t.abbr] || "")}" alt=""
+        onerror="this.style.display='none'">
+        <b>${esc(t.name)}</b> <span class="ab">${esc(t.abbr)}</span></span></td>
+      <td>${fmtM(t.payroll)} <span class="pill ${st}">${
+        t.payroll >= CFG.apron2 ? "2nd apron"
+        : t.payroll >= CFG.apron1 ? "1st apron"
+        : t.payroll >= CFG.tax_line ? "tax" : "under tax"}</span></td>
+      <td>${t.counts.std}<span style="color:var(--fg5)"> + ${t.counts.tw} TW</span></td>
+      <td>${fmtM(t.value_total)}</td>
+      <td class="${t.surplus >= 0 ? "good" : "bad"}"${t.unpriced && t.unpriced.n
+        ? ` title="Excludes ${t.unpriced.n} player(s) worth ${fmtM(t.unpriced.salary)} the model cannot price"`
+        : ""}>${(t.surplus >= 0 ? "+" : "") + fmtM(t.surplus)}</td>
+      <td>${tpe ? fmtM(tpe) : "<span style=\"color:var(--fg5)\">none</span>"}</td>
+      <td>${t.picks.filter(p => p.round === 1).length}
+        <span style="color:var(--fg5)">/ ${t.picks.filter(p => p.round === 2).length}</span></td></tr>`;
+  }
+  return h + `</tbody></table></div>
+    <div class="note">Committed salary counts only signed 2026-27 contracts, so it is
+    what a team actually owes today. Surplus is the model value of the roster minus
+    what it costs. Two-way deals do not count against the cap.</div></div>`;
+}
+
+function render(){
+  const t = T[state.team];
+  root.innerHTML = t
+    ? teamStrip() + headerBlock(t)
+      + `<div class="cols"><div>${rosterPanel(t)}</div><div>${railPanel(t)}</div></div>`
+    : teamStrip() + leagueSummary() + leagueTable();
+  wire();
+  syncParentURL();
+  fitFrame();
+}
+
+function wire(){
+  for (const b of document.querySelectorAll(".tbtn"))
+    b.onclick = () => { state.team = b.dataset.team; state.q = ""; render(); };
+  for (const r of document.querySelectorAll(".ltable tbody tr"))
+    r.onclick = () => { state.team = r.dataset.team; state.q = ""; render(); };
+  for (const th of document.querySelectorAll(".ltable th"))
+    th.onclick = ev => { ev.stopPropagation(); state.lsort = th.dataset.lsort; render(); };
+  const back = document.getElementById("back");
+  if (back) back.onclick = () => { state.team = null; state.q = ""; render(); };
+  for (const b of document.querySelectorAll(".sortbtn"))
+    b.onclick = () => {
+      if (b.dataset.view) state.view = b.dataset.view; else state.sort = b.dataset.sort;
+      render();
+    };
+  const q = document.getElementById("q");
+  if (q) q.oninput = () => {
+    state.q = q.value;
+    const t = T[state.team];
+    document.querySelector(".cols > div").innerHTML = rosterPanel(t);
+    wire();
+    const f = document.getElementById("q");
+    if (f){ f.focus(); f.setSelectionRange(f.value.length, f.value.length); }
+    fitFrame();
+  };
+}
+
+// keep the parent URL shareable (same-origin srcdoc iframe)
+function syncParentURL(){
+  try{
+    const u = new URL(window.parent.location.href);
+    if (state.team) u.searchParams.set("team", state.team); else u.searchParams.delete("team");
+    window.parent.history.replaceState(null, "", u.toString());
+  }catch(e){}
+}
+
+// size our own frame to the content so nothing scrolls inside the component
+function fitFrame(){
+  try{
+    const h = document.documentElement.scrollHeight + 24;
+    const fe = window.frameElement;
+    if (!fe) return;
+    fe.style.height = h + "px";
+    const pdoc = fe.ownerDocument;
+    let el = fe.parentElement;
+    while (el && el !== pdoc.body){
+      const tid = el.getAttribute && el.getAttribute("data-testid");
+      if (tid === "stAppViewContainer" || tid === "stMain") break;
+      if (el.style){
+        el.style.minHeight = h + "px";
+        if (el.style.height && parseInt(el.style.height) < h) el.style.height = "auto";
+      }
+      el = el.parentElement;
+    }
+  }catch(e){}
+}
+
+function themeSync(){
+  // follow the parent app's theme at runtime: the app paints its background as
+  // a gradient image (backgroundColor is transparent everywhere), so sample the
+  // TEXT color instead -- dark text means the light theme
+  try{
+    const m = getComputedStyle(window.parent.document.body).color.match(/\d+(\.\d+)?/g);
+    if (m && m.length >= 3){
+      const lum = .299*m[0] + .587*m[1] + .114*m[2];
+      document.body.classList.toggle("light", lum <= 128);
+    }
+  }catch(e){}
+}
+
+state.team = DATA.initial && T[DATA.initial] ? DATA.initial : null;
+themeSync();
+render();
+setInterval(() => { fitFrame(); themeSync(); }, 1000);
+try{ new ResizeObserver(fitFrame).observe(document.body); }catch(e){}
+window.addEventListener("load", fitFrame);
+</script>

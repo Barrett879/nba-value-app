@@ -1409,8 +1409,8 @@ _TEAM_PAGE_SET = None
 
 
 def _team_page_set():
-    """Set of team abbreviations that have a crawlable /team/<ABBR> page
-    (from cache/team_pages.json). Cached; empty on any failure."""
+    """Set of current team abbreviations (from cache/team_pages.json), used to
+    decide which team cells link to /Rosters. Cached; empty on any failure."""
     global _TEAM_PAGE_SET
     if _TEAM_PAGE_SET is None:
         import json
@@ -1424,16 +1424,16 @@ def _team_page_set():
 
 def team_cell(v) -> str:
     """Team table cell: team-color dot + abbreviation, linked to that team's
-    value page when the PARKED team-pages feature is enabled (HV_TEAM_PAGES=1,
-    same flag serve.py's route reads -- with it off the links would 404, so the
-    cell renders as plain text). Unknown/historical teams always fall back to
+    2026-27 roster. Points at /Rosters (a live page), not the PARKED
+    /team/<ABBR> route, which 404s unless HV_TEAM_PAGES=1. Historical teams
+    the roster page does not carry (NJN, SEA on the Legacy page) fall back to
     plain text. Returns raw HTML; use in a `raw` column."""
     ab = str(v)
     esc = html.escape(ab)
     escq = html.escape(ab, quote=True)
     dot = f'<span class="tdot tdot-{escq}"></span>'
-    if os.environ.get("HV_TEAM_PAGES", "").strip() == "1" and ab in _team_page_set():
-        return f'{dot}<a class="hv-tlink" href="/team/{escq}" target="_top">{esc}</a>'
+    if ab in _team_page_set():
+        return f'{dot}<a class="hv-tlink" href="/Rosters?team={escq}" target="_top">{esc}</a>'
     return f"{dot}{esc}"
 
 
@@ -1935,6 +1935,7 @@ _NAV_PAGES = [
     ("Current Rankings",   "/Rankings"),
     ("Compare Players",    "/Search"),
     ("Legacy",             "/Legacy"),
+    ("Rosters",            "/Rosters"),
     ("Team Analysis",      "/Team_Analysis"),
     ("Trade Machine",      "/Trade_Machine"),
     # Trades tab removed — page lives at /Trades_disabled.py (kept for

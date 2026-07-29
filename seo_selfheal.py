@@ -32,8 +32,9 @@ import unicodedata
 
 import streamlit
 
-MARKER = "hv-seo-v5"
-_OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2", "hv-seo-v3", "hv-seo-v4")
+MARKER = "hv-seo-v6"
+_OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2", "hv-seo-v3", "hv-seo-v4",
+                "hv-seo-v5")
 
 TITLE = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
 DESC = ("HoopsValue scores every NBA player since 1973 by their on-court value "
@@ -60,6 +61,7 @@ PAGES = [
     ("Contract_Predictor", "Contract Predictor: what any NBA player would sign for today"),
     ("Rankings", "Current Rankings: every NBA player ranked by Barrett Score value"),
     ("Free_Agent_Class", "2026 NBA Free Agent Class: who is available and what they are worth"),
+    ("Rosters", "NBA Rosters 2026-27: every team's contracts, cap sheet and value"),
     ("Team_Analysis", "Team Analysis: every NBA roster ranked by value"),
     ("Search", "Compare Players: head-to-head NBA player value"),
     ("Legacy", "Legacy: the best NBA players ever by Barrett Score"),

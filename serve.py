@@ -224,7 +224,7 @@ def _patch_seo_inprocess() -> None:
 # noindex, so Google folds the origin host into hoopsvalue.com. Header only:
 # a redirect there would break the websocket handshake through Render.
 _SITEMAP_PATHS = [
-    "/", "/Rankings", "/Search", "/Legacy", "/Team_Analysis",
+    "/", "/Rankings", "/Search", "/Legacy", "/Rosters", "/Team_Analysis",
     "/Contract_Predictor", "/Free_Agent_Class", "/About",
 ]
 
