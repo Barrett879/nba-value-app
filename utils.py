@@ -1656,14 +1656,27 @@ COMMON_CSS = """
         padding: 0.3rem;
     }
     #hv-ns-list[hidden] { display: none; }
-    .hv-ns-row {
+    /* the rows are anchors sitting inside .top-nav, and `.top-nav a` outranks a
+       bare class, so these are scoped under the list id to win the cascade --
+       otherwise the rows inherit the nav pill's padding, 20px radius and hover
+       border */
+    #hv-ns-list .hv-ns-row {
         display: flex; align-items: center; gap: 0.55rem;
-        padding: 0.3rem 0.4rem; border-radius: 9px;
+        padding: 0.3rem 0.4rem;
+        border: 1px solid transparent;
         border-left: 3px solid transparent;
-        text-decoration: none !important; cursor: pointer;
+        border-radius: 9px;
+        color: var(--fg-1);
+        font-size: 0.82rem;
+        font-weight: 400;
+        text-decoration: none !important;
+        cursor: pointer;
+        white-space: normal;
     }
-    .hv-ns-row:hover, .hv-ns-row.on {
-        background: var(--panel-hover); border-left-color: var(--tc, var(--accent-red));
+    #hv-ns-list .hv-ns-row:hover, #hv-ns-list .hv-ns-row.on {
+        background: var(--panel-hover);
+        border-color: transparent;
+        border-left-color: var(--tc, var(--accent-red));
     }
     .hv-ns-face {
         width: 30px; height: 30px; border-radius: 50%; flex: 0 0 30px;
