@@ -187,7 +187,7 @@ def _payload() -> str:
             fas.setdefault(ab, []).append({
                 "n": f["n"], "pos": (f.get("pos") or "").strip("—- ").split("/")[0],
                 "value": round(f.get("value") or 2.1, 1),
-                "barrett": f.get("barrett"),
+                "barrett": f.get("barrett"), "bs_yr": f.get("bs_yr"),
                 **(_box.get(normalize(f["n"])) or {}),   # ppg/apg/rpg/dl
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None)})

@@ -537,18 +537,40 @@ _pool = [x for x in _pool
 # below the frame's minutes bar legitimately stay blank.
 try:
     from utils import build_raw as _braw
-    _bs = {}
-    for _r in _braw(sim.get("season", "2025-26")).itertuples():
-        _k = normalize(_r.Player)
-        _bs[_k] = round(float(_r.barrett_score), 1)
-        _bs.setdefault(_strip(_k), _bs[_k])
+
+    def _score_map(_season):
+        _m = {}
+        for _r in _braw(_season).itertuples():
+            _k = normalize(_r.Player)
+            _m[_k] = round(float(_r.barrett_score), 1)
+            _m.setdefault(_strip(_k), _m[_k])
+        return _m
+
+    _season = sim.get("season", "2025-26")
+    _y = int(_season[:4])
+    _prior = f"{_y - 1}-{str(_y)[-2:]}"       # 2025-26 -> 2024-25
+    _bs = _score_map(_season)
     _filled = 0
     for x in _pool:
         if x.get("barrett") is None:
             _k = normalize(x["n"])
             x["barrett"] = _bs.get(_k) or _bs.get(_strip(_k))
             _filled += x["barrett"] is not None
-    print(f"  filled {_filled} free-agent Barrett scores from the season frame")
+    # anyone who did not clear the current season's minutes bar (hurt, deep
+    # bench, waived early) falls back to his last qualifying season, tagged
+    # so the card can say which year it is
+    _bs_prior = _score_map(_prior)
+    _back = 0
+    for x in _pool:
+        if x.get("barrett") is None:
+            _k = normalize(x["n"])
+            _v = _bs_prior.get(_k) or _bs_prior.get(_strip(_k))
+            if _v is not None:
+                x["barrett"] = _v
+                x["bs_yr"] = _prior[2:4] + "-" + _prior[-2:]     # "24-25"
+                _back += 1
+    print(f"  filled {_filled} free-agent Barrett scores from {_season}, "
+          f"{_back} more from {_prior}")
 except Exception as e:                       # never block the pool dump
     print(f"  Barrett score fill skipped: {e}")
 (ROOT / "cache" / "fa_pool_v1.json").write_text(_json0.dumps({

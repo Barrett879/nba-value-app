@@ -756,7 +756,7 @@ function statBits(p,salary){
   const nT=state.teams.length;
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
   const out=[fmtM(salary!=null?salary:p.salary)];
-  if(p.barrett!=null) out.push(p.barrett.toFixed(1)+" BS");
+  if(p.barrett!=null) out.push(p.barrett.toFixed(1)+" BS"+(p.bs_yr?` (${p.bs_yr})`:""));
   if(nT<=3){
     if(p.ppg!=null) out.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`);
     if(p.dl!=null) out.push("DLEB "+(p.dl>0?"+":"")+p.dl.toFixed(1));
