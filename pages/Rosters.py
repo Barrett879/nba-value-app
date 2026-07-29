@@ -162,6 +162,21 @@ def _payload() -> str:
             hard_caps[r["team"].strip()] = {
                 "cap": r["cap"].strip(), "why": (r.get("trigger") or "").strip()}
 
+    # Dead money: salary still owed to players who are no longer on the roster.
+    # It is not a roster spot but it IS on the cap, so committed salary has to
+    # carry it -- Memphis owes Caldwell-Pope $17.7M in 2026-27 not to play, and
+    # a payroll that leaves it out reads $17.7M cheaper than the team really is.
+    dead = {}
+    for r in _read_csv(_ROOT / "data" / "dead_money_2026_27.csv"):
+        if r.get("team") and r.get("amount_M"):
+            dead.setdefault(r["team"].strip(), []).append({
+                "n": (r.get("player") or "").strip(),
+                "amt": round(float(r["amount_M"]), 2),
+                "why": (r.get("status") or "").strip(),
+                "note": (r.get("notes") or "").strip()})
+    for v in dead.values():
+        v.sort(key=lambda x: -x["amt"])
+
     tpes = {}
     for r in _read_csv(_ROOT / "data" / "trade_exceptions_2026_27.csv"):
         exp = (r.get("expires") or "").strip()
@@ -286,7 +301,10 @@ def _payload() -> str:
         std.sort(key=lambda p: -p["salary"])
         tw.sort(key=lambda p: -(p["barrett"] or 0))
         fas.sort(key=lambda p: -(p["value"] or 0))
-        payroll = round(sum(p["salary"] for p in std), 1)
+        dead_rows = dead.get(abbr, [])
+        dead_tot = round(sum(d["amt"] for d in dead_rows), 1)
+        pay_signed = round(sum(p["salary"] for p in std), 1)
+        payroll = round(pay_signed + dead_tot, 1)
         # Surplus compares like with like: a player the model has no 2026-27
         # value for (he missed all of last season, so there is nothing to price
         # off) is left out of BOTH sides. Counting his salary against a zero
@@ -303,6 +321,8 @@ def _payload() -> str:
             "conf": _conf.get(abbr, ""), "div": _div.get(abbr, ""),
             "players": std + tw + fas,
             "payroll": payroll,
+            "pay_signed": pay_signed,
+            "dead": {"total": dead_tot, "rows": dead_rows},
             "value_total": val_tot,
             "pay_priced": pay_priced,
             "surplus": round(val_tot - pay_priced, 1),
@@ -397,9 +417,10 @@ st.caption(
     "the cap. Model value reads 2025-26 production against 2026-27 money, so "
     "a star who was hurt last season looks overpaid here, and a player who "
     "did not play at all carries no value at all and is left out of the "
-    "surplus on both sides. Committed salary counts signed 2026-27 contracts "
-    "only: it does not include dead money from waived players, cap holds for "
-    "the team's own free agents, or empty-roster-spot charges."
+    "surplus on both sides. Committed salary is signed 2026-27 contracts plus "
+    "dead money still owed to waived and bought-out players, which counts "
+    "against the cap the same way a roster player does. It does not include "
+    "cap holds for the team's own free agents or empty-roster-spot charges."
 )
 
 render_footer()

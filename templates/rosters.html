@@ -258,6 +258,7 @@ body:not(.light) .tbtn:not(.on){background:rgba(255,255,255,.05)}
 .pill.under{border-color:var(--blue);color:var(--blue)}
 .pill.tax{border-color:var(--amberc);color:var(--amberc)}
 .pill.apron{border-color:var(--bad);color:var(--bad)}
+.pill.bad{border-color:var(--bad);color:var(--bad)}
 .good{color:var(--teal)} .bad{color:var(--bad)}
 .backbtn{background:var(--card);border:1px solid var(--line);color:var(--fg3);border-radius:9px;
   padding:.3rem .6rem;font-size:.72rem;font-weight:700;cursor:pointer;align-self:center}
@@ -369,6 +370,12 @@ function headerBlock(t){
     chips.push(`<span class="chip warn">Over the tax by <b>${fmtM(t.payroll - CFG.tax_line)}</b></span>`);
   if (t.payroll >= CFG.apron1)
     chips.push(`<span class="chip bad">Over the first apron</span>`);
+  const dm = t.dead || {total: 0, rows: []};
+  if (dm.total)
+    chips.push(`<span class="chip bad help" title="Salary owed to players who are no longer on
+      the roster, and it counts against the cap the same way a player's salary does:
+      ${esc(dm.rows.map(d => d.n + " " + fmtM(d.amt)).join(", "))}.">Dead money
+      <b>${fmtM(dm.total)}</b></span>`);
   if (t.hard_cap)
     chips.push(t.hard_cap_conflict
       ? `<span class="chip bad help" title="Our records disagree: the hard cap is recorded as
@@ -553,14 +560,31 @@ function rosterPanel(t){
   h += sec("Under contract", std);
   h += sec("Two-way", tw, "does not count against the cap");
   h += sec("Own free agents", fa, "unsigned, model value shown");
+  // dead money reads as a roster section because that is how it spends: these
+  // names are off the team and still on its cap
+  const dead = (t.dead || {rows: []}).rows.filter(d => !q || d.n.toLowerCase().includes(q));
+  if (dead.length){
+    h += `<div class="secl mid"><span class="bar"></span>Dead money
+      <span style="font-weight:600;letter-spacing:0;text-transform:none;color:var(--fg5);
+        margin-left:.35rem">off the roster, still on the cap</span>
+      <span class="cnt">${dead.length}</span></div>`;
+    h += dead.map(d => `<div class="tpe"><span class="amt bad">${fmtM(d.amt)}</span>
+      <span class="who" title="${esc(d.note || "")}">${esc(d.n)}${
+        d.why ? ", " + esc(d.why) : ""}</span></div>`).join("");
+  }
   return h + `</div>`;
 }
 
 function railPanel(t){
   const surplus = t.surplus, up = t.unpriced || {n: 0, salary: 0};
+  const dead = t.dead || {total: 0, rows: []};
   let h = `<div class="panel">
     <div class="secl"><span class="bar"></span>Value check</div>
     <div class="kv"><span class="k">Committed salary</span><span class="v">${fmtM(t.payroll)}</span></div>`;
+  if (dead.total) h += `<div class="kv"><span class="k">On the roster</span>
+      <span class="v">${fmtM(t.pay_signed)}</span></div>
+    <div class="kv"><span class="k">Dead money</span>
+      <span class="v bad">${fmtM(dead.total)}</span></div>`;
   if (up.n) h += `<div class="kv"><span class="k">Priced by the model</span>
       <span class="v">${fmtM(t.pay_priced)}</span></div>`;
   h += `<div class="kv"><span class="k">Model value of that salary</span>
@@ -571,8 +595,20 @@ function railPanel(t){
       Positive means the team is paying under market for its production.${up.n
         ? ` ${up.n} player${up.n > 1 ? "s" : ""} worth ${fmtM(up.salary)} ${up.n > 1 ? "are" : "is"}
           left out of both sides: the model has no 2026-27 value for a player with no minutes
-          last season.` : ""}</div>
+          last season.` : ""}${dead.total
+        ? ` Dead money is in committed salary but not in the surplus: nobody is playing for it,
+          so there is no production to price it against.` : ""}</div>
   </div>`;
+
+  if (dead.total){
+    h += `<div class="panel"><div class="secl"><span class="bar"></span>Dead money
+      <span class="cnt">${dead.rows.length}</span></div>`;
+    h += dead.rows.map(d => `<div class="tpe"><span class="amt bad">${fmtM(d.amt)}</span>
+        <span class="who" title="${esc(d.note || "")}">${esc(d.n)}${
+          d.why ? ", " + esc(d.why) : ""}</span></div>`).join("");
+    h += `<div class="note">Salary owed to players who are not on the roster. It counts against
+      the cap, the tax and both aprons exactly like a player's salary does.</div></div>`;
+  }
 
   h += `<div class="panel"><div class="secl"><span class="bar"></span>Trade exceptions
     <span class="cnt">${t.tpes.length}</span></div>`;
@@ -681,7 +717,11 @@ function leagueTable(){
       <td><span class="lteam"><img src="${esc(DATA.logos[t.abbr] || "")}" alt=""
         onerror="this.style.display='none'">
         <b>${esc(t.name)}</b> <span class="ab">${esc(t.abbr)}</span></span></td>
-      <td>${fmtM(t.payroll)} <span class="pill ${st}">${
+      <td${(t.dead || {}).total
+        ? ` title="${fmtM(t.pay_signed)} on the roster plus ${fmtM(t.dead.total)} dead money:
+            ${esc(t.dead.rows.map(d => d.n).join(", "))}."` : ""
+        }>${fmtM(t.payroll)}${(t.dead || {}).total
+        ? ` <span class="pill bad">+${fmtM(t.dead.total)} dead</span>` : ""} <span class="pill ${st}">${
         t.payroll >= CFG.apron2 ? "2nd apron"
         : t.payroll >= CFG.apron1 ? "1st apron"
         : t.payroll >= CFG.tax_line ? "tax" : "under tax"}</span></td>
@@ -697,8 +737,10 @@ function leagueTable(){
         <span style="color:var(--fg5)">/ ${t.picks.filter(p => p.round === 2).length}</span></td></tr>`;
   }
   return h + `</tbody></table></div>
-    <div class="note">Committed salary counts only signed 2026-27 contracts, so it is
-    what a team actually owes today. Surplus is the model value of the roster minus
+    <div class="note">Committed salary is signed 2026-27 contracts plus dead money owed to
+    players the team waived or bought out, so it is what a team actually owes today.
+    Dead money is on the cap but out of the model value and the surplus: nobody is
+    playing for it. Surplus is the model value of the roster minus
     what it costs, over the part of the payroll the model can price. A rookie who has
     not played, or a veteran who missed all of last season, has no 2026-27 value, so
     his salary sits outside both the model value and the surplus: those two columns
