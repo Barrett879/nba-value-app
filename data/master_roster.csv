@@ -421,7 +421,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,PHX,Koby Brea,0,two_way,SG,two-way signed 2026
 ,PHX,CJ Huntley,0,two_way,PF,"2yr two-way signed 2025, runs through 2026-27"
 ,POR,Ja Morant,42.17,standard,PG/SG,"Acquired from MEM, official July 6, 2026, for Jerami Grant + Kris Murray + $1M cash; deal runs through 2027-28"
-,POR,Jrue Holiday,34.8,standard,PG/SG,PO for 2027-28; acquired from BOS June 2025
+,POR,Jrue Holiday,34.8,standard,SG/PG,PO for 2027-28; acquired from BOS June 2025
 ,POR,Shaedon Sharpe,20.09,standard,SG/PG,"Rookie extension (2026) begins 2026-27, through 2029-30"
 ,POR,Toumani Camara,18.08,standard,PF/SF,"Vet extension (2026) begins 2026-27, through 2029-30"
 ,POR,Robert Williams III,14,standard,C,2-yr vet extension signed 2026
@@ -431,8 +431,8 @@ asof,team,player,salary_M,kind,pos,notes
 ,POR,Donovan Clingan,7.52,standard,C,Year 3 rookie scale (2024 No. 7); TO decision 2027
 ,POR,Yang Hansen,4.64,standard,C,"2025 1st-rounder (No. 16), year 2"
 ,POR,Micah Potter,2.8,standard,PF/C,Rest-of-season deal (2025-26) running through 2026-27
-,POR,Vit Krejci,2.67,standard,PG/SF,Through 2027-28 (TO decision 2027)
-,POR,Sidy Cissoko,2.5,standard,SG/SF,Rest-of-season deal (2025-26) running through 2026-27
+,POR,Vit Krejci,2.67,standard,SG/PG,Through 2027-28 (TO decision 2027)
+,POR,Sidy Cissoko,2.5,standard,SF/SG,Rest-of-season deal (2025-26) running through 2026-27
 ,POR,Branden Carlson,2.45,standard,C,Re-signed 1yr minimum July 2026
 ,POR,John Tonje,0,two_way,SG,2025 No. 53 pick; two-way signed 2026 covering 2026-27 (+2027-28)
 ,POR,Jayson Kent,0,two_way,SG,"2-yr two-way signed 2025, covers 2026-27"
