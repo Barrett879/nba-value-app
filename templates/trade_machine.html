@@ -622,7 +622,7 @@ function render(){
         btn+=`<button class="mv" data-return="${key}">&larr; return</button>`;
         html+=`<div class="card inc" draggable="true" data-key="${key}">${img}
           <div class="who"><div class="nm">${esc(id)}</div>
-          <div class="sub">${fmtM(mv.salary)} &middot; sign and trade from ${src}</div></div>${btn}</div>`;
+          <div class="sub">${(bits=>bits.chip+bits.stats.join(" &middot; "))(statBits(fa||{},mv.salary))} &middot; sign and trade from ${src}</div></div>${btn}</div>`;
       }else{
         const p=DATA.teams[a].players.find(x=>x.n===id);
         if(p) html+=cardHTML(p,a,key,false);
@@ -643,7 +643,7 @@ function render(){
         const img=f.headshot?`<img loading="lazy" src="${f.headshot}" alt="">`:`<div class="noimg"></div>`;
         html+=`<div class="card fa" draggable="true" data-key="${key}">${img}
           <div class="who"><div class="nm">${esc(f.n)}</div>
-          <div class="sub">free agent${f.pos?" &middot; "+esc(f.pos):""} &middot; est ${fmtM(f.value)}</div></div>
+          <div class="sub">${(bits=>bits.chip+bits.stats.join(" &middot; "))(statBits(f,f.value))} &middot; free agent</div></div>
           <input class="fasal" type="number" min="1" step="0.5" value="${f.value}" title="Starting salary of the new deal ($M)"></div>`;
       }
     }
@@ -750,6 +750,19 @@ function findOwner(name){
   return null;
 }
 
+function statBits(p,salary){
+  // one stat line for every player card: position chip + salary + Barrett
+  // score, plus last season's box line and D-LEBRON on 2- and 3-team boards
+  const nT=state.teams.length;
+  const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
+  const out=[fmtM(salary!=null?salary:p.salary)];
+  if(p.barrett!=null) out.push(p.barrett.toFixed(1)+" BS");
+  if(nT<=3){
+    if(p.ppg!=null) out.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`);
+    if(p.dl!=null) out.push("DLEB "+(p.dl>0?"+":"")+p.dl.toFixed(1));
+  }
+  return {chip,stats:out};
+}
 function cardHTML(p,src,key,inZone,tpe){
   const img=p.headshot?`<img loading="lazy" src="${p.headshot}" alt="">`:`<div class="noimg"></div>`;
   const others=state.teams.filter(x=>x!==(inZone?null:src)&&x!==src);
@@ -758,16 +771,7 @@ function cardHTML(p,src,key,inZone,tpe){
     :"";
   if(inZone&&tpe&&tpe.has)
     btn=`<button class="mv tp${tpe.on?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`+btn;
-  const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
-  // salary + Barrett score always; 2- and 3-team trades add last season's
-  // points/assists/rebounds line and D-LEBRON (only 4-team drops them)
-  const nT=state.teams.length;
-  const stats=[fmtM(p.salary)];
-  if(p.barrett!=null) stats.push(p.barrett.toFixed(1)+" BS");
-  if(nT<=3){
-    if(p.ppg!=null) stats.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`);
-    if(p.dl!=null) stats.push("DLEB "+(p.dl>0?"+":"")+p.dl.toFixed(1));
-  }
+  const {chip,stats}=statBits(p);
   const sub=inZone&&tpe&&tpe.on
     ?`${chip}${fmtM(p.salary)} &middot; absorbed into a trade exception`
     :`${chip}${stats.join(" &middot; ")}`+(inZone?` &middot; from ${src}`:"");
