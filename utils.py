@@ -2165,6 +2165,19 @@ TEAM_HEX = {
     "SAC": "#5A2D81", "SAS": "#8A8D8F", "TOR": "#CE1141", "UTA": "#F9A01B", "WAS": "#E31837",
 }
 
+# The other half of each team's pair, for surfaces that need a primary AND a
+# secondary (the Rosters view toggle). Teams whose real second colour is black
+# or white get a charcoal instead: a pure black fill disappears in dark mode and
+# a white one disappears in light.
+TEAM_HEX_2 = {
+    "ATL": "#C1D32F", "BOS": "#BA9653", "BKN": "#3A3A3A", "CHA": "#1D1160", "CHI": "#2E2E2E",
+    "CLE": "#FDBB30", "DAL": "#B8C4CA", "DEN": "#0E2240", "DET": "#1D42BA", "GSW": "#FFC72C",
+    "HOU": "#2E2E2E", "IND": "#002D62", "LAC": "#1D428A", "LAL": "#FDB927", "MEM": "#12173F",
+    "MIA": "#F9A01B", "MIL": "#C9B072", "MIN": "#78BE20", "NOP": "#0C2340", "NYK": "#006BB6",
+    "OKC": "#EF3B24", "ORL": "#C4CED4", "PHI": "#ED174C", "PHX": "#1D1160", "POR": "#2E2E2E",
+    "SAC": "#63727A", "SAS": "#2E2E2E", "TOR": "#2E2E2E", "UTA": "#002B5C", "WAS": "#002B5C",
+}
+
 
 def hex_rgba(h: str, alpha: float) -> str:
     """'#RRGGBB' -> 'rgba(r,g,b,a)'. Plotly and per-player CSS can't read theme

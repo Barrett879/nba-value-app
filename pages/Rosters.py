@@ -23,7 +23,7 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils import (NameIndex, TEAM_HEX, _headshot_id_map, fetch_dlebron,
+from utils import (NameIndex, TEAM_HEX, TEAM_HEX_2, _headshot_id_map, fetch_dlebron,
                    render_footer, render_nav, render_page_chrome, script_json,
                    _bootstrap_warm)
 
@@ -325,7 +325,8 @@ def _payload() -> str:
 
     return json.dumps({
         "season": "2026-27", "asof": asof, "cfg": cfg, "logos": logos,
-        "colors": dict(TEAM_HEX), "divs": _DIVS, "teams": teams,
+        "colors": dict(TEAM_HEX), "colors2": dict(TEAM_HEX_2),
+        "divs": _DIVS, "teams": teams,
         "abbrs": sorted(teams),
     }, separators=(",", ":"))
 

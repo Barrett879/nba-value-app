@@ -114,17 +114,17 @@ body{background:transparent;color:var(--fg1);
   padding:.35rem .6rem;font-size:.74rem;font-weight:700;cursor:pointer}
 .sortbtn:hover{color:var(--fg1);border-color:var(--tc,var(--teal))}
 .sortbtn.on{background:var(--tc,var(--teal));border-color:var(--tc,var(--teal));color:var(--tfg,#fff)}
-/* v- prefixed because `.depth` is already the depth-chart grid container:
-   an unprefixed `.depth` button inherits display:grid and stretches
-   the two view buttons are a pair, not peers: the depth chart is the primary
-   way to read a roster and carries the accent, the list is the secondary and
-   stays neutral, in both the active and the resting state */
-.vbtn.v-depth{border-color:var(--teal);color:var(--teal)}
-.vbtn.v-depth:hover{background:var(--tintg)}
-.vbtn.v-depth.on{background:var(--teal);border-color:var(--teal);color:#fff}
-.vbtn.v-list{border-color:var(--line);color:var(--fg4)}
-.vbtn.v-list:hover{border-color:var(--fg4);color:var(--fg2);background:transparent}
-.vbtn.v-list.on{background:var(--fg4);border-color:var(--fg4);color:var(--panel)}
+/* The two view buttons wear the team's own pair: the depth chart takes the
+   team's primary colour, the list its secondary, both set on the panel from
+   TEAM_HEX / TEAM_HEX_2. v- prefixed because `.depth` is already the
+   depth-chart grid container, and an unprefixed `.depth` button inherits
+   display:grid and stretches across the toolbar. */
+.vbtn.v-depth{border-color:var(--tc);color:var(--tc)}
+.vbtn.v-depth:hover{background:var(--tc);color:var(--tfg)}
+.vbtn.v-depth.on{background:var(--tc);border-color:var(--tc);color:var(--tfg)}
+.vbtn.v-list{border-color:var(--tc2);color:var(--tc2)}
+.vbtn.v-list:hover{background:var(--tc2);color:var(--tfg2)}
+.vbtn.v-list.on{background:var(--tc2);border-color:var(--tc2);color:var(--tfg2)}
 
 .roster{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 @media(max-width:1180px){.roster{grid-template-columns:1fr}}
@@ -503,7 +503,12 @@ function rosterPanel(t){
     return x;
   };
 
-  let h = `<div class="panel"><div class="tools">
+  // the panel carries the team's colour pair, so the view toggle (and the
+  // section bars and card hovers under it) wear the team rather than the site
+  const c1 = DATA.colors[t.abbr] || "", c2 = (DATA.colors2 || {})[t.abbr] || "";
+  const teamVars = `--tc:${c1 || "var(--teal)"};--tfg:${onColor(c1)};`
+    + `--tc2:${c2 || "var(--fg4)"};--tfg2:${onColor(c2)}`;
+  let h = `<div class="panel" style="${teamVars}"><div class="tools">
     <input type="text" id="q" placeholder="Filter this roster" value="${esc(state.q)}">
     <button class="sortbtn vbtn v-depth${state.view === "depth" ? " on" : ""}"
       data-view="depth">Depth chart</button>
