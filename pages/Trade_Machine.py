@@ -19,8 +19,8 @@ import json
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils import (_headshot_id_map, fetch_dlebron, normalize, render_nav,
-                   render_page_chrome, _bootstrap_warm)
+from utils import (NameIndex, _headshot_id_map, fetch_dlebron, normalize,
+                   render_nav, render_page_chrome, _bootstrap_warm)
 
 st.set_page_config(page_title="Trade Machine", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
@@ -48,19 +48,22 @@ def _payload() -> str:
     cfg = {k: v for k, v in json.loads(
         (_ROOT / "data" / "cba_config_2026_27.json").read_text()).items()
         if not k.startswith("_")}
-    heads = _headshot_id_map()
+    # name-tolerant lookups: the roster feed and the stats feed disagree on
+    # "C.J." vs "CJ", "Nic" vs "Nicolas", "Jimmy Butler" vs "Jimmy Butler III",
+    # which otherwise costs those players their headshot and their box line
+    heads = NameIndex(_headshot_id_map())
     # last season's per-game line + D-LEBRON, shown on cards in 2-team trades
     import pandas as pd
-    _box = {}
+    _box = NameIndex()
     try:
         _ls = pd.read_parquet(_ROOT / "cache" / "league_stats_2025_26.parquet")
         _dl = fetch_dlebron("2025-26")
         for _r in _ls.itertuples():
-            _box[normalize(_r.PLAYER_NAME)] = {
+            _box.add(_r.PLAYER_NAME, {
                 "ppg": round(float(_r.PTS), 1), "apg": round(float(_r.AST), 1),
                 "rpg": round(float(_r.REB), 1),
                 "dl": (round(float(_dl[_r.PLAYER_ID]), 1)
-                       if _dl.get(_r.PLAYER_ID) else None)}
+                       if _dl.get(_r.PLAYER_ID) else None)})
     except Exception:
         pass
     # verified master list of 2026-27 hard caps (apron caps triggered by
@@ -108,12 +111,13 @@ def _payload() -> str:
                 continue
             n = normalize(p["n"])
             sig = signings.get(n)
-            pid = heads.get(n)
+            pid = heads.get(p["n"])
             players.append({
                 "n": p["n"], "salary": float(p["salary"]),
                 "pos": (p.get("pos") or "").split("/")[0],
                 "value": p.get("value"), "barrett": p.get("barrett"),
-                **(_box.get(n) or {}),
+                "bs_yr": p.get("bs_yr"),
+                **(_box.get(p["n"]) or {}),
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None),
                 "signed_date": (sig or {}).get("date"),
@@ -183,12 +187,12 @@ def _payload() -> str:
             ab = f.get("team", "")
             if ab not in teams or not f.get("n"):
                 continue
-            pid = heads.get(normalize(f["n"]))
+            pid = heads.get(f["n"])
             fas.setdefault(ab, []).append({
                 "n": f["n"], "pos": (f.get("pos") or "").strip("—- ").split("/")[0],
                 "value": round(f.get("value") or 2.1, 1),
                 "barrett": f.get("barrett"), "bs_yr": f.get("bs_yr"),
-                **(_box.get(normalize(f["n"])) or {}),   # ppg/apg/rpg/dl
+                **(_box.get(f["n"]) or {}),              # ppg/apg/rpg/dl
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None)})
         for v in fas.values():

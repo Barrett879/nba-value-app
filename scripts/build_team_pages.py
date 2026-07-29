@@ -32,19 +32,22 @@ def main() -> None:
     # Market value ($M) per player = the board's 2025-26 projected market salary,
     # keyed by normalized name. Used to grade each 2026-27 contract.
     df = utils.build_ranked_projected(utils.SEASONS[0])
-    mval = {utils.normalize(str(r["Player"])): float(r["projected_salary"]) / 1e6
-            for _, r in df.iterrows()}
+    # NameIndex, not a plain dict: the roster feed writes "C.J. McCollum" and
+    # "Nicolas Claxton" where the board has "CJ McCollum" and "Nic Claxton", and
+    # an exact-key miss left those players with no market value at all.
+    mval = utils.NameIndex({str(r["Player"]): float(r["projected_salary"]) / 1e6
+                            for _, r in df.iterrows()})
 
     teams = {}
     for abbr, t in ros["teams"].items():
         players = []
         for p in t["players"]:
             sal = p.get("salary")
-            val = mval.get(utils.normalize(str(p["n"])))
+            val = mval.get(p["n"])
             vd = round(sal - val, 1) if (val is not None and sal is not None) else None
             players.append({
                 "n": p["n"], "role": p["role"], "pos": p.get("pos", ""),
-                "barrett": p.get("barrett"),
+                "barrett": p.get("barrett"), "bs_yr": p.get("bs_yr"),
                 "salary": sal,
                 "value": round(val, 1) if val is not None else None,
                 "vd": vd,  # salary - market value; >0 overpay, <0 bargain

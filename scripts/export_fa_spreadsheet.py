@@ -64,10 +64,46 @@ _SUF = re.compile(r"\s+(jr|sr|ii|iii|iv|v)$")
 def _strip(n):
     return _SUF.sub("", n)
 
+from utils import NameIndex, name_keys  # noqa: E402
+
+bs_yr = {}                       # name key -> "24-25" when the score is borrowed
+
+
+class _ScoreMap(dict):
+    """Barrett scores with a fallback index.
+
+    Exact entries (board roster, sim) win. Anything still blank -- a player who
+    changed teams this offseason, or whose name the stats feed spells differently
+    -- resolves lazily against the canonical season frames through NameIndex,
+    this season first, then last season (tagged in bs_yr)."""
+
+    idx = NameIndex()            # name -> (score, borrowed-season tag or None)
+
+    def get(self, k, default=None):
+        v = dict.get(self, k)
+        if v is not None:
+            return v
+        hit = self.idx.get(k)
+        if hit:
+            self[k] = hit[0]
+            if hit[1]:
+                for kk in name_keys(k):
+                    bs_yr.setdefault(kk, hit[1])
+            return hit[0]
+        return default
+
+
+def _bs_year(n):
+    for kk in name_keys(n):
+        if kk in bs_yr:
+            return bs_yr[kk]
+    return None
+
 # display name / position / barrett / TEAM lookups. The board roster is the reliable
 # team source (its names match the salary feed); cey is the fallback for players the
 # board doesn't list (opted-in option-holders, non-rated deep bench).
-disp, pos_map, bar_map, board_team = {}, {}, {}, {}
+disp, pos_map, board_team = {}, {}, {}
+bar_map = _ScoreMap()
 for tm, t in TEAMS.items():
     for rr in t["roster"]:
         n = normalize(rr["name"])
@@ -93,6 +129,24 @@ def cur_team(n):                                          # correction > board r
     return team_corr.get(n) or board_team.get(n) or stats_team.get(n) or cey_team.get(n) or cey_team.get(_strip(n))
 for p in sim["players"]:
     n = normalize(p["player"]); disp[n] = p["player"]; pos_map.setdefault(n, p["pos"]); bar_map.setdefault(n, p["barrett"])
+
+# Index the canonical season frames so bar_map can resolve anyone the board and
+# the sim miss (offseason movers, name-spelling mismatches). This season wins;
+# last season backfills players who did not clear this season's minutes bar.
+try:
+    from utils import build_raw as _braw
+    _SEASON = sim.get("season", "2025-26")
+    _Y = int(_SEASON[:4])
+    _PRIOR = f"{_Y - 1}-{str(_Y)[-2:]}"
+
+    def _index(season, tag=None):            # current season added first, so
+        for _r in _braw(season).itertuples():  # the prior only fills its gaps
+            _ScoreMap.idx.add(_r.Player, (round(float(_r.barrett_score), 1), tag))
+
+    _index(_SEASON)
+    _index(_PRIOR, _PRIOR[2:4] + "-" + _PRIOR[-2:])
+except Exception as e:                          # never block the export
+    print(f"  Barrett score index skipped: {e}")
 p2k = ROOT / "data" / "player_positions_2k.csv"
 if p2k.exists():
     for r in csv.DictReader(p2k.read_text().splitlines()):
@@ -535,44 +589,17 @@ _pool = [x for x in _pool
 # agents came through blank. Fill from the canonical season frame (suffix-
 # stripped alias catches "Xavier Tillman" vs "Xavier Tillman Sr."); players
 # below the frame's minutes bar legitimately stay blank.
-try:
-    from utils import build_raw as _braw
-
-    def _score_map(_season):
-        _m = {}
-        for _r in _braw(_season).itertuples():
-            _k = normalize(_r.Player)
-            _m[_k] = round(float(_r.barrett_score), 1)
-            _m.setdefault(_strip(_k), _m[_k])
-        return _m
-
-    _season = sim.get("season", "2025-26")
-    _y = int(_season[:4])
-    _prior = f"{_y - 1}-{str(_y)[-2:]}"       # 2025-26 -> 2024-25
-    _bs = _score_map(_season)
-    _filled = 0
-    for x in _pool:
-        if x.get("barrett") is None:
-            _k = normalize(x["n"])
-            x["barrett"] = _bs.get(_k) or _bs.get(_strip(_k))
-            _filled += x["barrett"] is not None
-    # anyone who did not clear the current season's minutes bar (hurt, deep
-    # bench, waived early) falls back to his last qualifying season, tagged
-    # so the card can say which year it is
-    _bs_prior = _score_map(_prior)
-    _back = 0
-    for x in _pool:
-        if x.get("barrett") is None:
-            _k = normalize(x["n"])
-            _v = _bs_prior.get(_k) or _bs_prior.get(_strip(_k))
-            if _v is not None:
-                x["barrett"] = _v
-                x["bs_yr"] = _prior[2:4] + "-" + _prior[-2:]     # "24-25"
-                _back += 1
-    print(f"  filled {_filled} free-agent Barrett scores from {_season}, "
-          f"{_back} more from {_prior}")
-except Exception as e:                       # never block the pool dump
-    print(f"  Barrett score fill skipped: {e}")
+_fa_filled = 0
+for x in _pool:                              # bar_map is already league-wide
+    if x.get("barrett") is None:
+        _k = normalize(x["n"])
+        x["barrett"] = bar_map.get(_k) or bar_map.get(_strip(_k))
+        if x["barrett"] is not None:
+            _fa_filled += 1
+    _yr = _bs_year(normalize(x["n"]))
+    if _yr and x.get("barrett") is not None:
+        x["bs_yr"] = _yr
+print(f"  filled {_fa_filled} free-agent Barrett scores from the season frames")
 (ROOT / "cache" / "fa_pool_v1.json").write_text(_json0.dumps({
     "asof": "2026-07-28", "fas": _pool}, separators=(",", ":")))
 
@@ -604,6 +631,7 @@ for _tm in team_order:
                          if _n in tracker_type and _role == "Under contract"
                          else _role),
                 "pos": r[2], "prev": r[5], "barrett": r[6], "salary": r[7],
+                "bs_yr": _bs_year(_n),
                 "real": (normalize(r[1]) in real_set or _n in master_names
                          if _role in ("Re-sign", "New signing") else True),
             })(normalize(r[1]), r[3])

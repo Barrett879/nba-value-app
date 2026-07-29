@@ -2299,6 +2299,76 @@ def normalize(name: str) -> str:
     return "".join(c for c in nfkd if not unicodedata.combining(c)).lower().strip()
 
 
+# ── Name matching ──────────────────────────────────────────────────────────────
+# The feeds spell the same player several ways: "C.J. McCollum" vs "CJ McCollum",
+# "Jimmy Butler" vs "Jimmy Butler III", "Nic Claxton" vs "Nicolas Claxton". Exact
+# normalize() keys miss all three, which is how offseason movers ended up with no
+# score, no market value and no headshot on their new team.
+_NAME_SUF = re.compile(r"\s+(jr|sr|ii|iii|iv|v)$")
+_NAME_PUNC = re.compile(r"[^a-z0-9 ]")
+
+
+def name_keys(name: str) -> list:
+    """Exact-match key variants for an already-normalize()d name."""
+    out = []
+    for base in (name, _NAME_SUF.sub("", name)):
+        flat = " ".join(_NAME_PUNC.sub("", base).split())
+        for k in (base, flat, _NAME_SUF.sub("", flat)):
+            if k and k not in out:
+                out.append(k)
+    return out
+
+
+def name_split(name: str):
+    """(given name, surname) from the flattened, suffix-stripped name."""
+    parts = " ".join(_NAME_PUNC.sub("", _NAME_SUF.sub("", name)).split()).split()
+    return (parts[0], " ".join(parts[1:])) if len(parts) >= 2 else (None, None)
+
+
+class NameIndex:
+    """Lookup keyed by player name, tolerant of the spellings above.
+
+    Exact (punctuation- and suffix-insensitive) keys resolve first. A short given
+    name then matches a longer one -- "Nic"/"Nicolas", "Herb"/"Herbert" -- but ONLY
+    when the surname matches, one name is a prefix of the other, and exactly one
+    player fits: that prefix test is what keeps Baba Miller off Brandon Miller.
+    First value added for a key wins, so callers should add their best source first.
+    """
+
+    def __init__(self, items=None):
+        self._k, self._s = {}, {}
+        for n, v in (items or {}).items():
+            self.add(n, v)
+
+    def add(self, name, value):
+        n = normalize(str(name))
+        for k in name_keys(n):
+            self._k.setdefault(k, value)
+        given, sur = name_split(n)
+        if sur and not any(g == given for g, _ in self._s.setdefault(sur, [])):
+            self._s[sur].append((given, value))
+
+    def get(self, name, default=None):
+        n = normalize(str(name))
+        for k in name_keys(n):
+            if k in self._k:
+                return self._k[k]
+        given, sur = name_split(n)
+        if given:
+            hit = [v for g, v in self._s.get(sur, ())
+                   if min(len(given), len(g)) >= 3
+                   and (given.startswith(g) or g.startswith(given))]
+            if len(hit) == 1:
+                return hit[0]
+        return default
+
+    def __contains__(self, name):
+        return self.get(name, _MISS) is not _MISS
+
+
+_MISS = object()
+
+
 def season_to_espn_year(season: str) -> int:
     return int(season.split("-")[0]) + 1
 
