@@ -531,6 +531,26 @@ _signed_pn = {x.replace(".", "").replace(" jr", "").replace(" sr", "")
 _pool = [x for x in _pool
          if normalize(x["n"]).replace(".", "").replace(" jr", "").replace(" sr", "")
          not in _signed_pn]
+# Barrett scores: the board roster only carries ROSTERED players, so free
+# agents came through blank. Fill from the canonical season frame (suffix-
+# stripped alias catches "Xavier Tillman" vs "Xavier Tillman Sr."); players
+# below the frame's minutes bar legitimately stay blank.
+try:
+    from utils import build_raw as _braw
+    _bs = {}
+    for _r in _braw(sim.get("season", "2025-26")).itertuples():
+        _k = normalize(_r.Player)
+        _bs[_k] = round(float(_r.barrett_score), 1)
+        _bs.setdefault(_strip(_k), _bs[_k])
+    _filled = 0
+    for x in _pool:
+        if x.get("barrett") is None:
+            _k = normalize(x["n"])
+            x["barrett"] = _bs.get(_k) or _bs.get(_strip(_k))
+            _filled += x["barrett"] is not None
+    print(f"  filled {_filled} free-agent Barrett scores from the season frame")
+except Exception as e:                       # never block the pool dump
+    print(f"  Barrett score fill skipped: {e}")
 (ROOT / "cache" / "fa_pool_v1.json").write_text(_json0.dumps({
     "asof": "2026-07-28", "fas": _pool}, separators=(",", ":")))
 
