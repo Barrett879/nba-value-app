@@ -42,6 +42,9 @@ st.caption(
 
 _ROOT = Path(__file__).parent.parent
 _TODAY = "2026-07-28"
+# a Barrett Score under this many minutes is a small-sample artifact, so the
+# page reaches back a season rather than showing it
+MIN_MINUTES = 500
 # feeds spell a few teams the old way
 _ABBR_FIX = {"PHO": "PHX", "CHO": "CHA", "BRK": "BKN", "NOH": "NOP"}
 # every player lands in exactly one depth-chart column; master_roster carries a
@@ -91,17 +94,33 @@ def _payload() -> str:
 
     heads = NameIndex(_headshot_id_map())
 
-    # Barrett Scores for anyone the projected board does not carry (two-way
-    # players, mostly). Same fallback the roster pipeline uses: this season
-    # first, then last season tagged so a card can say which year it is.
-    scores = NameIndex()
+    # Barrett Scores, with a minutes floor. A score off a handful of games is
+    # noise: Walker Kessler played 5 games in 2025-26 and scores 12.8, against
+    # 21.2 on a full 2024-25. So the rule is the most recent season in which
+    # the player cleared MIN_MINUTES; only if neither season clears it does the
+    # small sample stand, because that is all there is.
+    scores, prior_scores, short = NameIndex(), NameIndex(), NameIndex()
     try:
         from utils import build_raw
-        for _season, _tag in (("2025-26", None), ("2024-25", "24-25")):
-            for _r in build_raw(_season).itertuples():
-                scores.add(_r.Player, (round(float(_r.barrett_score), 1), _tag))
+        for _r in build_raw("2024-25").itertuples():
+            prior_scores.add(_r.Player, (round(float(_r.barrett_score), 1), "24-25",
+                                         float(_r.total_min)))
+        for _r in build_raw("2025-26").itertuples():
+            v = (round(float(_r.barrett_score), 1), None, float(_r.total_min))
+            if float(_r.total_min) >= MIN_MINUTES:
+                scores.add(_r.Player, v)
+            else:
+                short.add(_r.Player, v)              # keep as the last resort
     except Exception:                                # never block the page
         pass
+
+    def score_of(name):
+        """(score, season tag) under the minutes floor."""
+        for src in (scores, prior_scores, short):
+            hit = src.get(name)
+            if hit:
+                return hit[0], hit[1]
+        return None, None
 
     # last season's per-game line + D-LEBRON
     box = NameIndex()
@@ -215,11 +234,11 @@ def _payload() -> str:
                     value = float(_mm.group(1)) if _mm else None
                 sal = 0.0
             pid = heads.get(name)
-            bar, bar_yr = m.get("barrett"), m.get("bs_yr")
+            bar, bar_yr = score_of(name)         # minutes floor wins outright
+            if bar is None:
+                bar, bar_yr = m.get("barrett"), m.get("bs_yr")
             if bar is None:
                 bar, bar_yr = fv.get("barrett"), fv.get("bs_yr")
-            if bar is None:
-                bar, bar_yr = scores.get(name) or (None, None)
             o = opts.get(name) or {}
             pos = (r.get("pos") or "").strip()
             players.append({
