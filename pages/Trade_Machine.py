@@ -15,12 +15,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import csv
 import json
+import re
 
 import streamlit as st
 import streamlit.components.v1 as components
 
 from utils import (NameIndex, _headshot_id_map, fetch_dlebron, normalize,
-                   render_nav, render_page_chrome, _bootstrap_warm)
+                   render_nav, render_page_chrome, script_json, _bootstrap_warm)
 
 st.set_page_config(page_title="Trade Machine", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
@@ -208,10 +209,20 @@ def _payload() -> str:
     }, separators=(",", ":"))
 
 
+_TOKEN_OK = re.compile(r"[A-Za-z0-9_=-]{0,6000}\Z")
+
+
 def _payload_with_request_state() -> str:
     """Splice per-request fields (share token from the URL, share base) into
-    the cached static payload without reparsing it."""
+    the cached static payload without reparsing it.
+
+    The token is base64url, so anything outside that alphabet is not a trade
+    link and is dropped before it reaches the <script> block; script_json()
+    escaping is the second lock.
+    """
     token = st.query_params.get("trade", "")
+    if not _TOKEN_OK.match(token or ""):
+        token = ""
     extras = (',"initial":' + json.dumps(token or None)
               + ',"share_base":"https://hoopsvalue.com/Trade_Machine"}')
     return _payload()[:-1] + extras
@@ -233,7 +244,7 @@ _LIGHT = """--panel:#ffffff;--card:#f7f8fa;--line:#e3e6eb;--track:#eceef2;
 _html = ((_ROOT / "templates" / "trade_machine.html").read_text()
          .replace("__THEME__", _DARK)
          .replace("__THEME_LIGHT__", _LIGHT)
-         .replace("__DATA__", _payload_with_request_state()))
+         .replace("__DATA__", script_json(_payload_with_request_state())))
 # Initial height only: the component resizes its own frame to fit the full
 # rosters (window.frameElement, same-origin srcdoc), so nothing scrolls inside.
 components.html(_html, height=1000, scrolling=False)

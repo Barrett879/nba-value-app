@@ -24,7 +24,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 from utils import (NameIndex, TEAM_HEX, _headshot_id_map, fetch_dlebron,
-                   render_footer, render_nav, render_page_chrome, _bootstrap_warm)
+                   render_footer, render_nav, render_page_chrome, script_json,
+                   _bootstrap_warm)
 
 st.set_page_config(page_title="Rosters", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
@@ -311,10 +312,18 @@ def _payload() -> str:
 
 
 def _payload_with_request_state() -> str:
-    """Splice the per-request team (from ?team=) into the cached payload."""
+    """Splice the per-request team (from ?team=) into the cached payload.
+
+    The value is checked against the 30 real abbreviations before it is spliced:
+    anything else becomes None. A query param that reaches a <script> block
+    unvalidated is an XSS hole, and script_json() below is the second lock.
+    """
     want = (st.query_params.get("team", "") or "").upper()
     want = _ABBR_FIX.get(want, want)
-    return _payload()[:-1] + ',"initial":' + json.dumps(want or None) + "}"
+    cached = _payload()
+    if want and f'"{want}":' not in cached:      # not one of the 30 teams
+        want = ""
+    return cached[:-1] + ',"initial":' + json.dumps(want or None) + "}"
 
 
 _DARK = """--panel:#15171d;--card:#1b1f28;--line:#262a33;--track:#242833;
@@ -332,7 +341,7 @@ _LIGHT = """--panel:#ffffff;--card:#f7f8fa;--line:#e3e6eb;--track:#eceef2;
 _html = ((_ROOT / "templates" / "rosters.html").read_text()
          .replace("__THEME__", _DARK)
          .replace("__THEME_LIGHT__", _LIGHT)
-         .replace("__DATA__", _payload_with_request_state()))
+         .replace("__DATA__", script_json(_payload_with_request_state())))
 components.html(_html, height=760, scrolling=False)
 
 # Server-rendered team index. The board above lives in a component iframe, which

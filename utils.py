@@ -2326,6 +2326,22 @@ def name_split(name: str):
     return (parts[0], " ".join(parts[1:])) if len(parts) >= 2 else (None, None)
 
 
+def script_json(payload: str) -> str:
+    """Make a JSON string safe to inline inside a <script> block.
+
+    json.dumps escapes quotes and backslashes but NOT "<", so any value spliced
+    into a component payload can close the script tag and open a new one:
+    ?team=</script><script src=evil> ran attacker JS on our own origin, because
+    a Streamlit components.html iframe is srcdoc + allow-same-origin +
+    allow-scripts. Escaping "<" (plus the two line separators that are literal
+    newlines to a JS parser but legal inside a JSON string) closes that off.
+    Validate the value as well: this is the belt, not the braces.
+    """
+    return (payload.replace("<", "\\u003c")
+                   .replace("\u2028", "\\u2028")
+                   .replace("\u2029", "\\u2029"))
+
+
 class NameIndex:
     """Lookup keyed by player name, tolerant of the spellings above.
 
