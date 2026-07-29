@@ -105,7 +105,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CLE,Jaylon Tyson,3.66,standard,SF/SG,Rookie scale yr 3
 ,CLE,Mario Hezonja,2.8,standard,SF,"Agreed 7/26/26 to 1yr minimum (~$2.8M) deal returning from Real Madrid; reported by ESPN/Shams, not yet official/not on Spotrac; PROMOTED to official per Barrett 2026-07-27"
 ,CLE,Thomas Bryant,2.45,standard,C,Re-signed 1yr/$3.52M on 7/7/26 (vet-min cap hit $2.45M)
-,CLE,Nae'Qwan Tomlin,2.41,standard,SF/PF,Converted from two-way in 2025-26; guaranteed
+,CLE,Nae'Qwan Tomlin,2.41,standard,PF/SF,Converted from two-way in 2025-26; guaranteed
 ,CLE,Craig Porter Jr.,2.41,standard,PG,Non-guaranteed for 2026-27 per Spotrac
 ,CLE,Tyrese Proctor,2.15,standard,PG/SG,"2025 2nd-rounder, yr 2"
 ,CLE,Meleek Thomas,1.36,standard,SG,2026 2nd-round pick; signed 4yr/$9.26M via 2nd-round exception 7/1/26; salary inferred (~rookie min) - Spotrac cap table shows $0/omits him (see caveats)
@@ -151,14 +151,14 @@ asof,team,player,salary_M,kind,pos,notes
 ,DET,Duncan Robinson,15.99,standard,SG/SF,2025 sign-and-trade from MIA; only $2M of 2026-27 guaranteed
 ,DET,Isaiah Joe,11.32,standard,SG/SF,Extension eligible
 ,DET,Ausar Thompson,11.12,standard,SF/PF,"Final rookie-scale year; RFA 2027, extension eligible"
-,DET,Kevin Huerter,9.51,standard,SG/SF,Signed 3yr/$27M on 7/9/26 (2028-29 team option); was on CHI in 2025-26
-,DET,Ron Holland II,9.07,standard,SF/PF,Rookie scale yr 3
+,DET,Kevin Huerter,9.51,standard,SF/SG,Signed 3yr/$27M on 7/9/26 (2028-29 team option); was on CHI in 2025-26
+,DET,Ron Holland II,9.07,standard,PF/SF,Rookie scale yr 3
 ,DET,Paul Reed,5.6,standard,C,2026-27 non-guaranteed
 ,DET,Ebuka Okorie,4.48,standard,PG,No. 17 pick 2026 draft (Stanford; DET traded up from 21 with MEM); signed rookie scale
 ,DET,Daniss Jenkins,4,standard,PG/SG,Guaranteed $4M for 2026-27
-,DET,Javonte Green,3.94,standard,SG/SF,"Veteran depth, expiring"
+,DET,Javonte Green,3.94,standard,SF/SG,"Veteran depth, expiring"
 ,DET,Gary Harris,3.82,standard,SG/SF,Acquired 7/8/26 from MIL in 6-team trade; expiring
-,DET,Taurean Prince,3.82,standard,SF/SG,Acquired 7/8/26 from MIL in 6-team trade; expiring
+,DET,Taurean Prince,3.82,standard,PF/SF,Acquired 7/8/26 from MIL in 6-team trade; expiring
 ,DET,Tolu Smith III,2.41,standard,C,Non-guaranteed for 2026-27 per Spotrac
 ,DET,Chaz Lanier,2.15,standard,SG/PG,"2025 2nd-rounder, yr 2"
 ,DET,Elijah Harkless,0,two_way,PG,Signed two-way 7/8/26
