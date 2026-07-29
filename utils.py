@@ -1626,6 +1626,35 @@ COMMON_CSS = """
     .top-nav .home-link:hover { color: var(--fg-1); border: none; }
     .top-nav .divider { color: var(--nav-divider); font-size: 0.75rem; margin: 0 0.1rem; user-select: none; }
 
+    /* Second nav row: the tabs within the current section. Underline tabs, not
+       pills, so the two rows never read as the same level of navigation. */
+    .sub-nav {
+        position: fixed;
+        top: 3rem; left: 0; right: 0;
+        z-index: 9998;
+        display: flex;
+        align-items: stretch;
+        gap: 0.15rem;
+        padding: 0 1.5rem;
+        height: 2.4rem;
+        background: var(--bg-nav);
+        border-bottom: 1px solid var(--nav-border);
+    }
+    .sub-nav a {
+        display: flex;
+        align-items: center;
+        text-decoration: none;
+        padding: 0 0.75rem;
+        font-size: 0.79rem;
+        font-weight: 600;
+        color: var(--fg-4);
+        border-bottom: 2px solid transparent;
+        transition: color 0.15s, border-color 0.15s;
+        white-space: nowrap;
+    }
+    .sub-nav a:hover { color: var(--fg-1); text-decoration: none; }
+    .sub-nav a.active { color: var(--fg-1); border-bottom-color: var(--accent-red); }
+
     /* ── Responsive nav: keep the links clear of the pinned brightness button ──
        Only the theme button is pinned (position:fixed) top-right; reserve its
        narrow width so the tabs don't slide under it, and shrink the tabs as the
@@ -1635,6 +1664,7 @@ COMMON_CSS = """
         .top-nav a, .top-nav .home-link {
             padding-left: 0.5rem; padding-right: 0.5rem; font-size: 0.78rem;
         }
+        .sub-nav a { padding-left: 0.55rem; padding-right: 0.55rem; font-size: 0.76rem; }
     }
     @media (max-width: 940px) {
         .top-nav .divider { display: none; }
@@ -1653,6 +1683,14 @@ COMMON_CSS = """
        link can scroll clear of the toggle even where a scroll container's
        trailing padding isn't honoured. */
     @media (max-width: 760px) {
+        .sub-nav {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+        .sub-nav::-webkit-scrollbar { display: none; }
+        .sub-nav a { padding-left: 0.45rem; padding-right: 0.45rem; font-size: 0.72rem; }
         .top-nav {
             overflow-x: auto;
             overflow-y: hidden;
@@ -1931,33 +1969,43 @@ COMMON_CSS = """
 </style>
 """
 
-_NAV_PAGES = [
-    ("Current Rankings",   "/Rankings"),
-    ("Compare Players",    "/Search"),
-    ("Legacy",             "/Legacy"),
-    ("Rosters",            "/Rosters"),
-    ("Team Analysis",      "/Team_Analysis"),
-    ("Trade Machine",      "/Trade_Machine"),
-    # Trades tab removed — page lives at /Trades_disabled.py (kept for
-    # easy revival) and a backup of the verdict-aware version is in
-    # Trades_backup.py at repo root.
-    ("Contract Predictor", "/Contract_Predictor"),
-    # Team Builder (Front Office) tab removed from users' view — page lives at
-    # /Team_Builder_disabled.py (kept at repo root for easy revival). Its model
-    # also lives inside Contract Predictor's team mode. Restore by moving the file
-    # back into pages/ as Team_Builder.py and re-adding the nav entry below.
-    # ("Team Builder",       "/Team_Builder"),
-    # Free Agency Sim tab removed from users' view — page lives at
-    # /Free_Agency_Simulation_disabled.py (kept at repo root for easy revival).
-    # Restore by moving the file back into pages/ as Free_Agency_Simulation.py
-    # and re-adding the nav entry below.
-    # ("Free Agency Sim",    "/Free_Agency_Simulation"),
-    ("Current Free Agents", "/Free_Agent_Class"),
-    # Track Record tab removed — page lives at /Track_Record_disabled.py
-    # (kept at repo root for easy revival). Restore by moving the file
-    # back into pages/ as Track_Record.py and re-adding the nav entry below.
-    # ("Track Record",       "/Track_Record"),
+# The nav is two rows: three sections across the top, and that section's own
+# tabs underneath. Nine flat tabs had outgrown the bar (they overflowed below
+# ~1100px), and "Rosters" next to "Rankings" told you nothing about which was
+# about a team and which was about a player.
+#
+# Each section is (label, landing page, [(tab label, url), ...]). The landing
+# page is where clicking the section header goes: the first tab.
+_NAV_GROUPS = [
+    ("Players", "/Rankings", [
+        ("Current Rankings",    "/Rankings"),
+        ("Compare Players",     "/Search"),
+        ("Legacy",              "/Legacy"),
+        ("Current Free Agents", "/Free_Agent_Class"),
+        # Track Record tab removed -- page lives at /Track_Record_disabled.py
+        # (kept at repo root for easy revival). Restore by moving the file back
+        # into pages/ as Track_Record.py and re-adding the tab below.
+        # ("Track Record",      "/Track_Record"),
+    ]),
+    ("Teams", "/Rosters", [
+        ("Rosters",             "/Rosters"),
+        ("Team Analysis",       "/Team_Analysis"),
+        # Team Builder (Front Office) removed from users' view -- page lives at
+        # /Team_Builder_disabled.py; its model also lives inside Contract
+        # Predictor's team mode.
+        # ("Team Builder",      "/Team_Builder"),
+    ]),
+    ("Front Office", "/Trade_Machine", [
+        ("Trade Machine",       "/Trade_Machine"),
+        ("Contract Predictor",  "/Contract_Predictor"),
+        # Trades tab removed -- page lives at /Trades_disabled.py, and a backup
+        # of the verdict-aware version is in Trades_backup.py at repo root.
+        # Free Agency Sim removed -- /Free_Agency_Simulation_disabled.py.
+    ]),
 ]
+
+# flat (label, url) list, in nav order -- what scripts/build_static.py mirrors
+_NAV_PAGES = [tab for _name, _home, tabs in _NAV_GROUPS for tab in tabs]
 
 _PLAYOFF_HELP = (
     "Replace regular-season stats with postseason stats for the selected "
@@ -2189,11 +2237,29 @@ def render_nav(current: str) -> None:
     nav links). State is shared via st.session_state.playoff_mode, so every
     page sees the change immediately on its next render.
     """
+    group = next((g for g in _NAV_GROUPS
+                  if any(label == current for label, _ in g[2])), None)
     links = '<a class="home-link" href="/" target="_top">Home</a><span class="divider">|</span>'
-    for label, url in _NAV_PAGES:
-        css_class = "active" if label == current else ""
-        links += f'<a class="{css_class}" href="{url}" target="_top">{label}</a>'
+    for name, home, _tabs in _NAV_GROUPS:
+        css_class = "active" if group and group[0] == name else ""
+        links += f'<a class="{css_class}" href="{home}" target="_top">{name}</a>'
     st.markdown(f'<div class="top-nav">{links}</div>', unsafe_allow_html=True)
+
+    # Second row: the tabs inside the section you are in. Home and About sit
+    # outside the sections, so they get no second row -- and the extra top
+    # padding ships with the row rather than in the global CSS, so those two
+    # pages do not carry a gap for a bar that is not there.
+    if group:
+        tabs = "".join(
+            f'<a class="{"active" if label == current else ""}" href="{url}" '
+            f'target="_top">{label}</a>'
+            for label, url in group[2])
+        st.markdown(
+            f'<div class="sub-nav">{tabs}</div>'
+            '<style>.main .block-container,section.main > .block-container,'
+            '[data-testid="stMain"] .block-container,'
+            '[data-testid="stMainBlockContainer"]{padding-top:7.4rem !important}</style>',
+            unsafe_allow_html=True)
 
     # Theme button — keyed container, pinned to the top-right via CSS. The
     # playoff toggle is NOT pinned here: it's rendered in-page (render_playoff_
