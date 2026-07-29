@@ -230,6 +230,8 @@ body:not(.light) .tbtn:not(.on){background:rgba(255,255,255,.05)}
 .ltable td:first-child{text-align:left}
 .ltable tr{cursor:pointer}
 .ltable tbody tr:hover td{background:var(--tintz)}
+.ltable tbody tr:focus-visible td,.ltable th:focus-visible{outline:2px solid var(--teal);
+  outline-offset:-2px}
 .ltable tbody tr:hover td:first-child{box-shadow:inset 3px 0 0 var(--tc)}
 .lteam{display:flex;align-items:center;gap:.5rem;min-width:0}
 .lteam img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
@@ -553,13 +555,15 @@ function railPanel(t){
       : p.swap === "unknown"
       ? `<span class="tag swq" title="Swap rights recorded with ${esc(p.swap_with || "another team")};
          which side holds them is not recorded in our ledger.">SWAP</span>`
-      : p.protection ? `<span class="tag pr" title="${esc(p.protection)}">PROT</span>` : "";
+      : "";
+    const prot = p.protection
+      ? `<span class="tag pr" title="${esc(p.protection)}">PROT</span>` : "";
     const who = p.own ? "Own" : p.origin;
     return `<div class="pk"><span class="rnd${p.round === 2 ? " r2" : ""}">${p.round}</span>
       <span class="yr">${p.year}</span>
       <img src="${esc(DATA.logos[p.origin] || "")}" alt=""
         onerror="this.outerHTML='<span class=&quot;pkabbr&quot;>${p.origin}</span>'">
-      <span class="lbl">${esc(who)}</span>${tag}</div>`;
+      <span class="lbl">${esc(who)}</span>${prot}${tag}</div>`;
   };
   h += `<div class="panel"><div class="secl"><span class="bar"></span>Draft picks
     <span class="cnt">${t.picks.length}</span></div>`;
@@ -623,12 +627,19 @@ function leagueTable(){
     <span class="cnt">click a team for its full roster</span></div>
     <div style="overflow-x:auto"><table class="ltable"><thead><tr>`;
   for (const [k, lbl] of cols)
-    h += `<th class="${state.lsort === k ? "on" : ""}" data-lsort="${k}">${esc(lbl)}</th>`;
+    h += `<th class="${state.lsort === k ? "on" : ""}" data-lsort="${k}" tabindex="0"
+      role="button" aria-label="Sort by ${esc(lbl)}">${esc(lbl)}</th>`;
   h += `</tr></thead><tbody>`;
   for (const t of rows){
     const st = capState(t.payroll);
+    // 20 of 30 teams carry some unpriced salary (every 2026 rookie is
+    // unpriced), so a per-row flag would be noise: the note explains it once
+    // and each surplus carries its own exact split on hover
+    const up = (t.unpriced || {}).n || 0;
     const tpe = t.tpes.reduce((s, x) => s + x.amt, 0);
-    h += `<tr data-team="${t.abbr}" style="--tc:${DATA.colors[t.abbr] || "var(--teal)"}">
+    h += `<tr data-team="${t.abbr}" tabindex="0" role="link"
+      aria-label="Open the ${esc(t.name)} roster"
+      style="--tc:${DATA.colors[t.abbr] || "var(--teal)"}">
       <td><span class="lteam"><img src="${esc(DATA.logos[t.abbr] || "")}" alt=""
         onerror="this.style.display='none'">
         <b>${esc(t.name)}</b> <span class="ab">${esc(t.abbr)}</span></span></td>
@@ -638,9 +649,11 @@ function leagueTable(){
         : t.payroll >= CFG.tax_line ? "tax" : "under tax"}</span></td>
       <td>${t.counts.std}<span style="color:var(--fg5)"> + ${t.counts.tw} TW</span></td>
       <td>${fmtM(t.value_total)}</td>
-      <td class="${t.surplus >= 0 ? "good" : "bad"}"${t.unpriced && t.unpriced.n
-        ? ` title="Excludes ${t.unpriced.n} player(s) worth ${fmtM(t.unpriced.salary)} the model cannot price"`
-        : ""}>${(t.surplus >= 0 ? "+" : "") + fmtM(t.surplus)}</td>
+      <td class="${t.surplus >= 0 ? "good" : "bad"}"${up
+        ? ` title="Model value and surplus cover ${fmtM(t.pay_priced)} of this payroll.
+            ${up} player${up > 1 ? "s" : ""} worth ${fmtM(t.unpriced.salary)} sit outside both:
+            the model has no 2026-27 value for a player with no minutes last season."` : ""
+        }>${(t.surplus >= 0 ? "+" : "") + fmtM(t.surplus)}</td>
       <td>${tpe ? fmtM(tpe) : "<span style=\"color:var(--fg5)\">none</span>"}</td>
       <td>${t.picks.filter(p => p.round === 1).length}
         <span style="color:var(--fg5)">/ ${t.picks.filter(p => p.round === 2).length}</span></td></tr>`;
@@ -648,7 +661,11 @@ function leagueTable(){
   return h + `</tbody></table></div>
     <div class="note">Committed salary counts only signed 2026-27 contracts, so it is
     what a team actually owes today. Surplus is the model value of the roster minus
-    what it costs. Two-way deals do not count against the cap.</div></div>`;
+    what it costs, over the part of the payroll the model can price. A rookie who has
+    not played, or a veteran who missed all of last season, has no 2026-27 value, so
+    his salary sits outside both the model value and the surplus: those two columns
+    can cover less than the full payroll. Hover a surplus for the exact split.
+    Two-way deals do not count against the cap.</div></div>`;
 }
 
 function render(){
@@ -665,10 +682,21 @@ function render(){
 function wire(){
   for (const b of document.querySelectorAll(".tbtn"))
     b.onclick = () => { state.team = b.dataset.team; state.q = ""; render(); };
-  for (const r of document.querySelectorAll(".ltable tbody tr"))
-    r.onclick = () => { state.team = r.dataset.team; state.q = ""; render(); };
-  for (const th of document.querySelectorAll(".ltable th"))
-    th.onclick = ev => { ev.stopPropagation(); state.lsort = th.dataset.lsort; render(); };
+  // keyboard parity: these are table cells doing button work, so Enter and
+  // Space have to do what a click does
+  const key = fn => ev => {
+    if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); fn(ev); }
+  };
+  for (const r of document.querySelectorAll(".ltable tbody tr")){
+    const go = () => { state.team = r.dataset.team; state.q = ""; render(); };
+    r.onclick = go;
+    r.onkeydown = key(go);
+  }
+  for (const th of document.querySelectorAll(".ltable th")){
+    const go = ev => { if (ev) ev.stopPropagation(); state.lsort = th.dataset.lsort; render(); };
+    th.onclick = go;
+    th.onkeydown = key(go);
+  }
   const back = document.getElementById("back");
   if (back) back.onclick = () => { state.team = null; state.q = ""; render(); };
   for (const b of document.querySelectorAll(".sortbtn"))
