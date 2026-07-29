@@ -325,7 +325,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Jordan Poole,34.04,standard,SG/PG,Expiring final year
 ,NOP,Dejounte Murray,32.79,standard,PG/SG,2027-28 player option $30.8M
 ,NOP,Trey Murphy III,27,standard,SF/SG,Rookie extension through 2029-30
-,NOP,Herb Jones,14.9,standard,SF/PF,2027-28 player option $24.2M
+,NOP,Herb Jones,14.9,standard,SG/SF,2027-28 player option $24.2M
 ,NOP,Jeremiah Fears,7.9,standard,PG/SG,"2025 lottery pick, yr 2; 2027-28 club option due 10/31/26"
 ,NOP,Jordan Hawkins,7.02,standard,SG/PG,Final rookie-scale year; 2027 RFA (QO $10.5M)
 ,NOP,Saddiq Bey,6.56,standard,SF/PF,Cap hit incl. likely incentives (base $6.44M); final year
@@ -334,7 +334,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Yves Missi,3.51,standard,C,Rookie scale yr 3; 2027-28 club option due 10/31/26
 ,NOP,Bryce McGowens,2.58,standard,SG/SF,Converted from two-way to standard March 2026; 2027-28 club option
 ,NOP,Karlo Matkovic,2.3,standard,PF/C,2027 RFA
-,NOP,Micah Peavy,2.15,standard,SG/SF,2025 No. 40 pick; partial guarantees
+,NOP,Micah Peavy,2.15,standard,SF/SG,2025 No. 40 pick; partial guarantees
 ,NOP,Hunter Dickinson,0.68,two_way,C,"Two-way QO tendered, re-signed two-way July 2026"
 ,NOP,Jaron Pierre Jr.,0.68,two_way,SG,2026 No. 58 pick; two-way agreed/reported signed 7/22/26; third NOP two-way slot open
 ,NYK,Karl-Anthony Towns,57.08,standard,C/PF,2027-28 player option $62.1M
