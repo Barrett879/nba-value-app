@@ -16,21 +16,21 @@
 #     their PRIMARY (so a SG/SF guard no longer blocks a true SF/PF forward).
 #   - Lines starting with # are ignored. Leave the file header-only to use 2K as-is.
 name,positions
-Jake LaRavia,SF/SG
+Jake LaRavia,SF/PF
 Gary Payton II,SG/SF
-Tari Eason,SF/SG
+Tari Eason,SF/PF
 Derrick Jones Jr.,SF/PF
 Aaron Wiggins,SF/SG
 Ochai Agbaji,SG/SF
-Terrence Shannon Jr.,SG/SF
-Jaylon Tyson,SG/SF
+Terrence Shannon Jr.,SF/SG
+Jaylon Tyson,SF/SG
 John Konchar,SG/SF
 Nique Clifford,SG/SF
-Jalen Williams,SG/SF
+Jalen Williams,SF/PF
 Jaylin Williams,C/PF
-Quinten Post,PF/C
+Quinten Post,C
 Joan Beringer,PF/C
-Alex Caruso,SG/SF
+Alex Caruso,SF/SG
 Kobe Sanders,SG/SF
 Zion Williamson,PF/SF
 Scottie Barnes,PF/SF
@@ -90,7 +90,7 @@ Bam Adebayo,C/PF
 Kel'el Ware,C/PF
 Taurean Prince,SF/SG
 Cam Thomas,SG
-Bobby Portis,PF/SF
+Bobby Portis,PF/C
 Naz Reid,C/PF
 Trey Murphy III,SF/SG
 Derik Queen,C
@@ -125,7 +125,7 @@ DeMar DeRozan,SF/SG
 Victor Wembanyama,C/PF
 De'Aaron Fox,PG/SG
 Harrison Barnes,PF/SF
-Carter Bryant,SF/SG
+Carter Bryant,PF/SF
 Jordan McLaughlin,PG
 Bismack Biyombo,C
 RJ Barrett,SG/SF
@@ -144,3 +144,69 @@ Quentin Grimes,SF/SG
 Derrick White,SG/PG
 Tyler Herro,SG/PG
 Kyle Kuzma,PF/SF
+Terry Rozier,PG/SG
+Monte Morris,PG
+Ja'Kobe Walter,SG/PG
+Duop Reath,C
+Will Riley,PF/SF
+Drake Powell,PG/SG
+Trey Jemison,C
+Keaton Wallace,PG
+Caleb Love,PG/SG
+Jaden Springer,SG/PG
+Daeqwon Plowden,SF/SG
+Julian Reese,C
+Ron Harper Jr.,SF/PF
+Blake Hinson,PF/C
+Chaz Lanier,SG/PG
+Adam Flagler,PG
+Amari Williams,C
+N'Faly Dante,C
+Johni Broome,C
+Lawson Lovering,C
+Chris Manon,SF/SG
+Devin Booker,SG/PG
+Jordan Goodwin,PG/SG
+Lauri Markkanen,PF/SF
+Bruce Brown,SG/PG
+Keldon Johnson,SF/SG
+Ayo Dosunmu,SG/PG
+Jabari Smith Jr.,PF/SF
+Aaron Nesmith,SF/SG
+Dyson Daniels,SF/SG
+Jalen Johnson,PF/SF
+Jonathan Kuminga,PF/SF
+Brandin Podziemski,SG/PG
+Brandon Miller,SF/SG
+Jordan Hawkins,SG/PG
+Bryce McGowens,SG/SF
+Tyrese Martin,SG/SF
+Taylor Hendricks,C/PF
+Ace Bailey,SF/PF
+Tidjane Salaun,PF/C
+Tristan Vukcevic,C
+Danny Wolf,PF/C
+Ben Saraf,SG/SF
+Dariq Whitehead,PF/SF
+Yanic Konan Niederhauser,C
+Myron Gardner,SF/SG
+Liam McNeeley,SF/PF
+Noa Essengue,PF/C
+Kyrie Irving,PG/SG
+Domantas Sabonis,C/PF
+Trey Lyles,PF/C
+Caleb Martin,SG/SF
+Kristaps Porzingis,C/PF
+Jaren Jackson Jr.,C/PF
+Jordan Poole,SG/PG
+Nickeil Alexander-Walker,SG/PG
+C.J. McCollum,PG/SG
+Patrick Williams,PF/SF
+Marvin Bagley III,C/PF
+Dean Wade,PF/SF
+Sam Hauser,PF/SF
+Stephon Castle,SG/PG
+Jabari Walker,PF/SF
+Isaiah Jackson,C/PF
+Jordan Walsh,PF/SF
+Josh Minott,PF/SF
