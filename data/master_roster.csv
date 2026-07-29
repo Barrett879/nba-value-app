@@ -232,7 +232,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,LAL,Luka Doncic,49.49,standard,PG/SG,year 1 of 3yr/$160.3M vet-max extension
 ,LAL,Austin Reaves,41.24,standard,SG/PG,re-signed 4yr/$184.76M July 2026
 ,LAL,Walker Kessler,30.11,standard,C,"acquired via sign-and-trade from UTA July 2026, 4yr/$129.47M"
-,LAL,Quentin Grimes,13.95,standard,SG/SF,signed 4yr/$60M July 2026
+,LAL,Quentin Grimes,13.95,standard,SF/SG,signed 4yr/$60M July 2026
 ,LAL,Sandro Mamukelashvili,13,standard,C/PF,signed 4yr/$52M July 2026
 ,LAL,Jarred Vanderbilt,12.43,standard,PF/C,2024 veteran extension
 ,LAL,Collin Sexton,9.37,standard,PG/SG,signed 2yr/$19.2M July 2026 via room exception
@@ -241,8 +241,8 @@ asof,team,player,salary_M,kind,pos,notes
 ,LAL,Dalton Knecht,4.2,standard,SG/SF,3rd year rookie scale
 ,LAL,Cameron Carr,3.32,standard,SG,2026 draft pick No. 25 (Baylor); rookie scale 4yr/$16.82M
 ,LAL,Kevon Looney,2.45,standard,C,signed 1yr/$3.88M vet-min July 2026; min cap hit
-,LAL,Ziaire Williams,2.45,standard,SF/PF,"signed 1yr/$2.85M Jul 19, 2026; min cap hit"
-,LAL,Matisse Thybulle,2.45,standard,SF/SG,"agreed 1yr/$3.29M Jul 20, 2026; on Spotrac pending-transactions, not yet official; PROMOTED to official per Barrett 2026-07-27"
+,LAL,Ziaire Williams,2.45,standard,PF/SF,"signed 1yr/$2.85M Jul 19, 2026; min cap hit"
+,LAL,Matisse Thybulle,2.45,standard,SG/SF,"agreed 1yr/$3.29M Jul 20, 2026; on Spotrac pending-transactions, not yet official; PROMOTED to official per Barrett 2026-07-27"
 ,LAL,Bronny James,2.3,standard,PG/SG,3rd year of 2024 second-round deal
 ,LAL,Adou Thiero,2.15,standard,SF/PF,2nd year of 2025 second-round deal
 ,LAL,Chris Manon,0,two_way,SG,two-way signed 2026
