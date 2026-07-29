@@ -369,7 +369,7 @@ def team_page_html(abbr: str):
 
         # cross-links to every other team (link graph for crawlers)
         others = "".join(
-            f'<a href="/team/{a}">{esc(t["abbr"])}</a>'
+            f'<a href="/Rosters?team={a}">{esc(t["abbr"])}</a>'
             for a, t in sorted(data.get("teams", {}).items()))
 
         room = team.get("room")

@@ -2348,6 +2348,18 @@ _NAV_SEARCH_HANDLER = """
 (function(){
   if (window.__hvNavSearchOn) return;
   window.__hvNavSearchOn = true;
+
+  // Navigation bridge for component iframes. Streamlit sandboxes them without
+  // allow-top-navigation, so a link inside a component cannot open a page even
+  // with target="_top" -- the click just does nothing. The component posts the
+  // path instead and this listener, which runs in the parent, navigates.
+  // Same-origin relative paths only, so a component can never redirect off-site.
+  window.addEventListener("message", function(ev){
+    var d = ev.data;
+    if (!d || d.hv !== "go" || typeof d.url !== "string") return;
+    if (d.url.charAt(0) !== "/" || d.url.charAt(1) === "/") return;
+    window.location.href = d.url;
+  });
   const P = __ROWS__, MAX = 7;
   const fold = s => s.normalize("NFKD").replace(/[\\u0300-\\u036f]/g, "").toLowerCase();
   for (const p of P) p._k = fold(p.n);

@@ -257,6 +257,14 @@ const DATA = __DATA__;
 const T = DATA.teams, CFG = DATA.cfg;
 const state = {team: null, sort: "salary", lsort: "pay", q: "", view: "list"};
 
+// Streamlit sandboxes component iframes without allow-top-navigation, so a
+// link in here cannot open a page even with target="_top". Hand the path to
+// the parent, which is not sandboxed, and let it navigate.
+function hvGo(a){
+  try{ window.parent.postMessage({hv: "go", url: a.getAttribute("href")}, "*"); }
+  catch(e){ return true; }
+  return false;
+}
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
   c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtM = v => (v == null ? "" : (v < 0 ? "-" : "") + "$" + Math.abs(v).toFixed(1) + "M");
@@ -418,8 +426,8 @@ function depthCard(p, rank){
   return `<div class="dcard${cls}" title="${esc(p.note)}">
     ${rank ? `<span class="drank${rank === 1 ? " top" : ""}">${rank}</span>` : ""}
     ${img}
-    <a class="nm" href="/Contract_Predictor?player=${encodeURIComponent(p.n)}"
-       target="_top">${esc(p.n)}</a>
+    <a class="nm" href="/?player=${encodeURIComponent(p.n)}" target="_top"
+       onclick="return hvGo(this)">${esc(p.n)}</a>
     <div class="bs">${p.barrett == null ? "no score" : p.barrett.toFixed(1) + " BS"}</div>
     ${money}${vd}
   </div>`;
@@ -448,8 +456,8 @@ function playerCard(p){
   return `<div class="card${cls}">
     ${img}
     <div class="who">
-      <a class="nm" href="/Contract_Predictor?player=${encodeURIComponent(p.n)}"
-         target="_top" title="Open ${esc(p.n)} in the Contract Predictor">${esc(p.n)}</a>${optChip(p)}
+      <a class="nm" href="/?player=${encodeURIComponent(p.n)}" target="_top"
+         onclick="return hvGo(this)" title="Open ${esc(p.n)}">${esc(p.n)}</a>${optChip(p)}
       <div class="sub">${pos}${statLine(p)}</div>
       <div class="deal" title="${esc(p.note)}">${esc(p.note)}</div>
     </div>

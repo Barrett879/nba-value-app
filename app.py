@@ -1385,7 +1385,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
                     _tw_view,
                     formatters={
                         "Player": lambda v: (f'<span class="hv-mini-wrap">{_face_img(str(v), "hv-mini-face")}</span>'
-                                             f'<a class="hv-plink" href="/Search?player={_urlquote(str(v))}" '
+                                             f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
                                              f'target="_top">{html.escape(str(v))}</a>'),
                         "Avg Score": lambda v: f"{v:.2f}",
                         "Peak": lambda v: f"{v:.2f}",

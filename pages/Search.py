@@ -20,6 +20,7 @@ from utils import (
     tier_color, gradient_points,
     render_rail, face_img, TEAM_HEX, hex_rgba,
     PRE_1990_SALARY_NOTE,
+    _team_page_set,
 )
 from urllib.parse import quote
 
@@ -358,10 +359,20 @@ def _gp_weighted(career: pd.DataFrame, col: str) -> float:
 
 # ── HV-kit table-cell helpers ─────────────────────────────────────────────────
 def _team_cell(v) -> str:
-    """Team abbrev with its team-color dot (raw column: escape the text)."""
+    """Team abbrev with its team-color dot, linked to that team's roster.
+
+    This page keeps its own cell rather than using utils.team_cell because it
+    renders historical teams too, and only current ones have a roster to point
+    at; the rest stay plain text.
+    """
     t = str(v)
     cls = f" tdot-{t}" if t in TEAM_HEX else ""
-    return f'<span class="tdot{cls}"></span>{html.escape(t)}'
+    dot = f'<span class="tdot{cls}"></span>'
+    if t in _team_page_set():
+        q = html.escape(t, quote=True)
+        return (f'{dot}<a class="hv-tlink" href="/Rosters?team={q}" '
+                f'target="_top">{html.escape(t)}</a>')
+    return f'{dot}{html.escape(t)}'
 
 
 def _score_bar_style(vmax: float):
