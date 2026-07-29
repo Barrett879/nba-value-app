@@ -34,7 +34,42 @@ two_font = Font(name=FONT, size=10, color="4F6B8A")
 fa_font = Font(name=FONT, size=10, italic=True, color="6B7280")
 
 
+def _lookups():
+    """Model value + Barrett score by normalized name, for both rostered
+    players (team pages) and free agents (the FA pool)."""
+    import json
+    from utils import normalize
+    val, score, yr = {}, {}, {}
+    try:
+        tp = json.loads((ROOT / "cache" / "team_pages.json").read_text())["teams"]
+        for t in tp.values():
+            for p in t["players"]:
+                n = normalize(p["n"])
+                if p.get("value") is not None:
+                    val[n] = p["value"]
+                if p.get("barrett") is not None:
+                    score[n] = p["barrett"]
+    except Exception:
+        pass
+    try:
+        for f in json.loads((ROOT / "cache" / "fa_pool_v1.json").read_text())["fas"]:
+            n = normalize(f["n"])
+            if f.get("value") is not None:
+                val[n] = f["value"]
+            if f.get("barrett") is not None:
+                score[n] = f["barrett"]
+            if f.get("bs_yr"):
+                yr[n] = f["bs_yr"]
+    except Exception:
+        pass
+    return val, score, yr
+
+
 def main() -> None:
+    import sys
+    sys.path.insert(0, str(ROOT))
+    from utils import normalize
+    val_of, score_of, yr_of = _lookups()
     rows = []
     asof = ""
     with SRC.open() as f:
@@ -50,7 +85,8 @@ def main() -> None:
     # ── Master List ──────────────────────────────────────────────────────────
     ws = wb.active
     ws.title = "Master List"
-    heads = ["Team", "Player", "Pos", "2026-27 Salary ($M)", "Contract", "Notes"]
+    heads = ["Team", "Player", "Pos", "2026-27 Salary ($M)", "Contract",
+             "Model Value ($M)", "Barrett Score", "Notes"]
     ws.append(heads)
     for c in range(1, len(heads) + 1):
         cell = ws.cell(1, c)
@@ -60,8 +96,14 @@ def main() -> None:
                   "free_agent": "Free Agent"}
     prev_team = None
     for i, r in enumerate(rows, start=2):
+        _n = normalize(r["player"])
+        _sc = score_of.get(_n)
         ws.append([r["team"], r["player"], r["pos"],
-                   float(r["salary_M"] or 0), kind_label[r["kind"]], r["notes"]])
+                   float(r["salary_M"] or 0), kind_label[r["kind"]],
+                   val_of.get(_n),
+                   (f"{_sc} ({yr_of[_n]})" if _sc is not None and _n in yr_of
+                    else _sc),
+                   r["notes"]])
         first_of_team = r["team"] != prev_team
         prev_team = r["team"]
         for c in range(1, len(heads) + 1):
@@ -76,10 +118,13 @@ def main() -> None:
         if first_of_team:
             ws.cell(i, 1).font = bold
         ws.cell(i, 4).number_format = "0.00"
-    for j, w in enumerate([7, 24, 8, 17, 11, 60], 1):
+        ws.cell(i, 6).number_format = "0.0"
+        ws.cell(i, 6).alignment = Alignment(horizontal="right")
+        ws.cell(i, 7).alignment = Alignment(horizontal="center")
+    for j, w in enumerate([7, 24, 8, 17, 11, 15, 13, 60], 1):
         ws.column_dimensions[get_column_letter(j)].width = w
     ws.freeze_panes = "A2"
-    ws.auto_filter.ref = f"A1:F{len(rows) + 1}"
+    ws.auto_filter.ref = f"A1:H{len(rows) + 1}"
 
     # ── Team Summary ─────────────────────────────────────────────────────────
     ts = wb.create_sheet("Team Summary")
