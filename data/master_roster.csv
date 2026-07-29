@@ -338,7 +338,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Hunter Dickinson,0.68,two_way,C,"Two-way QO tendered, re-signed two-way July 2026"
 ,NOP,Jaron Pierre Jr.,0.68,two_way,SG,2026 No. 58 pick; two-way agreed/reported signed 7/22/26; third NOP two-way slot open
 ,NYK,Karl-Anthony Towns,57.08,standard,C/PF,2027-28 player option $62.1M
-,NYK,OG Anunoby,42.5,standard,SF/PF,2028-29 player option
+,NYK,OG Anunoby,42.5,standard,PF/SF,2028-29 player option
 ,NYK,Jalen Brunson,37.74,standard,PG,2028-29 player option
 ,NYK,Mikal Bridges,33.48,standard,SG/SF,2029-30 player option
 ,NYK,Josh Hart,20.92,standard,SF/SG,Extension-eligible 8/10/2026; 2027-28 team option $22.4M
@@ -469,7 +469,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,SAS,David Jones Garcia,0.68,two_way,SF,Two-way contract
 ,SAS,Ja'Kobi Gillespie,0.68,two_way,PG,Two-way contract
 ,SAS,Maliq Brown,0.68,two_way,PF,Two-way contract; 50% guarantee at opening night
-,TOR,Kawhi Leonard,50.3,standard,PF/SF,"Trade from LAC AGREED (for Ingram, Dick, 2031+2033 unprotected 1sts, 2027 swap, 2030+2033 2nds) but ON HOLD pending NBA investigation into his Aspiration deal; not official as of 7/27; $50.3M expiring; PROMOTED to official per Barrett 2026-07-27"
+,TOR,Kawhi Leonard,50.3,standard,SF/PF,"Trade from LAC AGREED (for Ingram, Dick, 2031+2033 unprotected 1sts, 2027 swap, 2030+2033 2nds) but ON HOLD pending NBA investigation into his Aspiration deal; not official as of 7/27; $50.3M expiring; PROMOTED to official per Barrett 2026-07-27"
 ,TOR,Scottie Barnes,41.75,standard,PF/SF,Designated-rookie max extension
 ,TOR,Immanuel Quickley,32.5,standard,PG/SG,
 ,TOR,RJ Barrett,29.62,standard,SG/SF,Plus $3.6M unlikely incentives
