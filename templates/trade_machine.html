@@ -31,14 +31,13 @@ body{background:transparent;color:var(--fg1);
 .emptyhint{border:1.5px dashed var(--line);border-radius:14px;padding:2rem 1.2rem;
   text-align:center;color:var(--fg4);font-size:.92rem;background:var(--tintz)}
 /* One column per SLOT, not per picked team -- an empty slot is still a card,
-   because the card is now what you pick a team with. The add slot is a narrow
-   trailing column so opening a third seat does not squeeze the two teams. */
+   because the card is now what you pick a team with. Nothing else lives in this
+   grid: a dashed "add team" tile beside the cards pulled the eye away from the
+   trade itself for the two-team case, which is nearly all of them. */
 .boards{display:grid;gap:12px;grid-template-rows:repeat(5,auto)}
 .boards.s2{grid-template-columns:1fr 1fr}
 .boards.s3{grid-template-columns:1fr 1fr 1fr}
 .boards.s4{grid-template-columns:repeat(4,1fr)}
-.boards.s2.plus{grid-template-columns:1fr 1fr 124px}
-.boards.s3.plus{grid-template-columns:1fr 1fr 1fr 124px}
 @media(max-width:900px){.boards{grid-template-columns:1fr !important}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
   padding:.75rem .75rem .85rem;min-width:0;border-top:3px solid var(--tc,var(--teal));
@@ -74,20 +73,15 @@ body{background:transparent;color:var(--fg1);
   border-radius:7px;width:22px;height:22px;line-height:1;font-size:.95rem;font-weight:700;
   cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
 .prm:hover{color:var(--bad);border-color:var(--bad)}
-/* The open seat, sitting to the right of the last team rather than above it */
-/* align-self:start keeps it a compact tile level with the team headers; left to
-   span the full subgrid it becomes a tall empty column beside the rosters */
-.addslot{grid-row:span 5;align-self:start;background:none;border:1.5px dashed var(--line);
-  border-radius:14px;color:var(--fg4);display:flex;flex-direction:column;align-items:center;
-  justify-content:center;gap:.3rem;cursor:pointer;padding:1.15rem .4rem;font-size:.8rem;
-  font-weight:700;line-height:1.3;text-align:center;
-  transition:color .12s,border-color .12s,background .12s}
-.addslot:hover{color:var(--teal);border-color:var(--teal);background:var(--tintz)}
-.addslot .plus{font-size:1.6rem;font-weight:300;line-height:1}
-.resetrow{display:flex;justify-content:flex-end;margin-bottom:8px}
-.resetrow .add{background:none;border:1px dashed var(--line);color:var(--fg4);border-radius:9px;
-  padding:.34rem .6rem;cursor:pointer;font-size:.78rem;font-weight:700}
-.resetrow .add:hover{color:var(--bad);border-color:var(--bad)}
+/* Board tools sit above and right of the cards as quiet text, out of the way of
+   a straight two-team trade. Borderless on purpose: a dashed box here reads as
+   another slot to fill. */
+.boardtools{display:flex;justify-content:flex-end;align-items:center;gap:.9rem;
+  margin-bottom:8px;min-height:1.2rem}
+.boardtools button{background:none;border:none;padding:0;cursor:pointer;
+  font-size:.78rem;font-weight:700;color:var(--fg5);transition:color .12s}
+.boardtools .addbtn:hover{color:var(--teal)}
+.boardtools .reset:hover{color:var(--bad)}
 .pname{font-weight:800;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   display:flex;align-items:center;gap:.45rem;min-width:0}
 .plogo{width:26px;height:26px;object-fit:contain;flex:0 0 26px}
@@ -674,11 +668,13 @@ function render(){
   const rmBtn=(a,i)=>state.teams.length>2
     ?`<button class="prm" data-rm="${i}" title="${a?"Remove "+esc(DATA.teams[a].name)+" from this trade":"Remove this slot"}">&times;</button>`:"";
 
-  if(anyMove||Object.keys(state.order).length)
-    html+=`<div class="resetrow"><button class="add" id="resetbtn" title="Clear every move, cash amount, and arranged order; keeps the selected teams">Reset trade</button></div>`;
-
   const slots=state.teams.length, canAdd=slots<4;
-  html+=`<div class="boards s${slots}${canAdd?" plus":""}">`;
+  const tools=(canAdd?`<button class="addbtn" id="addteam" title="Bring a third or fourth team into this trade">+ Add team</button>`:"")
+    +((anyMove||Object.keys(state.order).length)
+      ?`<button class="reset" id="resetbtn" title="Clear every move, cash amount, and arranged order; keeps the selected teams">Reset trade</button>`:"");
+  if(tools) html+=`<div class="boardtools">${tools}</div>`;
+
+  html+=`<div class="boards s${slots}">`;
   for(let i=0;i<slots;i++){
     const a=state.teams[i];
     if(!a){                                       // an open seat: header only
@@ -777,9 +773,6 @@ function render(){
     html+=`<div class="cashrow">Cash out <input type="number" min="0" max="${CFG.cash_annual_limit}"
       step="0.5" value="${state.cash[a]||""}" data-cash="${a}" placeholder="0"> $M</div></div></div>`;
   }
-  if(canAdd)
-    html+=`<button class="addslot" id="addteam" title="Bring a third or fourth team into this trade">
-      <span class="plus">+</span><span>Add team</span></button>`;
   html+=`</div>`;
 
   if(n<2){                       // the boards ARE the picker now, so they stay
