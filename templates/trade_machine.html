@@ -158,15 +158,31 @@ body{background:transparent;color:var(--fg1);
 .capticks{display:flex;justify-content:flex-end;font-size:.6rem;margin-bottom:.3rem;font-variant-numeric:tabular-nums}
 .capend.rest{color:var(--blue)} .capend.live{color:var(--good)} .capend.bad{color:var(--bad)}
 .apronwarn{font-size:.68rem;color:var(--amberc);margin:0 0 .3rem}
-.zone{border:1.5px dashed var(--line);border-radius:11px;min-height:58px;padding:.4rem;
+.zone{position:relative;overflow:hidden;
+  border:1.5px dashed var(--line);border-radius:11px;min-height:58px;padding:.4rem;
   margin:.45rem 0 .6rem;background:var(--tintz);transition:border-color .12s, background .12s}
+/* The receive box is the one genuinely empty area on the card, so it carries
+   the team's ghosted abbreviation -- the site's established identity device,
+   borrowed from the Rosters header. Put anywhere in the header it collided with
+   the payroll figure; here it fills dead space and quietly recedes once players
+   and picks land on top of it. */
+.zone::after{content:attr(data-drop);position:absolute;right:.5rem;top:50%;
+  transform:translateY(-50%);font-size:2.6rem;font-weight:800;letter-spacing:-.04em;
+  line-height:1;color:var(--tc,var(--teal));opacity:.10;pointer-events:none;z-index:0}
+.zone > *{position:relative;z-index:1}
+@media(max-width:760px){.zone::after{display:none}}
 .zone .zl{font-size:.62rem;font-weight:800;letter-spacing:.08em;color:var(--fg5);
   text-transform:uppercase;padding:.15rem .25rem}
 .zone.over{border-color:var(--teal);background:var(--tintg)}
 .zone .card{margin:.28rem 0}
 .roster,.pickgrid{display:block;margin:.15rem 0 .1rem}
 .roster .card,.pickgrid .card{margin:0 0 .32rem}
+/* A 3px edge in the team's own colour, so a column of rows reads as that team's
+   even when you are deep in a roster and the header has scrolled away. The
+   incoming rule below overrides it with green, which is the point: an acquired
+   player should not look like he was always there. */
 .card{display:flex;align-items:center;gap:.6rem;background:var(--card);border:1px solid var(--line);
+  border-left:3px solid var(--tc,var(--line));
   border-radius:11px;padding:.5rem .65rem;margin:0;cursor:grab;user-select:none;min-width:0;
   transition:border-color .12s, box-shadow .12s, transform .12s}
 /* Hovering a player washes the card in his team's colours, positioned by where
@@ -184,9 +200,26 @@ body{background:transparent;color:var(--fg1);
 .card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .sub{font-size:.76rem;color:var(--fg4);font-variant-numeric:tabular-nums;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
+/* Position chips carry a hue per slot, so a roster reads as a shape at a glance
+   -- a guard-heavy board looks different from a frontcourt one before you read a
+   word. Deliberately no green or red: those already mean under and over value
+   everywhere else on the site, and reusing them here would say something the
+   chip does not mean. Falls back to the old grey for a blank or odd position. */
 .poschip{display:inline-block;min-width:1.5em;text-align:center;padding:0 .3em;margin-right:.35em;
   border-radius:5px;background:var(--track);color:var(--fg3);font-size:.68rem;font-weight:800;
-  vertical-align:1px;letter-spacing:.02em}
+  vertical-align:1px;letter-spacing:.02em;
+  background:color-mix(in srgb, var(--pc,transparent) 16%, var(--track));
+  color:var(--pc,var(--fg3))}
+.poschip[data-pos="PG"]{--pc:#3b82f6}
+.poschip[data-pos="SG"]{--pc:#0ea5b7}
+.poschip[data-pos="SF"]{--pc:#8b5cf6}
+.poschip[data-pos="PF"]{--pc:#d97706}
+.poschip[data-pos="C"] {--pc:#db2777}
+body:not(.light) .poschip[data-pos="PG"]{--pc:#7cb0ff}
+body:not(.light) .poschip[data-pos="SG"]{--pc:#3fd0de}
+body:not(.light) .poschip[data-pos="SF"]{--pc:#b193ff}
+body:not(.light) .poschip[data-pos="PF"]{--pc:#f5ac3c}
+body:not(.light) .poschip[data-pos="C"] {--pc:#ff6fae}
 .card .mv{border:none;background:var(--track);color:var(--fg3);font-size:.74rem;font-weight:800;
   border-radius:8px;padding:.3rem .55rem;cursor:pointer;white-space:nowrap;
   transition:background .1s, color .1s}
@@ -1009,7 +1042,8 @@ function statBits(p,salary){
   // one stat line for every player card: position chip + salary + Barrett
   // score, plus last season's box line and D-LEBRON on 2- and 3-team boards
   const nT=picked().length;
-  const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
+  const chip=p.pos?`<span class="poschip" data-pos="${esc((p.pos||"").split("/")[0].toUpperCase())}"
+    >${esc(p.pos)}</span>`:"";
   const out=[fmtM(salary!=null?salary:p.salary)];
   if(p.barrett!=null) out.push(p.barrett.toFixed(1)+" BS"+(p.bs_yr?` (${p.bs_yr})`:""));
   if(nT<=3){
