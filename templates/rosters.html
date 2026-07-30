@@ -976,10 +976,24 @@ function syncParentURL(){
 // size our own frame to the content so nothing scrolls inside the component
 function fitFrame(){
   try{
-    const h = document.documentElement.scrollHeight + 24;
+    // Measure the CONTENT, not documentElement.scrollHeight. Inside a srcdoc
+    // iframe that sizes itself, the root's scrollHeight is floored at the
+    // viewport height, and the viewport height IS the iframe height -- so
+    // scrollHeight + 24 could only ever mean "current + 24", and the 1s
+    // interval below grew the frame forever. Measured 1507px of real content
+    // in an 1866px frame, reaching 2802px ten seconds later: a page of blank
+    // space under the rosters that a theme toggle then jerked into view.
+    const rootEl = document.getElementById("ro-root");
+    const top = window.scrollY || document.documentElement.scrollTop || 0;
+    const h = Math.ceil(rootEl.getBoundingClientRect().bottom + top) + 24;
     const fe = window.frameElement;
     if (!fe) return;
     fe.style.height = h + "px";
+    // Streamlit sizes this wrapper from the declared components.html(height=...)
+    // via a stylesheet rule, so min-height cannot bring it back down once the
+    // iframe shrinks to fit. It holds only this component, so pinning is safe.
+    if (fe.parentElement && fe.parentElement.getAttribute("data-testid") === "stElementContainer")
+      fe.parentElement.style.height = h + "px";
     const pdoc = fe.ownerDocument;
     let el = fe.parentElement;
     while (el && el !== pdoc.body){

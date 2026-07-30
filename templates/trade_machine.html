@@ -990,6 +990,14 @@ function fitFrame(){
     const fe=window.frameElement;
     if(!fe) return;
     fe.style.height=h+"px";
+    // Pin the element container that holds ONLY this component. Streamlit sizes
+    // it from the declared components.html(height=...) -- 1000px here -- via a
+    // stylesheet rule, so min-height cannot bring it down: once fitFrame started
+    // shrinking the iframe to fit its content, the difference showed up as
+    // hundreds of pixels of reserved blank page below the boards. Safe to set
+    // height here and nowhere else, because this wrapper has one child.
+    if(fe.parentElement&&fe.parentElement.getAttribute("data-testid")==="stElementContainer")
+      fe.parentElement.style.height=h+"px";
     // Grow EVERY wrapper up to Streamlit's scroll root with min-height (not
     // height: min-height cooperates with flex layout and containers that hold
     // more than the component). Stopping short of the root left the page's
