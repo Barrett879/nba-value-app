@@ -1956,14 +1956,19 @@ COMMON_CSS = """
         gap: 0 !important;
     }
 
-    /* Page block-container top padding, fits the fixed nav bar (3rem tall)
-       plus breathing room before the page title. 5.5rem leaves a clean ~2.5rem
-       gap between the nav and the title. */
+    /* Page block-container top padding, clearing the fixed nav bar. Tuned by
+       MEASURING the gap from the bar's bottom edge to the title's glyph tops,
+       not by arithmetic: Streamlit's block offsets differ between one-row and
+       two-row pages, so matching the padding does NOT match the visible gap.
+       5.2rem lands 23px of clearance, the same as app.py's homepage and the
+       same as render_nav()'s 8.6rem sub-nav override. Was 5.5rem (28px), which
+       left section pages looking tighter than the rest of the site by
+       comparison. Change these three together. */
     .main .block-container,
     section.main > .block-container,
     [data-testid="stMain"] .block-container,
     [data-testid="stMainBlockContainer"] {
-        padding-top: 5.5rem !important;
+        padding-top: 5.2rem !important;
     }
 
     /* Same trick for the components.html hide-badge iframe, height=0 in
@@ -2508,11 +2513,16 @@ def render_nav(current: str) -> None:
             f'<a class="{"active" if label == current else ""}" href="{url}" '
             f'target="_top">{label}</a>'
             for label, url in group[2])
+        # Tuned to land the SAME 23px between the sub-nav's bottom edge and the
+        # title's glyph tops that COMMON_CSS's 5.2rem gives one-row pages. Was
+        # 7.4rem, which left about 4px and read as the title touching the tabs.
+        # Not 5.2 + the sub-nav's 2.4rem: Streamlit's block offset differs
+        # between one-row and two-row pages, so this is measured, not derived.
         st.markdown(
             f'<div class="sub-nav">{tabs}</div>'
             '<style>.main .block-container,section.main > .block-container,'
             '[data-testid="stMain"] .block-container,'
-            '[data-testid="stMainBlockContainer"]{padding-top:7.4rem !important}</style>',
+            '[data-testid="stMainBlockContainer"]{padding-top:8.6rem !important}</style>',
             unsafe_allow_html=True)
 
     # Theme button — keyed container, pinned to the top-right via CSS. The
