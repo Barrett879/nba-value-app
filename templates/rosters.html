@@ -20,7 +20,11 @@ body{background:transparent;color:var(--fg1);
 .striphead{display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem}
 .striphead .lbl{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
   color:var(--fg5)}
-.strip{display:flex;gap:10px 16px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
+/* Two rows, one per conference: East on top, West underneath. Left to its own
+   wrapping the six pills broke 5+1 at most widths, which read as an accident. */
+.strip{display:flex;flex-direction:column;gap:10px}
+.confrow{display:flex;gap:10px 16px;align-items:flex-start;flex-wrap:wrap;
+  justify-content:center}
 /* one group per division, five logos across: six groups fill the row on a wide
    screen and wrap by division on a narrow one, so the grouping never breaks.
    Each division is a pill washed with a gradient built from its own five teams'
@@ -344,7 +348,8 @@ function teamStrip(){
     ${state.team ? `<button class="backbtn" id="back" style="margin-left:auto"
       title="Back to the league table">All 30 teams</button>` : ""}
   </div><div class="strip">`;
-  for (const [conf, divs] of Object.entries(DATA.divs))
+  for (const [conf, divs] of Object.entries(DATA.divs)){
+    h += `<div class="confrow">`;
     for (const [div, abbrs] of Object.entries(divs)){
       h += `<div class="confgrp" style="--dg:${divGradient(abbrs)}">
         <div class="conflabel">${esc(div)}
@@ -361,6 +366,8 @@ function teamStrip(){
       }
       h += `</div></div>`;
     }
+    h += `</div>`;                     // close .confrow
+  }
   return h + "</div></div>";
 }
 
