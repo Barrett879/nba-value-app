@@ -15,8 +15,14 @@ body{background:transparent;color:var(--fg1);
 #ro-root{padding:2px 2px 16px}
 
 /* ── team strip ─────────────────────────────────────────────────────────── */
-.stripwrap{background:var(--panel);border:1px solid var(--line);border-radius:14px;
-  padding:.5rem .7rem .6rem;margin-bottom:12px}
+/* Picker and shortlist are two separate cards sitting side by side, divided by
+   the same 8px gutter the league-summary cards use rather than by a hairline
+   inside one card. The shortlist is its own block, not a margin note on the
+   picker. */
+.striprow{display:flex;gap:8px;align-items:stretch;margin-bottom:12px}
+.stripwrap{flex:1 1 auto;min-width:0;
+  background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:.5rem .7rem .6rem}
 .striphead{display:flex;align-items:center;gap:.6rem;margin-bottom:.35rem}
 .striphead .lbl{font-size:.66rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;
   color:var(--fg5)}
@@ -24,14 +30,14 @@ body{background:transparent;color:var(--fg1);
    wrapping the six pills broke 5+1 at most widths, which read as an accident. */
 .strip{display:flex;flex-direction:column;gap:10px;flex:1 1 auto;min-width:0}
 /* The picker left a wide gutter on the right at desktop widths. It now holds a
-   shortlist of the strongest rosters, so the panel answers "who should I look
-   at?" instead of just "pick something". Collapses under the pills below 1180px
+   shortlist of the strongest rosters, so the row answers "who should I look
+   at?" instead of just "pick something". Drops under the picker below 1180px
    and disappears entirely on phones, where it would just be scroll. */
-.stripbody{display:flex;gap:16px;align-items:flex-start}
-.teamlead{flex:0 0 236px;border-left:1px solid var(--line);padding-left:14px}
-.teamlead .tlhead{font-size:.6rem;font-weight:800;letter-spacing:.09em;
+.leadwrap{flex:0 0 264px;background:var(--panel);border:1px solid var(--line);
+  border-radius:14px;padding:.5rem .7rem .6rem}
+.leadwrap .tlhead{font-size:.6rem;font-weight:800;letter-spacing:.09em;
   text-transform:uppercase;color:var(--fg5);margin-bottom:.35rem;white-space:nowrap}
-.teamlead .tlhead span{font-weight:600;letter-spacing:0;text-transform:none;color:var(--fg5);
+.leadwrap .tlhead span{font-weight:600;letter-spacing:0;text-transform:none;color:var(--fg5);
   opacity:.75;margin-left:.3rem}
 .tlrow{display:flex;align-items:center;gap:.45rem;width:100%;padding:.17rem .35rem;
   border:1px solid transparent;border-radius:8px;background:none;cursor:pointer;
@@ -45,14 +51,13 @@ body{background:transparent;color:var(--fg1);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tlrow .tlsc{font-size:.72rem;font-weight:800;color:var(--teal);
   font-variant-numeric:tabular-nums}
-.teamlead .tlnote{font-size:.62rem;color:var(--fg5);margin-top:.4rem;line-height:1.35}
+.leadwrap .tlnote{font-size:.62rem;color:var(--fg5);margin-top:.4rem;line-height:1.35}
 @media(max-width:1180px){
-  .stripbody{flex-direction:column}
-  .teamlead{flex:1 1 auto;border-left:0;border-top:1px solid var(--line);
-    padding-left:0;padding-top:10px;width:100%}
-  .teamlead .tlgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 10px}
+  .striprow{flex-direction:column}
+  .leadwrap{flex:1 1 auto;width:100%}
+  .leadwrap .tlgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:2px 10px}
 }
-@media(max-width:620px){.teamlead{display:none}}
+@media(max-width:620px){.leadwrap{display:none}}
 .confrow{display:flex;gap:10px 16px;align-items:flex-start;flex-wrap:wrap;
   justify-content:center}
 /* one group per division, five logos across: six groups fill the row on a wide
@@ -372,10 +377,11 @@ function divGradient(abbrs){
   return `linear-gradient(100deg, ${stops})`;
 }
 
-// A team's rotation strength: the ten best Barrett Scores under contract.
-// Summing the whole roster would just reward carrying 19 bodies; ten is about a
-// full rotation and is roster-size neutral (every team has at least 11 scored).
-const ROTATION_N = 10;
+// A team's rotation strength: the eight best Barrett Scores under contract.
+// Summing the whole roster would just reward carrying 19 bodies; eight is about
+// a playoff rotation and is roster-size neutral (every team has at least 11
+// scored players, so the top eight always exists).
+const ROTATION_N = 8;
 function rotationStrength(t){
   return (t.players || [])
     .filter(p => p.kind !== "free_agent" && p.barrett != null)
@@ -387,12 +393,12 @@ function teamLeaderboard(){
   const ranked = Object.values(T)
     .map(t => ({ t, s: rotationStrength(t) }))
     .sort((a, b) => b.s - a.s).slice(0, 5);
-  let h = `<div class="teamlead"><div class="tlhead">Strongest rosters
+  let h = `<div class="leadwrap"><div class="tlhead">Strongest rosters
     <span>top ${ROTATION_N} by Barrett Score</span></div><div class="tlgrid">`;
   ranked.forEach(({ t, s }, i) => {
     const c = DATA.colors[t.abbr] || "var(--teal)";
     h += `<button class="tlrow${t.abbr === state.team ? " on" : ""}" data-team="${esc(t.abbr)}"
-      style="--tc:${c}" title="${esc(t.name)} — ${ROTATION_N} best Barrett Scores under contract add to ${s.toFixed(1)}">
+      style="--tc:${c}" title="${esc(t.name)}: ${ROTATION_N} best Barrett Scores under contract add to ${s.toFixed(1)}">
       <span class="tlrank">${i + 1}</span>
       <img src="${esc(DATA.logos[t.abbr] || "")}" alt="" loading="lazy"
         onerror="this.style.visibility='hidden'">
@@ -403,11 +409,11 @@ function teamLeaderboard(){
 }
 
 function teamStrip(){
-  let h = `<div class="stripwrap"><div class="striphead">
+  let h = `<div class="striprow"><div class="stripwrap"><div class="striphead">
     <span class="lbl">${state.team ? "Switch team" : "Pick a team"}</span>
     ${state.team ? `<button class="backbtn" id="back" style="margin-left:auto"
       title="Back to the league table">All 30 teams</button>` : ""}
-  </div><div class="stripbody"><div class="strip">`;
+  </div><div class="strip">`;
   for (const [conf, divs] of Object.entries(DATA.divs)){
     h += `<div class="confrow">`;
     for (const [div, abbrs] of Object.entries(divs)){
@@ -428,7 +434,8 @@ function teamStrip(){
     }
     h += `</div>`;                     // close .confrow
   }
-  return h + "</div>" + teamLeaderboard() + "</div></div>";
+  //          .strip   .stripwrap        the sibling card        .striprow
+  return h + "</div>" + "</div>" + teamLeaderboard() + "</div>";
 }
 
 function capBar(t){
