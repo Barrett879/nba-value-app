@@ -12,17 +12,6 @@ body{background:transparent;color:var(--fg1);
   font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
   -webkit-font-smoothing:antialiased}
 #tm-root{padding:2px 2px 14px}
-.pickrow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
-.teampick{position:relative;display:inline-flex;align-items:center;gap:4px}
-.tsel{display:flex;align-items:center;gap:.5rem;min-width:210px;text-align:left;
-  background:var(--panel);color:var(--fg1);border:1px solid var(--line);
-  border-left:4px solid var(--tc,var(--line));border-radius:9px;
-  padding:.42rem .6rem;font-size:.88rem;font-weight:700;cursor:pointer;
-  transition:border-color .12s, box-shadow .12s}
-.tsel:hover{border-color:var(--tc,var(--teal));box-shadow:0 2px 10px rgba(0,0,0,.10)}
-.tsel.unset{border-style:dashed;color:var(--fg4);font-weight:600}
-.tsel img{width:22px;height:22px;object-fit:contain;flex:0 0 22px}
-.tsel .caret{margin-left:auto;color:var(--fg5);font-size:.62rem}
 .tmenu{position:absolute;top:calc(100% + 6px);left:0;z-index:60;width:266px;
   max-height:330px;overflow:auto;background:var(--panel);border:1px solid var(--line);
   border-radius:12px;box-shadow:0 12px 34px rgba(0,0,0,.28);padding:.35rem}
@@ -41,19 +30,15 @@ body{background:transparent;color:var(--fg1);
 .topt.sel{background:var(--track);border-left-color:var(--tc)}
 .emptyhint{border:1.5px dashed var(--line);border-radius:14px;padding:2rem 1.2rem;
   text-align:center;color:var(--fg4);font-size:.92rem;background:var(--tintz)}
-.pickrow .add{background:none;border:1px dashed var(--line);color:var(--fg4);border-radius:9px;
-  padding:.45rem .7rem;cursor:pointer;font-size:.82rem;font-weight:700}
-.pickrow .add:hover{color:var(--teal);border-color:var(--teal)}
-.pickrow .reset:hover{color:var(--bad);border-color:var(--bad)}
-.teampick{display:inline-flex;align-items:center;gap:4px}
-.rmteam{background:none;border:1px solid var(--line);color:var(--fg5);border-radius:8px;
-  width:26px;height:26px;line-height:1;font-size:1rem;font-weight:700;cursor:pointer;
-  display:flex;align-items:center;justify-content:center;padding:0}
-.rmteam:hover{color:var(--bad);border-color:var(--bad)}
+/* One column per SLOT, not per picked team -- an empty slot is still a card,
+   because the card is now what you pick a team with. The add slot is a narrow
+   trailing column so opening a third seat does not squeeze the two teams. */
 .boards{display:grid;gap:12px;grid-template-rows:repeat(5,auto)}
-.boards.n2{grid-template-columns:1fr 1fr}
-.boards.n3{grid-template-columns:1fr 1fr 1fr}
-.boards.n4{grid-template-columns:1fr 1fr 1fr 1fr}
+.boards.s2{grid-template-columns:1fr 1fr}
+.boards.s3{grid-template-columns:1fr 1fr 1fr}
+.boards.s4{grid-template-columns:repeat(4,1fr)}
+.boards.s2.plus{grid-template-columns:1fr 1fr 124px}
+.boards.s3.plus{grid-template-columns:1fr 1fr 1fr 124px}
 @media(max-width:900px){.boards{grid-template-columns:1fr !important}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
   padding:.75rem .75rem .85rem;min-width:0;border-top:3px solid var(--tc,var(--teal));
@@ -63,7 +48,46 @@ body{background:transparent;color:var(--fg1);
      trade exceptions or apron warnings */
   display:grid;grid-template-rows:subgrid;grid-row:span 5;align-content:start}
 .pnotes{align-self:start} .pbody{min-width:0}
-.phead{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:2px}
+/* min-width:0 for the same reason .pbody has it: the panel's implicit grid
+   column is auto-sized, so any child that refuses to shrink sets the column
+   width and the whole card overflows. The header carries a nowrap hard-cap
+   chip, so at three and four teams it is exactly that child. */
+.phead{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:2px;
+  position:relative;min-width:0}
+/* The card header IS the team picker. It stays styled as a heading until you
+   point at it, so the board reads as a board rather than a row of dropdowns. */
+/* min-width:0 + overflow are load-bearing: without them the trigger refuses to
+   shrink below the full team name, and at three or four teams the whole header
+   (payroll and remove button included) overflows the card. */
+.pseltrig{display:flex;align-items:center;gap:.45rem;flex:1 1 auto;min-width:4.5rem;
+  overflow:hidden;background:none;border:none;padding:0;margin:0;font:inherit;color:inherit;
+  text-align:left;cursor:pointer}
+.hcline{margin:.1rem 0 .15rem}
+.pseltrig .pcaret{flex:0 0 auto;font-size:.58rem;color:var(--fg5);opacity:.5;
+  transition:opacity .12s,color .12s}
+.pseltrig:hover .pcaret{opacity:1;color:var(--tc,var(--teal))}
+.pseltrig:hover .pnametxt{color:var(--tc,var(--teal))}
+.panel.unset{border-top-color:var(--line);border-style:dashed}
+.panel.unset .pseltrig{color:var(--fg4)}
+.slothint{color:var(--fg5);font-size:.8rem;line-height:1.5;padding:.5rem 0 .1rem}
+.prm{flex:0 0 auto;background:none;border:1px solid transparent;color:var(--fg5);
+  border-radius:7px;width:22px;height:22px;line-height:1;font-size:.95rem;font-weight:700;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.prm:hover{color:var(--bad);border-color:var(--bad)}
+/* The open seat, sitting to the right of the last team rather than above it */
+/* align-self:start keeps it a compact tile level with the team headers; left to
+   span the full subgrid it becomes a tall empty column beside the rosters */
+.addslot{grid-row:span 5;align-self:start;background:none;border:1.5px dashed var(--line);
+  border-radius:14px;color:var(--fg4);display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:.3rem;cursor:pointer;padding:1.15rem .4rem;font-size:.8rem;
+  font-weight:700;line-height:1.3;text-align:center;
+  transition:color .12s,border-color .12s,background .12s}
+.addslot:hover{color:var(--teal);border-color:var(--teal);background:var(--tintz)}
+.addslot .plus{font-size:1.6rem;font-weight:300;line-height:1}
+.resetrow{display:flex;justify-content:flex-end;margin-bottom:8px}
+.resetrow .add{background:none;border:1px dashed var(--line);color:var(--fg4);border-radius:9px;
+  padding:.34rem .6rem;cursor:pointer;font-size:.78rem;font-weight:700}
+.resetrow .add:hover{color:var(--bad);border-color:var(--bad)}
 .pname{font-weight:800;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   display:flex;align-items:center;gap:.45rem;min-width:0}
 .plogo{width:26px;height:26px;object-fit:contain;flex:0 0 26px}
@@ -631,37 +655,42 @@ function render(){
 
   const logoOf=x=>DATA.logos&&DATA.logos[x]
     ?`<img loading="lazy" src="${DATA.logos[x]}" alt="">`:`<span class="tabbr">${x}</span>`;
-  html+=`<div class="pickrow">`+state.teams.map((a,i)=>{
-    const menu=DATA.abbrs.map(x=>{
-      const taken=state.teams.includes(x)&&x!==a;
-      return `<button class="topt${taken?" dis":""}${x===a?" sel":""}" data-slot="${i}"
-        data-team="${x}" ${taken?"disabled":""}
-        style="--tc:${TEAM_COLORS[x]||"var(--teal)"};--tfg:${onColor(TEAM_COLORS[x])}"
-        >${logoOf(x)}<span>${esc(DATA.teams[x].name)}</span><span class="tabbr">${x}</span></button>`;
-    }).join("");
-    return `<span class="teampick">
-      <button class="tsel${a?"":" unset"}" data-open="${i}"
-        style="${a?`--tc:${TEAM_COLORS[a]||"var(--teal)"}`:""}">
-        ${a?logoOf(a)+`<span>${esc(DATA.teams[a].name)}</span>`:`<span>Select a team</span>`}
-        <span class="caret">&#9660;</span></button>
-      <div class="tmenu" data-menu="${i}" hidden>
-        <input class="tfilter" type="text" placeholder="Search teams" data-filter="${i}">
-        ${menu}</div>`
-      +(state.teams.length>2?`<button class="rmteam" data-rm="${i}" title="${a?"Remove "+esc(DATA.teams[a].name)+" from this trade":"Remove this slot"}">&times;</button>`:"")
-      +`</span>`;
-  }).join("")+
-  (state.teams.length<4?`<button class="add" id="addteam">+ Add team</button>`:"")+
-  (anyMove||Object.keys(state.order).length
-    ?`<button class="add reset" id="resetbtn" title="Clear every move, cash amount, and arranged order; keeps the selected teams">Reset trade</button>`:"")
-  +`</div>`;
 
-  if(n<2){
-    html+=`<div class="emptyhint">Pick ${n===0?"two teams":"one more team"} above to start building a trade.
-      Then drag players and picks between them.</div>`;
-    root.innerHTML=html; wire(); fitFrame(); syncParentURL(); return;
-  }
-  html+=`<div class="boards n${n}">`;
-  for(const a of teams){
+  // The picker used to be a row of dropdowns above the boards. It now lives in
+  // each card's own header, so the board you are looking at is the control you
+  // change -- and an unpicked slot is still a card, just an empty one.
+  const teamMenu=(a,i)=>`<div class="tmenu" data-menu="${i}" hidden>
+      <input class="tfilter" type="text" placeholder="Search teams" data-filter="${i}">
+      ${DATA.abbrs.map(x=>{
+        const taken=state.teams.includes(x)&&x!==a;
+        return `<button class="topt${taken?" dis":""}${x===a?" sel":""}" data-slot="${i}"
+          data-team="${x}" ${taken?"disabled":""}
+          style="--tc:${TEAM_COLORS[x]||"var(--teal)"};--tfg:${onColor(TEAM_COLORS[x])}"
+          >${logoOf(x)}<span>${esc(DATA.teams[x].name)}</span><span class="tabbr">${x}</span></button>`;
+      }).join("")}</div>`;
+  const slotTrigger=(a,i,inner)=>`<button class="pseltrig" data-open="${i}"
+      title="${a?"Change the team in this slot":"Pick a team for this slot"}">
+      ${inner}<span class="pcaret">&#9660;</span></button>`;
+  const rmBtn=(a,i)=>state.teams.length>2
+    ?`<button class="prm" data-rm="${i}" title="${a?"Remove "+esc(DATA.teams[a].name)+" from this trade":"Remove this slot"}">&times;</button>`:"";
+
+  if(anyMove||Object.keys(state.order).length)
+    html+=`<div class="resetrow"><button class="add" id="resetbtn" title="Clear every move, cash amount, and arranged order; keeps the selected teams">Reset trade</button></div>`;
+
+  const slots=state.teams.length, canAdd=slots<4;
+  html+=`<div class="boards s${slots}${canAdd?" plus":""}">`;
+  for(let i=0;i<slots;i++){
+    const a=state.teams[i];
+    if(!a){                                       // an open seat: header only
+      html+=`<div class="panel unset">
+        <div class="phead"><span class="pname">${slotTrigger("",i,
+          `<span class="pnametxt">Select a team</span>`)}</span>${rmBtn("",i)}
+          ${teamMenu("",i)}</div>
+        <div class="capwrap"></div><div class="pnotes"></div>
+        <div class="slothint">Pick a team to load its roster, picks and cap sheet.</div>
+        <div class="pbody"></div></div>`;
+      continue;
+    }
     const T=DATA.teams[a];
     const tt=trade.teams.find(x=>x.abbr===a);
     const after=tt?payAfter(tt):T.payroll;
@@ -671,6 +700,12 @@ function render(){
         +(n<=2?`Hard-capped: ${esc(T.hard_cap_label||"")} (${fmtM(T.hard_cap)})`
               :`Hard cap: ${esc(T.hard_cap_label||"")}`)+`</span>`
       :"";
+    // Past two teams the header cannot hold logo, name, caret, chip, payroll and
+    // the remove button at once, and the name is what loses the shrink contest
+    // (a single letter at four teams, half a word at three). From the third team
+    // on, the chip drops to the notes line; the cap bar right above it already
+    // prints the same number, so nothing is lost but the header keeps the name.
+    const hcInHead=n<=2;
     const tpeLine=T.tpes&&T.tpes.length
       ?`<div class="tpeline" title="${esc(T.tpes.map(t=>"$"+t.amt.toFixed(2)+"M ("+t.player+(t.expires?", expires "+t.expires:"")+")").join("; "))}. Toggle via TPE on an incoming player to absorb his salary into an exception instead of matching.">Trade exceptions: ${T.tpes.map(t=>"$"+t.amt.toFixed(1)+"M").join(" + ")} <span class="tpewho">(${esc(T.tpes[0].player)}${T.tpes.length>1?" and "+(T.tpes.length-1)+" more":""})</span></div>`
       :"";
@@ -685,10 +720,11 @@ function render(){
       ?`<img class="plogo" loading="lazy" src="${DATA.logos[a]}" alt="">`:"";
     const cb=capbar(T,after,active);
     html+=`<div class="panel" data-team="${a}" style="--tc:${TEAM_COLORS[a]||"var(--teal)"}">
-      <div class="phead"><span class="pname">${logo}<span class="pnametxt">${esc(T.name)}</span>${hcChip}</span>
-      ${pay}</div>
+      <div class="phead"><span class="pname">${slotTrigger(a,i,
+        logo+`<span class="pnametxt">${esc(T.name)}</span>`)}${hcInHead?hcChip:""}</span>
+      ${pay}${rmBtn(a,i)}${teamMenu(a,i)}</div>
       <div class="capwrap">${cb.bar}</div>
-      <div class="pnotes">${cb.warn}${tpeLine}</div>
+      <div class="pnotes">${hcInHead?"":`<div class="hcline">${hcChip}</div>`}${cb.warn}${tpeLine}</div>
       <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;
     for(const [key,mv] of incoming){
       const [kind,src,id]=key.split("|");
@@ -741,7 +777,16 @@ function render(){
     html+=`<div class="cashrow">Cash out <input type="number" min="0" max="${CFG.cash_annual_limit}"
       step="0.5" value="${state.cash[a]||""}" data-cash="${a}" placeholder="0"> $M</div></div></div>`;
   }
+  if(canAdd)
+    html+=`<button class="addslot" id="addteam" title="Bring a third or fourth team into this trade">
+      <span class="plus">+</span><span>Add team</span></button>`;
   html+=`</div>`;
+
+  if(n<2){                       // the boards ARE the picker now, so they stay
+    html+=`<div class="emptyhint">Pick ${n===0?"two teams":"one more team"} to start building a trade.
+      Then drag players and picks between them.</div>`;
+    root.innerHTML=html; wire(); fitFrame(); syncParentURL(); return;
+  }
 
   html+=`<div class="verdict">`;
   if(!anyMove){
