@@ -17,13 +17,20 @@ body{background:transparent;color:var(--fg1);
      any narrower and a third of the league wraps to two rows */
   width:516px;max-width:calc(100vw - 16px);
   /* tall enough that all fifteen of a conference land without scrolling, which
-     is the whole point of splitting them */
-  max-height:min(648px,84vh);overflow:auto;background:var(--panel);
+     is the whole point of splitting them. Deliberately NOT a vh cap: this
+     iframe sizes itself to its content, so vh is the frame height, which
+     depends on the menu height, which would depend on vh. That loop settled
+     one interval tick at a time and left the frame too short to show the menu
+     it had just opened. The parent page scrolls; a tall menu is fine. */
+  max-height:648px;overflow:auto;background:var(--panel);
   border:1px solid var(--line);border-radius:12px;
-  box-shadow:0 12px 34px rgba(0,0,0,.28);padding:.35rem}
-/* the rightmost card's menu opens leftward, or it runs off the iframe and gets
-   clipped -- there is no horizontal scroll to reach it */
-.panel:last-of-type .tmenu{left:auto;right:0;transform:none}
+  box-shadow:0 12px 34px rgba(0,0,0,.28);padding:.35rem;
+  /* --mshift is set at open time by clampMenu(): the menu is wider than a card
+     once there are three or four, so it has to overhang, but it must never
+     leave the iframe -- components.html ships scrolling=False, so anything past
+     an edge is unreachable. Hand-anchoring first/last in CSS covered the ends
+     and silently missed the middle card of four. */
+  transform:translateX(var(--mshift,0px))}
 .tcols{display:grid;grid-template-columns:1fr 1fr;gap:0}
 .tcol{min-width:0;padding:0 .1rem}
 /* only draw the divider while there is a second column to divide from -- a
@@ -112,13 +119,10 @@ body{background:transparent;color:var(--fg1);
   transition:border-color .14s,color .14s,box-shadow .14s}
 .slotbtn:hover{border-color:var(--teal);color:var(--teal);box-shadow:0 2px 10px rgba(0,0,0,.08)}
 .slotbtn .pcaret{opacity:.55;font-size:.56rem}
-/* the menu hangs off a centred button, so centre it rather than left-aligning */
-.slotpick .tmenu{left:50%;transform:translateX(-50%)}
-/* centring only works while the card is wider than the menu; at three and four
-   slots it would hang off both sides, so anchor to the edges instead */
-.boards.s3 .slotpick .tmenu,.boards.s4 .slotpick .tmenu{left:0;transform:none}
-.boards.s3 .panel:last-of-type .tmenu,.boards.s4 .panel:last-of-type .tmenu{
-  left:auto;right:0;transform:none}
+/* the menu hangs off a centred button, so centre it rather than left-aligning.
+   clampMenu() then slides it back inside the frame if the card is too narrow
+   to centre 516px on, which is every card below about 1040px of component. */
+.slotpick .tmenu{left:50%;transform:translateX(calc(-50% + var(--mshift,0px)))}
 .prm.slotrm{position:absolute;top:.55rem;right:.55rem}
 .slothint{color:var(--fg5);font-size:.78rem;line-height:1.5;max-width:20rem}
 .prm{flex:0 0 auto;background:none;border:1px solid transparent;color:var(--fg5);
@@ -937,7 +941,19 @@ function render(){
 // collides with the overflowing iframe.
 function fitFrame(){
   try{
-    const h=document.documentElement.scrollHeight+24;
+    // Measure the CONTENT, not documentElement.scrollHeight. Inside a srcdoc
+    // iframe that sizes itself, the root's scrollHeight is floored at the
+    // viewport height, and the viewport height IS the iframe height -- so
+    // scrollHeight + 24 could only ever be "current + 24". The 1s interval
+    // below then grew the frame 24px per tick forever: measured 243px of real
+    // content sitting in a 2248px frame, i.e. 2000px of blank page.
+    const rootEl=document.getElementById("tm-root");
+    const top=window.scrollY||document.documentElement.scrollTop||0;
+    let content=rootEl.getBoundingClientRect().bottom+top;
+    // an open menu is absolutely positioned and can hang below the boards
+    for(const m of rootEl.querySelectorAll(".tmenu"))
+      if(!m.hidden) content=Math.max(content,m.getBoundingClientRect().bottom+top);
+    const h=Math.ceil(content)+24;
     const fe=window.frameElement;
     if(!fe) return;
     fe.style.height=h+"px";
@@ -1065,6 +1081,20 @@ function pruneTeam(abbr){
   delete state.order[abbr];
 }
 
+// Slide an open menu back inside the frame. The menu is 516px, a card is not,
+// and the component ships scrolling=False -- anything past an edge cannot be
+// reached. CSS first/last anchoring handled the two ends and left the middle
+// card of four hanging 84px out, so the position is clamped at open time
+// instead of guessed per slot.
+function clampMenu(m){
+  m.style.setProperty("--mshift","0px");
+  const vw=document.documentElement.clientWidth, r=m.getBoundingClientRect(), pad=8;
+  let shift=0;
+  if(r.right>vw-pad) shift=(vw-pad)-r.right;      // pull left off the right edge
+  if(r.left+shift<pad) shift=pad-r.left;          // ...but never past the left one
+  if(shift) m.style.setProperty("--mshift",shift.toFixed(1)+"px");
+}
+
 function wire(){
   const closeMenus=()=>{root.querySelectorAll(".tmenu").forEach(m=>m.hidden=true);fitFrame();};
   root.querySelectorAll("[data-open]").forEach(b=>{
@@ -1075,10 +1105,11 @@ function wire(){
       closeMenus();
       if(!wasOpen){
         m.hidden=false;
-        fitFrame();                       // let the iframe grow for the menu
-        const f=m.querySelector(".tfilter"); if(f){f.value="";f.focus();}
         m.querySelectorAll(".topt").forEach(o=>o.hidden=false);
         m.querySelectorAll(".tcol").forEach(c=>c.hidden=false);
+        clampMenu(m);                     // BEFORE focus: focusing a field that
+        fitFrame();                       // sits outside the frame scrolls the
+        const f=m.querySelector(".tfilter"); if(f){f.value="";f.focus();}
       }
     };
   });
@@ -1111,10 +1142,12 @@ function wire(){
   });
   if(!window.__menuClosersBound){                 // wire() reruns each render
     window.__menuClosersBound=true;
-    document.addEventListener("click",()=>
-      root.querySelectorAll(".tmenu").forEach(m=>{m.hidden=true;}));
-    document.addEventListener("keydown",e=>{
-      if(e.key==="Escape") root.querySelectorAll(".tmenu").forEach(m=>{m.hidden=true;});});
+    // these must call fitFrame too: now that it can SHRINK the frame, closing a
+    // menu without it leaves the tall menu-sized frame behind until the next
+    // interval tick
+    const shut=()=>{root.querySelectorAll(".tmenu").forEach(m=>{m.hidden=true;});fitFrame();};
+    document.addEventListener("click",shut);
+    document.addEventListener("keydown",e=>{if(e.key==="Escape") shut();});
   }
   const add=document.getElementById("addteam");
   if(add) add.onclick=()=>{                      // adding disturbs nothing
