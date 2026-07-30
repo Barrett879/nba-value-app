@@ -18,9 +18,28 @@ season the model has never seen. Graded on every real new contract
 (minimums, buyouts, and market deals all count); the only exclusion is
 rookie-scale step-ups, which aren't new signings, they're the CBA-mandated
 next-year salary of a player's existing rookie deal.
-  - 89% of predictions within 5% of the cap (~$8M)
-  - 99% within 10% of cap (catastrophic misses under 2% of predictions)
-  - Median |error|: ~2% of cap
+  - 80% of 2026 projections landed within $4M of the actual deal (83 of the
+    85 tracked signings carry a projection; cache/accuracy_tracker_v1.json is
+    the live scorecard and the page copy reads from it, never a literal)
+  - 74% within $4M across 564 graded contracts in backtest (2021-2025)
+  - By size of deal, in backtest: 87% of minimum-scale contracts, 70% of
+    $5M-$20M contracts, 47% of $20M+ contracts (n = 263 / 203 / 98)
+  - Off by more than $10M on 4% of contracts
+  - Median miss: $1.7M live, $1.9M in backtest
+
+Why $4M and not a share of the cap. 5% of the cap is $7.7M, wide enough that
+"he'll take the minimum" scores as correct on any deal up to about $10M -- on
+the same rows, always guessing the league minimum scores 67% within 5% of cap.
+$4M is roughly the market's own resolution: two players with near-identical
+resumes signing in different years land a median $3.1M apart, so a much tighter
+band would grade the model on noise the market itself does not resolve.
+
+What the number is not: out of reach for a simple rule. Always guessing the
+minimum lands within $4M on 59% of backtest contracts, and a rank-based rule of
+thumb manages 67%. What those rules cannot do is hold across the range -- the
+minimum rule is right on 100% of minimum-scale deals and 0% of $20M+ deals, and
+the rank rule falls to 28% at the top where the model is at 47%. The by-size
+line is the honest part of the claim, and $20M+ is where the model is weakest.
 Salary data is sanity-checked: mid-season buyout/waiver artifacts (a star's
 prorated near-zero figure after a trade) and verified bad labels are
 excluded, since they misrepresent the actual contract.
@@ -36,6 +55,7 @@ import sys
 from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+import json
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -96,6 +116,24 @@ MAX_FLOOR_AGE_CAP   = 33
 STAR_BARRETT_THR    = 22.0
 STAR_FLOOR_DISCOUNT = 0.02
 STAR_FLOOR_AGE_MAX  = 40      # 41+ stars don't get max-snapped (a 41-yo won't sign a max)
+
+
+def _live_accuracy_phrase() -> str:
+    """The headline accuracy claim, read live from the offseason scorecard so the
+    page copy can never drift from the tracker. Falls back to prose with no
+    number rather than to a stale one, because a wrong figure is worse than a
+    vague one -- the About page carried an out-of-date figure for two weeks
+    before this was wired up."""
+    try:
+        sc = (json.loads((Path(__file__).parent.parent / "cache"
+                          / "accuracy_tracker_v1.json").read_text()).get("scorecard") or {})
+        if sc.get("n") and sc.get("within_4M") is not None:
+            return (f"About {sc['within_4M']:.0f}% of our {sc['n']} tracked 2026 "
+                    f"projections landed within \\$4M of the contract the player "
+                    f"actually signed")
+    except Exception:
+        pass
+    return "Most of our tracked 2026 projections landed close to the actual contract"
 
 
 def _apply_star_floor(predicted, raw_predicted, features, cba_max_dollars,
@@ -496,8 +534,8 @@ def get_player_features(player_name: str, season: str = CURRENT_SEASON) -> dict 
 # Features: Barrett pruned set + advanced stats (usage/PIE/on-off/TS), the
 # latter confirmed a real +1.12pp within-5% gain by paired CV (t=3.9).
 # Temporal CV on recent seasons (2021-2025), graded on all real new contracts
-# (rookie-scale step-ups + buyout-artifact/bad-label rows excluded): 89%
-# within 5% of cap, 99% within 10% — incl. the All-NBA max-tier floor
+# (rookie-scale step-ups + buyout-artifact/bad-label rows excluded): 74% within
+# $4M, 87/70/47 by deal size — incl. the All-NBA max-tier floor
 # (apply_cba_postprocess), forward-validated at +1.07pp. A two-stage model +
 # stacked ensemble were tested and came in within noise under CV.
 # See scripts/build_production_histgbm.py and scripts/test_floor_forward.py.
@@ -2731,12 +2769,13 @@ with st.expander("About this prediction"):
         "(his Barrett Score) along with his age, position, years in the league, "
         "All-NBA honors, and deeper analytics, then estimates what a team would "
         "pay him on a new deal today.\n\n"
-        "**How accurate is it?** We tested it the fair way, on real signings "
-        "it had never seen. It's most reliable for role and rotation players "
-        "(usually within \\$2–4M of the actual deal). For stars it's looser and "
-        "tends to land about \\$5M low, because superstar contracts are shaped "
-        "by salary-cap rules and negotiations more than by on-court stats, so "
-        "read star and max figures as a ballpark, not an exact quote."
+        f"**How accurate is it?** {_live_accuracy_phrase()}. We tested it the "
+        "fair way, on real signings it had never seen. It's most reliable for "
+        "role and rotation players (usually within \\$2–4M of the actual deal). "
+        "For stars it's looser and tends to land about \\$5M low, because "
+        "superstar contracts are shaped by salary-cap rules and negotiations "
+        "more than by on-court stats, so read star and max figures as a "
+        "ballpark, not an exact quote."
     )
 
     # Likely-suitors methodology — only when that (experimental) section
@@ -2968,11 +3007,14 @@ with st.expander("About this prediction"):
         - **Mid-tier ($15–25M):** about $5.5M off
         - **Stars ($25M+):** about $5–9M off, and usually a little *low*
 
-        You may see a headline like "89% within 5% of the cap." It sounds
-        great, but measuring as a share of the cap flatters cheap deals, a $7M
-        miss counts as "within 5%" whether the player makes $50M or $3M. Bottom
-        line: trust the dollar figure most for role and rotation players; for
-        stars, treat it as a ballpark.
+        We used to headline "89% within 5% of the cap." It sounds great, but
+        measuring as a share of the cap flatters cheap deals: 5% of the cap is
+        $7.7M, so a miss counts as a hit whether the player makes $50M or $3M.
+        On those same contracts, simply guessing the league minimum every time
+        scores 67%. We now measure in dollars instead, and we publish the split
+        by deal size, because that is the part a simple rule cannot fake.
+        Bottom line: trust the dollar figure most for role and rotation
+        players; for stars, treat it as a ballpark.
 
         We also tried several ways to sharpen the star estimates, but none held
         up under fair testing, so we left them out, superstar money is settled
