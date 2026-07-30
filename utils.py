@@ -276,6 +276,25 @@ NEW_CONTRACT_PCT    = 0.25  # ≥25% YoY salary change = "new deal" proxy
 SUPERMAX_CAP_PCT    = 0.28  # base ≥ this fraction of cap → suppress pos mult
 TOP_N_DIRECTIONAL   = 20    # top-N underpaid/overpaid calls per season
 
+# Conference / division map. Lived privately in pages/Rosters.py until the Trade
+# Machine's team menu needed the same split; one copy so the two can never drift.
+NBA_DIVISIONS = {
+    "East": {
+        "Atlantic":  ["BOS", "BKN", "NYK", "PHI", "TOR"],
+        "Central":   ["CHI", "CLE", "DET", "IND", "MIL"],
+        "Southeast": ["ATL", "CHA", "MIA", "ORL", "WAS"],
+    },
+    "West": {
+        "Northwest": ["DEN", "MIN", "OKC", "POR", "UTA"],
+        "Pacific":   ["GSW", "LAC", "LAL", "PHX", "SAC"],
+        "Southwest": ["DAL", "HOU", "MEM", "NOP", "SAS"],
+    },
+}
+# abbr -> "East" / "West"
+TEAM_CONFERENCE = {ab: conf
+                   for conf, divs in NBA_DIVISIONS.items()
+                   for abbrs in divs.values() for ab in abbrs}
+
 
 def age_bucket(age) -> str:
     """Five-bucket age classification used by the contract calibration layer.

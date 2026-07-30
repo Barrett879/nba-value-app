@@ -24,9 +24,9 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils import (NameIndex, TEAM_HEX, TEAM_HEX_2, _headshot_id_map, fetch_dlebron,
-                   render_footer, render_nav, render_page_chrome, script_json,
-                   _bootstrap_warm)
+from utils import (NameIndex, NBA_DIVISIONS, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
+                   _headshot_id_map, fetch_dlebron, render_footer, render_nav,
+                   render_page_chrome, script_json, _bootstrap_warm)
 
 st.set_page_config(page_title="Rosters", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
@@ -54,19 +54,9 @@ _ABBR_FIX = {"PHO": "PHX", "CHO": "CHA", "BRK": "BKN", "NOH": "NOP"}
 # handful of bare "G" and "F" listings on two-way and free-agent rows
 _SLOT = {"PG": "PG", "SG": "SG", "SF": "SF", "PF": "PF", "C": "C", "G": "PG", "F": "SF"}
 
-# conference / division, for grouping the team strip
-_DIVS = {
-    "East": {
-        "Atlantic": ["BOS", "BKN", "NYK", "PHI", "TOR"],
-        "Central": ["CHI", "CLE", "DET", "IND", "MIL"],
-        "Southeast": ["ATL", "CHA", "MIA", "ORL", "WAS"],
-    },
-    "West": {
-        "Northwest": ["DEN", "MIN", "OKC", "POR", "UTA"],
-        "Pacific": ["GSW", "LAC", "LAL", "PHX", "SAC"],
-        "Southwest": ["DAL", "HOU", "MEM", "NOP", "SAS"],
-    },
-}
+# conference / division, for grouping the team strip. Shared with the Trade
+# Machine's team menu, so it lives in utils rather than here.
+_DIVS = NBA_DIVISIONS
 
 
 def _read_csv(path: Path) -> list:
@@ -258,7 +248,7 @@ def _payload() -> str:
             opts.add(r["player"], {"d": (r.get("decision") or "").strip(),
                                    "note": (r.get("note") or "").strip()})
 
-    _conf = {ab: c for c, ds in _DIVS.items() for d in ds.values() for ab in d}
+    _conf = TEAM_CONFERENCE                      # derived once, in utils
     _div = {ab: d for ds in _DIVS.values() for d, abs_ in ds.items() for ab in abs_}
 
     by_team = {}

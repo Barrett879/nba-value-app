@@ -21,8 +21,9 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils import (NameIndex, _headshot_id_map, fetch_dlebron, normalize,
-                   render_nav, render_page_chrome, script_json, _bootstrap_warm)
+from utils import (NameIndex, TEAM_CONFERENCE, _headshot_id_map, fetch_dlebron,
+                   normalize, render_nav, render_page_chrome, script_json,
+                   _bootstrap_warm)
 
 st.set_page_config(page_title="Trade Machine", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
@@ -208,6 +209,7 @@ def _payload() -> str:
              for t in _nbat.get_teams()}
     return json.dumps({
         "abbrs": sorted(teams), "teams": teams, "cfg": cfg, "vectors": vectors,
+        "conf": {ab: TEAM_CONFERENCE.get(ab, "West") for ab in teams},
         "logos": logos, "fas": fas, "today": _TODAY,
         "default_teams": ["LAL", "BKN"],
     }, separators=(",", ":"))
