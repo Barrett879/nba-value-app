@@ -237,7 +237,14 @@ body{background:transparent;color:var(--fg1);
 .card .mv.tp{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.tp:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .card .mv.tp.on{background:var(--teal);border-color:var(--teal);color:#fff}
-.card.inc{border-left:3px solid var(--good);background:var(--tintg)}
+/* background-COLOR, not the background shorthand: the shorthand also resets
+   background-image, and because this rule sits after .card:hover at equal
+   specificity it was cancelling every incoming player's --pw wash. That made
+   all of them hover to the same flat green instead of their own team's ramp. */
+.card.inc{border-left:3px solid var(--good);background-color:var(--tintg)}
+/* On hover the green tint steps aside so the wash reads as the player's team;
+   the green left edge still marks the card as incoming. */
+.card.inc:hover{background-color:var(--card)}
 .card.dovr{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
 .fasal{width:58px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
   border-radius:7px;padding:.25rem .3rem;font-size:.72rem;flex:0 0 auto}

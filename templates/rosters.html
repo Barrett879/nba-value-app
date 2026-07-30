@@ -413,35 +413,42 @@ function divGradient(abbrs){
   return `linear-gradient(100deg, ${stops})`;
 }
 
-// A team's rotation strength: the eight best Barrett Scores under contract.
-// Summing the whole roster would just reward carrying 19 bodies; eight is about
-// a playoff rotation and is roster-size neutral (every team has at least 11
-// scored players, so the top eight always exists).
-const ROTATION_N = 8;
-function rotationStrength(t){
-  return (t.players || [])
-    .filter(p => p.kind !== "free_agent" && p.barrett != null)
-    .map(p => p.barrett).sort((a, b) => b - a).slice(0, ROTATION_N)
-    .reduce((s, x) => s + x, 0);
-}
+// How many teams the leaderboard lists.
+const LEADER_N = 6;
 
 function teamLeaderboard(){
-  const ranked = Object.values(T)
-    .map(t => ({ t, s: rotationStrength(t) }))
-    .sort((a, b) => b.s - a.s).slice(0, 5);
-  let h = `<div class="leadwrap"><div class="tlhead">Strongest rosters
-    <span>top ${ROTATION_N} by Barrett Score</span></div><div class="tlgrid">`;
-  ranked.forEach(({ t, s }, i) => {
+  const recs = DATA.records || {};
+  // Best record last season. Ties on wins break on point differential, not on
+  // whatever order the teams happen to sit in: 2025-26 ended with New York and
+  // the Lakers both 53-29, and a list cut at six has to separate them somehow.
+  const all = Object.values(T).map(t => ({ t, r: recs[t.abbr] })).filter(x => x.r);
+  const ranked = all
+    .slice()
+    .sort((a, b) => (b.r.w - a.r.w) || (b.r.mov - a.r.mov))
+    .slice(0, LEADER_N);
+  if (!ranked.length) return "";
+  const season = DATA.records_season || "";
+  let h = `<div class="leadwrap"><div class="tlhead">Best records
+    <span>top ${LEADER_N} in ${esc(season)}</span></div><div class="tlgrid">`;
+  ranked.forEach(({ t, r }, i) => {
     const c = DATA.colors[t.abbr] || "var(--teal)";
+    const mov = (r.mov > 0 ? "+" : "") + r.mov.toFixed(1);
+    // A shared record is a tie, not a placing. The NBA has no cross-conference
+    // tiebreaker, so the order here is ours (point differential) and the row says
+    // so rather than passing a judgement call off as a standing.
+    const tiedWith = all.filter(x => x.t.abbr !== t.abbr && x.r.w === r.w && x.r.l === r.l);
+    const tie = tiedWith.length
+      ? `, tied with ${tiedWith.map(x => x.t.name).join(" and ")} and ahead on point differential`
+      : "";
     h += `<button class="tlrow${t.abbr === state.team ? " on" : ""}" data-team="${esc(t.abbr)}"
-      style="--tc:${c}" title="${esc(t.name)}: ${ROTATION_N} best Barrett Scores under contract add to ${s.toFixed(1)}">
-      <span class="tlrank">${i + 1}</span>
+      style="--tc:${c}" title="${esc(t.name)}: ${r.w}-${r.l} in ${esc(season)}${esc(tie)}, ${mov} points per game">
+      <span class="tlrank">${tiedWith.length ? "T" : ""}${i + 1}</span>
       <img src="${esc(DATA.logos[t.abbr] || "")}" alt="" loading="lazy"
         onerror="this.style.visibility='hidden'">
       <span class="tlname">${esc(t.name.replace(/^(Los Angeles|New York|New Orleans|Oklahoma City|Golden State|San Antonio|Portland Trail|Minnesota|Philadelphia|Washington|Sacramento|Cleveland|Charlotte|Milwaukee|Memphis|Brooklyn|Detroit|Toronto|Indiana|Orlando|Houston|Chicago|Atlanta|Phoenix|Denver|Boston|Dallas|Miami|Utah)\s+/, ""))}</span>
-      <span class="tlsc">${s.toFixed(0)}</span></button>`;
+      <span class="tlsc">${r.w}-${r.l}</span></button>`;
   });
-  return h + `</div><div class="tlnote">Rotation strength, not payroll. Click one to open its book.</div></div>`;
+  return h + `</div><div class="tlnote">Last season's finish, not this roster. Click one to open its book.</div></div>`;
 }
 
 function teamStrip(){

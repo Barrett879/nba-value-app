@@ -204,6 +204,17 @@ def _payload() -> str:
     for v in dead.values():
         v.sort(key=lambda x: -x["amt"])
 
+    # Last season's finished record, for the leaderboard beside the team picker.
+    # mov (average point differential) is carried because the 2025-26 season ended
+    # with New York and the Lakers both 53-29: a leaderboard cut at six has to
+    # break that tie on something, and list order is not a reason.
+    records = {}
+    for r in _read_csv(_ROOT / "data" / "team_records_2025_26.csv"):
+        if r.get("team") and r.get("wins"):
+            records[r["team"].strip()] = {
+                "w": int(r["wins"]), "l": int(r["losses"]),
+                "mov": float(r["mov"]), "conf": (r.get("conf") or "").strip()}
+
     tpes = {}
     for r in _read_csv(_ROOT / "data" / "trade_exceptions_2026_27.csv"):
         exp = (r.get("expires") or "").strip()
@@ -380,6 +391,7 @@ def _payload() -> str:
         "season": "2026-27", "asof": asof, "cfg": cfg, "logos": logos,
         "colors": dict(TEAM_HEX), "colors2": dict(TEAM_HEX_2),
         "divs": _DIVS, "teams": teams,
+        "records": records, "records_season": "2025-26",
         "abbrs": sorted(teams),
     }, separators=(",", ":"))
 

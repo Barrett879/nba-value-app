@@ -1,0 +1,49 @@
+# 2025-26 NBA final regular season records, all 30 teams.
+# Records from basketball-reference.com/leagues/NBA_2026_standings.html, retrieved
+# 2026-07-30, and independently confirmed team-for-team against ESPN, NBA.com and
+# Wikipedia (which stores home/road splits, so its totals are a separate derivation).
+# All four agree on every record in the top 8.
+# Verified: every team's wins + losses = 82, and wins and losses each sum to 1230
+# league-wide (30 teams x 82 / 2). East wins (609) = West losses, West wins (621) = East losses.
+#
+# The rows are sorted league-wide by wins, then by mov. That ORDER is ours, not a
+# published standing: Basketball Reference and the NBA publish standings per
+# conference, and the NBA has no cross-conference tiebreaker. It matters at the top:
+# New York and the Lakers both finished 53-29 and split the season series 1-1, so
+# nothing official separates them. We put New York ahead on point differential
+# (+6.4 to +1.7). ESPN's league-wide view orders them the other way. Any consumer
+# cutting this list at a fixed length is splitting a real tie and should say so.
+#
+# mov = average point differential (pts_per_g - opp_pts_per_g). The 2026 champion
+# was the New York Knicks (over San Antonio 4-1).
+team,team_name,conf,wins,losses,win_pct,mov,srs
+OKC,Oklahoma City Thunder,West,64,18,0.780,+11.10,+11.04
+SAS,San Antonio Spurs,West,62,20,0.756,+8.30,+8.28
+DET,Detroit Pistons,East,60,22,0.732,+8.20,+7.53
+BOS,Boston Celtics,East,56,26,0.683,+7.70,+7.37
+DEN,Denver Nuggets,West,54,28,0.659,+5.20,+4.97
+NYK,New York Knicks,East,53,29,0.646,+6.40,+6.05
+LAL,Los Angeles Lakers,West,53,29,0.646,+1.70,+1.68
+HOU,Houston Rockets,West,52,30,0.634,+5.20,+4.87
+CLE,Cleveland Cavaliers,East,52,30,0.634,+4.10,+3.78
+MIN,Minnesota Timberwolves,West,49,33,0.598,+3.40,+3.07
+TOR,Toronto Raptors,East,46,36,0.561,+2.80,+2.75
+ATL,Atlanta Hawks,East,46,36,0.561,+2.50,+2.38
+PHX,Phoenix Suns,West,45,37,0.549,+1.50,+1.75
+ORL,Orlando Magic,East,45,37,0.549,+0.60,+0.81
+PHI,Philadelphia 76ers,East,45,37,0.549,-0.20,-0.27
+CHA,Charlotte Hornets,East,44,38,0.537,+4.80,+4.48
+MIA,Miami Heat,East,43,39,0.524,+2.40,+2.35
+LAC,Los Angeles Clippers,West,42,40,0.512,+1.20,+0.96
+POR,Portland Trail Blazers,West,42,40,0.512,-0.30,-0.29
+GSW,Golden State Warriors,West,37,45,0.451,-0.60,-0.34
+MIL,Milwaukee Bucks,East,32,50,0.390,-6.20,-6.12
+CHI,Chicago Bulls,East,31,51,0.378,-5.20,-5.09
+NOP,New Orleans Pelicans,West,26,56,0.317,-4.50,-4.26
+DAL,Dallas Mavericks,West,26,56,0.317,-5.50,-5.33
+MEM,Memphis Grizzlies,West,25,57,0.305,-6.00,-5.83
+UTA,Utah Jazz,West,22,60,0.268,-8.40,-8.05
+SAC,Sacramento Kings,West,22,60,0.268,-10.00,-9.58
+BKN,Brooklyn Nets,East,20,62,0.244,-10.00,-9.70
+IND,Indiana Pacers,East,19,63,0.232,-8.00,-7.64
+WAS,Washington Wizards,East,17,65,0.207,-12.00,-11.62
