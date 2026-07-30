@@ -1,7 +1,8 @@
 {
 "season": "2025-26",
-"built_at": "2026-07-09",
+"built_at": "2026-07-30",
 "model_stamp": "ccf4646b7fa3",
+"source_stamp": "8f3dcaecadcf",
 "players": {
 "a.j. lawson": {
 "player": "A.J. Lawson",
@@ -29,19 +30,11 @@
 },
 "aaron gordon": {
 "player": "Aaron Gordon",
-"pcv_M": 19.4,
-"low_M": 10.6,
-"high_M": 28.2,
+"pcv_M": 21.1,
+"low_M": 12.7,
+"high_M": 29.5,
 "is_max": false,
 "max_pct": 0.35
-},
-"aaron holiday": {
-"player": "Aaron Holiday",
-"pcv_M": 3.5,
-"low_M": 0.6,
-"high_M": 6.5,
-"is_max": false,
-"max_pct": 0.3
 },
 "aaron nesmith": {
 "player": "Aaron Nesmith",
@@ -115,14 +108,6 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"alijah martin": {
-"player": "Alijah Martin",
-"pcv_M": 3.3,
-"low_M": 0.5,
-"high_M": 6.1,
-"is_max": false,
-"max_pct": 0.25
-},
 "alperen sengun": {
 "player": "Alperen Sengun",
 "pcv_M": 41.2,
@@ -141,9 +126,9 @@
 },
 "amen thompson": {
 "player": "Amen Thompson",
-"pcv_M": 14.9,
-"low_M": 6.5,
-"high_M": 23.4,
+"pcv_M": 15.2,
+"low_M": 6.7,
+"high_M": 23.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -173,9 +158,9 @@
 },
 "andrew nembhard": {
 "player": "Andrew Nembhard",
-"pcv_M": 22.2,
-"low_M": 14.1,
-"high_M": 30.3,
+"pcv_M": 21.9,
+"low_M": 13.7,
+"high_M": 30.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -189,17 +174,17 @@
 },
 "anfernee simons": {
 "player": "Anfernee Simons",
-"pcv_M": 15.2,
-"low_M": 6.7,
-"high_M": 23.7,
+"pcv_M": 15.3,
+"low_M": 6.8,
+"high_M": 23.8,
 "is_max": false,
 "max_pct": 0.3
 },
 "anthony black": {
 "player": "Anthony Black",
-"pcv_M": 12.7,
-"low_M": 4.7,
-"high_M": 20.6,
+"pcv_M": 13.1,
+"low_M": 5.1,
+"high_M": 21.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -253,9 +238,9 @@
 },
 "ausar thompson": {
 "player": "Ausar Thompson",
-"pcv_M": 21.3,
-"low_M": 13.0,
-"high_M": 29.7,
+"pcv_M": 21.7,
+"low_M": 13.4,
+"high_M": 29.9,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -269,25 +254,25 @@
 },
 "ayo dosunmu": {
 "player": "Ayo Dosunmu",
-"pcv_M": 18.4,
-"low_M": 9.4,
-"high_M": 27.4,
+"pcv_M": 18.3,
+"low_M": 9.2,
+"high_M": 27.3,
 "is_max": false,
 "max_pct": 0.25
 },
 "bam adebayo": {
 "player": "Bam Adebayo",
-"pcv_M": 46.1,
-"low_M": 40.2,
-"high_M": 52.0,
+"pcv_M": 45.5,
+"low_M": 39.6,
+"high_M": 51.4,
 "is_max": false,
 "max_pct": 0.3
 },
 "baylor scheierman": {
 "player": "Baylor Scheierman",
-"pcv_M": 6.8,
-"low_M": 1.5,
-"high_M": 12.1,
+"pcv_M": 6.5,
+"low_M": 1.3,
+"high_M": 11.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -309,25 +294,17 @@
 },
 "bennedict mathurin": {
 "player": "Bennedict Mathurin",
-"pcv_M": 19.5,
-"low_M": 10.8,
-"high_M": 28.3,
-"is_max": false,
-"max_pct": 0.25
-},
-"bez mbeng": {
-"player": "Bez Mbeng",
-"pcv_M": 2.7,
-"low_M": 0.2,
-"high_M": 5.2,
+"pcv_M": 19.7,
+"low_M": 11.0,
+"high_M": 28.4,
 "is_max": false,
 "max_pct": 0.25
 },
 "bilal coulibaly": {
 "player": "Bilal Coulibaly",
-"pcv_M": 11.2,
-"low_M": 3.8,
-"high_M": 18.7,
+"pcv_M": 11.4,
+"low_M": 3.9,
+"high_M": 18.9,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -339,14 +316,6 @@
 "is_max": false,
 "max_pct": 0.35
 },
-"blake hinson": {
-"player": "Blake Hinson",
-"pcv_M": 5.0,
-"low_M": 0.7,
-"high_M": 9.2,
-"is_max": false,
-"max_pct": 0.25
-},
 "blake wesley": {
 "player": "Blake Wesley",
 "pcv_M": 3.0,
@@ -357,9 +326,9 @@
 },
 "bobby portis": {
 "player": "Bobby Portis",
-"pcv_M": 7.3,
-"low_M": 1.7,
-"high_M": 12.8,
+"pcv_M": 6.7,
+"low_M": 1.4,
+"high_M": 11.9,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -389,25 +358,17 @@
 },
 "bradley beal": {
 "player": "Bradley Beal",
-"pcv_M": 4.8,
+"pcv_M": 4.9,
 "low_M": 0.7,
-"high_M": 9.0,
+"high_M": 9.2,
 "is_max": false,
 "max_pct": 0.35
 },
-"branden carlson": {
-"player": "Branden Carlson",
-"pcv_M": 2.5,
-"low_M": 0.0,
-"high_M": 5.0,
-"is_max": false,
-"max_pct": 0.25
-},
 "brandin podziemski": {
 "player": "Brandin Podziemski",
-"pcv_M": 2.6,
-"low_M": 0.1,
-"high_M": 5.1,
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -421,9 +382,9 @@
 },
 "brandon ingram": {
 "player": "Brandon Ingram",
-"pcv_M": 31.1,
-"low_M": 24.4,
-"high_M": 37.7,
+"pcv_M": 30.5,
+"low_M": 23.9,
+"high_M": 37.2,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -445,9 +406,9 @@
 },
 "brice sensabaugh": {
 "player": "Brice Sensabaugh",
-"pcv_M": 7.4,
-"low_M": 1.8,
-"high_M": 13.1,
+"pcv_M": 6.4,
+"low_M": 1.3,
+"high_M": 11.5,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -467,14 +428,6 @@
 "is_max": false,
 "max_pct": 0.35
 },
-"brooks barnhizer": {
-"player": "Brooks Barnhizer",
-"pcv_M": 2.5,
-"low_M": 0.0,
-"high_M": 5.0,
-"is_max": false,
-"max_pct": 0.25
-},
 "bruce brown": {
 "player": "Bruce Brown",
 "pcv_M": 4.4,
@@ -493,9 +446,9 @@
 },
 "bub carrington": {
 "player": "Bub Carrington",
-"pcv_M": 7.5,
+"pcv_M": 7.4,
 "low_M": 1.8,
-"high_M": 13.2,
+"high_M": 13.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -528,14 +481,6 @@
 "pcv_M": 4.3,
 "low_M": 0.6,
 "high_M": 8.0,
-"is_max": false,
-"max_pct": 0.25
-},
-"caleb love": {
-"player": "Caleb Love",
-"pcv_M": 2.6,
-"low_M": 0.1,
-"high_M": 5.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -573,9 +518,9 @@
 },
 "cam whitmore": {
 "player": "Cam Whitmore",
-"pcv_M": 5.5,
-"low_M": 0.9,
-"high_M": 10.1,
+"pcv_M": 5.2,
+"low_M": 0.8,
+"high_M": 9.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -614,8 +559,8 @@
 "cason wallace": {
 "player": "Cason Wallace",
 "pcv_M": 19.5,
-"low_M": 10.8,
-"high_M": 28.3,
+"low_M": 10.7,
+"high_M": 28.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -624,22 +569,6 @@
 "pcv_M": 10.2,
 "low_M": 3.2,
 "high_M": 17.2,
-"is_max": false,
-"max_pct": 0.25
-},
-"chaney johnson": {
-"player": "Chaney Johnson",
-"pcv_M": 2.3,
-"low_M": 0.0,
-"high_M": 4.8,
-"is_max": false,
-"max_pct": 0.25
-},
-"charles bassey": {
-"player": "Charles Bassey",
-"pcv_M": 2.9,
-"low_M": 0.4,
-"high_M": 5.4,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -675,27 +604,11 @@
 "is_max": false,
 "max_pct": 0.35
 },
-"chris youngblood": {
-"player": "Chris Youngblood",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
 "christian braun": {
 "player": "Christian Braun",
-"pcv_M": 20.4,
-"low_M": 11.9,
+"pcv_M": 20.5,
+"low_M": 12.0,
 "high_M": 29.0,
-"is_max": false,
-"max_pct": 0.25
-},
-"christian koloko": {
-"player": "Christian Koloko",
-"pcv_M": 3.5,
-"low_M": 0.5,
-"high_M": 6.4,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -757,9 +670,9 @@
 },
 "collin gillespie": {
 "player": "Collin Gillespie",
-"pcv_M": 15.1,
-"low_M": 6.6,
-"high_M": 23.5,
+"pcv_M": 14.6,
+"low_M": 6.3,
+"high_M": 23.0,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -782,7 +695,7 @@
 "cooper flagg": {
 "player": "Cooper Flagg",
 "pcv_M": 20.7,
-"low_M": 12.3,
+"low_M": 12.2,
 "high_M": 29.2,
 "is_max": false,
 "max_pct": 0.25
@@ -795,27 +708,11 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"cormac ryan": {
-"player": "Cormac Ryan",
-"pcv_M": 4.5,
-"low_M": 0.6,
-"high_M": 8.3,
-"is_max": false,
-"max_pct": 0.25
-},
 "craig porter jr.": {
 "player": "Craig Porter Jr.",
 "pcv_M": 6.1,
 "low_M": 1.2,
-"high_M": 10.9,
-"is_max": false,
-"max_pct": 0.25
-},
-"curtis jones": {
-"player": "Curtis Jones",
-"pcv_M": 2.9,
-"low_M": 0.4,
-"high_M": 5.4,
+"high_M": 11.0,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -840,22 +737,6 @@
 "pcv_M": 2.2,
 "low_M": 0.0,
 "high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
-"daeqwon plowden": {
-"player": "Daeqwon Plowden",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
-"dalen terry": {
-"player": "Dalen Terry",
-"pcv_M": 2.6,
-"low_M": 0.1,
-"high_M": 5.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -909,19 +790,11 @@
 },
 "darius garland": {
 "player": "Darius Garland",
-"pcv_M": 21.0,
-"low_M": 12.6,
-"high_M": 29.4,
+"pcv_M": 22.7,
+"low_M": 14.7,
+"high_M": 30.7,
 "is_max": false,
 "max_pct": 0.3
-},
-"david jones garcia": {
-"player": "David Jones Garcia",
-"pcv_M": 3.0,
-"low_M": 0.5,
-"high_M": 5.5,
-"is_max": false,
-"max_pct": 0.25
 },
 "davion mitchell": {
 "player": "Davion Mitchell",
@@ -935,7 +808,7 @@
 "player": "Day'Ron Sharpe",
 "pcv_M": 13.1,
 "low_M": 5.1,
-"high_M": 21.1,
+"high_M": 21.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -957,7 +830,7 @@
 },
 "de'anthony melton": {
 "player": "De'Anthony Melton",
-"pcv_M": 8.3,
+"pcv_M": 8.4,
 "low_M": 2.2,
 "high_M": 14.5,
 "is_max": false,
@@ -971,19 +844,11 @@
 "is_max": false,
 "max_pct": 0.35
 },
-"dejon jarreau": {
-"player": "DeJon Jarreau",
-"pcv_M": 2.6,
-"low_M": 0.1,
-"high_M": 5.1,
-"is_max": false,
-"max_pct": 0.25
-},
 "demar derozan": {
 "player": "DeMar DeRozan",
-"pcv_M": 15.7,
-"low_M": 7.1,
-"high_M": 24.3,
+"pcv_M": 15.3,
+"low_M": 6.8,
+"high_M": 23.8,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -999,13 +864,13 @@
 "player": "Deandre Ayton",
 "pcv_M": 18.3,
 "low_M": 9.3,
-"high_M": 27.3,
+"high_M": 27.4,
 "is_max": false,
 "max_pct": 0.3
 },
 "dejounte murray": {
 "player": "Dejounte Murray",
-"pcv_M": 19.1,
+"pcv_M": 19.0,
 "low_M": 10.2,
 "high_M": 27.9,
 "is_max": false,
@@ -1047,7 +912,7 @@
 "player": "Derrick Jones Jr.",
 "pcv_M": 11.3,
 "low_M": 3.8,
-"high_M": 18.7,
+"high_M": 18.8,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -1061,9 +926,9 @@
 },
 "desmond bane": {
 "player": "Desmond Bane",
-"pcv_M": 32.2,
-"low_M": 25.6,
-"high_M": 38.7,
+"pcv_M": 32.4,
+"low_M": 25.8,
+"high_M": 39.0,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1109,25 +974,25 @@
 },
 "domantas sabonis": {
 "player": "Domantas Sabonis",
-"pcv_M": 11.7,
+"pcv_M": 11.9,
 "low_M": 4.1,
-"high_M": 19.4,
+"high_M": 19.6,
 "is_max": false,
 "max_pct": 0.35
 },
 "dominick barlow": {
 "player": "Dominick Barlow",
-"pcv_M": 6.2,
-"low_M": 1.2,
-"high_M": 11.2,
+"pcv_M": 6.3,
+"low_M": 1.3,
+"high_M": 11.4,
 "is_max": false,
 "max_pct": 0.25
 },
 "donovan clingan": {
 "player": "Donovan Clingan",
-"pcv_M": 4.1,
+"pcv_M": 4.2,
 "low_M": 0.6,
-"high_M": 7.6,
+"high_M": 7.8,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1197,9 +1062,9 @@
 },
 "dru smith": {
 "player": "Dru Smith",
-"pcv_M": 5.3,
+"pcv_M": 5.1,
 "low_M": 0.8,
-"high_M": 9.8,
+"high_M": 9.5,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1213,9 +1078,9 @@
 },
 "duop reath": {
 "player": "Duop Reath",
-"pcv_M": 2.6,
-"low_M": 0.1,
-"high_M": 5.1,
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1245,33 +1110,17 @@
 },
 "dyson daniels": {
 "player": "Dyson Daniels",
-"pcv_M": 29.7,
-"low_M": 23.0,
-"high_M": 36.4,
-"is_max": false,
-"max_pct": 0.25
-},
-"e.j. liddell": {
-"player": "E.J. Liddell",
-"pcv_M": 2.5,
-"low_M": 0.0,
-"high_M": 5.0,
+"pcv_M": 29.6,
+"low_M": 22.9,
+"high_M": 36.3,
 "is_max": false,
 "max_pct": 0.25
 },
 "egor demin": {
 "player": "Egor D\u00ebmin",
-"pcv_M": 10.2,
-"low_M": 3.2,
-"high_M": 17.1,
-"is_max": false,
-"max_pct": 0.25
-},
-"elijah harkless": {
-"player": "Elijah Harkless",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
+"pcv_M": 10.5,
+"low_M": 3.4,
+"high_M": 17.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1283,14 +1132,6 @@
 "is_max": false,
 "max_pct": 0.35
 },
-"ethan thompson": {
-"player": "Ethan Thompson",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
 "evan mobley": {
 "player": "Evan Mobley",
 "pcv_M": 41.2,
@@ -1301,17 +1142,17 @@
 },
 "franz wagner": {
 "player": "Franz Wagner",
-"pcv_M": 33.3,
-"low_M": 26.8,
-"high_M": 39.8,
+"pcv_M": 33.4,
+"low_M": 26.9,
+"high_M": 39.9,
 "is_max": false,
 "max_pct": 0.25
 },
 "gg jackson": {
 "player": "GG Jackson",
-"pcv_M": 7.6,
-"low_M": 1.8,
-"high_M": 13.4,
+"pcv_M": 7.7,
+"low_M": 1.9,
+"high_M": 13.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1330,14 +1171,6 @@
 "high_M": 7.2,
 "is_max": false,
 "max_pct": 0.35
-},
-"garrison mathews": {
-"player": "Garrison Mathews",
-"pcv_M": 2.9,
-"low_M": 0.4,
-"high_M": 5.4,
-"is_max": false,
-"max_pct": 0.25
 },
 "gary harris": {
 "player": "Gary Harris",
@@ -1373,9 +1206,9 @@
 },
 "goga bitadze": {
 "player": "Goga Bitadze",
-"pcv_M": 10.0,
+"pcv_M": 10.1,
 "low_M": 3.1,
-"high_M": 16.9,
+"high_M": 17.0,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -1405,25 +1238,25 @@
 },
 "guerschon yabusele": {
 "player": "Guerschon Yabusele",
-"pcv_M": 4.9,
-"low_M": 0.7,
-"high_M": 9.1,
+"pcv_M": 4.5,
+"low_M": 0.6,
+"high_M": 8.3,
 "is_max": false,
 "max_pct": 0.25
 },
 "gui santos": {
 "player": "Gui Santos",
-"pcv_M": 7.3,
-"low_M": 1.7,
-"high_M": 13.0,
+"pcv_M": 7.6,
+"low_M": 1.8,
+"high_M": 13.4,
 "is_max": false,
 "max_pct": 0.25
 },
 "harrison barnes": {
 "player": "Harrison Barnes",
-"pcv_M": 14.8,
-"low_M": 6.4,
-"high_M": 23.2,
+"pcv_M": 15.0,
+"low_M": 6.5,
+"high_M": 23.4,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -1445,9 +1278,9 @@
 },
 "hugo gonzalez": {
 "player": "Hugo Gonz\u00e1lez",
-"pcv_M": 6.5,
+"pcv_M": 6.6,
 "low_M": 1.4,
-"high_M": 11.7,
+"high_M": 11.9,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1485,17 +1318,9 @@
 },
 "isaiah collier": {
 "player": "Isaiah Collier",
-"pcv_M": 3.5,
+"pcv_M": 3.7,
 "low_M": 0.6,
-"high_M": 6.5,
-"is_max": false,
-"max_pct": 0.25
-},
-"isaiah crawford": {
-"player": "Isaiah Crawford",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
+"high_M": 6.8,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1509,25 +1334,17 @@
 },
 "isaiah jackson": {
 "player": "Isaiah Jackson",
-"pcv_M": 3.8,
+"pcv_M": 4.1,
 "low_M": 0.6,
-"high_M": 7.1,
+"high_M": 7.6,
 "is_max": false,
 "max_pct": 0.25
 },
 "isaiah joe": {
 "player": "Isaiah Joe",
-"pcv_M": 19.7,
-"low_M": 10.9,
-"high_M": 28.4,
-"is_max": false,
-"max_pct": 0.25
-},
-"isaiah livers": {
-"player": "Isaiah Livers",
-"pcv_M": 2.9,
-"low_M": 0.4,
-"high_M": 5.4,
+"pcv_M": 18.8,
+"low_M": 9.9,
+"high_M": 27.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1589,9 +1406,9 @@
 },
 "jaden hardy": {
 "player": "Jaden Hardy",
-"pcv_M": 5.8,
-"low_M": 1.0,
-"high_M": 10.5,
+"pcv_M": 5.9,
+"low_M": 1.1,
+"high_M": 10.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1607,7 +1424,7 @@
 "player": "Jaden McDaniels",
 "pcv_M": 22.7,
 "low_M": 14.7,
-"high_M": 30.7,
+"high_M": 30.8,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1616,22 +1433,6 @@
 "pcv_M": 3.1,
 "low_M": 0.5,
 "high_M": 5.6,
-"is_max": false,
-"max_pct": 0.25
-},
-"jahmai mashack": {
-"player": "Jahmai Mashack",
-"pcv_M": 2.4,
-"low_M": 0.0,
-"high_M": 4.9,
-"is_max": false,
-"max_pct": 0.25
-},
-"jahmir young": {
-"player": "Jahmir Young",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1645,9 +1446,9 @@
 },
 "jake laravia": {
 "player": "Jake LaRavia",
-"pcv_M": 9.7,
-"low_M": 2.9,
-"high_M": 16.4,
+"pcv_M": 9.4,
+"low_M": 2.8,
+"high_M": 16.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1693,17 +1494,9 @@
 },
 "jalen pickett": {
 "player": "Jalen Pickett",
-"pcv_M": 3.1,
-"low_M": 0.5,
-"high_M": 5.6,
-"is_max": false,
-"max_pct": 0.25
-},
-"jalen slawson": {
-"player": "Jalen Slawson",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1725,9 +1518,9 @@
 },
 "jalen williams": {
 "player": "Jalen Williams",
-"pcv_M": 28.3,
+"pcv_M": 28.2,
 "low_M": 21.5,
-"high_M": 35.1,
+"high_M": 35.0,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1736,14 +1529,6 @@
 "pcv_M": 3.5,
 "low_M": 0.6,
 "high_M": 6.5,
-"is_max": false,
-"max_pct": 0.25
-},
-"jamal cain": {
-"player": "Jamal Cain",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1765,9 +1550,9 @@
 },
 "jamaree bouyea": {
 "player": "Jamaree Bouyea",
-"pcv_M": 2.4,
+"pcv_M": 2.3,
 "low_M": 0.0,
-"high_M": 4.9,
+"high_M": 4.8,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1805,15 +1590,15 @@
 },
 "jarace walker": {
 "player": "Jarace Walker",
-"pcv_M": 9.6,
-"low_M": 2.9,
-"high_M": 16.2,
+"pcv_M": 9.5,
+"low_M": 2.8,
+"high_M": 16.1,
 "is_max": false,
 "max_pct": 0.25
 },
 "jared mccain": {
 "player": "Jared McCain",
-"pcv_M": 5.5,
+"pcv_M": 5.4,
 "low_M": 0.9,
 "high_M": 10.0,
 "is_max": false,
@@ -1821,9 +1606,9 @@
 },
 "jaren jackson jr.": {
 "player": "Jaren Jackson Jr.",
-"pcv_M": 26.3,
-"low_M": 19.1,
-"high_M": 33.5,
+"pcv_M": 26.2,
+"low_M": 19.0,
+"high_M": 33.4,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -1845,33 +1630,17 @@
 },
 "jase richardson": {
 "player": "Jase Richardson",
-"pcv_M": 3.7,
-"low_M": 0.6,
-"high_M": 6.9,
-"is_max": false,
-"max_pct": 0.25
-},
-"javon small": {
-"player": "Javon Small",
 "pcv_M": 3.8,
 "low_M": 0.6,
 "high_M": 7.1,
 "is_max": false,
 "max_pct": 0.25
 },
-"javonte cooke": {
-"player": "Javonte Cooke",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
 "javonte green": {
 "player": "Javonte Green",
-"pcv_M": 5.9,
-"low_M": 1.1,
-"high_M": 10.7,
+"pcv_M": 5.6,
+"low_M": 1.0,
+"high_M": 10.3,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1925,9 +1694,9 @@
 },
 "jaylon tyson": {
 "player": "Jaylon Tyson",
-"pcv_M": 5.8,
-"low_M": 1.0,
-"high_M": 10.6,
+"pcv_M": 6.0,
+"low_M": 1.1,
+"high_M": 10.8,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -1951,7 +1720,7 @@
 "player": "Jerami Grant",
 "pcv_M": 17.0,
 "low_M": 8.1,
-"high_M": 25.8,
+"high_M": 25.9,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -1960,14 +1729,6 @@
 "pcv_M": 8.1,
 "low_M": 2.1,
 "high_M": 14.2,
-"is_max": false,
-"max_pct": 0.25
-},
-"jeremiah robinson-earl": {
-"player": "Jeremiah Robinson-Earl",
-"pcv_M": 2.9,
-"low_M": 0.4,
-"high_M": 5.4,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2005,25 +1766,25 @@
 },
 "jimmy butler iii": {
 "player": "Jimmy Butler III",
-"pcv_M": 41.4,
-"low_M": 35.4,
-"high_M": 47.5,
+"pcv_M": 41.5,
+"low_M": 35.5,
+"high_M": 47.6,
 "is_max": false,
 "max_pct": 0.35
 },
 "joan beringer": {
 "player": "Joan Beringer",
-"pcv_M": 3.4,
+"pcv_M": 3.3,
 "low_M": 0.5,
-"high_M": 6.3,
+"high_M": 6.1,
 "is_max": false,
 "max_pct": 0.25
 },
 "jock landale": {
 "player": "Jock Landale",
-"pcv_M": 6.5,
-"low_M": 1.4,
-"high_M": 11.7,
+"pcv_M": 6.2,
+"low_M": 1.2,
+"high_M": 11.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2037,9 +1798,9 @@
 },
 "joel embiid": {
 "player": "Joel Embiid",
-"pcv_M": 41.7,
-"low_M": 35.6,
-"high_M": 47.8,
+"pcv_M": 41.6,
+"low_M": 35.5,
+"high_M": 47.7,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -2059,14 +1820,6 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"john poulakidas": {
-"player": "John Poulakidas",
-"pcv_M": 2.3,
-"low_M": 0.0,
-"high_M": 4.8,
-"is_max": false,
-"max_pct": 0.25
-},
 "johni broome": {
 "player": "Johni Broome",
 "pcv_M": 2.2,
@@ -2080,14 +1833,6 @@
 "pcv_M": 2.9,
 "low_M": 0.4,
 "high_M": 5.4,
-"is_max": false,
-"max_pct": 0.25
-},
-"johnny juzang": {
-"player": "Johnny Juzang",
-"pcv_M": 2.8,
-"low_M": 0.3,
-"high_M": 5.3,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2125,9 +1870,9 @@
 },
 "jordan clarkson": {
 "player": "Jordan Clarkson",
-"pcv_M": 4.4,
+"pcv_M": 4.3,
 "low_M": 0.6,
-"high_M": 8.1,
+"high_M": 8.0,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -2157,9 +1902,9 @@
 },
 "jordan miller": {
 "player": "Jordan Miller",
-"pcv_M": 3.6,
-"low_M": 0.6,
-"high_M": 6.7,
+"pcv_M": 3.5,
+"low_M": 0.5,
+"high_M": 6.4,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2167,7 +1912,7 @@
 "player": "Jordan Poole",
 "pcv_M": 5.7,
 "low_M": 1.0,
-"high_M": 10.4,
+"high_M": 10.5,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2191,7 +1936,7 @@
 "player": "Josh Giddey",
 "pcv_M": 36.8,
 "low_M": 30.5,
-"high_M": 43.2,
+"high_M": 43.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2205,9 +1950,9 @@
 },
 "josh hart": {
 "player": "Josh Hart",
-"pcv_M": 27.1,
-"low_M": 20.1,
-"high_M": 34.1,
+"pcv_M": 26.6,
+"low_M": 19.4,
+"high_M": 33.7,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2229,17 +1974,17 @@
 },
 "jrue holiday": {
 "player": "Jrue Holiday",
-"pcv_M": 21.0,
-"low_M": 12.6,
-"high_M": 29.4,
+"pcv_M": 18.8,
+"low_M": 9.8,
+"high_M": 27.7,
 "is_max": false,
 "max_pct": 0.35
 },
 "julian champagnie": {
 "player": "Julian Champagnie",
-"pcv_M": 11.2,
-"low_M": 3.8,
-"high_M": 18.7,
+"pcv_M": 9.1,
+"low_M": 2.6,
+"high_M": 15.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2251,19 +1996,11 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"julian reese": {
-"player": "Julian Reese",
-"pcv_M": 2.4,
-"low_M": 0.0,
-"high_M": 4.9,
-"is_max": false,
-"max_pct": 0.25
-},
 "julian strawther": {
 "player": "Julian Strawther",
-"pcv_M": 5.4,
-"low_M": 0.9,
-"high_M": 9.9,
+"pcv_M": 5.3,
+"low_M": 0.8,
+"high_M": 9.8,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2277,9 +2014,9 @@
 },
 "justin champagnie": {
 "player": "Justin Champagnie",
-"pcv_M": 4.9,
+"pcv_M": 4.6,
 "low_M": 0.7,
-"high_M": 9.0,
+"high_M": 8.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2293,25 +2030,17 @@
 },
 "jusuf nurkic": {
 "player": "Jusuf Nurki\u0107",
-"pcv_M": 8.0,
+"pcv_M": 8.1,
 "low_M": 2.0,
 "high_M": 14.1,
 "is_max": false,
 "max_pct": 0.35
 },
-"kj simpson": {
-"player": "KJ Simpson",
-"pcv_M": 3.3,
-"low_M": 0.5,
-"high_M": 6.1,
-"is_max": false,
-"max_pct": 0.25
-},
 "kam jones": {
 "player": "Kam Jones",
-"pcv_M": 2.3,
-"low_M": 0.0,
-"high_M": 4.8,
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2333,9 +2062,9 @@
 },
 "kasparas jakucionis": {
 "player": "Kasparas Jaku\u010dionis",
-"pcv_M": 5.1,
-"low_M": 0.7,
-"high_M": 9.4,
+"pcv_M": 5.2,
+"low_M": 0.8,
+"high_M": 9.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2365,17 +2094,17 @@
 },
 "kel'el ware": {
 "player": "Kel'el Ware",
-"pcv_M": 8.8,
-"low_M": 2.4,
-"high_M": 15.1,
+"pcv_M": 9.2,
+"low_M": 2.7,
+"high_M": 15.7,
 "is_max": false,
 "max_pct": 0.25
 },
 "keldon johnson": {
 "player": "Keldon Johnson",
-"pcv_M": 23.1,
-"low_M": 15.2,
-"high_M": 31.1,
+"pcv_M": 22.2,
+"low_M": 14.1,
+"high_M": 30.4,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2389,19 +2118,11 @@
 },
 "kelly oubre jr.": {
 "player": "Kelly Oubre Jr.",
-"pcv_M": 12.3,
+"pcv_M": 12.4,
 "low_M": 4.5,
-"high_M": 20.2,
+"high_M": 20.3,
 "is_max": false,
 "max_pct": 0.35
-},
-"kennedy chandler": {
-"player": "Kennedy Chandler",
-"pcv_M": 4.3,
-"low_M": 0.6,
-"high_M": 7.9,
-"is_max": false,
-"max_pct": 0.25
 },
 "kenrich williams": {
 "player": "Kenrich Williams",
@@ -2429,9 +2150,9 @@
 },
 "keshad johnson": {
 "player": "Keshad Johnson",
-"pcv_M": 3.2,
+"pcv_M": 3.1,
 "low_M": 0.5,
-"high_M": 5.8,
+"high_M": 5.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2447,7 +2168,7 @@
 "player": "Kevin Huerter",
 "pcv_M": 10.3,
 "low_M": 3.3,
-"high_M": 17.4,
+"high_M": 17.3,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2458,14 +2179,6 @@
 "high_M": 7.2,
 "is_max": false,
 "max_pct": 0.35
-},
-"kevin mccullar jr.": {
-"player": "Kevin McCullar Jr.",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
 },
 "kevin porter jr.": {
 "player": "Kevin Porter Jr.",
@@ -2485,9 +2198,9 @@
 },
 "keyonte george": {
 "player": "Keyonte George",
-"pcv_M": 4.9,
-"low_M": 0.7,
-"high_M": 9.2,
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2501,19 +2214,11 @@
 },
 "khris middleton": {
 "player": "Khris Middleton",
-"pcv_M": 6.8,
-"low_M": 1.5,
-"high_M": 12.1,
+"pcv_M": 7.5,
+"low_M": 1.8,
+"high_M": 13.2,
 "is_max": false,
 "max_pct": 0.35
-},
-"killian hayes": {
-"player": "Killian Hayes",
-"pcv_M": 6.2,
-"low_M": 1.2,
-"high_M": 11.1,
-"is_max": false,
-"max_pct": 0.25
 },
 "klay thompson": {
 "player": "Klay Thompson",
@@ -2539,22 +2244,6 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"kobe sanders": {
-"player": "Kobe Sanders",
-"pcv_M": 2.8,
-"low_M": 0.3,
-"high_M": 5.3,
-"is_max": false,
-"max_pct": 0.25
-},
-"koby brea": {
-"player": "Koby Brea",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
 "kon knueppel": {
 "player": "Kon Knueppel",
 "pcv_M": 16.1,
@@ -2565,9 +2254,9 @@
 },
 "kris dunn": {
 "player": "Kris Dunn",
-"pcv_M": 10.0,
-"low_M": 3.1,
-"high_M": 16.9,
+"pcv_M": 8.2,
+"low_M": 2.1,
+"high_M": 14.3,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -2597,17 +2286,17 @@
 },
 "kyle filipowski": {
 "player": "Kyle Filipowski",
-"pcv_M": 3.9,
+"pcv_M": 3.6,
 "low_M": 0.6,
-"high_M": 7.2,
+"high_M": 6.7,
 "is_max": false,
 "max_pct": 0.25
 },
 "kyle kuzma": {
 "player": "Kyle Kuzma",
 "pcv_M": 8.1,
-"low_M": 2.0,
-"high_M": 14.1,
+"low_M": 2.1,
+"high_M": 14.2,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2621,17 +2310,9 @@
 },
 "kyshawn george": {
 "player": "Kyshawn George",
-"pcv_M": 7.6,
+"pcv_M": 7.5,
 "low_M": 1.8,
-"high_M": 13.3,
-"is_max": false,
-"max_pct": 0.25
-},
-"lj cryer": {
-"player": "LJ Cryer",
-"pcv_M": 2.9,
-"low_M": 0.4,
-"high_M": 5.4,
+"high_M": 13.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2641,14 +2322,6 @@
 "low_M": 35.2,
 "high_M": 47.3,
 "is_max": true,
-"max_pct": 0.25
-},
-"lachlan olbrich": {
-"player": "Lachlan Olbrich",
-"pcv_M": 2.7,
-"low_M": 0.2,
-"high_M": 5.2,
-"is_max": false,
 "max_pct": 0.25
 },
 "landry shamet": {
@@ -2669,9 +2342,9 @@
 },
 "lauri markkanen": {
 "player": "Lauri Markkanen",
-"pcv_M": 38.0,
-"low_M": 31.7,
-"high_M": 44.2,
+"pcv_M": 37.9,
+"low_M": 31.6,
+"high_M": 44.1,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2679,17 +2352,9 @@
 "player": "LeBron James",
 "pcv_M": 39.8,
 "low_M": 33.6,
-"high_M": 46.0,
+"high_M": 45.9,
 "is_max": false,
 "max_pct": 0.35
-},
-"leaky black": {
-"player": "Leaky Black",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
 },
 "leonard miller": {
 "player": "Leonard Miller",
@@ -2718,7 +2383,7 @@
 "lonzo ball": {
 "player": "Lonzo Ball",
 "pcv_M": 8.5,
-"low_M": 2.3,
+"low_M": 2.2,
 "high_M": 14.7,
 "is_max": false,
 "max_pct": 0.3
@@ -2743,15 +2408,15 @@
 "player": "Luka Garza",
 "pcv_M": 8.0,
 "low_M": 2.0,
-"high_M": 14.0,
+"high_M": 13.9,
 "is_max": false,
 "max_pct": 0.25
 },
 "luke kennard": {
 "player": "Luke Kennard",
-"pcv_M": 6.8,
-"low_M": 1.5,
-"high_M": 12.2,
+"pcv_M": 7.1,
+"low_M": 1.6,
+"high_M": 12.6,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2763,43 +2428,11 @@
 "is_max": false,
 "max_pct": 0.3
 },
-"luke travers": {
-"player": "Luke Travers",
-"pcv_M": 3.2,
-"low_M": 0.5,
-"high_M": 5.9,
-"is_max": false,
-"max_pct": 0.25
-},
-"mac mcclung": {
-"player": "Mac McClung",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
-"malachi smith": {
-"player": "Malachi Smith",
-"pcv_M": 2.3,
-"low_M": 0.0,
-"high_M": 4.8,
-"is_max": false,
-"max_pct": 0.25
-},
 "malaki branham": {
 "player": "Malaki Branham",
 "pcv_M": 4.8,
 "low_M": 0.7,
 "high_M": 8.9,
-"is_max": false,
-"max_pct": 0.25
-},
-"malevy leons": {
-"player": "Malevy Leons",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2811,19 +2444,11 @@
 "is_max": false,
 "max_pct": 0.3
 },
-"marjon beauchamp": {
-"player": "MarJon Beauchamp",
-"pcv_M": 3.0,
-"low_M": 0.5,
-"high_M": 5.5,
-"is_max": false,
-"max_pct": 0.25
-},
 "marcus sasser": {
 "player": "Marcus Sasser",
-"pcv_M": 3.8,
+"pcv_M": 3.9,
 "low_M": 0.6,
-"high_M": 7.1,
+"high_M": 7.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2845,9 +2470,9 @@
 },
 "marvin bagley iii": {
 "player": "Marvin Bagley III",
-"pcv_M": 4.4,
+"pcv_M": 4.3,
 "low_M": 0.6,
-"high_M": 8.1,
+"high_M": 8.0,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2861,9 +2486,9 @@
 },
 "matas buzelis": {
 "player": "Matas Buzelis",
-"pcv_M": 7.5,
-"low_M": 1.8,
-"high_M": 13.2,
+"pcv_M": 7.4,
+"low_M": 1.7,
+"high_M": 13.0,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -2877,25 +2502,17 @@
 },
 "max christie": {
 "player": "Max Christie",
-"pcv_M": 14.6,
-"low_M": 6.2,
-"high_M": 22.9,
-"is_max": false,
-"max_pct": 0.25
-},
-"max shulga": {
-"player": "Max Shulga",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
+"pcv_M": 14.7,
+"low_M": 6.3,
+"high_M": 23.1,
 "is_max": false,
 "max_pct": 0.25
 },
 "max strus": {
 "player": "Max Strus",
-"pcv_M": 9.3,
-"low_M": 2.7,
-"high_M": 15.8,
+"pcv_M": 9.1,
+"low_M": 2.6,
+"high_M": 15.6,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2925,25 +2542,25 @@
 },
 "micah potter": {
 "player": "Micah Potter",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4,
 "is_max": false,
 "max_pct": 0.25
 },
 "michael porter jr.": {
 "player": "Michael Porter Jr.",
-"pcv_M": 31.9,
-"low_M": 25.3,
-"high_M": 38.5,
+"pcv_M": 32.1,
+"low_M": 25.5,
+"high_M": 38.7,
 "is_max": false,
 "max_pct": 0.3
 },
 "mikal bridges": {
 "player": "Mikal Bridges",
-"pcv_M": 33.1,
-"low_M": 26.5,
-"high_M": 39.6,
+"pcv_M": 33.0,
+"low_M": 26.4,
+"high_M": 39.5,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -2962,14 +2579,6 @@
 "high_M": 35.6,
 "is_max": false,
 "max_pct": 0.3
-},
-"miles kelly": {
-"player": "Miles Kelly",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
 },
 "miles mcbride": {
 "player": "Miles McBride",
@@ -2997,9 +2606,9 @@
 },
 "moritz wagner": {
 "player": "Moritz Wagner",
-"pcv_M": 3.8,
+"pcv_M": 3.5,
 "low_M": 0.6,
-"high_M": 7.0,
+"high_M": 6.5,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -3019,19 +2628,11 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"moussa cisse": {
-"player": "Moussa Cisse",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
 "moussa diabate": {
 "player": "Moussa Diabat\u00e9",
-"pcv_M": 8.0,
-"low_M": 2.0,
-"high_M": 14.0,
+"pcv_M": 7.8,
+"low_M": 1.9,
+"high_M": 13.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3069,19 +2670,11 @@
 },
 "naji marshall": {
 "player": "Naji Marshall",
-"pcv_M": 15.3,
-"low_M": 6.8,
-"high_M": 23.8,
+"pcv_M": 15.1,
+"low_M": 6.6,
+"high_M": 23.6,
 "is_max": false,
 "max_pct": 0.25
-},
-"nate williams": {
-"player": "Nate Williams",
-"pcv_M": 3.5,
-"low_M": 0.6,
-"high_M": 6.5,
-"is_max": false,
-"max_pct": 0.3
 },
 "naz reid": {
 "player": "Naz Reid",
@@ -3101,9 +2694,9 @@
 },
 "nic claxton": {
 "player": "Nic Claxton",
-"pcv_M": 13.3,
+"pcv_M": 13.2,
 "low_M": 5.2,
-"high_M": 21.4,
+"high_M": 21.3,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -3115,27 +2708,19 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"nick smith jr.": {
-"player": "Nick Smith Jr.",
-"pcv_M": 4.0,
-"low_M": 0.6,
-"high_M": 7.4,
-"is_max": false,
-"max_pct": 0.25
-},
 "nickeil alexander-walker": {
 "player": "Nickeil Alexander-Walker",
-"pcv_M": 29.5,
-"low_M": 22.8,
-"high_M": 36.2,
+"pcv_M": 29.4,
+"low_M": 22.6,
+"high_M": 36.1,
 "is_max": false,
 "max_pct": 0.3
 },
 "nicolas batum": {
 "player": "Nicolas Batum",
-"pcv_M": 3.9,
+"pcv_M": 4.1,
 "low_M": 0.6,
-"high_M": 7.2,
+"high_M": 7.7,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -3165,9 +2750,9 @@
 },
 "nikola topic": {
 "player": "Nikola Topi\u0107",
-"pcv_M": 2.9,
-"low_M": 0.4,
-"high_M": 5.4,
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3181,9 +2766,9 @@
 },
 "nique clifford": {
 "player": "Nique Clifford",
-"pcv_M": 6.9,
-"low_M": 1.5,
-"high_M": 12.3,
+"pcv_M": 7.0,
+"low_M": 1.6,
+"high_M": 12.4,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3215,7 +2800,7 @@
 "player": "Nolan Traore",
 "pcv_M": 4.1,
 "low_M": 0.6,
-"high_M": 7.6,
+"high_M": 7.7,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3229,9 +2814,9 @@
 },
 "og anunoby": {
 "player": "OG Anunoby",
-"pcv_M": 31.4,
-"low_M": 24.8,
-"high_M": 38.1,
+"pcv_M": 31.7,
+"low_M": 25.1,
+"high_M": 38.3,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -3239,7 +2824,7 @@
 "player": "Obi Toppin",
 "pcv_M": 9.2,
 "low_M": 2.7,
-"high_M": 15.7,
+"high_M": 15.8,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3261,25 +2846,17 @@
 },
 "onyeka okongwu": {
 "player": "Onyeka Okongwu",
-"pcv_M": 27.4,
-"low_M": 20.5,
-"high_M": 34.3,
-"is_max": false,
-"max_pct": 0.25
-},
-"oscar tshiebwe": {
-"player": "Oscar Tshiebwe",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
+"pcv_M": 27.2,
+"low_M": 20.3,
+"high_M": 34.2,
 "is_max": false,
 "max_pct": 0.25
 },
 "oso ighodaro": {
 "player": "Oso Ighodaro",
-"pcv_M": 5.3,
-"low_M": 0.8,
-"high_M": 9.8,
+"pcv_M": 5.8,
+"low_M": 1.1,
+"high_M": 10.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3298,14 +2875,6 @@
 "high_M": 24.6,
 "is_max": false,
 "max_pct": 0.3
-},
-"pj hall": {
-"player": "PJ Hall",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
 },
 "pacome dadiet": {
 "player": "Pac\u00f4me Dadiet",
@@ -3326,7 +2895,7 @@
 "pascal siakam": {
 "player": "Pascal Siakam",
 "pcv_M": 31.3,
-"low_M": 24.7,
+"low_M": 24.6,
 "high_M": 37.9,
 "is_max": false,
 "max_pct": 0.35
@@ -3349,9 +2918,9 @@
 },
 "patrick williams": {
 "player": "Patrick Williams",
-"pcv_M": 4.5,
-"low_M": 0.7,
-"high_M": 8.4,
+"pcv_M": 4.3,
+"low_M": 0.6,
+"high_M": 8.0,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3365,16 +2934,16 @@
 },
 "paul reed": {
 "player": "Paul Reed",
-"pcv_M": 6.7,
-"low_M": 1.4,
-"high_M": 12.0,
+"pcv_M": 6.4,
+"low_M": 1.3,
+"high_M": 11.5,
 "is_max": false,
 "max_pct": 0.25
 },
 "payton pritchard": {
 "player": "Payton Pritchard",
-"pcv_M": 29.7,
-"low_M": 23.0,
+"pcv_M": 29.8,
+"low_M": 23.1,
 "high_M": 36.5,
 "is_max": false,
 "max_pct": 0.25
@@ -3387,26 +2956,18 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"pete nance": {
-"player": "Pete Nance",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
 "peyton watson": {
 "player": "Peyton Watson",
-"pcv_M": 15.6,
-"low_M": 7.1,
-"high_M": 24.2,
+"pcv_M": 15.4,
+"low_M": 6.8,
+"high_M": 23.9,
 "is_max": false,
 "max_pct": 0.25
 },
 "precious achiuwa": {
 "player": "Precious Achiuwa",
-"pcv_M": 9.7,
-"low_M": 2.9,
+"pcv_M": 9.8,
+"low_M": 3.0,
 "high_M": 16.5,
 "is_max": false,
 "max_pct": 0.25
@@ -3437,9 +2998,9 @@
 },
 "rj barrett": {
 "player": "RJ Barrett",
-"pcv_M": 36.8,
-"low_M": 30.5,
-"high_M": 43.2,
+"pcv_M": 36.7,
+"low_M": 30.4,
+"high_M": 43.1,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -3451,35 +3012,19 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"rayj dennis": {
-"player": "RayJ Dennis",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
-"rayan rupert": {
-"player": "Rayan Rupert",
-"pcv_M": 2.5,
-"low_M": 0.0,
-"high_M": 5.0,
-"is_max": false,
-"max_pct": 0.25
-},
 "reed sheppard": {
 "player": "Reed Sheppard",
-"pcv_M": 10.6,
-"low_M": 3.4,
-"high_M": 17.8,
+"pcv_M": 10.8,
+"low_M": 3.5,
+"high_M": 18.1,
 "is_max": false,
 "max_pct": 0.25
 },
 "rob dillingham": {
 "player": "Rob Dillingham",
-"pcv_M": 4.1,
+"pcv_M": 4.3,
 "low_M": 0.6,
-"high_M": 7.6,
+"high_M": 7.9,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3487,17 +3032,9 @@
 "player": "Robert Williams III",
 "pcv_M": 12.6,
 "low_M": 4.7,
-"high_M": 20.5,
+"high_M": 20.6,
 "is_max": false,
 "max_pct": 0.3
-},
-"ron harper jr.": {
-"player": "Ron Harper Jr.",
-"pcv_M": 2.3,
-"low_M": 0.0,
-"high_M": 4.8,
-"is_max": false,
-"max_pct": 0.25
 },
 "ronald holland ii": {
 "player": "Ronald Holland II",
@@ -3517,17 +3054,17 @@
 },
 "rudy gobert": {
 "player": "Rudy Gobert",
-"pcv_M": 23.0,
-"low_M": 15.1,
-"high_M": 31.0,
+"pcv_M": 23.4,
+"low_M": 15.5,
+"high_M": 31.2,
 "is_max": false,
 "max_pct": 0.35
 },
 "rui hachimura": {
 "player": "Rui Hachimura",
-"pcv_M": 15.3,
-"low_M": 6.8,
-"high_M": 23.9,
+"pcv_M": 16.2,
+"low_M": 7.5,
+"high_M": 24.9,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -3535,7 +3072,7 @@
 "player": "Russell Westbrook",
 "pcv_M": 5.4,
 "low_M": 0.9,
-"high_M": 9.9,
+"high_M": 10.0,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -3573,9 +3110,9 @@
 },
 "saddiq bey": {
 "player": "Saddiq Bey",
-"pcv_M": 20.5,
-"low_M": 11.9,
-"high_M": 29.0,
+"pcv_M": 20.3,
+"low_M": 11.7,
+"high_M": 28.8,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3599,7 +3136,7 @@
 "player": "Sandro Mamukelashvili",
 "pcv_M": 9.1,
 "low_M": 2.6,
-"high_M": 15.5,
+"high_M": 15.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3645,9 +3182,9 @@
 },
 "shaedon sharpe": {
 "player": "Shaedon Sharpe",
-"pcv_M": 24.0,
+"pcv_M": 23.9,
 "low_M": 16.2,
-"high_M": 31.7,
+"high_M": 31.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3658,14 +3195,6 @@
 "high_M": 63.6,
 "is_max": true,
 "max_pct": 0.35
-},
-"sharife cooper": {
-"player": "Sharife Cooper",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
 },
 "sidy cissoko": {
 "player": "Sidy Cissoko",
@@ -3693,9 +3222,9 @@
 },
 "spencer jones": {
 "player": "Spencer Jones",
-"pcv_M": 3.9,
+"pcv_M": 4.0,
 "low_M": 0.6,
-"high_M": 7.3,
+"high_M": 7.4,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3711,15 +3240,15 @@
 "player": "Stephon Castle",
 "pcv_M": 16.0,
 "low_M": 7.3,
-"high_M": 24.6,
+"high_M": 24.7,
 "is_max": false,
 "max_pct": 0.25
 },
 "steven adams": {
 "player": "Steven Adams",
-"pcv_M": 7.2,
+"pcv_M": 7.4,
 "low_M": 1.7,
-"high_M": 12.8,
+"high_M": 13.1,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -3733,19 +3262,11 @@
 },
 "t.j. mcconnell": {
 "player": "T.J. McConnell",
-"pcv_M": 6.3,
-"low_M": 1.3,
-"high_M": 11.3,
+"pcv_M": 5.8,
+"low_M": 1.1,
+"high_M": 10.6,
 "is_max": false,
 "max_pct": 0.35
-},
-"taelon peter": {
-"player": "Taelon Peter",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
 },
 "taj gibson": {
 "player": "Taj Gibson",
@@ -3757,9 +3278,9 @@
 },
 "tari eason": {
 "player": "Tari Eason",
-"pcv_M": 10.2,
+"pcv_M": 10.1,
 "low_M": 3.2,
-"high_M": 17.2,
+"high_M": 17.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3813,7 +3334,7 @@
 },
 "tidjane salaun": {
 "player": "Tidjane Sala\u00fcn",
-"pcv_M": 4.4,
+"pcv_M": 4.3,
 "low_M": 0.6,
 "high_M": 8.1,
 "is_max": false,
@@ -3835,22 +3356,6 @@
 "is_max": false,
 "max_pct": 0.35
 },
-"tolu smith": {
-"player": "Tolu Smith",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
-"tony bradley": {
-"player": "Tony Bradley",
-"pcv_M": 3.5,
-"low_M": 0.6,
-"high_M": 6.5,
-"is_max": false,
-"max_pct": 0.3
-},
 "toumani camara": {
 "player": "Toumani Camara",
 "pcv_M": 16.3,
@@ -3861,9 +3366,9 @@
 },
 "trae young": {
 "player": "Trae Young",
-"pcv_M": 18.4,
-"low_M": 9.4,
-"high_M": 27.4,
+"pcv_M": 18.1,
+"low_M": 9.0,
+"high_M": 27.1,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -3885,9 +3390,9 @@
 },
 "tre jones": {
 "player": "Tre Jones",
-"pcv_M": 16.9,
-"low_M": 8.0,
-"high_M": 25.7,
+"pcv_M": 17.3,
+"low_M": 8.3,
+"high_M": 26.2,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3907,19 +3412,11 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"trey jemison iii": {
-"player": "Trey Jemison III",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
 "trey murphy iii": {
 "player": "Trey Murphy III",
-"pcv_M": 38.2,
-"low_M": 32.0,
-"high_M": 44.5,
+"pcv_M": 36.7,
+"low_M": 30.4,
+"high_M": 43.1,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -3935,39 +3432,23 @@
 "player": "Tristan da Silva",
 "pcv_M": 11.4,
 "low_M": 3.9,
-"high_M": 19.0,
+"high_M": 18.9,
 "is_max": false,
 "max_pct": 0.25
 },
 "ty jerome": {
 "player": "Ty Jerome",
-"pcv_M": 15.3,
-"low_M": 6.8,
-"high_M": 23.8,
-"is_max": false,
-"max_pct": 0.25
-},
-"tyty washington jr.": {
-"player": "TyTy Washington Jr.",
-"pcv_M": 2.5,
-"low_M": 0.0,
-"high_M": 5.0,
-"is_max": false,
-"max_pct": 0.25
-},
-"tyler burton": {
-"player": "Tyler Burton",
-"pcv_M": 2.6,
-"low_M": 0.1,
-"high_M": 5.1,
+"pcv_M": 15.9,
+"low_M": 7.3,
+"high_M": 24.6,
 "is_max": false,
 "max_pct": 0.25
 },
 "tyler herro": {
 "player": "Tyler Herro",
-"pcv_M": 22.6,
-"low_M": 14.6,
-"high_M": 30.7,
+"pcv_M": 22.8,
+"low_M": 14.7,
+"high_M": 30.8,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -3987,14 +3468,6 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"tyrese martin": {
-"player": "Tyrese Martin",
-"pcv_M": 4.0,
-"low_M": 0.6,
-"high_M": 7.4,
-"is_max": false,
-"max_pct": 0.25
-},
 "tyrese maxey": {
 "player": "Tyrese Maxey",
 "pcv_M": 49.5,
@@ -4011,14 +3484,6 @@
 "is_max": false,
 "max_pct": 0.25
 },
-"tyson etienne": {
-"player": "Tyson Etienne",
-"pcv_M": 2.2,
-"low_M": 0.0,
-"high_M": 4.7,
-"is_max": false,
-"max_pct": 0.25
-},
 "tyus jones": {
 "player": "Tyus Jones",
 "pcv_M": 3.9,
@@ -4029,9 +3494,9 @@
 },
 "vj edgecombe": {
 "player": "VJ Edgecombe",
-"pcv_M": 13.8,
-"low_M": 5.6,
-"high_M": 22.0,
+"pcv_M": 14.3,
+"low_M": 6.0,
+"high_M": 22.6,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -4053,9 +3518,9 @@
 },
 "vit krejci": {
 "player": "V\u00edt Krej\u010d\u00ed",
-"pcv_M": 8.4,
-"low_M": 2.2,
-"high_M": 14.6,
+"pcv_M": 8.6,
+"low_M": 2.3,
+"high_M": 14.9,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -4077,9 +3542,9 @@
 },
 "wendell carter jr.": {
 "player": "Wendell Carter Jr.",
-"pcv_M": 16.2,
-"low_M": 7.5,
-"high_M": 25.0,
+"pcv_M": 15.5,
+"low_M": 7.0,
+"high_M": 24.1,
 "is_max": false,
 "max_pct": 0.3
 },
@@ -4094,8 +3559,8 @@
 "will riley": {
 "player": "Will Riley",
 "pcv_M": 6.3,
-"low_M": 1.3,
-"high_M": 11.4,
+"low_M": 1.2,
+"high_M": 11.3,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -4120,14 +3585,6 @@
 "pcv_M": 3.2,
 "low_M": 0.5,
 "high_M": 5.9,
-"is_max": false,
-"max_pct": 0.25
-},
-"yuki kawamura": {
-"player": "Yuki Kawamura",
-"pcv_M": 2.5,
-"low_M": 0.0,
-"high_M": 5.0,
 "is_max": false,
 "max_pct": 0.25
 },
@@ -4157,17 +3614,17 @@
 },
 "zach edey": {
 "player": "Zach Edey",
-"pcv_M": 11.5,
+"pcv_M": 11.4,
 "low_M": 3.9,
-"high_M": 19.0,
+"high_M": 18.9,
 "is_max": false,
 "max_pct": 0.25
 },
 "zach lavine": {
 "player": "Zach LaVine",
-"pcv_M": 12.2,
-"low_M": 4.3,
-"high_M": 20.0,
+"pcv_M": 11.9,
+"low_M": 4.2,
+"high_M": 19.7,
 "is_max": false,
 "max_pct": 0.35
 },
@@ -4194,17 +3651,561 @@
 "high_M": 46.0,
 "is_max": false,
 "max_pct": 0.25
+},
+"aaron holiday": {
+"player": "Aaron Holiday",
+"pcv_M": 3.6,
+"low_M": 0.6,
+"high_M": 6.6,
+"is_max": false,
+"max_pct": 0.3
+},
+"alijah martin": {
+"player": "Alijah Martin",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"bez mbeng": {
+"player": "Bez Mbeng",
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2,
+"is_max": false,
+"max_pct": 0.25
+},
+"blake hinson": {
+"player": "Blake Hinson",
+"pcv_M": 5.0,
+"low_M": 0.7,
+"high_M": 9.3,
+"is_max": false,
+"max_pct": 0.25
+},
+"branden carlson": {
+"player": "Branden Carlson",
+"pcv_M": 3.5,
+"low_M": 0.5,
+"high_M": 6.4,
+"is_max": false,
+"max_pct": 0.25
+},
+"brooks barnhizer": {
+"player": "Brooks Barnhizer",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0,
+"is_max": false,
+"max_pct": 0.25
+},
+"caleb love": {
+"player": "Caleb Love",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"chaney johnson": {
+"player": "Chaney Johnson",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8,
+"is_max": false,
+"max_pct": 0.25
+},
+"charles bassey": {
+"player": "Charles Bassey",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"chris youngblood": {
+"player": "Chris Youngblood",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"christian koloko": {
+"player": "Christian Koloko",
+"pcv_M": 3.4,
+"low_M": 0.5,
+"high_M": 6.3,
+"is_max": false,
+"max_pct": 0.25
+},
+"cormac ryan": {
+"player": "Cormac Ryan",
+"pcv_M": 4.6,
+"low_M": 0.7,
+"high_M": 8.6,
+"is_max": false,
+"max_pct": 0.25
+},
+"curtis jones": {
+"player": "Curtis Jones",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4,
+"is_max": false,
+"max_pct": 0.25
+},
+"daeqwon plowden": {
+"player": "Daeqwon Plowden",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"dalen terry": {
+"player": "Dalen Terry",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0,
+"is_max": false,
+"max_pct": 0.25
+},
+"david jones garcia": {
+"player": "David Jones Garcia",
+"pcv_M": 3.0,
+"low_M": 0.5,
+"high_M": 5.5,
+"is_max": false,
+"max_pct": 0.25
+},
+"dejon jarreau": {
+"player": "DeJon Jarreau",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"e.j. liddell": {
+"player": "E.J. Liddell",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0,
+"is_max": false,
+"max_pct": 0.25
+},
+"elijah harkless": {
+"player": "Elijah Harkless",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"ethan thompson": {
+"player": "Ethan Thompson",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"garrison mathews": {
+"player": "Garrison Mathews",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"isaiah crawford": {
+"player": "Isaiah Crawford",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"isaiah livers": {
+"player": "Isaiah Livers",
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2,
+"is_max": false,
+"max_pct": 0.25
+},
+"jahmai mashack": {
+"player": "Jahmai Mashack",
+"pcv_M": 2.4,
+"low_M": 0.0,
+"high_M": 4.9,
+"is_max": false,
+"max_pct": 0.25
+},
+"jahmir young": {
+"player": "Jahmir Young",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"jalen slawson": {
+"player": "Jalen Slawson",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"jamal cain": {
+"player": "Jamal Cain",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"javon small": {
+"player": "Javon Small",
+"pcv_M": 3.8,
+"low_M": 0.6,
+"high_M": 7.0,
+"is_max": false,
+"max_pct": 0.25
+},
+"javonte cooke": {
+"player": "Javonte Cooke",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"jeremiah robinson-earl": {
+"player": "Jeremiah Robinson-Earl",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"john poulakidas": {
+"player": "John Poulakidas",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8,
+"is_max": false,
+"max_pct": 0.25
+},
+"johnny juzang": {
+"player": "Johnny Juzang",
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2,
+"is_max": false,
+"max_pct": 0.25
+},
+"julian reese": {
+"player": "Julian Reese",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8,
+"is_max": false,
+"max_pct": 0.25
+},
+"kj simpson": {
+"player": "KJ Simpson",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"kennedy chandler": {
+"player": "Kennedy Chandler",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0,
+"is_max": false,
+"max_pct": 0.25
+},
+"kevin mccullar jr.": {
+"player": "Kevin McCullar Jr.",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"killian hayes": {
+"player": "Killian Hayes",
+"pcv_M": 8.3,
+"low_M": 2.2,
+"high_M": 14.4,
+"is_max": false,
+"max_pct": 0.25
+},
+"kobe sanders": {
+"player": "Kobe Sanders",
+"pcv_M": 2.8,
+"low_M": 0.3,
+"high_M": 5.3,
+"is_max": false,
+"max_pct": 0.25
+},
+"koby brea": {
+"player": "Koby Brea",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"lj cryer": {
+"player": "LJ Cryer",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4,
+"is_max": false,
+"max_pct": 0.25
+},
+"lachlan olbrich": {
+"player": "Lachlan Olbrich",
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2,
+"is_max": false,
+"max_pct": 0.25
+},
+"leaky black": {
+"player": "Leaky Black",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"luke travers": {
+"player": "Luke Travers",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9,
+"is_max": false,
+"max_pct": 0.25
+},
+"mac mcclung": {
+"player": "Mac McClung",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"malachi smith": {
+"player": "Malachi Smith",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8,
+"is_max": false,
+"max_pct": 0.25
+},
+"malevy leons": {
+"player": "Malevy Leons",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"marjon beauchamp": {
+"player": "MarJon Beauchamp",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"max shulga": {
+"player": "Max Shulga",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"miles kelly": {
+"player": "Miles Kelly",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"moussa cisse": {
+"player": "Moussa Cisse",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"nate williams": {
+"player": "Nate Williams",
+"pcv_M": 3.8,
+"low_M": 0.6,
+"high_M": 7.1,
+"is_max": false,
+"max_pct": 0.3
+},
+"nick smith jr.": {
+"player": "Nick Smith Jr.",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.4,
+"is_max": false,
+"max_pct": 0.25
+},
+"oscar tshiebwe": {
+"player": "Oscar Tshiebwe",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"pj hall": {
+"player": "PJ Hall",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"pete nance": {
+"player": "Pete Nance",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"rayj dennis": {
+"player": "RayJ Dennis",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"rayan rupert": {
+"player": "Rayan Rupert",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0,
+"is_max": false,
+"max_pct": 0.25
+},
+"ron harper jr.": {
+"player": "Ron Harper Jr.",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8,
+"is_max": false,
+"max_pct": 0.25
+},
+"sharife cooper": {
+"player": "Sharife Cooper",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"taelon peter": {
+"player": "Taelon Peter",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"tolu smith": {
+"player": "Tolu Smith",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"tony bradley": {
+"player": "Tony Bradley",
+"pcv_M": 3.3,
+"low_M": 0.5,
+"high_M": 6.0,
+"is_max": false,
+"max_pct": 0.3
+},
+"trey jemison iii": {
+"player": "Trey Jemison III",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"tyty washington jr.": {
+"player": "TyTy Washington Jr.",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"tyler burton": {
+"player": "Tyler Burton",
+"pcv_M": 2.6,
+"low_M": 0.1,
+"high_M": 5.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"tyrese martin": {
+"player": "Tyrese Martin",
+"pcv_M": 4.1,
+"low_M": 0.6,
+"high_M": 7.5,
+"is_max": false,
+"max_pct": 0.25
+},
+"tyson etienne": {
+"player": "Tyson Etienne",
+"pcv_M": 2.2,
+"low_M": 0.0,
+"high_M": 4.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"yuki kawamura": {
+"player": "Yuki Kawamura",
+"pcv_M": 2.5,
+"low_M": 0.0,
+"high_M": 5.0,
+"is_max": false,
+"max_pct": 0.25
 }
 },
 "contract_end": {
-"cj mccollum": {
-"end_season": "2026-27",
+"jalen johnson": {
+"end_season": "2029-30",
 "last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "ATL"
 },
-"jalen johnson": {
+"dyson daniels": {
 "end_season": "2029-30",
 "last_year_type": "guaranteed",
 "signing_season": "2030-31",
@@ -4218,11 +4219,18 @@
 "years_remaining": 2,
 "current_team": "ATL"
 },
-"nickeil alexander-walker": {
-"end_season": "2028-29",
-"last_year_type": "player_option",
-"signing_season": "2029-30",
-"years_remaining": 4,
+"cj mccollum": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "ATL"
+},
+"luguentz dort": {
+"end_season": "2026-27",
+"last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "ATL"
 },
 "onyeka okongwu": {
@@ -4232,25 +4240,25 @@
 "years_remaining": 3,
 "current_team": "ATL"
 },
+"nickeil alexander-walker": {
+"end_season": "2028-29",
+"last_year_type": "player_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "ATL"
+},
+"jock landale": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "ATL"
+},
 "corey kispert": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
-"current_team": "ATL"
-},
-"zaccharie risacher": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "ATL"
-},
-"gabe vincent": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "ATL"
 },
 "buddy hield": {
@@ -4260,9 +4268,30 @@
 "years_remaining": 3,
 "current_team": "ATL"
 },
-"dyson daniels": {
+"aaron wiggins": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "ATL"
+},
+"kingston flemings": {
 "end_season": "2029-30",
-"last_year_type": "guaranteed",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "ATL"
+},
+"devin carter": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "ATL"
+},
+"zuby ejiofor": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
 "signing_season": "2030-31",
 "years_remaining": 5,
 "current_team": "ATL"
@@ -4274,20 +4303,6 @@
 "years_remaining": 4,
 "current_team": "ATL"
 },
-"keaton wallace": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "ATL"
-},
-"jock landale": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "ATL"
-},
 "mouhamed gueye": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
@@ -4295,39 +4310,18 @@
 "years_remaining": 2,
 "current_team": "ATL"
 },
-"tony bradley": {
-"end_season": "2025-26",
+"ryan nembhard": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "ATL"
+},
+"henri veesaar": {
+"end_season": "2029-30",
 "last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "IND"
-},
-"duop reath": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "ATL"
-},
-"n'faly dante": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "ATL"
-},
-"nikola djurisic": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "ATL"
-},
-"caleb houstan": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "ATL"
 },
 "jayson tatum": {
@@ -4337,11 +4331,11 @@
 "years_remaining": 5,
 "current_team": "BOS"
 },
-"jaylen brown": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"paul george": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "BOS"
 },
 "derrick white": {
@@ -4351,11 +4345,11 @@
 "years_remaining": 4,
 "current_team": "BOS"
 },
-"nikola vucevic": {
-"end_season": "2025-26",
+"mitchell robinson": {
+"end_season": "2028-29",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "BOS"
 },
 "sam hauser": {
@@ -4372,18 +4366,25 @@
 "years_remaining": 3,
 "current_team": "BOS"
 },
+"ron harper jr.": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "BOS"
+},
+"chris cenac jr.": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "BOS"
+},
 "hugo gonzalez": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
-"current_team": "BOS"
-},
-"baylor scheierman": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
 "current_team": "BOS"
 },
 "luka garza": {
@@ -4393,6 +4394,13 @@
 "years_remaining": 2,
 "current_team": "BOS"
 },
+"baylor scheierman": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "BOS"
+},
 "neemias queta": {
 "end_season": "2030-31",
 "last_year_type": "guaranteed",
@@ -4400,54 +4408,33 @@
 "years_remaining": 6,
 "current_team": "BOS"
 },
+"mike conley": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "BOS"
+},
 "jordan walsh": {
+"end_season": "2029-30",
+"last_year_type": "guaranteed",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "BOS"
+},
+"milos uzan": {
 "end_season": "2026-27",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
 "current_team": "BOS"
 },
-"max shulga": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BOS"
-},
-"dalano banton": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "LAC"
-},
-"ron harper jr.": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BOS"
-},
-"john tonje": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BOS"
-},
-"jd davison": {
+"tucker devries": {
 "end_season": "2026-27",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
-"current_team": "HOU"
-},
-"charles bassey": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "PHI"
+"current_team": "BOS"
 },
 "michael porter jr.": {
 "end_season": "2026-27",
@@ -4456,14 +4443,35 @@
 "years_remaining": 2,
 "current_team": "BRK"
 },
-"nic claxton": {
+"julius randle": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "BRK"
+},
+"terance mann": {
 "end_season": "2027-28",
 "last_year_type": "guaranteed",
 "signing_season": "2028-29",
 "years_remaining": 3,
 "current_team": "BRK"
 },
-"terance mann": {
+"day'ron sharpe": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "BRK"
+},
+"mikel brown jr.": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "BRK"
+},
+"keon ellis": {
 "end_season": "2027-28",
 "last_year_type": "guaranteed",
 "signing_season": "2028-29",
@@ -4477,21 +4485,14 @@
 "years_remaining": 4,
 "current_team": "BRK"
 },
-"ochai agbaji": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BRK"
-},
-"ziaire williams": {
+"noah clowney": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
 "signing_season": "2027-28",
 "years_remaining": 2,
 "current_team": "BRK"
 },
-"day'ron sharpe": {
+"josh minott": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
 "signing_season": "2028-29",
@@ -4503,13 +4504,6 @@
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
-"current_team": "BRK"
-},
-"noah clowney": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
 "current_team": "BRK"
 },
 "drake powell": {
@@ -4526,6 +4520,13 @@
 "years_remaining": 4,
 "current_team": "BRK"
 },
+"joshua jefferson": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "BRK"
+},
 "danny wolf": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
@@ -4533,114 +4534,30 @@
 "years_remaining": 4,
 "current_team": "BRK"
 },
-"josh minott": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "BRK"
+"naz reid": {
+"end_season": "2029-30",
+"last_year_type": "player_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "CHO"
 },
-"jalen wilson": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BRK"
-},
-"malachi smith": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "BRK"
-},
-"cam thomas": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIL"
-},
-"haywood highsmith": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "PHO"
-},
-"kobe bufkin": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "LAL"
-},
-"dariq whitehead": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"keon johnson": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BRK"
-},
-"hunter tyson": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BRK"
-},
-"tyrese martin": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BRK"
-},
-"drew timme": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BRK"
-},
-"tre scott": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BRK"
-},
-"grant nelson": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "BRK"
-},
-"lamelo ball": {
+"coby white": {
 "end_season": "2028-29",
 "last_year_type": "guaranteed",
 "signing_season": "2029-30",
 "years_remaining": 4,
 "current_team": "CHO"
 },
-"miles bridges": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"grayson allen": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "CHO"
 },
-"josh green": {
+"brandon miller": {
 "end_season": "2026-27",
-"last_year_type": "guaranteed",
+"last_year_type": "team_option",
 "signing_season": "2027-28",
 "years_remaining": 2,
 "current_team": "CHO"
@@ -4652,25 +4569,18 @@
 "years_remaining": 2,
 "current_team": "CHO"
 },
-"coby white": {
+"dorian finney-smith": {
 "end_season": "2028-29",
-"last_year_type": "guaranteed",
+"last_year_type": "player_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
 "current_team": "CHO"
 },
-"brandon miller": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "CHO"
-},
-"pat connaughton": {
-"end_season": "2026-27",
+"royce o'neale": {
+"end_season": "2027-28",
 "last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "CHO"
 },
 "kon knueppel": {
@@ -4680,6 +4590,13 @@
 "years_remaining": 4,
 "current_team": "CHO"
 },
+"tidjane salaun": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "CHO"
+},
 "tre mann": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
@@ -4687,11 +4604,25 @@
 "years_remaining": 3,
 "current_team": "CHO"
 },
-"tidjane salaun": {
-"end_season": "2027-28",
+"hannes steinbach": {
+"end_season": "2029-30",
 "last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "CHO"
+},
+"christian anderson jr.": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "CHO"
+},
+"pat connaughton": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "CHO"
 },
 "liam mcneeley": {
@@ -4701,11 +4632,18 @@
 "years_remaining": 4,
 "current_team": "CHO"
 },
-"xavier tillman sr.": {
-"end_season": "2025-26",
+"moussa diabate": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "CHO"
+},
+"mouhamadou gueye": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "CHO"
 },
 "sion james": {
@@ -4722,41 +4660,6 @@
 "years_remaining": 4,
 "current_team": "CHO"
 },
-"moussa diabate": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "CHO"
-},
-"mike conley": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIN"
-},
-"malaki branham": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "CHO"
-},
-"nick smith jr.": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "LAL"
-},
-"anfernee simons": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "CHI"
-},
 "josh giddey": {
 "end_season": "2028-29",
 "last_year_type": "guaranteed",
@@ -4764,16 +4667,16 @@
 "years_remaining": 4,
 "current_team": "CHI"
 },
-"collin sexton": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "CHI"
-},
-"zach collins": {
+"nic claxton": {
 "end_season": "2027-28",
 "last_year_type": "guaranteed",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "CHI"
+},
+"norman powell": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
 "signing_season": "2028-29",
 "years_remaining": 3,
 "current_team": "CHI"
@@ -4792,11 +4695,25 @@
 "years_remaining": 2,
 "current_team": "CHI"
 },
+"caleb wilson": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "CHI"
+},
 "jalen smith": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
+"current_team": "CHI"
+},
+"zach collins": {
+"end_season": "2027-28",
+"last_year_type": "guaranteed",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "CHI"
 },
 "tre jones": {
@@ -4813,13 +4730,6 @@
 "years_remaining": 3,
 "current_team": "CHI"
 },
-"guerschon yabusele": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "CHI"
-},
 "matas buzelis": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
@@ -4834,11 +4744,11 @@
 "years_remaining": 4,
 "current_team": "CHI"
 },
-"nick richards": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"dailyn swain": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "CHI"
 },
 "leonard miller": {
@@ -4848,39 +4758,18 @@
 "years_remaining": 2,
 "current_team": "CHI"
 },
-"mouhamadou gueye": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "CHI"
-},
-"jaden ivey": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "CHI"
-},
-"jevon carter": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "ORL"
+"donovan mitchell": {
+"end_season": "2030-31",
+"last_year_type": "player_option",
+"signing_season": "2031-32",
+"years_remaining": 6,
+"current_team": "CLE"
 },
 "evan mobley": {
 "end_season": "2029-30",
 "last_year_type": "guaranteed",
 "signing_season": "2030-31",
 "years_remaining": 5,
-"current_team": "CLE"
-},
-"donovan mitchell": {
-"end_season": "2027-28",
-"last_year_type": "player_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
 "current_team": "CLE"
 },
 "james harden": {
@@ -4918,13 +4807,6 @@
 "years_remaining": 4,
 "current_team": "CLE"
 },
-"dean wade": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "CLE"
-},
 "jaylon tyson": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
@@ -4932,25 +4814,18 @@
 "years_remaining": 3,
 "current_team": "CLE"
 },
-"keon ellis": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "CLE"
-},
-"larry nance jr.": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "CLE"
-},
 "thomas bryant": {
-"end_season": "2025-26",
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "CLE"
+},
+"nae'qwan tomlin": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "CLE"
 },
 "craig porter jr.": {
@@ -4967,11 +4842,11 @@
 "years_remaining": 4,
 "current_team": "CLE"
 },
-"nae'qwan tomlin": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"meleek thomas": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "CLE"
 },
 "ricky rubio": {
@@ -4988,11 +4863,11 @@
 "years_remaining": 3,
 "current_team": "DAL"
 },
-"khris middleton": {
-"end_season": "2025-26",
-"last_year_type": "player_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"p.j. washington": {
+"end_season": "2029-30",
+"last_year_type": "guaranteed",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "DAL"
 },
 "klay thompson": {
@@ -5009,11 +4884,11 @@
 "years_remaining": 4,
 "current_team": "DAL"
 },
-"p.j. washington": {
-"end_season": "2029-30",
-"last_year_type": "guaranteed",
-"signing_season": "2030-31",
-"years_remaining": 5,
+"santi aldama": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "DAL"
 },
 "cooper flagg": {
@@ -5021,6 +4896,13 @@
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
+"current_team": "DAL"
+},
+"zaccharie risacher": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "DAL"
 },
 "caleb martin": {
@@ -5051,47 +4933,40 @@
 "years_remaining": 2,
 "current_team": "DAL"
 },
-"dwight powell": {
-"end_season": "2025-26",
-"last_year_type": "player_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"morez johnson jr.": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "DAL"
 },
-"aj johnson": {
+"marcus sasser": {
+"end_season": "2026-27",
+"last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "DAL"
+},
+"sergio de larrea": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "DAL"
+},
+"tarik biberovic": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
 "signing_season": "2028-29",
 "years_remaining": 3,
 "current_team": "DAL"
 },
-"marvin bagley iii": {
-"end_season": "2025-26",
+"moussa cisse": {
+"end_season": "2027-28",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "DAL"
-},
-"brandon williams": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "DAL"
-},
-"ryan nembhard": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "DAL"
-},
-"tyus jones": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "DEN"
 },
 "javale mcgee": {
 "end_season": "2027-28",
@@ -5106,13 +4981,6 @@
 "signing_season": "2027-28",
 "years_remaining": 2,
 "current_team": "MEM"
-},
-"jeremiah robinson-earl": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "DAL"
 },
 "nikola jokic": {
 "end_season": "2027-28",
@@ -5142,11 +5010,11 @@
 "years_remaining": 2,
 "current_team": "DEN"
 },
-"jonas valanciunas": {
-"end_season": "2026-27",
+"christian braun": {
+"end_season": "2030-31",
 "last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"signing_season": "2031-32",
+"years_remaining": 6,
 "current_team": "DEN"
 },
 "zeke nnaji": {
@@ -5156,23 +5024,9 @@
 "years_remaining": 3,
 "current_team": "DEN"
 },
-"christian braun": {
-"end_season": "2030-31",
-"last_year_type": "guaranteed",
-"signing_season": "2031-32",
-"years_remaining": 6,
-"current_team": "DEN"
-},
-"peyton watson": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "DEN"
-},
-"daron holmes": {
+"spencer jones": {
 "end_season": "2027-28",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2028-29",
 "years_remaining": 3,
 "current_team": "DEN"
@@ -5184,18 +5038,25 @@
 "years_remaining": 2,
 "current_team": "DEN"
 },
-"tim hardaway jr.": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"daron holmes": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "DEN"
 },
-"bruce brown": {
-"end_season": "2025-26",
+"marvin bagley iii": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "DEN"
+},
+"tyus jones": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "DEN"
 },
 "jalen pickett": {
@@ -5205,11 +5066,11 @@
 "years_remaining": 2,
 "current_team": "DEN"
 },
-"spencer jones": {
-"end_season": "2025-26",
+"trevon brazile": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "DEN"
 },
 "cade cunningham": {
@@ -5219,18 +5080,11 @@
 "years_remaining": 5,
 "current_team": "DET"
 },
-"tobias harris": {
-"end_season": "2025-26",
+"john collins": {
+"end_season": "2028-29",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "DET"
-},
-"kevin huerter": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "DET"
 },
 "duncan robinson": {
@@ -5240,18 +5094,11 @@
 "years_remaining": 3,
 "current_team": "DET"
 },
-"isaiah stewart": {
+"isaiah joe": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
 "signing_season": "2028-29",
 "years_remaining": 3,
-"current_team": "DET"
-},
-"caris levert": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
 "current_team": "DET"
 },
 "ausar thompson": {
@@ -5268,11 +5115,11 @@
 "years_remaining": 3,
 "current_team": "DET"
 },
-"jalen duren": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"kevin huerter": {
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "DET"
 },
 "paul reed": {
@@ -5282,6 +5129,13 @@
 "years_remaining": 2,
 "current_team": "DET"
 },
+"ebuka okorie": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "DET"
+},
 "daniss jenkins": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
@@ -5289,32 +5143,25 @@
 "years_remaining": 2,
 "current_team": "DET"
 },
-"marcus sasser": {
+"javonte green": {
 "end_season": "2026-27",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
 "current_team": "DET"
 },
-"javonte green": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"gary harris": {
+"end_season": "2026-27",
+"last_year_type": "player_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "DET"
 },
-"isaac jones": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "DET"
-},
-"chaz lanier": {
-"end_season": "2028-29",
-"last_year_type": "team_option",
-"signing_season": "2029-30",
-"years_remaining": 4,
+"taurean prince": {
+"end_season": "2026-27",
+"last_year_type": "player_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "DET"
 },
 "tolu smith": {
@@ -5324,18 +5171,11 @@
 "years_remaining": 2,
 "current_team": "DET"
 },
-"dario saric": {
-"end_season": "2025-26",
-"last_year_type": "player_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "DET"
-},
-"bobi klintman": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"chaz lanier": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "DET"
 },
 "stephen curry": {
@@ -5352,18 +5192,18 @@
 "years_remaining": 2,
 "current_team": "GSW"
 },
-"kristaps porzingis": {
-"end_season": "2027-28",
-"last_year_type": "player_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "GSW"
-},
 "draymond green": {
 "end_season": "2026-27",
 "last_year_type": "player_option",
 "signing_season": "2027-28",
 "years_remaining": 2,
+"current_team": "GSW"
+},
+"kristaps porzingis": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "GSW"
 },
 "moses moody": {
@@ -5380,25 +5220,18 @@
 "years_remaining": 3,
 "current_team": "GSW"
 },
+"yaxel lendeborg": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "GSW"
+},
 "brandin podziemski": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
 "signing_season": "2027-28",
 "years_remaining": 2,
-"current_team": "GSW"
-},
-"de'anthony melton": {
-"end_season": "2026-27",
-"last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "GSW"
-},
-"gary payton ii": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "GSW"
 },
 "gui santos": {
@@ -5408,18 +5241,18 @@
 "years_remaining": 4,
 "current_team": "GSW"
 },
-"quinten post": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"de'anthony melton": {
+"end_season": "2026-27",
+"last_year_type": "player_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "GSW"
 },
-"seth curry": {
-"end_season": "2025-26",
+"charles bassey": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "GSW"
 },
 "will richard": {
@@ -5427,20 +5260,6 @@
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
-"current_team": "GSW"
-},
-"pat spencer": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "GSW"
-},
-"omer yurtseven": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "GSW"
 },
 "kevin durant": {
@@ -5464,20 +5283,6 @@
 "years_remaining": 2,
 "current_team": "HOU"
 },
-"steven adams": {
-"end_season": "2027-28",
-"last_year_type": "guaranteed",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "HOU"
-},
-"dorian finney-smith": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "HOU"
-},
 "jabari smith jr.": {
 "end_season": "2030-31",
 "last_year_type": "guaranteed",
@@ -5485,9 +5290,16 @@
 "years_remaining": 6,
 "current_team": "HOU"
 },
-"reed sheppard": {
+"tari eason": {
+"end_season": "2030-31",
+"last_year_type": "player_option",
+"signing_season": "2031-32",
+"years_remaining": 6,
+"current_team": "HOU"
+},
+"steven adams": {
 "end_season": "2027-28",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2028-29",
 "years_remaining": 3,
 "current_team": "HOU"
@@ -5499,6 +5311,13 @@
 "years_remaining": 2,
 "current_team": "HOU"
 },
+"reed sheppard": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "HOU"
+},
 "clint capela": {
 "end_season": "2027-28",
 "last_year_type": "guaranteed",
@@ -5506,39 +5325,60 @@
 "years_remaining": 3,
 "current_team": "HOU"
 },
-"tari eason": {
-"end_season": "2025-26",
+"marcus smart": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "HOU"
+},
+"jd davison": {
+"end_season": "2026-27",
 "last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "HOU"
 },
-"aaron holiday": {
-"end_season": "2025-26",
+"julian phillips": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "HOU"
 },
-"josh okogie": {
-"end_season": "2025-26",
+"oscar tshiebwe": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "HOU"
 },
-"jeff green": {
-"end_season": "2025-26",
+"isaiah crawford": {
+"end_season": "2027-28",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "HOU"
+},
+"bogdan bogdanovic": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "HOU"
 },
 "jae'sean tate": {
-"end_season": "2025-26",
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "HOU"
+},
+"bruce thornton": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "HOU"
 },
 "tyrese haliburton": {
@@ -5576,16 +5416,16 @@
 "years_remaining": 3,
 "current_team": "IND"
 },
-"aaron nesmith": {
+"t.j. mcconnell": {
 "end_season": "2028-29",
-"last_year_type": "guaranteed",
+"last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
 "current_team": "IND"
 },
-"t.j. mcconnell": {
+"aaron nesmith": {
 "end_season": "2028-29",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2029-30",
 "years_remaining": 4,
 "current_team": "IND"
@@ -5597,14 +5437,14 @@
 "years_remaining": 2,
 "current_team": "IND"
 },
-"ben sheppard": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"kelly oubre jr.": {
+"end_season": "2027-28",
+"last_year_type": "guaranteed",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "IND"
 },
-"kobe brown": {
+"ben sheppard": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
 "signing_season": "2027-28",
@@ -5618,67 +5458,18 @@
 "years_remaining": 3,
 "current_team": "IND"
 },
+"larry nance jr.": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "IND"
+},
 "johnny furphy": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
 "signing_season": "2028-29",
 "years_remaining": 3,
-"current_team": "IND"
-},
-"micah potter": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "IND"
-},
-"kam jones": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "IND"
-},
-"quenton jackson": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "IND"
-},
-"james wiseman": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "IND"
-},
-"garrison mathews": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "IND"
-},
-"monte morris": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "IND"
-},
-"mac mcclung": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "IND"
-},
-"gabe mcglothan": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "IND"
 },
 "kawhi leonard": {
@@ -5695,18 +5486,11 @@
 "years_remaining": 3,
 "current_team": "LAC"
 },
-"john collins": {
-"end_season": "2025-26",
-"last_year_type": "player_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "LAC"
-},
-"bogdan bogdanovic": {
-"end_season": "2026-27",
+"rui hachimura": {
+"end_season": "2027-28",
 "last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "LAC"
 },
 "derrick jones jr.": {
@@ -5716,11 +5500,11 @@
 "years_remaining": 2,
 "current_team": "LAC"
 },
-"bennedict mathurin": {
-"end_season": "2025-26",
+"keaton wagler": {
+"end_season": "2029-30",
 "last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "LAC"
 },
 "brook lopez": {
@@ -5758,11 +5542,25 @@
 "years_remaining": 5,
 "current_team": "PHO"
 },
+"jordan miller": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "LAC"
+},
 "yanic konan niederhauser": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
+"current_team": "LAC"
+},
+"kobe sanders": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "LAC"
 },
 "cam christie": {
@@ -5772,33 +5570,12 @@
 "years_remaining": 3,
 "current_team": "LAC"
 },
-"jordan miller": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "LAC"
-},
-"kobe sanders": {
-"end_season": "2026-27",
+"baba miller": {
+"end_season": "2029-30",
 "last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "LAC"
-},
-"patrick baldwin jr.": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "PHI"
-},
-"lebron james": {
-"end_season": "2025-26",
-"last_year_type": "player_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "LAL"
 },
 "luka doncic": {
 "end_season": "2028-29",
@@ -5807,18 +5584,32 @@
 "years_remaining": 4,
 "current_team": "LAL"
 },
-"rui hachimura": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"austin reaves": {
+"end_season": "2029-30",
+"last_year_type": "player_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "LAL"
 },
-"austin reaves": {
-"end_season": "2026-27",
+"walker kessler": {
+"end_season": "2029-30",
 "last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "LAL"
+},
+"quentin grimes": {
+"end_season": "2029-30",
+"last_year_type": "player_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "LAL"
+},
+"sandro mamukelashvili": {
+"end_season": "2029-30",
+"last_year_type": "player_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "LAL"
 },
 "jarred vanderbilt": {
@@ -5828,26 +5619,19 @@
 "years_remaining": 3,
 "current_team": "LAL"
 },
-"luke kennard": {
-"end_season": "2025-26",
+"collin sexton": {
+"end_season": "2027-28",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "LAL"
 },
-"maxi kleber": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"jaden hardy": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "LAL"
-},
-"deandre ayton": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "POR"
 },
 "jake laravia": {
 "end_season": "2026-27",
@@ -5856,13 +5640,6 @@
 "years_remaining": 2,
 "current_team": "LAL"
 },
-"marcus smart": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
 "dalton knecht": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
@@ -5870,11 +5647,25 @@
 "years_remaining": 3,
 "current_team": "LAL"
 },
-"jaxson hayes": {
-"end_season": "2025-26",
+"cameron carr": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "LAL"
+},
+"ziaire williams": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "LAL"
+},
+"kevon looney": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "LAL"
 },
 "bronny james": {
@@ -5891,21 +5682,14 @@
 "years_remaining": 3,
 "current_team": "LAL"
 },
-"ja morant": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"kentavious caldwell-pope": {
-"end_season": "2026-27",
+"jerami grant": {
+"end_season": "2027-28",
 "last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "MEM"
 },
-"santi aldama": {
+"isaiah stewart": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
 "signing_season": "2028-29",
@@ -5919,11 +5703,25 @@
 "years_remaining": 2,
 "current_team": "MEM"
 },
+"cameron boozer": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "MEM"
+},
 "ty jerome": {
 "end_season": "2027-28",
 "last_year_type": "player_option",
 "signing_season": "2028-29",
 "years_remaining": 3,
+"current_team": "MEM"
+},
+"quinten post": {
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "MEM"
 },
 "taylor hendricks": {
@@ -5947,6 +5745,20 @@
 "years_remaining": 4,
 "current_team": "MEM"
 },
+"d'angelo russell": {
+"end_season": "2026-27",
+"last_year_type": "player_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "MEM"
+},
+"kris murray": {
+"end_season": "2026-27",
+"last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "MEM"
+},
 "walter clayton": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
@@ -5954,11 +5766,11 @@
 "years_remaining": 4,
 "current_team": "MEM"
 },
-"cam spencer": {
-"end_season": "2028-29",
+"aj johnson": {
+"end_season": "2027-28",
 "last_year_type": "team_option",
-"signing_season": "2029-30",
-"years_remaining": 4,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "MEM"
 },
 "scotty pippen jr.": {
@@ -5966,6 +5778,13 @@
 "last_year_type": "guaranteed",
 "signing_season": "2028-29",
 "years_remaining": 3,
+"current_team": "MEM"
+},
+"cam spencer": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "MEM"
 },
 "gg jackson ii": {
@@ -5982,46 +5801,18 @@
 "years_remaining": 3,
 "current_team": "MEM"
 },
-"taj gibson": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"rayan rupert": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "POR"
-},
-"kyle anderson": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIN"
-},
-"georges niang": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"kentavious caldwell-pope": {
+"end_season": "2026-27",
+"last_year_type": "player_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "MEM"
 },
 "cole anthony": {
-"end_season": "2025-26",
+"end_season": "2027-28",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "PHO"
-},
-"eric gordon": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "MEM"
 },
 "mamadi diakite": {
@@ -6031,67 +5822,18 @@
 "years_remaining": 2,
 "current_team": "MEM"
 },
-"dejon jarreau": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"christian koloko": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"tyler burton": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"adama-alpha bal": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"lucas williamson": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"lawson lovering": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
-},
-"toby okani": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MEM"
+"giannis antetokounmpo": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "MIA"
 },
 "bam adebayo": {
 "end_season": "2028-29",
 "last_year_type": "player_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
-"current_team": "MIA"
-},
-"tyler herro": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "MIA"
 },
 "andrew wiggins": {
@@ -6101,11 +5843,18 @@
 "years_remaining": 4,
 "current_team": "MIA"
 },
-"norman powell": {
-"end_season": "2025-26",
+"nikola jovic": {
+"end_season": "2029-30",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "MIA"
+},
+"bobby portis": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "MIA"
 },
 "davion mitchell": {
@@ -6115,39 +5864,11 @@
 "years_remaining": 2,
 "current_team": "MIA"
 },
-"simone fontecchio": {
+"tim hardaway jr.": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
-"current_team": "MIA"
-},
-"nikola jovic": {
-"end_season": "2029-30",
-"last_year_type": "guaranteed",
-"signing_season": "2030-31",
-"years_remaining": 5,
-"current_team": "MIA"
-},
-"kel'el ware": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIA"
-},
-"jaime jaquez jr.": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIA"
-},
-"kasparas jakucionis": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "MIA"
 },
 "dru smith": {
@@ -6157,11 +5878,11 @@
 "years_remaining": 3,
 "current_team": "MIA"
 },
-"keshad johnson": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"simone fontecchio": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "MIA"
 },
 "pelle larsson": {
@@ -6178,25 +5899,18 @@
 "years_remaining": 3,
 "current_team": "MIA"
 },
-"jahmir young": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"ryan conwell": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "MIA"
 },
-"terry rozier": {
-"end_season": "2025-26",
+"tyler herro": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIA"
-},
-"giannis antetokounmpo": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "MIL"
 },
 "myles turner": {
@@ -6213,58 +5927,16 @@
 "years_remaining": 2,
 "current_team": "MIL"
 },
-"bobby portis": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIL"
-},
-"ousmane dieng": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIL"
-},
-"kevin porter jr.": {
-"end_season": "2026-27",
-"last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "MIL"
-},
-"ryan rollins": {
-"end_season": "2027-28",
-"last_year_type": "player_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "MIL"
-},
 "gary trent jr.": {
-"end_season": "2026-27",
-"last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"end_season": "2029-30",
+"last_year_type": "guaranteed",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "MIL"
 },
-"gary harris": {
+"caris levert": {
 "end_season": "2026-27",
-"last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "MIL"
-},
-"taurean prince": {
-"end_season": "2026-27",
-"last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "MIL"
-},
-"jericho sims": {
-"end_season": "2026-27",
-"last_year_type": "player_option",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
 "current_team": "MIL"
@@ -6276,11 +5948,74 @@
 "years_remaining": 5,
 "current_team": "MIL"
 },
-"thanasis antetokounmpo": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"brayden burries": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "MIL"
+},
+"jaime jaquez jr.": {
+"end_season": "2026-27",
+"last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "MIL"
+},
+"ousmane dieng": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "MIL"
+},
+"nate ament": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "MIL"
+},
+"kevin porter jr.": {
+"end_season": "2026-27",
+"last_year_type": "player_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "MIL"
+},
+"kel'el ware": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "MIL"
+},
+"ryan rollins": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "MIL"
+},
+"kasparas jakucionis": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "MIL"
+},
+"jericho sims": {
+"end_season": "2026-27",
+"last_year_type": "player_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "MIL"
+},
+"pete nance": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "MIL"
 },
 "andre jackson jr.": {
@@ -6290,26 +6025,19 @@
 "years_remaining": 2,
 "current_team": "MIL"
 },
+"bogoljub markovic": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "MIL"
+},
 "damian lillard": {
 "end_season": "2027-28",
 "last_year_type": "player_option",
 "signing_season": "2028-29",
 "years_remaining": 3,
 "current_team": "POR"
-},
-"nigel hayes-davis": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIL"
-},
-"tyler smith": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIL"
 },
 "vasilije micic": {
 "end_season": "2027-28",
@@ -6325,14 +6053,14 @@
 "years_remaining": 4,
 "current_team": "MIN"
 },
-"rudy gobert": {
-"end_season": "2027-28",
-"last_year_type": "player_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
+"lamelo ball": {
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "MIN"
 },
-"julius randle": {
+"rudy gobert": {
 "end_season": "2027-28",
 "last_year_type": "player_option",
 "signing_season": "2028-29",
@@ -6346,11 +6074,18 @@
 "years_remaining": 4,
 "current_team": "MIN"
 },
-"naz reid": {
-"end_season": "2029-30",
+"ayo dosunmu": {
+"end_season": "2030-31",
 "last_year_type": "player_option",
-"signing_season": "2030-31",
-"years_remaining": 5,
+"signing_season": "2031-32",
+"years_remaining": 6,
+"current_team": "MIN"
+},
+"josh green": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "MIN"
 },
 "donte divincenzo": {
@@ -6360,18 +6095,25 @@
 "years_remaining": 2,
 "current_team": "MIN"
 },
-"ayo dosunmu": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIN"
-},
 "joan beringer": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
+"current_team": "MIN"
+},
+"jaylen clark": {
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "MIN"
+},
+"bones hyland": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "MIN"
 },
 "terrence shannon jr.": {
@@ -6381,25 +6123,18 @@
 "years_remaining": 3,
 "current_team": "MIN"
 },
-"joe ingles": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "MIN"
-},
-"julian phillips": {
+"trey lyles": {
 "end_season": "2026-27",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
 "current_team": "MIN"
 },
-"jaylen clark": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"isaiah evans": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "MIN"
 },
 "zion williamson": {
@@ -6437,18 +6172,18 @@
 "years_remaining": 5,
 "current_team": "NOP"
 },
-"kevon looney": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "NOP"
-},
 "jeremiah fears": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
+"current_team": "NOP"
+},
+"jordan hawkins": {
+"end_season": "2026-27",
+"last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "NOP"
 },
 "saddiq bey": {
@@ -6465,11 +6200,11 @@
 "years_remaining": 4,
 "current_team": "NOP"
 },
-"jordan hawkins": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"deandre jordan": {
+"end_season": "2027-28",
+"last_year_type": "guaranteed",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "NOP"
 },
 "yves missi": {
@@ -6479,11 +6214,18 @@
 "years_remaining": 3,
 "current_team": "NOP"
 },
-"deandre jordan": {
-"end_season": "2025-26",
+"bryce mcgowens": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "NOP"
+},
+"kobe bufkin": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "NOP"
 },
 "karlo matkovic": {
@@ -6498,27 +6240,6 @@
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
-"current_team": "NOP"
-},
-"bryce mcgowens": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "NOP"
-},
-"dalen terry": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "PHI"
-},
-"jaden springer": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "NOP"
 },
 "karl-anthony towns": {
@@ -6556,18 +6277,18 @@
 "years_remaining": 3,
 "current_team": "NYK"
 },
-"mitchell robinson": {
-"end_season": "2025-26",
+"landry shamet": {
+"end_season": "2029-30",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "NYK"
 },
 "jose alvarado": {
-"end_season": "2026-27",
-"last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "NYK"
 },
 "miles mcbride": {
@@ -6584,32 +6305,25 @@
 "years_remaining": 3,
 "current_team": "NYK"
 },
-"landry shamet": {
-"end_season": "2025-26",
+"jordan clarkson": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "NYK"
 },
-"jordan clarkson": {
-"end_season": "2025-26",
+"andre drummond": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "NYK"
 },
 "tyler kolek": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
 "signing_season": "2028-29",
 "years_remaining": 3,
-"current_team": "NYK"
-},
-"ariel hukporti": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "NYK"
 },
 "mohamed diawara": {
@@ -6619,74 +6333,11 @@
 "years_remaining": 5,
 "current_team": "NYK"
 },
-"jeremy sochan": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAS"
-},
-"shai gilgeous-alexander": {
-"end_season": "2030-31",
-"last_year_type": "player_option",
-"signing_season": "2031-32",
-"years_remaining": 6,
-"current_team": "OKC"
-},
-"isaiah hartenstein": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "OKC"
-},
-"luguentz dort": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "OKC"
-},
-"alex caruso": {
-"end_season": "2028-29",
-"last_year_type": "guaranteed",
-"signing_season": "2029-30",
-"years_remaining": 4,
-"current_team": "OKC"
-},
 "chet holmgren": {
 "end_season": "2030-31",
 "last_year_type": "guaranteed",
 "signing_season": "2031-32",
 "years_remaining": 6,
-"current_team": "OKC"
-},
-"isaiah joe": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "OKC"
-},
-"aaron wiggins": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "OKC"
-},
-"jaylin williams": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "OKC"
-},
-"kenrich williams": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
 "current_team": "OKC"
 },
 "jalen williams": {
@@ -6696,11 +6347,46 @@
 "years_remaining": 6,
 "current_team": "OKC"
 },
+"shai gilgeous-alexander": {
+"end_season": "2030-31",
+"last_year_type": "player_option",
+"signing_season": "2031-32",
+"years_remaining": 6,
+"current_team": "OKC"
+},
+"isaiah hartenstein": {
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "OKC"
+},
+"alex caruso": {
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "OKC"
+},
+"jaylin williams": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "OKC"
+},
 "cason wallace": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
 "signing_season": "2027-28",
 "years_remaining": 2,
+"current_team": "OKC"
+},
+"aday mara": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "OKC"
 },
 "nikola topic": {
@@ -6710,11 +6396,25 @@
 "years_remaining": 3,
 "current_team": "OKC"
 },
+"kenrich williams": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "OKC"
+},
 "thomas sorber": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
+"current_team": "OKC"
+},
+"bennett stirtz": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "OKC"
 },
 "jared mccain": {
@@ -6731,18 +6431,18 @@
 "years_remaining": 3,
 "current_team": "OKC"
 },
-"mason plumlee": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAS"
-},
 "franz wagner": {
 "end_season": "2029-30",
 "last_year_type": "guaranteed",
 "signing_season": "2030-31",
 "years_remaining": 5,
+"current_team": "ORL"
+},
+"paolo banchero": {
+"end_season": "2030-31",
+"last_year_type": "player_option",
+"signing_season": "2031-32",
+"years_remaining": 6,
 "current_team": "ORL"
 },
 "desmond bane": {
@@ -6759,20 +6459,6 @@
 "years_remaining": 5,
 "current_team": "ORL"
 },
-"paolo banchero": {
-"end_season": "2030-31",
-"last_year_type": "player_option",
-"signing_season": "2031-32",
-"years_remaining": 6,
-"current_team": "ORL"
-},
-"jonathan isaac": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "ORL"
-},
 "wendell carter jr.": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
@@ -6780,7 +6466,7 @@
 "years_remaining": 4,
 "current_team": "ORL"
 },
-"goga bitadze": {
+"jonathan isaac": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
 "signing_season": "2027-28",
@@ -6794,18 +6480,11 @@
 "years_remaining": 2,
 "current_team": "ORL"
 },
-"jett howard": {
+"goga bitadze": {
 "end_season": "2026-27",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
-"current_team": "ORL"
-},
-"moritz wagner": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "ORL"
 },
 "tristan da silva": {
@@ -6822,18 +6501,32 @@
 "years_remaining": 4,
 "current_team": "ORL"
 },
-"noah penda": {
-"end_season": "2028-29",
-"last_year_type": "team_option",
-"signing_season": "2029-30",
-"years_remaining": 4,
-"current_team": "ORL"
-},
 "jamal cain": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
 "signing_season": "2027-28",
 "years_remaining": 2,
+"current_team": "ORL"
+},
+"jevon carter": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "ORL"
+},
+"nikola vucevic": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "ORL"
+},
+"noah penda": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "ORL"
 },
 "joel embiid": {
@@ -6843,11 +6536,11 @@
 "years_remaining": 4,
 "current_team": "PHI"
 },
-"paul george": {
-"end_season": "2025-26",
+"jaylen brown": {
+"end_season": "2028-29",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "PHI"
 },
 "tyrese maxey": {
@@ -6864,30 +6557,44 @@
 "years_remaining": 4,
 "current_team": "PHI"
 },
-"quentin grimes": {
-"end_season": "2025-26",
+"dean wade": {
+"end_season": "2029-30",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "PHI"
 },
-"kelly oubre jr.": {
-"end_season": "2025-26",
+"anfernee simons": {
+"end_season": "2027-28",
 "last_year_type": "player_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "PHI"
 },
-"andre drummond": {
-"end_season": "2025-26",
+"lebron james": {
+"end_season": "2027-28",
 "last_year_type": "player_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "PHI"
+},
+"labaron philon jr.": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "PHI"
 },
 "dominick barlow": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "PHI"
+},
+"ariel hukporti": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
 "current_team": "PHI"
@@ -6899,11 +6606,11 @@
 "years_remaining": 2,
 "current_team": "PHI"
 },
-"kyle lowry": {
-"end_season": "2025-26",
+"jabari walker": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "PHI"
 },
 "justin edwards": {
@@ -6927,20 +6634,6 @@
 "years_remaining": 4,
 "current_team": "PHI"
 },
-"jabari walker": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "PHI"
-},
-"cameron payne": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "PHI"
-},
 "devin booker": {
 "end_season": "2029-30",
 "last_year_type": "player_option",
@@ -6955,6 +6648,13 @@
 "years_remaining": 3,
 "current_team": "PHO"
 },
+"miles bridges": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "PHO"
+},
 "dillon brooks": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
@@ -6962,25 +6662,18 @@
 "years_remaining": 2,
 "current_team": "PHO"
 },
-"grayson allen": {
-"end_season": "2027-28",
-"last_year_type": "player_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "PHO"
-},
-"royce o'neale": {
-"end_season": "2027-28",
-"last_year_type": "guaranteed",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "PHO"
-},
 "mark williams": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "PHO"
+},
+"collin gillespie": {
+"end_season": "2029-30",
+"last_year_type": "guaranteed",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "PHO"
 },
 "khaman maluach": {
@@ -6990,6 +6683,34 @@
 "years_remaining": 4,
 "current_team": "PHO"
 },
+"luke kennard": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "PHO"
+},
+"jordan goodwin": {
+"end_season": "2028-29",
+"last_year_type": "player_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "PHO"
+},
+"haywood highsmith": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "PHO"
+},
+"koa peat": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "PHO"
+},
 "ryan dunn": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
@@ -6997,25 +6718,11 @@
 "years_remaining": 3,
 "current_team": "PHO"
 },
-"jordan goodwin": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "PHO"
-},
-"collin gillespie": {
-"end_season": "2025-26",
+"jamaree bouyea": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "PHO"
-},
-"amir coffey": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "PHO"
 },
 "oso ighodaro": {
@@ -7032,13 +6739,6 @@
 "years_remaining": 4,
 "current_team": "PHO"
 },
-"jamaree bouyea": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "PHO"
-},
 "nassir little": {
 "end_season": "2028-29",
 "last_year_type": "guaranteed",
@@ -7053,6 +6753,13 @@
 "years_remaining": 2,
 "current_team": "PHO"
 },
+"ja morant": {
+"end_season": "2027-28",
+"last_year_type": "guaranteed",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "POR"
+},
 "jrue holiday": {
 "end_season": "2027-28",
 "last_year_type": "player_option",
@@ -7060,18 +6767,18 @@
 "years_remaining": 3,
 "current_team": "POR"
 },
-"jerami grant": {
-"end_season": "2025-26",
+"shaedon sharpe": {
+"end_season": "2029-30",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "POR"
 },
-"deni avdija": {
-"end_season": "2027-28",
+"toumani camara": {
+"end_season": "2029-30",
 "last_year_type": "guaranteed",
-"signing_season": "2028-29",
-"years_remaining": 3,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "POR"
 },
 "robert williams": {
@@ -7081,13 +6788,6 @@
 "years_remaining": 4,
 "current_team": "POR"
 },
-"matisse thybulle": {
-"end_season": "2025-26",
-"last_year_type": "player_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "POR"
-},
 "scoot henderson": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
@@ -7095,11 +6795,11 @@
 "years_remaining": 2,
 "current_team": "POR"
 },
-"shaedon sharpe": {
-"end_season": "2029-30",
+"deni avdija": {
+"end_season": "2027-28",
 "last_year_type": "guaranteed",
-"signing_season": "2030-31",
-"years_remaining": 5,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "POR"
 },
 "donovan clingan": {
@@ -7116,11 +6816,11 @@
 "years_remaining": 4,
 "current_team": "POR"
 },
-"kris murray": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"micah potter": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "POR"
 },
 "vit krejci": {
@@ -7130,21 +6830,14 @@
 "years_remaining": 3,
 "current_team": "POR"
 },
-"blake wesley": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"toumani camara": {
-"end_season": "2029-30",
+"sidy cissoko": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2030-31",
-"years_remaining": 5,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "POR"
 },
-"sidy cissoko": {
+"branden carlson": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
 "signing_season": "2027-28",
@@ -7172,25 +6865,11 @@
 "years_remaining": 3,
 "current_team": "SAC"
 },
-"demar derozan": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAC"
-},
 "de'andre hunter": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
-"current_team": "SAC"
-},
-"malik monk": {
-"end_season": "2027-28",
-"last_year_type": "player_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
 "current_team": "SAC"
 },
 "keegan murray": {
@@ -7200,11 +6879,25 @@
 "years_remaining": 6,
 "current_team": "SAC"
 },
-"devin carter": {
-"end_season": "2025-26",
+"malik monk": {
+"end_season": "2027-28",
+"last_year_type": "player_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "SAC"
+},
+"darius acuff jr.": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "SAC"
+},
+"precious achiuwa": {
+"end_season": "2027-28",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "SAC"
 },
 "nique clifford": {
@@ -7214,46 +6907,11 @@
 "years_remaining": 4,
 "current_team": "SAC"
 },
-"russell westbrook": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAC"
-},
-"drew eubanks": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAC"
-},
-"doug mcdermott": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAC"
-},
-"precious achiuwa": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAC"
-},
-"maxime raynaud": {
-"end_season": "2027-28",
+"alex karaban": {
+"end_season": "2029-30",
 "last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "SAC"
-},
-"killian hayes": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "SAC"
 },
 "daeqwon plowden": {
@@ -7263,11 +6921,18 @@
 "years_remaining": 3,
 "current_team": "SAC"
 },
-"daquan jeffries": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"maxime raynaud": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "SAC"
+},
+"emanuel sharp": {
+"end_season": "2028-29",
+"last_year_type": "team_option",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "SAC"
 },
 "de'aaron fox": {
@@ -7284,13 +6949,6 @@
 "years_remaining": 4,
 "current_team": "SAS"
 },
-"harrison barnes": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAS"
-},
 "keldon johnson": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
@@ -7298,18 +6956,25 @@
 "years_remaining": 2,
 "current_team": "SAS"
 },
-"kelly olynyk": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"victor wembanyama": {
+"end_season": "2031-32",
+"last_year_type": "player_option",
+"signing_season": "2032-33",
+"years_remaining": 7,
 "current_team": "SAS"
 },
-"victor wembanyama": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"tobias harris": {
+"end_season": "2027-28",
+"last_year_type": "guaranteed",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "SAS"
+},
+"julian champagnie": {
+"end_season": "2028-29",
+"last_year_type": "guaranteed",
+"signing_season": "2029-30",
+"years_remaining": 4,
 "current_team": "SAS"
 },
 "dylan harper": {
@@ -7333,6 +6998,13 @@
 "years_remaining": 3,
 "current_team": "SAS"
 },
+"harrison barnes": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "SAS"
+},
 "carter bryant": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
@@ -7340,32 +7012,25 @@
 "years_remaining": 4,
 "current_team": "SAS"
 },
-"julian champagnie": {
-"end_season": "2028-29",
-"last_year_type": "guaranteed",
-"signing_season": "2029-30",
-"years_remaining": 4,
+"jayden quaintance": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "SAS"
+},
+"tarris reed jr.": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "SAS"
 },
 "jordan mclaughlin": {
-"end_season": "2025-26",
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAS"
-},
-"lindy waters iii": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "SAS"
-},
-"bismack biyombo": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "SAS"
 },
 "scottie barnes": {
@@ -7403,6 +7068,13 @@
 "years_remaining": 5,
 "current_team": "TOR"
 },
+"gradey dick": {
+"end_season": "2026-27",
+"last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
+"current_team": "TOR"
+},
 "collin murray-boyles": {
 "end_season": "2028-29",
 "last_year_type": "team_option",
@@ -7410,11 +7082,11 @@
 "years_remaining": 4,
 "current_team": "TOR"
 },
-"gradey dick": {
-"end_season": "2026-27",
+"allen graves": {
+"end_season": "2029-30",
 "last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
+"signing_season": "2030-31",
+"years_remaining": 5,
 "current_team": "TOR"
 },
 "ja'kobe walter": {
@@ -7424,18 +7096,11 @@
 "years_remaining": 3,
 "current_team": "TOR"
 },
-"sandro mamukelashvili": {
+"kyle anderson": {
 "end_season": "2026-27",
-"last_year_type": "player_option",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
-"current_team": "TOR"
-},
-"garrett temple": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "TOR"
 },
 "trayce jackson-davis": {
@@ -7443,13 +7108,6 @@
 "last_year_type": "team_option",
 "signing_season": "2027-28",
 "years_remaining": 2,
-"current_team": "TOR"
-},
-"jonathan mogbo": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
 "current_team": "TOR"
 },
 "jamison battle": {
@@ -7466,13 +7124,6 @@
 "years_remaining": 2,
 "current_team": "TOR"
 },
-"a.j. lawson": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "TOR"
-},
 "alijah martin": {
 "end_season": "2027-28",
 "last_year_type": "player_option",
@@ -7480,40 +7131,12 @@
 "years_remaining": 3,
 "current_team": "TOR"
 },
-"chris paul": {
-"end_season": "2025-26",
+"nate bittle": {
+"end_season": "2026-27",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "TOR"
-},
-"mo bamba": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"markelle fultz": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "TOR"
-},
-"tyreke key": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "TOR"
-},
-"lauri markkanen": {
-"end_season": "2028-29",
-"last_year_type": "guaranteed",
-"signing_season": "2029-30",
-"years_remaining": 4,
-"current_team": "UTA"
 },
 "jaren jackson jr.": {
 "end_season": "2029-30",
@@ -7522,11 +7145,25 @@
 "years_remaining": 5,
 "current_team": "UTA"
 },
-"jusuf nurkic": {
-"end_season": "2025-26",
+"lauri markkanen": {
+"end_season": "2028-29",
 "last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
+"signing_season": "2029-30",
+"years_remaining": 4,
+"current_team": "UTA"
+},
+"darryn peterson": {
+"end_season": "2029-30",
+"last_year_type": "team_option",
+"signing_season": "2030-31",
+"years_remaining": 5,
+"current_team": "UTA"
+},
+"jusuf nurkic": {
+"end_season": "2027-28",
+"last_year_type": "guaranteed",
+"signing_season": "2028-29",
+"years_remaining": 3,
 "current_team": "UTA"
 },
 "ace bailey": {
@@ -7534,6 +7171,13 @@
 "last_year_type": "team_option",
 "signing_season": "2029-30",
 "years_remaining": 4,
+"current_team": "UTA"
+},
+"keyonte george": {
+"end_season": "2026-27",
+"last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 2,
 "current_team": "UTA"
 },
 "john konchar": {
@@ -7550,35 +7194,14 @@
 "years_remaining": 3,
 "current_team": "UTA"
 },
-"walker kessler": {
-"end_season": "2025-26",
-"last_year_type": "team_option",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"keyonte george": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "UTA"
-},
-"kevin love": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"svi mykhailiuk": {
+"jaxson hayes": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
 "signing_season": "2028-29",
 "years_remaining": 3,
 "current_team": "UTA"
 },
-"kyle filipowski": {
+"josh okogie": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
 "signing_season": "2028-29",
@@ -7592,6 +7215,27 @@
 "years_remaining": 2,
 "current_team": "UTA"
 },
+"svi mykhailiuk": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "UTA"
+},
+"mo bamba": {
+"end_season": "2027-28",
+"last_year_type": "guaranteed",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "UTA"
+},
+"kyle filipowski": {
+"end_season": "2027-28",
+"last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 3,
+"current_team": "UTA"
+},
 "isaiah collier": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
@@ -7599,201 +7243,12 @@
 "years_remaining": 3,
 "current_team": "UTA"
 },
-"bez mbeng": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"hayden gray": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"lonzo ball": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"vince williams jr.": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"chris boucher": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"kennedy chandler": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"andersson garcia": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "UTA"
-},
-"anthony davis": {
-"end_season": "2027-28",
-"last_year_type": "player_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "WAS"
-},
-"trae young": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"alex sarr": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "WAS"
-},
-"tre johnson": {
-"end_season": "2028-29",
-"last_year_type": "team_option",
-"signing_season": "2029-30",
-"years_remaining": 4,
-"current_team": "WAS"
-},
-"bilal coulibaly": {
+"harrison ingram": {
 "end_season": "2026-27",
-"last_year_type": "team_option",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 2,
-"current_team": "WAS"
-},
-"jaden hardy": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "WAS"
-},
-"d'angelo russell": {
-"end_season": "2026-27",
-"last_year_type": "player_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "WAS"
-},
-"bub carrington": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "WAS"
-},
-"cam whitmore": {
-"end_season": "2026-27",
-"last_year_type": "team_option",
-"signing_season": "2027-28",
-"years_remaining": 2,
-"current_team": "WAS"
-},
-"will riley": {
-"end_season": "2028-29",
-"last_year_type": "team_option",
-"signing_season": "2029-30",
-"years_remaining": 4,
-"current_team": "WAS"
-},
-"kyshawn george": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "WAS"
-},
-"tristan vukcevic": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"justin champagnie": {
-"end_season": "2027-28",
-"last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 3,
-"current_team": "WAS"
-},
-"anthony gill": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"jamir watkins": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"dillon jones": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"dante exum": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"skal labissiere": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"alondes williams": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"kadary richmond": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
-},
-"keshon gilbert": {
-"end_season": "2025-26",
-"last_year_type": "guaranteed",
-"signing_season": "2026-27",
-"years_remaining": 1,
-"current_team": "WAS"
+"current_team": "UTA"
 }
 }
 }

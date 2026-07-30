@@ -372,26 +372,27 @@ function divGradient(abbrs){
   return `linear-gradient(100deg, ${stops})`;
 }
 
-// A team's rotation strength: the eight best Barrett Scores under contract.
-// Summing the whole roster would just reward carrying 19 bodies; eight is about
-// a playoff rotation and is roster-size neutral.
+// A team's rotation strength: the ten best Barrett Scores under contract.
+// Summing the whole roster would just reward carrying 19 bodies; ten is about a
+// full rotation and is roster-size neutral (every team has at least 11 scored).
+const ROTATION_N = 10;
 function rotationStrength(t){
   return (t.players || [])
     .filter(p => p.kind !== "free_agent" && p.barrett != null)
-    .map(p => p.barrett).sort((a, b) => b - a).slice(0, 8)
+    .map(p => p.barrett).sort((a, b) => b - a).slice(0, ROTATION_N)
     .reduce((s, x) => s + x, 0);
 }
 
 function teamLeaderboard(){
   const ranked = Object.values(T)
     .map(t => ({ t, s: rotationStrength(t) }))
-    .sort((a, b) => b.s - a.s).slice(0, 10);
+    .sort((a, b) => b.s - a.s).slice(0, 5);
   let h = `<div class="teamlead"><div class="tlhead">Strongest rosters
-    <span>top 8 by Barrett Score</span></div><div class="tlgrid">`;
+    <span>top ${ROTATION_N} by Barrett Score</span></div><div class="tlgrid">`;
   ranked.forEach(({ t, s }, i) => {
     const c = DATA.colors[t.abbr] || "var(--teal)";
     h += `<button class="tlrow${t.abbr === state.team ? " on" : ""}" data-team="${esc(t.abbr)}"
-      style="--tc:${c}" title="${esc(t.name)} — eight best Barrett Scores under contract add to ${s.toFixed(1)}">
+      style="--tc:${c}" title="${esc(t.name)} — ${ROTATION_N} best Barrett Scores under contract add to ${s.toFixed(1)}">
       <span class="tlrank">${i + 1}</span>
       <img src="${esc(DATA.logos[t.abbr] || "")}" alt="" loading="lazy"
         onerror="this.style.visibility='hidden'">

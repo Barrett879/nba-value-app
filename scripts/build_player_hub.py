@@ -78,28 +78,67 @@ contract_end = utils.fetch_contract_end_years()
 print(f"contract_end: {len(contract_end)} players under contract", flush=True)
 
 
+# Fingerprint of the INPUTS the pcv values are derived from. Resuming is only
+# legitimate when these are unchanged; if the model or the season's raw parquet
+# moved, every cached projection is stale and must be recomputed.
+def _source_stamp() -> str:
+    parts = [MODEL_STAMP]
+    raw = ROOT / "cache" / f"raw_{utils.SEASONS[0].replace('-', '_')}_{utils.FORMULA_VERSION}.parquet"
+    try:
+        st = raw.stat()
+        parts.append(f"{raw.name}:{int(st.st_mtime)}:{st.st_size}")
+    except OSError:
+        parts.append("raw:missing")
+    return hashlib.sha1("|".join(parts).encode()).hexdigest()[:12]
+
+
+SOURCE_STAMP = _source_stamp()
+
+
 def _write(players: dict) -> None:
     OUT.write_text(json.dumps({
         "season": utils.SEASONS[0],
         "built_at": datetime.date.today().isoformat(),
         "model_stamp": MODEL_STAMP,
+        "source_stamp": SOURCE_STAMP,
         "players": players,
         "contract_end": contract_end,
     }, indent=0))
 
 
-# Resume: keep whatever a previous (interrupted) run already computed — the v1
-# file seeds the first v2 run so ~500 model projections aren't recomputed.
+# Resume ONLY within an interrupted run against unchanged inputs.
+#
+# This used to resume unconditionally, which made the script a no-op on any
+# re-run: `todo` came out empty because the previous run had written every
+# player, yet _write still restamped the current model hash. Retraining the
+# model or refreshing the parquets and re-running therefore republished the OLD
+# projections under the NEW hash, defeating the staleness warning the homepage
+# was given. It ran that way from 2026-07-09 to 2026-07-30, through the whole of
+# free agency: LeBron James signed a veteran minimum on 7/26 and the homepage
+# went on projecting $39.8M for him.
+FORCE = "--force" in sys.argv
 out: dict = {}
-for _src in (OUT, V1):
-    if _src.exists():
+if FORCE:
+    print("  --force: recomputing every player", flush=True)
+else:
+    for _src in (OUT, V1):
+        if not _src.exists():
+            continue
         try:
-            out = json.loads(_src.read_text()).get("players", {})
-            if out:
-                print(f"  resuming with {len(out)} already computed ({_src.name})", flush=True)
-                break
+            blob = json.loads(_src.read_text())
         except Exception:
-            out = {}
+            continue
+        prev = blob.get("players") or {}
+        if not prev:
+            continue
+        if blob.get("source_stamp") != SOURCE_STAMP:
+            print(f"  {_src.name}: inputs changed since it was built "
+                  f"({blob.get('source_stamp') or 'unstamped'} -> {SOURCE_STAMP}); "
+                  f"recomputing all {len(prev)}", flush=True)
+            break
+        out = prev
+        print(f"  resuming with {len(out)} already computed ({_src.name})", flush=True)
+        break
 
 pool = build_ranked_projected(utils.SEASONS[0])
 players = list(dict.fromkeys(pool["Player"].astype(str)))

@@ -125,6 +125,40 @@ def _payload() -> str:
                 return hit[0], hit[1]
         return None, None
 
+    # Market value has to be priced off the SAME score the row displays.
+    #
+    # cache/team_pages.json prices every player off the current season with no
+    # minutes floor, while score_of() honours the 500-minute floor and reaches
+    # back a season when it has to. Those two disagreeing put a 2024-25 score
+    # next to a value derived from a 2025-26 sprained-ankle sample and printed a
+    # verdict on it: Trae Young (384 minutes in 2025-26) rendered as
+    # "35.4 BS (24-25) · $49.5M · $35.4M over value" when the honest gap is
+    # about $5M. 21 players on the 2026-27 books were affected.
+    #
+    # So rather than read the precomputed value, map the FLOORED score back
+    # through the same score -> projected-salary curve the board is built from.
+    # For a player whose score already comes from the current season this
+    # reproduces the board value exactly; for everyone else it prices the season
+    # actually being shown.
+    _score_curve = None
+    try:
+        from utils import build_ranked_projected
+        _proj = build_ranked_projected("2025-26")[["barrett_score", "projected_salary"]]
+        _proj = _proj.dropna().sort_values("barrett_score")
+        _score_curve = (_proj["barrett_score"].to_numpy(dtype=float),
+                        _proj["projected_salary"].to_numpy(dtype=float) / 1e6)
+    except Exception:
+        pass
+
+    def value_of(score):
+        """Projected market salary ($M) for a Barrett Score, off the current
+        season's curve. None when the curve is unavailable."""
+        if score is None or _score_curve is None or not len(_score_curve[0]):
+            return None
+        import numpy as _np
+        xs, ys = _score_curve
+        return round(float(_np.interp(float(score), xs, ys)), 1)
+
     # last season's per-game line + D-LEBRON
     box = NameIndex()
     try:
@@ -244,19 +278,25 @@ def _payload() -> str:
             note = (r.get("notes") or "").strip()
             m = model.get(name) or {}
             fv = fa_val.get(name) or {}
-            value = m.get("value")
+            pid = heads.get(name)
+            # score first: the value is priced off it, so it has to be resolved
+            # before the value is chosen
+            bar, bar_yr = score_of(name)         # minutes floor wins outright
+            if bar is None:
+                bar, bar_yr = m.get("barrett"), m.get("bs_yr")
+            if bar is None:
+                bar, bar_yr = fv.get("barrett"), fv.get("bs_yr")
+            # price the score that is actually on the row; fall back to the
+            # board value only when the curve is unavailable
+            value = value_of(bar)
+            if value is None:
+                value = m.get("value")
             if kind == "free_agent":
                 value = fv.get("value")
                 if value is None:                      # "est value $12.3M"
                     _mm = re.search(r"\$([0-9.]+)M", note)
                     value = float(_mm.group(1)) if _mm else None
                 sal = 0.0
-            pid = heads.get(name)
-            bar, bar_yr = score_of(name)         # minutes floor wins outright
-            if bar is None:
-                bar, bar_yr = m.get("barrett"), m.get("bs_yr")
-            if bar is None:
-                bar, bar_yr = fv.get("barrett"), fv.get("bs_yr")
             o = opts.get(name) or {}
             pos = (r.get("pos") or "").strip()
             players.append({
