@@ -22,10 +22,16 @@ body{background:transparent;color:var(--fg1);
   color:var(--fg5)}
 .strip{display:flex;gap:10px 16px;align-items:flex-start;flex-wrap:wrap;justify-content:center}
 /* one group per division, five logos across: six groups fill the row on a wide
-   screen and wrap by division on a narrow one, so the grouping never breaks */
-.confgrp{flex:0 0 auto}
+   screen and wrap by division on a narrow one, so the grouping never breaks.
+   Each division is a pill washed with a gradient built from its own five teams'
+   colours (--dg, computed in teamStrip), so the strip reads as six distinct
+   neighbourhoods instead of thirty loose buttons. The wash is deliberately weak
+   -- the logos have to stay the loudest thing in the pill. */
+.confgrp{flex:0 0 auto;background:var(--dg,transparent);border:1px solid var(--line);
+  border-radius:999px;padding:.4rem 1rem .5rem;transition:box-shadow .16s,transform .16s}
+.confgrp:hover{box-shadow:0 3px 14px rgba(0,0,0,.10)}
 .conflabel{font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
-  color:var(--fg5);margin:0 0 .3rem .15rem;white-space:nowrap}
+  color:var(--fg5);margin:0 0 .3rem 0;white-space:nowrap;text-align:center}
 .conflabel .cf{color:var(--fg4);opacity:.55;margin-left:.3rem;letter-spacing:.04em}
 .logos{display:grid;grid-template-columns:repeat(5,40px);gap:3px}
 @media(max-width:420px){.logos{grid-template-columns:repeat(5,38px)}
@@ -75,6 +81,13 @@ body{background:transparent;color:var(--fg1);
   transition:width .25s}
 .capbar .fill.tax{background:var(--amberc)} .capbar .fill.apron{background:var(--bad)}
 .capbar .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--panel);opacity:.95}
+/* Salary above a hard cap is money the team legally cannot spend, so that
+   stretch of the track is greyed out rather than left looking like headroom. */
+.capbar .deadzone{position:absolute;top:0;bottom:0;right:0;border-radius:0 5px 5px 0;
+  background:repeating-linear-gradient(135deg,var(--fg5) 0 2px,transparent 2px 6px);
+  opacity:.22;pointer-events:none}
+.capbar .hcline{position:absolute;top:-2px;bottom:-2px;width:2px;background:var(--fg4);opacity:.75}
+.caplegend span.dead{color:var(--fg5);opacity:.75}
 /* the four thresholds sit within 25% of each other at the top of the bar, so
    positional labels would overprint: the bar carries unlabelled ticks and the
    numbers ride in a legend line underneath */
@@ -306,6 +319,25 @@ function vdTone(vd){
   return vd < 0 ? "good" : "bad";
 }
 
+// hex -> rgba at a given alpha, for the division wash. Returns transparent for
+// anything that is not a 6-digit hex (a few colours come through as var(--x)).
+function hexA(hex, a){
+  const h = (hex || "").replace("#", "");
+  if (h.length !== 6) return "rgba(0,0,0,0)";
+  const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
+  return `rgba(${r},${g},${b},${a})`;
+}
+
+// The five team colours of a division, laid left to right as a gradient. Alpha
+// is low on purpose: this is a wash behind the logos, not a paint job.
+function divGradient(abbrs){
+  const cols = abbrs.map(ab => DATA.colors[ab]).filter(Boolean);
+  if (cols.length < 2) return "transparent";
+  const stops = cols.map((c, i) =>
+    `${hexA(c, .20)} ${Math.round(i / (cols.length - 1) * 100)}%`).join(", ");
+  return `linear-gradient(100deg, ${stops})`;
+}
+
 function teamStrip(){
   let h = `<div class="stripwrap"><div class="striphead">
     <span class="lbl">${state.team ? "Switch team" : "Pick a team"}</span>
@@ -314,7 +346,8 @@ function teamStrip(){
   </div><div class="strip">`;
   for (const [conf, divs] of Object.entries(DATA.divs))
     for (const [div, abbrs] of Object.entries(divs)){
-      h += `<div class="confgrp"><div class="conflabel">${esc(div)}
+      h += `<div class="confgrp" style="--dg:${divGradient(abbrs)}">
+        <div class="conflabel">${esc(div)}
         <span class="cf">${esc(conf)}</span></div><div class="logos">`;
       for (const ab of abbrs){
         const t = T[ab]; if (!t) continue;
@@ -339,9 +372,24 @@ function capBar(t){
                  ["ap1", CFG.apron1, "First apron"], ["ap2", CFG.apron2, "Second apron"]];
   let bar = `<div class="capbar"><div class="fill ${st}" style="width:${pct(pay)}%"></div>`;
   for (const [, v] of ticks) bar += `<div class="tick" style="left:${pct(v)}%"></div>`;
+  // Everything past a hard cap is unspendable, so hatch it out and mark the line.
+  if (t.hard_cap){
+    const hc = pct(t.hard_cap);
+    bar += `<div class="deadzone" style="left:${hc}%" title="Hard-capped at the ${
+      esc(t.hard_cap_label || "apron")} (${fmtM(t.hard_cap)}). This team cannot spend past it."></div>`;
+    bar += `<div class="hcline" style="left:${hc}%"></div>`;
+  }
   bar += `</div><div class="caplegend">`;
-  for (const [, v, lbl] of ticks)
-    bar += `<span class="${pay >= v ? "hit" : ""}">${esc(lbl)} <b>${fmtM(v)}</b></span>`;
+  for (const [, v, lbl] of ticks){
+    // a threshold sitting above this team's hard cap is unreachable for them
+    const unreachable = t.hard_cap && v > t.hard_cap;
+    bar += `<span class="${pay >= v ? "hit" : unreachable ? "dead" : ""}"${unreachable
+      ? ` title="Above this team's hard cap, so it cannot be reached."` : ""
+      }>${esc(lbl)} <b>${fmtM(v)}</b></span>`;
+  }
+  if (t.hard_cap)
+    bar += `<span class="dead" title="${esc(t.hard_cap_why || "")}">Hard cap
+      <b>${fmtM(t.hard_cap)}</b></span>`;
   return bar + `</div>`;
 }
 

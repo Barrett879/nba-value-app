@@ -41,7 +41,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,BKN,Joshua Jefferson,2.97,standard,PF,2026 1st-round pick No.28
 ,BKN,Danny Wolf,2.94,standard,PF/C,2025 No.27 pick; 2027-28 club option decision due 10/31/2026
 ,BKN,Tyler Bilodeau,0,two_way,PF,Two-way; 2026 2nd-round pick No.43
-,BKN,Chaney Johnson,0,two_way,PF,Two-way; undrafted 2025
+,BKN,Chaney Johnson,0,two_way,SF/PF,Two-way; undrafted 2025
 ,BOS,Jayson Tatum,58.46,standard,PF/SF,Designated-vet extension; 2029-30 player option $71.4M
 ,BOS,Paul George,54.13,standard,SF/PF,Acquired from PHI 7/6/2026 in Jaylen Brown trade (BOS also got 2 firsts incl PHI 2031 + 2 seconds); 2027-28 PO
 ,BOS,Derrick White,30.35,standard,SG/PG,Cap hit includes $1.89M likely incentives; 2028-29 player option
@@ -274,7 +274,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MIA,Bam Adebayo,49.49,standard,C/PF,2028-29 player option $57.4M
 ,MIA,Andrew Wiggins,30.17,standard,SF/PF,traded to MIA 2/6/25; salary drops to $16.5M in 27-28; 2028-29 PO
 ,MIA,Nikola Jovic,16.2,standard,PF/C,rookie extension through 2029-30
-,MIA,Bobby Portis,14.52,standard,PF/C,traded from MIL 7/6/26 (Giannis deal); 2027-28 PO
+,MIA,Bobby Portis,14.52,standard,C/PF,traded from MIL 7/6/26 (Giannis deal); 2027-28 PO
 ,MIA,Davion Mitchell,12.4,standard,PG/SG,expiring (2yr/$24M signed 7/7/25)
 ,MIA,Tim Hardaway Jr.,6.07,standard,SG/SF,signed 1yr/$6.07M as FA 7/6/26
 ,MIA,Dru Smith,2.58,standard,PG/SG,2027-28 club option/partial gtd

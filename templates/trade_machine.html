@@ -91,8 +91,12 @@ body{background:transparent;color:var(--fg1);
 .card{display:flex;align-items:center;gap:.6rem;background:var(--card);border:1px solid var(--line);
   border-radius:11px;padding:.5rem .65rem;margin:0;cursor:grab;user-select:none;min-width:0;
   transition:border-color .12s, box-shadow .12s, transform .12s}
+/* Hovering a player washes the card in his team's colours, positioned by where
+   he plays: a point guard sits at the primary end of the ramp, a centre at the
+   secondary end, everyone else blends between. Falls back to the plain hover
+   when a team has no secondary on file. */
 .card:hover{border-color:var(--tc,var(--teal));box-shadow:0 2px 8px rgba(0,0,0,.08);
-  transform:translateY(-1px)}
+  transform:translateY(-1px);background-image:var(--pw,none)}
 .card:active{cursor:grabbing}
 .card.dragging{opacity:.45}
 .card img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top;
@@ -182,6 +186,38 @@ const TEAM_COLORS={ATL:"#E03A3E",BKN:"#8a8f9c",BOS:"#007A33",CHA:"#00788C",
   NYK:"#F58426",OKC:"#007AC1",ORL:"#0077C0",PHI:"#006BB6",PHX:"#E56020",
   POR:"#E03A3E",SAC:"#5A2D81",SAS:"#939597",TOR:"#CE1141",UTA:"#F9A01B",
   WAS:"#E31837"};
+// Secondary team colours, mirroring utils.TEAM_HEX_2. Used with TEAM_COLORS to
+// paint a hovered player card by position: a point guard picks up the team's
+// primary, a centre its secondary, and everyone between blends across.
+const TEAM_COLORS_2={ATL:"#C1D32F",BKN:"#3A3A3A",BOS:"#BA9653",CHA:"#1D1160",
+  CHI:"#2E2E2E",CLE:"#FDBB30",DAL:"#B8C4CA",DEN:"#0E2240",
+  DET:"#1D42BA",GSW:"#FFC72C",HOU:"#2E2E2E",IND:"#002D62",
+  LAC:"#1D428A",LAL:"#FDB927",MEM:"#12173F",MIA:"#F9A01B",
+  MIL:"#C9B072",MIN:"#78BE20",NOP:"#0C2340",NYK:"#006BB6",
+  OKC:"#EF3B24",ORL:"#C4CED4",PHI:"#ED174C",PHX:"#1D1160",
+  POR:"#2E2E2E",SAC:"#63727A",SAS:"#2E2E2E",TOR:"#2E2E2E",
+  UTA:"#002B5C",WAS:"#002B5C"};
+// where each position sits on the primary -> secondary ramp
+const POS_T={PG:0,SG:0.25,SF:0.5,PF:0.75,C:1};
+function mixHex(a,b,t){
+  const p=(h)=>{h=(h||"").replace("#","");return h.length===6?[parseInt(h.slice(0,2),16),
+    parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]:null;};
+  const A=p(a),B=p(b); if(!A||!B) return null;
+  return A.map((v,i)=>Math.round(v+(B[i]-v)*t));
+}
+// The hover wash for one card: a gradient running from the team primary to the
+// team secondary, centred on wherever this player's position sits on that ramp.
+function posWash(team,pos){
+  const c1=TEAM_COLORS[team],c2=TEAM_COLORS_2[team];
+  if(!c1||!c2) return "";
+  const slot=(pos||"").split("/")[0].toUpperCase();
+  const t=POS_T[slot]; if(t==null) return "";
+  const mid=mixHex(c1,c2,t); if(!mid) return "";
+  const lo=mixHex(c1,c2,Math.max(0,t-0.28)),hi=mixHex(c1,c2,Math.min(1,t+0.28));
+  const rgba=(v,a)=>`rgba(${v[0]},${v[1]},${v[2]},${a})`;
+  return `linear-gradient(100deg, ${rgba(lo,.30)} 0%, ${rgba(mid,.20)} 52%, ${rgba(hi,.10)} 100%)`;
+}
+
 // readable text color on a team-colored hover row (gold/yellow teams need dark)
 function onColor(hex){
   const c=(TEAM_COLORS[hex]||hex||"").replace("#","");
@@ -830,7 +866,12 @@ function cardHTML(p,src,key,inZone,tpe){
   const sub=inZone&&tpe&&tpe.on
     ?`${chip}${fmtM(p.salary)} &middot; absorbed into a trade exception`
     :`${chip}${stats.join(" &middot; ")}`+(inZone?` &middot; from ${src}`:"");
-  return `<div class="card${inZone?" inc":""}" draggable="true" data-key="${key}">${img}
+  // --pw: the hover wash for THIS player, mixed from his team's primary and
+  // secondary by position. src is the owning team on the roster side; in a zone
+  // the card keeps the colours of the team it came from.
+  const wash=posWash(src,p.pos);
+  return `<div class="card${inZone?" inc":""}" draggable="true" data-key="${key}"${
+    wash?` style="--pw:${wash}"`:""}>${img}
     <div class="who"><div class="nm">${esc(p.n)}</div>
     <div class="sub">${sub}</div></div>${btn}</div>`;
 }
