@@ -34,7 +34,11 @@ body{background:transparent;color:var(--fg1);
    at?" instead of just "pick something". Drops under the picker below 1180px
    and disappears entirely on phones, where it would just be scroll. */
 .leadwrap{flex:0 0 264px;background:var(--panel);border:1px solid var(--line);
-  border-radius:14px;padding:.5rem .7rem .6rem}
+  border-radius:14px;padding:.5rem .7rem .6rem;
+  display:flex;flex-direction:column}
+/* the card is stretched to the picker's height, so the five rows spread through
+   whatever room that leaves instead of bunching at the top over dead space */
+.leadwrap .tlgrid{flex:1;display:flex;flex-direction:column;justify-content:space-between}
 .leadwrap .tlhead{font-size:.6rem;font-weight:800;letter-spacing:.09em;
   text-transform:uppercase;color:var(--fg5);margin-bottom:.35rem;white-space:nowrap}
 .leadwrap .tlhead span{font-weight:600;letter-spacing:0;text-transform:none;color:var(--fg5);
@@ -66,19 +70,48 @@ body{background:transparent;color:var(--fg1);
    colours (--dg, computed in teamStrip), so the strip reads as six distinct
    neighbourhoods instead of thirty loose buttons. The wash is deliberately weak
    -- the logos have to stay the loudest thing in the pill. */
-.confgrp{flex:0 0 auto;background:var(--dg,transparent);border:1px solid var(--line);
+/* The pills SHARE the row and grow into it rather than sitting at a fixed
+   width, so the logos scale up to fill the picker instead of leaving a third of
+   the card empty. A 230px basis is under the old fixed 246, so three-across
+   survives to a NARROWER row than before and only wraps past that. Deliberately
+   NO max-width: capping the pill re-opened the same empty gutter on any monitor
+   wider than about 1410px, which is the thing this is here to remove. */
+.confgrp{flex:1 1 230px;min-width:0;
+  background:var(--dg,transparent);border:1px solid var(--line);
   border-radius:999px;padding:.4rem 1rem .5rem;transition:box-shadow .16s,transform .16s}
 .confgrp:hover{box-shadow:0 3px 14px rgba(0,0,0,.10)}
+/* Below the width that fits three, go straight to one division per row. Left to
+   wrap on its own the row breaks 2+1 and strands a pill, which is the same
+   accident the conference rows were split to avoid.
+   The pills size to their CONTENT here and centre, rather than stretching: a
+   full-width capsule holds the tiles at their cap and strings them across it,
+   which turns the declared 4px gap into 80-odd px of empty pill.
+   The threshold is in em, not px, so it moves with the reader's default font
+   size -- the pill padding is in rem and grows with it, and a px threshold left
+   three pills claiming more room than the row had at 17px and up. */
+@media(max-width:47em){
+  .confrow{flex-direction:column;align-items:center}
+  .confgrp{flex:0 0 auto}
+}
 .conflabel{font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
   color:var(--fg5);margin:0 0 .3rem 0;white-space:nowrap;text-align:center}
 .conflabel .cf{color:var(--fg4);opacity:.55;margin-left:.3rem;letter-spacing:.04em}
-.logos{display:grid;grid-template-columns:repeat(5,40px);gap:3px}
-@media(max-width:420px){.logos{grid-template-columns:repeat(5,38px)}
-  .tbtn{width:38px;height:38px} .tbtn img{width:26px;height:26px}}
+/* five fluid columns; the tile is square by ratio and capped so it stops growing
+   once it is comfortably the loudest thing in the pill. The cap has to be high
+   enough to keep up with the pill: set too low, the pill keeps widening while
+   the tiles do not and the surplus turns into dead space BETWEEN the logos,
+   which is the same complaint one level down. */
+.logos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;
+  justify-items:center}
 .tbtn{position:relative;display:flex;align-items:center;justify-content:center;
-  width:40px;height:40px;border-radius:10px;border:1px solid transparent;background:none;
+  width:100%;max-width:64px;aspect-ratio:1;border-radius:12px;
+  border:1px solid transparent;background:none;
   cursor:pointer;padding:0;transition:background .12s,border-color .12s,transform .12s}
-.tbtn img{width:27px;height:27px;object-fit:contain;transition:filter .12s,transform .12s}
+.tbtn img{width:68%;height:68%;object-fit:contain;transition:filter .12s,transform .12s}
+/* Must sit AFTER the .tbtn rule above, not with the layout media query further
+   up: same specificity, so source order decides. Six pills stack in a column
+   below this width, where a taller tile only buys scroll before the roster. */
+@media(max-width:47em){.tbtn{max-width:54px}}
 /* the abbreviation sits under the logo and is hidden the moment the image
    paints. A hung CDN request never fires onerror, so waiting on it would leave
    a wall of blank buttons; this way the picker is always readable. */
@@ -239,8 +272,11 @@ body{background:transparent;color:var(--fg1);
 .rnd.r2{background:var(--fg4)}
 .note{font-size:.7rem;color:var(--fg5);margin-top:.5rem;line-height:1.4}
 
-/* monochrome logos (BKN, SAS) vanish on the dark panel without a backdrop */
-body:not(.light) .tbtn:not(.on){background:rgba(255,255,255,.05)}
+/* monochrome logos (BKN, SAS) vanish on the dark panel without a backdrop.
+   :not(:hover) matters -- this selector outweighs .tbtn:hover, so without it the
+   backdrop wins on hover and the team-colour fill never paints in dark mode
+   (the abbreviation still flips to white, on a grey tile). */
+body:not(.light) .tbtn:not(.on):not(:hover){background:rgba(255,255,255,.05)}
 
 /* ── league overview (no team picked) ───────────────────────────────────── */
 .sumrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;
