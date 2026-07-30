@@ -64,7 +64,15 @@ body{background:transparent;color:var(--fg1);
 .boards.s3{grid-template-columns:1fr 1fr 1fr}
 .boards.s4{grid-template-columns:repeat(4,1fr)}
 @media(max-width:900px){.boards{grid-template-columns:1fr !important}}
-.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+/* The card itself carries the team colour rather than the rows: a wash that
+   starts at the team's own hue under the top border and clears by the time the
+   roster begins. It is a big quiet surface, which is where colour belongs on a
+   board you read for a long time -- the alternative, tinting every row, is a lot
+   of noise for attributes nobody trades on. */
+.panel{background:linear-gradient(180deg,
+    color-mix(in srgb, var(--tc,var(--teal)) 7%, var(--panel)) 0,
+    var(--panel) 190px), var(--panel);
+  border:1px solid var(--line);border-radius:14px;
   padding:.75rem .75rem .85rem;min-width:0;border-top:3px solid var(--tc,var(--teal));
   box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.05);
   /* every panel spans the same five rows, so headers, cap bars, note lines,
@@ -159,8 +167,10 @@ body{background:transparent;color:var(--fg1);
 .capend.rest{color:var(--blue)} .capend.live{color:var(--good)} .capend.bad{color:var(--bad)}
 .apronwarn{font-size:.68rem;color:var(--amberc);margin:0 0 .3rem}
 .zone{position:relative;overflow:hidden;
-  border:1.5px dashed var(--line);border-radius:11px;min-height:58px;padding:.4rem;
-  margin:.45rem 0 .6rem;background:var(--tintz);transition:border-color .12s, background .12s}
+  border:1.5px dashed color-mix(in srgb, var(--tc,var(--teal)) 30%, var(--line));
+  border-radius:11px;min-height:58px;padding:.4rem;margin:.45rem 0 .6rem;
+  background:color-mix(in srgb, var(--tc,var(--teal)) 9%, var(--panel));
+  transition:border-color .12s, background .12s}
 /* The receive box is the one genuinely empty area on the card, so it carries
    the team's ghosted abbreviation -- the site's established identity device,
    borrowed from the Rosters header. Put anywhere in the header it collided with
@@ -171,7 +181,7 @@ body{background:transparent;color:var(--fg1);
   line-height:1;color:var(--tc,var(--teal));opacity:.10;pointer-events:none;z-index:0}
 .zone > *{position:relative;z-index:1}
 @media(max-width:760px){.zone::after{display:none}}
-.zone .zl{font-size:.62rem;font-weight:800;letter-spacing:.08em;color:var(--fg5);
+.zone .zl{font-size:.62rem;font-weight:800;letter-spacing:.08em;color:var(--fg3);
   text-transform:uppercase;padding:.15rem .25rem}
 .zone.over{border-color:var(--teal);background:var(--tintg)}
 .zone .card{margin:.28rem 0}
@@ -200,26 +210,12 @@ body{background:transparent;color:var(--fg1);
 .card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .card .sub{font-size:.76rem;color:var(--fg4);font-variant-numeric:tabular-nums;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
-/* Position chips carry a hue per slot, so a roster reads as a shape at a glance
-   -- a guard-heavy board looks different from a frontcourt one before you read a
-   word. Deliberately no green or red: those already mean under and over value
-   everywhere else on the site, and reusing them here would say something the
-   chip does not mean. Falls back to the old grey for a blank or odd position. */
+/* Stays neutral on purpose. Hueing these per position was tried and reverted:
+   thirty small rainbow chips down a board is a lot of noise for an attribute
+   nobody trades on. Colour belongs on the big surfaces, not on every row. */
 .poschip{display:inline-block;min-width:1.5em;text-align:center;padding:0 .3em;margin-right:.35em;
   border-radius:5px;background:var(--track);color:var(--fg3);font-size:.68rem;font-weight:800;
-  vertical-align:1px;letter-spacing:.02em;
-  background:color-mix(in srgb, var(--pc,transparent) 16%, var(--track));
-  color:var(--pc,var(--fg3))}
-.poschip[data-pos="PG"]{--pc:#3b82f6}
-.poschip[data-pos="SG"]{--pc:#0ea5b7}
-.poschip[data-pos="SF"]{--pc:#8b5cf6}
-.poschip[data-pos="PF"]{--pc:#d97706}
-.poschip[data-pos="C"] {--pc:#db2777}
-body:not(.light) .poschip[data-pos="PG"]{--pc:#7cb0ff}
-body:not(.light) .poschip[data-pos="SG"]{--pc:#3fd0de}
-body:not(.light) .poschip[data-pos="SF"]{--pc:#b193ff}
-body:not(.light) .poschip[data-pos="PF"]{--pc:#f5ac3c}
-body:not(.light) .poschip[data-pos="C"] {--pc:#ff6fae}
+  vertical-align:1px;letter-spacing:.02em}
 .card .mv{border:none;background:var(--track);color:var(--fg3);font-size:.74rem;font-weight:800;
   border-radius:8px;padding:.3rem .55rem;cursor:pointer;white-space:nowrap;
   transition:background .1s, color .1s}
@@ -258,7 +254,7 @@ body:not(.light) .poschip[data-pos="C"] {--pc:#ff6fae}
 .ptab{position:relative;background:none;border:none;cursor:pointer;font-family:inherit;
   display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap;
   padding:.34rem .55rem;margin-bottom:-1px;border-bottom:2px solid transparent;
-  font-size:.72rem;font-weight:800;letter-spacing:.03em;color:var(--fg4);
+  font-size:.72rem;font-weight:800;letter-spacing:.03em;color:var(--fg3);
   transition:color .12s,border-color .12s}
 .ptab:hover:not(:disabled){color:var(--fg1)}
 .ptab.on{color:var(--fg1);border-bottom-color:var(--tc,var(--teal))}
@@ -1042,8 +1038,7 @@ function statBits(p,salary){
   // one stat line for every player card: position chip + salary + Barrett
   // score, plus last season's box line and D-LEBRON on 2- and 3-team boards
   const nT=picked().length;
-  const chip=p.pos?`<span class="poschip" data-pos="${esc((p.pos||"").split("/")[0].toUpperCase())}"
-    >${esc(p.pos)}</span>`:"";
+  const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
   const out=[fmtM(salary!=null?salary:p.salary)];
   if(p.barrett!=null) out.push(p.barrett.toFixed(1)+" BS"+(p.bs_yr?` (${p.bs_yr})`:""));
   if(nT<=3){
