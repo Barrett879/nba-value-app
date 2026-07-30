@@ -913,6 +913,27 @@ if _sel:
     _pred_txt = ((('<span class="hv-chip max">MAX</span>' if _pv.get("is_max") else "")
                   + f"${_pv['pcv_M']:.1f}M")
                  if _pv.get("pcv_M") is not None else "—")
+    # If he has already signed for 2026-27, the projection stops being a forecast
+    # and becomes a scored guess. Showing the two side by side is the honest
+    # framing -- and a visible miss is more interesting than a hidden one.
+    # Without this the panel read "$39.8M PREDICTED CONTRACT" a line below
+    # "Signed $3.9M" with nothing connecting them.
+    _sign = _hub_signings().get(_n) or {}
+    _act_M = _sign.get("actual_M")
+    _pred_label = "Predicted contract"
+    _pred_tip = ("The model's projection for a NEW deal signed today, "
+                 "at next season's cap")
+    _pred_sub = ""
+    if _act_M is not None and _pv.get("pcv_M") is not None:
+        _miss = _pv["pcv_M"] - _act_M
+        _hit = abs(_miss) <= 4.0
+        _pred_label = "Predicted vs actual"
+        _pred_tip = (f"The model projected ${_pv['pcv_M']:.1f}M. He signed for "
+                     f"${_act_M:.1f}M — "
+                     + ("within $4M, a hit." if _hit
+                        else f"a ${abs(_miss):.1f}M miss."))
+        _pred_sub = (f'<span style="color:{"var(--value-good)" if _hit else "var(--value-bad)"}">'
+                     f'signed ${_act_M:.1f}M</span>')
 
     _team = str(_sel["Team"])
     _thx = TEAM_HEX.get(_team, "")
@@ -1089,10 +1110,17 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
         _d_txt = f"{'+' if _dm > 0 else '−' if _dm < 0 else ''}${abs(_dm):.1f}M"
         _d_lbl = "Underpaid" if _dm < 0 else ("Overpaid" if _dm > 0 else "At market")
         _ci = _hub_contract_end().get(_n) or {}
-        _deal_line = (f'<div class="hub-note">Current deal runs through <b>{html.escape(str(_ci["end_season"]))}</b>'
-                      f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
-                      if _ci.get("end_season") else
-                      '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
+        # A player who has already signed for 2026-27 must not also be told his
+        # "current deal runs through 2027-28" — the contract-end scraper still
+        # carries his OLD deal, and the two lines contradicted each other.
+        if _act_M is not None:
+            _deal_line = ('<div class="hub-note">Signed a new deal this offseason'
+                          f' · <b>${_act_M:.1f}M</b> in 2026-27.</div>')
+        else:
+            _deal_line = (f'<div class="hub-note">Current deal runs through <b>{html.escape(str(_ci["end_season"]))}</b>'
+                          f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
+                          if _ci.get("end_season") else
+                          '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
         _bx = _hub_counting().get(_n)
         # Position profile: each stat as a percentile bar among the player's
         # primary-position peers this season (tick on the track = median).
@@ -1219,7 +1247,7 @@ img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
   <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">#{_sel["rank"]}</div><div class="l">League rank</div></div>
   <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
-  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}</div><div class="l" title="The model's projection for a NEW deal signed today, at next season's cap">Predicted contract</div></div>
+  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}{(" &middot; " + _pred_sub) if _pred_sub else ""}</div><div class="l" title="{html.escape(_pred_tip)}">{_pred_label}</div></div>
 </div>
 <div class="hub-ladder">{_ladder}</div>
 <div class="hub-note" style="margin-top:0.3rem" title="Low-minute players are excluded so a garbage-time fluke cannot set the scale's endpoints.">Track runs lowest to highest rotation {html.escape(_pos_prim)} (15+ MPG) this season · middle tick = the {_center_word} (small number).</div>
