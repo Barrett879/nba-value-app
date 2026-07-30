@@ -122,7 +122,11 @@ body{background:transparent;color:var(--fg1);
 /* the menu hangs off a centred button, so centre it rather than left-aligning.
    clampMenu() then slides it back inside the frame if the card is too narrow
    to centre 516px on, which is every card below about 1040px of component. */
-.slotpick .tmenu{left:50%;transform:translateX(calc(-50% + var(--mshift,0px)))}
+/* The open seat's button sits in the MIDDLE of a 200px card, so a menu hung
+   below it started halfway down and trailed a long way past the card. Anchor it
+   to the top of the card instead -- the containing block here is .panel.unset,
+   not the button -- so the list reads as belonging to the card it fills. */
+.slotpick .tmenu{top:0;left:50%;transform:translateX(calc(-50% + var(--mshift,0px)))}
 .prm.slotrm{position:absolute;top:.55rem;right:.55rem}
 .slothint{color:var(--fg5);font-size:.78rem;line-height:1.5;max-width:20rem}
 .prm{flex:0 0 auto;background:none;border:1px solid transparent;color:var(--fg5);
