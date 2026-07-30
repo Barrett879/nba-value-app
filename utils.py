@@ -3646,14 +3646,21 @@ def fetch_monthly_scores(player_id: int, season: str,
     from nba_api.stats.endpoints import playergamelog, teamgamelog
 
     # ── Player game log ───────────────────────────────────────────────────────
+    # Bounded — a dead stats API must not hang the page. stats.nba.com 403s for
+    # cloud IPs under load; the old `while gl is None` retried forever, leaking a
+    # Streamlit script thread per visitor and holding the cache lock behind it.
     gl = None
     delay = 1
-    while gl is None:
+    for _ in range(3):
         try:
             gl = playergamelog.PlayerGameLog(player_id=player_id, season=season, timeout=15)
+            break
         except Exception:
             time.sleep(delay)
-            delay = min(delay * 2, 30)
+            delay = min(delay * 2, 8)
+    if gl is None:
+        logger.warning("player game log unavailable for %s %s", player_id, season)
+        return pd.DataFrame()
 
     pdf = gl.get_data_frames()[0]
     if pdf.empty:
@@ -3684,12 +3691,19 @@ def fetch_monthly_scores(player_id: int, season: str,
         if team_id:
             tgl = None
             delay = 1
-            while tgl is None:
+            # Bounded, and with the timeout this call was missing entirely — it
+            # was the only nba_api endpoint in the file without one, so a hung
+            # socket here had no bound at all.
+            for _ in range(3):
                 try:
-                    tgl = teamgamelog.TeamGameLog(team_id=team_id, season=season)
+                    tgl = teamgamelog.TeamGameLog(team_id=team_id, season=season,
+                                                  timeout=15)
+                    break
                 except Exception:
                     time.sleep(delay)
-                    delay = min(delay * 2, 30)
+                    delay = min(delay * 2, 8)
+            if tgl is None:
+                raise RuntimeError("team game log unavailable")
             tdf = tgl.get_data_frames()[0]
             tdf["GAME_DATE"] = pd.to_datetime(tdf["GAME_DATE"])
             team_dates = tdf["GAME_DATE"].sort_values().reset_index(drop=True)
@@ -4376,12 +4390,19 @@ def _player_season_splits_raw(player_id: int, season: str,
                                season_games: int = 82) -> pd.DataFrame:
     career = None
     delay = 1
-    while career is None:
+    # Bounded — see the note on fetch_monthly_scores. The splits panel reaches
+    # here on a live request, so an unreachable stats API must degrade to an
+    # empty frame (the caller checks .empty) rather than spin forever.
+    for _ in range(3):
         try:
             career = playercareerstats.PlayerCareerStats(player_id=player_id, timeout=15)
+            break
         except Exception:
             time.sleep(delay)
-            delay = min(delay * 2, 30)
+            delay = min(delay * 2, 8)
+    if career is None:
+        logger.warning("career stats unavailable for %s", player_id)
+        return pd.DataFrame()
     df = career.get_data_frames()[0]
     rows = df[df["SEASON_ID"] == season].copy()
     if rows.empty:

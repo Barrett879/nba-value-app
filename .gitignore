@@ -42,3 +42,16 @@ design_handoff_hoopsvalue_refresh/
 # Claude Code local dev config
 .claude/
 exports/
+
+# ── Private build: Agency Database ──────────────────────────────────────────
+# Kept locally, never published. Lives outside pages/ so Streamlit's filesystem
+# router cannot serve it on hoopsvalue.com. Run it locally with:
+#   ./scripts/agency_local.sh
+private_pages/
+agency_db.py
+data/player_agents.csv
+data/player_agents_override.csv
+data/agency_contacts.csv
+cache/agent_contracts_v1.json
+scripts/build_agent_db.py
+scripts/audit_agents.py

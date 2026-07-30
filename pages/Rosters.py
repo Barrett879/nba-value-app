@@ -17,6 +17,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import csv
+import datetime as _dt
 import json
 import re
 
@@ -41,7 +42,9 @@ st.caption(
 )
 
 _ROOT = Path(__file__).parent.parent
-_TODAY = "2026-07-28"
+# Used to expire lapsed trade exceptions. A frozen literal here silently
+# resurrects TPEs that have already expired.
+_TODAY = _dt.date.today().isoformat()
 # a Barrett Score under this many minutes is a small-sample artifact, so the
 # page reaches back a season rather than showing it
 MIN_MINUTES = 500

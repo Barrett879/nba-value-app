@@ -317,7 +317,12 @@ with fa_col_d:
 
 fa_display = fa_df.copy()
 if fa_search:
-    fa_display = fa_display[fa_display["Player"].str.contains(fa_search, case=False)]
+    # regex=False: this is raw user text. Left as a regex, a stray "(" or "["
+    # raises re.error and takes the whole page down. na=False so a missing name
+    # filters out instead of propagating NaN into the mask.
+    fa_display = fa_display[
+        fa_display["Player"].str.contains(fa_search, case=False, regex=False, na=False)
+    ]
 # Availability and Status are independent, so they stack (e.g. Available + UFA).
 if fa_show == "Signed":
     fa_display = fa_display[fa_display["Player"].map(normalize).isin(_signed)]

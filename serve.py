@@ -225,7 +225,7 @@ def _patch_seo_inprocess() -> None:
 # a redirect there would break the websocket handshake through Render.
 _SITEMAP_PATHS = [
     "/", "/Rankings", "/Search", "/Legacy", "/Rosters", "/Team_Analysis",
-    "/Contract_Predictor", "/Free_Agent_Class", "/About",
+    "/Contract_Predictor", "/Free_Agent_Class", "/Trade_Machine", "/About",
 ]
 
 
@@ -308,6 +308,23 @@ def _install_extra_routes() -> None:
 
             head = get
 
+        class _PageHandler(tornado.web.RequestHandler):
+            """Serve the SPA shell for a known sitemap route with a canonical
+            pointing at that route rather than at the homepage, plus the page's
+            own title and description. Body is the same booting shell, so the
+            human experience is unchanged."""
+
+            def initialize(self, path):
+                self._path = path
+
+            def get(self):
+                out = seo_selfheal.page_shell(_base_shell, self._path)
+                self.set_header("Content-Type", "text/html; charset=utf-8")
+                self.set_header("Cache-Control", "no-cache")
+                self.write(out)
+
+            head = get
+
         class _TradeMachineHandler(tornado.web.RequestHandler):
             """Serve the SPA shell for /Trade_Machine, swapping in per-trade OG
             tags when a ?trade= share token is present, so shared trades unfurl
@@ -316,7 +333,8 @@ def _install_extra_routes() -> None:
 
             def get(self):
                 token = self.get_argument("trade", "")
-                out = seo_selfheal.trade_shell(_base_shell, token) if token else _base_shell
+                page = seo_selfheal.page_shell(_base_shell, "/Trade_Machine")
+                out = seo_selfheal.trade_shell(page, token) if token else page
                 self.set_header("Content-Type", "text/html; charset=utf-8")
                 self.set_header("Cache-Control", "no-cache")
                 self.write(out)
@@ -405,6 +423,15 @@ def _install_extra_routes() -> None:
                 if _base_shell:  # exact "/" only; every other path stays Streamlit's
                     extra.append((r"/", _RootHandler))
                     extra.append((r"/Trade_Machine", _TradeMachineHandler))
+                    # Every sitemap route used to be answered by Streamlit's
+                    # StaticFileHandler with the homepage shell, so all nine
+                    # declared <link rel="canonical" href="https://hoopsvalue.com/">
+                    # -- telling Google they were duplicates of the homepage and
+                    # nullifying the sitemap. These serve the same shell with a
+                    # self-referencing canonical and per-page title/description.
+                    for _sp in _SITEMAP_PATHS:
+                        if _sp != "/":
+                            extra.append((_sp, _PageHandler, dict(path=_sp)))
                 handlers = extra + list(handlers)
             _orig_app_init(self, handlers, *args, **kwargs)
             self.transforms.append(_NoindexTransform)

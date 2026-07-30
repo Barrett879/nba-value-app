@@ -211,6 +211,80 @@ def _share_meta() -> dict:
     return _SHARE_META
 
 
+# Per-page title/description for the routes in the sitemap. Without these every
+# route served the homepage's tags AND — the real damage — the homepage's
+# canonical, which told Google that /Rankings, /Rosters, /Contract_Predictor and
+# every ?player= deep link were duplicates of "/". The sitemap asked for nine
+# URLs to be indexed while the canonical disclaimed all nine.
+_PAGE_META = {
+    "/Rankings": (
+        "NBA Player Rankings by Value — Barrett Score | HoopsValue",
+        "Every NBA player ranked by the Barrett Score and set against his salary, "
+        "so you can see who is underpaid, overpaid, or paid about right."),
+    "/Search": (
+        "Search Any NBA Player's Value and Contract | HoopsValue",
+        "Look up any NBA player since 1973: Barrett Score, salary, model value, "
+        "and how his production compares to what he is paid."),
+    "/Legacy": (
+        "NBA Career Value Leaders, 1973 to Today | HoopsValue",
+        "Career Barrett Score leaders across five decades of NBA basketball, with "
+        "peak seasons, longevity, and value against salary."),
+    "/Rosters": (
+        "NBA Rosters and 2026-27 Salary Books, All 30 Teams | HoopsValue",
+        "The real 2026-27 books team by team: every contract, dead money, trade "
+        "exceptions and picks, read against the cap, the tax line and both aprons."),
+    "/Team_Analysis": (
+        "NBA Team Value Analysis — Payroll vs Production | HoopsValue",
+        "Which NBA front offices get the most on-court value per dollar, and which "
+        "are paying for production they are not getting."),
+    "/Contract_Predictor": (
+        "NBA Contract Predictor — What Is a Player Worth? | HoopsValue",
+        "Estimate what any NBA player would command on a new contract today, with "
+        "comparable signings, likely suitors, and the model's track record."),
+    "/Free_Agent_Class": (
+        "2026 NBA Free Agent Class — Values and Predictions | HoopsValue",
+        "The full 2026 NBA free agent class ranked by value, with predicted "
+        "contracts and how each deal has actually landed."),
+    "/Trade_Machine": (
+        "NBA Trade Machine — CBA-Legal Trades | HoopsValue",
+        "Build NBA trades and see instantly whether they are legal under the 2023 "
+        "CBA: salary matching, aprons, hard caps and trade exceptions."),
+    "/About": (
+        "About HoopsValue — Methodology and Data Sources",
+        "How the Barrett Score is built, how the contract model is trained and "
+        "tested, and where the data comes from."),
+}
+
+
+def page_shell(base_html: str, path: str) -> str:
+    """Return base_html with canonical/og:url — and, where known, title and
+    description — pointed at `path` instead of the homepage. Never raises;
+    an unknown path returns base_html untouched."""
+    try:
+        path = "/" + (path or "").strip("/")
+        if path == "/":
+            return base_html
+        url = "https://hoopsvalue.com" + path
+        out = re.sub(r'(<link rel="canonical" href=")[^"]*(")',
+                     lambda m: m.group(1) + url + m.group(2), base_html, count=1)
+        out = re.sub(r'(<meta property="og:url" content=")[^"]*(")',
+                     lambda m: m.group(1) + url + m.group(2), out, count=1)
+        meta = _PAGE_META.get(path)
+        if meta:
+            t, d = _html.escape(meta[0], quote=True), _html.escape(meta[1], quote=True)
+            out = re.sub(r"<title>[^<]*</title>", lambda m: f"<title>{t}</title>",
+                         out, count=1)
+            out = re.sub(r'(<meta name="description" content=")[^"]*(")',
+                         lambda m: m.group(1) + d + m.group(2), out, count=1)
+            out = re.sub(r'(<meta property="og:title" content=")[^"]*(")',
+                         lambda m: m.group(1) + t + m.group(2), out, count=1)
+            out = re.sub(r'(<meta property="og:description" content=")[^"]*(")',
+                         lambda m: m.group(1) + d + m.group(2), out, count=1)
+        return out
+    except Exception:
+        return base_html
+
+
 def player_shell(base_html: str, player_name: str) -> str:
     """Return base_html with the title/description/OG tags swapped for the named
     player's, or base_html unchanged when the name is unknown. Rewrites whatever

@@ -14,6 +14,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import csv
+import datetime as _dt
 import json
 import re
 
@@ -29,7 +30,10 @@ _bootstrap_warm()
 render_nav("Trade Machine")
 
 _ROOT = Path(__file__).parent.parent
-_TODAY = "2026-07-27"
+# The engine's ONLY clock. A frozen literal here meant every trade was judged as
+# if it were July: the offseason roster limit (21) applied all season instead of
+# 15, sign-and-trades never closed, and the Dec-15 / Jan-15 freezes never bound.
+_TODAY = _dt.date.today().isoformat()
 
 st.title("Trade Machine")
 st.caption(
