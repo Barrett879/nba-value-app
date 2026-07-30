@@ -28,8 +28,6 @@ body{background:transparent;color:var(--fg1);
 .topt.dis{opacity:.32;cursor:not-allowed}
 .topt[hidden],.tmenu[hidden]{display:none}
 .topt.sel{background:var(--track);border-left-color:var(--tc)}
-.emptyhint{border:1.5px dashed var(--line);border-radius:14px;padding:2rem 1.2rem;
-  text-align:center;color:var(--fg4);font-size:.92rem;background:var(--tintz)}
 /* One column per SLOT, not per picked team -- an empty slot is still a card,
    because the card is now what you pick a team with. Nothing else lives in this
    grid: a dashed "add team" tile beside the cards pulled the eye away from the
@@ -66,9 +64,35 @@ body{background:transparent;color:var(--fg1);
   transition:opacity .12s,color .12s}
 .pseltrig:hover .pcaret{opacity:1;color:var(--tc,var(--teal))}
 .pseltrig:hover .pnametxt{color:var(--tc,var(--teal))}
-.panel.unset{border-top-color:var(--line);border-style:dashed}
-.panel.unset .pseltrig{color:var(--fg4)}
-.slothint{color:var(--fg5);font-size:.8rem;line-height:1.5;padding:.5rem 0 .1rem}
+/* An open seat: one centred invitation, not an empty copy of a team card. It
+   opts OUT of .panel's subgrid -- with no cap bar or roster there is nothing to
+   line up with, and the placeholder rows that alignment needed left a dead band
+   across the middle of the card. */
+/* align-self:start or it stretches to the height of the loaded team beside it,
+   which is a 2000px dashed box around one small invitation */
+.panel.unset{position:relative;grid-row:span 5;align-self:start;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:.6rem;text-align:center;
+  min-height:200px;padding:1.7rem 1.1rem;
+  border:1.5px dashed var(--line);border-top:1.5px dashed var(--line);
+  background:var(--tintz);box-shadow:none;
+  transition:border-color .14s,background .14s}
+.panel.unset:hover{border-color:var(--teal)}
+.slotpick{position:relative;display:flex;flex-direction:column;align-items:center;gap:.55rem}
+.slotmark{display:flex;align-items:center;justify-content:center;width:44px;height:44px;
+  border-radius:50%;border:1.5px dashed var(--line);color:var(--fg5);
+  font-size:1.45rem;font-weight:300;line-height:1;transition:color .14s,border-color .14s}
+.panel.unset:hover .slotmark{color:var(--teal);border-color:var(--teal)}
+.slotbtn{display:inline-flex;align-items:center;gap:.4rem;cursor:pointer;
+  background:var(--panel);color:var(--fg1);border:1px solid var(--line);border-radius:9px;
+  padding:.42rem .8rem;font-size:.92rem;font-weight:800;font-family:inherit;
+  transition:border-color .14s,color .14s,box-shadow .14s}
+.slotbtn:hover{border-color:var(--teal);color:var(--teal);box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.slotbtn .pcaret{opacity:.55;font-size:.56rem}
+/* the menu hangs off a centred button, so centre it rather than left-aligning */
+.slotpick .tmenu{left:50%;transform:translateX(-50%)}
+.prm.slotrm{position:absolute;top:.55rem;right:.55rem}
+.slothint{color:var(--fg5);font-size:.78rem;line-height:1.5;max-width:20rem}
 .prm{flex:0 0 auto;background:none;border:1px solid transparent;color:var(--fg5);
   border-radius:7px;width:22px;height:22px;line-height:1;font-size:.95rem;font-weight:700;
   cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
@@ -665,8 +689,8 @@ function render(){
   const slotTrigger=(a,i,inner)=>`<button class="pseltrig" data-open="${i}"
       title="${a?"Change the team in this slot":"Pick a team for this slot"}">
       ${inner}<span class="pcaret">&#9660;</span></button>`;
-  const rmBtn=(a,i)=>state.teams.length>2
-    ?`<button class="prm" data-rm="${i}" title="${a?"Remove "+esc(DATA.teams[a].name)+" from this trade":"Remove this slot"}">&times;</button>`:"";
+  const rmBtn=(a,i,extra="")=>state.teams.length>2
+    ?`<button class="prm${extra}" data-rm="${i}" title="${a?"Remove "+esc(DATA.teams[a].name)+" from this trade":"Remove this slot"}">&times;</button>`:"";
 
   const slots=state.teams.length, canAdd=slots<4;
   const tools=(canAdd?`<button class="addbtn" id="addteam" title="Bring a third or fourth team into this trade">+ Add team</button>`:"")
@@ -677,14 +701,19 @@ function render(){
   html+=`<div class="boards s${slots}">`;
   for(let i=0;i<slots;i++){
     const a=state.teams[i];
-    if(!a){                                       // an open seat: header only
-      html+=`<div class="panel unset">
-        <div class="phead"><span class="pname">${slotTrigger("",i,
-          `<span class="pnametxt">Select a team</span>`)}</span>${rmBtn("",i)}
-          ${teamMenu("",i)}</div>
-        <div class="capwrap"></div><div class="pnotes"></div>
-        <div class="slothint">Pick a team to load its roster, picks and cap sheet.</div>
-        <div class="pbody"></div></div>`;
+    // An open seat is one centred invitation rather than an empty copy of a
+    // team card. It drops the subgrid: with no cap bar or roster there is
+    // nothing here to line up with the cards beside it, and the placeholder
+    // rows it needed for that left a dead band across the middle.
+    if(!a){
+      html+=`<div class="panel unset">${rmBtn("",i," slotrm")}
+        <div class="slotpick">
+          <span class="slotmark">+</span>
+          <button class="slotbtn" data-open="${i}" title="Pick a team for this slot">
+            Select a team<span class="pcaret">&#9660;</span></button>
+          <div class="slothint">Its roster, picks and cap sheet load here.</div>
+          ${teamMenu("",i)}
+        </div></div>`;
       continue;
     }
     const T=DATA.teams[a];
@@ -775,11 +804,10 @@ function render(){
   }
   html+=`</div>`;
 
-  if(n<2){                       // the boards ARE the picker now, so they stay
-    html+=`<div class="emptyhint">Pick ${n===0?"two teams":"one more team"} to start building a trade.
-      Then drag players and picks between them.</div>`;
-    root.innerHTML=html; wire(); fitFrame(); syncParentURL(); return;
-  }
+  // No banner under the boards: the open seats say "Select a team" themselves and
+  // the page intro already says to drag players between them, so a third copy of
+  // the same instruction just crowded the empty state.
+  if(n<2){ root.innerHTML=html; wire(); fitFrame(); syncParentURL(); return; }
 
   html+=`<div class="verdict">`;
   if(!anyMove){
