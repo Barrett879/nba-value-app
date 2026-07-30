@@ -988,19 +988,30 @@ function fitFrame(){
     const h = Math.ceil(rootEl.getBoundingClientRect().bottom + top) + 24;
     const fe = window.frameElement;
     if (!fe) return;
+    const pdoc = fe.ownerDocument;
+    // Release wrappers that used to hold this component. Streamlit's React
+    // recycles stElementContainer nodes between reruns, and a theme toggle is a
+    // rerun -- so an inline height stamped on the wrapper stays put while the
+    // node is handed to a different element, reserving the component's full
+    // height somewhere up the page. Sizes we set are tagged so they can be
+    // given back.
+    for (const st of pdoc.querySelectorAll('[data-hv-fit="ro"]'))
+      if (!st.contains(fe)){ st.style.height = ""; st.style.minHeight = ""; st.removeAttribute("data-hv-fit"); }
     fe.style.height = h + "px";
     // Streamlit sizes this wrapper from the declared components.html(height=...)
     // via a stylesheet rule, so min-height cannot bring it back down once the
     // iframe shrinks to fit. It holds only this component, so pinning is safe.
-    if (fe.parentElement && fe.parentElement.getAttribute("data-testid") === "stElementContainer")
+    if (fe.parentElement && fe.parentElement.getAttribute("data-testid") === "stElementContainer"){
       fe.parentElement.style.height = h + "px";
-    const pdoc = fe.ownerDocument;
+      fe.parentElement.setAttribute("data-hv-fit", "ro");
+    }
     let el = fe.parentElement;
     while (el && el !== pdoc.body){
       const tid = el.getAttribute && el.getAttribute("data-testid");
       if (tid === "stAppViewContainer" || tid === "stMain") break;
       if (el.style){
         el.style.minHeight = h + "px";
+        el.setAttribute("data-hv-fit", "ro");
         if (el.style.height && parseInt(el.style.height) < h) el.style.height = "auto";
       }
       el = el.parentElement;
@@ -1026,5 +1037,21 @@ themeSync();
 render();
 setInterval(() => { fitFrame(); themeSync(); }, 1000);
 try{ new ResizeObserver(fitFrame).observe(document.body); }catch(e){}
+// React hands our wrapper node to another element during a rerun, so re-fit the
+// moment the parent's element list changes instead of waiting up to a second for
+// the interval -- otherwise a theme toggle flashes the stale gap before healing.
+try{
+  const host = window.frameElement.closest('[data-testid="stVerticalBlock"]');
+  let last = 0, trail = 0;
+  new MutationObserver(() => {
+    // leading call releases the stale pin before the next paint; trailing call
+    // catches the end of the rerun's burst. Deliberately not requestAnimationFrame,
+    // which never fires while the tab is hidden -- exactly when a rerun can land.
+    const now = Date.now();
+    if (now - last >= 16){ last = now; fitFrame(); }
+    clearTimeout(trail);
+    trail = setTimeout(() => { last = Date.now(); fitFrame(); }, 80);
+  }).observe(host, {childList:true, subtree:true});
+}catch(e){}
 window.addEventListener("load", fitFrame);
 </script>

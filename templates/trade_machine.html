@@ -989,6 +989,15 @@ function fitFrame(){
     const h=Math.ceil(content)+24;
     const fe=window.frameElement;
     if(!fe) return;
+    const pdoc=fe.ownerDocument;
+    // Release wrappers that used to hold this component. Streamlit's React
+    // recycles stElementContainer nodes between reruns, and a theme toggle is a
+    // rerun -- so an inline height stamped on the wrapper stays put while the
+    // node is handed to a different element. It landed on the intro caption,
+    // which then reserved the board's full height and pushed everything below it
+    // 207px down the page. Sizes we set are tagged so they can be given back.
+    for(const st of pdoc.querySelectorAll('[data-hv-fit="tm"]'))
+      if(!st.contains(fe)){st.style.height="";st.style.minHeight="";st.removeAttribute("data-hv-fit");}
     fe.style.height=h+"px";
     // Pin the element container that holds ONLY this component. Streamlit sizes
     // it from the declared components.html(height=...) -- 1000px here -- via a
@@ -996,19 +1005,21 @@ function fitFrame(){
     // shrinking the iframe to fit its content, the difference showed up as
     // hundreds of pixels of reserved blank page below the boards. Safe to set
     // height here and nowhere else, because this wrapper has one child.
-    if(fe.parentElement&&fe.parentElement.getAttribute("data-testid")==="stElementContainer")
+    if(fe.parentElement&&fe.parentElement.getAttribute("data-testid")==="stElementContainer"){
       fe.parentElement.style.height=h+"px";
+      fe.parentElement.setAttribute("data-hv-fit","tm");
+    }
     // Grow EVERY wrapper up to Streamlit's scroll root with min-height (not
     // height: min-height cooperates with flex layout and containers that hold
     // more than the component). Stopping short of the root left the page's
     // scrollable height capped below the component bottom.
-    const pdoc=fe.ownerDocument;
     let el=fe.parentElement;
     while(el&&el!==pdoc.body){
       const tid=el.getAttribute&&el.getAttribute("data-testid");
       if(tid==="stAppViewContainer"||tid==="stMain") break;
       if(el.style){
         el.style.minHeight=h+"px";
+        el.setAttribute("data-hv-fit","tm");
         if(el.style.height&&parseInt(el.style.height)<h) el.style.height="auto";
       }
       el=el.parentElement;
@@ -1032,6 +1043,22 @@ function themeSync(){
 themeSync();
 setInterval(()=>{fitFrame();themeSync();},1000);   // survive Streamlit re-layouts resetting wrappers
 try{ new ResizeObserver(fitFrame).observe(document.body); }catch(e){}
+// React hands our wrapper node to another element during a rerun, so re-fit the
+// moment the parent's element list changes instead of waiting up to a second for
+// the interval -- otherwise a theme toggle flashes the stale gap before healing.
+try{
+  const host=window.frameElement.closest('[data-testid="stVerticalBlock"]');
+  let last=0,trail=0;
+  new MutationObserver(()=>{
+    // leading call releases the stale pin before the next paint; trailing call
+    // catches the end of the rerun's burst. Deliberately not requestAnimationFrame,
+    // which never fires while the tab is hidden -- exactly when a rerun can land.
+    const now=Date.now();
+    if(now-last>=16){last=now;fitFrame();}
+    clearTimeout(trail);
+    trail=setTimeout(()=>{last=Date.now();fitFrame();},80);
+  }).observe(host,{childList:true,subtree:true});
+}catch(e){}
 window.addEventListener("load",fitFrame);
 
 function findOwner(name){
