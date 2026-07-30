@@ -44,7 +44,7 @@ body{background:transparent;color:var(--fg1);
      receive zones and rosters line up across teams even when only some have
      trade exceptions or apron warnings */
   display:grid;grid-template-rows:subgrid;grid-row:span 5;align-content:start}
-.pnotes{align-self:start} .pbody{min-width:0}
+.pbody{min-width:0}
 /* min-width:0 for the same reason .pbody has it: the panel's implicit grid
    column is auto-sized, so any child that refuses to shrink sets the column
    width and the whole card overflows. The header carries a nowrap hard-cap
@@ -167,8 +167,6 @@ body{background:transparent;color:var(--fg1);
 .hcap{display:inline-block;flex:0 0 auto;margin-left:.55rem;padding:.08rem .45rem;border:1px solid var(--amberc);
   color:var(--amberc);border-radius:99px;font-size:.66rem;font-weight:800;vertical-align:2px;
   letter-spacing:.02em;white-space:nowrap;cursor:help}
-.tpeline{margin:.1rem 0 .15rem;font-size:.72rem;color:var(--fg4);cursor:help}
-.tpeline .tpewho{color:var(--fg5)}
 .card .mv.sw{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.sw:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .card .mv.tp{background:transparent;border:1px solid var(--line);color:var(--fg4)}
@@ -178,15 +176,36 @@ body{background:transparent;color:var(--fg1);
 .card.dovr{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
 .fasal{width:58px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
   border-radius:7px;padding:.25rem .3rem;font-size:.72rem;flex:0 0 auto}
-.seclhint{font-weight:400;color:var(--fg5);text-transform:none;letter-spacing:0;
-  font-size:.66rem;margin-left:.4rem}
-.cashrow{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--fg4);margin-top:.3rem}
+.cashrow{display:flex;align-items:center;gap:.45rem;font-size:.72rem;color:var(--fg4);margin-top:.6rem}
 .cashrow input{width:72px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
   border-radius:7px;padding:.25rem .4rem;font-size:.78rem}
-.secl{font-size:.62rem;font-weight:800;letter-spacing:.08em;color:var(--fg4);
-  text-transform:uppercase;margin:.6rem 0 .2rem;display:flex;align-items:center;gap:.4rem}
-.secl::before{content:"";width:3px;height:11px;border-radius:2px;background:var(--tc,var(--teal));
-  flex:0 0 3px}
+
+/* Panel tabs. The four things a team can put into a trade, each carrying its
+   count, sitting on the band that used to be a mostly-empty notes line. The
+   underline is the team colour, so the active tab reads as part of the card. */
+.ptabs{display:flex;align-items:flex-end;gap:.15rem;border-bottom:1px solid var(--line);
+  margin:.5rem 0 0;overflow-x:auto;scrollbar-width:none}
+.ptabs::-webkit-scrollbar{display:none}
+.ptab{position:relative;background:none;border:none;cursor:pointer;font-family:inherit;
+  display:inline-flex;align-items:center;gap:.3rem;white-space:nowrap;
+  padding:.34rem .55rem;margin-bottom:-1px;border-bottom:2px solid transparent;
+  font-size:.72rem;font-weight:800;letter-spacing:.03em;color:var(--fg4);
+  transition:color .12s,border-color .12s}
+.ptab:hover:not(:disabled){color:var(--fg1)}
+.ptab.on{color:var(--fg1);border-bottom-color:var(--tc,var(--teal))}
+.ptab .tcount{font-size:.64rem;font-weight:700;color:var(--fg5);
+  background:var(--track);border-radius:999px;padding:.02rem .3rem;
+  font-variant-numeric:tabular-nums}
+.ptab.on .tcount{background:var(--tc,var(--teal));color:var(--tfg,#fff)}
+.ptab.empty{opacity:.4;cursor:default}
+.tabnote{font-size:.68rem;color:var(--fg5);line-height:1.45;margin:.5rem 0 .45rem}
+.tabempty{font-size:.74rem;color:var(--fg5);padding:.9rem 0}
+.telist{display:flex;flex-direction:column;gap:.3rem}
+.terow{display:flex;align-items:baseline;gap:.5rem;background:var(--card);
+  border:1px solid var(--line);border-radius:9px;padding:.4rem .55rem;font-size:.78rem}
+.terow b{font-variant-numeric:tabular-nums;flex:0 0 auto}
+.terow span{color:var(--fg3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.terow .texp{margin-left:auto;font-size:.66rem;color:var(--fg5);flex:0 0 auto}
 .verdict{margin-top:14px}
 .vband{border-radius:12px;padding:.85rem 1.1rem;font-weight:800;font-size:1.05rem;border:1px solid;
   box-shadow:0 2px 10px rgba(0,0,0,.05)}
@@ -501,7 +520,7 @@ function validateTrade(trade){
 })();
 
 // ── UI state ─────────────────────────────────────────────────────────────────
-const state={teams:["",""],moves:{},cash:{},order:{}};
+const state={teams:["",""],moves:{},cash:{},order:{},tab:{}};
 // slots can be empty until the user picks a team; picked() is the real list
 const picked=()=>state.teams.filter(Boolean);
 // moves: playerKey/pickKey -> {to,swap,...} (absence = stays home)
@@ -548,7 +567,7 @@ function restore(token){
     if(o.v!==1||!Array.isArray(o.t)) return;
     const t=o.t.filter(a=>DATA.teams[a]).slice(0,4);
     if(t.length<2) return;
-    state.teams=t; state.moves={}; state.cash={}; state.order={};
+    state.teams=t; state.moves={}; state.cash={}; state.order={}; state.tab={};
     for(const [kind,src,id,dest] of (o.m||[])){
       if(!DATA.teams[src]||!DATA.teams[dest]||!t.includes(src)||!t.includes(dest)) continue;
       if(kind==="P"||kind==="T"){
@@ -731,9 +750,6 @@ function render(){
     // on, the chip drops to the notes line; the cap bar right above it already
     // prints the same number, so nothing is lost but the header keeps the name.
     const hcInHead=n<=2;
-    const tpeLine=T.tpes&&T.tpes.length
-      ?`<div class="tpeline" title="${esc(T.tpes.map(t=>"$"+t.amt.toFixed(2)+"M ("+t.player+(t.expires?", expires "+t.expires:"")+")").join("; "))}. Toggle via TPE on an incoming player to absorb his salary into an exception instead of matching.">Trade exceptions: ${T.tpes.map(t=>"$"+t.amt.toFixed(1)+"M").join(" + ")} <span class="tpewho">(${esc(T.tpes[0].player)}${T.tpes.length>1?" and "+(T.tpes.length-1)+" more":""})</span></div>`
-      :"";
     const active=!!tt&&(tt.out_players.length>0||tt.in_players.length>0
       ||tt.out_picks.length>0||tt.in_picks.length>0||Number(state.cash[a]||0)>0);
     const scaleEnd=T.hard_cap!=null?T.hard_cap:CFG.apron2;
@@ -748,8 +764,25 @@ function render(){
       <div class="phead"><span class="pname">${slotTrigger(a,i,
         logo+`<span class="pnametxt">${esc(T.name)}</span>`)}${hcInHead?hcChip:""}</span>
       ${pay}${rmBtn(a,i)}${teamMenu(a,i)}</div>
-      <div class="capwrap">${cb.bar}</div>
-      <div class="pnotes">${hcInHead?"":`<div class="hcline">${hcChip}</div>`}${cb.warn}${tpeLine}</div>
+      <div class="capwrap">${cb.bar}${hcInHead?"":`<div class="hcline">${hcChip}</div>`}${cb.warn}</div>`;
+
+    // The band under the cap bar used to be a notes line that was empty on most
+    // teams. It is now the panel's tab bar: the four things you can move or
+    // spend, each with its count, so the card says what a team has to offer
+    // without you scrolling its whole roster.
+    const rosterKeys=displayOrder(a);
+    const freeAgents=(DATA.fas&&DATA.fas[a]||[]).filter(f=>!state.moves["F|"+a+"|"+f.n]);
+    const ownPicks=T.picks.map((pk,ix)=>[pk,pickKey(a,ix)]).filter(([,k])=>!state.moves[k]);
+    const TABS=[["players","Players",rosterKeys.length],
+                ["picks","Picks",ownPicks.length],
+                ["snt","S&amp;T",freeAgents.length],
+                ["te","TE",(T.tpes||[]).length]];
+    const want=state.tab[a]||"players";
+    // never strand the user on a tab that emptied out from under them
+    const cur=(TABS.find(([k,,n])=>k===want&&n>0)||TABS.find(([,,n])=>n>0)||TABS[0])[0];
+    html+=`<div class="ptabs">`+TABS.map(([k,label,n])=>
+      `<button class="ptab${k===cur?" on":""}${n?"":" empty"}" data-tab="${k}" data-tabteam="${a}"
+        ${n?"":"disabled"}>${label}<span class="tcount">${n}</span></button>`).join("")+`</div>
       <div class="zone" data-drop="${a}"><div class="zl">Receives (drag players or picks here)</div>`;
     for(const [key,mv] of incoming){
       const [kind,src,id]=key.split("|");
@@ -758,39 +791,40 @@ function render(){
         html+=pickHTML(pk,src,key,true,isSwapMove(pk,mv));
       }
     }
-    html+=`</div><div class="pbody"><div class="secl">Roster</div><div class="roster">`;
-    for(const key of displayOrder(a)){
-      const [kind,src,id]=key.split("|");
-      const mv=state.moves[key];
-      if(mv&&kind==="P"){                       // acquired via trade
-        const p=DATA.teams[src].players.find(x=>x.n===id);
-        html+=cardHTML(p,src,key,true,{has:(T.tpes||[]).length>0,on:!!mv.tpe});
-      }else if(mv&&kind==="F"){                 // acquired via sign-and-trade
-        const fa=(DATA.fas&&DATA.fas[src]||[]).find(x=>x.n===id);
-        const img=fa&&fa.headshot?`<img loading="lazy" src="${fa.headshot}" alt="">`:`<div class="noimg"></div>`;
-        let btn="";
-        if((T.tpes||[]).length)
-          btn+=`<button class="mv tp${mv.tpe?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`;
-        btn+=`<button class="mv" data-return="${key}">&larr; return</button>`;
-        html+=`<div class="card inc" draggable="true" data-key="${key}">${img}
-          <div class="who"><div class="nm">${esc(id)}</div>
-          <div class="sub">${(bits=>bits.chip+bits.stats.join(" &middot; "))(statBits(fa||{},mv.salary))} &middot; sign and trade from ${src}</div></div>${btn}</div>`;
-      }else{
-        const p=DATA.teams[a].players.find(x=>x.n===id);
-        if(p) html+=cardHTML(p,a,key,false);
+    html+=`</div><div class="pbody">`;
+
+    if(cur==="players"){
+      html+=`<div class="roster">`;
+      for(const key of rosterKeys){
+        const [kind,src,id]=key.split("|");
+        const mv=state.moves[key];
+        if(mv&&kind==="P"){                     // acquired via trade
+          const p=DATA.teams[src].players.find(x=>x.n===id);
+          html+=cardHTML(p,src,key,true,{has:(T.tpes||[]).length>0,on:!!mv.tpe});
+        }else if(mv&&kind==="F"){               // acquired via sign-and-trade
+          const fa=(DATA.fas&&DATA.fas[src]||[]).find(x=>x.n===id);
+          const img=fa&&fa.headshot?`<img loading="lazy" src="${fa.headshot}" alt="">`:`<div class="noimg"></div>`;
+          let btn="";
+          if((T.tpes||[]).length)
+            btn+=`<button class="mv tp${mv.tpe?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`;
+          btn+=`<button class="mv" data-return="${key}">&larr; return</button>`;
+          html+=`<div class="card inc" draggable="true" data-key="${key}">${img}
+            <div class="who"><div class="nm">${esc(id)}</div>
+            <div class="sub">${(bits=>bits.chip+bits.stats.join(" &middot; "))(statBits(fa||{},mv.salary))} &middot; sign and trade from ${src}</div></div>${btn}</div>`;
+        }else{
+          const p=DATA.teams[a].players.find(x=>x.n===id);
+          if(p) html+=cardHTML(p,a,key,false);
+        }
       }
-    }
-    html+=`</div><div class="secl">Picks</div><div class="pickgrid">`;
-    T.picks.forEach((pk,i)=>{
-      const key=pickKey(a,i);
-      if(state.moves[key]) return;
-      html+=pickHTML(pk,a,key,false);
-    });
-    html+=`</div>`;
-    const fas=(DATA.fas&&DATA.fas[a]||[]).filter(f=>!state.moves["F|"+a+"|"+f.n]);
-    if(fas.length){
-      html+=`<div class="secl">Sign and trade <span class="seclhint">their free agents; set the starting salary, minimum 3-year deal</span></div>`;
-      for(const f of fas){
+      html+=`</div>`;
+    }else if(cur==="picks"){
+      html+=`<div class="pickgrid">`;
+      for(const [pk,key] of ownPicks) html+=pickHTML(pk,a,key,false);
+      html+=`</div>`;
+      if(!ownPicks.length) html+=`<div class="tabempty">Every pick is already in the trade.</div>`;
+    }else if(cur==="snt"){
+      html+=`<div class="tabnote">Sign and trade their own free agents. Set the starting salary; minimum three-year deal.</div>`;
+      for(const f of freeAgents){
         const key="F|"+a+"|"+f.n;
         const img=f.headshot?`<img loading="lazy" src="${f.headshot}" alt="">`:`<div class="noimg"></div>`;
         html+=`<div class="card fa" draggable="true" data-key="${key}">${img}
@@ -798,7 +832,15 @@ function render(){
           <div class="sub">${(bits=>bits.chip+bits.stats.join(" &middot; "))(statBits(f,f.value))} &middot; free agent</div></div>
           <input class="fasal" type="number" min="1" step="0.5" value="${f.value}" title="Starting salary of the new deal ($M)"></div>`;
       }
+    }else{
+      html+=`<div class="tabnote">Absorb an incoming salary into one of these instead of matching it,
+        using the "via TPE" button on the player.</div><div class="telist">`;
+      for(const t of (T.tpes||[]))
+        html+=`<div class="terow"><b>$${t.amt.toFixed(1)}M</b><span>${esc(t.player)}</span>
+          <span class="texp">${t.expires?"expires "+esc(t.expires):""}</span></div>`;
+      html+=`</div>`;
     }
+
     html+=`<div class="cashrow">Cash out <input type="number" min="0" max="${CFG.cash_annual_limit}"
       step="0.5" value="${state.cash[a]||""}" data-cash="${a}" placeholder="0"> $M</div></div></div>`;
   }
@@ -1045,6 +1087,9 @@ function wire(){
       render();
     };
   });
+  root.querySelectorAll("[data-tab]").forEach(b=>{
+    b.onclick=()=>{state.tab[b.dataset.tabteam]=b.dataset.tab; render();};
+  });
   root.querySelectorAll("[data-swap]").forEach(b=>{
     b.onclick=()=>{state.moves[b.dataset.swap]={to:b.dataset.to,swap:true}; render();};
   });
@@ -1123,6 +1168,11 @@ function moveTo(key,dest){
   // route an asset to dest, keeping its extras (swap, salary, tpe) intact;
   // dropping it back on its own team is a return
   const src=key.split("|")[1];
+  // Land on the tab that will actually show what just moved. Without this you
+  // can drop a player into a team sitting on its TE tab and watch him vanish:
+  // he is in the roster pane, which is not the one on screen.
+  const pane=key[0]==="P"||key[0]==="F"?"players":"picks";
+  state.tab[dest]=pane; state.tab[src]=pane;
   if(dest===src){ delete state.moves[key]; }
   else{
     const prev=state.moves[key]||{};
