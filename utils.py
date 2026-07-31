@@ -5718,6 +5718,12 @@ def fetch_contract_end_years(cache_v: int = 1) -> dict:
             pass
 
     out: dict = {}
+    # Read what we already have BEFORE going near the network, so a failed
+    # scrape always has something to fall back on.
+    try:
+        prior: dict = _pkl_load(path) or {}
+    except Exception:
+        prior = {}
     base_url = "https://www.basketball-reference.com/contracts"
 
     # Pull the index page once to discover the season header → year mapping.
@@ -5754,19 +5760,32 @@ def fetch_contract_end_years(cache_v: int = 1) -> dict:
             year_map[f"y{i}"] = f"{yr}-{str(yr + 1)[-2:]}"
 
     # Now iterate each team's contracts page and parse player rows.
+    # Any team that comes back empty is recorded rather than shrugged off: a
+    # partial scrape used to be saved straight over a complete cache, and
+    # because the teams are walked alphabetically the casualty was always
+    # Washington -- the cache silently lost a whole roster.
+    failed_teams: list[str] = []
     for team in _BBREF_TEAMS:
         url = f"{base_url}/{team}.html"
-        try:
-            time.sleep(0.6)
-            r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
-            if r.status_code == 429:
-                time.sleep(15)
-                r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
-            r.encoding = "utf-8"
-            soup = BeautifulSoup(r.text, "html.parser")
-        except Exception as e:
-            logger.warning("contracts fetch failed for %s: %s", team, e)
+        soup = None
+        for attempt in range(4):
+            try:
+                time.sleep(3.0 if attempt == 0 else 20.0 * attempt)
+                r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=20)
+                if r.status_code == 429:          # rate limited: back off and retry
+                    logger.warning("contracts 429 for %s (attempt %d)", team, attempt + 1)
+                    continue
+                r.raise_for_status()
+                r.encoding = "utf-8"
+                soup = BeautifulSoup(r.text, "html.parser")
+                break
+            except Exception as e:
+                logger.warning("contracts fetch failed for %s (attempt %d): %s",
+                               team, attempt + 1, e)
+        if soup is None:
+            failed_teams.append(team)
             continue
+        before = len(out)
 
         # Player rows are <tr> with a <th data-stat="player"> child that
         # contains the player's link. Skip "notes" rows (which have
@@ -5828,6 +5847,33 @@ def fetch_contract_end_years(cache_v: int = 1) -> dict:
                 "years_remaining": max(1, years_remaining),
                 "current_team":    team,
             }
+
+        if len(out) == before:                    # page loaded but parsed to nothing
+            failed_teams.append(team)
+
+    # Stale beats empty. Carry the previous cache's rows for any team we could
+    # not read this time, so one bad night never deletes a roster, and never
+    # save a cache that is missing teams outright.
+    if failed_teams:
+        logger.warning("contract scrape incomplete for %s; keeping prior rows for them",
+                       ",".join(failed_teams))
+        carried = 0
+        for k, v in prior.items():
+            if v.get("current_team") in failed_teams and k not in out:
+                out[k] = v
+                carried += 1
+        logger.warning("carried %d prior rows for %d unreadable team(s)",
+                       carried, len(failed_teams))
+        # Still short a team after falling back, or the scrape returned less than
+        # we already had? Keep what we have and leave the file alone. A thin
+        # scrape must never be the thing that deletes a roster.
+        still_missing = [t for t in failed_teams
+                         if not any(v.get("current_team") == t for v in out.values())]
+        if prior and (still_missing or len(out) < len(prior)):
+            logger.error("contract scrape would shrink the cache (%d -> %d, missing %s); "
+                         "keeping the existing cache untouched",
+                         len(prior), len(out), ",".join(still_missing) or "none")
+            return prior
 
     _pkl_save(path, out)
     return out
