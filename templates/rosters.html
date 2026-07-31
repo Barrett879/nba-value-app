@@ -220,7 +220,12 @@ body{background:transparent;color:var(--fg1);
   box-shadow:0 2px 10px rgba(0,0,0,.09);transform:translateY(-1px)}
 .card img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top;
   background:var(--track);flex:0 0 44px;box-shadow:0 0 0 2px var(--track)}
-.card .noimg{width:44px;height:44px;border-radius:50%;background:var(--track);flex:0 0 44px}
+/* Stands in for a headshot the league has not published yet. An empty grey disc
+   reads as a broken image, so it carries the player's initials instead. */
+.card .noimg{width:44px;height:44px;border-radius:50%;background:var(--track);flex:0 0 44px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.84rem;font-weight:800;letter-spacing:.03em;color:var(--fg2);
+  box-shadow:0 0 0 2px var(--track);user-select:none}
 .card .who{flex:1;min-width:0}
 .card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;display:block;color:var(--fg1);text-decoration:none}
@@ -312,6 +317,8 @@ body:not(.light) .tbtn:not(.on):not(:hover){background:rgba(255,255,255,.05)}
 .dcard img,.dcard .noimg{width:42px;height:42px;border-radius:50%;object-fit:cover;
   object-position:top;background:var(--track);margin:0 auto .25rem;display:block;
   box-shadow:0 0 0 2px var(--track)}
+.dcard .noimg{display:flex;align-items:center;justify-content:center;
+  font-size:.8rem;font-weight:800;letter-spacing:.03em;color:var(--fg2);user-select:none}
 .dcard .nm{display:block;font-size:.78rem;font-weight:700;color:var(--fg1);text-decoration:none;
   line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .dcard .nm:hover{color:var(--tc,var(--teal))}
@@ -369,6 +376,22 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
   c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const fmtM = v => (v == null ? "" : (v < 0 ? "-" : "") + "$" + Math.abs(v).toFixed(1) + "M");
 const root = document.getElementById("ro-root");
+
+// Initials for a player with no headshot on file. Drops generational suffixes so
+// Gary Trent Jr. is GT rather than GJ. KEEP IN SYNC with trade_machine.html.
+const NAME_SUFFIX = /^(jr|sr|ii|iii|iv|v)\.?$/i;
+function initials(name){
+  const all = String(name || "").trim().split(/\s+/).filter(Boolean);
+  if (!all.length) return "";
+  const kept = all.filter(w => !NAME_SUFFIX.test(w));
+  const parts = kept.length ? kept : all;
+  const a = parts[0][0] || "", b = parts.length > 1 ? (parts[parts.length-1][0] || "") : "";
+  return (a + b).toUpperCase();
+}
+function avatar(url, name){
+  return url ? `<img src="${esc(url)}" alt="" loading="lazy">`
+             : `<div class="noimg" aria-hidden="true">${esc(initials(name))}</div>`;
+}
 
 // Readable text on a team-coloured backdrop, measured rather than guessed.
 // KEEP IN SYNC with the identical block in templates/trade_machine.html.
@@ -641,8 +664,7 @@ function optChip(p){
 }
 
 function depthCard(p, rank){
-  const img = p.headshot
-    ? `<img src="${esc(p.headshot)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
+  const img = avatar(p.headshot, p.n);
   const tone = vdTone(p.vd);
   const cls = p.kind === "two_way" ? " tw" : tone === "flat" ? "" : " " + tone;
   const money = p.kind === "two_way" ? `<div class="sal" style="font-size:.7rem;color:var(--fg4)">
@@ -663,8 +685,7 @@ function depthCard(p, rank){
 
 function playerCard(p){
   const pos = p.pos ? `<span class="poschip">${esc(p.pos.split("/")[0])}</span>` : "";
-  const img = p.headshot
-    ? `<img src="${esc(p.headshot)}" alt="" loading="lazy">` : `<div class="noimg"></div>`;
+  const img = avatar(p.headshot, p.n);
   let money;
   if (p.kind === "standard"){
     const vd = p.vd;

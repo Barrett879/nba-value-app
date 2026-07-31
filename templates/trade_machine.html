@@ -208,7 +208,14 @@ body{background:transparent;color:var(--fg1);
 .card.dragging{opacity:.45}
 .card img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top;
   background:var(--track);flex:0 0 44px;box-shadow:0 0 0 2px var(--track)}
-.card .noimg{width:44px;height:44px;border-radius:50%;background:var(--track);flex:0 0 44px}
+/* Stands in for a headshot the league has not published yet -- draft picks and
+   late signings mostly. An empty grey disc reads as a broken image, so it carries
+   the player's initials instead. Same 44px disc and ring as the real photo so a
+   roster with a few of them still lines up. */
+.card .noimg{width:44px;height:44px;border-radius:50%;background:var(--track);flex:0 0 44px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.84rem;font-weight:800;letter-spacing:.03em;color:var(--fg2);
+  box-shadow:0 0 0 2px var(--track);user-select:none}
 .card .who{flex:1;min-width:0}
 .card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* --fg2, not the muted --fg4 this line used to take. The team wash is painted on
@@ -337,6 +344,22 @@ const TEAM_COLORS_2 = DATA.colors2 || {};
 // Oklahoma City's centres came out overpaid pink. Holding the wash constant
 // across a team turns it back into team identity: it says whose card this is,
 // not what the card is worth.
+// Initials for a player with no headshot on file. Drops generational suffixes so
+// Gary Trent Jr. is GT rather than GJ. KEEP IN SYNC with templates/rosters.html.
+const NAME_SUFFIX=/^(jr|sr|ii|iii|iv|v)\.?$/i;
+function initials(name){
+  const all=String(name||"").trim().split(/\s+/).filter(Boolean);
+  if(!all.length) return "";
+  const kept=all.filter(w=>!NAME_SUFFIX.test(w));
+  const parts=kept.length?kept:all;
+  const a=parts[0][0]||"", b=parts.length>1?(parts[parts.length-1][0]||""):"";
+  return (a+b).toUpperCase();
+}
+function avatar(url,name){
+  return url?`<img loading="lazy" src="${esc(url)}" alt="">`
+            :`<div class="noimg" aria-hidden="true">${esc(initials(name))}</div>`;
+}
+
 const WASH_A=.26;   // one opacity for both ends, so the gradient reads as colour-to-colour
 function teamWash(team){
   const c1=TEAM_COLORS[team],c2=TEAM_COLORS_2[team];
@@ -918,7 +941,7 @@ function render(){
           html+=cardHTML(p,src,key,true,{has:(T.tpes||[]).length>0,on:!!mv.tpe});
         }else if(mv&&kind==="F"){               // acquired via sign-and-trade
           const fa=(DATA.fas&&DATA.fas[src]||[]).find(x=>x.n===id);
-          const img=fa&&fa.headshot?`<img loading="lazy" src="${fa.headshot}" alt="">`:`<div class="noimg"></div>`;
+          const img=avatar(fa&&fa.headshot,id);
           let btn="";
           if((T.tpes||[]).length)
             btn+=`<button class="mv tp${mv.tpe?" on":""}" data-tpe="${key}" title="Absorb this salary into one of the team's trade exceptions instead of salary matching">via TPE</button>`;
@@ -941,7 +964,7 @@ function render(){
       html+=`<div class="tabnote">Sign and trade their own free agents. Set the starting salary; minimum three-year deal.</div>`;
       for(const f of freeAgents){
         const key="F|"+a+"|"+f.n;
-        const img=f.headshot?`<img loading="lazy" src="${f.headshot}" alt="">`:`<div class="noimg"></div>`;
+        const img=avatar(f.headshot,f.n);
         html+=`<div class="card fa" draggable="true" data-key="${key}">${img}
           <div class="who"><div class="nm">${esc(f.n)}</div>
           <div class="sub">${(bits=>bits.chip+bits.stats.join(" &middot; "))(statBits(f,f.value))} &middot; free agent</div></div>
@@ -1125,7 +1148,7 @@ function statBits(p,salary){
   return {chip,stats:out};
 }
 function cardHTML(p,src,key,inZone,tpe){
-  const img=p.headshot?`<img loading="lazy" src="${p.headshot}" alt="">`:`<div class="noimg"></div>`;
+  const img=avatar(p.headshot,p.n);
   const others=picked().filter(x=>x!==(inZone?null:src)&&x!==src);
   let btn=inZone
     ?`<button class="mv" data-return="${key}">&larr; return</button>`
