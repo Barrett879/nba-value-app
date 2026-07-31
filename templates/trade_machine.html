@@ -191,16 +191,19 @@ body{background:transparent;color:var(--fg1);
    even when you are deep in a roster and the header has scrolled away. The
    incoming rule below overrides it with green, which is the point: an acquired
    player should not look like he was always there. */
-.card{display:flex;align-items:center;gap:.6rem;background:var(--card);border:1px solid var(--line);
+/* Every player card carries his team's colours all the time, positioned by where
+   he plays: a point guard sits at the primary end of the ramp, a centre at the
+   secondary end, everyone else blends between. This used to appear only on
+   hover. background-COLOR here, never the shorthand -- the shorthand would reset
+   background-image and wipe the wash. */
+.card{display:flex;align-items:center;gap:.6rem;background-color:var(--card);
+  background-image:var(--pw,none);border:1px solid var(--line);
   border-left:3px solid var(--tc,var(--line));
   border-radius:11px;padding:.5rem .65rem;margin:0;cursor:grab;user-select:none;min-width:0;
   transition:border-color .12s, box-shadow .12s, transform .12s}
-/* Hovering a player washes the card in his team's colours, positioned by where
-   he plays: a point guard sits at the primary end of the ramp, a centre at the
-   secondary end, everyone else blends between. Falls back to the plain hover
-   when a team has no secondary on file. */
-.card:hover{border-color:var(--tc,var(--teal));box-shadow:0 2px 8px rgba(0,0,0,.08);
-  transform:translateY(-1px);background-image:var(--pw,none)}
+/* Hover is the drag affordance only: lift and shadow, no colour change, since
+   the colour is already there. */
+.card:hover{box-shadow:0 2px 8px rgba(0,0,0,.08);transform:translateY(-1px)}
 .card:active{cursor:grabbing}
 .card.dragging{opacity:.45}
 .card img{width:44px;height:44px;border-radius:50%;object-fit:cover;object-position:top;
@@ -208,7 +211,12 @@ body{background:transparent;color:var(--fg1);
 .card .noimg{width:44px;height:44px;border-radius:50%;background:var(--track);flex:0 0 44px}
 .card .who{flex:1;min-width:0}
 .card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.card .sub{font-size:.76rem;color:var(--fg4);font-variant-numeric:tabular-nums;white-space:nowrap;
+/* --fg2, not the muted --fg4 this line used to take. The team wash is painted on
+   every card permanently now, and over that tint --fg4 falls to 2.5-3.4 against
+   the 4.5 AA floor. Measured: at the wash's strongest stop --fg4 never clears AA
+   even at a tenth of its opacity, so the text is the lever, not the colour.
+   Hierarchy still reads -- the name above is --fg1, bold, and larger. */
+.card .sub{font-size:.76rem;color:var(--fg2);font-variant-numeric:tabular-nums;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
 /* Stays neutral on purpose. Hueing these per position was tried and reverted:
    thirty small rainbow chips down a board is a lot of noise for an attribute
@@ -220,7 +228,7 @@ body{background:transparent;color:var(--fg1);
   border-radius:8px;padding:.3rem .55rem;cursor:pointer;white-space:nowrap;
   transition:background .1s, color .1s}
 .card .mv:hover{background:var(--teal);color:#fff}
-.card.pick{cursor:grab;background:var(--card)}
+.card.pick{cursor:grab;background-color:var(--card)}
 .card.pick .nm{color:var(--fg2)}
 .pkwrap{position:relative;flex:0 0 40px;width:40px;height:40px}
 .pkwrap img{width:40px;height:40px;object-fit:contain}
@@ -237,14 +245,11 @@ body{background:transparent;color:var(--fg1);
 .card .mv.tp{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.tp:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .card .mv.tp.on{background:var(--teal);border-color:var(--teal);color:#fff}
-/* background-COLOR, not the background shorthand: the shorthand also resets
-   background-image, and because this rule sits after .card:hover at equal
-   specificity it was cancelling every incoming player's --pw wash. That made
-   all of them hover to the same flat green instead of their own team's ramp. */
-.card.inc{border-left:3px solid var(--good);background-color:var(--tintg)}
-/* On hover the green tint steps aside so the wash reads as the player's team;
-   the green left edge still marks the card as incoming. */
-.card.inc:hover{background-color:var(--card)}
+/* An acquired player is marked by the green left edge alone. The green surface
+   tint is gone: now that the team wash paints every card permanently, tinting
+   underneath it just muddied the team colour. Note background-COLOR, never the
+   shorthand, which would reset background-image and wipe the wash. */
+.card.inc{border-left:3px solid var(--good)}
 .card.dovr{border-color:var(--teal);box-shadow:0 0 0 1px var(--teal)}
 .fasal{width:58px;background:var(--card);color:var(--fg1);border:1px solid var(--line);
   border-radius:7px;padding:.25rem .3rem;font-size:.72rem;flex:0 0 auto}
