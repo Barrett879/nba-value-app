@@ -59,3 +59,4 @@ scripts/audit_agents.py
 # Raw Spotrac free-agent pages (~16MB of HTML). The parsed result is committed
 # as data/contract_types_2012_2026.csv; re-fetch with scrape_contract_types.py.
 cache/spotrac_free_agents/
+cache/spotrac_yearly/
