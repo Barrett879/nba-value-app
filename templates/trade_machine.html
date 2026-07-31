@@ -327,25 +327,26 @@ const TEAM_COLORS = DATA.colors || {};
 // by position: a point guard picks up the team's primary, a centre its
 // secondary, and everyone between blends across.
 const TEAM_COLORS_2 = DATA.colors2 || {};
-// where each position sits on the primary -> secondary ramp
-const POS_T={PG:0,SG:0.25,SF:0.5,PF:0.75,C:1};
-function mixHex(a,b,t){
-  const p=(h)=>{h=(h||"").replace("#","");return h.length===6?[parseInt(h.slice(0,2),16),
-    parseInt(h.slice(2,4),16),parseInt(h.slice(4,6),16)]:null;};
-  const A=p(a),B=p(b); if(!A||!B) return null;
-  return A.map((v,i)=>Math.round(v+(B[i]-v)*t));
-}
-// The hover wash for one card: a gradient running from the team primary to the
-// team secondary, centred on wherever this player's position sits on that ramp.
-function posWash(team,pos){
+// One wash per TEAM, not per player: the two team colours running left to right,
+// brighter end first. Every player on a board gets the identical card.
+//
+// It used to ramp by position, which was the problem. The hue then varied player
+// to player, and on a page whose colour language is green = underpaid and red =
+// overpaid, a per-row colour reads as a verdict on that row -- 15 of the 30 teams
+// have a red or green end, so Milwaukee's board came out all-bargain green and
+// Oklahoma City's centres came out overpaid pink. Holding the wash constant
+// across a team turns it back into team identity: it says whose card this is,
+// not what the card is worth.
+const WASH_A=.26;   // one opacity for both ends, so the gradient reads as colour-to-colour
+function teamWash(team){
   const c1=TEAM_COLORS[team],c2=TEAM_COLORS_2[team];
   if(!c1||!c2) return "";
-  const slot=(pos||"").split("/")[0].toUpperCase();
-  const t=POS_T[slot]; if(t==null) return "";
-  const mid=mixHex(c1,c2,t); if(!mid) return "";
-  const lo=mixHex(c1,c2,Math.max(0,t-0.28)),hi=mixHex(c1,c2,Math.min(1,t+0.28));
-  const rgba=(v,a)=>`rgba(${v[0]},${v[1]},${v[2]},${a})`;
-  return `linear-gradient(100deg, ${rgba(lo,.30)} 0%, ${rgba(mid,.20)} 52%, ${rgba(hi,.10)} 100%)`;
+  const L1=_lum(c1),L2=_lum(c2);
+  if(L1==null||L2==null) return "";
+  const light=L1>=L2?c1:c2, dark=L1>=L2?c2:c1;     // brighter left, darker right
+  const a=(h)=>{const v=[0,2,4].map(i=>parseInt(h.replace("#","").slice(i,i+2),16));
+    return `rgba(${v[0]},${v[1]},${v[2]},${WASH_A})`;};
+  return `linear-gradient(100deg, ${a(light)} 0%, ${a(dark)} 100%)`;
 }
 
 // Readable text on a team-coloured backdrop, measured rather than guessed.
@@ -1135,10 +1136,11 @@ function cardHTML(p,src,key,inZone,tpe){
   const sub=inZone&&tpe&&tpe.on
     ?`${chip}${fmtM(p.salary)} &middot; absorbed into a trade exception`
     :`${chip}${stats.join(" &middot; ")}`+(inZone?` &middot; from ${src}`:"");
-  // --pw: the hover wash for THIS player, mixed from his team's primary and
-  // secondary by position. src is the owning team on the roster side; in a zone
-  // the card keeps the colours of the team it came from.
-  const wash=posWash(src,p.pos);
+  // --pw: this card's team wash, identical for every player on the same team.
+  // src is the owning team on the roster side; a card sitting in a zone keeps the
+  // colours of the team it came FROM, which is how you can see at a glance who
+  // is being acquired and from where.
+  const wash=teamWash(src);
   return `<div class="card${inZone?" inc":""}" draggable="true" data-key="${key}"${
     wash?` style="--pw:${wash}"`:""}>${img}
     <div class="who"><div class="nm">${esc(p.n)}</div>
