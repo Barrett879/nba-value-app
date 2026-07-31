@@ -679,9 +679,14 @@ function yrsLabel(y){
   if (!ab) return String(y.n);              // every remaining year is guaranteed
   const gtd = y.g == null ? y.n - 1 : y.g;  // seasons the team is committed to
   const rest = y.n - gtd;
-  // Nothing guaranteed left: "TO", not "0+TO".
-  return gtd <= 0 ? (rest > 1 ? `${rest}${ab}` : ab)
-                  : `${gtd}+${rest > 1 ? rest : ""}${ab}`;
+  if (gtd > 0) return `${gtd}+${rest > 1 ? rest : ""}${ab}`;
+  // Nothing guaranteed at all. If every remaining season is the same kind of
+  // option say so ("TO", "2TO"); if they are a mix -- Isaiah Crawford is three
+  // non-guaranteed years then a team option -- "4TO" would claim four option
+  // years, so report the honest headline instead: four seasons, none owed.
+  const marks = (y.seasons.match(/:([A-Z])/g) || []).map(m => m[1]);
+  const uniform = marks.length && marks.every(m => m === marks[0]);
+  return uniform ? (rest > 1 ? `${rest}${ab}` : ab) : `${y.n}NG`;
 }
 function yrsTitle(y){
   if (!y || !y.n) return "";
