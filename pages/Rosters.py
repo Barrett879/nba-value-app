@@ -215,6 +215,22 @@ def _payload() -> str:
                 "w": int(r["wins"]), "l": int(r["losses"]),
                 "mov": float(r["mov"]), "conf": (r.get("conf") or "").strip()}
 
+    # Years still owed on each contract, and what the final year is. Keyed by
+    # (team, name) rather than name alone because the roster carries a handful
+    # of same-surname pairs and a bare name key is how players quietly lose data
+    # here. Absent is normal and means "no contract on file" -- 6 two-ways and 5
+    # players Spotrac still lists as pending, which render no chip at all rather
+    # than a guess.
+    years: dict[str, NameIndex] = {}
+    for r in _read_csv(_ROOT / "data" / "contract_years_2026_27.csv"):
+        if r.get("player") and r.get("years_left"):
+            years.setdefault(r["team"].strip(), NameIndex()).add(
+                r["player"], {
+                    "n": int(r["years_left"]),
+                    "kind": (r.get("last_year_type") or "guaranteed").strip(),
+                    "seasons": (r.get("seasons") or "").strip(),
+                })
+
     tpes = {}
     for r in _read_csv(_ROOT / "data" / "trade_exceptions_2026_27.csv"):
         exp = (r.get("expires") or "").strip()
@@ -313,6 +329,7 @@ def _payload() -> str:
                 **(box.get(name) or {}),
                 "opt": o.get("d") or None,
                 "opt_note": o.get("note") or None,
+                "yrs": (years.get(abbr) or NameIndex()).get(name),
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None),
             })
