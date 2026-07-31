@@ -225,6 +225,9 @@ body{background:transparent;color:var(--fg1);
    Hierarchy still reads -- the name above is --fg1, bold, and larger. */
 .card .sub{font-size:.76rem;color:var(--fg2);font-variant-numeric:tabular-nums;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
+/* Years left on the deal: bold against the rest of the line, never green or
+   red -- those mean under and over value here, and length is not a verdict. */
+.card .sub .yrs{font-weight:800}
 /* Stays neutral on purpose. Hueing these per position was tried and reverted:
    thirty small rainbow chips down a board is a lot of noise for an attribute
    nobody trades on. Colour belongs on the big surfaces, not on every row. */
@@ -1134,12 +1137,48 @@ function findOwner(name){
   return null;
 }
 
+// "3", "1+TO", "2+PO", "2NG" -- guaranteed years, then what follows them, with
+// 2026-27 as year one. KEEP IN SYNC with the identical block in rosters.html.
+// A mixed tail (guaranteed, then non-guaranteed, then a team option -- the
+// standard minimum-deal shape) falls back to NG rather than claiming option
+// years the player does not have; NG is money-true in every mixed case.
+const OPT_ABBR={team_option:"TO",player_option:"PO",mutual_option:"MO",
+                non_guaranteed:"NG",partly_guaranteed:"PG"};
+const OPT_WORD={team_option:"a team option",player_option:"a player option",
+                mutual_option:"a mutual option",
+                non_guaranteed:"not guaranteed",partly_guaranteed:"only partly guaranteed"};
+function yrsLabel(y){
+  if(!y||!y.n) return "";
+  if(y.kind==="two_way") return "two-way";
+  const ab=OPT_ABBR[y.kind];
+  if(!ab) return String(y.n);
+  const gtd=y.g==null?y.n-1:y.g, rest=y.n-gtd;
+  const marks=(y.seasons.match(/:([A-Z])/g)||[]).map(m=>m[1]).slice(gtd);
+  const uniform=marks.length&&marks.every(m=>m===marks[0]);
+  const tailAb=uniform?ab:"NG";
+  if(gtd>0) return `${gtd}+${rest>1?rest:""}${tailAb}`;
+  return rest>1?`${rest}${tailAb}`:tailAb;
+}
+function yrsTitle(y){
+  if(!y||!y.n) return "";
+  if(y.kind==="two_way") return "Two-way contract";
+  const s=n=>n===1?"season":"seasons";
+  const tail=OPT_WORD[y.kind]?`, the last of them ${OPT_WORD[y.kind]}`:", all guaranteed";
+  const gtd=y.g==null?null:y.g;
+  const gpart=(gtd!=null&&gtd<y.n)?` - ${gtd} ${s(gtd)} guaranteed`:"";
+  return `${y.n} ${s(y.n)} on the books from 2026-27${tail}${gpart}`;
+}
+
 function statBits(p,salary){
   // one stat line for every player card: position chip + salary + Barrett
   // score, plus last season's box line and D-LEBRON on 2- and 3-team boards
   const nT=picked().length;
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
   const out=[fmtM(salary!=null?salary:p.salary)];
+  // Contract length rides beside the money: what a trade acquires is the
+  // contract, so "$12.4M 1+PO" is the unit being moved.
+  const yl=yrsLabel(p.yrs);
+  if(yl) out.push(`<span class="yrs" title="${esc(yrsTitle(p.yrs))}">${esc(yl)}</span>`);
   if(p.barrett!=null) out.push(p.barrett.toFixed(1)+" BS"+(p.bs_yr?` (${p.bs_yr})`:""));
   if(nT<=3){
     if(p.ppg!=null) out.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`);

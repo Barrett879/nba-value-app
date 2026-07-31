@@ -230,9 +230,6 @@ body{background:transparent;color:var(--fg1);
 .card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;display:block;color:var(--fg1);text-decoration:none}
 .card .nm:hover{color:var(--tc,var(--teal))}
-/* Years left reads as a small fact, not a status: neutral, never green or red,
-   because on this page those already mean under and over value. */
-.yrs{font-weight:800;color:var(--fg2);font-variant-numeric:tabular-nums}
 .card .sub{font-size:.755rem;color:var(--fg4);font-variant-numeric:tabular-nums;line-height:1.3}
 .card .deal{font-size:.7rem;color:var(--fg5);white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;margin-top:.06rem}
@@ -648,11 +645,6 @@ function headerBlock(t){
 
 function statLine(p){
   const bits = [];
-  // Years still owed leads the line: on a page about the books it is the first
-  // thing you want after the money. Absent for anyone with no contract on file,
-  // rather than guessed at.
-  const yl = yrsLabel(p.yrs);
-  if (yl) bits.push(`<span class="yrs" title="${esc(yrsTitle(p.yrs))}">${esc(yl)}</span>`);
   if (p.age != null)
     bits.push(`<span title="Age during the 2025-26 season">${p.age} yo</span>`);
   if (p.barrett != null) bits.push(p.barrett.toFixed(1) + " BS" + (p.bs_yr ? ` (${p.bs_yr})` : ""));
@@ -715,17 +707,14 @@ function depthCard(p, rank){
   const img = avatar(p.headshot, p.n);
   const tone = vdTone(p.vd);
   const cls = p.kind === "two_way" ? " tw" : tone === "flat" ? "" : " " + tone;
-  // Years left sits with the money, since that is the pair a front office reads
-  // together. Two-ways already say so in place of a salary, so no chip there.
-  const yl = p.kind === "two_way" ? "" : yrsLabel(p.yrs);
   const money = p.kind === "two_way" ? `<div class="sal" style="font-size:.7rem;color:var(--fg4)">
-      Two-way</div>` : `<div class="sal">${fmtM(p.salary)}${
-        yl ? ` <span class="yrs" title="${esc(yrsTitle(p.yrs))}">${esc(yl)}</span>` : ""}</div>`;
+      Two-way</div>` : `<div class="sal">${fmtM(p.salary)}</div>`;
   const vd = p.vd == null ? "" : p.vd <= -1
     ? `<div class="vd ${tone}">${fmtM(-p.vd)} under</div>`
     : p.vd >= 1 ? `<div class="vd ${tone}">${fmtM(p.vd)} over</div>`
     : `<div class="vd flat">at value</div>`;
-  return `<div class="dcard${cls}" title="${esc(p.note)}">
+  const yt = p.kind === "two_way" ? "" : yrsTitle(p.yrs);
+  return `<div class="dcard${cls}" title="${esc(p.note)}${yt ? esc(" | " + yt) : ""}">
     ${rank ? `<span class="drank${rank === 1 ? " top" : ""}">${rank}</span>` : ""}
     ${img}
     <a class="nm" href="/?player=${encodeURIComponent(p.n)}" target="_top"
@@ -760,7 +749,7 @@ function playerCard(p){
       <a class="nm" href="/?player=${encodeURIComponent(p.n)}" target="_top"
          onclick="return hvGo(this)" title="Open ${esc(p.n)}">${esc(p.n)}</a>${optChip(p)}
       <div class="sub">${pos}${statLine(p)}</div>
-      <div class="deal" title="${esc(p.note)}">${esc(p.note)}</div>
+      <div class="deal" title="${esc(p.note)}${(p.kind !== "two_way" && yrsTitle(p.yrs)) ? esc(" | " + yrsTitle(p.yrs)) : ""}">${esc(p.note)}</div>
     </div>
     <div class="money">${money}</div>
   </div>`;

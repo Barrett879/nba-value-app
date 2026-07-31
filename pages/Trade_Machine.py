@@ -109,6 +109,24 @@ def _payload() -> str:
                 signings[normalize(r["player"])] = {
                     "date": d + "-01" if len(d) == 7 else d,
                     "type": (r.get("type") or "").strip().lower()}
+    # Years left + option type per contract, joined per team with NameIndex --
+    # the roster carries same-surname pairs and a bare name key is how players
+    # quietly lose data. On a trade card this is core information: what you
+    # acquire is the CONTRACT, not the season.
+    years: dict[str, NameIndex] = {}
+    for r in csv.DictReader(
+            ln for ln in (_ROOT / "data" / "contract_years_2026_27.csv")
+            .read_text(encoding="utf-8").splitlines()
+            if not ln.lstrip().startswith("#")):
+        if r.get("player") and r.get("years_left"):
+            years.setdefault(r["team"].strip(), NameIndex()).add(
+                r["player"], {
+                    "n": int(r["years_left"]),
+                    "g": int(r.get("guaranteed_years") or 0),
+                    "kind": (r.get("last_year_type") or "guaranteed").strip(),
+                    "seasons": (r.get("seasons") or "").strip(),
+                })
+
     teams = {}
     for abbr, t in teams_raw.items():
         players = []
@@ -124,6 +142,7 @@ def _payload() -> str:
                 "value": p.get("value"), "barrett": p.get("barrett"),
                 "bs_yr": p.get("bs_yr"),
                 **(_box.get(p["n"]) or {}),
+                "yrs": (years.get(abbr) or NameIndex()).get(p["n"]),
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None),
                 "signed_date": (sig or {}).get("date"),
