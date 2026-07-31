@@ -679,14 +679,17 @@ function yrsLabel(y){
   if (!ab) return String(y.n);              // every remaining year is guaranteed
   const gtd = y.g == null ? y.n - 1 : y.g;  // seasons the team is committed to
   const rest = y.n - gtd;
-  if (gtd > 0) return `${gtd}+${rest > 1 ? rest : ""}${ab}`;
-  // Nothing guaranteed at all. If every remaining season is the same kind of
-  // option say so ("TO", "2TO"); if they are a mix -- Isaiah Crawford is three
-  // non-guaranteed years then a team option -- "4TO" would claim four option
-  // years, so report the honest headline instead: four seasons, none owed.
-  const marks = (y.seasons.match(/:([A-Z])/g) || []).map(m => m[1]);
+  // The tail is everything after the guaranteed run. When its seasons are all
+  // one kind, name it: "1+TO", "2+2TO", "3+PO". When they are a mix -- the
+  // common minimum-deal shape is guaranteed, then non-guaranteed, then a team
+  // option (34 contracts league-wide) -- naming the final kind would claim
+  // "1+2TO" for a player with only one option year. Fall back to NG, which is
+  // money-true for every mixed tail and never overstates what a team owes.
+  const marks = (y.seasons.match(/:([A-Z])/g) || []).map(m => m[1]).slice(gtd);
   const uniform = marks.length && marks.every(m => m === marks[0]);
-  return uniform ? (rest > 1 ? `${rest}${ab}` : ab) : `${y.n}NG`;
+  const tailAb = uniform ? ab : "NG";
+  if (gtd > 0) return `${gtd}+${rest > 1 ? rest : ""}${tailAb}`;
+  return rest > 1 ? `${rest}${tailAb}` : tailAb;
 }
 function yrsTitle(y){
   if (!y || !y.n) return "";
