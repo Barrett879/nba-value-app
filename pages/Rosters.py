@@ -227,6 +227,7 @@ def _payload() -> str:
             years.setdefault(r["team"].strip(), NameIndex()).add(
                 r["player"], {
                     "n": int(r["years_left"]),
+                    "g": int(r.get("guaranteed_years") or 0),
                     "kind": (r.get("last_year_type") or "guaranteed").strip(),
                     "seasons": (r.get("seasons") or "").strip(),
                 })

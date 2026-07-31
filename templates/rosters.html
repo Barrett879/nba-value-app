@@ -662,28 +662,36 @@ function statLine(p){
   return bits.join(" &middot; ");
 }
 
-// "3", "1+TO", "2+PO" -- guaranteed years, then the option that follows them.
-// Counting 2026-27 as year one, so an expiring deal reads "1".
-const OPT_ABBR = {team_option: "TO", player_option: "PO", mutual_option: "MO"};
+// "3", "1+TO", "2+PO", "1+NG" -- years the team is actually committed to, then
+// what follows them. Counting 2026-27 as year one, so an expiring deal reads "1".
+// An option year and a non-guaranteed year are both NOT commitments, which is why
+// the guaranteed count comes from the data rather than from years_left: John
+// Collins has three seasons on the books and one the team owes.
+const OPT_ABBR = {team_option: "TO", player_option: "PO", mutual_option: "MO",
+                  non_guaranteed: "NG", partly_guaranteed: "PG"};
 const OPT_WORD = {team_option: "a team option", player_option: "a player option",
-                  mutual_option: "a mutual option"};
+                  mutual_option: "a mutual option",
+                  non_guaranteed: "not guaranteed", partly_guaranteed: "only partly guaranteed"};
 function yrsLabel(y){
   if (!y || !y.n) return "";
   if (y.kind === "two_way") return "two-way";
   const ab = OPT_ABBR[y.kind];
-  if (!ab) return String(y.n);            // every remaining year is guaranteed
-  const opts = (y.seasons.match(/:[TPM]/g) || []).length || 1;
-  const gtd = y.n - opts;
-  // All that is left is option years: "TO", not "0+TO".
-  return gtd <= 0 ? (opts > 1 ? `${opts}${ab}` : ab)
-                  : `${gtd}+${opts > 1 ? opts : ""}${ab}`;
+  if (!ab) return String(y.n);              // every remaining year is guaranteed
+  const gtd = y.g == null ? y.n - 1 : y.g;  // seasons the team is committed to
+  const rest = y.n - gtd;
+  // Nothing guaranteed left: "TO", not "0+TO".
+  return gtd <= 0 ? (rest > 1 ? `${rest}${ab}` : ab)
+                  : `${gtd}+${rest > 1 ? rest : ""}${ab}`;
 }
 function yrsTitle(y){
   if (!y || !y.n) return "";
   if (y.kind === "two_way") return "Two-way contract";
-  const s = y.n === 1 ? "season" : "seasons";
+  const s = n => n === 1 ? "season" : "seasons";
   const tail = OPT_WORD[y.kind] ? `, the last of them ${OPT_WORD[y.kind]}` : ", all guaranteed";
-  return `${y.n} ${s} left on the books from 2026-27${tail}`;
+  const gtd = y.g == null ? null : y.g;
+  const gpart = (gtd != null && gtd < y.n)
+    ? ` &mdash; ${gtd} ${s(gtd)} guaranteed` : "";
+  return `${y.n} ${s(y.n)} on the books from 2026-27${tail}${gpart}`.replace(" &mdash; ", " - ");
 }
 
 const OPT = {to_in: ["Team option exercised", "in"], to_out: ["Team option declined", "out"],

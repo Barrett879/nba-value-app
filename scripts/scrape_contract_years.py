@@ -70,10 +70,22 @@ TEAMS = {
 _TR = re.compile(r"<tr[^>]*>(.*?)</tr>", re.S)
 _TD = re.compile(r"<td\b[^>]*>.*?</td>", re.S)
 _PLAYER = re.compile(r'/nba/player/_/id/\d+/[^"]*"[^>]*>\s*([^<]+?)\s*</a>', re.S)
-_PILL = re.compile(r"class='pill ([^']*)'|class=\"pill ([^\"]*)\"")
+# The OUTER pill div always carries pill-normal. Match the class attribute
+# wherever "pill" sits inside it: Spotrac emits junk prefixes on exactly the
+# non-guaranteed cells (class='a pill ... pill-non-guaranteed', also 'aa ' and
+# 'aaaa '), so a pattern anchored at "class='pill " silently misses all 64 of
+# them and they fall through to guaranteed.
+_PILL = re.compile(r"class=['\"]([^'\"]*\bpill-normal\b[^'\"]*)['\"]")
+_PILL_START = re.compile(r"pill-start[^>]*>\s*\$?([\d,]+)")
+_GTD = re.compile(r"GTD:\s*\$([\d,]+)")
 _SEASON_HDR = re.compile(r"(20\d\d)-\d\d")
 _MARK = {"guaranteed": "G", "team_option": "T", "player_option": "P",
-         "mutual_option": "M", "two_way": "W"}
+         "mutual_option": "M", "non_guaranteed": "N", "partly_guaranteed": "Q",
+         "two_way": "W"}
+# What actually binds the team. An option year or non-guaranteed year is not a
+# commitment, so "years left" and "guaranteed years" are different numbers and
+# both are emitted rather than collapsing to the flattering one.
+_BINDING = {"guaranteed", "partly_guaranteed"}
 
 
 def fetch(team: str, slug: str, refresh: bool) -> str:
@@ -131,32 +143,53 @@ def parse(team: str, page: str) -> list[dict]:
         run: list[tuple[str, str]] = []
         for season, cell in zip(seasons, season_cells):
             pm = _PILL.search(cell)
-            cls = (pm.group(1) or pm.group(2) or "") if pm else ""
+            cls = pm.group(1) if pm else ""
             text = _html.unescape(re.sub(r"<[^>]+>", " ", cell))
-            has_money = bool(re.search(r"\$[\d,]+", cell))
+            # Read the salary from the pill-start div, not "any $ in the cell":
+            # the cell also carries a GTD tooltip whose dollars would match.
+            sm = _PILL_START.search(cell)
+            salary = int(sm.group(1).replace(",", "")) if sm else None
+            gm = _GTD.search(cell)
+            gtd = int(gm.group(1).replace(",", "")) if gm else None
             # A two-way is a real roster year, it just shows the words rather
             # than a figure. Without this the player is silently dropped.
             is_two_way = "Two-Way" in text
             if "pill-ufa" in cls or "pill-rfa" in cls:
                 break                      # he reaches free agency here: contract over
-            if not has_money and not is_two_way:
-                break                      # empty column: nothing owed beyond this
-            # pill-estimate is NOT an option -- it is a real contracted year whose
-            # dollar figure is projected (extension years priced off a future cap).
-            # pill-mutual is a mutual option: both sides must agree, so it is no
-            # more guaranteed than a team or player option and gets its own type.
-            kind = ("two_way" if is_two_way else
-                    "team_option" if "pill-club" in cls else
-                    "player_option" if "pill-player" in cls else
-                    "mutual_option" if "pill-mutual" in cls else "guaranteed")
+            if not is_two_way and (salary is None or salary == 0):
+                break                      # empty column, or $0 owed: not a year
+            # Order matters. An option is the strongest statement about a season,
+            # then whether the money is guaranteed. pill-estimate is NOT an option
+            # -- it marks a real contracted year whose figure is projected off a
+            # future cap (extension years) -- so it is deliberately not listed.
+            if is_two_way:
+                kind = "two_way"
+            elif "pill-club" in cls:
+                kind = "team_option"
+            elif "pill-player" in cls:
+                kind = "player_option"
+            elif "pill-mutual" in cls:
+                kind = "mutual_option"
+            elif "pill-non-guaranteed" in cls or (gtd == 0 and (salary or 0) > 0):
+                kind = "non_guaranteed"
+            elif gtd is not None and salary is not None and 0 < gtd < salary:
+                kind = "partly_guaranteed"
+            else:
+                kind = "guaranteed"
             run.append((season, kind))
         if not run:
             continue
         end_season = run[-1][0]
+        gtd_years = 0
+        for _, k in run:
+            if k not in _BINDING:
+                break
+            gtd_years += 1
         out.append({
             "team": team,
             "player": name,
             "years_left": len(run),
+            "guaranteed_years": gtd_years,
             "last_year_type": run[-1][1],
             "end_season": f"{end_season}-{str(int(end_season)+1)[-2:]}",
             "seasons": "|".join(f"{s}:{_MARK[k]}" for s, k in run),
@@ -240,8 +273,8 @@ def main() -> int:
         fh.write("#   year followed by a team option.\n")
         fh.write("# seasons: per-year detail -- G guaranteed, T team option, P player option,\n#   M mutual option, W two-way.\n")
         w = csv.DictWriter(fh, fieldnames=["team", "player", "years_left",
-                                           "last_year_type", "end_season", "seasons",
-                                           "spotrac_player"])
+                                           "guaranteed_years", "last_year_type",
+                                           "end_season", "seasons", "spotrac_player"])
         w.writeheader()
         for r in sorted(rows, key=lambda r: (r["team"], -r["years_left"], r["player"])):
             w.writerow(r)
