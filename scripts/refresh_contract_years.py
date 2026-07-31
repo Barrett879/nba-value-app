@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh cache/contract_end_years_v1.pkl from Basketball Reference.
+"""Refresh cache/contract_end_years_v2.pkl from Basketball Reference.
 
 Why this exists as a script rather than a one-liner: the contract cache is
 committed and deployed, so refreshing it is a deliberate act with a verification
@@ -106,7 +106,7 @@ def main() -> int:
                     help="how long to wait for BBRef's rate limit to clear")
     args = ap.parse_args()
 
-    path = utils._dc_path("contract_end_years_v1.pkl")
+    path = utils._dc_path("contract_end_years_v2.pkl")
     before = {}
     if path.exists():
         with open(path, "rb") as fh:

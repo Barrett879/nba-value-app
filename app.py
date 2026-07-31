@@ -579,7 +579,7 @@ def _hub_contract_end() -> dict:
     if isinstance(m, dict) and m:
         return m
     try:
-        return _pkl_load(CACHE_DIR / "contract_end_years_v1.pkl") or {}
+        return _pkl_load(CACHE_DIR / "contract_end_years_v2.pkl") or {}
     except Exception:
         return {}
 

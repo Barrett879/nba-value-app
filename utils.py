@@ -5693,7 +5693,7 @@ _BBREF_TEAMS = [
 
 
 @st.cache_data(ttl=86400, show_spinner="Loading contract data…")
-def fetch_contract_end_years(cache_v: int = 1) -> dict:
+def fetch_contract_end_years(cache_v: int = 2) -> dict:
     """Returns {normalized_player_name: contract_info} for every player
     with an active multi-year contract.
 
@@ -5768,11 +5768,17 @@ def fetch_contract_end_years(cache_v: int = 1) -> dict:
     for team in _BBREF_TEAMS:
         url = f"{base_url}/{team}.html"
         soup = None
-        for attempt in range(4):
+        # Two quick attempts, short waits. This function runs INSIDE page reruns
+        # (fetch_rookie_scale_players -> here), so patient multi-minute backoff
+        # is an outage, not robustness: with BBRef rate-limiting the whole site
+        # sat behind a retry ladder. scripts/refresh_contract_years.py is the
+        # place to be patient -- it waits for BBRef to answer 200 BEFORE it
+        # starts. Here we fail fast and lean on the carry-forward below.
+        for attempt in range(2):
             try:
-                time.sleep(3.0 if attempt == 0 else 20.0 * attempt)
-                r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=20)
-                if r.status_code == 429:          # rate limited: back off and retry
+                time.sleep(1.5 if attempt == 0 else 8.0)
+                r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
+                if r.status_code == 429:          # rate limited: one short retry
                     logger.warning("contracts 429 for %s (attempt %d)", team, attempt + 1)
                     continue
                 r.raise_for_status()
@@ -5871,8 +5877,9 @@ def fetch_contract_end_years(cache_v: int = 1) -> dict:
                          if not any(v.get("current_team") == t for v in out.values())]
         if prior and (still_missing or len(out) < len(prior)):
             logger.error("contract scrape would shrink the cache (%d -> %d, missing %s); "
-                         "keeping the existing cache untouched",
+                         "keeping the existing cache and re-arming its TTL",
                          len(prior), len(out), ",".join(still_missing) or "none")
+            _pkl_save(path, prior)
             return prior
 
     _pkl_save(path, out)
