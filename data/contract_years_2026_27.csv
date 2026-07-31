@@ -5,7 +5,8 @@
 #   last_year_type is what the FINAL of those seasons is, so a label
 #   reads '2' for two guaranteed years and '1+TO' for one guaranteed
 #   year followed by a team option.
-# seasons: per-year detail, G=guaranteed T=team option P=player option.
+# seasons: per-year detail -- G guaranteed, T team option, P player option,
+#   M mutual option, W two-way.
 team,player,years_left,last_year_type,end_season,seasons,spotrac_player
 ATL,Dyson Daniels,4,guaranteed,2029-30,2026:G|2027:G|2028:G|2029:G,Dyson Daniels
 ATL,Henri Veesaar,4,team_option,2029-30,2026:G|2027:G|2028:G|2029:T,Henri Veesaar
@@ -37,7 +38,7 @@ BKN,Nolan Traore,3,team_option,2028-29,2026:G|2027:T|2028:T,Nolan Traore
 BKN,Day'Ron Sharpe,2,team_option,2027-28,2026:G|2027:T,Day'Ron Sharpe
 BKN,Josh Minott,2,team_option,2027-28,2026:G|2027:T,Josh Minott
 BKN,Julius Randle,2,player_option,2027-28,2026:G|2027:P,Julius Randle
-BKN,Keon Ellis,2,guaranteed,2027-28,2026:G|2027:G,Keon Ellis
+BKN,Keon Ellis,2,mutual_option,2027-28,2026:G|2027:M,Keon Ellis
 BKN,Terance Mann,2,guaranteed,2027-28,2026:G|2027:G,Terance Mann
 BKN,Chaney Johnson,1,two_way,2026-27,2026:W,Chaney Johnson
 BKN,Michael Porter Jr.,1,guaranteed,2026-27,2026:G,Michael Porter Jr.
@@ -354,7 +355,7 @@ OKC,Shai Gilgeous-Alexander,5,player_option,2030-31,2026:G|2027:G|2028:G|2029:G|
 OKC,Aday Mara,4,team_option,2029-30,2026:G|2027:G|2028:T|2029:T,Aday Mara
 OKC,Bennett Stirtz,4,team_option,2029-30,2026:G|2027:G|2028:T|2029:T,Bennett Stirtz
 OKC,Alex Caruso,3,guaranteed,2028-29,2026:G|2027:G|2028:G,Alex Caruso
-OKC,Isaiah Hartenstein,3,guaranteed,2028-29,2026:G|2027:G|2028:G,Isaiah Hartenstein
+OKC,Isaiah Hartenstein,3,mutual_option,2028-29,2026:G|2027:G|2028:M,Isaiah Hartenstein
 OKC,Thomas Sorber,3,team_option,2028-29,2026:G|2027:T|2028:T,Thomas Sorber
 OKC,Ajay Mitchell,2,team_option,2027-28,2026:G|2027:T,Ajay Mitchell
 OKC,Jared McCain,2,team_option,2027-28,2026:G|2027:T,Jared McCain

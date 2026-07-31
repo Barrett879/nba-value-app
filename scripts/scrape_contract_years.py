@@ -72,8 +72,8 @@ _TD = re.compile(r"<td\b[^>]*>.*?</td>", re.S)
 _PLAYER = re.compile(r'/nba/player/_/id/\d+/[^"]*"[^>]*>\s*([^<]+?)\s*</a>', re.S)
 _PILL = re.compile(r"class='pill ([^']*)'|class=\"pill ([^\"]*)\"")
 _SEASON_HDR = re.compile(r"(20\d\d)-\d\d")
-_MARK = {"guaranteed": "G", "team_option": "T",
-         "player_option": "P", "two_way": "W"}
+_MARK = {"guaranteed": "G", "team_option": "T", "player_option": "P",
+         "mutual_option": "M", "two_way": "W"}
 
 
 def fetch(team: str, slug: str, refresh: bool) -> str:
@@ -141,9 +141,14 @@ def parse(team: str, page: str) -> list[dict]:
                 break                      # he reaches free agency here: contract over
             if not has_money and not is_two_way:
                 break                      # empty column: nothing owed beyond this
+            # pill-estimate is NOT an option -- it is a real contracted year whose
+            # dollar figure is projected (extension years priced off a future cap).
+            # pill-mutual is a mutual option: both sides must agree, so it is no
+            # more guaranteed than a team or player option and gets its own type.
             kind = ("two_way" if is_two_way else
                     "team_option" if "pill-club" in cls else
-                    "player_option" if "pill-player" in cls else "guaranteed")
+                    "player_option" if "pill-player" in cls else
+                    "mutual_option" if "pill-mutual" in cls else "guaranteed")
             run.append((season, kind))
         if not run:
             continue
@@ -233,7 +238,7 @@ def main() -> int:
         fh.write("#   last_year_type is what the FINAL of those seasons is, so a label\n")
         fh.write("#   reads '2' for two guaranteed years and '1+TO' for one guaranteed\n")
         fh.write("#   year followed by a team option.\n")
-        fh.write("# seasons: per-year detail, G=guaranteed T=team option P=player option.\n")
+        fh.write("# seasons: per-year detail -- G guaranteed, T team option, P player option,\n#   M mutual option, W two-way.\n")
         w = csv.DictWriter(fh, fieldnames=["team", "player", "years_left",
                                            "last_year_type", "end_season", "seasons",
                                            "spotrac_player"])
