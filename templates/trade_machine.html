@@ -328,7 +328,7 @@ const TEAM_COLORS = DATA.colors || {};
 // secondary, and everyone between blends across.
 const TEAM_COLORS_2 = DATA.colors2 || {};
 // One wash per TEAM, not per player: the two team colours running left to right,
-// brighter end first. Every player on a board gets the identical card.
+// darker end first. Every player on a board gets the identical card.
 //
 // It used to ramp by position, which was the problem. The hue then varied player
 // to player, and on a page whose colour language is green = underpaid and red =
@@ -343,10 +343,10 @@ function teamWash(team){
   if(!c1||!c2) return "";
   const L1=_lum(c1),L2=_lum(c2);
   if(L1==null||L2==null) return "";
-  const light=L1>=L2?c1:c2, dark=L1>=L2?c2:c1;     // brighter left, darker right
+  const light=L1>=L2?c1:c2, dark=L1>=L2?c2:c1;     // darker left, brighter right
   const a=(h)=>{const v=[0,2,4].map(i=>parseInt(h.replace("#","").slice(i,i+2),16));
     return `rgba(${v[0]},${v[1]},${v[2]},${WASH_A})`;};
-  return `linear-gradient(100deg, ${a(light)} 0%, ${a(dark)} 100%)`;
+  return `linear-gradient(100deg, ${a(dark)} 0%, ${a(light)} 100%)`;
 }
 
 // Readable text on a team-coloured backdrop, measured rather than guessed.
