@@ -120,9 +120,9 @@ body{background:transparent;color:var(--fg1);
 .tbtn.on .tabbr,.tbtn:hover .tabbr{color:var(--tfg,#fff)}
 .pk .pkabbr{font-size:.62rem;font-weight:800;color:var(--fg5);width:18px;text-align:center;
   flex:0 0 18px}
-.tbtn:hover{background:var(--tc);border-color:var(--tc);transform:translateY(-1px)}
+.tbtn:hover{background:var(--tcb,var(--tc));border-color:var(--tc);transform:translateY(-1px)}
 .tbtn:hover img{transform:scale(1.06)}
-.tbtn.on{background:var(--tc);border-color:var(--tc);box-shadow:0 2px 10px rgba(0,0,0,.16)}
+.tbtn.on{background:var(--tcb,var(--tc));border-color:var(--tc);box-shadow:0 2px 10px rgba(0,0,0,.16)}
 .tbtn.on::after{content:"";position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);
   width:0;height:0;border:5px solid transparent;border-top-color:var(--tc)}
 
@@ -198,18 +198,18 @@ body{background:transparent;color:var(--fg1);
 .sortbtn{background:var(--card);border:1px solid var(--line);color:var(--fg3);border-radius:9px;
   padding:.35rem .6rem;font-size:.74rem;font-weight:700;cursor:pointer}
 .sortbtn:hover{color:var(--fg1);border-color:var(--tc,var(--teal))}
-.sortbtn.on{background:var(--tc,var(--teal));border-color:var(--tc,var(--teal));color:var(--tfg,#fff)}
+.sortbtn.on{background:var(--tcb,var(--tc,var(--teal)));border-color:var(--tc,var(--teal));color:var(--tfg,#fff)}
 /* The two view buttons wear the team's own pair: the depth chart takes the
    team's primary colour, the list its secondary, both set on the panel from
    TEAM_HEX / TEAM_HEX_2. v- prefixed because `.depth` is already the
    depth-chart grid container, and an unprefixed `.depth` button inherits
    display:grid and stretches across the toolbar. */
 .vbtn.v-depth{border-color:var(--tc);color:var(--tc)}
-.vbtn.v-depth:hover{background:var(--tc);color:var(--tfg)}
-.vbtn.v-depth.on{background:var(--tc);border-color:var(--tc);color:var(--tfg)}
+.vbtn.v-depth:hover{background:var(--tcb,var(--tc));color:var(--tfg)}
+.vbtn.v-depth.on{background:var(--tcb,var(--tc));border-color:var(--tc);color:var(--tfg)}
 .vbtn.v-list{border-color:var(--tc2);color:var(--tc2)}
-.vbtn.v-list:hover{background:var(--tc2);color:var(--tfg2)}
-.vbtn.v-list.on{background:var(--tc2);border-color:var(--tc2);color:var(--tfg2)}
+.vbtn.v-list:hover{background:var(--tcb2,var(--tc2));color:var(--tfg2)}
+.vbtn.v-list.on{background:var(--tcb2,var(--tc2));border-color:var(--tc2);color:var(--tfg2)}
 
 .roster{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 @media(max-width:1180px){.roster{grid-template-columns:1fr}}
@@ -370,12 +370,47 @@ const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
 const fmtM = v => (v == null ? "" : (v < 0 ? "-" : "") + "$" + Math.abs(v).toFixed(1) + "M");
 const root = document.getElementById("ro-root");
 
-// readable text color on a team-colored background
-function onColor(hex){
+// Readable text on a team-coloured backdrop, measured rather than guessed.
+// KEEP IN SYNC with the identical block in templates/trade_machine.html.
+//
+// The old test was perceived brightness (.299r+.587g+.114b) over a 150 cutoff.
+// That is not WCAG relative luminance, and it put white on mid-tone backgrounds
+// where dark scores far better: Brooklyn and San Antonio grey came out at 3.34,
+// well under the 4.5 AA floor for normal text.
+const FG_DARK = "#10131a", FG_LIGHT = "#ffffff", AA = 4.5;
+function _lum(hex){
   const h = (hex || "").replace("#", "");
-  if (h.length !== 6) return "#fff";
-  const r = parseInt(h.slice(0,2),16), g = parseInt(h.slice(2,4),16), b = parseInt(h.slice(4,6),16);
-  return (.299*r + .587*g + .114*b) > 150 ? "#10131a" : "#ffffff";
+  if (h.length !== 6 || /[^0-9a-f]/i.test(h)) return null;
+  const f = v => { v /= 255; return v <= .03928 ? v/12.92 : Math.pow((v + .055)/1.055, 2.4); };
+  return .2126*f(parseInt(h.slice(0,2),16)) + .7152*f(parseInt(h.slice(2,4),16))
+       + .0722*f(parseInt(h.slice(4,6),16));
+}
+function _ratio(a, b){
+  const A = _lum(a), B = _lum(b); if (A == null || B == null) return 0;
+  return (Math.max(A,B) + .05) / (Math.min(A,B) + .05);
+}
+function onColor(hex){
+  if (_lum(hex) == null) return FG_LIGHT;
+  return _ratio(hex, FG_DARK) >= _ratio(hex, FG_LIGHT) ? FG_DARK : FG_LIGHT;
+}
+// The team colour, shaded only as far as it must be to carry its own label at
+// AA. Three of the 30 need it -- Atlanta's and Portland's red, Philadelphia's
+// secondary -- where white scores 4.34 and dark scores less, so no foreground
+// clears 4.5 on its own. Shading the BACKDROP fixes it in one 4% step
+// (#E03A3E -> #D7383C). Deliberately a separate token from --tc: the true team
+// colour still paints every border, accent and bar, and only the surface that
+// has text sitting on it moves.
+function onColorBg(hex){
+  if (_lum(hex) == null) return hex;
+  const fg = onColor(hex);
+  if (_ratio(hex, fg) >= AA) return hex;
+  const hx = c => "#" + c.map(v => v.toString(16).padStart(2,"0")).join("").toUpperCase();
+  let c = [0,2,4].map(i => parseInt(hex.replace("#","").slice(i,i+2), 16));
+  const darken = fg === FG_LIGHT;
+  for (let n = 0; n < 40 && _ratio(hx(c), fg) < AA; n++)
+    c = c.map(v => darken ? Math.max(0, Math.round(v * .96))
+                          : Math.min(255, Math.round(v + (255 - v) * .06)));
+  return hx(c);
 }
 
 function capState(pay){
@@ -467,7 +502,7 @@ function teamStrip(){
         const t = T[ab]; if (!t) continue;
         const c = DATA.colors[ab] || "var(--teal)";
         h += `<button class="tbtn${ab === state.team ? " on" : ""}" data-team="${ab}"
-          style="--tc:${c};--tfg:${onColor(c)}" title="${esc(t.name)}, ${fmtM(t.payroll)} committed">
+          style="--tc:${c};--tcb:${onColorBg(c)};--tfg:${onColor(c)}" title="${esc(t.name)}, ${fmtM(t.payroll)} committed">
           <span class="tabbr">${ab}</span>${DATA.logos[ab]
             ? `<img src="${esc(DATA.logos[ab])}" alt="${esc(t.name)}" loading="lazy"
                  onload="this.previousElementSibling.style.display='none'"
@@ -688,8 +723,8 @@ function rosterPanel(t){
   // the panel carries the team's colour pair, so the view toggle (and the
   // section bars and card hovers under it) wear the team rather than the site
   const c1 = DATA.colors[t.abbr] || "", c2 = (DATA.colors2 || {})[t.abbr] || "";
-  const teamVars = `--tc:${c1 || "var(--teal)"};--tfg:${onColor(c1)};`
-    + `--tc2:${c2 || "var(--fg4)"};--tfg2:${onColor(c2)}`;
+  const teamVars = `--tc:${c1 || "var(--teal)"};--tcb:${onColorBg(c1) || "var(--teal)"};--tfg:${onColor(c1)};`
+    + `--tc2:${c2 || "var(--fg4)"};--tcb2:${onColorBg(c2) || "var(--fg4)"};--tfg2:${onColor(c2)}`;
   let h = `<div class="panel" style="${teamVars}"><div class="tools">
     <input type="text" id="q" placeholder="Filter this roster" value="${esc(state.q)}">
     <button class="sortbtn vbtn v-depth${state.view === "depth" ? " on" : ""}"
