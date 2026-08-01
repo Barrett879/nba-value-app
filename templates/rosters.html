@@ -55,7 +55,6 @@ body{background:transparent;color:var(--fg1);
   overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .tlrow .tlsc{font-size:.72rem;font-weight:800;color:var(--teal);
   font-variant-numeric:tabular-nums}
-.leadwrap .tlnote{font-size:.62rem;color:var(--fg5);margin-top:.4rem;line-height:1.35}
 @media(max-width:1180px){
   .striprow{flex-direction:column}
   .leadwrap{flex:1 1 auto;width:100%}
@@ -484,7 +483,7 @@ function divGradient(abbrs){
 }
 
 // How many teams the leaderboard lists.
-const LEADER_N = 6;
+const LEADER_N = 7;
 
 function teamLeaderboard(){
   const recs = DATA.records || {};
@@ -507,18 +506,26 @@ function teamLeaderboard(){
     // tiebreaker, so the order here is ours (point differential) and the row says
     // so rather than passing a judgement call off as a standing.
     const tiedWith = all.filter(x => x.t.abbr !== t.abbr && x.r.w === r.w && x.r.l === r.l);
+    // Competition ranking: a shared record shares the rank, so with both 53-29
+    // teams on the list they read T6 and T6, never T6 then T7.
+    const rank = 1 + all.filter(x => x.r.w > r.w).length;
+    const ahead = tiedWith.every(x => r.mov > x.r.mov);
+    const behind = tiedWith.every(x => r.mov < x.r.mov);
     const tie = tiedWith.length
-      ? `, tied with ${tiedWith.map(x => x.t.name).join(" and ")} and ahead on point differential`
+      ? `, tied with ${tiedWith.map(x => x.t.name).join(" and ")}${
+          ahead ? " and ahead on point differential"
+          : behind ? " and behind on point differential"
+          : ", separated on point differential"}`
       : "";
     h += `<button class="tlrow${t.abbr === state.team ? " on" : ""}" data-team="${esc(t.abbr)}"
       style="--tc:${c}" title="${esc(t.name)}: ${r.w}-${r.l} in ${esc(season)}${esc(tie)}, ${mov} points per game">
-      <span class="tlrank">${tiedWith.length ? "T" : ""}${i + 1}</span>
+      <span class="tlrank">${tiedWith.length ? "T" : ""}${rank}</span>
       <img src="${esc(DATA.logos[t.abbr] || "")}" alt="" loading="lazy"
         onerror="this.style.visibility='hidden'">
       <span class="tlname">${esc(t.name.replace(/^(Los Angeles|New York|New Orleans|Oklahoma City|Golden State|San Antonio|Portland Trail|Minnesota|Philadelphia|Washington|Sacramento|Cleveland|Charlotte|Milwaukee|Memphis|Brooklyn|Detroit|Toronto|Indiana|Orlando|Houston|Chicago|Atlanta|Phoenix|Denver|Boston|Dallas|Miami|Utah)\s+/, ""))}</span>
       <span class="tlsc">${r.w}-${r.l}</span></button>`;
   });
-  return h + `</div><div class="tlnote">Last season's finish, not this roster. Click one to open its book.</div></div>`;
+  return h + `</div></div>`;
 }
 
 function teamStrip(){
