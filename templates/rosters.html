@@ -210,6 +210,9 @@ body{background:transparent;color:var(--fg1);
 .vbtn.v-list{border-color:var(--tc2);color:var(--tc2)}
 .vbtn.v-list:hover{background:var(--tcb2,var(--tc2));color:var(--tfg2)}
 .vbtn.v-list.on{background:var(--tcb2,var(--tc2));border-color:var(--tc2);color:var(--tfg2)}
+.vdtog{display:inline-flex;align-items:center;gap:.35rem;font-size:.74rem;font-weight:700;
+  color:var(--fg3);cursor:pointer;user-select:none;white-space:nowrap;margin-left:.1rem}
+.vdtog input{accent-color:var(--teal);width:14px;height:14px;cursor:pointer;margin:0}
 
 .roster{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 @media(max-width:1180px){.roster{grid-template-columns:1fr}}
@@ -446,6 +449,15 @@ function capState(pay){
 // this, green and red were firing on gaps well inside the model's own error bar,
 // so a whole roster lit up and nothing stood out. The number still shows, it
 // just reads neutral until the gap is real.
+// Per-player value verdicts ("$X over / under", red and teal card edges) are
+// viewer-controlled: a checkbox in the roster toolbar, default off, remembered
+// per browser. Everything still computes -- vd rides the payload untouched --
+// the toggle only decides whether the cards SAY it. League-table Surplus and
+// the Value Check rail are deliberately unaffected: those are team-level reads,
+// not a verdict pinned on a player. localStorage works here because a srcdoc
+// iframe inherits the parent origin.
+let showVD = false;
+try { showVD = localStorage.getItem("hv_show_verdicts") === "1"; } catch(e){}
 const COLOR_AT = 5;
 function vdTone(vd){
   if (vd == null || Math.abs(vd) < COLOR_AT) return "flat";
@@ -705,11 +717,11 @@ function optChip(p){
 
 function depthCard(p, rank){
   const img = avatar(p.headshot, p.n);
-  const tone = vdTone(p.vd);
+  const tone = showVD ? vdTone(p.vd) : "flat";
   const cls = p.kind === "two_way" ? " tw" : tone === "flat" ? "" : " " + tone;
   const money = p.kind === "two_way" ? `<div class="sal" style="font-size:.7rem;color:var(--fg4)">
       Two-way</div>` : `<div class="sal">${fmtM(p.salary)}</div>`;
-  const vd = p.vd == null ? "" : p.vd <= -1
+  const vd = !showVD || p.vd == null ? "" : p.vd <= -1
     ? `<div class="vd ${tone}">${fmtM(-p.vd)} under</div>`
     : p.vd >= 1 ? `<div class="vd ${tone}">${fmtM(p.vd)} over</div>`
     : `<div class="vd flat">at value</div>`;
@@ -730,12 +742,13 @@ function playerCard(p){
   let money;
   if (p.kind === "standard"){
     const vd = p.vd;
-    const cls = vdTone(vd);
+    const cls = showVD ? vdTone(vd) : "flat";
     const txt = vd == null ? "no model value"
       : vd <= -1 ? fmtM(-vd) + " under value"
       : vd >= 1 ? fmtM(vd) + " over value" : "at market value";
-    money = `<div class="sal">${fmtM(p.salary)}</div>
-      <div class="vd ${cls}" title="Model value ${p.value == null ? "n/a" : fmtM(p.value)}">${txt}</div>`;
+    money = showVD ? `<div class="sal">${fmtM(p.salary)}</div>
+      <div class="vd ${cls}" title="Model value ${p.value == null ? "n/a" : fmtM(p.value)}">${txt}</div>`
+      : `<div class="sal">${fmtM(p.salary)}</div>`;
   } else if (p.kind === "two_way"){
     money = `<div class="sal">Two-way</div>`;
   } else {
@@ -793,6 +806,8 @@ function rosterPanel(t){
       data-view="depth">Depth chart</button>
     <button class="sortbtn vbtn v-list${state.view === "list" ? " on" : ""}"
       data-view="list">List</button>
+    <label class="vdtog" title="Show what the model says each contract is worth against this season's market curve">
+      <input type="checkbox" id="vdtog"${showVD ? " checked" : ""}> Model verdicts</label>
   </div>`;
   if (state.view === "list") h += `<div class="tools" style="margin-top:-.2rem">
     <span style="font-size:.66rem;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
@@ -1056,6 +1071,12 @@ function wire(){
       if (b.dataset.view) state.view = b.dataset.view; else state.sort = b.dataset.sort;
       render();
     };
+  const vt = document.getElementById("vdtog");
+  if (vt) vt.onchange = () => {
+    showVD = vt.checked;
+    try { localStorage.setItem("hv_show_verdicts", showVD ? "1" : "0"); } catch(e){}
+    render();
+  };
   const q = document.getElementById("q");
   if (q) q.oninput = () => {
     state.q = q.value;
