@@ -902,546 +902,552 @@ if "player" in st.query_params:
 # career arcs, all eras). Native bordered containers (st.container(border=True))
 # hold each quadrant — raw <div> cards can't wrap Streamlit elements (charts,
 # tables): markdown auto-closes them and the layout shatters.
-if _sel:
-    _n = _sel["norm"]
-    _pv = _pcv_by.get(_n) or {}
-    _draft = get_player_draft_info(_sel["Player"])
-    _draft_txt = (f"{_draft['draft_tier']} · #{_draft['draft_pick']} in {_draft['draft_year']}"
-                  if _draft.get("draft_pick") else "Undrafted")
-    _outcome = _hub_outcome(_n, _sel["Status"])
-    _q = _urlquote(_sel["Player"])
-    _pred_txt = ((('<span class="hv-chip max">MAX</span>' if _pv.get("is_max") else "")
-                  + f"${_pv['pcv_M']:.1f}M")
-                 if _pv.get("pcv_M") is not None else "—")
-    # If he has already signed for 2026-27, the projection stops being a forecast
-    # and becomes a scored guess. Showing the two side by side is the honest
-    # framing -- and a visible miss is more interesting than a hidden one.
-    # Without this the panel read "$39.8M PREDICTED CONTRACT" a line below
-    # "Signed $3.9M" with nothing connecting them.
-    _sign = _hub_signings().get(_n) or {}
-    _act_M = _sign.get("actual_M")
-    _pred_label = "Predicted contract"
-    _pred_tip = ("The model's projection for a NEW deal signed today, "
-                 "at next season's cap")
-    _pred_sub = ""
-    if _act_M is not None and _pv.get("pcv_M") is not None:
-        _miss = _pv["pcv_M"] - _act_M
-        _hit = abs(_miss) <= 4.0
-        _pred_label = "Predicted vs actual"
-        _pred_tip = (f"The model projected ${_pv['pcv_M']:.1f}M. He signed for "
-                     f"${_act_M:.1f}M — "
-                     + ("within $4M, a hit." if _hit
-                        else f"a ${abs(_miss):.1f}M miss."))
-        _pred_sub = (f'<span style="color:{"var(--value-good)" if _hit else "var(--value-bad)"}">'
-                     f'signed ${_act_M:.1f}M</span>')
+# The hub renders inside an always-present keyed container so the page keeps
+# the same top-level element sequence with or without a selection. Without the
+# stable slot, picking a player inserts ~30 elements here, every element after
+# it (the whole board section) changes delta path, and Streamlit unmounts and
+# re-streams it: the visible half-second collapse-and-restore on selection.
+with st.container(key="hub_slot"):
+    if _sel:
+        _n = _sel["norm"]
+        _pv = _pcv_by.get(_n) or {}
+        _draft = get_player_draft_info(_sel["Player"])
+        _draft_txt = (f"{_draft['draft_tier']} · #{_draft['draft_pick']} in {_draft['draft_year']}"
+                      if _draft.get("draft_pick") else "Undrafted")
+        _outcome = _hub_outcome(_n, _sel["Status"])
+        _q = _urlquote(_sel["Player"])
+        _pred_txt = ((('<span class="hv-chip max">MAX</span>' if _pv.get("is_max") else "")
+                      + f"${_pv['pcv_M']:.1f}M")
+                     if _pv.get("pcv_M") is not None else "—")
+        # If he has already signed for 2026-27, the projection stops being a forecast
+        # and becomes a scored guess. Showing the two side by side is the honest
+        # framing -- and a visible miss is more interesting than a hidden one.
+        # Without this the panel read "$39.8M PREDICTED CONTRACT" a line below
+        # "Signed $3.9M" with nothing connecting them.
+        _sign = _hub_signings().get(_n) or {}
+        _act_M = _sign.get("actual_M")
+        _pred_label = "Predicted contract"
+        _pred_tip = ("The model's projection for a NEW deal signed today, "
+                     "at next season's cap")
+        _pred_sub = ""
+        if _act_M is not None and _pv.get("pcv_M") is not None:
+            _miss = _pv["pcv_M"] - _act_M
+            _hit = abs(_miss) <= 4.0
+            _pred_label = "Predicted vs actual"
+            _pred_tip = (f"The model projected ${_pv['pcv_M']:.1f}M. He signed for "
+                         f"${_act_M:.1f}M — "
+                         + ("within $4M, a hit." if _hit
+                            else f"a ${abs(_miss):.1f}M miss."))
+            _pred_sub = (f'<span style="color:{"var(--value-good)" if _hit else "var(--value-bad)"}">'
+                         f'signed ${_act_M:.1f}M</span>')
 
-    _team = str(_sel["Team"])
-    _thx = TEAM_HEX.get(_team, "")
-    _team_style = f"--team:{_thx};" if _thx else ""
-    _wash = _hex_rgba(_thx, 0.08) if _thx else "transparent"
-    _rule = _hex_rgba(_thx, 0.35) if _thx else "var(--hairline-soft)"
-    # One-line verdict: production rank vs pay rank vs market, plus the FA hook.
-    _vbits = []
-    if _sel.get("SalRank"):
-        _vbits.append(f'Plays like #{_sel["rank"]}, paid like #{_sel["SalRank"]}')
-    _vdm = _sel["DeltaMkt"]
-    if _vdm <= -3:
-        _vbits.append(f"${abs(_vdm):.1f}M below market value")
-    elif _vdm >= 3:
-        _vbits.append(f"${_vdm:.1f}M over market value")
-    else:
-        _vbits.append("paid about right")
-    if str(_sel["Status"]) in _FA_SET:
-        _vbits.append("hits the market in 2026")
-    _verdict = " · ".join(_vbits)
-    _STATUS_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
-                    "Player Option": ("po", "PLAYER OPTION"),
-                    "Team Option": ("to", "TEAM OPTION"), "Signed": ("signed", "SIGNED")}
-    _chip = _STATUS_CHIP.get(str(_sel["Status"]))
-    _status_html = (f'<span class="hv-chip {_chip[0]}">{_chip[1]}</span>' if _chip
-                    else (f'<b>{html.escape(str(_sel["Status"]))}</b>'
-                          if str(_sel["Status"]) not in ("", "—") else ""))
-    if _outcome:
-        _status_html = (_status_html + " · " if _status_html else "") + html.escape(_outcome)
-    _status_seg = f"&nbsp;·&nbsp; {_status_html}" if _status_html else ""
-
-    st.markdown(f"""
-<style>
-/* Selected-player masthead: headshot + name + meta, team-color rail + watermark. */
-.hub-banner {{ display: flex; align-items: center; gap: 1rem;
-  background: linear-gradient(90deg, {_wash}, transparent 45%), var(--panel-solid);
-  border: 1px solid var(--panel-line);
-  border-left: 4px solid var(--team, var(--accent-teal));
-  border-radius: 14px; padding: 0.7rem 1.2rem; box-shadow: var(--shadow-card);
-  position: relative; overflow: hidden; margin-bottom: 0.8rem; }}
-img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
-  object-position: center 12%; background: var(--panel-2);
-  border: 2px solid var(--team, var(--panel-line)); flex: 0 0 auto; }}
-.hub-banner .nm {{ font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em;
-  color: var(--fg-1); line-height: 1.15; }}
-.hub-banner .meta {{ color: var(--fg-3); font-size: 0.85rem; }}
-.hub-banner .rank {{ margin-left: auto; text-align: right;
-  font-variant-numeric: tabular-nums; position: relative; z-index: 1; }}
-.hub-banner .rank .v {{ font-size: 1.5rem; font-weight: 800; color: var(--accent-teal); }}
-.hub-banner .rank .l {{ display: block; font-size: 0.62rem; text-transform: uppercase;
-  letter-spacing: 0.07em; color: var(--fg-4); }}
-.hub-banner::after {{ content: attr(data-team); position: absolute; right: 4.5rem;
-  top: 50%; transform: translateY(-50%); font-family: "Space Grotesk", sans-serif;
-  font-size: 4.2rem; font-weight: 800; letter-spacing: -0.04em;
-  color: var(--team, var(--accent-teal)); opacity: 0.07; pointer-events: none; }}
-/* Skin the four quadrant containers like themed cards (scoped by key so other
-   bordered containers on the page stay native). Streamlit's st-key class can
-   land on the wrapper itself or a descendant depending on version: cover both. */
-[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
-[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
-[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
-[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
-  background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
-  border-radius: 14px !important; box-shadow: var(--shadow-card);
-  height: 580px !important; max-height: 580px !important;
-  overflow-y: auto !important; padding: 0.55rem 0.8rem 3.3rem !important;
-  position: relative; margin-bottom: 0.9rem; }}
-/* Phones: drop the fixed height so the four quadrants flow full-length instead
-   of trapping content in small inner-scroll boxes. Desktop is untouched. */
-@media (max-width: 640px) {{
-  [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
-  [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
-  [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
-  [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
-  [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1),
-  [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2),
-  [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3),
-  [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
-    height: auto !important; max-height: none !important;
-    min-height: 0 !important; overflow-y: visible !important; }}
-}}
-/* Jump buttons pin to the bottom-left of every quadrant card. Streamlit's
-   element containers are positioned, which would capture the absolute button,
-   so the containers on the button's ancestor chain go static. */
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stElementContainer"]:has(.hub-go),
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stMarkdown"]:has(.hub-go),
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stMarkdownContainer"]:has(.hub-go) {{
-  position: static !important; }}
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go {{
-  position: absolute; left: 0.9rem; bottom: 0.7rem; z-index: 2; margin: 0; }}
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go a {{
-  margin-top: 0; }}
-/* Per-quadrant identity accents. */
-[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1) {{
-  border-top: 3px solid var(--accent-teal) !important; }}
-[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2) {{
-  border-top: 3px solid var(--logo-copper) !important; }}
-[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3) {{
-  border-top: 3px solid var(--sky) !important; }}
-[data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
-[data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
-  border-top: 3px solid var(--logo-sage) !important; }}
-[data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap,
-[data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
-.hub-qh {{ display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem;
-  font-weight: 800; letter-spacing: 0.07em;
-  text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
-.hub-qh::after {{ content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, {_rule}, var(--hairline-soft)); }}
-.hub-qh b {{ color: var(--accent-teal); }}
-.hub-stats {{ display: flex; gap: 1.7rem; flex-wrap: wrap; margin-top: 0.3rem; }}
-.hub-stat .v {{ font-size: 1.55rem; font-weight: 800; color: var(--fg-1); }}
-.hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
-  color: var(--fg-4); font-weight: 600; margin-top: 0.1rem; }}
-.hub-ladder {{ margin-top: 1.4rem; }}
-.hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.28rem; }}
-.hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
-  letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
-.hub-ladder .lbar {{ flex: 1; height: 13px; background: var(--hairline-soft);
-  border-radius: 7px; overflow: hidden; position: relative; }}
-.hub-ladder .lbar .tickm {{ position: absolute; top: -1px; bottom: -1px; width: 2px;
-  background: var(--fg-3); opacity: 0.85; z-index: 2; border-radius: 1px; }}
-.hub-ladder .lbar div {{ height: 100%; border-radius: 7px; }}
-.hub-ladder .lbar .lband {{ position: absolute; top: 0; height: 100%;
-  background: var(--bar-tint); border-radius: 0; }}
-.hub-ladder .lv {{ width: 72px; text-align: right; font-size: 0.78rem; font-weight: 700;
-  color: var(--fg-2); font-variant-numeric: tabular-nums; flex: 0 0 auto; line-height: 1.15; }}
-.hub-ladder .lv .avg {{ display: block; font-size: 0.6rem; font-weight: 600;
-  color: var(--fg-5); }}
-.hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.8rem; }}
-.hub-go a {{ display: inline-block; margin-top: 0.6rem; background: var(--panel);
-  border: 1px solid var(--panel-line); border-radius: 9px; padding: 0.4rem 0.85rem;
-  font-size: 0.8rem; font-weight: 700; color: var(--sky); text-decoration: none; }}
-.hub-go a:hover {{ border-color: var(--sky); }}
-.hv-plink {{ color: var(--sky); font-weight: 700; text-decoration: none; }}
-.hv-plink:hover {{ text-decoration: underline; }}
-</style>
-<div class="hub-banner" style="{_team_style}" data-team="{html.escape(_team, quote=True)}">
-  {_face_img(_sel["Player"], "hub-face")}
-  <span style="min-width:0">
-    <span class="nm" style="display:block">{html.escape(_sel["Player"])}</span>
-    <span class="meta">{html.escape(_team)} · {html.escape(str(_sel["Pos"]))} · {html.escape(_draft_txt)}
-{_status_seg}</span>
-    <span style="display:block;font-style:italic;color:var(--fg-3);font-size:0.82rem;margin-top:2px">{html.escape(_verdict)}</span>
-  </span>
-  <span class="rank"><span class="v">#{_sel["rank"]}</span><span class="l">2025-26 rank</span></span>
-</div>
-""", unsafe_allow_html=True)
-
-    _car = _hub_career()
-    # Resolve the selected player's career rows by PLAYER_ID, not name: distinct
-    # players can share a normalized name, and a norm lookup would splice their
-    # careers together. Prefer the pool's own id; fall back to the id whose
-    # latest season is newest (the current player beats a retired namesake).
-    _pid = _sel.get("PID")
-    if _pid is None or not (_car["PLAYER_ID"] == _pid).any():
-        _same = _car[_car["norm"] == _n]
-        _pid = int(_same.groupby("PLAYER_ID")["Season"].max().idxmax()) if len(_same) else None
-    _mine = (_car[_car["PLAYER_ID"] == _pid] if _pid is not None
-             else _car.iloc[0:0]).sort_values("Season")
-
-    _left, _right = st.columns(2)
-
-    with _left:   # ── Quadrant 1: Right Now ─────────────────────────────────────
-        # Salary vs market-anchor verdict (value_diff = actual − projected; negative = underpaid)
-        _dm = _sel["DeltaMkt"]
-        _d_color = "var(--value-good)" if _dm < 0 else ("var(--value-bad)" if _dm > 0 else "var(--fg-2)")
-        _d_txt = f"{'+' if _dm > 0 else '−' if _dm < 0 else ''}${abs(_dm):.1f}M"
-        _d_lbl = "Underpaid" if _dm < 0 else ("Overpaid" if _dm > 0 else "At market")
-        _ci = _hub_contract_end().get(_n) or {}
-        # A player who has already signed for 2026-27 must not also be told his
-        # "current deal runs through 2027-28" — the contract-end scraper still
-        # carries his OLD deal, and the two lines contradicted each other.
-        if _act_M is not None:
-            _deal_line = ('<div class="hub-note">Signed a new deal this offseason'
-                          f' · <b>${_act_M:.1f}M</b> in 2026-27.</div>')
+        _team = str(_sel["Team"])
+        _thx = TEAM_HEX.get(_team, "")
+        _team_style = f"--team:{_thx};" if _thx else ""
+        _wash = _hex_rgba(_thx, 0.08) if _thx else "transparent"
+        _rule = _hex_rgba(_thx, 0.35) if _thx else "var(--hairline-soft)"
+        # One-line verdict: production rank vs pay rank vs market, plus the FA hook.
+        _vbits = []
+        if _sel.get("SalRank"):
+            _vbits.append(f'Plays like #{_sel["rank"]}, paid like #{_sel["SalRank"]}')
+        _vdm = _sel["DeltaMkt"]
+        if _vdm <= -3:
+            _vbits.append(f"${abs(_vdm):.1f}M below market value")
+        elif _vdm >= 3:
+            _vbits.append(f"${_vdm:.1f}M over market value")
         else:
-            _deal_line = (f'<div class="hub-note">Current deal runs through <b>{html.escape(str(_ci["end_season"]))}</b>'
-                          f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
-                          if _ci.get("end_season") else
-                          '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
-        _bx = _hub_counting().get(_n)
-        # Position profile: each stat as a percentile bar among the player's
-        # primary-position peers this season (tick on the track = median).
-        _pos_prim = str(_sel["Pos"]).split("/")[0].strip()
-        _bx_all = _hub_counting()
+            _vbits.append("paid about right")
+        if str(_sel["Status"]) in _FA_SET:
+            _vbits.append("hits the market in 2026")
+        _verdict = " · ".join(_vbits)
+        _STATUS_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
+                        "Player Option": ("po", "PLAYER OPTION"),
+                        "Team Option": ("to", "TEAM OPTION"), "Signed": ("signed", "SIGNED")}
+        _chip = _STATUS_CHIP.get(str(_sel["Status"]))
+        _status_html = (f'<span class="hv-chip {_chip[0]}">{_chip[1]}</span>' if _chip
+                        else (f'<b>{html.escape(str(_sel["Status"]))}</b>'
+                              if str(_sel["Status"]) not in ("", "—") else ""))
+        if _outcome:
+            _status_html = (_status_html + " · " if _status_html else "") + html.escape(_outcome)
+        _status_seg = f"&nbsp;·&nbsp; {_status_html}" if _status_html else ""
 
-        # Rotation-minutes floor: low-minute players (two-ways, garbage time)
-        # distort the min/avg/max endpoints, especially on rate stats where a
-        # 5-minute fluke sets an unreachable TS% ceiling. Peers must clear
-        # _POS_MPG_MIN; if that leaves too thin a pool, fall back to everyone.
-        _POS_MPG_MIN = 15.0
-        _pos_peers = [_r0 for _r0 in _hub_rows
-                      if str(_r0["Pos"]).split("/")[0].strip() == _pos_prim
-                      and float(_r0.get("MPG") or 0) >= _POS_MPG_MIN]
-        if len(_pos_peers) < 12:
+        st.markdown(f"""
+    <style>
+    /* Selected-player masthead: headshot + name + meta, team-color rail + watermark. */
+    .hub-banner {{ display: flex; align-items: center; gap: 1rem;
+      background: linear-gradient(90deg, {_wash}, transparent 45%), var(--panel-solid);
+      border: 1px solid var(--panel-line);
+      border-left: 4px solid var(--team, var(--accent-teal));
+      border-radius: 14px; padding: 0.7rem 1.2rem; box-shadow: var(--shadow-card);
+      position: relative; overflow: hidden; margin-bottom: 0.8rem; }}
+    img.hub-face {{ width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+      object-position: center 12%; background: var(--panel-2);
+      border: 2px solid var(--team, var(--panel-line)); flex: 0 0 auto; }}
+    .hub-banner .nm {{ font-size: 1.6rem; font-weight: 800; letter-spacing: -0.01em;
+      color: var(--fg-1); line-height: 1.15; }}
+    .hub-banner .meta {{ color: var(--fg-3); font-size: 0.85rem; }}
+    .hub-banner .rank {{ margin-left: auto; text-align: right;
+      font-variant-numeric: tabular-nums; position: relative; z-index: 1; }}
+    .hub-banner .rank .v {{ font-size: 1.5rem; font-weight: 800; color: var(--accent-teal); }}
+    .hub-banner .rank .l {{ display: block; font-size: 0.62rem; text-transform: uppercase;
+      letter-spacing: 0.07em; color: var(--fg-4); }}
+    .hub-banner::after {{ content: attr(data-team); position: absolute; right: 4.5rem;
+      top: 50%; transform: translateY(-50%); font-family: "Space Grotesk", sans-serif;
+      font-size: 4.2rem; font-weight: 800; letter-spacing: -0.04em;
+      color: var(--team, var(--accent-teal)); opacity: 0.07; pointer-events: none; }}
+    /* Skin the four quadrant containers like themed cards (scoped by key so other
+       bordered containers on the page stay native). Streamlit's st-key class can
+       land on the wrapper itself or a descendant depending on version: cover both. */
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
+      background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
+      border-radius: 14px !important; box-shadow: var(--shadow-card);
+      height: 580px !important; max-height: 580px !important;
+      overflow-y: auto !important; padding: 0.55rem 0.8rem 3.3rem !important;
+      position: relative; margin-bottom: 0.9rem; }}
+    /* Phones: drop the fixed height so the four quadrants flow full-length instead
+       of trapping content in small inner-scroll boxes. Desktop is untouched. */
+    @media (max-width: 640px) {{
+      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
+      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
+      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
+      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
+      [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1),
+      [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2),
+      [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3),
+      [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
+        height: auto !important; max-height: none !important;
+        min-height: 0 !important; overflow-y: visible !important; }}
+    }}
+    /* Jump buttons pin to the bottom-left of every quadrant card. Streamlit's
+       element containers are positioned, which would capture the absolute button,
+       so the containers on the button's ancestor chain go static. */
+    [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stElementContainer"]:has(.hub-go),
+    [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stMarkdown"]:has(.hub-go),
+    [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stMarkdownContainer"]:has(.hub-go) {{
+      position: static !important; }}
+    [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go {{
+      position: absolute; left: 0.9rem; bottom: 0.7rem; z-index: 2; margin: 0; }}
+    [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go a {{
+      margin-top: 0; }}
+    /* Per-quadrant identity accents. */
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1) {{
+      border-top: 3px solid var(--accent-teal) !important; }}
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2) {{
+      border-top: 3px solid var(--logo-copper) !important; }}
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3) {{
+      border-top: 3px solid var(--sky) !important; }}
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
+    [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
+      border-top: 3px solid var(--logo-sage) !important; }}
+    [data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap,
+    [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
+    .hub-qh {{ display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem;
+      font-weight: 800; letter-spacing: 0.07em;
+      text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
+    .hub-qh::after {{ content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, {_rule}, var(--hairline-soft)); }}
+    .hub-qh b {{ color: var(--accent-teal); }}
+    .hub-stats {{ display: flex; gap: 1.7rem; flex-wrap: wrap; margin-top: 0.3rem; }}
+    .hub-stat .v {{ font-size: 1.55rem; font-weight: 800; color: var(--fg-1); }}
+    .hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
+      color: var(--fg-4); font-weight: 600; margin-top: 0.1rem; }}
+    .hub-ladder {{ margin-top: 1.4rem; }}
+    .hub-ladder .lrow {{ display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.28rem; }}
+    .hub-ladder .ll {{ width: 66px; font-size: 0.64rem; text-transform: uppercase;
+      letter-spacing: 0.05em; color: var(--fg-4); font-weight: 700; flex: 0 0 auto; }}
+    .hub-ladder .lbar {{ flex: 1; height: 13px; background: var(--hairline-soft);
+      border-radius: 7px; overflow: hidden; position: relative; }}
+    .hub-ladder .lbar .tickm {{ position: absolute; top: -1px; bottom: -1px; width: 2px;
+      background: var(--fg-3); opacity: 0.85; z-index: 2; border-radius: 1px; }}
+    .hub-ladder .lbar div {{ height: 100%; border-radius: 7px; }}
+    .hub-ladder .lbar .lband {{ position: absolute; top: 0; height: 100%;
+      background: var(--bar-tint); border-radius: 0; }}
+    .hub-ladder .lv {{ width: 72px; text-align: right; font-size: 0.78rem; font-weight: 700;
+      color: var(--fg-2); font-variant-numeric: tabular-nums; flex: 0 0 auto; line-height: 1.15; }}
+    .hub-ladder .lv .avg {{ display: block; font-size: 0.6rem; font-weight: 600;
+      color: var(--fg-5); }}
+    .hub-note {{ color: var(--fg-3); font-size: 0.78rem; margin-top: 0.8rem; }}
+    .hub-go a {{ display: inline-block; margin-top: 0.6rem; background: var(--panel);
+      border: 1px solid var(--panel-line); border-radius: 9px; padding: 0.4rem 0.85rem;
+      font-size: 0.8rem; font-weight: 700; color: var(--sky); text-decoration: none; }}
+    .hub-go a:hover {{ border-color: var(--sky); }}
+    .hv-plink {{ color: var(--sky); font-weight: 700; text-decoration: none; }}
+    .hv-plink:hover {{ text-decoration: underline; }}
+    </style>
+    <div class="hub-banner" style="{_team_style}" data-team="{html.escape(_team, quote=True)}">
+      {_face_img(_sel["Player"], "hub-face")}
+      <span style="min-width:0">
+        <span class="nm" style="display:block">{html.escape(_sel["Player"])}</span>
+        <span class="meta">{html.escape(_team)} · {html.escape(str(_sel["Pos"]))} · {html.escape(_draft_txt)}
+    {_status_seg}</span>
+        <span style="display:block;font-style:italic;color:var(--fg-3);font-size:0.82rem;margin-top:2px">{html.escape(_verdict)}</span>
+      </span>
+      <span class="rank"><span class="v">#{_sel["rank"]}</span><span class="l">2025-26 rank</span></span>
+    </div>
+    """, unsafe_allow_html=True)
+
+        _car = _hub_career()
+        # Resolve the selected player's career rows by PLAYER_ID, not name: distinct
+        # players can share a normalized name, and a norm lookup would splice their
+        # careers together. Prefer the pool's own id; fall back to the id whose
+        # latest season is newest (the current player beats a retired namesake).
+        _pid = _sel.get("PID")
+        if _pid is None or not (_car["PLAYER_ID"] == _pid).any():
+            _same = _car[_car["norm"] == _n]
+            _pid = int(_same.groupby("PLAYER_ID")["Season"].max().idxmax()) if len(_same) else None
+        _mine = (_car[_car["PLAYER_ID"] == _pid] if _pid is not None
+                 else _car.iloc[0:0]).sort_values("Season")
+
+        _left, _right = st.columns(2)
+
+        with _left:   # ── Quadrant 1: Right Now ─────────────────────────────────────
+            # Salary vs market-anchor verdict (value_diff = actual − projected; negative = underpaid)
+            _dm = _sel["DeltaMkt"]
+            _d_color = "var(--value-good)" if _dm < 0 else ("var(--value-bad)" if _dm > 0 else "var(--fg-2)")
+            _d_txt = f"{'+' if _dm > 0 else '−' if _dm < 0 else ''}${abs(_dm):.1f}M"
+            _d_lbl = "Underpaid" if _dm < 0 else ("Overpaid" if _dm > 0 else "At market")
+            _ci = _hub_contract_end().get(_n) or {}
+            # A player who has already signed for 2026-27 must not also be told his
+            # "current deal runs through 2027-28" — the contract-end scraper still
+            # carries his OLD deal, and the two lines contradicted each other.
+            if _act_M is not None:
+                _deal_line = ('<div class="hub-note">Signed a new deal this offseason'
+                              f' · <b>${_act_M:.1f}M</b> in 2026-27.</div>')
+            else:
+                _deal_line = (f'<div class="hub-note">Current deal runs through <b>{html.escape(str(_ci["end_season"]))}</b>'
+                              f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
+                              if _ci.get("end_season") else
+                              '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
+            _bx = _hub_counting().get(_n)
+            # Position profile: each stat as a percentile bar among the player's
+            # primary-position peers this season (tick on the track = median).
+            _pos_prim = str(_sel["Pos"]).split("/")[0].strip()
+            _bx_all = _hub_counting()
+
+            # Rotation-minutes floor: low-minute players (two-ways, garbage time)
+            # distort the min/avg/max endpoints, especially on rate stats where a
+            # 5-minute fluke sets an unreachable TS% ceiling. Peers must clear
+            # _POS_MPG_MIN; if that leaves too thin a pool, fall back to everyone.
+            _POS_MPG_MIN = 15.0
             _pos_peers = [_r0 for _r0 in _hub_rows
-                          if str(_r0["Pos"]).split("/")[0].strip() == _pos_prim]
+                          if str(_r0["Pos"]).split("/")[0].strip() == _pos_prim
+                          and float(_r0.get("MPG") or 0) >= _POS_MPG_MIN]
+            if len(_pos_peers) < 12:
+                _pos_peers = [_r0 for _r0 in _hub_rows
+                              if str(_r0["Pos"]).split("/")[0].strip() == _pos_prim]
 
-        def _pos_pool(idx=None, col=None):
-            _vals = []
-            for _r0 in _pos_peers:
-                if col is not None:
-                    _vals.append(float(_r0[col]))
-                else:
-                    _b0 = _bx_all.get(_r0["norm"])
-                    if _b0:
-                        _vals.append(float(_b0[idx]))
-            return _vals
+            def _pos_pool(idx=None, col=None):
+                _vals = []
+                for _r0 in _pos_peers:
+                    if col is not None:
+                        _vals.append(float(_r0[col]))
+                    else:
+                        _b0 = _bx_all.get(_r0["norm"])
+                        if _b0:
+                            _vals.append(float(_b0[idx]))
+                return _vals
 
-        # Center of the position track (the tick + the small number). Flip
-        # _CENTER_STAT between "median" and "mean" to switch the whole profile.
-        _CENTER_STAT = "median"
-        _center_lbl = "med" if _CENTER_STAT == "median" else "avg"
-        _center_word = "median" if _CENTER_STAT == "median" else "average"
+            # Center of the position track (the tick + the small number). Flip
+            # _CENTER_STAT between "median" and "mean" to switch the whole profile.
+            _CENTER_STAT = "median"
+            _center_lbl = "med" if _CENTER_STAT == "median" else "avg"
+            _center_word = "median" if _CENTER_STAT == "median" else "average"
 
-        def _avg_of(pool):
-            if not pool:
-                return None
-            if _CENTER_STAT == "median":
-                _s = sorted(pool); _m = len(_s)
-                return _s[_m // 2] if _m % 2 else (_s[_m // 2 - 1] + _s[_m // 2]) / 2
-            return sum(pool) / len(pool)
+            def _avg_of(pool):
+                if not pool:
+                    return None
+                if _CENTER_STAT == "median":
+                    _s = sorted(pool); _m = len(_s)
+                    return _s[_m // 2] if _m % 2 else (_s[_m // 2 - 1] + _s[_m // 2]) / 2
+                return sum(pool) / len(pool)
 
-        def _scale_of(v, pool):
-            """0 = position low, 100 = position high, 50 = position center
-            (mean or median per _CENTER_STAT). Each half is linear, so
-            bar-vs-tick reads as above/below the center player."""
-            if not pool:
-                return 50.0
-            _lo, _hi = min(pool), max(pool)
-            _av = _avg_of(pool)
-            if v >= _hi:
-                return 100.0
-            if v <= _lo:
-                return 0.0
-            if v <= _av:
-                return 50.0 * (v - _lo) / (_av - _lo) if _av > _lo else 50.0
-            return 50.0 + 50.0 * (v - _av) / (_hi - _av) if _hi > _av else 50.0
+            def _scale_of(v, pool):
+                """0 = position low, 100 = position high, 50 = position center
+                (mean or median per _CENTER_STAT). Each half is linear, so
+                bar-vs-tick reads as above/below the center player."""
+                if not pool:
+                    return 50.0
+                _lo, _hi = min(pool), max(pool)
+                _av = _avg_of(pool)
+                if v >= _hi:
+                    return 100.0
+                if v <= _lo:
+                    return 0.0
+                if v <= _av:
+                    return 50.0 * (v - _lo) / (_av - _lo) if _av > _lo else 50.0
+                return 50.0 + 50.0 * (v - _av) / (_hi - _av) if _hi > _av else 50.0
 
-        _prof = []
-        if _bx:
-            for _lbl, _idx in [("Points", 0), ("Rebounds", 1), ("Assists", 2),
-                               ("Steals", 3), ("Blocks", 4)]:
-                _v = float(_bx[_idx])
-                _pl = _pos_pool(idx=_idx)
-                _av = _avg_of(_pl)
-                _prof.append((_lbl, f"{_v:.1f}", _scale_of(_v, _pl),
-                              f"{_av:.1f}" if _av is not None else ""))
-        _ts_pool = _pos_pool(col="TS")
-        _ts_avg = _avg_of(_ts_pool)
-        _prof.append(("TS%", f"{_sel['TS'] * 100:.1f}%", _scale_of(float(_sel["TS"]), _ts_pool),
-                      f"{_ts_avg * 100:.1f}%" if _ts_avg is not None else ""))
-        _dl_pool = _pos_pool(col="DLEB")
-        _dl_avg = _avg_of(_dl_pool)
-        _prof.append(("D-LEBRON", f"{_sel['DLEB']:+.1f}", _scale_of(float(_sel["DLEB"]), _dl_pool),
-                      f"{_dl_avg:+.1f}" if _dl_avg is not None else ""))
-        _bar_c = _thx or "var(--accent-teal)"
-        _ladder = "".join(
-            f'<div class="lrow"><span class="ll">{_l}</span>'
-            f'<div class="lbar"><span class="tickm" style="left:50%"></span>'
-            f'<div style="width:{max(2.0, _p):.0f}%;background:{_bar_c};position:relative;z-index:0"></div></div>'
-            f'<span class="lv">{_vtxt}'
-            + (f'<span class="avg">{_center_lbl} {_atxt}</span>' if _atxt else "")
-            + '</span></div>'
-            for _l, _vtxt, _p, _atxt in _prof)
-        _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
-        _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
-        # Named anchors, plain-English: the player who performs nearest to him
-        # (production rank +/-1, closest score) and the player who gets paid
-        # nearest to him (salary rank +/-1, closest paycheck). Replaced the old
-        # cross-rank mapping ("value = the #13 paycheck"), which read like a
-        # riddle (Barrett, 2026-07-15).
-        _anchor_note = ""
-        try:
-            _rk = int(_sel["rank"])
-            _sr = int(_sel.get("SalRank") or 0)
-            _me_sc = float(_sel["Barrett Score"])
-            _me_sal = float(_sel["Salary"])
-            _pf_c = [_hub_df.iloc[i] for i in (_rk - 2, _rk) if 0 <= i < len(_hub_df)]
-            _pf_c = [c for c in _pf_c if normalize(str(c["Player"])) != _n]
-            _pf = min(_pf_c, key=lambda c: abs(float(c["Barrett Score"]) - _me_sc), default=None)
-            _sl_c = []
-            for _d in (-1, 1):
-                _m = _hub_df[_hub_df["SalRank"] == _sr + _d] if _sr else _hub_df.iloc[0:0]
-                if len(_m):
-                    _sl_c.append(_m.iloc[0])
-            _sl_c = [c for c in _sl_c if normalize(str(c["Player"])) != _n]
-            _sl = min(_sl_c, key=lambda c: abs(float(c["Salary"]) - _me_sal), default=None)
-            _lines = []
-            if _pf is not None:
-                _lines.append(f'Similar 2025-26 performance: <b>{html.escape(str(_pf["Player"]))}</b> '
-                              f'({float(_pf["Barrett Score"]):.1f} Barrett Score)')
-            if _sl is not None:
-                _lines.append(f'Similar 2025-26 salary: <b>{html.escape(str(_sl["Player"]))}</b> '
-                              f'(&#36;{float(_sl["Salary"]):.1f}M)')
-            if _lines:
-                _anchor_note = '<div class="hub-note">' + "<br>".join(_lines) + "</div>"
-        except Exception:
+            _prof = []
+            if _bx:
+                for _lbl, _idx in [("Points", 0), ("Rebounds", 1), ("Assists", 2),
+                                   ("Steals", 3), ("Blocks", 4)]:
+                    _v = float(_bx[_idx])
+                    _pl = _pos_pool(idx=_idx)
+                    _av = _avg_of(_pl)
+                    _prof.append((_lbl, f"{_v:.1f}", _scale_of(_v, _pl),
+                                  f"{_av:.1f}" if _av is not None else ""))
+            _ts_pool = _pos_pool(col="TS")
+            _ts_avg = _avg_of(_ts_pool)
+            _prof.append(("TS%", f"{_sel['TS'] * 100:.1f}%", _scale_of(float(_sel["TS"]), _ts_pool),
+                          f"{_ts_avg * 100:.1f}%" if _ts_avg is not None else ""))
+            _dl_pool = _pos_pool(col="DLEB")
+            _dl_avg = _avg_of(_dl_pool)
+            _prof.append(("D-LEBRON", f"{_sel['DLEB']:+.1f}", _scale_of(float(_sel["DLEB"]), _dl_pool),
+                          f"{_dl_avg:+.1f}" if _dl_avg is not None else ""))
+            _bar_c = _thx or "var(--accent-teal)"
+            _ladder = "".join(
+                f'<div class="lrow"><span class="ll">{_l}</span>'
+                f'<div class="lbar"><span class="tickm" style="left:50%"></span>'
+                f'<div style="width:{max(2.0, _p):.0f}%;background:{_bar_c};position:relative;z-index:0"></div></div>'
+                f'<span class="lv">{_vtxt}'
+                + (f'<span class="avg">{_center_lbl} {_atxt}</span>' if _atxt else "")
+                + '</span></div>'
+                for _l, _vtxt, _p, _atxt in _prof)
+            _avail_txt = f"{_sel['Avail'] * 100:.0f}%" if _sel.get("Avail") else "—"
+            _salrank_txt = f"#{_sel['SalRank']}" if _sel.get("SalRank") else "—"
+            # Named anchors, plain-English: the player who performs nearest to him
+            # (production rank +/-1, closest score) and the player who gets paid
+            # nearest to him (salary rank +/-1, closest paycheck). Replaced the old
+            # cross-rank mapping ("value = the #13 paycheck"), which read like a
+            # riddle (Barrett, 2026-07-15).
             _anchor_note = ""
-        with st.container(border=True, key="hub_q1"):
-            st.markdown(f"""
-<div class="hub-qh">Right now · <b>2025-26</b></div>
-<div class="hub-stats" style="margin-top:0.7rem">
-  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
-  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">#{_sel["rank"]}</div><div class="l">League rank</div></div>
-  <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
-  <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}{(" &middot; " + _pred_sub) if _pred_sub else ""}</div><div class="l" title="{html.escape(_pred_tip)}">{_pred_label}</div></div>
-</div>
-<div class="hub-ladder">{_ladder}</div>
-<div class="hub-note" style="margin-top:0.3rem" title="Low-minute players are excluded so a garbage-time fluke cannot set the scale's endpoints.">Track runs lowest to highest rotation {html.escape(_pos_prim)} (15+ MPG) this season · middle tick = the {_center_word} (small number).</div>
-<div class="hub-stats" style="margin-top:1.1rem">
-  <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
-  <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
-  <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
-  <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel.get("Avail", 0) >= 0.85 else ('var(--value-bad)' if 0 < _sel.get("Avail", 0) < 0.6 else 'var(--fg-1)')}">{_avail_txt}</div><div class="l">Availability</div></div>
-</div>
-{_deal_line}
-{_anchor_note}
-<div class="hub-go"><a href="/Contract_Predictor?player={_q}" target="_top">Full contract prediction →</a></div>
-""", unsafe_allow_html=True)
+            try:
+                _rk = int(_sel["rank"])
+                _sr = int(_sel.get("SalRank") or 0)
+                _me_sc = float(_sel["Barrett Score"])
+                _me_sal = float(_sel["Salary"])
+                _pf_c = [_hub_df.iloc[i] for i in (_rk - 2, _rk) if 0 <= i < len(_hub_df)]
+                _pf_c = [c for c in _pf_c if normalize(str(c["Player"])) != _n]
+                _pf = min(_pf_c, key=lambda c: abs(float(c["Barrett Score"]) - _me_sc), default=None)
+                _sl_c = []
+                for _d in (-1, 1):
+                    _m = _hub_df[_hub_df["SalRank"] == _sr + _d] if _sr else _hub_df.iloc[0:0]
+                    if len(_m):
+                        _sl_c.append(_m.iloc[0])
+                _sl_c = [c for c in _sl_c if normalize(str(c["Player"])) != _n]
+                _sl = min(_sl_c, key=lambda c: abs(float(c["Salary"]) - _me_sal), default=None)
+                _lines = []
+                if _pf is not None:
+                    _lines.append(f'Similar 2025-26 performance: <b>{html.escape(str(_pf["Player"]))}</b> '
+                                  f'({float(_pf["Barrett Score"]):.1f} Barrett Score)')
+                if _sl is not None:
+                    _lines.append(f'Similar 2025-26 salary: <b>{html.escape(str(_sl["Player"]))}</b> '
+                                  f'(&#36;{float(_sl["Salary"]):.1f}M)')
+                if _lines:
+                    _anchor_note = '<div class="hub-note">' + "<br>".join(_lines) + "</div>"
+            except Exception:
+                _anchor_note = ""
+            with st.container(border=True, key="hub_q1"):
+                st.markdown(f"""
+    <div class="hub-qh">Right now · <b>2025-26</b></div>
+    <div class="hub-stats" style="margin-top:0.7rem">
+      <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
+      <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">#{_sel["rank"]}</div><div class="l">League rank</div></div>
+      <div class="hub-stat"><div class="v">{_sel["GP"]} · {_sel["MPG"]:.1f}</div><div class="l">GP · MPG</div></div>
+      <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}{(" &middot; " + _pred_sub) if _pred_sub else ""}</div><div class="l" title="{html.escape(_pred_tip)}">{_pred_label}</div></div>
+    </div>
+    <div class="hub-ladder">{_ladder}</div>
+    <div class="hub-note" style="margin-top:0.3rem" title="Low-minute players are excluded so a garbage-time fluke cannot set the scale's endpoints.">Track runs lowest to highest rotation {html.escape(_pos_prim)} (15+ MPG) this season · middle tick = the {_center_word} (small number).</div>
+    <div class="hub-stats" style="margin-top:1.1rem">
+      <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
+      <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
+      <div class="hub-stat"><div class="v">{_salrank_txt}</div><div class="l">Salary rank · paid like</div></div>
+      <div class="hub-stat"><div class="v" style="color:{'var(--value-good)' if _sel.get("Avail", 0) >= 0.85 else ('var(--value-bad)' if 0 < _sel.get("Avail", 0) < 0.6 else 'var(--fg-1)')}">{_avail_txt}</div><div class="l">Availability</div></div>
+    </div>
+    {_deal_line}
+    {_anchor_note}
+    <div class="hub-go"><a href="/Contract_Predictor?player={_q}" target="_top">Full contract prediction →</a></div>
+    """, unsafe_allow_html=True)
 
-    with _right:   # ── Quadrant 2: Career ────────────────────────────────────────
-        with st.container(border=True, key="hub_q2"):
-            st.markdown('<div class="hub-qh">Career · <b>scores & contracts</b></div>',
-                        unsafe_allow_html=True)
-            if len(_mine) >= 2:
-                # Team-colored score line over muted salary bars: one graphic,
-                # the whole pay-vs-production story. Plotly can't read CSS vars,
-                # so tints come from TEAM_HEX server-side; light golds (DEN/IND/
-                # UTA/NOP) get darkened for line contrast.
-                _chex = _thx or "#7ec8e8"
-                _line_hex = _hex_darken(_chex, 0.72) if _hex_is_light(_chex) else _chex
-                _pk = _mine.loc[_mine["barrett_score"].idxmax()]
-                _fig = go.Figure()
-                _fig.add_bar(x=_mine["Season"], y=_mine["salary"] / 1e6, yaxis="y2",
-                             marker_color=_hex_rgba(_chex, 0.22),
-                             hovertemplate="$%{y:.1f}M<extra></extra>")
-                _base = float(_mine["barrett_score"].min()) - 2
-                _fig.add_scatter(x=_mine["Season"], y=[_base] * len(_mine),
-                                 mode="lines", line=dict(width=0),
-                                 hoverinfo="skip", showlegend=False)
-                _fig.add_scatter(x=_mine["Season"], y=_mine["barrett_score"],
-                                 mode="lines+markers",
-                                 line=dict(color=_line_hex, width=2.5),
-                                 marker=dict(color=_line_hex, size=5),
-                                 fill="tonexty", fillcolor=_hex_rgba(_chex, 0.10),
-                                 hovertemplate="%{y:.2f}<extra></extra>")
-                _fig.add_scatter(x=[_pk["Season"]], y=[_pk["barrett_score"]],
-                                 mode="markers",
-                                 marker=dict(color="#f1c40f", size=11,
-                                             line=dict(color="#b8860b", width=1)),
-                                 hovertemplate="Peak: %{y:.2f}<extra></extra>")
-                _fig.update_layout(
-                    height=175, margin=dict(t=6, b=6, l=6, r=6), showlegend=False,
-                    paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
-                    yaxis2=dict(overlaying="y", side="right", showticklabels=False,
-                                showgrid=False, rangemode="tozero",
-                                range=[0, float(_mine["salary"].max()) / 1e6 * 3.2]),
-                )
-                # Season strings like "2003-04" parse as YYYY-MM dates, so plotly
-                # infers a DATE axis from early-career values and silently drops
-                # "2012-13"+ (months 13-26 do not exist). Force categories; thin
-                # the tick labels for long careers so they do not collide.
-                _fig.update_xaxes(type="category",
-                                  dtick=max(1, len(_mine) // 8),
-                                  tickfont=dict(size=9))
-                st.plotly_chart(theme_fig(_fig), use_container_width=True,
-                                config={"displayModeBar": False})
-            _ct = _mine.sort_values("Season", ascending=False)[
-                ["Season", "barrett_score", "score_rank", "salary"]].copy()
-            _ct.columns = ["Season", "Score", "Rank", "Salary"]
-            _ct["Salary"] = _ct["Salary"] / 1e6
-            _pk_score = float(_ct["Score"].max()) if len(_ct) else 0.0
-            html_table(
-                _ct,
-                formatters={"Score": lambda v: f"{v:.2f}",
-                            "Rank": lambda v: f"#{int(v)}" if v == v else "—",
-                            "Salary": lambda v: f"${v:.1f}M"},
-                styles={"Score": lambda v, _r: ("color:var(--gold);font-weight:800"
-                                                if v == _pk_score else "")},
-                row_style=lambda rd: ("background:rgba(241,196,15,0.07)"
-                                      if rd.get("Score") == _pk_score else ""),
-                aligns={"Score": "right", "Rank": "right", "Salary": "right"},
-                numeric={"Score", "Rank", "Salary"},
-                height=216,
-            )
-            st.markdown(f'<div class="hub-go"><a href="/Search?player={_q}" target="_top">'
-                        f'Full profile & career →</a></div>', unsafe_allow_html=True)
-
-    with _left:   # ── Quadrant 3: Similar Today ────────────────────────────────
-        with st.container(border=True, key="hub_q3"):
-            st.markdown('<div class="hub-qh">Similar players · <b>today</b></div>',
-                        unsafe_allow_html=True)
-            _sim = (_hub_df.assign(_d=(_hub_df["Barrett Score"] - _sel["Barrett Score"]).abs())
-                    .loc[lambda d: d["norm"] != _n]
-                    .nsmallest(10, "_d"))
-            # Pin the selected player into the list so the comparison has an anchor.
-            _sim = (pd.concat([_sim, _hub_df[_hub_df["norm"] == _n]])
-                    .sort_values("Barrett Score", ascending=False))
-            _sim_view = _sim[["#", "Player", "Team", "Barrett Score", "Salary", "Predicted"]].copy()
-            _s_lo = float(_sim_view["Barrett Score"].min())
-            _s_hi = float(_sim_view["Barrett Score"].max())
-            _s_rng = (_s_hi - _s_lo) or 1.0
-
-            def _sim_player_cell(v, r):
-                _tm = str(r.get("Team", ""))
-                _ring = TEAM_HEX.get(_tm, "")
-                _ring_st = f' style="box-shadow:inset 0 0 0 2px {_ring}"' if _ring else ""
-                return (f'<span class="hv-mini-wrap"{_ring_st}>{_face_img(str(v), "hv-mini-face")}</span>'
-                        f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
-                        f'target="_top">{html.escape(str(v))}</a>')
-
-            html_table(
-                _sim_view,
-                formatters={
-                    "Player": _sim_player_cell,
-                    "Team": team_cell,
-                    "Barrett Score": lambda v: f"{v:.2f}",
-                    "Salary": lambda v: f"${v:.1f}M",
-                    "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
-                                               else ('<span class="hv-chip max">MAX</span>'
-                                                     if normalize(str(r.get("Player", ""))) in _max_norms else "")
-                                                    + f"${v:.1f}M"),
-                },
-                raw={"Player", "Team", "Predicted"},
-                styles={
-                    "Barrett Score": lambda v, _r: (
-                        f"background:linear-gradient(90deg,var(--bar-tint) "
-                        f"{max(2, min(100, v / (_s_hi or 1) * 100)):.0f}%,transparent 0)"),
-                    "Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
-                                                else "color:var(--accent-teal)"),
-                },
-                row_style=lambda rd: ((f"background:{_hex_rgba(_thx, 0.10)};font-weight:600" if _thx
-                                       else "background:var(--panel-hover);font-weight:600")
-                                      if normalize(str(rd.get("Player", ""))) == _n else ""),
-                aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
-                numeric={"#", "Barrett Score", "Salary", "Predicted"},
-                height=404,
-            )
-            st.markdown('<div class="hub-note">Closest current Barrett Scores in the 2025-26 pool.</div>'
-                        '<div class="hub-go"><a href="/Rankings" target="_top">Full current rankings →</a></div>',
-                        unsafe_allow_html=True)
-
-    with _right:   # ── Quadrant 4: Career Twins (all eras) ──────────────────────
-        with st.container(border=True, key="hub_q4"):
-            st.markdown('<div class="hub-qh">Career twins · <b>1973 → today</b></div>',
-                        unsafe_allow_html=True)
-            _agg = _hub_career_agg()
-            if not _agg.empty and _pid is not None and (_agg["PLAYER_ID"] == _pid).any():
-                _me = _agg[_agg["PLAYER_ID"] == _pid].iloc[0]
-                _tw = (_agg[(_agg["PLAYER_ID"] != _pid) & (_agg["yrs"] >= 3)]
-                       .assign(_d=lambda d: (d["avg"] - _me["avg"]).abs())
-                       .nsmallest(10, "_d"))
-                # Pin the selected player among his twins.
-                _tw = (pd.concat([_tw, _agg[_agg["PLAYER_ID"] == _pid]])
-                       .sort_values("avg", ascending=False))
-                # Career-shape sparklines, from the same parquet (one groupby pass).
-                _arc_ids = set(_tw["PLAYER_ID"])
-                _arcs = {pid: _spark_svg(g.sort_values("Season")["barrett_score"].tolist())
-                         for pid, g in _car[_car["PLAYER_ID"].isin(_arc_ids)].groupby("PLAYER_ID")}
-                _tw_view = _tw[["Player", "PLAYER_ID", "avg", "peak", "best_rank", "top_sal"]].copy()
-                _tw_view["Arc"] = _tw_view["PLAYER_ID"].map(_arcs).fillna("")
-                _tw_view = _tw_view.drop(columns=["PLAYER_ID"])[
-                    ["Player", "Arc", "avg", "peak", "best_rank", "top_sal"]]
-                _tw_view.columns = ["Player", "Arc", "Avg Score", "Peak", "Best Rank", "Top Salary"]
-                _tw_view["Top Salary"] = _tw_view["Top Salary"] / 1e6
-                _t_lo = float(_tw_view["Avg Score"].min())
-                _t_rng = (float(_tw_view["Avg Score"].max()) - _t_lo) or 1.0
+        with _right:   # ── Quadrant 2: Career ────────────────────────────────────────
+            with st.container(border=True, key="hub_q2"):
+                st.markdown('<div class="hub-qh">Career · <b>scores & contracts</b></div>',
+                            unsafe_allow_html=True)
+                if len(_mine) >= 2:
+                    # Team-colored score line over muted salary bars: one graphic,
+                    # the whole pay-vs-production story. Plotly can't read CSS vars,
+                    # so tints come from TEAM_HEX server-side; light golds (DEN/IND/
+                    # UTA/NOP) get darkened for line contrast.
+                    _chex = _thx or "#7ec8e8"
+                    _line_hex = _hex_darken(_chex, 0.72) if _hex_is_light(_chex) else _chex
+                    _pk = _mine.loc[_mine["barrett_score"].idxmax()]
+                    _fig = go.Figure()
+                    _fig.add_bar(x=_mine["Season"], y=_mine["salary"] / 1e6, yaxis="y2",
+                                 marker_color=_hex_rgba(_chex, 0.22),
+                                 hovertemplate="$%{y:.1f}M<extra></extra>")
+                    _base = float(_mine["barrett_score"].min()) - 2
+                    _fig.add_scatter(x=_mine["Season"], y=[_base] * len(_mine),
+                                     mode="lines", line=dict(width=0),
+                                     hoverinfo="skip", showlegend=False)
+                    _fig.add_scatter(x=_mine["Season"], y=_mine["barrett_score"],
+                                     mode="lines+markers",
+                                     line=dict(color=_line_hex, width=2.5),
+                                     marker=dict(color=_line_hex, size=5),
+                                     fill="tonexty", fillcolor=_hex_rgba(_chex, 0.10),
+                                     hovertemplate="%{y:.2f}<extra></extra>")
+                    _fig.add_scatter(x=[_pk["Season"]], y=[_pk["barrett_score"]],
+                                     mode="markers",
+                                     marker=dict(color="#f1c40f", size=11,
+                                                 line=dict(color="#b8860b", width=1)),
+                                     hovertemplate="Peak: %{y:.2f}<extra></extra>")
+                    _fig.update_layout(
+                        height=175, margin=dict(t=6, b=6, l=6, r=6), showlegend=False,
+                        paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                        yaxis2=dict(overlaying="y", side="right", showticklabels=False,
+                                    showgrid=False, rangemode="tozero",
+                                    range=[0, float(_mine["salary"].max()) / 1e6 * 3.2]),
+                    )
+                    # Season strings like "2003-04" parse as YYYY-MM dates, so plotly
+                    # infers a DATE axis from early-career values and silently drops
+                    # "2012-13"+ (months 13-26 do not exist). Force categories; thin
+                    # the tick labels for long careers so they do not collide.
+                    _fig.update_xaxes(type="category",
+                                      dtick=max(1, len(_mine) // 8),
+                                      tickfont=dict(size=9))
+                    st.plotly_chart(theme_fig(_fig), use_container_width=True,
+                                    config={"displayModeBar": False})
+                _ct = _mine.sort_values("Season", ascending=False)[
+                    ["Season", "barrett_score", "score_rank", "salary"]].copy()
+                _ct.columns = ["Season", "Score", "Rank", "Salary"]
+                _ct["Salary"] = _ct["Salary"] / 1e6
+                _pk_score = float(_ct["Score"].max()) if len(_ct) else 0.0
                 html_table(
-                    _tw_view,
+                    _ct,
+                    formatters={"Score": lambda v: f"{v:.2f}",
+                                "Rank": lambda v: f"#{int(v)}" if v == v else "—",
+                                "Salary": lambda v: f"${v:.1f}M"},
+                    styles={"Score": lambda v, _r: ("color:var(--gold);font-weight:800"
+                                                    if v == _pk_score else "")},
+                    row_style=lambda rd: ("background:rgba(241,196,15,0.07)"
+                                          if rd.get("Score") == _pk_score else ""),
+                    aligns={"Score": "right", "Rank": "right", "Salary": "right"},
+                    numeric={"Score", "Rank", "Salary"},
+                    height=216,
+                )
+                st.markdown(f'<div class="hub-go"><a href="/Search?player={_q}" target="_top">'
+                            f'Full profile & career →</a></div>', unsafe_allow_html=True)
+
+        with _left:   # ── Quadrant 3: Similar Today ────────────────────────────────
+            with st.container(border=True, key="hub_q3"):
+                st.markdown('<div class="hub-qh">Similar players · <b>today</b></div>',
+                            unsafe_allow_html=True)
+                _sim = (_hub_df.assign(_d=(_hub_df["Barrett Score"] - _sel["Barrett Score"]).abs())
+                        .loc[lambda d: d["norm"] != _n]
+                        .nsmallest(10, "_d"))
+                # Pin the selected player into the list so the comparison has an anchor.
+                _sim = (pd.concat([_sim, _hub_df[_hub_df["norm"] == _n]])
+                        .sort_values("Barrett Score", ascending=False))
+                _sim_view = _sim[["#", "Player", "Team", "Barrett Score", "Salary", "Predicted"]].copy()
+                _s_lo = float(_sim_view["Barrett Score"].min())
+                _s_hi = float(_sim_view["Barrett Score"].max())
+                _s_rng = (_s_hi - _s_lo) or 1.0
+
+                def _sim_player_cell(v, r):
+                    _tm = str(r.get("Team", ""))
+                    _ring = TEAM_HEX.get(_tm, "")
+                    _ring_st = f' style="box-shadow:inset 0 0 0 2px {_ring}"' if _ring else ""
+                    return (f'<span class="hv-mini-wrap"{_ring_st}>{_face_img(str(v), "hv-mini-face")}</span>'
+                            f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
+                            f'target="_top">{html.escape(str(v))}</a>')
+
+                html_table(
+                    _sim_view,
                     formatters={
-                        "Player": lambda v: (f'<span class="hv-mini-wrap">{_face_img(str(v), "hv-mini-face")}</span>'
-                                             f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
-                                             f'target="_top">{html.escape(str(v))}</a>'),
-                        "Avg Score": lambda v: f"{v:.2f}",
-                        "Peak": lambda v: f"{v:.2f}",
-                        "Best Rank": lambda v: f"#{int(v)}" if v == v else "—",
-                        "Top Salary": lambda v: f"${v:.1f}M",
+                        "Player": _sim_player_cell,
+                        "Team": team_cell,
+                        "Barrett Score": lambda v: f"{v:.2f}",
+                        "Salary": lambda v: f"${v:.1f}M",
+                        "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
+                                                   else ('<span class="hv-chip max">MAX</span>'
+                                                         if normalize(str(r.get("Player", ""))) in _max_norms else "")
+                                                        + f"${v:.1f}M"),
                     },
-                    raw={"Player", "Arc"},
+                    raw={"Player", "Team", "Predicted"},
                     styles={
-                        "Avg Score": lambda v, _r: (
+                        "Barrett Score": lambda v, _r: (
                             f"background:linear-gradient(90deg,var(--bar-tint) "
-                            f"{max(2, min(100, v / ((_t_lo + _t_rng) or 1) * 100)):.0f}%,transparent 0)"),
+                            f"{max(2, min(100, v / (_s_hi or 1) * 100)):.0f}%,transparent 0)"),
+                        "Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
+                                                    else "color:var(--accent-teal)"),
                     },
                     row_style=lambda rd: ((f"background:{_hex_rgba(_thx, 0.10)};font-weight:600" if _thx
                                            else "background:var(--panel-hover);font-weight:600")
                                           if normalize(str(rd.get("Player", ""))) == _n else ""),
-                    aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
-                            "Top Salary": "right"},
-                    numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
+                    aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
+                    numeric={"#", "Barrett Score", "Salary", "Predicted"},
                     height=404,
                 )
-                st.markdown(f'<div class="hub-note">Closest career averages, all eras: '
-                            f'{html.escape(_sel["Player"])} at {_me["avg"]:.2f} over '
-                            f'{int(_me["yrs"])} season{"s" if _me["yrs"] != 1 else ""}.</div>'
-                            f'<div class="hub-go"><a href="/Legacy" target="_top">Compare eras in Legacy →</a></div>',
+                st.markdown('<div class="hub-note">Closest current Barrett Scores in the 2025-26 pool.</div>'
+                            '<div class="hub-go"><a href="/Rankings" target="_top">Full current rankings →</a></div>',
                             unsafe_allow_html=True)
-            else:
-                st.markdown('<div class="hub-note">No career history on file yet.</div>',
+
+        with _right:   # ── Quadrant 4: Career Twins (all eras) ──────────────────────
+            with st.container(border=True, key="hub_q4"):
+                st.markdown('<div class="hub-qh">Career twins · <b>1973 → today</b></div>',
                             unsafe_allow_html=True)
+                _agg = _hub_career_agg()
+                if not _agg.empty and _pid is not None and (_agg["PLAYER_ID"] == _pid).any():
+                    _me = _agg[_agg["PLAYER_ID"] == _pid].iloc[0]
+                    _tw = (_agg[(_agg["PLAYER_ID"] != _pid) & (_agg["yrs"] >= 3)]
+                           .assign(_d=lambda d: (d["avg"] - _me["avg"]).abs())
+                           .nsmallest(10, "_d"))
+                    # Pin the selected player among his twins.
+                    _tw = (pd.concat([_tw, _agg[_agg["PLAYER_ID"] == _pid]])
+                           .sort_values("avg", ascending=False))
+                    # Career-shape sparklines, from the same parquet (one groupby pass).
+                    _arc_ids = set(_tw["PLAYER_ID"])
+                    _arcs = {pid: _spark_svg(g.sort_values("Season")["barrett_score"].tolist())
+                             for pid, g in _car[_car["PLAYER_ID"].isin(_arc_ids)].groupby("PLAYER_ID")}
+                    _tw_view = _tw[["Player", "PLAYER_ID", "avg", "peak", "best_rank", "top_sal"]].copy()
+                    _tw_view["Arc"] = _tw_view["PLAYER_ID"].map(_arcs).fillna("")
+                    _tw_view = _tw_view.drop(columns=["PLAYER_ID"])[
+                        ["Player", "Arc", "avg", "peak", "best_rank", "top_sal"]]
+                    _tw_view.columns = ["Player", "Arc", "Avg Score", "Peak", "Best Rank", "Top Salary"]
+                    _tw_view["Top Salary"] = _tw_view["Top Salary"] / 1e6
+                    _t_lo = float(_tw_view["Avg Score"].min())
+                    _t_rng = (float(_tw_view["Avg Score"].max()) - _t_lo) or 1.0
+                    html_table(
+                        _tw_view,
+                        formatters={
+                            "Player": lambda v: (f'<span class="hv-mini-wrap">{_face_img(str(v), "hv-mini-face")}</span>'
+                                                 f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
+                                                 f'target="_top">{html.escape(str(v))}</a>'),
+                            "Avg Score": lambda v: f"{v:.2f}",
+                            "Peak": lambda v: f"{v:.2f}",
+                            "Best Rank": lambda v: f"#{int(v)}" if v == v else "—",
+                            "Top Salary": lambda v: f"${v:.1f}M",
+                        },
+                        raw={"Player", "Arc"},
+                        styles={
+                            "Avg Score": lambda v, _r: (
+                                f"background:linear-gradient(90deg,var(--bar-tint) "
+                                f"{max(2, min(100, v / ((_t_lo + _t_rng) or 1) * 100)):.0f}%,transparent 0)"),
+                        },
+                        row_style=lambda rd: ((f"background:{_hex_rgba(_thx, 0.10)};font-weight:600" if _thx
+                                               else "background:var(--panel-hover);font-weight:600")
+                                              if normalize(str(rd.get("Player", ""))) == _n else ""),
+                        aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
+                                "Top Salary": "right"},
+                        numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
+                        height=404,
+                    )
+                    st.markdown(f'<div class="hub-note">Closest career averages, all eras: '
+                                f'{html.escape(_sel["Player"])} at {_me["avg"]:.2f} over '
+                                f'{int(_me["yrs"])} season{"s" if _me["yrs"] != 1 else ""}.</div>'
+                                f'<div class="hub-go"><a href="/Legacy" target="_top">Compare eras in Legacy →</a></div>',
+                                unsafe_allow_html=True)
+                else:
+                    st.markdown('<div class="hub-note">No career history on file yet.</div>',
+                                unsafe_allow_html=True)
 
 # ── The board ─────────────────────────────────────────────────────────────────
 # Rail header + quick-filter pills + the value-coded table, all in one fragment
