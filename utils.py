@@ -4761,6 +4761,18 @@ def fetch_rookie_scale_players(season: str, cache_v: int = 3) -> set:
             stale = None
     if stale and _dc_fresh(path, ttl=86400):
         return stale
+    # Stale but present: serve it now, refresh behind. The derive makes a live
+    # PlayerIndex request (up to 15s) and chains into the contract fetch, so it
+    # has no business inside a page rerun when yesterday's set is on disk.
+    if stale:
+        _refresh_in_background(path.name,
+                               lambda: _derive_rookie_scale_players(season, path, None))
+        return stale
+    return _derive_rookie_scale_players(season, path, stale)
+
+
+def _derive_rookie_scale_players(season: str, path, stale: set | None) -> set:
+    """The live derivation. Blocking; background-thread or first-run only."""
     try:
         end_year = int(season.split("-")[0]) + 1  # "2025-26" → 2026
 
@@ -4828,6 +4840,17 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
             stale = None
     if stale and _dc_fresh(path, ttl=86400):
         return stale
+    # Stale but present: serve it now, refresh behind -- the derive hits ESPN
+    # and Spotrac with 15s timeouts, request paths do not wait for that.
+    if stale:
+        _refresh_in_background(path.name,
+                               lambda: _derive_next_year_contracts(espn_year, path, None))
+        return stale
+    return _derive_next_year_contracts(espn_year, path, stale)
+
+
+def _derive_next_year_contracts(espn_year: int, path, stale: dict | None) -> dict:
+    """The live ESPN + Spotrac derivation. Blocking; background or first run."""
     next_year = espn_year + 1
     contracts: dict = {}
     _hdrs = {
@@ -5692,9 +5715,33 @@ _BBREF_TEAMS = [
 ]
 
 
-# One background refresh at a time, per process.
-_CEY_REFRESH_LOCK = threading.Lock()
-_CEY_REFRESHING = False
+# One background refresh per cache key at a time, per process. Request-path
+# fetchers serve their stale disk cache immediately and hand the real work to
+# this instead of ever waiting on the network -- the /data seed preserves
+# mtimes (shutil.copy2), so committed caches arrive pre-aged and every TTL
+# fetcher would otherwise run its network derive inside whichever page rerun
+# crossed the boundary first.
+_BG_REFRESH_LOCK = threading.Lock()
+_BG_REFRESHING: set = set()
+
+
+def _refresh_in_background(key: str, work) -> None:
+    """Run work() once on a daemon thread; coalesce repeat requests for key."""
+    with _BG_REFRESH_LOCK:
+        if key in _BG_REFRESHING:
+            return
+        _BG_REFRESHING.add(key)
+
+    def _run() -> None:
+        try:
+            work()
+        except Exception as e:
+            logger.warning("background refresh %s failed: %s", key, e)
+        finally:
+            with _BG_REFRESH_LOCK:
+                _BG_REFRESHING.discard(key)
+
+    threading.Thread(target=_run, daemon=True, name=f"bg-refresh-{key}").start()
 
 
 @st.cache_data(ttl=86400, show_spinner=False)
@@ -5722,7 +5769,6 @@ def fetch_contract_end_years(cache_v: int = 2, block: bool = False) -> dict:
     wait: a truly empty cache (first run in dev, nothing to serve), and the
     refresh script via block=True.
     """
-    global _CEY_REFRESHING
     path = _dc_path(f"contract_end_years_v{cache_v}.pkl")
     if _dc_fresh(path, ttl=86400):
         try:
@@ -5739,21 +5785,7 @@ def fetch_contract_end_years(cache_v: int = 2, block: bool = False) -> dict:
         stale = {}
 
     if stale and not block:
-        with _CEY_REFRESH_LOCK:
-            if not _CEY_REFRESHING:
-                _CEY_REFRESHING = True
-
-                def _refresh() -> None:
-                    global _CEY_REFRESHING
-                    try:
-                        _scrape_contract_end_years(path)
-                    except Exception as e:
-                        logger.warning("background contract refresh failed: %s", e)
-                    finally:
-                        _CEY_REFRESHING = False
-
-                threading.Thread(target=_refresh, daemon=True,
-                                 name="cey-refresh").start()
+        _refresh_in_background(path.name, lambda: _scrape_contract_end_years(path))
         return stale
 
     return _scrape_contract_end_years(path)
