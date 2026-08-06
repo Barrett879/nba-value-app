@@ -15,7 +15,9 @@ Two things it handles that a bare call to fetch_contract_end_years() does not:
   * The freshness gate. fetch_contract_end_years short-circuits on a cache
     younger than a day, so a plain call after a recent run is a no-op. This
     bypasses the gate WITHOUT moving the file: the fetcher needs the old cache
-    in place to carry rows forward for any team it cannot read.
+    in place to carry rows forward for any team it cannot read. block=True
+    forces the scrape inline -- the app path serves stale and refreshes in a
+    background thread, which would let this script exit before the scrape ran.
 
 Prints a coverage report against data/master_roster.csv at the end. The cache is
 only rewritten if the scrape is at least as complete as what is already there --
@@ -128,7 +130,7 @@ def main() -> int:
 
     print(f"scraping 30 team pages at {MIN_PACE}s apiece...", flush=True)
     t0 = time.time()
-    cey = utils.fetch_contract_end_years()
+    cey = utils.fetch_contract_end_years(block=True)
     print(f"done in {time.time()-t0:.0f}s", flush=True)
 
     after = {}

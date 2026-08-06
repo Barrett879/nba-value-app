@@ -5692,8 +5692,13 @@ _BBREF_TEAMS = [
 ]
 
 
-@st.cache_data(ttl=86400, show_spinner="Loading contract data…")
-def fetch_contract_end_years(cache_v: int = 2) -> dict:
+# One background refresh at a time, per process.
+_CEY_REFRESH_LOCK = threading.Lock()
+_CEY_REFRESHING = False
+
+
+@st.cache_data(ttl=86400, show_spinner=False)
+def fetch_contract_end_years(cache_v: int = 2, block: bool = False) -> dict:
     """Returns {normalized_player_name: contract_info} for every player
     with an active multi-year contract.
 
@@ -5707,7 +5712,17 @@ def fetch_contract_end_years(cache_v: int = 2) -> dict:
 
     For free agents this season (no future salaries), the player simply
     doesn't appear in the dict. The caller treats absence as "signing now."
+
+    NEVER blocks a request path on the network. A stale-but-present cache is
+    served immediately and a single daemon thread refreshes it behind the
+    scenes -- the earlier once-a-day design still put a live 30-page BBRef
+    scrape inside whichever page rerun happened to cross the TTL, ~45s for the
+    user who drew the short straw, every single day (the /data seed preserves
+    mtimes, so the committed cache arrives pre-aged). Only two callers may
+    wait: a truly empty cache (first run in dev, nothing to serve), and the
+    refresh script via block=True.
     """
+    global _CEY_REFRESHING
     path = _dc_path(f"contract_end_years_v{cache_v}.pkl")
     if _dc_fresh(path, ttl=86400):
         try:
@@ -5717,6 +5732,36 @@ def fetch_contract_end_years(cache_v: int = 2) -> dict:
         except Exception:
             pass
 
+    stale: dict = {}
+    try:
+        stale = _pkl_load(path) or {}
+    except Exception:
+        stale = {}
+
+    if stale and not block:
+        with _CEY_REFRESH_LOCK:
+            if not _CEY_REFRESHING:
+                _CEY_REFRESHING = True
+
+                def _refresh() -> None:
+                    global _CEY_REFRESHING
+                    try:
+                        _scrape_contract_end_years(path)
+                    except Exception as e:
+                        logger.warning("background contract refresh failed: %s", e)
+                    finally:
+                        _CEY_REFRESHING = False
+
+                threading.Thread(target=_refresh, daemon=True,
+                                 name="cey-refresh").start()
+        return stale
+
+    return _scrape_contract_end_years(path)
+
+
+def _scrape_contract_end_years(path) -> dict:
+    """The actual BBRef scrape. Blocking; call from a background thread or a
+    script, never directly from a page rerun with data already on disk."""
     out: dict = {}
     # Read what we already have BEFORE going near the network, so a failed
     # scrape always has something to fall back on.
