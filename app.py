@@ -903,12 +903,143 @@ if "player" in st.query_params:
 # hold each quadrant — raw <div> cards can't wrap Streamlit elements (charts,
 # tables): markdown auto-closes them and the layout shatters.
 # The hub renders inside an always-present keyed container so the page keeps
-# the same top-level element sequence with or without a selection. Without the
-# stable slot, picking a player inserts ~30 elements here, every element after
-# it (the whole board section) changes delta path, and Streamlit unmounts and
-# re-streams it: the visible half-second collapse-and-restore on selection.
-with st.container(key="hub_slot"):
-    if _sel:
+# the same top-level element sequence with or without a selection (without the
+# stable slot, picking a player shifted every later element's delta path and
+# Streamlit unmounted and re-streamed the whole board: the half-second
+# collapse-and-restore on selection). The slot is CREATED here, above the
+# board, but FILLED after _board() runs, so a slow hub computation (cold
+# caches after a deploy) can never hold the board hostage: the board paints
+# first and the hub streams into its slot above whenever it is ready.
+_hub_slot = st.container(key="hub_slot")
+
+# ── The board ─────────────────────────────────────────────────────────────────
+# Rail header + quick-filter pills + the value-coded table, all in one fragment
+# so a filter click re-renders only the board (the sort script is document-
+# delegated and survives fragment re-renders).
+_BOARD_VIEWS = ["All", "Bargains", "Overpays", "Free agents", "Max tier"]
+_SCORE_MAX = float(_hub_df["Barrett Score"].max() or 0) or 1.0
+
+st.markdown("""
+<style>
+.st-key-board_view [data-testid="stButtonGroup"] button{border-radius:999px;
+    font-weight:700;font-size:.78rem;background:var(--panel-solid);
+    border:1px solid var(--panel-line);color:var(--fg-3);}
+.st-key-board_view [data-testid="stButtonGroup"] button:hover{color:var(--fg-1);
+    border-color:var(--fg-5);}
+.st-key-board_view [data-testid="stButtonGroup"] button[kind="pillsActive"]{
+    color:var(--accent-teal);border-color:var(--accent-teal);
+    background:var(--panel-hover);}
+.st-key-board_view [data-testid="stButtonGroup"] button p{font-size:.78rem !important;}
+.hv-plink{color:var(--sky);font-weight:700;text-decoration:none}
+.hv-plink:hover{text-decoration:underline}
+/* The hub_slot container exists purely for reconciliation (stable delta paths;
+   see its declaration). Flatten it out of layout with display:contents so the
+   hub children flow exactly as they did as root-level elements. Without this,
+   the slot's stVerticalBlock is a real flex column and picks up the sitewide
+   1.7rem block gap, which the zeroed root gap was supposed to suppress. */
+[data-testid="stLayoutWrapper"]:has(> .st-key-hub_slot){display:contents !important;}
+[data-testid="stVerticalBlock"].st-key-hub_slot{display:contents !important;gap:0 !important;}
+/* Streamlit 1.51 puts margin-bottom:-16px on every stMarkdownContainer, which
+   swallows section spacing under the zeroed root gap. Neutralize it for the
+   page-level rhythm blocks only (rails + card grid). */
+[data-testid="stMarkdownContainer"]:has(.hv-rail),
+[data-testid="stMarkdownContainer"]:has(.fp-grid),
+[data-testid="stMarkdownContainer"]:has(.hub-banner){margin-bottom:0 !important;}
+/* Board fragment: tighten rail-to-pills and pills-to-table. The pills'
+   element container (.st-key-board_view) is a DIRECT child of the fragment's
+   inner stVerticalBlock in 1.51, so target that block's gap; the old
+   "> stLayoutWrapper" form matched an outer zero-height block and did
+   nothing. */
+[data-testid="stVerticalBlock"]:has(> .st-key-board_view){
+    gap:0.45rem !important;}
+[data-testid="stVerticalBlock"]:has(> .st-key-board_view) .hv-table-wrap{
+    margin-top:0.2rem;}
+</style>
+""", unsafe_allow_html=True)
+
+
+@st.fragment
+def _board():
+    _pick = st.session_state.get("board_view") or "All"
+    if _pick == "Bargains":
+        _df = _hub_df[_hub_df["DeltaMkt"] <= -5].sort_values("DeltaMkt")
+    elif _pick == "Overpays":
+        _df = _hub_df[_hub_df["DeltaMkt"] >= 5].sort_values("DeltaMkt", ascending=False)
+    elif _pick == "Free agents":
+        _df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
+    elif _pick == "Max tier":
+        _df = _hub_df[_hub_df["norm"].isin(_max_norms)]
+    else:
+        _df = _hub_df
+    _rail("", "2025-26 Player Board", count=f"{len(_df)} players")
+    st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
+             label_visibility="collapsed")
+
+    # The score column is the board's main event, so its explainer lives here
+    # (same expander every inner page shows), not up in the hero.
+
+    _view = _df
+    _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",
+                   "ProjValue", "DeltaMkt", "Predicted", "Next"]].rename(columns={
+        "Barrett Score": "2025-26 Barrett Score", "Salary": "2025-26 Salary",
+        "ProjValue": "2025-26 Value", "DeltaMkt": "+/-",
+        "Predicted": "2026-27 Predicted", "Next": "Actual 2026-27 Salary"})
+    html_table(
+        _view,
+        formatters={
+            "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
+                                 f'target="_top">{html.escape(str(v))}</a>'),
+            "Team": team_cell,
+            "2025-26 Barrett Score": lambda v: f"{v:.2f}",
+            "2025-26 Salary": lambda v: f"${v:.2f}M",
+            "2025-26 Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                        else f"${v:.2f}M"),
+            "Actual 2026-27 Salary": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                                   else ('<span class="hv-chip max">MAX</span>'
+                                                         if normalize(str(r.get("Player", ""))) in _amax_norms else "")
+                                                        + f"${v:.2f}M"),
+            "+/-": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                              else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
+            "2026-27 Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
+                                               else ('<span class="hv-chip max">MAX</span>'
+                                                     if normalize(str(r.get("Player", ""))) in _max_norms else "")
+                                                    + f"${v:.1f}M"),
+        },
+        raw={"Player", "Team", "2026-27 Predicted", "Actual 2026-27 Salary"},
+        styles={
+            "2025-26 Barrett Score": lambda v, _r: (
+                "" if v is None or (isinstance(v, float) and v != v) else
+                f"background:linear-gradient(90deg,var(--bar-tint) "
+                f"{max(4, min(100, v / _SCORE_MAX * 100)):.0f}%,transparent 0)"),
+            "+/-": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                  else ("color:var(--value-good);font-weight:700" if v < 0
+                                        else "color:var(--value-bad);font-weight:700")),
+            "2026-27 Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
+                                                else "color:var(--accent-teal)"),
+        },
+        aligns={"#": "right", "2025-26 Barrett Score": "right", "2025-26 Salary": "right",
+                "2025-26 Value": "right", "+/-": "right", "2026-27 Predicted": "right",
+                "Actual 2026-27 Salary": "right"},
+        numeric={"#", "2025-26 Barrett Score", "2025-26 Salary", "2025-26 Value",
+                 "+/-", "2026-27 Predicted", "Actual 2026-27 Salary"},
+        helps={
+            "2025-26 Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
+            "2025-26 Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
+            "+/-": "2025-26 Salary minus 2025-26 Value. Negative = underpaid.",
+            "2026-27 Predicted": ("The Contract Predictor's model projection: what a NEW deal signed today "
+                                  "would pay, at next season's cap." + _accuracy_note()),
+            "Actual 2026-27 Salary": "What is really on the books for 2026-27: existing contract, exercised option, or the actual new deal signed this summer. Blank = nothing signed yet.",
+        },
+        height=min(760, max(260, len(_view) * 38 + 46)),
+    )
+
+
+_board()
+
+# ── Hub fill — runs AFTER the board so the board is never blocked (see the
+#    _hub_slot declaration above the board for the full reasoning). ─────────
+if _sel:
+    with _hub_slot:
         _n = _sel["norm"]
         _pv = _pcv_by.get(_n) or {}
         _draft = get_player_draft_info(_sel["Player"])
@@ -1448,123 +1579,6 @@ with st.container(key="hub_slot"):
                 else:
                     st.markdown('<div class="hub-note">No career history on file yet.</div>',
                                 unsafe_allow_html=True)
-
-# ── The board ─────────────────────────────────────────────────────────────────
-# Rail header + quick-filter pills + the value-coded table, all in one fragment
-# so a filter click re-renders only the board (the sort script is document-
-# delegated and survives fragment re-renders).
-_BOARD_VIEWS = ["All", "Bargains", "Overpays", "Free agents", "Max tier"]
-_SCORE_MAX = float(_hub_df["Barrett Score"].max() or 0) or 1.0
-
-st.markdown("""
-<style>
-.st-key-board_view [data-testid="stButtonGroup"] button{border-radius:999px;
-    font-weight:700;font-size:.78rem;background:var(--panel-solid);
-    border:1px solid var(--panel-line);color:var(--fg-3);}
-.st-key-board_view [data-testid="stButtonGroup"] button:hover{color:var(--fg-1);
-    border-color:var(--fg-5);}
-.st-key-board_view [data-testid="stButtonGroup"] button[kind="pillsActive"]{
-    color:var(--accent-teal);border-color:var(--accent-teal);
-    background:var(--panel-hover);}
-.st-key-board_view [data-testid="stButtonGroup"] button p{font-size:.78rem !important;}
-.hv-plink{color:var(--sky);font-weight:700;text-decoration:none}
-.hv-plink:hover{text-decoration:underline}
-/* Streamlit 1.51 puts margin-bottom:-16px on every stMarkdownContainer, which
-   swallows section spacing under the zeroed root gap. Neutralize it for the
-   page-level rhythm blocks only (rails + card grid). */
-[data-testid="stMarkdownContainer"]:has(.hv-rail),
-[data-testid="stMarkdownContainer"]:has(.fp-grid),
-[data-testid="stMarkdownContainer"]:has(.hub-banner){margin-bottom:0 !important;}
-/* Board fragment: tighten rail-to-pills and pills-to-table. The pills'
-   element container (.st-key-board_view) is a DIRECT child of the fragment's
-   inner stVerticalBlock in 1.51, so target that block's gap; the old
-   "> stLayoutWrapper" form matched an outer zero-height block and did
-   nothing. */
-[data-testid="stVerticalBlock"]:has(> .st-key-board_view){
-    gap:0.45rem !important;}
-[data-testid="stVerticalBlock"]:has(> .st-key-board_view) .hv-table-wrap{
-    margin-top:0.2rem;}
-</style>
-""", unsafe_allow_html=True)
-
-
-@st.fragment
-def _board():
-    _pick = st.session_state.get("board_view") or "All"
-    if _pick == "Bargains":
-        _df = _hub_df[_hub_df["DeltaMkt"] <= -5].sort_values("DeltaMkt")
-    elif _pick == "Overpays":
-        _df = _hub_df[_hub_df["DeltaMkt"] >= 5].sort_values("DeltaMkt", ascending=False)
-    elif _pick == "Free agents":
-        _df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
-    elif _pick == "Max tier":
-        _df = _hub_df[_hub_df["norm"].isin(_max_norms)]
-    else:
-        _df = _hub_df
-    _rail("", "2025-26 Player Board", count=f"{len(_df)} players")
-    st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
-             label_visibility="collapsed")
-
-    # The score column is the board's main event, so its explainer lives here
-    # (same expander every inner page shows), not up in the hero.
-
-    _view = _df
-    _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",
-                   "ProjValue", "DeltaMkt", "Predicted", "Next"]].rename(columns={
-        "Barrett Score": "2025-26 Barrett Score", "Salary": "2025-26 Salary",
-        "ProjValue": "2025-26 Value", "DeltaMkt": "+/-",
-        "Predicted": "2026-27 Predicted", "Next": "Actual 2026-27 Salary"})
-    html_table(
-        _view,
-        formatters={
-            "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
-                                 f'target="_top">{html.escape(str(v))}</a>'),
-            "Team": team_cell,
-            "2025-26 Barrett Score": lambda v: f"{v:.2f}",
-            "2025-26 Salary": lambda v: f"${v:.2f}M",
-            "2025-26 Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
-                                        else f"${v:.2f}M"),
-            "Actual 2026-27 Salary": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
-                                                   else ('<span class="hv-chip max">MAX</span>'
-                                                         if normalize(str(r.get("Player", ""))) in _amax_norms else "")
-                                                        + f"${v:.2f}M"),
-            "+/-": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
-                              else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
-            "2026-27 Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
-                                               else ('<span class="hv-chip max">MAX</span>'
-                                                     if normalize(str(r.get("Player", ""))) in _max_norms else "")
-                                                    + f"${v:.1f}M"),
-        },
-        raw={"Player", "Team", "2026-27 Predicted", "Actual 2026-27 Salary"},
-        styles={
-            "2025-26 Barrett Score": lambda v, _r: (
-                "" if v is None or (isinstance(v, float) and v != v) else
-                f"background:linear-gradient(90deg,var(--bar-tint) "
-                f"{max(4, min(100, v / _SCORE_MAX * 100)):.0f}%,transparent 0)"),
-            "+/-": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) or v == 0
-                                  else ("color:var(--value-good);font-weight:700" if v < 0
-                                        else "color:var(--value-bad);font-weight:700")),
-            "2026-27 Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
-                                                else "color:var(--accent-teal)"),
-        },
-        aligns={"#": "right", "2025-26 Barrett Score": "right", "2025-26 Salary": "right",
-                "2025-26 Value": "right", "+/-": "right", "2026-27 Predicted": "right",
-                "Actual 2026-27 Salary": "right"},
-        numeric={"#", "2025-26 Barrett Score", "2025-26 Salary", "2025-26 Value",
-                 "+/-", "2026-27 Predicted", "Actual 2026-27 Salary"},
-        helps={
-            "2025-26 Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
-            "2025-26 Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
-            "+/-": "2025-26 Salary minus 2025-26 Value. Negative = underpaid.",
-            "2026-27 Predicted": ("The Contract Predictor's model projection: what a NEW deal signed today "
-                                  "would pay, at next season's cap." + _accuracy_note()),
-            "Actual 2026-27 Salary": "What is really on the books for 2026-27: existing contract, exercised option, or the actual new deal signed this summer. Blank = nothing signed yet.",
-        },
-        height=min(760, max(260, len(_view) * 38 + 46)),
-    )
-
-
-_board()
 
 # Freshness stamp for the hand-verified offseason columns on the board (signings,
 # option decisions, supplemented salaries).
