@@ -16,7 +16,9 @@
 #   note        = free text
 #
 # Add a row each time a real signing is reported. Lines starting with # are ignored.
-# Verified 2026-07-14 (deals through July 14, 2026; Spotrac/ESPN/Hoops Rumors).
+# Verified 2026-08-18 (deals through August 18, 2026; adversarial web-search round:
+# every row below confirmed by 2+ independent sources - HoopsRumors/ESPN/RealGM/
+# Spotrac/NBA.com transaction log/team releases).
 player,team,years,total_M,yr1_M,type,signed_date,source,note
 Collin Gillespie,PHX,4,48,10.71,resign,2026-07,SalarySwish + Spotrac (4yr/$48M; 2026-27 = $10;714;286),corrected via Spotrac verify: Marginal overstatement. Team/type/years/total ($48M) all correct; but actual 202
 Jordan Goodwin,PHX,3,19,5.8,resign,2026-06,NBC,3yr/$19M re-sign (starts $5.8M; yr3 player option $6.8M)
@@ -69,7 +71,7 @@ Jaxson Hayes,UTA,2,12,5.9,ufa,2026-07,ESPN,2yr/$12M with Utah (yr2 team option);
 Alijah Martin,TOR,2,4.8,2.3,resign,2026-07,ESPN,2yr/$4.8M RFA re-sign with Toronto (off two-way); yr1 est
 Kobe Sanders,LAC,4,11.2,2.7,resign,2026-07,ESPN,4yr/$11.2M re-sign with the Clippers (TO declined; first 2 yrs gtd); yr1 est
 Bogdan Bogdanović,HOU,1,3.6,3.6,ufa,2026-07,ESPN,1yr vet-minimum with Houston (~$3.6M CBA figure; LAC declined $16M TO)
-Khris Middleton,WAS,3,17.6,5.59,ufa,2026-07,ESPN,3yr/$17.6M S&T from Dallas; yr1 $5.59M fully gtd (yr2 partial, yr3 non-gtd)
+Khris Middleton,WAS,3,17.6,5.59,ufa,2026-07,ESPN,"3yr/$17.6M S&T from Dallas; yr1 $5.59M fully gtd (yr2 partial, yr3 non-gtd)"
 Quinten Post,MEM,3,30,9,rfa,2026-07,SalarySwish (2026-27 base $9;000;000; 3yr/$30.015M; $9M gtd),corrected via Spotrac verify: Team/total/type all correct; but yr1 is overstated. He signed a 3yr/$30.015M off
 Kevon Looney,LAL,1,3.88,3.88,ufa,2026-07,Spotrac,1yr vet-minimum with the Lakers ($3876529)
 DeAndre Jordan,NOP,1,3.88,3.88,ufa,2026-07,Spotrac,1yr vet-minimum with New Orleans
@@ -100,6 +102,56 @@ Kam Jones,MIL,2,1.36,0.68,two-way,2026-07,Hoops Rumors / HoopsHype (two-way deal
 Pat Spencer,PHX,1,0.68,0.68,two-way,2026-07,Spotrac ($678;882; $91K guaranteed); Hoops Rumors/Arizona Sp,corrected via Spotrac verify: Actual deal is a TWO-WAY contract; 1 year; $678;882 (~$0.68M) with Phoenix; not 
 Jamir Watkins,WAS,1,0.68,0.68,two-way,2026-07,SalarySwish ($678;882; 1yr two-way) / Hoops Rumors (re-signe,corrected via Spotrac verify: Structural errors: this is a 1-year TWO-WAY contract (type recorded as 'unknown'
 Kobe Brown,IND,1,0.6,0.6,unknown,2026-07,multi,two-way (~$0.6M slot) (Jul 9 official)
-Isaiah Hartenstein,OKC,3,75,23.15,resign,2026-07,Spotrac,OKC declined his $28.5M team option then re-signed him to a NEW 3yr/$75M deal; yr1 $23.15M (a genuine signing, not a pure extension)
+Isaiah Hartenstein,OKC,3,75,23.15,resign,2026-07,Spotrac,"OKC declined his $28.5M team option then re-signed him to a NEW 3yr/$75M deal; yr1 $23.15M (a genuine signing, not a pure extension)"
 LeBron James,PHI,2,7.95,3.88,new,2026-07-26,Spotrac transaction log + ESPN (chose PHI after free agency sweepstakes),vet-min 1+1 with 2027-28 player option $4.07M; 15% trade bonus; cannot be traded until 12/15/26
 Kentavious Caldwell-Pope,PHI,1,3.9,3.9,new,2026-07-26,HoopsRumors + ESPN (agreed after MEM buyout 7/25; pending waiver clearance),opted into $21.6M with MEM then buyout; PHI deal agreed but not official as of 7/28; promoted per master-roster doctrine
+Jett Howard,DAL,1,0.679,0.679,two-way,2026-07-20,HoopsRumors + Mavs release,one-season two-way ($678882); DAL waived Tyler Smith for the slot; ORL had declined his rookie option Oct 2025
+Arthur Kaluma,LAL,1,0.68,0.68,two-way,2026-07-21,HoopsRumors + Lakers release,earned two-way after breakout Summer League; LAL waived Peter Suder for the slot
+Jalen Slawson,IND,1,0.68,0.68,two-way,2026-07-22,Pacers release + HoopsRumors,RFA signed his two-way qualifying offer ($91K partial guarantee)
+Jalen Wilson,ATL,1,0.68,0.68,two-way,2026-07-22,Hawks release + HoopsRumors,one-year two-way (3 years of service caps two-way length at one season)
+David Jones-Garcia,SAS,1,0.68,0.68,two-way,2026-07-22,NBA transaction feed + Spurs release,two-way RFA signed his qualifying offer ($91K partial guarantee)
+Moussa Cisse,DAL,2,4.76,2.185,resign,2026-07-19,ESPN + HoopsRumors,DAL matched NYK 2yr minimum offer sheet ($2185116 / $2571895); yr1 50% gtd rising Oct 1; yr2 non-gtd
+Isaiah Crawford,HOU,4,11.27,2.45,resign,2026-07-23,HoopsRumors + Rockets release,converted two-way to 4yr vet-min via Non-Bird; all non-guaranteed at signing ($1.15M partial); final year team option
+Jae'Sean Tate,HOU,1,3.07,3.07,resign,2026-07-23,HoopsRumors + Spotrac,1yr vet min ($3066143 actual / $2449421 cap hit); $1.04M partial guarantee; waived trade veto
+Jaron Pierre Jr.,NOP,1,0.679,0.679,two-way,2026-07-24,Pelicans release + Marc Stein,No.58 pick in the 2026 draft signs his two-way ($678882)
+John Tonje,POR,2,1.36,0.679,two-way,2026-07-25,Blazers release + HoopsHype,two-YEAR two-way ($678882 in 26-27)
+Matisse Thybulle,LAL,1,3.3,3.3,new,2026-07-27,HoopsRumors + ESPN (McMenamin),1yr vet min fully guaranteed ($3.3M actual / $2.45M cap hit)
+Spencer Jones,DEN,2,11.75,6,resign,2026-07-27,ESPN + HoopsRumors,DEN matched OKC taxpayer-MLE offer sheet: $6M / $5.75M fully guaranteed
+Karim Lopez,MEM,4,18.37,3.75,new,2026-07-29,Grizzlies release + Spotrac,rookie scale for No.21 pick (rights via DET draft night); $3746760 yr1; first two years guaranteed; yrs 3-4 team options
+Draymond Green,GSW,1,27.68,27.68,resign,2026-07-30,ESPN (Shams) + Warriors release,declined his $27678571 player option 6/29 to open cap room then re-signed for the identical figure 1yr; expiring
+Mario Hezonja,CLE,1,2.85,2.85,new,2026-07-31,HoopsRumors + Cavs release,NBA return from Real Madrid (ACB MVP); vet min non-gtd until ~Nov 15 ($2.85M actual / $2.45M cap hit); last NBA team POR 2019-20
+Gary Payton II,GSW,1,3.9,3.9,resign,2026-08-01,ESPN (Shams) + Marc Stein,1yr vet min ($3.9M actual / $2449421 cap hit); 7th season with GSW
+Jeremy Sochan,POR,1,2.63,2.63,new,2026-08-02,HoopsRumors + Spotrac,1yr vet min standard deal NON-guaranteed (Exhibit 9 knee language; $2625627 if he makes the roster); camp battle after title season as NYK reserve
+Trey Jemison III,TOR,1,0.679,0.679,two-way,2026-08-04,NBA transaction feed + HoopsRumors,two-way ($678882)
+Dillon Mitchell,BOS,1,0.68,0.68,two-way,2026-08-05,HoopsRumors,two-way contract
+Jamarion Sharp,LAC,1,0.68,0.68,two-way,2026-08-07,HoopsRumors,two-way; LAC waived Sean Pedulla to clear slots
+Jalen Pickett,LAC,1,0.679,0.679,two-way,2026-08-12,HoopsRumors,two-way; DEN had declined his $2.41M team option 6/29
+Bradley Beal,LAC,2,13.2,6.42,resign,2026-08-13,ESPN (Shams) + Spotrac,2yr $13.17M via Non-Bird (declined $5.62M PO in June); $9.42M guaranteed; yr2 $6.75M player option w/ $3M partial
+Braden Smith,IND,1,0.68,0.68,two-way,2026-08-17,Pacers release + HoopsRumors,No.38 pick (via CHI draft-night trade) signs two-way; IND waived Ethan Thompson for the slot
+Sean Pedulla,HOU,2,1.39,0.68,two-way,2026-08-17,NBA transaction log + HoopsHype,two-YEAR two-way after LAC waived him 8/7; G League ROY
+Haywood Highsmith,PHX,1,3.07,3.07,resign,2026-08-17,ESPN transactions + HoopsRumors,waive-and-re-sign restructure (waived 8/12; ~$11M tax savings): 1yr vet min $3066143 actual / $2449421 cap hit; Exhibit 3 knee clause
+Trendon Watford,NOP,1,2.85,2.85,new,2026-08-17,HoopsRumors,1yr vet min; PHI had declined his $2.8M team option in June
+Malik Dia,NOP,1,0.68,0.68,two-way,2026-08-18,HoopsRumors + HoopsHype,two-way; NOP waived Hunter Dickinson from his two-way the same day
+# ── Verified 2026-08-18 round: events checked but NOT rows ─────────────────────
+# Extensions (start 2027-28, no new 2026-27 salary, so not scoreable as signings):
+#   Jordan Walsh BOS 3yr/$15.75M (7/23, yr3 team option); Naji Marshall DAL
+#   3yr/$52.2M fully gtd (8/2); Dillon Brooks PHX 3yr/$73M fully gtd (8/8).
+# Exhibit 9/10 camp deals ($0 guaranteed, cut-before-season default; a row here
+#   would score as a fake $0 signing): Oscar Tshiebwe HOU 7/24; Julian Phillips
+#   HOU 7/24; Harrison Ingram UTA 7/25; Kobe Bufkin NOP 7/25 (ex-lottery, $2.54M
+#   if kept); Christian Koloko NOP 7/28; Milos Uzan BOS 7/15; Jeremy Sochan is a
+#   row above (standard non-gtd deal, not a camp invite); Caleb Houstan NOP 8/4;
+#   Andre Jackson Jr. TOR 8/4; Lonnie Walker IV DEN 8/5; Terrell Brown Jr. UTA
+#   8/6; Alondes Williams WAS 8/7; Taelon Peter SAS 8/7 (IND waived him 7/20);
+#   Kobe Stewart CHA 8/7; Yuki Kawamura LAC 8/9; Ezra Ausar MIA 8/10; Ian
+#   Schieffelin MIA 8/10; Malachi Smith TOR 8/17; Nick Pringle BKN 8/17.
+#   Donovan Atwell withdrew from his CHI Exhibit 10 to return to Texas Tech 8/17.
+# Trades moving 2026-27 salary: Dort (OKC) + Nembhard (DAL, $2150917) to ATL /
+#   Risacher to DAL / three 2nds + $17.7M TPE to OKC (7/19, official); Johni
+#   Broome PHI to LAC (7/28, already reflected in rosters); Dennis Schroder
+#   ($14.8M) + cash CLE to CHA for Tre Mann ($8M, plus 27-28 team option) 8/14.
+# Waives/guarantee events: Dalen Terry waived PHI 7/26 ($2.6M non-gtd, no dead
+#   money); KCP buyout MEM 7/25 (gave back ~$3.88M, then signed PHI row above);
+#   Hunter Dickinson waived NOP 8/18 (two-way); Vit Krejci POR 26-27 $2667944
+#   hit $250K partial guarantee by passing Aug 1 roster date; Cam Christie LAC
+#   $2.3M guarantee date pushed to Oct 15.
