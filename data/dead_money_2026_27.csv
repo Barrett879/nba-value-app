@@ -6,7 +6,8 @@
 # so pages/Rosters.py adds it to committed salary.
 #
 # Source: Spotrac 2026-27 team cap tables (the "Dead Money Cap" section), read
-# 2026-07-29. Every team below reconciles to the Dead Cap column on Spotrac's
+# 2026-07-29 (re-verified 2026-08-18: Highsmith charge added). Every team
+# below reconciles to the Dead Cap column on Spotrac's
 # league cap tracker; the 20 teams not listed here carry none.
 #
 # status is only filled in where the source tags the move; a blank means the
@@ -31,3 +32,4 @@ asof,team,player,amount_M,status,notes
 2026-07-29,PHX,E.J. Liddell,0.707,,
 2026-07-29,POR,Didi Louzada,0.268,,
 2026-07-29,SAC,DeMar DeRozan,10.000,waived,
+2026-08-18,PHX,Haywood Highsmith,1.000,waived,"$1M partial guarantee from the 8/12/26 waive; he re-signed 8/17 on a new vet min (tax-cutting restructure)"
