@@ -10,15 +10,21 @@
 # the team at the first apron; teams over the first apron cannot use a
 # prior-season TPE at all. Maintain like real_signings: edit rows as TPEs are
 # created, used, or expire; re-run build_trade_exceptions_xlsx.py. Shown on
+# Re-verified 2026-08-20 (post-7/28 changes: Broome deal TPEs, Niang and MIA
+# Highsmith expiries, the five-team Watson deal, Collins amount corrected).
+# PENDING: which CLE exception absorbs Cam Whitmore ($5,458,310) in the
+# Watson deal is UNDETERMINED until the league processes it - Gozlan implies
+# the $10M Lonzo Ball TPE, cap convention says the $6.9M Hunter TPE;
+# SalarySwish still shows both whole. Both rows left at full value; shrink
+# one when the processed structure is reported.
 # Trade Machine team panels (informational; verdicts do not model TPE
 # absorption yet). No double quotes in notes (HTML tooltip).
 asof,team,amount_M,player,created,expires,notes,source
-2026-07-28,ATL,4.50372,Kobe Bufkin,2025-09-16,2026-09-16,"Trade with BKN; full $4,503,720 available",Pincus tracker + SalarySwish + Spotrac
+2026-08-20,ATL,4.50372,Kobe Bufkin,2025-09-16,2026-09-16,"Trade with BKN; full $4,503,720 available",Pincus tracker + SalarySwish + Spotrac
 ,ATL,2.349578,Vit Krejci,2026-02-01,2027-02-01,"Trade with POR; full $2,349,578 available",Pincus tracker + SalarySwish + Spotrac
 ,ATL,1.971962,Luke Kennard,2026-02-05,2027-02-05,"Remaining balance: initial $11.0M, $9,028,038 used on Aaron Wiggins. Pincus lists $2,168,224 remaining instead.",Pincus tracker + SalarySwish + Spotrac
 ,ATL,1.357994,Trae Young,2026-01-11,2027-01-11,"Trade with WAS; $1,357,993 available of $1,357,994 original",Pincus tracker + SalarySwish + Spotrac
 ,BOS,27.678571,Anfernee Simons,2026-02-05,2027-02-05,"Trade with CHI; full $27,678,571 available; largest Boston TPE; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
-,BOS,8.2,Georges Niang,2025-08-06,2026-08-06,"Trade with UTA; full $8,200,000 available; expires 8/6/2026; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,BOS,2.952348,Jaylen Brown,2026-07-06,2027-07-06,Residual from the Brown-to-76ers (Paul George) July 2026 trade,Pincus tracker + SalarySwish + Spotrac
 ,BOS,2.546675,Xavier Tillman Sr.,2026-02-05,2027-02-05,"Trade with CHA; full $2,546,675 available",Pincus tracker + SalarySwish + Spotrac
 ,BOS,2.37887,Chris Boucher,2026-02-05,2027-02-05,"Trade with UTA; full $2,296,274 available",Pincus tracker + SalarySwish + Spotrac
@@ -28,23 +34,24 @@ asof,team,amount_M,player,created,expires,notes,source
 ,CHA,2.296274,Mason Plumlee,2026-02-04,2027-02-04,"Trade with OKC; full $2,296,274 available",Pincus tracker + SalarySwish + Spotrac
 ,CLE,10,Lonzo Ball,2026-02-05,2027-02-05,"Trade with UTA; full $10,000,000 available; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,CLE,6.897984,De'Andre Hunter,2026-02-01,2027-02-01,"Trade with SAC; full $6,897,984 available; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
+,CLE,16.660836,Max Strus,2026-08-20,2027-08-20,"Created in the five-team Watson deal agreed 8/19-20/26 (processing pending): Strus out unmatched while Watson arrives via S&T and Whitmore via an existing exception; per Gozlan the fold-in exists largely to create this TPE",Gozlan (Third Apron) + HoopsRumors
 ,CLE,0.263397,Darius Garland,2026-02-04,2027-02-04,"Trade with LAC; full $263,397 available (small residual TPE); single-source (Pincus tracker), small residual",Pincus tracker only
 ,DAL,7.004114,Anthony Davis,2026-02-05,2027-02-05,"Trade with WAS; $20,830,154 original, used on Zaccharie Risacher ($13,826,040), $7,004,114 remaining; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,DAL,2.90952,Jaden Hardy,2026-02-05,2027-02-05,"Trade with WAS; $6,000,000 original, used on AJ Johnson ($3,090,480), $2,909,520 remaining",Pincus tracker + SalarySwish + Spotrac
 ,DAL,2.150917,Ryan Nembhard,2026-07-19,2027-07-19,"Trade with ATL, July 2026; full $2,150,917 available",Pincus tracker + SalarySwish + Spotrac
+,DEN,10.2,Peyton Watson,2026-08-20,2027-08-20,"S&T TPE (~50% of Watson yr1 salary, a little over $10M per HoopsRumors) from the five-team deal agreed 8/19-20/26; exact figure lands when the contract is signed; UNUSABLE while DEN is over the second apron",HoopsRumors (Luke Adams) + Gozlan + Bobby Marks
 ,DEN,2.221677,Hunter Tyson,2026-02-05,2027-02-05,"Trade with BKN; full $2,221,677 available",Pincus tracker + SalarySwish + Spotrac
 ,DET,15,Isaiah Stewart,2026-07-08,2027-07-08,"From the July 8, 2026 six-team trade (Stewart to Grizzlies); verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,DET,5.198983,Marcus Sasser,2026-07-08,2027-07-08,"Trade with DAL; full $5,198,983 available; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,GSW,2.221677,Trayce Jackson-Davis,2026-02-05,2027-02-05,"Trade with TOR; full $2,221,677 available; single-source (Pincus tracker), small residual",Pincus tracker only
 ,HOU,13.335,Dorian Finney-Smith,2026-07-06,2027-07-06,"Created in the Finney-Smith trade with ATL; full $13,335,000 remaining.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,IND,1.075459,Kam Jones,2026-06-24,2027-06-24,"Created when Kam Jones was traded to CHI (the Bulls absorbed him into the remainder of their Coby White TPE); full $1,075,459 remaining.",Pincus tracker + SalarySwish + Spotrac
-,LAC,15.740741,John Collins,2026-07-08,2027-07-08,"Generated in the John Collins sign-and-trade (six-team deal); $15,740,741 per SalarySwish; the $17M figure floating around is the contract AAV, corrected in verification",Pincus tracker only
+,LAC,0.339164,John Collins,2026-07-08,2027-07-08,"Original $17,000,000 - Collins Pistons deal is FLAT $17M x3 (Spotrac), so the July correction to $15.74M (8%-raise back-derivation via SalarySwish) was itself wrong, per Bobby Marks + HoopsRumors; $16,660,836 used absorbing Max Strus in the five-team Watson deal agreed 8/19-20/26 (processing pending), $339,164 remaining",Bobby Marks ESPN + HoopsRumors + Spotrac
 ,LAC,2.65488,Kobe Brown,2026-02-05,2027-02-05,"From the Kobe Brown trade with IND at the Feb 2026 deadline; full $2,654,880 remaining.; single-source (Pincus tracker), small residual",Pincus tracker only
-,LAC,2.296274,Chris Paul,2026-02-05,2027-02-05,"From the Chris Paul trade with TOR; full $2,296,274 remaining.; single-source (Pincus tracker), small residual",Pincus tracker only
+,LAC,0.145357,Chris Paul,2026-02-05,2027-02-05,"$2,150,917 used absorbing Johni Broome 7/28/26 (Broome is yr2 of a 4yr deal so the minimum exception could not be used); $145,357 remaining; prior-season TPE use re-triggers the apron-1 hard cap LAC already carries (Hachimura NTMLE)",HoopsRumors TPE tracker + HoopsHype + 213hoops
 ,LAC,1.314427,Ivica Zubac,2026-02-05,2027-02-05,"From the Ivica Zubac trade with IND; full $1,314,427 remaining.; single-source (Pincus tracker), small residual",Pincus tracker only
 ,MEM,28.87292,Jaren Jackson Jr.,2026-02-03,2027-02-03,"From the Jaren Jackson Jr. trade with UTA at the Feb 2026 deadline; full $28,872,920 remaining. Largest outstanding TPE among the 10 teams checked.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,MEM,4.314089,Ja Morant,2026-06-29,2027-06-29,"From the Ja Morant trade with POR; full $4,314,089 remaining.",Pincus tracker + SalarySwish + Spotrac
-,MIA,5.616,Haywood Highsmith,2025-08-17,2026-08-17,"From the Highsmith trade with BKN (Aug 2025); full $5,616,000 remaining but expires 8/15/2026, so it is use-it-or-lose-it imminently.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,MIL,25.456566,Giannis Antetokounmpo,2026-07-06,2027-07-06,"From the Giannis trade with MIA; full $25,456,566 remaining. Second-largest outstanding TPE among the 10 teams checked.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,MIL,0.085763,Bobby Portis,2026-07-06,2027-07-06,"From the Bobby Portis trade with MIA; $85,763 remaining (residual sliver, effectively unusable).",Pincus tracker + SalarySwish + Spotrac
 ,MIN,10.774038,Mike Conley,2026-02-03,2027-02-03,"From the Mike Conley trade with CHI; full $10,774,038 remaining.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
@@ -59,6 +66,7 @@ asof,team,amount_M,player,created,expires,notes,source
 ,ORL,7,Tyus Jones,2026-02-04,2027-02-04,"Pincus lists $2,449,522 instead - likely copy error (matches OKC Dieng row); verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,PHI,4.22136,Jared McCain,2026-02-04,2027-02-04,McCain went to OKC (absorbed into Dieng TPE),Pincus tracker + SalarySwish + Spotrac
 ,PHI,2.296274,Eric Gordon,2026-02-05,2027-02-05,Trade with MEM; fully unused,Pincus tracker + SalarySwish + Spotrac
+,PHI,2.150917,Johni Broome,2026-07-28,2027-07-28,"Broome + a 2027 2nd to LAC for $1M cash (7/28/26, official); TPE equals his full outgoing salary; near-unusable while PHI sits ~$1.8M under its apron-1 hard cap",HoopsRumors + Spotrac + ESPN tracker
 ,PHX,5,Nick Richards,2026-02-05,2027-02-05,Trade with CHI; fully unused; verified 2026-07-28,Pincus tracker only
 ,PHX,2.048494,Nigel Hayes-Davis,2026-02-05,2027-02-05,"Trade with MIL; fully unused; single-source (Pincus tracker), small residual",Pincus tracker only
 ,POR,3.132,Kris Murray,2026-06-29,2027-06-29,From the Morant deal framework (Murray to Grizzlies),Pincus tracker + SalarySwish + Spotrac
