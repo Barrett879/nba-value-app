@@ -857,7 +857,13 @@ if not _hub_df.empty:
     _r0 = _hub_df.iloc[0]
     _stl_df = _hub_df[_hub_df["Salary"] >= 2.0]       # keep rookie-min noise off the card
     _ovp = _hub_df.loc[_hub_df["DeltaMkt"].idxmax()]
-    _fa_df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
+    # Status comes from the scraped feeds, which lag agreed deals by days; the
+    # hand-verified signings tracker knows the moment a deal is recorded. A
+    # player with a tracked signing is off the market whatever the feed says
+    # (the FA Watch card headlined James Harden hours after his 3yr/$97M).
+    _signed_norms = {normalize(k) for k in _hub_signings()}
+    _fa_df = _hub_df[_hub_df["Status"].isin(_FA_SET)
+                     & ~_hub_df["norm"].isin(_signed_norms)]
 
     _rail("", "Today around the league")
 
@@ -966,7 +972,10 @@ def _board():
     elif _pick == "Overpays":
         _df = _hub_df[_hub_df["DeltaMkt"] >= 5].sort_values("DeltaMkt", ascending=False)
     elif _pick == "Free agents":
-        _df = _hub_df[_hub_df["Status"].isin(_FA_SET)]
+        # same signings cross-check as the FA Watch card: a tracked signing
+        # beats a stale feed status
+        _df = _hub_df[_hub_df["Status"].isin(_FA_SET)
+                      & ~_hub_df["norm"].isin(_signed_norms)]
     elif _pick == "Max tier":
         _df = _hub_df[_hub_df["norm"].isin(_max_norms)]
     else:

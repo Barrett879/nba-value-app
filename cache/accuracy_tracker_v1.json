@@ -1,13 +1,45 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 99,
-  "within_4M": 82,
-  "within_5cap": 93,
-  "median_err_M": 1.5,
-  "bias_M": 0.0
+  "n": 102,
+  "within_4M": 80,
+  "within_5cap": 92,
+  "median_err_M": 1.6,
+  "bias_M": 0.3
  },
  "signings": [
+  {
+   "player": "James Harden",
+   "team": "CLE",
+   "deal": "3yr/$97M",
+   "years": 3,
+   "total_M": 97.0,
+   "actual_M": 29.9,
+   "type": "resign",
+   "date": "2026-08-20",
+   "model_M": 54.5,
+   "low_M": 48.6,
+   "high_M": 60.4,
+   "delta_M": 24.6,
+   "in4": false,
+   "in5cap": false
+  },
+  {
+   "player": "Peyton Watson",
+   "team": "CLE",
+   "deal": "4yr/$88M",
+   "years": 4,
+   "total_M": 88.0,
+   "actual_M": 20.4,
+   "type": "new",
+   "date": "2026-08-19",
+   "model_M": 15.6,
+   "low_M": 7.1,
+   "high_M": 24.2,
+   "delta_M": -4.8,
+   "in4": false,
+   "in5cap": true
+  },
   {
    "player": "Malik Dia",
    "team": "NOP",
@@ -414,6 +446,22 @@
    "low_M": 0.0,
    "high_M": 4.7,
    "delta_M": 0.0,
+   "in4": true,
+   "in5cap": true
+  },
+  {
+   "player": "Caleb Love",
+   "team": "PHI",
+   "deal": "1yr/$0.68M",
+   "years": 1,
+   "total_M": 0.68,
+   "actual_M": 0.7,
+   "type": "two-way",
+   "date": "2026-07-05",
+   "model_M": 2.6,
+   "low_M": 0.1,
+   "high_M": 5.1,
+   "delta_M": 1.9,
    "in4": true,
    "in5cap": true
   },

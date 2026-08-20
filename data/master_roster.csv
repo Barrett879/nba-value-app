@@ -3,11 +3,12 @@
 # (canonical) cross-checked vs ESPN + RealGM, reconciled 2026-07-27.
 # Re-verified 2026-08-18: August trades/signings/waives applied from the
 # adversarial web-search round (see receipts/2026-08-18-offseason-reverification.md).
+# Re-verified 2026-08-20: five-team Watson trade + Harden re-sign applied.
 # Maintain by hand as trades/waivers/signings happen (same doctrine as
 # real_signings), then re-run scripts/build_master_roster_xlsx.py.
 # kind: standard | two_way | pending (agreed, not official, not vs limits)
 asof,team,player,salary_M,kind,pos,notes
-2026-08-18,ATL,Jalen Johnson,30,standard,PF/SF,5yr/$150M rookie extension (2025-29)
+2026-08-20,ATL,Jalen Johnson,30,standard,PF/SF,5yr/$150M rookie extension (2025-29)
 ,ATL,Dyson Daniels,25,standard,SF/SG,4yr/$100M rookie extension begins 2026-27
 ,ATL,C.J. McCollum,21,standard,PG/SG,"acquired by trade 1/9/26; 1yr $21M vet extension, expiring"
 ,ATL,Luguentz Dort,17.72,standard,PF/SF,traded to ATL 7/19/26; expiring
@@ -71,7 +72,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CHA,Royce O'Neale,10.88,standard,SF/PF,acquired by trade 7/13/26 (same deal as Allen)
 ,CHA,Kon Knueppel,10.52,standard,SG/SF,"2025 No. 4 pick, yr 2; TO 2027-28"
 ,CHA,Tidjane Salaun,8.24,standard,PF/C,"2024 No. 6 pick, yr 3; TO 2027-28"
-,CHA,Dennis Schroder,14.81,standard,PG/SG,"acquired from CLE 8/14/26 with ~$4M cash for Tre Mann; $14.8M 2026-27 + $4.4M gtd 2027-28"
+,CHA,Dennis Schroder,14.81,standard,PG/SG,"acquired from CLE with ~$4M cash (8/14 swap folded into the five-team Watson deal, official 8/19-20/26); $14.8M 2026-27 + $4.35M partial 2027-28"
 ,CHA,Hannes Steinbach,5.23,standard,PF,"2026 1st round, No. 14 overall"
 ,CHA,Christian Anderson,4.26,standard,PG,"2026 1st round, No. 18 overall"
 ,CHA,Pat Connaughton,3.82,standard,SG/SF,"Waived Feb 2026 then re-signed 2yr min deal 5 days later; CHA exercised his $3,815,861 team option for 2026-27 in June; non-guaranteed until January 2027"
@@ -101,8 +102,9 @@ asof,team,player,salary_M,kind,pos,notes
 ,CLE,Donovan Mitchell,50.11,standard,SG/PG,Signed 4yr/$272.7M max extension 7/8/26 (declined 27-28 PO as part; 2030-31 PO)
 ,CLE,Evan Mobley,50.11,standard,PF/C,Designated rookie max extension
 ,CLE,Jarrett Allen,28,standard,C,Veteran extension through 2028-29
-,CLE,Max Strus,16.66,standard,SF/SG,Year 3 of 4yr/$63M; extension eligible
-,CLE,Tre Mann,8,standard,PG/SG,"acquired from CHA 8/14/26 for Dennis Schroder + cash; $8M expiring + $8M 2027-28 team option (non-gtd)"
+,CLE,Cam Whitmore,5.46,standard,SF/SG,"acquired from WAS 8/20/26 in the five-team Watson deal; $5.46M expiring rookie scale, RFA 2027; SI reports CLE may waive"
+,CLE,Peyton Watson,20.4,standard,SF/PF,"sign-and-trade from DEN 8/19/26 (five-team CLE/DEN/LAC/WAS/CHA deal): 4yr $88M, player option + 7.5% trade kicker; yr1 ~$20.4M est; hard-caps CLE at apron 1"
+,CLE,James Harden,29.9,standard,PG/SG,"agreed 8/20/26: 3yr $97M re-sign (2028-29 player option, trade kicker) after declining his $42.3M PO in June; yr1 ~$29.9M est at 8% raises; official signing pending the Watson trade paperwork"
 ,CLE,Sam Merrill,9.16,standard,SG/SF,Year 2 of 4yr/$38M
 ,CLE,Jaylon Tyson,3.66,standard,SF/SG,Rookie scale yr 3
 ,CLE,Mario Hezonja,2.45,standard,SF,"officially signed 7/31/26: 1yr vet min returning from Real Madrid ($2.85M actual, $2.45M cap hit; non-gtd until ~Nov 15)"
@@ -216,6 +218,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,IND,Jalen Slawson,0,two_way,PF,Signed two-way 7/22/26
 ,IND,Braden Smith,0.68,two_way,PG,"No. 38 pick 2026 (Purdue; pick via CHI draft-night trade for Kam Jones); two-way officially signed 8/17/26 (Ethan Thompson waived for the slot)"
 ,LAC,Darius Garland,42.17,standard,PG,"acquired from CLE Feb 5, 2026 for James Harden"
+,LAC,Max Strus,16.66,standard,SF/SG,"acquired from CLE 8/19/26 in the five-team Watson deal (absorbed into the John Collins S&T trade exception); expiring year 4 of 4yr/$63M"
 ,LAC,Brandon Ingram,40,standard,SF/PF,"part of agreed Kawhi-to-TOR trade (with Dick, 2031/2033 1sts, 2030/2033 2nds, 2027 swap); unofficial pending Aspiration investigation; PROMOTED to official per Barrett 2026-07-27"
 ,LAC,Rui Hachimura,14,standard,PF/SF,signed 2yr/$28M July 2026 via full non-taxpayer MLE (from LAL)
 ,LAC,Derrick Jones Jr.,10.48,standard,SF/PF,final year of 3yr/$30M
@@ -518,14 +521,13 @@ asof,team,player,salary_M,kind,pos,notes
 ,WAS,Tre Johnson,8.65,standard,SG/SF,"2025 No. 6, yr 2; TO 2027-28"
 ,WAS,Deandre Ayton,8.1,standard,C,traded from LAL 7/7/26; expiring
 ,WAS,Khris Middleton,5.59,standard,PF/SF,signed 3yr/$17.6M as FA 7/8/26 (partial gtd yrs 2-3)
-,WAS,Cam Whitmore,5.46,standard,SF/SG,traded to WAS 7/6/25; RFA 2027
+,WAS,Tre Mann,8,standard,PG/SG,"acquired 8/20/26 in the five-team Watson deal (the 8/14 CHA-CLE Schroder swap folded in, rerouting Mann to WAS); $8M expiring + $8M 2027-28 team option (non-gtd); WAS also got LAC 2027 2nd + cash"
 ,WAS,Bub Carrington,4.9,standard,PG/SG,"2024 No. 14, yr 3; TO 2027-28"
 ,WAS,Will Riley,3.69,standard,PF/SF,"2025 No. 21, yr 2; TO 2027-28"
 ,WAS,Kyshawn George,3.11,standard,SF/SG,"2024 No. 24, yr 3; TO 2027-28"
 ,WAS,Tristan Vukcevic,3,standard,C,2027-28 club option $3.0M
 ,WAS,Justin Champagnie,2.67,standard,SF/PF,non-guaranteed until 1/10/27
 ,WAS,Jamir Watkins,0,two_way,SG/SF,"2025 2nd round No. 43; two-way, 50% gtd first day of season"
-,WAS,Julian Reese,0,two_way,C,two-way; QO due 6/29/27
 ,WAS,Felix Okpara,0,two_way,C,"2026 2nd round No. 46; two-way, 50% gtd first day of season"
 # ── FREE AGENTS (kind=free_agent): every verified UNSIGNED 2026 free agent,
 # listed under the team that holds his rights. NOT counted in rosters or
@@ -557,13 +559,11 @@ asof,team,player,salary_M,kind,pos,notes
 ,CHI,Guerschon Yabusele,0,free_agent,PF/C,unsigned free agent; est value $4.9M
 ,CHI,Yuki Kawamura,0,free_agent,G,unsigned free agent; est value $2.5M
 ,CHI,Mac McClung,0,free_agent,PG,unsigned free agent; est value $2.2M
-,CLE,James Harden,0,free_agent,PG/SG,unsigned free agent; est value $54.5M
 ,CLE,Lonzo Ball,0,free_agent,PG/SG,unsigned free agent; est value $8.5M
 ,CLE,Olivier Sarr,0,free_agent,C,unsigned free agent
 ,DAL,Brandon Williams,0,free_agent,PG/SG,unsigned free agent; est value $7.7M
 ,DAL,Dwight Powell,0,free_agent,C,unsigned free agent; est value $3.9M
 ,DAL,Jeremiah Robinson-Earl,0,free_agent,PF/C,unsigned free agent; est value $2.9M
-,DEN,Peyton Watson,0,free_agent,SF/PF,unsigned free agent; est value $15.6M
 ,DEN,Bruce Brown,0,free_agent,SG/PG,unsigned free agent; est value $4.4M
 ,DEN,Curtis Jones,0,free_agent,G,unsigned free agent; est value $2.9M
 ,DEN,David Roddy,0,free_agent,PF,unsigned free agent
@@ -638,3 +638,4 @@ asof,team,player,salary_M,kind,pos,notes
 ,HOU,J.D. Davison,0,free_agent,PG/SG,"waived 8/5/26 (was non-guaranteed; no dead money)"
 ,IND,Ethan Thompson,0,free_agent,SG,"waived from his two-way 8/17/26 (slot went to Braden Smith)"
 ,NOP,Hunter Dickinson,0,free_agent,C,"waived from his two-way 8/18/26 (slot went to Malik Dia)"
+,DEN,Julian Reese,0,free_agent,C,"two-way traded WAS to DEN in the five-team Watson deal 8/19/26 and immediately waived; UFA"

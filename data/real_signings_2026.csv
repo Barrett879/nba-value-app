@@ -16,7 +16,7 @@
 #   note        = free text
 #
 # Add a row each time a real signing is reported. Lines starting with # are ignored.
-# Verified 2026-08-18 (deals through August 18, 2026; adversarial web-search round:
+# Verified 2026-08-20 (deals through August 20, 2026; adversarial web-search rounds:
 # every row below confirmed by 2+ independent sources - HoopsRumors/ESPN/RealGM/
 # Spotrac/NBA.com transaction log/team releases).
 player,team,years,total_M,yr1_M,type,signed_date,source,note
@@ -149,9 +149,16 @@ Malik Dia,NOP,1,0.68,0.68,two-way,2026-08-18,HoopsRumors + HoopsHype,two-way; NO
 # Trades moving 2026-27 salary: Dort (OKC) + Nembhard (DAL, $2150917) to ATL /
 #   Risacher to DAL / three 2nds + $17.7M TPE to OKC (7/19, official); Johni
 #   Broome PHI to LAC (7/28, already reflected in rosters); Dennis Schroder
-#   ($14.8M) + cash CLE to CHA for Tre Mann ($8M, plus 27-28 team option) 8/14.
+#   ($14.8M) + cash CLE to CHA for Tre Mann 8/14 - FOLDED 8/19 into the
+#   FIVE-TEAM Watson deal (CLE/DEN/LAC/WAS/CHA): Watson S&T to CLE (row
+#   below), Strus ($16.66M) CLE to LAC, Whitmore ($5.46M) WAS to CLE, Mann
+#   rerouted to WAS, Reese two-way WAS to DEN and waived; DEN got CLE 2031
+#   1st + SAC 2032 2nd, dodging ~$210M in tax.
 # Waives/guarantee events: Dalen Terry waived PHI 7/26 ($2.6M non-gtd, no dead
 #   money); KCP buyout MEM 7/25 (gave back ~$3.88M, then signed PHI row above);
 #   Hunter Dickinson waived NOP 8/18 (two-way); Vit Krejci POR 26-27 $2667944
 #   hit $250K partial guarantee by passing Aug 1 roster date; Cam Christie LAC
 #   $2.3M guarantee date pushed to Oct 15.
+Caleb Love,PHI,1,0.68,0.68,two-way,2026-07-05,ESPN (Shams) + Sixers release,"two-way signed 7/5/26 (agreed 7/3); backfilled in the 8/20 round - missed by the July verification"
+Peyton Watson,CLE,4,88,20.4,new,2026-08-19,ESPN (Shams) + HoopsHype (Scotto),"sign-and-trade from DEN in the five-team deal: 4yr $88M, player option + 7.5% trade kicker; yr1 ~$20.4M est (~5% raises); hard-caps CLE at apron 1"
+James Harden,CLE,3,97,29.9,resign,2026-08-20,ESPN (Shams) + HoopsRumors,"agreed 8/20: 3yr $97M (2028-29 player option, trade kicker) after declining his $42.3M PO in June; yr1 ~$29.9M est at 8% Bird raises; held until the Watson trade cleared"
