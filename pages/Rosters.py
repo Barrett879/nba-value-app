@@ -107,8 +107,28 @@ def _payload() -> str:
     except Exception:                                # never block the page
         pass
 
+    # Hand-picked season overrides (data/score_season_override.csv). The minutes
+    # floor cannot catch a player who kept a starter's MINUTES across a fraction
+    # of the SEASON -- Keegan Murray's 23 games at ~34 a night clear 500 easily,
+    # and the 12.0 that produced ranked him behind a bench big on his own chart.
+    # An override forces the season; the card still labels which year it is.
+    _season_ovr = NameIndex()
+    for _row in _read_csv(_ROOT / "data" / "score_season_override.csv"):
+        _nm, _sn = (_row.get("player") or "").strip(), (_row.get("season") or "").strip()
+        if _nm and _sn:
+            _season_ovr.add(_nm, _sn)
+
     def score_of(name):
-        """(score, season tag) under the minutes floor."""
+        """(score, season tag) under the minutes floor, or the pinned season."""
+        want = _season_ovr.get(name)
+        if want:
+            # 2025-26 lives in `scores` or `short` depending on the floor; the
+            # tag comes from the source, so an override to the current season
+            # stays untagged exactly like an ordinary current score.
+            for src in ((prior_scores,) if want == "2024-25" else (scores, short)):
+                hit = src.get(name)
+                if hit:
+                    return hit[0], hit[1]
         for src in (scores, prior_scores, short):
             hit = src.get(name)
             if hit:

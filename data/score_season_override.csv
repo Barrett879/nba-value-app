@@ -1,0 +1,20 @@
+# HoopsValue - manual season overrides for the Barrett Score shown on Rosters.
+#
+# The page normally shows the most recent season in which a player cleared the
+# 500-minute floor. That floor catches players who barely played, but it cannot
+# see a player who kept a starter's MINUTES across a fraction of the SEASON: a
+# 23-game year at 34 minutes a night clears 500 minutes easily while still being
+# a fifth of a season, and the resulting score reads as a verdict on the player
+# rather than on the sample.
+#
+# A row here forces the displayed score to a specific season. The card labels it
+# with that season, so this never hides which year the number came from, and the
+# page's market value re-prices off the same score (the two must always agree).
+#
+# Scope: the Rosters page only. The player board and the rankings stay purely
+# data-driven, so nothing here can move a league-wide ranking.
+#
+#   player = must match the roster spelling; season = 2024-25 or 2025-26
+#
+player,season,note
+Keegan Murray,2024-25,"played 23 games in 2025-26; 794 minutes clears the floor but is a fifth of a season, and the 12.0 it produced sat him behind a bench big on his own depth chart. 2024-25 is 17.8 over 2607 minutes"
