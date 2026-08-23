@@ -3,12 +3,13 @@
 # (canonical) cross-checked vs ESPN + RealGM, reconciled 2026-07-27.
 # Re-verified 2026-08-18: August trades/signings/waives applied from the
 # adversarial web-search round (see receipts/2026-08-18-offseason-reverification.md).
-# Re-verified 2026-08-20: five-team Watson trade + Harden re-sign applied.
+# Re-verified 2026-08-23: Watson deal league-processed; Klay buyout to MIA;
+# DeRozan to DEN. Watch: stretch-deadline cluster expected by Fri 8/29.
 # Maintain by hand as trades/waivers/signings happen (same doctrine as
 # real_signings), then re-run scripts/build_master_roster_xlsx.py.
 # kind: standard | two_way | pending (agreed, not official, not vs limits)
 asof,team,player,salary_M,kind,pos,notes
-2026-08-20,ATL,Jalen Johnson,30,standard,PF/SF,5yr/$150M rookie extension (2025-29)
+2026-08-23,ATL,Jalen Johnson,30,standard,PF/SF,5yr/$150M rookie extension (2025-29)
 ,ATL,Dyson Daniels,25,standard,SF/SG,4yr/$100M rookie extension begins 2026-27
 ,ATL,C.J. McCollum,21,standard,PG/SG,"acquired by trade 1/9/26; 1yr $21M vet extension, expiring"
 ,ATL,Luguentz Dort,17.72,standard,PF/SF,traded to ATL 7/19/26; expiring
@@ -103,8 +104,8 @@ asof,team,player,salary_M,kind,pos,notes
 ,CLE,Evan Mobley,50.11,standard,PF/C,Designated rookie max extension
 ,CLE,Jarrett Allen,28,standard,C,Veteran extension through 2028-29
 ,CLE,Cam Whitmore,5.46,standard,SF/SG,"acquired from WAS 8/20/26 in the five-team Watson deal; $5.46M expiring rookie scale, RFA 2027; SI reports CLE may waive"
-,CLE,Peyton Watson,20.4,standard,SF/PF,"sign-and-trade from DEN 8/19/26 (five-team CLE/DEN/LAC/WAS/CHA deal): 4yr $88M, player option + 7.5% trade kicker; yr1 ~$20.4M est; hard-caps CLE at apron 1"
-,CLE,James Harden,29.9,standard,PG/SG,"agreed 8/20/26: 3yr $97M re-sign (2028-29 player option, trade kicker) after declining his $42.3M PO in June; yr1 ~$29.9M est at 8% raises; official signing pending the Watson trade paperwork"
+,CLE,Peyton Watson,20.47,standard,SF/PF,"sign-and-trade from DEN 8/19/26 (five-team CLE/DEN/LAC/WAS/CHA deal): 4yr $88M, player option + 7.5% trade kicker; yr1 ~$20.4M est; hard-caps CLE at apron 1"
+,CLE,James Harden,29.9,standard,PG/SG,"officially signed: 3yr $97M fully gtd re-sign (2028-29 player option, trade kicker); yr1 ~$29.9-30M"
 ,CLE,Sam Merrill,9.16,standard,SG/SF,Year 2 of 4yr/$38M
 ,CLE,Jaylon Tyson,3.66,standard,SF/SG,Rookie scale yr 3
 ,CLE,Mario Hezonja,2.45,standard,SF,"officially signed 7/31/26: 1yr vet min returning from Real Madrid ($2.85M actual, $2.45M cap hit; non-gtd until ~Nov 15)"
@@ -118,7 +119,6 @@ asof,team,player,salary_M,kind,pos,notes
 ,CLE,Ernest Udeh Jr.,0,two_way,C,Signed two-way 7/1/26
 ,DAL,Kyrie Irving,39.49,standard,PG/SG,Yr 2 of 3yr deal; 2027-28 player option $42.4M
 ,DAL,P.J. Washington,19.81,standard,PF/SF,Vet extension runs through 2029-30
-,DAL,Klay Thompson,17.46,standard,SG/SF,Final year of 3yr sign-and-trade deal
 ,DAL,Daniel Gafford,17.26,standard,C,Vet extension through 2028-29
 ,DAL,Santi Aldama,17.01,standard,PF/SF,"Acquired from MEM in July 8, 2026 six-team trade (AJ Johnson + 2030 1st + 2nds out); 2027-28 team option $17.0M"
 ,DAL,Cooper Flagg,14.52,standard,SF/PF,"2025 No. 1 pick, yr 2; 2027-28 club option due 10/31/26"
@@ -130,7 +130,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,DAL,Morez Johnson Jr.,6.75,standard,C,"2026 No. 9 pick, signed rookie deal"
 ,DAL,Marcus Sasser,5.2,standard,PG/SG,Acquired from DET July 2026 (absorbed via Bi-Annual Exception); 2027 RFA
 ,DAL,Sergio de Larrea,3.18,standard,PG/SG,"2026 No. 25 pick (DAL traded up from 30), signed rookie deal"
-,DAL,Tarik Biberovic,3,standard,SF,Draft rights acquired from MEM in Aldama trade; signed 2yr/$6M via part of MLE
+,DAL,Tarik Biberovic,2.93,standard,SF,"Draft rights via the Aldama six-teamer; signed 7/10/26 2yr $6M via part of the MLE ($2926829 yr1, 27-28 team option)"
 ,DAL,Moussa Cisse,2.19,standard,C,"Non-guaranteed; $1.09M guarantees 9/1/26, full 10/1/26"
 ,DAL,Tobi Lawal,0.68,two_way,PF,2026 second-round pick on two-way
 ,DAL,John Poulakidas,0.68,two_way,SG,Two-way contract
@@ -142,6 +142,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,DEN,Christian Braun,21.55,standard,SG/SF,5yr/$125M rookie extension (fall 2025) begins 2026-27
 ,DEN,Zeke Nnaji,7.47,standard,C/PF,Rookie extension; PO for 2027-28
 ,DEN,Spencer Jones,6,standard,PF/SF,"RFA: signed 2yr $11.75M offer sheet with OKC (taxpayer MLE); DEN matched 7/27/26; $6M / $5.75M fully gtd"
+,DEN,DeMar DeRozan,2.45,standard,SF/SG,"signed 8/21/26: 1yr vet min ($3.88M actual, $2.45M cap hit; second-apron DEN limited to the minimum); SAC waived him in July"
 ,DEN,Julian Strawther,4.83,standard,SF/PF,Final rookie-scale year (RFA 2027)
 ,DEN,DaRon Holmes II,3.37,standard,PF/C,Year 3 rookie scale (2024 No. 22); TO decision for 2027-28
 ,DEN,Tyus Jones,2.45,standard,PG,"Re-signed 1yr July 2, 2026 (vet min; joined DEN Mar 2026 after DAL waiver); cap hit is 2-yr-min charge, base $3.88M"
@@ -278,6 +279,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Karim Lopez,3.75,standard,PF,"2026 No. 21 pick (rights from DET draft night); rookie scale officially signed 7/29/26: 4yr $18.37M, $3,746,760 in 2026-27, first two years gtd"
 ,MEM,Richie Saunders,0,two_way,SG,"2026 No. 32 pick, unsigned (Feb 2026 ACL rehab); reported likely two-way when cleared; PROMOTED to official per Barrett 2026-07-27"
 ,MIA,Giannis Antetokounmpo,58.46,standard,PF/C,traded from MIL 7/6/26; 2027-28 player option $62.8M
+,MIA,Klay Thompson,6.3,standard,SG/SF,"agreed 8/21/26 after the DAL buyout: 2yr ~$13M, 2027-28 player option; signs when waivers clear 8/23"
 ,MIA,Bam Adebayo,49.49,standard,C/PF,2028-29 player option $57.4M
 ,MIA,Andrew Wiggins,30.17,standard,SF/PF,traded to MIA 2/6/25; salary drops to $16.5M in 27-28; 2028-29 PO
 ,MIA,Nikola Jovic,16.2,standard,PF/C,rookie extension through 2029-30
@@ -610,7 +612,6 @@ asof,team,player,salary_M,kind,pos,notes
 ,PHI,Dalen Terry,0,free_agent,SG/SF,unsigned free agent; est value $2.6M
 ,PHX,Amir Coffey,0,free_agent,SG/SF,unsigned free agent; est value $2.9M
 ,PHX,Isaiah Livers,0,free_agent,SF/PF,unsigned free agent; est value $2.9M
-,SAC,DeMar DeRozan,0,free_agent,SF/SG,unsigned free agent; est value $15.7M
 ,SAC,Killian Hayes,0,free_agent,PG,unsigned free agent; est value $6.2M
 ,SAC,Russell Westbrook,0,free_agent,PG/SG,unsigned free agent; est value $5.4M
 ,SAC,Doug McDermott,0,free_agent,SF/PF,unsigned free agent; est value $3.9M

@@ -1,13 +1,45 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 102,
+  "n": 104,
   "within_4M": 80,
-  "within_5cap": 92,
+  "within_5cap": 91,
   "median_err_M": 1.6,
-  "bias_M": 0.3
+  "bias_M": 0.4
  },
  "signings": [
+  {
+   "player": "DeMar DeRozan",
+   "team": "DEN",
+   "deal": "1yr/$3.88M",
+   "years": 1,
+   "total_M": 3.88,
+   "actual_M": 3.9,
+   "type": "new",
+   "date": "2026-08-21",
+   "model_M": 15.7,
+   "low_M": 7.1,
+   "high_M": 24.3,
+   "delta_M": 11.8,
+   "in4": false,
+   "in5cap": false
+  },
+  {
+   "player": "Klay Thompson",
+   "team": "MIA",
+   "deal": "2yr/$13M",
+   "years": 2,
+   "total_M": 13.0,
+   "actual_M": 6.3,
+   "type": "new",
+   "date": "2026-08-21",
+   "model_M": 6.0,
+   "low_M": 1.2,
+   "high_M": 10.9,
+   "delta_M": -0.3,
+   "in4": true,
+   "in5cap": true
+  },
   {
    "player": "James Harden",
    "team": "CLE",
@@ -30,13 +62,13 @@
    "deal": "4yr/$88M",
    "years": 4,
    "total_M": 88.0,
-   "actual_M": 20.4,
+   "actual_M": 20.5,
    "type": "new",
    "date": "2026-08-19",
    "model_M": 15.6,
    "low_M": 7.1,
    "high_M": 24.2,
-   "delta_M": -4.8,
+   "delta_M": -4.9,
    "in4": false,
    "in5cap": true
   },
@@ -448,6 +480,17 @@
    "delta_M": 0.0,
    "in4": true,
    "in5cap": true
+  },
+  {
+   "player": "Tarik Biberovic",
+   "team": "DAL",
+   "deal": "2yr/$6M",
+   "years": 2,
+   "total_M": 6.0,
+   "actual_M": 2.9,
+   "type": "new",
+   "date": "2026-07-10",
+   "model_M": null
   },
   {
    "player": "Caleb Love",

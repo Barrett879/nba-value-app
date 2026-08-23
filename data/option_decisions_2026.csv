@@ -1,4 +1,4 @@
-# Verified 2026-08-20 (option outcomes re-checked in the August verification rounds).
+# Verified 2026-08-23 (option outcomes re-checked in the August verification rounds).
 # HoopsValue - actual 2026 player/team OPTION decisions for players still showing in
 # the Free Agent list. Most resolutions are DERIVED automatically: a player who shows a
 # "Player Option" status and also signed a new tracked deal necessarily OPTED OUT, so the
@@ -43,7 +43,6 @@ Zach LaVine,po_in,49.0,exercised his $49M player option to stay with Sacramento
 Draymond Green,po_out,27.7,declined his $27.7M player option (Golden State) to enter free agency
 Gary Trent Jr.,po_out,3.9,declined his $3.9M player option (Milwaukee) to enter free agency
 James Harden,po_out,42.3,declined his $42.3M player option (Cleveland) to negotiate a new deal; re-signed CLE 8/20/26 (3yr $97M)
-Jonathan Kuminga,to_out,24.3,Atlanta declined his $24.3M team option -> unrestricted free agent
 Kevon Looney,to_out,8.0,New Orleans declined his $8M team option -> unrestricted free agent
 Nicolas Batum,to_out,5.9,LA Clippers declined his $5.88M team option -> unrestricted free agent
 Kenrich Williams,to_out,7.2,Oklahoma City declined his $7.16M team option -> unrestricted free agent
@@ -55,7 +54,7 @@ Jonathan Mogbo,to_out,2.3,Toronto declined his $2.3M team option -> unrestricted
 Ziaire Williams,to_out,6.25,Brooklyn declined his $6.25M team option -> unrestricted free agent
 Kobe Sanders,to_out,2.2,LA Clippers declined his $2.2M team option then re-signed him 4yr/$11.2M
 Bogdan Bogdanović,to_out,16.0,LA Clippers declined his $16M team option; signed 1yr vet-min with Houston
-Jonathan Kuminga,to_out,24.3,Atlanta declined his $24.3M team option after the February trade from Golden State (with Hield for Porzingis); still unsigned as of late July
+Jonathan Kuminga,to_out,24.3,Atlanta declined his $24.3M team option after the February trade from Golden State (with Hield for Porzingis); UNRESTRICTED FA (not RFA - ATL keeps Bird rights for a possible S&T); still unsigned 8/23
 Bradley Beal,po_out,5.62,declined his $5.62M player option with the Clippers 6/29; re-signed LAC 8/13 (2yr $13.2M via Non-Bird)
 Trendon Watford,to_out,2.8,Philadelphia declined his $2.8M team option; signed NOP 8/17 (1yr vet min)
 Jalen Pickett,to_out,2.41,Denver declined his $2.41M team option 6/29; no qualifying offer; signed LAC two-way 8/12
