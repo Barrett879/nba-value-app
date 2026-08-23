@@ -36,7 +36,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,BKN,Moritz Wagner,9.27,standard,C,"Agreed 2yr/$19M (2nd-yr mutual option) on 7/1/2026 from ORL; still in Spotrac pending section as of 7/27, not counted vs roster; PROMOTED to official per Barrett 2026-07-27"
 ,BKN,Keon Ellis,9,standard,SG/PG,Signed multi-year FA 7/6/2026 (from SAC); 2027-28 player option $9M
 ,BKN,Mikel Brown Jr.,8.79,standard,PG,2026 1st-round pick No.6
-,BKN,Egor Demin,7.23,standard,PG/SG,2025 No.8 pick; 2027-28 club option decision due 10/31/2026
+,BKN,Egor Demin,7.23,standard,SG/PG,2025 No.8 pick; 2027-28 club option decision due 10/31/2026
 ,BKN,Noah Clowney,5.41,standard,PF/C,RFA summer 2027 (QO $8.3M)
 ,BKN,Josh Minott,4.5,standard,SF/PF,"Traded from BOS 2/5/2026, then re-signed 7/6/2026; 2027-28 team option"
 ,BKN,Nolan Traore,4,standard,PG/SG,2025 No.19 pick; 2027-28 club option decision due 10/31/2026
@@ -222,10 +222,10 @@ asof,team,player,salary_M,kind,pos,notes
 ,LAC,Max Strus,16.66,standard,SF/SG,"acquired from CLE 8/19/26 in the five-team Watson deal (absorbed into the John Collins S&T trade exception); expiring year 4 of 4yr/$63M"
 ,LAC,Brandon Ingram,40,standard,SF/PF,"part of agreed Kawhi-to-TOR trade (with Dick, 2031/2033 1sts, 2030/2033 2nds, 2027 swap); unofficial pending Aspiration investigation; PROMOTED to official per Barrett 2026-07-27"
 ,LAC,Rui Hachimura,14,standard,PF/SF,signed 2yr/$28M July 2026 via full non-taxpayer MLE (from LAL)
-,LAC,Derrick Jones Jr.,10.48,standard,SF/PF,final year of 3yr/$30M
+,LAC,Derrick Jones Jr.,10.48,standard,PF/SF,final year of 3yr/$30M
 ,LAC,Keaton Wagler,9.67,standard,PG,2026 draft pick No. 5 (Illinois); rookie scale 4yr/$43.96M
 ,LAC,Brook Lopez,9.19,standard,C,year 2 of 2yr/$17.94M
-,LAC,Gradey Dick,7.13,standard,SG/SF,part of agreed Kawhi-to-TOR trade; 4th-year rookie-scale option; unofficial pending investigation; PROMOTED to official per Barrett 2026-07-27
+,LAC,Gradey Dick,7.13,standard,SF/SG,part of agreed Kawhi-to-TOR trade; 4th-year rookie-scale option; unofficial pending investigation; PROMOTED to official per Barrett 2026-07-27
 ,LAC,Isaiah Jackson,7,standard,C/PF,3yr/$21M (2025); acquired from IND Feb 2026 (Zubac/Kobe Brown deal)
 ,LAC,Kris Dunn,5.68,standard,PG/SG,final year of 2024 sign-and-trade deal
 ,LAC,Jordan Miller,5.3,standard,SG/SF,"re-signed 3yr/$15.3M Jul 9, 2026; 2028-29 team option"

@@ -1,0 +1,32 @@
+# HoopsValue - hand-set depth-chart order.
+#
+# A column normally ranks by Barrett Score, which is a VALUE ranking and not a
+# rotation. Those two disagree whenever last season's number does not describe
+# next season's role: a rookie has no score at all, a returning starter who
+# missed most of a year scores like a bench player, and a high-scoring sixth
+# man outranks the starter he backs up.
+#
+# A row here pins a player to a SLOT in his column: rank 1 is the starter,
+# rank 2 the man behind him. Everyone without a row keeps score order and
+# fills in around the pins, so "second SF" does not force you to pin the
+# starter above him too. A rank past the end of a column lands at the end.
+#
+# Scope: the Rosters depth chart only. The player board, the rankings and every
+# model value stay untouched, so nothing here can flatter a player's numbers.
+# It moves where he is LISTED, never what he is WORTH.
+#
+#   team,player,rank,note   -- player must match the master-roster spelling
+#
+team,player,rank,note
+MEM,Cameron Boozer,1,2026 lottery pick; no NBA score yet so the automatic rule buries him
+MEM,Scotty Pippen Jr.,1,starting point guard
+MEM,Cedric Coward,1,starting shooting guard
+CHI,Caleb Wilson,1,2026 No. 4 pick; no NBA score yet
+IND,Aaron Nesmith,1,starter ahead of Oubre despite the closer scores (11.4 vs 12.4)
+WAS,AJ Dybantsa,1,2026 lottery pick; no NBA score yet
+SAC,Darius Acuff Jr.,1,2026 first-rounder; no NBA score yet
+BKN,Mikel Brown Jr.,1,2026 first-rounder; no NBA score yet
+UTA,Darryn Peterson,1,"2026 No. 2 pick; no NBA score yet, and the automatic rule had him 4th"
+DEN,Christian Braun,1,starting shooting guard; DeRozan is the scorer off the bench
+PHX,Ryan Dunn,2,"ahead of Highsmith; Brooks keeps the top slot on score"
+GSW,Yaxel Lendeborg,2,"ahead of Moody; Butler keeps the top slot on score"

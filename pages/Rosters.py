@@ -107,6 +107,20 @@ def _payload() -> str:
     except Exception:                                # never block the page
         pass
 
+    # Hand-set depth-chart order (data/depth_order.csv). Keyed by team as well
+    # as name so a pin can never leak onto a same-named player elsewhere. The
+    # rank rides on the player payload; the template sorts pinned players above
+    # the score-ranked rest.
+    _pin = {}
+    for _row in _read_csv(_ROOT / "data" / "depth_order.csv"):
+        _tm, _nm = (_row.get("team") or "").strip(), (_row.get("player") or "").strip()
+        try:
+            _rk = int((_row.get("rank") or "").strip())
+        except ValueError:
+            continue
+        if _tm and _nm:
+            _pin.setdefault(_tm, NameIndex()).add(_nm, (_rk, (_row.get("note") or "").strip()))
+
     # Hand-picked season overrides (data/score_season_override.csv). The minutes
     # floor cannot catch a player who kept a starter's MINUTES across a fraction
     # of the SEASON -- Keegan Murray's 23 games at ~34 a night clear 500 easily,
@@ -337,10 +351,13 @@ def _payload() -> str:
                 sal = 0.0
             o = opts.get(name) or {}
             pos = (r.get("pos") or "").strip()
+            _pn = (_pin.get(abbr) or NameIndex()).get(name)
             players.append({
                 "n": name, "kind": kind,
                 "pos": pos,
                 "slot": _SLOT.get(pos.split("/")[0].upper(), ""),
+                "dord": _pn[0] if _pn else None,
+                "dnote": (_pn[1] or None) if _pn else None,
                 "salary": round(sal, 2),
                 "note": note,
                 "value": round(value, 1) if value is not None else None,

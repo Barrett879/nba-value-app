@@ -737,7 +737,10 @@ function depthCard(p, rank){
     : p.vd >= 1 ? `<div class="vd ${tone}">${fmtM(p.vd)} over</div>`
     : `<div class="vd flat">at value</div>`;
   const yt = p.kind === "two_way" ? "" : yrsTitle(p.yrs);
-  return `<div class="dcard${cls}" title="${esc(p.note)}${yt ? esc(" | " + yt) : ""}">
+  // A pinned card looks identical to one that earned its rank, so the reason
+  // rides in the tooltip rather than being invisible.
+  const pin = p.dord == null ? "" : " | Pinned" + (p.dnote ? ": " + p.dnote : "");
+  return `<div class="dcard${cls}" title="${esc(p.note)}${yt ? esc(" | " + yt) : ""}${esc(pin)}">
     ${rank ? `<span class="drank${rank === 1 ? " top" : ""}">${rank}</span>` : ""}
     ${img}
     <a class="nm" href="/?player=${encodeURIComponent(p.n)}" target="_top"
@@ -834,11 +837,27 @@ function rosterPanel(t){
     const cmpD = (a, b) => (b.barrett == null ? -1e9 : b.barrett)
                          - (a.barrett == null ? -1e9 : a.barrett)
                          || (b.salary - a.salary);
+    // Hand-set order (data/depth_order.csv): a pin's rank is the SLOT it takes
+    // in the column, and the unpinned fill in around it by score. Absolute
+    // slots are what lets one row say "second SF" without also having to pin
+    // the starter above him. A pin moves where a player is LISTED, never his
+    // score or his value, both of which still render exactly as computed.
+    const orderD = list => {
+      const pins = list.filter(p => p.dord != null).sort((a, b) => a.dord - b.dord);
+      if (!pins.length) return list.sort(cmpD);
+      const rest = list.filter(p => p.dord == null).sort(cmpD), out = [];
+      for (const p of pins) {
+        while (out.length < p.dord - 1 && rest.length) out.push(rest.shift());
+        out.push(p);
+      }
+      return out.concat(rest);
+    };
     const pool = t.players.filter(p => p.kind !== "free_agent" && match(p));
-    h += `<div class="depthhint">Each column is ranked by Barrett Score, best first.</div>
+    h += `<div class="depthhint">Each column is ranked by Barrett Score, best first,
+      with hand-set starters pinned above it.</div>
       <div class="depth">`;
     for (const pos of POS){
-      const list = pool.filter(p => p.slot === pos).sort(cmpD);
+      const list = orderD(pool.filter(p => p.slot === pos));
       h += `<div class="dcol"><div class="dhead">${pos}<span class="cnt">${list.length}</span></div>`;
       h += list.length ? list.map((p, i) => depthCard(p, i + 1)).join("")
         : `<div class="empty">${q ? "No match." : "Nobody listed."}</div>`;
