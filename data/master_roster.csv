@@ -108,7 +108,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CLE,James Harden,29.9,standard,PG/SG,"officially signed: 3yr $97M fully gtd re-sign (2028-29 player option, trade kicker); yr1 ~$29.9-30M"
 ,CLE,Sam Merrill,9.16,standard,SG/SF,Year 2 of 4yr/$38M
 ,CLE,Jaylon Tyson,3.66,standard,SF/SG,Rookie scale yr 3
-,CLE,Mario Hezonja,2.45,standard,SF,"officially signed 7/31/26: 1yr vet min returning from Real Madrid ($2.85M actual, $2.45M cap hit; non-gtd until ~Nov 15)"
+,CLE,Mario Hezonja,2.45,standard,PF/SF,"officially signed 7/31/26: 1yr vet min returning from Real Madrid ($2.85M actual, $2.45M cap hit; non-gtd until ~Nov 15)"
 ,CLE,Thomas Bryant,2.45,standard,C,Re-signed 1yr/$3.52M on 7/7/26 (vet-min cap hit $2.45M)
 ,CLE,Nae'Qwan Tomlin,2.41,standard,PF/SF,Converted from two-way in 2025-26; guaranteed
 ,CLE,Craig Porter Jr.,2.41,standard,PG,Non-guaranteed for 2026-27 per Spotrac
@@ -142,7 +142,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,DEN,Christian Braun,21.55,standard,SG/SF,5yr/$125M rookie extension (fall 2025) begins 2026-27
 ,DEN,Zeke Nnaji,7.47,standard,C/PF,Rookie extension; PO for 2027-28
 ,DEN,Spencer Jones,6,standard,PF/SF,"RFA: signed 2yr $11.75M offer sheet with OKC (taxpayer MLE); DEN matched 7/27/26; $6M / $5.75M fully gtd"
-,DEN,DeMar DeRozan,2.45,standard,SF/SG,"signed 8/21/26: 1yr vet min ($3.88M actual, $2.45M cap hit; second-apron DEN limited to the minimum); SAC waived him in July"
+,DEN,DeMar DeRozan,2.45,standard,SG/SF,"signed 8/21/26: 1yr vet min ($3.88M actual, $2.45M cap hit; second-apron DEN limited to the minimum); SAC waived him in July"
 ,DEN,Julian Strawther,4.83,standard,SF/PF,Final rookie-scale year (RFA 2027)
 ,DEN,DaRon Holmes II,3.37,standard,PF/C,Year 3 rookie scale (2024 No. 22); TO decision for 2027-28
 ,DEN,Tyus Jones,2.45,standard,PG,"Re-signed 1yr July 2, 2026 (vet min; joined DEN Mar 2026 after DAL waiver); cap hit is 2-yr-min charge, base $3.88M"
