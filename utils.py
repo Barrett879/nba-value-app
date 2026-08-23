@@ -3043,6 +3043,51 @@ def _dc_path(name: str) -> Path:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     return CACHE_DIR / name
 
+
+# ── DATA_REV — the escape hatch for a cache file that is WRONG on production ──
+# Render's /data disk seeds a repo cache file only when that FILENAME is
+# missing, so re-committing a corrected file under the same name never reaches
+# the live site: the first copy the disk ever saw wins forever. (The career
+# loader in app.py already carries a scar from this rule.) Renaming is the only
+# way through. Bump this token to reseed the caches that carry the CURRENT
+# season, and commit files under the new name in the SAME change — a bump
+# without the files leaves production with nothing on disk and nothing in the
+# repo, and it rebuilds from the network on a request path.
+#
+#   r2 (2026-08-23): the disk's 2025-26 parquet was a mid-season snapshot. It
+#   was missing 28 players outright (Moussa Diabaté, Dennis Schröder, ...), so
+#   the site had no current-season score for them and fell back to their
+#   2024-25 numbers -- visible as stale (24-25) tags on the depth chart and as
+#   a 494-player board where the shipped data holds 522.
+DATA_REV = "r2"
+
+
+def _rev_path(name: str) -> Path:
+    """Cache path for a file whose contents include the CURRENT season.
+
+    Prefers the DATA_REV copy, and falls back to the pre-revision name when
+    only that exists, so a failed seed degrades to stale-but-present data
+    rather than a network rebuild on a request path. When neither exists the
+    revisioned path is returned, so writes always land on the current name.
+    """
+    CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    stem, _, ext = name.rpartition(".")
+    revved = CACHE_DIR / f"{stem}_{DATA_REV}.{ext}"
+    if revved.exists():
+        return revved
+    legacy = CACHE_DIR / name
+    return legacy if legacy.exists() else revved
+
+
+def all_seasons_path(min_threshold: int = 0, playoffs: bool = False) -> Path:
+    """The pooled all-seasons parquet. Public so callers outside this module
+    (app.py's career loader) resolve the same revisioned file rather than
+    hardcoding a version that silently drifts."""
+    if playoffs:
+        return _rev_path(f"all_seasons_{min_threshold}_playoff_"
+                         f"{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet")
+    return _rev_path(f"all_seasons_{min_threshold}_{FORMULA_VERSION}.parquet")
+
 def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> bool:
     if not path.exists():
         return False
@@ -4069,9 +4114,9 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
         # live stats API for missing ones) inside the user's prediction — the
         # profiled cause of multi-minute predictions. Boot (serve.py) owns rebuilds.
         if playoffs:
-            _cpath = _dc_path(f"all_seasons_0_playoff_{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet")
+            _cpath = all_seasons_path(0, playoffs=True)
         else:
-            _cpath = _dc_path(f"all_seasons_0_{FORMULA_VERSION}.parquet")
+            _cpath = all_seasons_path(0)
         combined = pd.read_parquet(_cpath) if _cpath.exists() else pd.DataFrame()
         need = {"Player", "Season", "barrett_score", "score_rank", "GP", "MPG",
                 "Team", "avail_mult", "ts_pct", "d_lebron", "efficiency_adj", "salary"}
@@ -5026,8 +5071,14 @@ PLAYOFF_VERSION = "p4"
 def _raw_disk_path(season: str, playoffs: bool = False) -> Path:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     if playoffs:
-        return CACHE_DIR / f"raw_{season.replace('-', '_')}_playoff_{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet"
-    return CACHE_DIR / f"raw_{season.replace('-', '_')}_{FORMULA_VERSION}.parquet"
+        name = (f"raw_{season.replace('-', '_')}_playoff_"
+                f"{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet")
+    else:
+        name = f"raw_{season.replace('-', '_')}_{FORMULA_VERSION}.parquet"
+    # Only the CURRENT season's data can change, and only it went stale on the
+    # disk; the ~50 historical parquets are immutable and keep their names, so
+    # a DATA_REV bump never orphans them into a network rebuild.
+    return _rev_path(name) if season == SEASONS[0] else CACHE_DIR / name
 
 def _raw_disk_fresh(season: str, playoffs: bool = False) -> bool:
     """True if the on-disk parquet exists AND is within its TTL.
@@ -5423,9 +5474,9 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD,
     # Include FORMULA_VERSION + mode (and PLAYOFF_VERSION for playoff
     # variants) so formula bumps and mode switches both invalidate.
     if playoffs:
-        path = _dc_path(f"all_seasons_{min_threshold}_playoff_{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet")
+        path = all_seasons_path(min_threshold, playoffs=True)
     else:
-        path = _dc_path(f"all_seasons_{min_threshold}_{FORMULA_VERSION}.parquet")
+        path = all_seasons_path(min_threshold)
     # Season-aware freshness: rebuilding means re-ranking all ~53 seasons — hourly
     # was pure churn (and in the offseason the data cannot change at all).
     if _dc_fresh(path, season=SEASONS[0]):

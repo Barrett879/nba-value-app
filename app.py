@@ -511,7 +511,7 @@ import pandas as pd
 import plotly.graph_objects as go
 
 from utils import (
-    CACHE_DIR, html_table, team_cell, theme_fig, get_player_draft_info,
+    CACHE_DIR, all_seasons_path, html_table, team_cell, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
     fetch_league_stats, SALARY_CAP_M, _pkl_load,
     FACE_GUARD_SCRIPT,
@@ -639,13 +639,13 @@ def _hub_career() -> pd.DataFrame:
     Johnsons, two Marcus Williamses) stay distinct."""
     cols = ["PLAYER_ID", "Player", "Season", "barrett_score", "score_rank", "salary"]
     try:
-        df = pd.read_parquet(CACHE_DIR / "all_seasons_0_v7.parquet", columns=cols)
+        df = pd.read_parquet(all_seasons_path(0), columns=cols)
     except Exception:
         try:
             # Older cache copy without the id column (Render's disk keeps the
             # first-ever seeded file): synthesize name-keyed ids so the hub
             # degrades to the pre-fix behavior instead of an empty career.
-            df = pd.read_parquet(CACHE_DIR / "all_seasons_0_v7.parquet", columns=cols[1:])
+            df = pd.read_parquet(all_seasons_path(0), columns=cols[1:])
             df["PLAYER_ID"] = df["Player"].map(normalize).factorize()[0]
         except Exception:
             return pd.DataFrame(columns=cols + ["norm"])
