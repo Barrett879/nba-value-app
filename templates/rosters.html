@@ -326,6 +326,10 @@ body:not(.light) .tbtn:not(.on):not(:hover){background:rgba(255,255,255,.05)}
 .dcard .nm:hover{color:var(--tc,var(--teal))}
 .dcard .sal{font-size:.8rem;font-weight:800;font-variant-numeric:tabular-nums;margin-top:.2rem}
 .dcard .bs{font-size:.66rem;color:var(--fg4);font-variant-numeric:tabular-nums}
+/* A score carried over from an older season, tagged so the column is not read
+   as a like-for-like comparison. Only ever set when the score is NOT current
+   (bs_yr is null for 2025-26), so the current season never carries a label. */
+.dcard .bsyr{margin-left:.2em;color:var(--fg5);font-weight:600}
 .dcard .vd{font-size:.64rem;font-weight:700;font-variant-numeric:tabular-nums}
 .drank{position:absolute;top:.3rem;left:.35rem;min-width:1.15em;height:1.15em;line-height:1.15em;
   border-radius:4px;background:var(--track);color:var(--fg5);font-size:.62rem;font-weight:800;
@@ -738,7 +742,8 @@ function depthCard(p, rank){
     ${img}
     <a class="nm" href="/?player=${encodeURIComponent(p.n)}" target="_top"
        onclick="return hvGo(this)">${esc(p.n)}</a>
-    <div class="bs">${p.barrett == null ? "no score" : p.barrett.toFixed(1) + " BS"}</div>
+    <div class="bs">${p.barrett == null ? "no score"
+      : p.barrett.toFixed(1) + " BS" + (p.bs_yr ? `<span class="bsyr">(${esc(p.bs_yr)})</span>` : "")}</div>
     ${money}${vd}
   </div>`;
 }
