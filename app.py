@@ -330,7 +330,12 @@ st.markdown("""
     /* Front Page strip: 4 clickable feature cards under the search. */
     .fp-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem;
         margin:0;padding:.25rem 0 .8rem;}
-    @media(max-width:1100px){.fp-grid{grid-template-columns:1fr 1fr;}}
+    /* minmax(0,1fr) matters: a bare 1fr floors each column at the card's
+       min-content width, and on a phone that pushed the right-hand column
+       ~34px off screen where it was quietly clipped. Under 560px one card
+       per row -- two of these side by side wraps every name. */
+    @media(max-width:1100px){.fp-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+    @media(max-width:560px){.fp-grid{grid-template-columns:minmax(0,1fr);}}
     a.fp-card{position:relative;display:flex;align-items:center;gap:.8rem;
         background:var(--panel-solid);border:1px solid var(--panel-line);
         border-left:4px solid var(--team,var(--accent-teal));border-radius:12px;
@@ -1152,8 +1157,11 @@ if _sel:
       overflow-y: auto !important; padding: 0.55rem 0.8rem 3.3rem !important;
       position: relative; margin-bottom: 0.9rem; }}
     /* Phones: drop the fixed height so the four quadrants flow full-length instead
-       of trapping content in small inner-scroll boxes. Desktop is untouched. */
-    @media (max-width: 640px) {{
+       of trapping content in small inner-scroll boxes. Desktop is untouched.
+       The height clause matters for LANDSCAPE: an iPhone turned sideways is
+       ~900px wide, so it sails past the width test while its viewport is
+       shorter than the 580px box it would otherwise get. */
+    @media (max-width: 640px), (max-height: 560px) {{
       [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
       [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
       [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),

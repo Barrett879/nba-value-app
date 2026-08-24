@@ -210,7 +210,7 @@ body{background:transparent;color:var(--fg1);
 .vbtn.v-list:hover{background:var(--tcb2,var(--tc2));color:var(--tfg2)}
 .vbtn.v-list.on{background:var(--tcb2,var(--tc2));border-color:var(--tc2);color:var(--tfg2)}
 .vdtog{display:inline-flex;align-items:center;gap:.35rem;font-size:.74rem;font-weight:700;
-  color:var(--fg3);cursor:pointer;user-select:none;white-space:nowrap;margin-left:.1rem}
+  color:var(--fg3);cursor:pointer;-webkit-user-select:none;user-select:none;white-space:nowrap;margin-left:.1rem}
 .vdtog input{accent-color:var(--teal);width:14px;height:14px;cursor:pointer;margin:0}
 
 .roster{display:grid;grid-template-columns:1fr 1fr;gap:6px}
@@ -227,7 +227,7 @@ body{background:transparent;color:var(--fg1);
 .card .noimg{width:44px;height:44px;border-radius:50%;background:var(--track);flex:0 0 44px;
   display:flex;align-items:center;justify-content:center;
   font-size:.84rem;font-weight:800;letter-spacing:.03em;color:var(--fg2);
-  box-shadow:0 0 0 2px var(--track);user-select:none}
+  box-shadow:0 0 0 2px var(--track);-webkit-user-select:none;user-select:none}
 .card .who{flex:1;min-width:0}
 .card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;
   text-overflow:ellipsis;display:block;color:var(--fg1);text-decoration:none}
@@ -320,7 +320,7 @@ body:not(.light) .tbtn:not(.on):not(:hover){background:rgba(255,255,255,.05)}
   object-position:top;background:var(--track);margin:0 auto .25rem;display:block;
   box-shadow:0 0 0 2px var(--track)}
 .dcard .noimg{display:flex;align-items:center;justify-content:center;
-  font-size:.8rem;font-weight:800;letter-spacing:.03em;color:var(--fg2);user-select:none}
+  font-size:.8rem;font-weight:800;letter-spacing:.03em;color:var(--fg2);-webkit-user-select:none;user-select:none}
 .dcard .nm{display:block;font-size:.78rem;font-weight:700;color:var(--fg1);text-decoration:none;
   line-height:1.2;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
 .dcard .nm:hover{color:var(--tc,var(--teal))}
@@ -339,7 +339,7 @@ body:not(.light) .tbtn:not(.on):not(:hover){background:rgba(255,255,255,.05)}
 .ltable th{position:sticky;top:0;background:var(--panel);text-align:right;font-size:.63rem;
   font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--fg5);
   padding:.4rem .45rem;border-bottom:1px solid var(--line);cursor:pointer;white-space:nowrap;
-  user-select:none}
+  -webkit-user-select:none;user-select:none}
 .ltable th:first-child{text-align:left}
 .ltable th.on{color:var(--teal)}
 .ltable td{padding:.34rem .45rem;border-bottom:1px solid var(--line);text-align:right;
@@ -364,6 +364,11 @@ body:not(.light) .tbtn:not(.on):not(:hover){background:rgba(255,255,255,.05)}
 .backbtn{background:var(--card);border:1px solid var(--line);color:var(--fg3);border-radius:9px;
   padding:.3rem .6rem;font-size:.72rem;font-weight:700;cursor:pointer;align-self:center}
 .backbtn:hover{color:var(--fg1);border-color:var(--teal)}
+/* 16px is the iOS auto-zoom threshold: a focused input any smaller lurches
+   the whole page into a zoom it never undoes. Applies to the roster filter. */
+@media(max-width:760px){
+  .tools input[type=text]{font-size:16px}
+}
 </style>
 <script>
 const DATA = __DATA__;

@@ -1931,6 +1931,16 @@ COMMON_CSS = """
         .st-key-score_help_nav button p { font-size: 0.72rem !important; }
         .st-key-score_help_nav { right: 2.8rem !important; }
     }
+    /* Phones: the pinned label is ~150px wide and the nav links need ~229px,
+       so under about 425px they overlap and "Front Office" renders straight
+       through the help text. Measured: 375px and 390px collide, 430px clears
+       by 5px. Collapse the label to a "?" rather than dropping the control,
+       which keeps the explainer one tap away on every page. */
+    @media (max-width: 460px) {
+        .st-key-score_help_nav button p { font-size: 0 !important; }
+        .st-key-score_help_nav button p::after {
+            content: "?"; font-size: 0.95rem; font-weight: 700; }
+    }
 
     /* In-page Playoff-mode toggle (on the title row): push it to the right edge
        of its column so it lines up under the brightness button. The toggle's
@@ -2573,7 +2583,10 @@ _FOOTER_HTML = f"""
     flex-wrap:wrap; gap:0.5rem 1.1rem; color:var(--fg-5); }}
 .hv-foot-bottom a {{ color:var(--fg-3); text-decoration:none; }}
 .hv-foot-bottom a:hover {{ color:var(--fg-1); }}
-.hv-foot-right {{ display:flex; align-items:center; gap:0.85rem; }}
+/* wrap: the row carries a full email address, which overflowed the viewport
+   by ~16px on a phone because this flex row could not break. */
+.hv-foot-right {{ display:flex; align-items:center; gap:0.85rem;
+    flex-wrap:wrap; justify-content:center; }}
 .hv-foot-right .sep {{ color:var(--panel-line); }}
 .hv-foot-ico {{ display:inline-flex; line-height:0; }}
 .hv-foot-ico svg {{ width:15px; height:15px; fill:var(--fg-3); transition:fill .12s ease; }}

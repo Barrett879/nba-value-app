@@ -199,7 +199,7 @@ body{background:transparent;color:var(--fg1);
 .card{display:flex;align-items:center;gap:.6rem;background-color:var(--card);
   background-image:var(--pw,none);border:1px solid var(--line);
   border-left:3px solid var(--tc,var(--line));
-  border-radius:11px;padding:.5rem .65rem;margin:0;cursor:grab;user-select:none;min-width:0;
+  border-radius:11px;padding:.5rem .65rem;margin:0;cursor:grab;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;min-width:0;
   transition:border-color .12s, box-shadow .12s, transform .12s}
 /* Hover is the drag affordance only: lift and shadow, no colour change, since
    the colour is already there. */
@@ -215,7 +215,7 @@ body{background:transparent;color:var(--fg1);
 .card .noimg{width:44px;height:44px;border-radius:50%;background:var(--track);flex:0 0 44px;
   display:flex;align-items:center;justify-content:center;
   font-size:.84rem;font-weight:800;letter-spacing:.03em;color:var(--fg2);
-  box-shadow:0 0 0 2px var(--track);user-select:none}
+  box-shadow:0 0 0 2px var(--track);-webkit-user-select:none;user-select:none}
 .card .who{flex:1;min-width:0}
 .card .nm{font-size:.92rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 /* --fg2, not the muted --fg4 this line used to take. The team wash is painted on
@@ -322,6 +322,14 @@ body{background:transparent;color:var(--fg1);
 .sharerow button:hover{filter:brightness(1.08)}
 .sharerow input{flex:1;min-width:220px;background:var(--card);color:var(--fg3);
   border:1px solid var(--line);border-radius:8px;padding:.4rem .55rem;font-size:.72rem}
+/* iOS zooms the whole page when a focused input computes under 16px, and it
+   does not zoom back out. The team filter is focus()ed the moment the picker
+   opens, so merely tapping "Select a team" jerked the page into a zoomed
+   state. 16px is the threshold, not a preference -- keep these at 16 on
+   touch widths even though they read large. */
+@media(max-width:760px){
+  .tfilter,.fasal,.cashrow input,.sharerow input{font-size:16px}
+}
 </style>
 <script>
 const DATA = __DATA__;
