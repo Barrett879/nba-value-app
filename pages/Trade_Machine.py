@@ -38,11 +38,8 @@ _TODAY = _dt.date.today().isoformat()
 
 st.title("Trade Machine")
 st.caption(
-    "Pick two to four teams, then drag players and picks between them. "
-    "The verdict updates instantly under the 2023 CBA: "
-    "salary matching, apron rules, hard caps, the Stepien rule, and trade "
-    "timing, each explained in plain English. Rosters are the real 2026-27 "
-    "books; projected (unsigned) players are not tradable."
+    "Pick two to four teams, then drag players and picks between them to "
+    "simulate potential trades. Rosters are the real 2026-27 books."
 )
 
 

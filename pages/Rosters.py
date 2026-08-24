@@ -36,8 +36,7 @@ render_nav("Rosters")
 st.title("Rosters")
 st.caption(
     "The real 2026-27 books, team by team. Every roster spot with its contract, "
-    "Barrett Score and model value: guaranteed deals, two-ways, and the team's "
-    "own unsigned free agents. Payroll is what a team actually owes, read "
+    "Barrett Score and model value. Payroll is what a team actually owes, read "
     "against the cap, the tax line and both aprons."
 )
 
