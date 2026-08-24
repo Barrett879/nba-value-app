@@ -100,10 +100,22 @@ body{background:transparent;color:var(--fg1);
    enough to keep up with the pill: set too low, the pill keeps widening while
    the tiles do not and the surplus turns into dead space BETWEEN the logos,
    which is the same complaint one level down. */
-.logos{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px;
-  justify-items:center}
+/* Flex, not a 5-column grid, and the difference only shows once the tiles hit
+   their cap. Stretched grid columns keep growing after the tile stops, so on a
+   wide screen the surplus opened 43px voids BETWEEN the logos and the row read
+   as scattered. Flex items that have reached max-width cannot absorb more, so
+   justify-content hands the surplus to the OUTSIDE and the five logos stay a
+   centred cluster at any pill width. Below the cap the tiles still grow to
+   fill, so narrow and mid widths render as before. */
+.logos{display:flex;justify-content:center;align-items:center;gap:6px}
+/* The gap can only widen once the tiles have stopped growing, because below
+   the cap every pixel of gap comes straight out of the logos. Under ~1600px
+   the pill is still full, so the gap stays tight; above it there is real
+   surplus and a wider gap gives the centred cluster room to breathe instead
+   of huddling in the middle of an empty pill. */
+@media(min-width:1600px){.logos{gap:18px}}
 .tbtn{position:relative;display:flex;align-items:center;justify-content:center;
-  width:100%;max-width:64px;aspect-ratio:1;border-radius:12px;
+  flex:1 1 0;min-width:0;max-width:64px;aspect-ratio:1;border-radius:12px;
   border:1px solid transparent;background:none;
   cursor:pointer;padding:0;transition:background .12s,border-color .12s,transform .12s}
 .tbtn img{width:68%;height:68%;object-fit:contain;transition:filter .12s,transform .12s}
