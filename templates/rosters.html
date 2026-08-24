@@ -75,15 +75,13 @@ body{background:transparent;color:var(--fg1);
    survives to a NARROWER row than before and only wraps past that. Deliberately
    NO max-width: capping the pill re-opened the same empty gutter on any monitor
    wider than about 1410px, which is the thing this is here to remove. */
-/* The bottom padding mirrors the whole label band -- the pill's own top pad,
-   plus the label's line box, plus the margin under it -- because the label
-   only occupies the TOP half. With equal padding the logo row rode the bottom
-   edge (26px of air above it, 9px below) and read as sitting low in the pill
-   rather than on its centre line. Matching the band puts equal space above and
-   below the logos at every tile size, so it holds from phone to wide screen. */
-.confgrp{flex:1 1 230px;min-width:0;
-  background:var(--dg,transparent);border:1px solid var(--line);
-  border-radius:999px;padding:.4rem 1rem calc(.4rem + .875rem + .3rem);
+/* The cell carries the row layout; the pill inside it is now nothing but a
+   backdrop for the logos. With the caption lifted out, symmetric padding is
+   all the vertical centring the logos need -- no mirroring a label band that
+   only occupied the top half. */
+.confcell{flex:1 1 230px;min-width:0;display:flex;flex-direction:column}
+.confgrp{background:var(--dg,transparent);border:1px solid var(--line);
+  border-radius:999px;padding:.5rem .85rem;
   transition:box-shadow .16s,transform .16s}
 .confgrp:hover{box-shadow:0 3px 14px rgba(0,0,0,.10)}
 /* Below the width that fits three, go straight to one division per row. Left to
@@ -97,7 +95,7 @@ body{background:transparent;color:var(--fg1);
    three pills claiming more room than the row had at 17px and up. */
 @media(max-width:47em){
   .confrow{flex-direction:column;align-items:center}
-  .confgrp{flex:0 0 auto}
+  .confcell{flex:0 0 auto}
 }
 .conflabel{font-size:.6rem;font-weight:800;letter-spacing:.09em;text-transform:uppercase;
   color:var(--fg5);margin:0 0 .3rem 0;white-space:nowrap;text-align:center}
@@ -122,10 +120,13 @@ body{background:transparent;color:var(--fg1);
    of huddling in the middle of an empty pill. */
 @media(min-width:1600px){.logos{gap:18px}}
 .tbtn{position:relative;display:flex;align-items:center;justify-content:center;
-  flex:1 1 0;min-width:0;max-width:64px;aspect-ratio:1;border-radius:12px;
+  flex:1 1 0;min-width:0;max-width:84px;aspect-ratio:1;border-radius:14px;
   border:1px solid transparent;background:none;
   cursor:pointer;padding:0;transition:background .12s,border-color .12s,transform .12s}
-.tbtn img{width:68%;height:68%;object-fit:contain;transition:filter .12s,transform .12s}
+/* 76%, not 68%: the tile grew and the logo should grow with it rather than
+   float in a bigger frame. The remainder still leaves a ring of padding for
+   the selected tile's fill to read as a rounded square behind the mark. */
+.tbtn img{width:76%;height:76%;object-fit:contain;transition:filter .12s,transform .12s}
 /* Must sit AFTER the .tbtn rule above, not with the layout media query further
    up: same specificity, so source order decides. Six pills stack in a column
    below this width, where a taller tile only buys scroll before the roster. */
@@ -565,9 +566,13 @@ function teamStrip(){
   for (const [conf, divs] of Object.entries(DATA.divs)){
     h += `<div class="confrow">`;
     for (const [div, abbrs] of Object.entries(divs)){
-      h += `<div class="confgrp" style="--dg:${divGradient(abbrs)}">
+      // The label sits OUTSIDE the pill: the pill then holds nothing but the
+      // logos, so it centres them by symmetric padding and they are free to
+      // grow into the space the caption used to occupy.
+      h += `<div class="confcell">
         <div class="conflabel">${esc(div)}
-        <span class="cf">${esc(conf)}</span></div><div class="logos">`;
+        <span class="cf">${esc(conf)}</span></div>
+        <div class="confgrp" style="--dg:${divGradient(abbrs)}"><div class="logos">`;
       for (const ab of abbrs){
         const t = T[ab]; if (!t) continue;
         const c = DATA.colors[ab] || "var(--teal)";
@@ -578,7 +583,7 @@ function teamStrip(){
                  onload="this.previousElementSibling.style.display='none'"
                  onerror="this.remove()">` : ""}</button>`;
       }
-      h += `</div></div>`;
+      h += `</div></div></div>`;       // close .logos .confgrp .confcell
     }
     h += `</div>`;                     // close .confrow
   }
