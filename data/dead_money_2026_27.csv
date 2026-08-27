@@ -6,7 +6,7 @@
 # so pages/Rosters.py adds it to committed salary.
 #
 # Source: Spotrac 2026-27 team cap tables (the "Dead Money Cap" section), read
-# 2026-07-29 (re-verified 2026-08-18 Highsmith; 2026-08-23 Klay buyout). Every team
+# 2026-07-29 (re-verified 2026-08-18 Highsmith; 08-23 Klay; 08-26 DeRozan stretch). Every team
 # below reconciles to the Dead Cap column on Spotrac's
 # league cap tracker; the 20 teams not listed here carry none.
 #
@@ -31,6 +31,6 @@ asof,team,player,amount_M,status,notes
 2026-07-29,PHX,Nassir Little,3.107,,
 2026-07-29,PHX,E.J. Liddell,0.707,,
 2026-07-29,POR,Didi Louzada,0.268,,
-2026-07-29,SAC,DeMar DeRozan,10.000,waived,
+2026-08-26,SAC,DeMar DeRozan,3.333,waived,"STRETCHED 8/25/26 before the deadline: the $10M guaranteed remainder of his $25.74M salary now charges $3.333M a year across 2026-27 through 2028-29, which drops SAC under the tax. He signed with DEN 8/21"
 2026-08-18,PHX,Haywood Highsmith,1.000,waived,"$1M partial guarantee from the 8/12/26 waive; he re-signed 8/17 on a new vet min (tax-cutting restructure)"
 2026-08-23,DAL,Klay Thompson,7.700,waived,"buyout 8/21/26 of his $17.5M final year - gave back ~$9.8M; waived, clears 8/23; ~$7.7M dead (no stretch reported); expected to sign MIA"
