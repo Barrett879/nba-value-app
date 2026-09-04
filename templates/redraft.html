@@ -34,6 +34,11 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
   cursor:pointer;transition:border-color .12s,color .12s}
 .btn:hover{border-color:var(--teal);color:var(--fg1)}
 .btn.warn:hover{border-color:var(--bad);color:var(--bad)}
+.modes{display:inline-flex;background:var(--track);border-radius:999px;padding:2px}
+.mbtn{background:none;border:none;color:var(--fg4);cursor:pointer;font-size:.76rem;
+  font-weight:700;padding:.3rem .75rem;border-radius:999px;transition:background .12s,color .12s}
+.mbtn:hover{color:var(--fg1)}
+.mbtn.on{background:var(--panel);color:var(--fg1);box-shadow:0 1px 2px rgba(0,0,0,.12)}
 
 /* ── the league strip: every team at a glance, click to switch ──────────── */
 .league{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:.2rem}
@@ -46,7 +51,7 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
 .tchip .ab{font-size:.7rem;font-weight:800;letter-spacing:.02em;color:var(--tc,var(--fg2))}
 .tchip .mt{font-size:.6rem;color:var(--fg5);font-variant-numeric:tabular-nums}
 .tchip.full .mt{color:var(--good)}
-.tchip.over .mt{color:var(--bad)}
+.tchip.over .mt{color:var(--amberc)}
 
 /* ── cap bar: same language as Rosters, plus the floor ──────────────────── */
 .capwrap{margin:.5rem 0 .2rem}
@@ -56,7 +61,7 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
   background:var(--blue);transition:width .18s}
 .capbar .fill.under{background:var(--fg5)}
 .capbar .fill.tax{background:var(--amberc)}
-.capbar .fill.apron{background:var(--bad)}
+.capbar .fill.apron{background:var(--amberc);opacity:.85}
 .capbar .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--panel);opacity:.95}
 .caplegend{display:flex;flex-wrap:wrap;gap:.15rem .9rem;margin-top:.35rem;
   font-size:.66rem;color:var(--fg5)}
@@ -69,7 +74,7 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
   border:1px solid var(--line);color:var(--fg4)}
 .payline .st.ok{color:var(--good);border-color:var(--good)}
 .payline .st.tax{color:var(--amberc);border-color:var(--amberc)}
-.payline .st.bad{color:var(--bad);border-color:var(--bad)}
+.payline .st.over{color:var(--amberc);border-color:var(--amberc)}
 .payline .room{font-size:.74rem;color:var(--fg4);font-variant-numeric:tabular-nums}
 
 /* ── roster slots ──────────────────────────────────────────────────────── */
@@ -125,8 +130,12 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
 
 <script>
 const DATA = __DATA__;
-const CFG = DATA.cfg, POOL = DATA.players, ABBRS = DATA.abbrs,
-      COLORS = DATA.colors, NAMES = DATA.names;
+const CFG = DATA.cfg, ABBRS = DATA.abbrs, COLORS = DATA.colors, NAMES = DATA.names;
+const CUR = DATA.players, ALL = DATA.alltime || [];
+// All-time entries are player-SEASONS, so the id carries the year while the
+// lock is by NAME -- you may draft Jordan in '91 or in '96, never both.
+const idOf = p => p.yr ? p.n + "|" + p.yr : p.n;
+const POOL_OF = m => m === "all" ? ALL : CUR;
 const SLOTS = CFG.roster_max_inseason;          // 15
 
 const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
@@ -148,34 +157,51 @@ function face(p, cls){
     : `<span class="noimg">${initials(p.n)}</span>`;
 }
 
-const byName = {};
-for (const p of POOL) byName[p.n] = p;
+const ORD = n => n + (["th","st","nd","rd"][(n % 100 - n % 10 !== 10) * (n % 10)] || "th");
+const byId = {};
+for (const p of CUR) byId[idOf(p)] = p;
+for (const p of ALL) byId[idOf(p)] = p;
 
 const state = {
+  mode: "cur",                 // "cur" = this league, "all" = every season since 1973
   teams: 6,                    // how many franchises are drafting
   active: 0,
-  rosters: [],                 // [teamIndex] -> [player name]
+  rostersBy: {cur: [], all: []},   // each mode keeps its own draft
   q: "", pos: "", sort: "bs", desc: true,
 };
-function resetRosters(n){ state.rosters = Array.from({length: n}, () => []); }
-resetRosters(state.teams);
+Object.defineProperty(state, "rosters", {get(){ return state.rostersBy[state.mode]; }});
+function resetRosters(n){
+  state.rostersBy[state.mode] = Array.from({length: n}, () => []);
+}
+for (const m of ["cur", "all"]) state.rostersBy[m] = Array.from({length: 6}, () => []);
 
-const takenBy = () => {            // name -> team index
+const takenBy = () => {            // id -> team index
   const m = {};
-  state.rosters.forEach((r, i) => r.forEach(n => { m[n] = i; }));
+  state.rosters.forEach((r, i) => r.forEach(id => { m[id] = i; }));
   return m;
 };
-const payrollOf = i => state.rosters[i].reduce((s, n) => s + (byName[n] ? byName[n].sal : 0), 0);
+// a NAME is spent even if a different season of him is what was taken
+const takenNames = () => {
+  const s = new Set();
+  state.rosters.forEach(r => r.forEach(id => s.add(id.split("|")[0])));
+  return s;
+};
+const payrollOf = i => state.rosters[i].reduce(
+  (s, id) => s + (byId[id] ? byId[id].sal : 0), 0);
 
 function capState(pay){
   if (pay >= CFG.apron2) return "apron";
+  if (pay >= CFG.apron1) return "tax";
   if (pay >= CFG.tax_line) return "tax";
   if (pay < CFG.min_team_salary) return "under";
   return "";
 }
+// Nothing here is an error state. The strongest thing the board says is which
+// line you are past, in the same amber it uses for the tax, because a redraft
+// is allowed to build a $400M superteam if that is the point of the exercise.
 function capWord(pay){
-  if (pay >= CFG.apron2) return ["Over the second apron", "bad"];
-  if (pay >= CFG.apron1) return ["Over the first apron", "bad"];
+  if (pay >= CFG.apron2) return ["Past the second apron", "over"];
+  if (pay >= CFG.apron1) return ["Past the first apron", "over"];
   if (pay >= CFG.tax_line) return ["In the luxury tax", "tax"];
   if (pay >= CFG.cap) return ["Over the cap", ""];
   if (pay >= CFG.min_team_salary) return ["Under the cap", "ok"];
@@ -208,18 +234,22 @@ function teamPanel(){
     <span class="st ${cls}">${word}</span>
     <span class="room">${pay < CFG.cap
       ? fmtM(CFG.cap - pay) + " under the cap"
-      : fmtM(pay - CFG.cap) + " over"}</span></div>`;
+      : pay >= CFG.apron2
+        ? fmtM(pay - CFG.apron2) + " past the second apron"
+        : fmtM(pay - CFG.cap) + " over the cap"}</span></div>`;
   h += `<div class="capwrap">${capBar(pay)}</div>`;
   h += `<div class="slots">`;
   for (let s = 0; s < SLOTS; s++){
-    const nm = r[s];
-    if (!nm){ h += `<div class="slot empty">Slot ${s+1}</div>`; continue; }
-    const p = byName[nm];
+    const id = r[s];
+    if (!id){ h += `<div class="slot empty">Slot ${s+1}</div>`; continue; }
+    const p = byId[id];
+    if (!p){ h += `<div class="slot empty">Slot ${s+1}</div>`; continue; }
+    const meta = p.yr ? esc(p.yr) : esc(p.pos || "—");
     h += `<div class="slot">${face(p)}
       <span class="who"><b class="nm">${esc(p.n)}</b>
-        <span class="sub">${esc(p.pos || "—")} · ${p.bs == null ? "no score" : p.bs + " BS"}</span></span>
+        <span class="sub">${meta} · ${p.bs == null ? "no score" : p.bs + " BS"}</span></span>
       <span class="money">${fmtM(p.sal)}</span>
-      <button class="drop" data-drop="${esc(p.n)}" title="Return to the pool">×</button></div>`;
+      <button class="drop" data-drop="${esc(id)}" title="Return to the pool">×</button></div>`;
   }
   return h + `</div>`;
 }
@@ -239,9 +269,9 @@ function leagueStrip(){
 const SORTS = [["bs","BS"],["pra","PRA"],["ts","TS%"],["dleb","D-LEB"],["sal","Salary"]];
 
 function poolRows(){
-  const taken = takenBy();
+  const spent = takenNames();
   const q = state.q.trim().toLowerCase();
-  let rows = POOL.filter(p => taken[p.n] === undefined
+  let rows = POOL_OF(state.mode).filter(p => !spent.has(p.n)
     && (!q || p.n.toLowerCase().includes(q))
     && (!state.pos || (p.pos || "").split("/").includes(state.pos)));
   const k = state.sort;
@@ -261,24 +291,25 @@ function poolPanel(){
     Available <span class="cnt">${rows.length}</span></div>`;
   h += `<div class="setup">
     <input type="text" id="q" placeholder="Search a player" value="${esc(state.q)}" style="flex:1;min-width:130px">
-    <select id="pos"><option value="">All positions</option>
+    ${state.mode === "all" ? "" : `<select id="pos"><option value="">All positions</option>
       ${["PG","SG","SF","PF","C"].map(p => `<option value="${p}"${state.pos===p?" selected":""}>${p}</option>`).join("")}
-    </select></div>`;
+    </select>`}</div>`;
   h += `<div class="hint">${full
     ? "This roster is full. Drop someone, or switch teams."
     : "Tap a player to draft him to " + esc(NAMES[ABBRS[state.active % ABBRS.length]] || "your team") + "."}</div>`;
   h += `<div class="pool"><table class="ptable"><thead><tr>
-    <th>Player</th><th>Pos</th>
+    <th>Player</th><th>${state.mode === "all" ? "Season" : "Pos"}</th>
     ${SORTS.map(([k,l]) => `<th class="${state.sort===k?"on":""}" data-sort="${k}">${l}</th>`).join("")}
     </tr></thead><tbody>`;
   if (!rows.length) h += `<tr><td colspan="7"><div class="empty">Nobody left matching that.</div></td></tr>`;
   for (const p of rows.slice(0, 400)){
-    h += `<tr data-pick="${esc(p.n)}"${full ? ' class="cant"' : ""}>
+    h += `<tr data-pick="${esc(idOf(p))}"${full ? ' class="cant"' : ""}>
       <td><span class="pn">${face(p)}<b>${esc(p.n)}</b>${p.tw ? '<span class="tw">two-way</span>' : ""}</span></td>
-      <td>${esc(p.pos || "—")}</td>
+      <td>${esc(p.yr || p.pos || "—")}</td>
       <td>${num(p.bs, 1)}</td><td>${num(p.pra, 1)}</td>
       <td>${p.ts == null ? "—" : p.ts.toFixed(1)}</td><td>${num(p.dleb, 1)}</td>
-      <td>${fmtM(p.sal)}${p.proj ? '<span class="proj" title="No 2026-27 contract on the books, so this is the model’s estimate of what he would command.">est</span>' : ""}</td>
+      <td>${fmtM(p.sal)}${p.proj ? '<span class="proj" title="No 2026-27 contract on the books, so this is the model’s estimate of what he would command.">est</span>'
+        : p.rank ? `<span class="proj" title="Ranked ${p.rank} by Barrett Score in ${esc(p.yr)}, so he is paid what the ${ORD(p.rank)}-highest-paid player of 2025-26 is paid.">#${p.rank}</span>` : ""}</td>
     </tr>`;
   }
   h += `</tbody></table></div>`;
@@ -291,6 +322,10 @@ function render(){
   root.innerHTML = `
     <div class="panel">
       <div class="setup">
+        <span class="modes">
+          <button class="mbtn${state.mode === "cur" ? " on" : ""}" data-mode="cur">This league</button>
+          <button class="mbtn${state.mode === "all" ? " on" : ""}" data-mode="all">All-time</button>
+        </span>
         <label for="nteams">Teams drafting</label>
         <select id="nteams">${[1,2,4,6,8,10,15,20,30].map(n =>
           `<option value="${n}"${n===state.teams?" selected":""}>${n}</option>`).join("")}</select>
@@ -299,6 +334,11 @@ function render(){
         <button class="btn warn" id="reset">Start over</button>
       </div>
       ${leagueStrip()}
+      ${state.mode === "all" ? `<div class="hint">Contracts are gone. Each player is
+        paid by his RANK: best in his own season earns what the best-paid player of
+        2025-26 earns, second earns what the second-highest is paid, and so on. Jordan
+        in 1990-91, LeBron in 2012-13 and Jokic in 2025-26 were all No. 1, so all
+        three cost the same. One season per player.</div>` : ""}
     </div>
     <div class="grid2">
       <div class="panel">${teamPanel()}</div>
@@ -308,51 +348,29 @@ function render(){
   fitFrame();
 }
 
-// Best available that still leaves room to FINISH the roster.
-//
-// The reserve is the whole trick, and it has to be the cost of the cheapest
-// players ACTUALLY LEFT, not a constant. A flat two-way reserve looked right
-// and failed at scale: only 77 players in the league cost under $1M, so once
-// 30 teams had picked those over, the "cheap" slots a team was banking on
-// were really $2.4M each and rosters stalled at seven or eight men.
+// Auto-fill takes the best player still on the board. Nothing here checks the
+// apron: a redraft is not a front office, and being told "no" by a spreadsheet
+// is the least interesting thing this page could do. The bar reports where you
+// have ended up and that is the whole of the enforcement.
+function draftBest(i, spent){
+  if (state.rosters[i].length >= SLOTS) return false;
+  for (const p of POOL_OF(state.mode)){  // both pools ship pre-sorted by score
+    if (spent.has(p.n)) continue;
+    state.rosters[i].push(idOf(p)); spent.add(p.n); return true;
+  }
+  return false;                          // board is empty
+}
 function autoFill(i){
-  const taken = takenBy();
-  const avail = POOL.filter(p => taken[p.n] === undefined);
-  const byScore = avail.slice().sort((a, b) =>
-    (b.bs == null ? -1e9 : b.bs) - (a.bs == null ? -1e9 : a.bs));
-  const byCost = avail.slice().sort((a, b) => a.sal - b.sal);
-  const used = new Set();
-  let pay = payrollOf(i);
-
-  // what the k cheapest players still on the board would cost; Infinity when
-  // there are not k of them left, which correctly stops the fill
-  const reserveFor = k => {
-    if (k <= 0) return 0;
-    let sum = 0, n = 0;
-    for (const p of byCost){
-      if (used.has(p.n)) continue;
-      sum += p.sal;
-      if (++n >= k) return sum;
-    }
-    return Infinity;
-  };
-
-  let need = reserveFor(SLOTS - state.rosters[i].length - 1);
-  for (const p of byScore){
-    const have = state.rosters[i].length;
-    if (have >= SLOTS) break;
-    if (used.has(p.n)) continue;
-    if (pay + p.sal + need > CFG.apron2) continue;
-    state.rosters[i].push(p.n); pay += p.sal; used.add(p.n); taken[p.n] = i;
-    need = reserveFor(SLOTS - state.rosters[i].length - 1);
-  }
-  // top the roster up with the cheapest bodies that still fit
-  for (const p of byCost){
-    if (state.rosters[i].length >= SLOTS) break;
-    if (used.has(p.n)) continue;
-    if (pay + p.sal > CFG.apron2) break;
-    state.rosters[i].push(p.n); pay += p.sal; used.add(p.n); taken[p.n] = i;
-  }
+  const spent = takenNames();
+  while (draftBest(i, spent));
+}
+// Round by round, not team by team: filling one roster at a time would hand
+// the first team the best fifteen players in the league and leave the last one
+// picking through the leftovers.
+function autoFillAll(){
+  const spent = takenNames();
+  for (let round = 0; round < SLOTS; round++)
+    for (let i = 0; i < state.teams; i++) draftBest(i, spent);
 }
 
 function wire(){
@@ -368,13 +386,26 @@ function wire(){
   };
   const pos = root.querySelector("#pos");
   if (pos) pos.onchange = () => { state.pos = pos.value; render(); };
+  root.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
+    if (state.mode === b.dataset.mode) return;
+    state.mode = b.dataset.mode;
+    // each mode keeps its own draft, but the team count is shared, so make the
+    // roster array match before rendering
+    const r = state.rostersBy[state.mode];
+    while (r.length < state.teams) r.push([]);
+    if (r.length > state.teams) r.length = state.teams;
+    state.pos = "";                    // no positions in the historical frame
+    render();
+  });
   const nt = root.querySelector("#nteams");
   if (nt) nt.onchange = () => {
     const n = Number(nt.value);
     // keep what is already drafted for teams that survive the change
-    const keep = state.rosters.slice(0, n);
-    while (keep.length < n) keep.push([]);
-    state.rosters = keep;
+    for (const m of ["cur", "all"]){
+      const keep = state.rostersBy[m].slice(0, n);
+      while (keep.length < n) keep.push([]);
+      state.rostersBy[m] = keep;
+    }
     state.teams = n;
     if (state.active >= n) state.active = n - 1;
     render();
@@ -402,10 +433,7 @@ function wire(){
   const f1 = root.querySelector("#fillone");
   if (f1) f1.onclick = () => { autoFill(state.active); render(); };
   const fa = root.querySelector("#fillall");
-  if (fa) fa.onclick = () => {
-    for (let i = 0; i < state.teams; i++) autoFill(i);
-    render();
-  };
+  if (fa) fa.onclick = () => { autoFillAll(); render(); };
   const rs = root.querySelector("#reset");
   if (rs) rs.onclick = () => { resetRosters(state.teams); render(); };
 }

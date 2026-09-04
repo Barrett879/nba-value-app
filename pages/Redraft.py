@@ -36,13 +36,18 @@ st.title("Redraft")
 st.caption(
     "Every player in the league is available and his contract comes with him. "
     "Fill 15 roster spots and watch the bar: floor, cap, tax, first apron, "
-    "second apron. Set how many teams are drafting to rebuild the whole league."
+    "second apron. Set how many teams are drafting to rebuild the whole league, "
+    "or switch to all-time and draft any season since 1973 priced on one scale."
 )
 
 
 @st.cache_data(show_spinner=False)
 def _payload() -> str:
     pool = json.loads((_ROOT / "cache" / "redraft_pool_v1.json").read_text())
+    # all-time is optional: if the cache has not been built the toggle simply
+    # has nothing behind it and the page still works on this season alone
+    _at = _ROOT / "cache" / "redraft_alltime_v1.json"
+    alltime = json.loads(_at.read_text())["players"] if _at.exists() else []
     cfg = {k: v for k, v in json.loads(
         (_ROOT / "data" / "cba_config_2026_27.json").read_text()).items()
         if not k.startswith("_")}
@@ -54,6 +59,7 @@ def _payload() -> str:
     return json.dumps({
         "cfg": cfg,
         "players": pool["players"],
+        "alltime": alltime,
         "value_season": pool.get("value_season", ""),
         "abbrs": abbrs,
         "colors": {a: TEAM_HEX[a] for a in abbrs},
