@@ -2110,6 +2110,7 @@ _NAV_GROUPS = [
     ("Front Office", "/Trade_Machine", [
         ("Trade Machine",       "/Trade_Machine"),
         ("Contract Predictor",  "/Contract_Predictor"),
+        ("Redraft",             "/Redraft"),
         # Trades tab removed -- page lives at /Trades_disabled.py, and a backup
         # of the verdict-aware version is in Trades_backup.py at repo root.
         # Free Agency Sim removed -- /Free_Agency_Simulation_disabled.py.

@@ -245,6 +245,11 @@ _PAGE_META = {
         "2026 NBA Free Agent Class — Values and Predictions | HoopsValue",
         "The full 2026 NBA free agent class ranked by value, with predicted "
         "contracts and how each deal has actually landed."),
+    "/Redraft": (
+        "NBA Redraft — Rebuild Any Roster Under the Cap | HoopsValue",
+        "Strip every team status off every player and refill 15 roster spots "
+        "under the real 2026-27 cap. Contracts come with the players, and the "
+        "bar tracks the floor, cap, tax and both aprons."),
     "/Trade_Machine": (
         "NBA Trade Machine — CBA-Legal Trades | HoopsValue",
         "Build NBA trades and see instantly whether they are legal under the 2023 "

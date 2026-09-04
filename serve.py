@@ -225,7 +225,8 @@ def _patch_seo_inprocess() -> None:
 # a redirect there would break the websocket handshake through Render.
 _SITEMAP_PATHS = [
     "/", "/Rankings", "/Search", "/Legacy", "/Rosters", "/Team_Analysis",
-    "/Contract_Predictor", "/Free_Agent_Class", "/Trade_Machine", "/About",
+    "/Contract_Predictor", "/Free_Agent_Class", "/Trade_Machine", "/Redraft",
+    "/About",
 ]
 
 

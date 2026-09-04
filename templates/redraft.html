@@ -1,0 +1,460 @@
+<!-- HoopsValue Redraft: every player is a free agent, you fill 15 slots under
+     the cap. Self-contained srcdoc component, same shape as rosters/trade
+     machine: both palettes ship, the theme is detected at runtime, and the
+     frame sizes itself to its content.
+
+     TAP, never drag. The Trade Machine is drag-only and is therefore dead on
+     iPhone (dragstart never fires from touch); this board is built on clicks
+     so it works the same on a phone as on a desktop. -->
+<style>
+:root{ __THEME__ }
+body.light{ __THEME_LIGHT__ }
+*{box-sizing:border-box}
+body{background:transparent;color:var(--fg1);margin:0;
+  font:14px/1.45 -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+#rd-root{padding:2px 2px 16px}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
+  padding:.75rem .85rem .85rem;min-width:0;
+  box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.05)}
+.panel + .panel{margin-top:12px}
+.secl{display:flex;align-items:center;gap:.5rem;font-size:.68rem;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--fg5);margin:0 0 .5rem}
+.secl .bar{width:3px;height:13px;border-radius:2px;background:var(--teal)}
+.secl .cnt{margin-left:auto;font-weight:700;letter-spacing:.02em;color:var(--fg4)}
+
+/* ── setup row ─────────────────────────────────────────────────────────── */
+.setup{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem .7rem;margin-bottom:.7rem}
+.setup label{font-size:.68rem;font-weight:800;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--fg5)}
+select,input[type=text]{background:var(--card);color:var(--fg1);
+  border:1px solid var(--line);border-radius:9px;padding:.4rem .55rem;font-size:16px}
+.btn{background:var(--card);color:var(--fg2);border:1px solid var(--line);
+  border-radius:999px;padding:.36rem .8rem;font-size:.78rem;font-weight:700;
+  cursor:pointer;transition:border-color .12s,color .12s}
+.btn:hover{border-color:var(--teal);color:var(--fg1)}
+.btn.warn:hover{border-color:var(--bad);color:var(--bad)}
+
+/* ── the league strip: every team at a glance, click to switch ──────────── */
+.league{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:.2rem}
+.tchip{display:flex;flex-direction:column;align-items:center;gap:1px;min-width:58px;
+  background:var(--card);border:1px solid var(--line);border-radius:10px;
+  padding:.3rem .35rem;cursor:pointer;transition:border-color .12s,transform .12s}
+.tchip:hover{border-color:var(--tc,var(--teal));transform:translateY(-1px)}
+.tchip.on{border-color:var(--tc,var(--teal));background:var(--tintz);
+  box-shadow:inset 0 0 0 1px var(--tc,var(--teal))}
+.tchip .ab{font-size:.7rem;font-weight:800;letter-spacing:.02em;color:var(--tc,var(--fg2))}
+.tchip .mt{font-size:.6rem;color:var(--fg5);font-variant-numeric:tabular-nums}
+.tchip.full .mt{color:var(--good)}
+.tchip.over .mt{color:var(--bad)}
+
+/* ── cap bar: same language as Rosters, plus the floor ──────────────────── */
+.capwrap{margin:.5rem 0 .2rem}
+.capbar{position:relative;height:10px;border-radius:5px;background:var(--track);
+  overflow:hidden}
+.capbar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:5px;
+  background:var(--blue);transition:width .18s}
+.capbar .fill.under{background:var(--fg5)}
+.capbar .fill.tax{background:var(--amberc)}
+.capbar .fill.apron{background:var(--bad)}
+.capbar .tick{position:absolute;top:0;bottom:0;width:2px;background:var(--panel);opacity:.95}
+.caplegend{display:flex;flex-wrap:wrap;gap:.15rem .9rem;margin-top:.35rem;
+  font-size:.66rem;color:var(--fg5)}
+.caplegend span{white-space:nowrap}
+.caplegend b{color:var(--fg3);font-variant-numeric:tabular-nums;font-weight:700}
+.caplegend .hit{color:var(--fg2)} .caplegend .hit b{color:var(--fg1)}
+.payline{display:flex;align-items:baseline;gap:.5rem;flex-wrap:wrap}
+.payline .big{font-size:1.35rem;font-weight:800;font-variant-numeric:tabular-nums}
+.payline .st{font-size:.72rem;font-weight:700;padding:.1rem .5rem;border-radius:999px;
+  border:1px solid var(--line);color:var(--fg4)}
+.payline .st.ok{color:var(--good);border-color:var(--good)}
+.payline .st.tax{color:var(--amberc);border-color:var(--amberc)}
+.payline .st.bad{color:var(--bad);border-color:var(--bad)}
+.payline .room{font-size:.74rem;color:var(--fg4);font-variant-numeric:tabular-nums}
+
+/* ── roster slots ──────────────────────────────────────────────────────── */
+.slots{display:grid;grid-template-columns:repeat(auto-fill,minmax(232px,1fr));gap:6px}
+.slot{display:flex;align-items:center;gap:.5rem;background:var(--card);
+  border:1px solid var(--line);border-radius:11px;padding:.4rem .5rem;min-height:48px}
+.slot.empty{border-style:dashed;color:var(--fg5);justify-content:center;
+  font-size:.72rem;letter-spacing:.04em}
+.slot img,.slot .noimg{width:32px;height:32px;border-radius:50%;object-fit:cover;
+  object-position:top;background:var(--track);flex:0 0 auto}
+.slot .noimg{display:flex;align-items:center;justify-content:center;font-size:.62rem;
+  font-weight:800;color:var(--fg3)}
+.slot .who{min-width:0;flex:1}
+.slot .nm{display:block;font-size:.78rem;font-weight:700;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.slot .sub{font-size:.64rem;color:var(--fg5);font-variant-numeric:tabular-nums}
+.slot .money{font-size:.78rem;font-weight:800;font-variant-numeric:tabular-nums;
+  flex:0 0 auto}
+.slot .drop{flex:0 0 auto;background:none;border:none;color:var(--fg5);cursor:pointer;
+  font-size:1rem;line-height:1;padding:.1rem .2rem;border-radius:6px}
+.slot .drop:hover{color:var(--bad);background:var(--tintb)}
+
+/* ── the pool ──────────────────────────────────────────────────────────── */
+.pool{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:11px}
+.ptable{width:100%;border-collapse:collapse;font-size:.76rem}
+.ptable th{position:sticky;top:0;background:var(--panel);z-index:2;text-align:right;
+  font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fg5);
+  padding:.45rem .5rem;border-bottom:1px solid var(--line);cursor:pointer;
+  white-space:nowrap;-webkit-user-select:none;user-select:none}
+.ptable th:first-child,.ptable th:nth-child(2){text-align:left}
+.ptable th.on{color:var(--teal)}
+.ptable td{padding:.3rem .5rem;border-bottom:1px solid var(--line);text-align:right;
+  font-variant-numeric:tabular-nums;white-space:nowrap}
+.ptable td:first-child,.ptable td:nth-child(2){text-align:left}
+.ptable tbody tr{cursor:pointer;transition:background .1s}
+.ptable tbody tr:hover{background:var(--tintz)}
+.ptable tbody tr.cant{opacity:.45}
+.ptable .pn{display:flex;align-items:center;gap:.45rem;min-width:0}
+.ptable .pn img,.ptable .pn .noimg{width:26px;height:26px;border-radius:50%;
+  object-fit:cover;object-position:top;background:var(--track);flex:0 0 auto}
+.ptable .pn .noimg{display:flex;align-items:center;justify-content:center;
+  font-size:.55rem;font-weight:800;color:var(--fg3)}
+.ptable .pn b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ptable .proj{color:var(--fg5);font-size:.62rem;margin-left:.2rem}
+.ptable .tw{color:var(--fg5);font-size:.62rem}
+.empty{padding:1.2rem;text-align:center;color:var(--fg5);font-size:.8rem}
+.hint{font-size:.7rem;color:var(--fg5);margin:.15rem 0 .5rem}
+.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:12px}
+@media(max-width:960px){.grid2{grid-template-columns:minmax(0,1fr)}}
+</style>
+
+<div id="rd-root"></div>
+
+<script>
+const DATA = __DATA__;
+const CFG = DATA.cfg, POOL = DATA.players, ABBRS = DATA.abbrs,
+      COLORS = DATA.colors, NAMES = DATA.names;
+const SLOTS = CFG.roster_max_inseason;          // 15
+
+const esc = s => String(s == null ? "" : s).replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const fmtM = v => (v == null ? "—" : "$" + (Math.round(v * 10) / 10).toFixed(1) + "M");
+const num = (v, d) => v == null ? "—" : (d ? v.toFixed(d) : String(v));
+
+// Initials stand in for a headshot the league has not published. Drops
+// generational suffixes so "Ron Harper Jr." reads RH, not RJ.
+function initials(name){
+  const parts = String(name).split(/\s+/).filter(p => !/^(jr|sr|ii|iii|iv|v)\.?$/i.test(p));
+  return ((parts[0]||" ")[0] + (parts.length > 1 ? (parts[parts.length-1]||" ")[0] : "")).toUpperCase();
+}
+function face(p, cls){
+  return p.pid
+    ? `<img src="https://cdn.nba.com/headshots/nba/latest/1040x760/${p.pid}.png"
+         alt="" loading="lazy" class="${cls||""}" onerror="this.replaceWith(Object.assign(
+         document.createElement('span'),{className:'noimg',textContent:'${initials(p.n)}'}))">`
+    : `<span class="noimg">${initials(p.n)}</span>`;
+}
+
+const byName = {};
+for (const p of POOL) byName[p.n] = p;
+
+const state = {
+  teams: 6,                    // how many franchises are drafting
+  active: 0,
+  rosters: [],                 // [teamIndex] -> [player name]
+  q: "", pos: "", sort: "bs", desc: true,
+};
+function resetRosters(n){ state.rosters = Array.from({length: n}, () => []); }
+resetRosters(state.teams);
+
+const takenBy = () => {            // name -> team index
+  const m = {};
+  state.rosters.forEach((r, i) => r.forEach(n => { m[n] = i; }));
+  return m;
+};
+const payrollOf = i => state.rosters[i].reduce((s, n) => s + (byName[n] ? byName[n].sal : 0), 0);
+
+function capState(pay){
+  if (pay >= CFG.apron2) return "apron";
+  if (pay >= CFG.tax_line) return "tax";
+  if (pay < CFG.min_team_salary) return "under";
+  return "";
+}
+function capWord(pay){
+  if (pay >= CFG.apron2) return ["Over the second apron", "bad"];
+  if (pay >= CFG.apron1) return ["Over the first apron", "bad"];
+  if (pay >= CFG.tax_line) return ["In the luxury tax", "tax"];
+  if (pay >= CFG.cap) return ["Over the cap", ""];
+  if (pay >= CFG.min_team_salary) return ["Under the cap", "ok"];
+  return ["Below the salary floor", ""];
+}
+
+// Floor, Cap, Lux, 1st, 2nd -- the five lines a drafter is working against.
+const TICKS = [["Floor", CFG.min_team_salary], ["Cap", CFG.cap],
+               ["Lux", CFG.tax_line], ["1st", CFG.apron1], ["2nd", CFG.apron2]];
+
+function capBar(pay){
+  const top = Math.max(CFG.apron2 * 1.08, pay * 1.04);
+  const pct = v => Math.max(0, Math.min(100, v / top * 100));
+  let h = `<div class="capbar"><div class="fill ${capState(pay)}" style="width:${pct(pay)}%"></div>`;
+  for (const [, v] of TICKS) h += `<div class="tick" style="left:${pct(v)}%"></div>`;
+  h += `</div><div class="caplegend">`;
+  for (const [lbl, v] of TICKS)
+    h += `<span class="${pay >= v ? "hit" : ""}">${lbl} <b>${fmtM(v)}</b></span>`;
+  return h + `</div>`;
+}
+
+function teamPanel(){
+  const i = state.active, r = state.rosters[i], pay = payrollOf(i);
+  const [word, cls] = capWord(pay);
+  const ab = ABBRS[i % ABBRS.length];
+  let h = `<div class="secl"><span class="bar" style="background:${COLORS[ab]||"var(--teal)"}"></span>
+    ${esc(NAMES[ab] || ("Team " + (i+1)))} · your roster
+    <span class="cnt">${r.length} of ${SLOTS}</span></div>`;
+  h += `<div class="payline"><span class="big">${fmtM(pay)}</span>
+    <span class="st ${cls}">${word}</span>
+    <span class="room">${pay < CFG.cap
+      ? fmtM(CFG.cap - pay) + " under the cap"
+      : fmtM(pay - CFG.cap) + " over"}</span></div>`;
+  h += `<div class="capwrap">${capBar(pay)}</div>`;
+  h += `<div class="slots">`;
+  for (let s = 0; s < SLOTS; s++){
+    const nm = r[s];
+    if (!nm){ h += `<div class="slot empty">Slot ${s+1}</div>`; continue; }
+    const p = byName[nm];
+    h += `<div class="slot">${face(p)}
+      <span class="who"><b class="nm">${esc(p.n)}</b>
+        <span class="sub">${esc(p.pos || "—")} · ${p.bs == null ? "no score" : p.bs + " BS"}</span></span>
+      <span class="money">${fmtM(p.sal)}</span>
+      <button class="drop" data-drop="${esc(p.n)}" title="Return to the pool">×</button></div>`;
+  }
+  return h + `</div>`;
+}
+
+function leagueStrip(){
+  let h = `<div class="league">`;
+  for (let i = 0; i < state.teams; i++){
+    const ab = ABBRS[i % ABBRS.length], pay = payrollOf(i), n = state.rosters[i].length;
+    const cls = n >= SLOTS ? " full" : pay >= CFG.apron2 ? " over" : "";
+    h += `<button class="tchip${i === state.active ? " on" : ""}${cls}" data-team="${i}"
+      style="--tc:${COLORS[ab]||"var(--teal)"}" title="${esc(NAMES[ab]||ab)} — ${fmtM(pay)}">
+      <span class="ab">${esc(ab)}</span><span class="mt">${n}/${SLOTS}</span></button>`;
+  }
+  return h + `</div>`;
+}
+
+const SORTS = [["bs","BS"],["pra","PRA"],["ts","TS%"],["dleb","D-LEB"],["sal","Salary"]];
+
+function poolRows(){
+  const taken = takenBy();
+  const q = state.q.trim().toLowerCase();
+  let rows = POOL.filter(p => taken[p.n] === undefined
+    && (!q || p.n.toLowerCase().includes(q))
+    && (!state.pos || (p.pos || "").split("/").includes(state.pos)));
+  const k = state.sort;
+  rows.sort((a, b) => {
+    const av = a[k], bv = b[k];
+    if (av == null && bv == null) return 0;
+    if (av == null) return 1;                 // blanks always last, either way
+    if (bv == null) return -1;
+    return state.desc ? bv - av : av - bv;
+  });
+  return rows;
+}
+
+function poolPanel(){
+  const rows = poolRows(), full = state.rosters[state.active].length >= SLOTS;
+  let h = `<div class="secl"><span class="bar" style="background:var(--blue)"></span>
+    Available <span class="cnt">${rows.length}</span></div>`;
+  h += `<div class="setup">
+    <input type="text" id="q" placeholder="Search a player" value="${esc(state.q)}" style="flex:1;min-width:130px">
+    <select id="pos"><option value="">All positions</option>
+      ${["PG","SG","SF","PF","C"].map(p => `<option value="${p}"${state.pos===p?" selected":""}>${p}</option>`).join("")}
+    </select></div>`;
+  h += `<div class="hint">${full
+    ? "This roster is full. Drop someone, or switch teams."
+    : "Tap a player to draft him to " + esc(NAMES[ABBRS[state.active % ABBRS.length]] || "your team") + "."}</div>`;
+  h += `<div class="pool"><table class="ptable"><thead><tr>
+    <th>Player</th><th>Pos</th>
+    ${SORTS.map(([k,l]) => `<th class="${state.sort===k?"on":""}" data-sort="${k}">${l}</th>`).join("")}
+    </tr></thead><tbody>`;
+  if (!rows.length) h += `<tr><td colspan="7"><div class="empty">Nobody left matching that.</div></td></tr>`;
+  for (const p of rows.slice(0, 400)){
+    h += `<tr data-pick="${esc(p.n)}"${full ? ' class="cant"' : ""}>
+      <td><span class="pn">${face(p)}<b>${esc(p.n)}</b>${p.tw ? '<span class="tw">two-way</span>' : ""}</span></td>
+      <td>${esc(p.pos || "—")}</td>
+      <td>${num(p.bs, 1)}</td><td>${num(p.pra, 1)}</td>
+      <td>${p.ts == null ? "—" : p.ts.toFixed(1)}</td><td>${num(p.dleb, 1)}</td>
+      <td>${fmtM(p.sal)}${p.proj ? '<span class="proj" title="No 2026-27 contract on the books, so this is the model’s estimate of what he would command.">est</span>' : ""}</td>
+    </tr>`;
+  }
+  h += `</tbody></table></div>`;
+  if (rows.length > 400) h += `<div class="hint">Showing the top 400. Search to narrow.</div>`;
+  return h;
+}
+
+function render(){
+  const root = document.getElementById("rd-root");
+  root.innerHTML = `
+    <div class="panel">
+      <div class="setup">
+        <label for="nteams">Teams drafting</label>
+        <select id="nteams">${[1,2,4,6,8,10,15,20,30].map(n =>
+          `<option value="${n}"${n===state.teams?" selected":""}>${n}</option>`).join("")}</select>
+        <button class="btn" id="fillone">Auto-fill this team</button>
+        <button class="btn" id="fillall">Auto-fill the rest</button>
+        <button class="btn warn" id="reset">Start over</button>
+      </div>
+      ${leagueStrip()}
+    </div>
+    <div class="grid2">
+      <div class="panel">${teamPanel()}</div>
+      <div class="panel">${poolPanel()}</div>
+    </div>`;
+  wire();
+  fitFrame();
+}
+
+// Best available that still leaves room to FINISH the roster.
+//
+// The reserve is the whole trick, and it has to be the cost of the cheapest
+// players ACTUALLY LEFT, not a constant. A flat two-way reserve looked right
+// and failed at scale: only 77 players in the league cost under $1M, so once
+// 30 teams had picked those over, the "cheap" slots a team was banking on
+// were really $2.4M each and rosters stalled at seven or eight men.
+function autoFill(i){
+  const taken = takenBy();
+  const avail = POOL.filter(p => taken[p.n] === undefined);
+  const byScore = avail.slice().sort((a, b) =>
+    (b.bs == null ? -1e9 : b.bs) - (a.bs == null ? -1e9 : a.bs));
+  const byCost = avail.slice().sort((a, b) => a.sal - b.sal);
+  const used = new Set();
+  let pay = payrollOf(i);
+
+  // what the k cheapest players still on the board would cost; Infinity when
+  // there are not k of them left, which correctly stops the fill
+  const reserveFor = k => {
+    if (k <= 0) return 0;
+    let sum = 0, n = 0;
+    for (const p of byCost){
+      if (used.has(p.n)) continue;
+      sum += p.sal;
+      if (++n >= k) return sum;
+    }
+    return Infinity;
+  };
+
+  let need = reserveFor(SLOTS - state.rosters[i].length - 1);
+  for (const p of byScore){
+    const have = state.rosters[i].length;
+    if (have >= SLOTS) break;
+    if (used.has(p.n)) continue;
+    if (pay + p.sal + need > CFG.apron2) continue;
+    state.rosters[i].push(p.n); pay += p.sal; used.add(p.n); taken[p.n] = i;
+    need = reserveFor(SLOTS - state.rosters[i].length - 1);
+  }
+  // top the roster up with the cheapest bodies that still fit
+  for (const p of byCost){
+    if (state.rosters[i].length >= SLOTS) break;
+    if (used.has(p.n)) continue;
+    if (pay + p.sal > CFG.apron2) break;
+    state.rosters[i].push(p.n); pay += p.sal; used.add(p.n); taken[p.n] = i;
+  }
+}
+
+function wire(){
+  const root = document.getElementById("rd-root");
+  const q = root.querySelector("#q");
+  if (q) q.oninput = () => {
+    state.q = q.value;
+    // keep the caret: re-render only the pool side
+    const panes = root.querySelectorAll(".grid2 > .panel");
+    panes[1].innerHTML = poolPanel(); wire(); fitFrame();
+    const q2 = root.querySelector("#q");
+    if (q2){ q2.focus(); q2.setSelectionRange(q2.value.length, q2.value.length); }
+  };
+  const pos = root.querySelector("#pos");
+  if (pos) pos.onchange = () => { state.pos = pos.value; render(); };
+  const nt = root.querySelector("#nteams");
+  if (nt) nt.onchange = () => {
+    const n = Number(nt.value);
+    // keep what is already drafted for teams that survive the change
+    const keep = state.rosters.slice(0, n);
+    while (keep.length < n) keep.push([]);
+    state.rosters = keep;
+    state.teams = n;
+    if (state.active >= n) state.active = n - 1;
+    render();
+  };
+  root.querySelectorAll("[data-team]").forEach(b => b.onclick = () => {
+    state.active = Number(b.dataset.team); render();
+  });
+  root.querySelectorAll("[data-pick]").forEach(tr => tr.onclick = () => {
+    const i = state.active;
+    if (state.rosters[i].length >= SLOTS) return;
+    state.rosters[i].push(tr.dataset.pick); render();
+  });
+  root.querySelectorAll("[data-drop]").forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const i = state.active, at = state.rosters[i].indexOf(b.dataset.drop);
+    if (at >= 0) state.rosters[i].splice(at, 1);
+    render();
+  });
+  root.querySelectorAll("[data-sort]").forEach(th => th.onclick = () => {
+    const k = th.dataset.sort;
+    if (state.sort === k) state.desc = !state.desc;
+    else { state.sort = k; state.desc = true; }
+    render();
+  });
+  const f1 = root.querySelector("#fillone");
+  if (f1) f1.onclick = () => { autoFill(state.active); render(); };
+  const fa = root.querySelector("#fillall");
+  if (fa) fa.onclick = () => {
+    for (let i = 0; i < state.teams; i++) autoFill(i);
+    render();
+  };
+  const rs = root.querySelector("#reset");
+  if (rs) rs.onclick = () => { resetRosters(state.teams); render(); };
+}
+
+function fitFrame(){
+  try{
+    const rootEl = document.getElementById("rd-root");
+    const top = window.scrollY || document.documentElement.scrollTop || 0;
+    const h = Math.ceil(rootEl.getBoundingClientRect().bottom + top) + 24;
+    const fe = window.frameElement;
+    if (!fe) return;
+    const pdoc = fe.ownerDocument;
+    // Streamlit's React recycles wrapper nodes between reruns, so a height we
+    // stamp can end up reserving space for a different element. Tag ours and
+    // hand it back when the wrapper no longer holds this frame.
+    for (const st of pdoc.querySelectorAll('[data-hv-fit="rd"]'))
+      if (!st.contains(fe)){ st.style.height = ""; st.style.minHeight = ""; st.removeAttribute("data-hv-fit"); }
+    fe.style.height = h + "px";
+    if (fe.parentElement && fe.parentElement.getAttribute("data-testid") === "stElementContainer"){
+      fe.parentElement.style.height = h + "px";
+      fe.parentElement.setAttribute("data-hv-fit", "rd");
+    }
+    let el = fe.parentElement;
+    while (el && el !== pdoc.body){
+      const tid = el.getAttribute && el.getAttribute("data-testid");
+      if (tid === "stAppViewContainer" || tid === "stMain") break;
+      if (el.style){
+        el.style.minHeight = h + "px";
+        el.setAttribute("data-hv-fit", "rd");
+        if (el.style.height && parseInt(el.style.height) < h) el.style.height = "auto";
+      }
+      el = el.parentElement;
+    }
+  }catch(e){}
+}
+
+function themeSync(){
+  try{
+    const m = getComputedStyle(window.parent.document.body).color.match(/\d+(\.\d+)?/g);
+    if (m && m.length >= 3){
+      const lum = .299*m[0] + .587*m[1] + .114*m[2];
+      document.body.classList.toggle("light", lum <= 128);
+    }
+  }catch(e){}
+}
+
+themeSync();
+render();
+setInterval(themeSync, 400);
+setInterval(fitFrame, 1000);
+try{ new ResizeObserver(fitFrame).observe(document.body); }catch(e){}
+</script>
