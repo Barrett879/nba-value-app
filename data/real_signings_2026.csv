@@ -16,7 +16,7 @@
 #   note        = free text
 #
 # Add a row each time a real signing is reported. Lines starting with # are ignored.
-# Verified 2026-08-26 (deals through August 26, 2026; adversarial web-search rounds:
+# Verified 2026-09-04 (deals through September 4, 2026; adversarial web-search rounds:
 # every row below confirmed by 2+ independent sources - HoopsRumors/ESPN/RealGM/
 # Spotrac/NBA.com transaction log/team releases).
 player,team,years,total_M,yr1_M,type,signed_date,source,note
@@ -151,12 +151,31 @@ Malik Dia,NOP,1,0.68,0.68,two-way,2026-08-18,HoopsRumors + HoopsHype,two-way; NO
 #   league-wide was SAC on DeMar DeRozan 8/25 - his $10M guarantee becomes
 #   $3.33M x3 dead money, dropping the Kings under the tax. In dead_money.
 # Waived: Tristen Newton (HOU two-way 8/26, slot went to Rafael Castro).
-# STILL OPEN as of 8/26: Harden's 3yr/$97M CLE agreement is NOT yet officially
+# Camp season (Exhibit 10s, $0 guaranteed, several already waived): J'Vonne
+#   Hadley MIA 8/27; Dalen Terry GSW 8/28; Matthew Murrell UTA 8/31 (waived
+#   9/2); Josiah Allick CHA 8/31 (waived 9/1); Trey Townsend CHA 9/1 (waived
+#   9/2); Jameer Nelson Jr. and Tacko Fall PHI 9/1; Kyle Mangas CHA 9/2
+#   (waived 9/3); Jarkel Joiner CHA 9/3; Malaki Branham and JD Davison ORL 9/3.
+# Extension (starts 2027-28, no 2026-27 change): Amen Thompson HOU 5yr/$208M
+#   with a 10%% trade kicker, agreed 9/3; he plays 2026-27 on his $12.26M
+#   rookie-scale year.
+# Trade 8/29 (official): MIN sends Josh Green ($14.68M) to UTA for Cody
+#   Williams ($6.02M) and John Konchar ($6.17M) plus cash; MIN waived and
+#   STRETCHED Konchar the same day.
+# Stretches before the 8/29 deadline, all in dead_money: CLE on Cam Whitmore
+#   ($1.819M x3 - the move that finally cleared Cleveland's first-apron hard
+#   cap for Harden), MIN on Konchar ($2.06M x3), DEN on Jonas Valanciunas
+#   ($667K x3, replacing the $2M lump).
+# Guarantee event: DET fully guaranteed Paul Reed's $5.6M on 9/2, read as
+#   leverage in the Jalen Duren standoff.
+# STILL OPEN as of 9/4: Harden's 3yr/$97M CLE agreement is NOT yet officially
 #   signed - it is gated on Cleveland clearing its $209.015M first-apron hard
-#   cap, which is why the Cam Whitmore decision matters; Whitmore was still on
-#   the roster at the deadline. Kawhi/TOR remains on hold with the
-#   cap-circumvention investigation unresolved (ESPN: could run into 2027).
-#   Jalen Duren is still an unsigned RFA; his $9.6M QO deadline is Oct 1.
+#   cap -- Cleveland has now DONE that work (Whitmore stretched, a deliberately
+#   small Diop deal) and the signing is expected imminently, but it is not
+#   booked here until it happens. Kawhi/TOR is agreed and reported days from
+#   finalising, still not consummated. Jalen Duren remains an unsigned RFA
+#   (DET around 5yr/$175M, his camp seeking north of $40M/yr; QO deadline
+#   Oct 1). Stephen Curry became extension-eligible 8/29 and has not signed.
 # Trades moving 2026-27 salary: Dort (OKC) + Nembhard (DAL, $2150917) to ATL /
 #   Risacher to DAL / three 2nds + $17.7M TPE to OKC (7/19, official); Johni
 #   Broome PHI to LAC (7/28, already reflected in rosters); Dennis Schroder
@@ -182,3 +201,6 @@ Georges Niang,GSW,1,3.88,3.88,new,2026-08-25,ESPN + Warriors release,"1yr vet mi
 Brandon Williams,GSW,1,2.63,2.63,new,2026-08-25,ESPN (Shams) + Warriors release,"1yr vet min $2625627 fully gtd; agreed 8/25, official 8/26; came from DAL (13.0 ppg in 66 games)"
 Rafael Castro,HOU,1,0.68,0.68,two-way,2026-08-26,Rockets release + HoopsRumors,"undrafted C (George Washington); HOU waived Tristen Newton for the slot; an earlier MIL two-way never materialised"
 Bryce Hopkins,DEN,1,0.68,0.68,two-way,2026-08-26,HoopsRumors + Spotrac,"No.49 pick 2026 (St. John's); joins KJ Simpson on the DEN two-ways"
+Nick Richards,MIA,1,3.1,3.1,new,2026-08-27,ESPN transactions + SI Heat,"1yr vet min for frontcourt depth; non-guaranteed until the regular season starts"
+Keshad Johnson,MIA,1,0.679,0.679,two-way,2026-08-27,HoopsRumors + Heat roster,"two-way, re-signed with Miami after 48 games there last season"
+Khalifa Diop,CLE,4,1.358,1.358,new,2026-09-02,HoopsRumors + CLE reporting,"deliberately small deal that helped Cleveland fit under its first-apron hard cap for the pending Harden signing"

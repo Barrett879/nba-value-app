@@ -3,14 +3,15 @@
 # (canonical) cross-checked vs ESPN + RealGM, reconciled 2026-07-27.
 # Re-verified 2026-08-18: August trades/signings/waives applied from the
 # adversarial web-search round (see receipts/2026-08-18-offseason-reverification.md).
-# Re-verified 2026-08-26: Kuminga to MIN, Mathurin to NOP, two GSW minimums,
-# Klay official at revised terms. Stretch deadline passed with one election
-# league-wide (SAC/DeRozan). Watch: Harden not yet officially signed.
+# Re-verified 2026-09-04: MIN/UTA trade, three waive-and-stretches before the
+# 8/29 deadline (Whitmore, Konchar, Valanciunas), Miami adds Richards and
+# Johnson. Watch: Harden STILL unsigned though Cleveland has now cleared the
+# room; Kawhi/TOR agreed and days from finalising.
 # Maintain by hand as trades/waivers/signings happen (same doctrine as
 # real_signings), then re-run scripts/build_master_roster_xlsx.py.
 # kind: standard | two_way | pending (agreed, not official, not vs limits)
 asof,team,player,salary_M,kind,pos,notes
-2026-08-26,ATL,Jalen Johnson,30,standard,PF/SF,5yr/$150M rookie extension (2025-29)
+2026-09-04,ATL,Jalen Johnson,30,standard,PF/SF,5yr/$150M rookie extension (2025-29)
 ,ATL,Dyson Daniels,25,standard,SF/SG,4yr/$100M rookie extension begins 2026-27
 ,ATL,C.J. McCollum,21,standard,PG/SG,"acquired by trade 1/9/26; 1yr $21M vet extension, expiring"
 ,ATL,Luguentz Dort,17.72,standard,PF/SF,traded to ATL 7/19/26; expiring
@@ -102,9 +103,9 @@ asof,team,player,salary_M,kind,pos,notes
 ,CHI,Tobe Awaka,0,two_way,PF,Two-way contract (only 2 of 3 CHI two-way slots filled)
 ,CHI,Jaylin Sellers,0,two_way,SG,Two-way contract
 ,CLE,Donovan Mitchell,50.11,standard,SG/PG,Signed 4yr/$272.7M max extension 7/8/26 (declined 27-28 PO as part; 2030-31 PO)
+,CLE,Khalifa Diop,1.358,standard,C,"signed 9/2/26: a deliberately small deal that helped Cleveland fit under its first-apron hard cap for the pending Harden signing"
 ,CLE,Evan Mobley,50.11,standard,PF/C,Designated rookie max extension
 ,CLE,Jarrett Allen,28,standard,C,Veteran extension through 2028-29
-,CLE,Cam Whitmore,5.46,standard,SF/SG,"acquired from WAS 8/20/26 in the five-team Watson deal; $5.46M expiring rookie scale, RFA 2027; SI reports CLE may waive"
 ,CLE,Peyton Watson,20.47,standard,SF/PF,"sign-and-trade from DEN 8/19/26 (five-team CLE/DEN/LAC/WAS/CHA deal): 4yr $88M, player option + 7.5% trade kicker; yr1 ~$20.4M est; hard-caps CLE at apron 1"
 ,CLE,James Harden,29.9,standard,PG/SG,"officially signed: 3yr $97M fully gtd re-sign (2028-29 player option, trade kicker); yr1 ~$29.9-30M"
 ,CLE,Sam Merrill,9.16,standard,SG/SF,Year 2 of 4yr/$38M
@@ -281,6 +282,8 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Karim Lopez,3.75,standard,PF,"2026 No. 21 pick (rights from DET draft night); rookie scale officially signed 7/29/26: 4yr $18.37M, $3,746,760 in 2026-27, first two years gtd"
 ,MEM,Richie Saunders,0,two_way,SG,"2026 No. 32 pick, unsigned (Feb 2026 ACL rehab); reported likely two-way when cleared; PROMOTED to official per Barrett 2026-07-27"
 ,MIA,Giannis Antetokounmpo,58.46,standard,PF/C,traded from MIL 7/6/26; 2027-28 player option $62.8M
+,MIA,Keshad Johnson,0.679,two_way,SF/PF,"two-way re-signed 8/27/26 after 48 games with the Heat last season"
+,MIA,Nick Richards,3.1,standard,C,"signed 8/27/26: 1yr vet min for frontcourt depth; non-guaranteed until the regular season"
 ,MIA,Klay Thompson,5.6,standard,SG/SF,"officially signed 8/23/26 at revised terms: 2yr $11.48M ($5.6M then $5.88M player option, 15% trade kicker), below the ~$13M first reported"
 ,MIA,Bam Adebayo,49.49,standard,C/PF,2028-29 player option $57.4M
 ,MIA,Andrew Wiggins,30.17,standard,SF/PF,traded to MIA 2/6/25; salary drops to $16.5M in 27-28; 2028-29 PO
@@ -321,7 +324,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MIN,Rudy Gobert,36.5,standard,C,"Vet extension (2025), through 2027-28"
 ,MIN,Jaden McDaniels,26.2,standard,SF/PF,Rookie extension
 ,MIN,Ayo Dosunmu,19.31,standard,SG/PG,Acquired from CHI at Feb 2026 deadline (Dillingham/Miller package); re-signed 4yr as FA July 2026
-,MIN,Josh Green,14.68,standard,SF/SG,Acquired with Ball from CHA July 2026; final year of rookie extension
+,UTA,Josh Green,14.68,standard,SF/SG,Acquired with Ball from CHA July 2026; final year of rookie extension
 ,MIN,Donte DiVincenzo,12.54,standard,PG/SG,Final year of 4-yr deal
 ,MIN,Joan Beringer,4.41,standard,PF/C,"2025 1st-rounder (No. 17), year 2"
 ,MIN,Jaylen Clark,3.09,standard,SG/SF,Re-signed 3yr July 2026
@@ -507,8 +510,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,UTA,Jusuf Nurkic,11.46,standard,C,Re-signed 2yr/$22M July 2026
 ,UTA,Ace Bailey,9.52,standard,SF/PF,"2025 No. 5 pick, year 2 rookie scale"
 ,UTA,Keyonte George,6.56,standard,PG/SG,Final rookie-scale year (RFA 2027)
-,UTA,John Konchar,6.17,standard,SG/SF,Acquired from MEM in the Feb 2026 JJJ trade; final year
-,UTA,Cody Williams,6.02,standard,SF/SG,Year 3 rookie scale (2024 No. 10); TO decision 2027
+,MIN,Cody Williams,6.02,standard,SF/SG,Year 3 rookie scale (2024 No. 10); TO decision 2027
 ,UTA,Jaxson Hayes,6,standard,C,Signed 2yr/$12M July 2026 (2nd year TO)
 ,UTA,Josh Okogie,6,standard,SG/SF,Signed 2yr/$12M July 2026 (2nd year TO)
 ,UTA,Brice Sensabaugh,4.86,standard,SG/SF,Final rookie-scale year (RFA 2027)
@@ -560,7 +562,6 @@ asof,team,player,salary_M,kind,pos,notes
 ,CHA,Antonio Reeves,0,free_agent,SF/PF,unsigned free agent; est value $3.1M
 ,CHA,Xavier Tillman Sr.,0,free_agent,C/PF,unsigned free agent
 ,CHI,Jaden Ivey,0,free_agent,PG/SG,unsigned free agent; est value $14.3M
-,CHI,Nick Richards,0,free_agent,C,unsigned free agent; est value $5.8M
 ,CHI,Guerschon Yabusele,0,free_agent,PF/C,unsigned free agent; est value $4.9M
 ,CHI,Yuki Kawamura,0,free_agent,G,unsigned free agent; est value $2.5M
 ,CHI,Mac McClung,0,free_agent,PG,unsigned free agent; est value $2.2M
@@ -592,7 +593,6 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Adama-Alpha Bal,0,free_agent,SF/PF,unsigned free agent
 ,MEM,Lawson Lovering,0,free_agent,C,unsigned free agent
 ,MEM,Lucas Williamson,0,free_agent,SF/PF,unsigned free agent
-,MIA,Keshad Johnson,0,free_agent,SF/PF,unsigned free agent; est value $3.2M
 ,MIA,Jahmir Young,0,free_agent,PG,unsigned free agent; est value $2.2M
 ,MIA,Terry Rozier,0,free_agent,PG/SG,unsigned free agent
 ,MIA,Trevor Keels,0,free_agent,SG,unsigned free agent
@@ -641,3 +641,5 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Hunter Dickinson,0,free_agent,C,"waived from his two-way 8/18/26 (slot went to Malik Dia)"
 ,DEN,Julian Reese,0,free_agent,C,"two-way traded WAS to DEN in the five-team Watson deal 8/19/26 and immediately waived; UFA"
 ,HOU,Tristen Newton,0,free_agent,PG/SG,"waived off his HOU two-way 8/26/26 (slot went to Rafael Castro); 2024 No.49 pick, G League All-NBA first team"
+,CLE,Cam Whitmore,0,free_agent,SF/SG,"waived and STRETCHED 8/28/26 ($1.819M x3 dead money) to clear Cleveland under its first-apron hard cap for Harden"
+,MIN,John Konchar,0,free_agent,SG/SF,"acquired from UTA 8/29/26 in the Josh Green trade and waived the same day; $6.17M stretched to $2.06M x3"
