@@ -161,6 +161,50 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
   .slot img,.slot .noimg{width:28px;height:28px}
   .ptable th,.ptable td{padding-left:.32rem;padding-right:.32rem}}
 
+/* ── the league board: every team at once ──────────────────────────────
+   Teams wrap into a grid rather than running off the side, because a 30-team
+   row would be some 5000px wide and this component cannot scroll itself into
+   view: a drag has to reach its target without any scrolling, so the target
+   has to be able to sit on screen in the first place. Wrapped rows put far
+   more teams within reach of a drag than one long scrolling strip would. */
+/* auto-FIT, not auto-fill: auto-fill keeps the empty tracks it can fit, so six
+   teams on a wide screen sat in seven columns and each one was squeezed by the
+   phantom. auto-fit collapses the spare track and lets the real teams grow. */
+.board{display:grid;gap:8px;grid-template-columns:repeat(auto-fit,minmax(186px,1fr))}
+.tcol{background:var(--card);border:1px solid var(--line);border-radius:11px;
+  padding:.4rem .4rem .45rem;min-width:0}
+.tcol.on{border-color:var(--tc,var(--teal));box-shadow:inset 0 0 0 1px var(--tc,var(--teal))}
+.tcolhead{display:flex;align-items:baseline;gap:.35rem;width:100%;background:none;
+  border:none;padding:.05rem .1rem .1rem;cursor:pointer;text-align:left;color:inherit;
+  font:inherit;min-width:0}
+.tcolhead .ab{font-size:.7rem;font-weight:800;letter-spacing:.02em;color:var(--tc,var(--fg2))}
+.tcolhead .ct{font-size:.58rem;color:var(--fg5);font-variant-numeric:tabular-nums}
+.tcolhead .pay{margin-left:auto;font-size:.72rem;font-weight:800;
+  font-variant-numeric:tabular-nums;color:var(--fg2)}
+.tcolhead .pay.tax,.tcolhead .pay.apron{color:var(--amberc)}
+.tcolhead .pay.under{color:var(--fg5)}
+.minibar{position:relative;height:5px;border-radius:3px;background:var(--track);
+  overflow:hidden;margin:.15rem 0 .4rem}
+.minibar .fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--blue)}
+.minibar .fill.under{background:var(--fg5)}
+.minibar .fill.tax,.minibar .fill.apron{background:var(--amberc)}
+.minibar .tick{position:absolute;top:0;bottom:0;width:1px;background:var(--panel);opacity:.9}
+/* minmax(0,1fr), not the implicit auto column: an auto column sizes to its
+   CONTENT, so a long name made every slot wider than the team column and the
+   salary rendered outside it, underneath the next team. */
+.tslots{display:grid;gap:3px;grid-template-columns:minmax(0,1fr)}
+/* One shared legend instead of five labels under all thirty bars. */
+.boardlegend{margin:0 0 .55rem}
+.slot.mini{min-height:0;padding:.22rem .3rem;gap:.32rem;border-radius:8px}
+.slot.mini .no{width:11px;font-size:.55rem}
+.slot.mini .grip{width:9px;height:14px;padding:4px 3px;background-size:4.5px 5px}
+.slot.mini img,.slot.mini .noimg{width:19px;height:19px}
+.slot.mini .noimg{font-size:.48rem}
+.slot.mini .nm{font-size:.68rem}
+.slot.mini .money{font-size:.66rem}
+.slot.mini .drop{font-size:.8rem;padding:0 .1rem}
+.slot.mini.empty{font-size:.6rem;min-height:27px;letter-spacing:.02em}
+
 /* ── drag ───────────────────────────────────────────────────────────────
    The grip is the only node with touch-action:none, and that is precisely why
    touch drags work: everywhere else inside .pool the browser claims the gesture
@@ -220,6 +264,19 @@ function initials(name){
   const parts = String(name).split(/\s+/).filter(p => !/^(jr|sr|ii|iii|iv|v)\.?$/i.test(p));
   return ((parts[0]||" ")[0] + (parts.length > 1 ? (parts[parts.length-1]||" ")[0] : "")).toUpperCase();
 }
+// The league board is narrow enough that a full name ellipsises to "Nikol...",
+// which is useless for scanning. A surname is how a roster is read anyway, so
+// mini slots take it and keep the full name in the tooltip. A generational
+// suffix travels with the surname, because "Porter Jr." is the name.
+const SUFFIX = /^(jr|sr|ii|iii|iv|v)\.?$/i;
+function surname(name){
+  const parts = String(name).trim().split(/\s+/);
+  if (parts.length < 2) return parts[0] || name;
+  const last = parts[parts.length - 1];
+  return SUFFIX.test(last) && parts.length > 2
+    ? parts[parts.length - 2] + " " + last : last;
+}
+
 function face(p, cls){
   return p.pid
     ? `<img src="https://cdn.nba.com/headshots/nba/latest/1040x760/${p.pid}.png"
@@ -237,6 +294,7 @@ const state = {
   mode: "cur",                 // "cur" = this league, "all" = every season since 1973
   teams: 6,                    // how many franchises are drafting
   slots: 10,                   // 5, 10 or 15 spots per roster
+  view: "one",                 // "one" = one team in detail, "all" = the league
   active: 0,
   rostersBy: {cur: [], all: []},   // each mode keeps its own draft
   q: "", pos: "", sort: "bs", desc: true,
@@ -306,6 +364,51 @@ function capBar(pay){
   return h + `</div>`;
 }
 
+// One slot renderer for both views: the league board only differs by being
+// compact and by not repeating the position line, so a change to how a slot
+// behaves cannot land in one view and miss the other.
+function slotCell(tm, s, id, mini){
+  const p = id ? byId[id] : null;
+  const k = mini ? " mini" : "";
+  if (!p) return `<div class="slot empty${k}" data-team="${tm}" data-slot="${s}">${
+    mini ? s+1 : "Slot " + (s+1)}</div>`;
+  const meta = p.yr ? esc(p.yr) : esc(p.pos || "—");
+  return `<div class="slot${k}" data-team="${tm}" data-slot="${s}" data-id="${esc(id)}"${
+    mini ? ` title="${esc(p.n)}${p.yr ? " " + esc(p.yr) : ""}, ${fmtM(p.sal)}"` : ""}>
+    <span class="no">${s+1}</span><span class="grip" title="Drag to move"></span>${face(p)}
+    <span class="who"><b class="nm">${mini ? esc(surname(p.n)) : esc(p.n)}</b>${mini ? "" :
+      `<span class="sub">${meta} · ${p.bs == null ? "no score" : p.bs + " BS"}</span>`}</span>
+    <span class="money">${fmtM(p.sal)}</span>
+    <button class="drop" data-drop="${tm}:${s}" title="Return to the pool">×</button></div>`;
+}
+
+function boardPanel(){
+  let h = `<div class="secl"><span class="bar" style="background:var(--blue)"></span>
+    The league <span class="cnt">${state.teams} team${state.teams === 1 ? "" : "s"},
+    ${state.slots} spots each</span></div>`;
+  // the five lines, once, instead of under every team
+  h += `<div class="caplegend boardlegend">`;
+  for (const [lbl, v] of TICKS) h += `<span>${lbl} <b>${fmtM(v)}</b></span>`;
+  h += `</div><div class="board">`;
+  for (let i = 0; i < state.teams; i++){
+    const ab = ABBRS[i % ABBRS.length], r = state.rosters[i];
+    const pay = payrollOf(i), st = capState(pay);
+    const top = Math.max(CFG.apron2 * 1.08, pay * 1.04);
+    const pct = v => Math.max(0, Math.min(100, v / top * 100));
+    h += `<div class="tcol${i === state.active ? " on" : ""}" style="--tc:${COLORS[ab]||"var(--teal)"}">
+      <button class="tcolhead" data-team="${i}" title="${esc(NAMES[ab]||ab)}, ${fmtM(pay)}">
+        <span class="ab">${esc(ab)}</span>
+        <span class="ct">${countOf(i)}/${state.slots}</span>
+        <span class="pay ${st}">${fmtM(pay)}</span></button>
+      <div class="minibar"><div class="fill ${st}" style="width:${pct(pay)}%"></div>`;
+    for (const [, v] of TICKS) h += `<div class="tick" style="left:${pct(v)}%"></div>`;
+    h += `</div><div class="tslots">`;
+    for (let s = 0; s < state.slots; s++) h += slotCell(i, s, r[s], true);
+    h += `</div></div>`;
+  }
+  return h + `</div>`;
+}
+
 function teamPanel(){
   const i = state.active, r = state.rosters[i], pay = payrollOf(i), n = countOf(i);
   const [word, cls] = capWord(pay);
@@ -322,17 +425,7 @@ function teamPanel(){
         : fmtM(pay - CFG.cap) + " over the cap"}</span></div>`;
   h += `<div class="capwrap">${capBar(pay)}</div>`;
   h += `<div class="slots c${slotCols()}">`;
-  for (let s = 0; s < state.slots; s++){
-    const p = r[s] ? byId[r[s]] : null;
-    if (!p){ h += `<div class="slot empty" data-slot="${s}">Slot ${s+1}</div>`; continue; }
-    const meta = p.yr ? esc(p.yr) : esc(p.pos || "—");
-    h += `<div class="slot" data-slot="${s}" data-id="${esc(r[s])}">
-      <span class="no">${s+1}</span><span class="grip" title="Drag to move"></span>${face(p)}
-      <span class="who"><b class="nm">${esc(p.n)}</b>
-        <span class="sub">${meta} · ${p.bs == null ? "no score" : p.bs + " BS"}</span></span>
-      <span class="money">${fmtM(p.sal)}</span>
-      <button class="drop" data-drop="${s}" title="Return to the pool">×</button></div>`;
-  }
+  for (let s = 0; s < state.slots; s++) h += slotCell(i, s, r[s], false);
   return h + `</div>`;
 }
 
@@ -380,10 +473,12 @@ function poolPanel(){
     ${state.mode === "all" ? "" : `<select id="pos"><option value="">All positions</option>
       ${["PG","SG","SF","PF","C"].map(p => `<option value="${p}"${state.pos===p?" selected":""}>${p}</option>`).join("")}
     </select>`}</div>`;
+  const who = esc(NAMES[ABBRS[state.active % ABBRS.length]] || "your team");
   h += `<div class="hint">${full
-    ? "This roster is full. Drop someone, or drag a new player onto the slot you want him in."
-    : "Tap a player to draft him to " + esc(NAMES[ABBRS[state.active % ABBRS.length]] || "your team")
-      + ", or drag him by the handle into the slot you want."}</div>`;
+    ? `${who} is full. Drop someone, or drag a new player onto the slot you want him in.`
+    : `Tap a player to draft him to ${who}${state.view === "all"
+        ? " (tap a team's name above to draft to that one instead)" : ""}, `
+      + "or drag him by the handle into the slot you want."}</div>`;
   h += `<div class="pool"><table class="ptable"><thead><tr>
     <th>Player</th><th>${state.mode === "all" ? "Season" : "Pos"}</th>
     ${SORTS.map(([k,l]) => `<th class="${state.sort===k?"on":""}" data-sort="${k}">${l}</th>`).join("")}
@@ -420,21 +515,28 @@ function render(){
         <label for="nslots">Roster spots</label>
         <select id="nslots">${SLOT_OPTIONS.map(n =>
           `<option value="${n}"${n===state.slots?" selected":""}>${n}</option>`).join("")}</select>
+        <span class="modes">
+          <button class="mbtn${state.view === "one" ? " on" : ""}" data-view="one">One team</button>
+          <button class="mbtn${state.view === "all" ? " on" : ""}" data-view="all">All teams</button>
+        </span>
         <button class="btn" id="fillone">Auto-fill this team</button>
         <button class="btn" id="fillall">Auto-fill the rest</button>
         <button class="btn warn" id="reset">Start over</button>
       </div>
-      ${leagueStrip()}
+      ${state.view === "one" ? leagueStrip() : ""}
       ${state.mode === "all" ? `<div class="hint">Contracts are gone. Each player is
         paid by his RANK: best in his own season earns what the best-paid player of
         2025-26 earns, second earns what the second-highest is paid, and so on. Jordan
         in 1990-91, LeBron in 2012-13 and Jokic in 2025-26 were all No. 1, so all
         three cost the same. One season per player.</div>` : ""}
     </div>
-    <div class="grid2 c${slotCols()}">
-      <div class="panel">${teamPanel()}</div>
-      <div class="panel">${poolPanel()}</div>
-    </div>`;
+    ${state.view === "all"
+      ? `<div class="panel">${boardPanel()}</div>
+         <div class="panel">${poolPanel()}</div>`
+      : `<div class="grid2 c${slotCols()}">
+           <div class="panel">${teamPanel()}</div>
+           <div class="panel">${poolPanel()}</div>
+         </div>`}`;
   wire();
   fitFrame();
 }
@@ -478,6 +580,10 @@ function wire(){
   };
   const pos = root.querySelector("#pos");
   if (pos) pos.onchange = () => { state.pos = pos.value; render(); };
+  root.querySelectorAll("[data-view]").forEach(b => b.onclick = () => {
+    if (state.view === b.dataset.view) return;
+    state.view = b.dataset.view; render();
+  });
   root.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
     if (state.mode === b.dataset.mode) return;
     state.mode = b.dataset.mode;
@@ -510,7 +616,7 @@ function wire(){
     if (state.active >= n) state.active = n - 1;
     render();
   };
-  root.querySelectorAll("[data-team]").forEach(b => b.onclick = () => {
+  root.querySelectorAll(".tchip[data-team],.tcolhead[data-team]").forEach(b => b.onclick = () => {
     state.active = Number(b.dataset.team); render();
   });
   root.querySelectorAll("[data-pick]").forEach(tr => tr.onclick = () => {
@@ -522,7 +628,8 @@ function wire(){
   root.querySelectorAll("[data-drop]").forEach(b => b.onclick = e => {
     e.stopPropagation();
     if (suppressClick) return;
-    state.rosters[state.active][Number(b.dataset.drop)] = null;
+    const [tm, s] = b.dataset.drop.split(":").map(Number);
+    state.rosters[tm][s] = null;
     render();
   });
   root.querySelectorAll("[data-sort]").forEach(th => th.onclick = () => {
@@ -579,9 +686,10 @@ function dragFrom(e){
   const ok = e.pointerType === "mouse" || !!el.closest(".grip");
   if (!ok) return null;
   const slot = el.closest(".slot[data-id]");
-  if (slot) return {id: slot.dataset.id, from: Number(slot.dataset.slot), el: slot};
+  if (slot) return {id: slot.dataset.id, from: Number(slot.dataset.slot),
+                    fromTeam: Number(slot.dataset.team), el: slot};
   const row = el.closest("tr[data-pick]");
-  if (row) return {id: row.dataset.pick, from: -1, el: row};      // -1 = the pool
+  if (row) return {id: row.dataset.pick, from: -1, fromTeam: -1, el: row};   // -1 = the pool
   return null;
 }
 
@@ -620,6 +728,7 @@ function moveTo(x, y){
   let t = null;
   if (el){
     t = el.closest(".slot[data-slot]") || el.closest(".tchip[data-team]")
+        || el.closest(".tcolhead[data-team]")
         || (drag.from >= 0 ? el.closest(".pool") : null);
   }
   if (t !== drag.over){
@@ -644,25 +753,29 @@ function onMove(e){
 // gesture nobody can learn: a player dropped on a slot TAKES that slot, and
 // whoever was standing there is swapped out or returned to the pool.
 function commit(){
-  const r = state.rosters[state.active], t = drag.over;
+  const t = drag.over;
   if (!t) return false;
-  if (t.classList.contains("pool")){                   // dragged out of the roster
-    if (drag.from >= 0){ r[drag.from] = null; return true; }
+  const src = drag.from >= 0 ? state.rosters[drag.fromTeam] : null;
+  if (t.classList.contains("pool")){                   // dragged out of a roster
+    if (src){ src[drag.from] = null; return true; }
     return false;
   }
-  if (t.dataset.team !== undefined){                   // dropped on another team
+  if (t.dataset.slot === undefined){                   // a team chip or column head
     const to = Number(t.dataset.team);
-    if (to === state.active && drag.from >= 0) return false;
+    if (src && to === drag.fromTeam) return false;
     const at = firstFree(state.rosters[to]);
     if (at < 0) return false;                          // that roster is full
-    if (drag.from >= 0) r[drag.from] = null;
+    if (src) src[drag.from] = null;
     state.rosters[to][at] = drag.id;
     return true;
   }
-  const to = Number(t.dataset.slot);
-  if (drag.from === to) return false;
-  if (drag.from >= 0){ r[drag.from] = r[to]; r[to] = drag.id; return true; }  // swap
-  r[to] = drag.id;                                     // from the pool: take the slot
+  const toTeam = Number(t.dataset.team), to = Number(t.dataset.slot);
+  const dst = state.rosters[toTeam];
+  if (src && toTeam === drag.fromTeam && drag.from === to) return false;
+  // A swap between two teams is still a swap: each side ends up holding what
+  // the other had, so neither roster silently changes size.
+  if (src){ src[drag.from] = dst[to]; dst[to] = drag.id; return true; }
+  dst[to] = drag.id;                                   // from the pool: take the slot
   return true;
 }
 
