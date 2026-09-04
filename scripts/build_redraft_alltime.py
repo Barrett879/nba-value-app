@@ -1,6 +1,8 @@
 """Build cache/redraft_alltime_v1.json: every notable player-season since
 1973-74, priced on one era-neutral scale.
 
+Points, rebounds and assists are carried separately, not summed into a PRA.
+
 The pricing is the whole idea. A player's contract is thrown away and replaced
 by the salary belonging to HIS RANK. Rank the league by Barrett Score inside a
 player's own season, take that ordinal, and pay him whatever the player at that
@@ -41,11 +43,13 @@ def main():
 
     heads = NameIndex(_headshot_id_map())
 
-    # Per-game PRA, read STRAIGHT off the cached league-stats parquets rather
+    # Per-game points, rebounds and assists, kept SEPARATE rather than summed
+    # into a PRA: the sum hid which of the three a player actually produced.
+    # Read STRAIGHT off the cached league-stats parquets rather
     # than through a fetcher. Only 23 of the 53 seasons have a bref_stats cache,
     # so the fetch path went to Basketball-Reference for the other 30 and sat
     # there being rate-limited; these files cover every season and are local.
-    pra_by_season, missing = {}, []
+    box_by_season, missing = {}, []
     for season in sorted(df["Season"].unique()):
         # Two caches, and the split is real: the NBA-API league-stats files
         # exist for every season but are EMPTY before 1996-97, which is why a
@@ -79,11 +83,14 @@ def main():
         idx = NameIndex()
         for _, r in box.iterrows():
             try:
-                idx.add(str(r["PLAYER_NAME"]),
-                        round(float(r["PTS"]) + reb(r) + float(r["AST"]), 1))
+                idx.add(str(r["PLAYER_NAME"]), {
+                    "pts": round(float(r["PTS"]), 1),
+                    "reb": round(reb(r), 1),
+                    "ast": round(float(r["AST"]), 1),
+                })
             except Exception:
                 continue
-        pra_by_season[season] = idx
+        box_by_season[season] = idx
     if missing:
         print(f"  no box scores cached for {len(missing)} season(s): "
               f"{', '.join(missing[:6])}", flush=True)
@@ -91,19 +98,20 @@ def main():
     out = []
     for season, grp in df.groupby("Season"):
         grp = grp.nsmallest(PER_SEASON, "score_rank")
-        pra = pra_by_season.get(season)
+        bx = box_by_season.get(season)
         for r in grp.itertuples():
             rank = int(r.score_rank)
             if rank > len(ladder):
                 continue                       # deeper than the league pays
             name = str(r.Player)
+            b = (bx.get(name) if bx else None) or {}
             out.append({
                 "n": name,
                 "yr": season,
                 "rank": rank,
                 "sal": round(ladder[rank - 1] / 1e6, 2),
                 "bs": round(float(r.barrett_score), 1),
-                "pra": (pra.get(name) if pra else None),
+                "pts": b.get("pts"), "reb": b.get("reb"), "ast": b.get("ast"),
                 "ts": (None if r.ts_pct != r.ts_pct else round(float(r.ts_pct) * 100, 1)),
                 "dleb": (None if r.d_lebron != r.d_lebron else round(float(r.d_lebron), 1)),
                 "gp": int(r.GP), "mpg": round(float(r.MPG), 1),
@@ -116,7 +124,7 @@ def main():
     seasons = len({p["yr"] for p in out})
     kb = OUT.stat().st_size / 1024
     print(f"wrote {OUT.relative_to(ROOT)}  ({len(out)} player-seasons across "
-          f"{seasons} seasons, {sum(1 for p in out if p['pra'] is not None)} with PRA, "
+          f"{seasons} seasons, {sum(1 for p in out if p['pts'] is not None)} with a box score, "
           f"{kb:.0f}KB)", flush=True)
     for p in out[:3]:
         print(f"    {p['n']} {p['yr']}  rank {p['rank']} -> ${p['sal']}M", flush=True)

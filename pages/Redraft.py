@@ -2,13 +2,15 @@
 scratch under the real 2026-27 cap.
 
 Every player in the league becomes available, his contract comes with him, and
-you fill 15 slots while the cap bar tracks you against all five lines (floor,
-cap, tax, first apron, second apron). Set how many franchises are drafting and
-you can rebuild the whole league, one team at a time.
+you fill 5, 10 or 15 slots while the cap bar tracks you against all five lines
+(floor, cap, tax, first apron, second apron). Set how many franchises are
+drafting and you can rebuild the whole league, one team at a time.
 
-The board is TAP-driven, not drag-driven. The Trade Machine's drag-and-drop
-cannot fire from touch on iOS, so a phone visitor cannot move a single asset
-there; this page is built on clicks and behaves identically on a phone.
+Every action is reachable by TAPPING. Dragging is an addition on top, built on
+Pointer Events so it fires from touch, and it is never the only way to do
+something. The Trade Machine's HTML5 drag-and-drop cannot fire from touch on
+iOS, so a phone visitor cannot move a single asset there; this page must not
+repeat that.
 
 All data is precomputed (cache/redraft_pool_v1.json via
 scripts/build_redraft_pool.py) -- no model work on the request path.
@@ -35,8 +37,9 @@ _ROOT = Path(__file__).parent.parent
 st.title("Redraft")
 st.caption(
     "Every player in the league is available and his contract comes with him. "
-    "Fill 15 roster spots and watch the bar: floor, cap, tax, first apron, "
-    "second apron. Set how many teams are drafting to rebuild the whole league, "
+    "Tap to draft, or drag a player straight into the slot you want, and watch "
+    "the bar: floor, cap, tax, first apron, second apron. Choose 5, 10 or 15 "
+    "roster spots and how many teams are drafting to rebuild the whole league, "
     "or switch to all-time and draft any season since 1973 priced on one scale."
 )
 

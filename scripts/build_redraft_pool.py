@@ -1,6 +1,11 @@
 """Build cache/redraft_pool_v1.json: every player in the league with his 2026-27
-contract and the four numbers the Redraft board shows -- Barrett Score, PRA,
-TS% and D-LEBRON.
+contract and the numbers the Redraft board shows -- Barrett Score, points,
+rebounds, assists, TS% and D-LEBRON.
+
+Points, rebounds and assists are stored SEPARATELY rather than summed into a
+PRA. The sum hid which of the three a player actually produced, and a drafter
+picking a centre wants to see the rebounds, not a total that a guard reaches a
+different way.
 
 The Redraft page strips team status from everyone and lets you refill rosters
 from scratch, so this pool is deliberately the WHOLE league, not one team's
@@ -48,14 +53,17 @@ def main():
             "gp": int(r.GP), "mpg": round(float(r.MPG), 1),
         })
 
-    # PRA comes from the box-score feed, not the raw frame
-    pra = NameIndex()
+    # the box score comes from the league-stats feed, not the raw frame
+    box = NameIndex()
     try:
         for _, r in fetch_league_stats(VALUE_SEASON).iterrows():
-            pra.add(str(r["PLAYER_NAME"]),
-                    round(float(r["PTS"]) + float(r["REB"]) + float(r["AST"]), 1))
+            box.add(str(r["PLAYER_NAME"]), {
+                "pts": round(float(r["PTS"]), 1),
+                "reb": round(float(r["REB"]), 1),
+                "ast": round(float(r["AST"]), 1),
+            })
     except Exception as e:                      # never block the build
-        print(f"  league stats unavailable ({e}); PRA will be blank", flush=True)
+        print(f"  league stats unavailable ({e}); box score will be blank", flush=True)
 
     heads = NameIndex(_headshot_id_map())
 
@@ -84,6 +92,7 @@ def main():
                 continue                         # no contract and no estimate
 
         s = stat.get(name) or {}
+        b = box.get(name) or {}
         pid = heads.get(name)
         pool.append({
             "n": name,
@@ -92,7 +101,8 @@ def main():
             "sal": round(sal, 2),
             "proj": proj,
             "tw": kind == "two_way",
-            "bs": s.get("bs"), "pra": pra.get(name),
+            "bs": s.get("bs"),
+            "pts": b.get("pts"), "reb": b.get("reb"), "ast": b.get("ast"),
             "ts": s.get("ts"), "dleb": s.get("dleb"),
             "gp": s.get("gp"), "mpg": s.get("mpg"),
             "pid": pid,
@@ -103,9 +113,9 @@ def main():
     OUT.write_text(json.dumps({"season": "2026-27", "value_season": VALUE_SEASON,
                                "players": pool}, separators=(",", ":")))
     withstat = sum(1 for p in pool if p["bs"] is not None)
-    withpra = sum(1 for p in pool if p["pra"] is not None)
+    withbox = sum(1 for p in pool if p["pts"] is not None)
     print(f"wrote {OUT.relative_to(ROOT)}  ({len(pool)} players, "
-          f"{withstat} with a score, {withpra} with PRA, "
+          f"{withstat} with a score, {withbox} with a box score, "
           f"{sum(1 for p in pool if p['proj'])} priced by model)", flush=True)
 
 
