@@ -515,10 +515,8 @@ function render(){
         <label for="nslots">Roster spots</label>
         <select id="nslots">${SLOT_OPTIONS.map(n =>
           `<option value="${n}"${n===state.slots?" selected":""}>${n}</option>`).join("")}</select>
-        <span class="modes">
-          <button class="mbtn${state.view === "one" ? " on" : ""}" data-view="one">One team</button>
-          <button class="mbtn${state.view === "all" ? " on" : ""}" data-view="all">All teams</button>
-        </span>
+        <button class="btn" data-view="${state.view === "one" ? "all" : "one"}">${
+          state.view === "one" ? "Show all teams" : "Show one team"}</button>
         <button class="btn" id="fillone">Auto-fill this team</button>
         <button class="btn" id="fillall">Auto-fill the rest</button>
         <button class="btn warn" id="reset">Start over</button>
@@ -581,7 +579,6 @@ function wire(){
   const pos = root.querySelector("#pos");
   if (pos) pos.onchange = () => { state.pos = pos.value; render(); };
   root.querySelectorAll("[data-view]").forEach(b => b.onclick = () => {
-    if (state.view === b.dataset.view) return;
     state.view = b.dataset.view; render();
   });
   root.querySelectorAll("[data-mode]").forEach(b => b.onclick = () => {
