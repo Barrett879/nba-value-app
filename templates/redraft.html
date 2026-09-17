@@ -110,7 +110,9 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
 .slot .who{min-width:0;flex:1}
 .slot .nm{display:block;font-size:.78rem;font-weight:700;white-space:nowrap;
   overflow:hidden;text-overflow:ellipsis}
-.slot .sub{font-size:.64rem;color:var(--fg5);font-variant-numeric:tabular-nums}
+.slot .sub{display:block;font-size:.64rem;color:var(--fg5);
+  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;
+  text-overflow:ellipsis}
 .slot .money{font-size:.78rem;font-weight:800;font-variant-numeric:tabular-nums;
   flex:0 0 auto}
 .slot .drop{flex:0 0 auto;background:none;border:none;color:var(--fg5);cursor:pointer;
@@ -118,16 +120,43 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
 .slot .drop:hover{color:var(--bad);background:var(--tintb)}
 
 /* ── the pool ──────────────────────────────────────────────────────────── */
-.pool{max-height:560px;overflow:auto;border:1px solid var(--line);border-radius:11px}
-.ptable{width:100%;border-collapse:collapse;font-size:.76rem}
+.pool{max-height:660px;overflow:auto;border:1px solid var(--line);border-radius:11px}
+/* table-layout:fixed is what actually guarantees the promise "you never scroll
+   sideways to read this". With auto layout the table demands its widest
+   content, so nine columns plus a name like Kareem Abdul-Jabbar set a floor of
+   653px and anything narrower overflowed; the fix kept slipping because it
+   depended on the viewport being wide enough. Fixed layout inverts it: the
+   table is exactly as wide as the panel, the numeric columns take what they
+   need, and the name column absorbs the rest and ellipsises. */
+.ptable{width:100%;border-collapse:collapse;font-size:.76rem;table-layout:fixed}
+.ptable th:nth-child(2),.ptable td:nth-child(2){width:64px}
+.ptable th:nth-child(3),.ptable td:nth-child(3),
+.ptable th:nth-child(4),.ptable td:nth-child(4),
+.ptable th:nth-child(5),.ptable td:nth-child(5),
+.ptable th:nth-child(6),.ptable td:nth-child(6),
+.ptable th:nth-child(7),.ptable td:nth-child(7){width:40px}
+.ptable th:nth-child(8),.ptable td:nth-child(8){width:48px}
+.ptable th:nth-child(9),.ptable td:nth-child(9){width:84px}
+.ptable td{overflow:hidden;text-overflow:ellipsis}
+/* Nine columns cannot fit a phone, and fixed layout would rather collapse the
+   name column to nothing than admit it: at 260px the numeric columns alone
+   claim 396px and Player was handed 0. Give the table a floor and let it scroll
+   inside .pool, which is what it did before and is the only honest answer on a
+   375px screen. The page itself still never scrolls sideways. */
+@media(max-width:700px){.ptable{min-width:520px}}
 .ptable th{position:sticky;top:0;background:var(--panel);z-index:2;text-align:right;
   font-size:.6rem;letter-spacing:.06em;text-transform:uppercase;color:var(--fg5);
-  padding:.45rem .5rem;border-bottom:1px solid var(--line);cursor:pointer;
+  padding:.45rem .34rem;border-bottom:1px solid var(--line);cursor:pointer;
   white-space:nowrap;-webkit-user-select:none;user-select:none}
 .ptable th:first-child,.ptable th:nth-child(2){text-align:left}
 .ptable th.on{color:var(--teal)}
-.ptable td{padding:.3rem .5rem;border-bottom:1px solid var(--line);text-align:right;
+/* One rhythm across the board: a roster slot is 48px in a 6px gap, a 54px
+   pitch, and a table row has no gap of its own, so the row carries all 54.
+   height on a td behaves as a minimum, which is what is wanted here. */
+.ptable tbody td{height:54px}
+.ptable td{padding:.3rem .34rem;border-bottom:1px solid var(--line);text-align:right;
   font-variant-numeric:tabular-nums;white-space:nowrap}
+.ptable .pn b{min-width:0}
 .ptable td:first-child,.ptable td:nth-child(2){text-align:left}
 .ptable tbody tr{cursor:pointer;transition:background .1s}
 .ptable tbody tr:hover{background:var(--tintz)}
@@ -162,13 +191,19 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
 .ptable .tw{color:var(--fg5);font-size:.62rem}
 .empty{padding:1.2rem;text-align:center;color:var(--fg5);font-size:.8rem}
 .hint{font-size:.7rem;color:var(--fg5);margin:.15rem 0 .5rem}
-.grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:12px}
+/* The pool carries nine columns and the roster carries two; splitting the width
+   evenly made the salary column fall off the right edge and forced a horizontal
+   scroll to read it. The roster gives up the space because it has it to give. */
+.grid2{display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.05fr);gap:12px}
 /* Breakpoints key off the COLUMN count (c1/c2/c3), not the slot total, because
    three columns of slots need roughly 636px and the two-up board only hands the
    roster half the width. A 15-man board therefore goes full-width sooner than a
    10-man one, and the pool drops underneath it. */
 @media(max-width:1380px){.grid2.c3{grid-template-columns:minmax(0,1fr)}}
-@media(max-width:960px){.grid2{grid-template-columns:minmax(0,1fr)}}
+/* Stack sooner than before. Between about 960 and 1200 the side-by-side board
+   could not give the pool enough width for nine columns, so the table scrolled
+   sideways; stacked, the pool has the whole width and never does. */
+@media(max-width:1200px){.grid2{grid-template-columns:minmax(0,1fr)}}
 /* Below these widths a column can no longer hold a name, a salary and a drop
    button, so the grid goes to a single column. Reading order is unchanged --
    slot 1 stays at the top -- so it degrades to "all of them down one column"
@@ -398,8 +433,8 @@ function slotCell(tm, s, id, mini){
   if (!p) return `<div class="slot empty${k}" data-team="${tm}" data-slot="${s}">${
     mini ? s+1 : "Slot " + (s+1)}</div>`;
   const meta = p.yr ? esc(p.yr) : esc(p.pos || "—");
-  return `<div class="slot${k}" data-team="${tm}" data-slot="${s}" data-id="${esc(id)}"${
-    mini ? ` title="${esc(p.n)}${p.yr ? " " + esc(p.yr) : ""}, ${fmtM(p.sal)}"` : ""}>
+  return `<div class="slot${k}" data-team="${tm}" data-slot="${s}" data-id="${esc(id)}"
+    title="${esc(p.n)}${p.yr ? " " + esc(p.yr) : ""}, ${fmtM(p.sal)}">
     <span class="no">${s+1}</span><span class="grip" title="Drag to move"></span>${face(p)}
     <span class="who"><b class="nm">${mini ? esc(surname(p.n)) : esc(p.n)}</b>${mini ? "" :
       `<span class="sub">${meta} · ${p.bs == null ? "no score" : p.bs + " BS"}</span>`}</span>
@@ -561,7 +596,7 @@ function poolPanel(){
   for (const {p, seasons, best} of rows.slice(0, CAP)){
     const open = !!state.open[p.n], more = seasons && seasons.length > 1;
     h += `<tr data-pick="${esc(idOf(p))}"${full ? ' class="cant"' : ""}>
-      <td><span class="pn"><span class="grip" title="Drag into a slot"></span>${face(p)}<b>${esc(p.n)}</b>${p.tw ? '<span class="tw">two-way</span>' : ""}${
+      <td title="${esc(p.n)}"><span class="pn"><span class="grip" title="Drag into a slot"></span>${face(p)}<b>${esc(p.n)}</b>${p.tw ? '<span class="tw">two-way</span>' : ""}${
         more ? `<button class="yrs${open ? " on" : ""}" data-yrs="${esc(p.n)}"
           title="${open ? "Hide" : "Compare"} his ${seasons.length} seasons">${seasons.length} yrs</button>` : ""}</span></td>
       ${cells(p)}
