@@ -142,17 +142,23 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
 /* ── all-time: one row per player, his other seasons behind a click ─────── */
 .yrs{flex:0 0 auto;margin-left:.3rem;background:var(--track);color:var(--fg4);
   border:1px solid transparent;border-radius:999px;cursor:pointer;
-  font-size:.58rem;font-weight:800;line-height:1;padding:.22rem .4rem;
+  font-size:.58rem;font-weight:800;line-height:1;padding:.32rem .45rem;
   font-variant-numeric:tabular-nums;-webkit-user-select:none;user-select:none}
 .yrs:hover{border-color:var(--teal);color:var(--teal)}
 .yrs.on{background:var(--teal);color:var(--panel)}
+/* An expanded season is a full row, the same size and weight as any other
+   player: it is a thing you are choosing between, so it has to be as readable
+   as what it is being compared against. Only the tint and the small elbow mark
+   it as belonging to the row above. */
 .ptable tr.alt{background:var(--tintz)}
-.ptable tr.alt td{border-bottom-color:transparent;padding-top:.22rem;padding-bottom:.22rem}
-.ptable tr.alt:last-of-type td{border-bottom-color:var(--line)}
-.ptable tr.alt .pn{padding-left:1.35rem}
-.ptable tr.alt .pn b{font-weight:600;color:var(--fg3)}
-.ptable tr.alt td{color:var(--fg3)}
-.ptable .best{color:var(--teal);font-size:.58rem;font-weight:800;margin-left:.3rem}
+.ptable tr.alt .pn{padding-left:1.15rem;position:relative}
+.ptable tr.alt .pn::before{content:"";position:absolute;left:.35rem;top:50%;
+  width:.45rem;height:1px;background:var(--fg5);opacity:.55}
+.ptable tr.alt.on{background:var(--tintg);box-shadow:inset 2px 0 0 var(--teal)}
+.ptable .best,.ptable .picked{font-size:.56rem;font-weight:800;margin-left:.3rem;
+  letter-spacing:.03em;text-transform:uppercase}
+.ptable .best{color:var(--fg5)}
+.ptable .picked{color:var(--teal)}
 .ptable .tw{color:var(--fg5);font-size:.62rem}
 .empty{padding:1.2rem;text-align:center;color:var(--fg5);font-size:.8rem}
 .hint{font-size:.7rem;color:var(--fg5);margin:.15rem 0 .5rem}
@@ -173,7 +179,10 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
   .slots.c2{grid-auto-flow:row;grid-template-rows:none;grid-template-columns:minmax(0,1fr)}
   .slot{min-height:44px;padding:.35rem .45rem;gap:.4rem}
   .slot img,.slot .noimg{width:28px;height:28px}
-  .ptable th,.ptable td{padding-left:.32rem;padding-right:.32rem}}
+  .ptable th,.ptable td{padding-left:.32rem;padding-right:.32rem}
+  /* A thumb needs more than an 18px-tall pill. The row is 43px, so let the
+     badge take most of that height rather than sitting as a sliver in it. */
+  .yrs{padding:.62rem .55rem;margin-left:.25rem}}
 
 /* ── the league board: every team at once ──────────────────────────────
    Teams wrap into a grid rather than running off the side, because a 30-team
@@ -313,6 +322,7 @@ const state = {
   rostersBy: {cur: [], all: []},   // each mode keeps its own draft
   q: "", pos: "", sort: "bs", desc: true,
   open: {},                    // all-time: player name -> his seasons expanded
+  pick: {},                    // all-time: player name -> the season he shows as
 };
 Object.defineProperty(state, "rosters", {get(){ return state.rostersBy[state.mode]; }});
 
@@ -505,8 +515,15 @@ function poolRows(){
   // a name is spent as a whole, so filtering the group by its best season is
   // the same as filtering every season of his
   const groups = groupBySeason(ALL).filter(g => keep(g.best));
-  groups.sort((a, b) => cmp(a.best[k], b.best[k]));
-  return groups.map(g => ({p: g.best, seasons: g.all}));
+  // The row stands for the season the user has CHOSEN, falling back to his
+  // best. It then sorts on that season's numbers, because the row shows those
+  // numbers and sorting it by a season it is not displaying would be a lie.
+  for (const g of groups){
+    const yr = state.pick[g.n];
+    g.shown = (yr && g.all.find(s => s.yr === yr)) || g.best;
+  }
+  groups.sort((a, b) => cmp(a.shown[k], b.shown[k]));
+  return groups.map(g => ({p: g.shown, seasons: g.all, best: g.best}));
 }
 
 const CAP = 500;                 // all-time is 488 players once grouped
@@ -526,8 +543,8 @@ function poolPanel(){
     : `Tap a player to draft him to ${who}${state.view === "all"
         ? " (tap a team's name above to draft to that one instead)" : ""}, `
       + "or drag him by the handle into the slot you want."}${
-    state.mode === "all" && !full
-      ? " Each player shows his best season; click the years badge to compare the rest and take a different one."
+    state.mode === "all"
+      ? " Each player shows his best season. Open the years badge to compare the rest, then click a season to use it instead, or drag any season straight into a slot."
       : ""}</div>`;
   h += `<div class="pool"><table class="ptable"><thead><tr>
     <th>Player</th><th>${state.mode === "all" ? "Season" : "Pos"}</th>
@@ -541,7 +558,7 @@ function poolPanel(){
       <td>${fmtM(p.sal)}${p.proj ? '<span class="proj" title="No 2026-27 contract on the books, so this is the model\u2019s estimate of what he would command.">est</span>'
         : p.rank ? `<span class="proj" title="Ranked ${p.rank} by Barrett Score in ${esc(p.yr)}, so he is paid what the ${ORD(p.rank)}-highest-paid player of 2025-26 is paid.">#${p.rank}</span>` : ""}</td>`;
 
-  for (const {p, seasons} of rows.slice(0, CAP)){
+  for (const {p, seasons, best} of rows.slice(0, CAP)){
     const open = !!state.open[p.n], more = seasons && seasons.length > 1;
     h += `<tr data-pick="${esc(idOf(p))}"${full ? ' class="cant"' : ""}>
       <td><span class="pn"><span class="grip" title="Drag into a slot"></span>${face(p)}<b>${esc(p.n)}</b>${p.tw ? '<span class="tw">two-way</span>' : ""}${
@@ -551,9 +568,12 @@ function poolPanel(){
     </tr>`;
     if (open && more){
       for (const s of seasons){
-        h += `<tr class="alt${full ? " cant" : ""}" data-pick="${esc(idOf(s))}">
-          <td><span class="pn"><span class="grip" title="Drag into a slot"></span><b>${esc(s.n)}</b>${
-            s === p ? '<span class="best">best</span>' : ""}</span></td>
+        const isShown = s === p, isBest = s === best;
+        h += `<tr class="alt${isShown ? " on" : ""}" data-pick="${esc(idOf(s))}"
+          title="Click to use ${esc(s.yr)} for ${esc(s.n)}, or drag it straight into a slot">
+          <td><span class="pn"><span class="grip" title="Drag into a slot"></span>${face(s)}<b>${esc(s.n)}</b>${
+            isBest ? '<span class="best">best</span>' : ""}${
+            isShown && !isBest ? '<span class="picked">using</span>' : ""}</span></td>
           ${cells(s)}
         </tr>`;
       }
@@ -612,7 +632,13 @@ function draftBest(i, spent){
   if (at < 0) return false;              // roster full
   for (const p of POOL_OF(state.mode)){  // both pools ship pre-sorted by score
     if (spent.has(p.n)) continue;
-    state.rosters[i][at] = idOf(p); spent.add(p.n); return true;
+    // Honour a season the user chose. Auto-fill walks the pool in best-season
+    // order, so without this it would hand back the best year of a player the
+    // user had deliberately downgraded, silently overriding the choice while
+    // every other draft path respected it.
+    const yr = state.mode === "all" ? state.pick[p.n] : null;
+    const take = yr ? (ALL.find(s => s.n === p.n && s.yr === yr) || p) : p;
+    state.rosters[i][at] = idOf(take); spent.add(p.n); return true;
   }
   return false;                          // board is empty
 }
@@ -631,12 +657,46 @@ function autoFillAll(){
 
 function wire(){
   const root = document.getElementById("rd-root");
+
+  // Redraw only the pool, and keep the user where they were. Replacing the
+  // markup builds a fresh .pool whose scrollTop is 0, so without this a badge
+  // opened two hundred rows down would throw you back to the top of the list.
+  //
+  // `focus` handles the other half. Choosing a season re-sorts the row onto
+  // that season's numbers, which is correct but can move it a long way: taking
+  // Jordan's 2001-02 drops him from 22nd to 233rd. Sorting honestly and then
+  // following the row is better than sorting on a season the row is not
+  // showing, so the list stays truthful and the player comes back into view.
+  const redrawPool = (focus) => {
+    const pane = [...root.querySelectorAll(".panel")].find(x => x.querySelector(".pool"));
+    if (!pane) return render();
+    const old = pane.querySelector(".pool");
+    const keepTop = old ? old.scrollTop : 0;
+    pane.innerHTML = poolPanel(); wire(); fitFrame();
+    const pool = pane.querySelector(".pool");
+    if (!pool) return;
+    pool.scrollTop = keepTop;
+    if (!focus) return;
+    const row = [...pool.querySelectorAll("tr[data-pick]")].find(r =>
+      !r.classList.contains("alt") && r.querySelector("b")
+      && r.querySelector("b").textContent === focus);
+    if (!row) return;                    // filtered out, or past the render cap
+    // the header is sticky and opaque, so the top of the pool is not visible
+    // space: a row scrolled to pr.top would sit underneath it
+    const th = pool.querySelector("thead");
+    const hh = th ? th.getBoundingClientRect().height : 0;
+    const rr = row.getBoundingClientRect(), pr = pool.getBoundingClientRect();
+    if (rr.top < pr.top + hh || rr.bottom > pr.bottom)
+      pool.scrollTop += (rr.top - pr.top - hh) - (pool.clientHeight - hh) / 2 + rr.height / 2;
+  };
+
   const q = root.querySelector("#q");
   if (q) q.oninput = () => {
     state.q = q.value;
-    // keep the caret: re-render only the pool side
-    const panes = root.querySelectorAll(".grid2 > .panel");
-    panes[1].innerHTML = poolPanel(); wire(); fitFrame();
+    // Was its own ".grid2 > .panel" lookup, which does not exist in the
+    // all-teams layout (two bare sibling panels, no grid), so every keystroke
+    // threw and the filter only appeared later on some unrelated re-render.
+    redrawPool();
     const q2 = root.querySelector("#q");
     if (q2){ q2.focus(); q2.setSelectionRange(q2.value.length, q2.value.length); }
   };
@@ -654,7 +714,7 @@ function wire(){
     while (r.length < state.teams) r.push(blank());
     if (r.length > state.teams) r.length = state.teams;
     state.pos = "";                    // no positions in the historical frame
-    state.open = {};
+    state.open = {}; state.pick = {};
     render();
   });
   const ns = root.querySelector("#nslots");
@@ -684,15 +744,25 @@ function wire(){
   root.querySelectorAll("[data-yrs]").forEach(b => b.onclick = e => {
     e.stopPropagation();                 // the row underneath still drafts
     const n = b.dataset.yrs;
-    if (state.open[n]) delete state.open[n]; else state.open[n] = true;
-    // redraw only the pool so the page does not jump back to the top
-    const panes = root.querySelectorAll(".grid2 > .panel, .panel");
-    const pane = [...panes].find(x => x.querySelector(".pool"));
-    if (pane){ pane.innerHTML = poolPanel(); wire(); fitFrame(); }
-    else render();
+    const opening = !state.open[n];
+    if (opening) state.open[n] = true; else delete state.open[n];
+    // follow the row when opening, so a badge near the bottom of the list does
+    // not insert its seasons entirely below the fold and look like it did nothing
+    redrawPool(opening ? n : null);
   });
   root.querySelectorAll("[data-pick]").forEach(tr => tr.onclick = () => {
     if (suppressClick) return;           // this "click" is the tail of a drag
+    // An expanded season is a CHOICE, not a pick: clicking it commits that year
+    // to the player's row so he sits alongside everyone else as that season.
+    // Dragging one still drafts it outright, because drag means "into a slot"
+    // everywhere else on this page and that should not change here.
+    if (tr.classList.contains("alt")){
+      const [n, yr] = tr.dataset.pick.split("|");
+      state.pick[n] = yr;
+      delete state.open[n];              // the comparison is over
+      redrawPool(n);                     // follow him to wherever the sort puts him
+      return;
+    }
     const i = state.active, at = firstFree(state.rosters[i]);
     if (at < 0) return;
     state.rosters[i][at] = tr.dataset.pick;
@@ -717,7 +787,11 @@ function wire(){
   const fa = root.querySelector("#fillall");
   if (fa) fa.onclick = () => { autoFillAll(); render(); };
   const rs = root.querySelector("#reset");
-  if (rs) rs.onclick = () => { resetRosters(state.teams); render(); };
+  // Start over clears the draft and closes any open comparison, but KEEPS the
+  // seasons the user chose: an expansion is a transient look at a player, a
+  // chosen season is a decision about him, and throwing away a curated board
+  // of seasons because someone wanted a fresh draft would be the wrong trade.
+  if (rs) rs.onclick = () => { resetRosters(state.teams); state.open = {}; render(); };
 }
 
 /* ── drag ───────────────────────────────────────────────────────────────
@@ -753,7 +827,10 @@ const SLOP = 5;                        // px before a press becomes a drag
 function dragFrom(e){
   if (e.button > 0) return null;                       // right or middle button
   const el = e.target;
-  if (el.closest("button.drop")) return null;          // the x is still just the x
+  // Buttons inside a row are controls, not drag handles: the x returns a player
+  // and the years badge opens his seasons. Without this a press on the badge
+  // that drifts past the slop drafts the player instead of expanding him.
+  if (el.closest("button")) return null;
   // Touch must start on the grip, because the grip is the only node with
   // touch-action:none; anywhere else the browser claims the gesture to scroll
   // the pool and stops sending moves. A mouse may grab the whole row.
@@ -782,7 +859,10 @@ function arm(e){
   const p = byId[drag.id];
   const g = document.createElement("div");
   g.className = "rd-ghost";
-  g.innerHTML = (p ? face(p) : "") + `<span>${esc(p ? p.n : drag.id)}</span>`;
+  // name the season: in all-time, dragging is how you take a year that is not
+  // the one on the row, so a ghost without the year says nothing useful
+  g.innerHTML = (p ? face(p) : "")
+    + `<span>${esc(p ? p.n : drag.id)}${p && p.yr ? " " + esc(p.yr) : ""}</span>`;
   document.body.appendChild(g);
   drag.ghost = g;
   drag.el.classList.add("rd-src");
@@ -867,13 +947,24 @@ function endDrag(){
 
 function onUp(e){
   if (!drag || e.pointerId !== drag.pid) return;
-  const was = drag.armed, changed = was && commit();
+  const was = drag.armed, fromAlt = !!(drag.el && drag.el.classList.contains("alt"));
+  const name = drag.id ? drag.id.split("|")[0] : null;
+  const changed = was && commit();
   endDrag();
-  if (was){                    // swallow the click this drag is about to produce
+  // Swallow the click a real drag is about to produce, EXCEPT when a drag off
+  // an expanded season landed nowhere: there the click only chooses a season,
+  // which is what a press that drifted six pixels meant anyway. On a main row
+  // the same click would draft, so that one stays swallowed.
+  if (was && !(fromAlt && !changed)){
     suppressClick = true;
     setTimeout(() => { suppressClick = false; }, 300);
   }
-  if (changed) render();
+  if (changed){
+    // he is spent, so an expansion left open is an expansion of nobody; it
+    // would reappear the moment he was dropped back into the pool
+    if (name) delete state.open[name];
+    render();
+  }
 }
 
 document.addEventListener("pointerdown", onDown, true);
