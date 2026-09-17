@@ -28,6 +28,12 @@ body{background:transparent;color:var(--fg1);margin:0;
   padding:.75rem .85rem .85rem;min-width:0;
   box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.05)}
 .panel + .panel{margin-top:12px}
+/* ...but NOT inside the two-column board. There the second panel is an adjacent
+   sibling of the first while sitting BESIDE it, so the stacking margin pushed
+   the pool 12px below the roster and the two card tops never lined up. The grid
+   supplies its own 12px gap in both directions, so the margin is redundant here
+   whether the board is side by side or stacked. */
+.grid2 > .panel + .panel{margin-top:0}
 .secl{display:flex;align-items:center;gap:.5rem;font-size:.68rem;font-weight:800;
   letter-spacing:.08em;text-transform:uppercase;color:var(--fg5);margin:0 0 .5rem}
 .secl .bar{width:3px;height:13px;border-radius:2px;background:var(--teal)}
@@ -194,7 +200,11 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
 /* The pool carries nine columns and the roster carries two; splitting the width
    evenly made the salary column fall off the right edge and forced a horizontal
    scroll to read it. The roster gives up the space because it has it to give. */
-.grid2{display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.05fr);gap:12px}
+/* margin-top matches what .panel + .panel gives every other pair of blocks.
+   The grid is not a .panel, so that rule never reached it and the board sat
+   flush against the setup card above while everything else had 12px. */
+.grid2{display:grid;grid-template-columns:minmax(0,0.95fr) minmax(0,1.05fr);
+  gap:12px;margin-top:12px}
 /* Breakpoints key off the COLUMN count (c1/c2/c3), not the slot total, because
    three columns of slots need roughly 636px and the two-up board only hands the
    roster half the width. A 15-man board therefore goes full-width sooner than a
