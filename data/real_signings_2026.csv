@@ -168,14 +168,68 @@ Malik Dia,NOP,1,0.68,0.68,two-way,2026-08-18,HoopsRumors + HoopsHype,two-way; NO
 #   ($667K x3, replacing the $2M lump).
 # Guarantee event: DET fully guaranteed Paul Reed's $5.6M on 9/2, read as
 #   leverage in the Jalen Duren standoff.
-# STILL OPEN as of 9/4: Harden's 3yr/$97M CLE agreement is NOT yet officially
-#   signed - it is gated on Cleveland clearing its $209.015M first-apron hard
-#   cap -- Cleveland has now DONE that work (Whitmore stretched, a deliberately
-#   small Diop deal) and the signing is expected imminently, but it is not
-#   booked here until it happens. Kawhi/TOR is agreed and reported days from
-#   finalising, still not consummated. Jalen Duren remains an unsigned RFA
-#   (DET around 5yr/$175M, his camp seeking north of $40M/yr; QO deadline
-#   Oct 1). Stephen Curry became extension-eligible 8/29 and has not signed.
+# --- Round of 2026-09-17, covering 9/5 to 9/17 -------------------------------
+# A CORRECTION FIRST, because it was ours. The Harden row used to read
+#   "OFFICIALLY SIGNED (verified 8/23), 2026-08-20". That was the AGREEMENT.
+#   He did not sign until 2026-09-08, three weeks later, once Cleveland had
+#   finished clearing its first-apron hard cap. The terms also moved: 3yr
+#   $96.54M not $97M, and yr1 is $30,647,619 not ~$29.9M. The note above this
+#   block had said "STILL OPEN as of 8/26: Harden ... NOT yet officially
+#   signed" and it was RIGHT; the 9/4 round re-dated that note to 9/4 without
+#   checking it against the row beneath, so a true warning and a false row sat
+#   three lines apart for two weeks. Re-date a standing note only after
+#   re-reading what it is about: bumping the date reads as re-verification.
+# Kawhi Leonard to TOR is OFFICIAL as of 9/14, as a TRADE, not a signing: LAC
+#   sends Leonard ($50.3M expiring) for Ingram ($40M), Gradey Dick ($7,131,511),
+#   2031+2033 unprotected 1sts, 2030+2033 2nds and a 2027 swap. Leonard WAIVED
+#   his entire 15%% trade kicker (~$7.5M), so there is nothing to add for it.
+#   Toronto took back more than it sent ($50.3M in, $47.13M out) using an
+#   expanded TPE, which hard-caps them at the first apron. This trade was
+#   already in master_roster, promoted to official by Barrett on 7/27; the
+#   league has now caught up with him.
+# Trade 9/8 (official, both clubs issued releases): NOP sends Jordan Hawkins
+#   ($7.02M) and Micah Peavy ($2.15M) to MEM for AJ Johnson ($3.24M) and Taj
+#   Gibson. New Orleans generated a ~$7.02M trade exception off Hawkins;
+#   Memphis did NOT create one, it USED the existing Ja Morant exception to
+#   absorb Peavy.
+# Waives: CHA Kobe Stewart 9/7 (Exhibit 10, $0); NOP waived Taj Gibson 9/9 the
+#   day after acquiring him, $148,828 guaranteed of $3,815,861 so that is the
+#   whole charge; ATL waived Devin Carter 9/11 with $5,158,080 fully guaranteed
+#   (he also declined a $7,370,897 2027-28 option, which is a 2027-28 matter).
+# Minimum-salary deals are booked at the CAP HIT, not the cash. The two-year
+#   veteran minimum charges $2,449,421 in 2026-27 and the league reimburses the
+#   rest, so Simmons, Walker and Gill all land on $2,449,421 despite three
+#   different cash figures. Booking the cash would have overstated three teams.
+# Camp deals are NOT rows here. An Exhibit 9 or Exhibit 10 carries a $0 cap hit
+#   until the player makes the opening-night roster, and most are waived within
+#   days. In the window: Dillon Jones PHI 9/8; Bez Mbeng CHA 9/8; Devon Higgs
+#   ATL 9/8 (waived 9/9); Keyshawn Bryant ATL 9/9; Alex Toohey GSW 9/9; LaMont
+#   Butler ATL 9/10; Hank Morgan BOS 9/11 (sign-and-waive); Christian Shumate
+#   NOP 9/13; Devin Carter BOS 9/14; Will Baker ATL 9/14; Christoph Tilly OKC
+#   9/14; Caleb Grill BOS 9/14 (sign-and-waive); Cam Hildreth, Keion Brooks Jr.,
+#   Wade Taylor IV and M.J. Iraldi IND 9/14; Jaden Akins, Nick Jourdain,
+#   Mitchell Mascari, Paul Zilinskas and Igor Milicic Jr. NYK 9/15; Liam Robbins
+#   NYK 9/15 (waived 9/16); Basheer Jihad and Dawson Garcia DET 9/15; Isaiah
+#   Wong and Dwight Murray Jr. BKN 9/15 (Murray's Exhibit 10 label is
+#   unverified, only the waive is documented); Johnny O'Neil NOP 9/15;
+#   Chance McMillian GSW 9/16; Deivon Smith GSW 9/16; Aziz Bandaogo NOP 9/16.
+# New York signed a BATCH of camp deals 9/16, all at a $0 cap hit until the
+#   player makes the opening-night roster: John Konchar, Drew Eubanks, Ochai
+#   Agbaji and Bruce Brown, each worth $2,449,421 if he sticks. Spotrac lists
+#   them together in the Knicks' $0 group. James Wiseman is reported in the
+#   same batch and appears in that group, but he drew no verdict of his own, so
+#   his roster row is left alone pending a second source.
+# Lonnie Walker IV DEN 9/10 IS a row, unlike the rest, because Spotrac books a
+#   real $2,449,421 cap hit against Denver. It is still provisional.
+# NOT CONFIRMED, deliberately left out: a reported Toby Okani signing, which
+#   only ever reached one source and so failed the two-source bar.
+# STILL OPEN as of 9/17: Jalen Duren is an unsigned RFA (DET at 5yr/$190M, his
+#   camp seeking $200M+, $9.6M qualifying offer, 10/1 deadline, sign-and-trade
+#   chatter). Stephen Curry has been extension-eligible since 8/29 for 2yr
+#   $136.7M and has NOT signed; the deal covering his 2026-27 is the 1yr $62.6M
+#   extension he signed in Aug 2024, so beware search results about that one.
+#   Kawhi and Toronto are in advanced talks on a ~2yr/$124M extension, not
+#   signed. Book none of these.
 # Trades moving 2026-27 salary: Dort (OKC) + Nembhard (DAL, $2150917) to ATL /
 #   Risacher to DAL / three 2nds + $17.7M TPE to OKC (7/19, official); Johni
 #   Broome PHI to LAC (7/28, already reflected in rosters); Dennis Schroder
@@ -191,12 +245,12 @@ Malik Dia,NOP,1,0.68,0.68,two-way,2026-08-18,HoopsRumors + HoopsHype,two-way; NO
 #   $2.3M guarantee date pushed to Oct 15.
 Caleb Love,PHI,1,0.68,0.68,two-way,2026-07-05,ESPN (Shams) + Sixers release,"two-way signed 7/5/26 (agreed 7/3); backfilled in the 8/20 round - missed by the July verification"
 Peyton Watson,CLE,4,88,20.47,new,2026-08-19,ESPN (Shams) + HoopsRumors,"sign-and-trade from DEN in the five-team deal (league-processed 8/20): 4yr $88M, player option + 7.5% trade kicker; yr1 $20.465M; hard-caps CLE at apron 1"
-James Harden,CLE,3,97,29.9,resign,2026-08-20,ESPN (Shams) + HoopsRumors,"OFFICIALLY SIGNED (verified 8/23): 3yr $97M fully gtd (2028-29 player option, trade kicker) after declining his $42.3M PO in June; yr1 ~$29.9-30M; followed the Watson trade clearing"
+James Harden,CLE,3,96.54,30.65,resign,2026-09-08,NBA.com + HoopsRumors + SalarySwish,"CORRECTED 9/17: we had booked the 8/20 AGREEMENT as the signing. He actually signed 9/8/26, three weeks later, once Cleveland finished clearing its first-apron hard cap. Terms 3yr $96.54M fully gtd (2028-29 player option, trade kicker); yr1 $30,647,619 then $32.18M and $33,712,381"
 Tarik Biberovic,DAL,2,6,2.93,new,2026-07-10,Marc Stein + Spotrac,"backfilled in the 8/23 round - missed by the July verification: 2yr $6M via part of the MLE ($2926829 / $3073171 team option); draft-and-stash from Fenerbahce (56th pick 2023, rights via the Aldama six-teamer)"
-DeMar DeRozan,DEN,1,3.88,3.88,new,2026-08-21,Chris Haynes + ESPN (Shams) + AP,"1yr vet min ($3.88M actual, $2.45M cap hit - second-apron DEN limited to the minimum); SAC had waived his partial guarantee in July; Jokic/Gordon/Murray recruited him"
+DeMar DeRozan,DEN,1,3.88,3.88,new,2026-09-08,NBA player-movement log + Nuggets release + ESPN,"officially processed 9/8/26; the 8/21 ESPN story was the agreement. 1yr vet min, $3.88M cash against a $2.45M cap hit (second-apron DEN limited to the minimum); SAC waived and stretched him; Jokic/Gordon/Murray recruited him"
 Klay Thompson,MIA,2,11.48,5.6,new,2026-08-23,HoopsRumors + ESPN + Heat release,"OFFICIALLY SIGNED 8/23 and terms came in BELOW the reported agreement: 2yr $11.48M ($5.6M then $5.88M player option, 15% trade kicker), not the ~$13M first reported. Followed the DAL buyout (gave back ~$9.8M of $17.5M)"
 Jonathan Kuminga,MIN,2,12.4,6.1,new,2026-08-26,ESPN (Shams) + HoopsRumors + RealGM,"2yr $12.4M with a 2027-28 player option; straight FA signing, not a S&T. ATL had declined his $24.3M team option so he was UNRESTRICTED. ESPN says $12.4M, HoopsRumors/RealGM say $13M"
-Bennedict Mathurin,NOP,2,16,7.8,new,2026-08-26,ESPN (Shams) + HoopsRumors + NBA.com,"2yr $16M with a 2027-28 player option; LAC withdrew his $8.8M qualifying offer at his reps request first, making him unrestricted"
+Bennedict Mathurin,NOP,2,16,8,new,2026-09-10,NBA.com league feed + HoopsRumors + HoopsHype,"officially signed 9/10/26, over two weeks after the 8/26 agreement; the deal is a flat $8M/$8M, not the $7.8M average we had, with a 2027-28 player option; LAC withdrew his $8.8M QO first, making him unrestricted"
 Georges Niang,GSW,1,3.88,3.88,new,2026-08-25,ESPN + Warriors release,"1yr vet min ($3.88M actual, $2.45M cap hit); fills the 15th roster spot; missed all of 2025-26 with a fractured left foot"
 Brandon Williams,GSW,1,2.63,2.63,new,2026-08-25,ESPN (Shams) + Warriors release,"1yr vet min $2625627 fully gtd; agreed 8/25, official 8/26; came from DAL (13.0 ppg in 66 games)"
 Rafael Castro,HOU,1,0.68,0.68,two-way,2026-08-26,Rockets release + HoopsRumors,"undrafted C (George Washington); HOU waived Tristen Newton for the slot; an earlier MIL two-way never materialised"
@@ -204,3 +258,6 @@ Bryce Hopkins,DEN,1,0.68,0.68,two-way,2026-08-26,HoopsRumors + Spotrac,"No.49 pi
 Nick Richards,MIA,1,3.1,3.1,new,2026-08-27,ESPN transactions + SI Heat,"1yr vet min for frontcourt depth; non-guaranteed until the regular season starts"
 Keshad Johnson,MIA,1,0.679,0.679,two-way,2026-08-27,HoopsRumors + Heat roster,"two-way, re-signed with Miami after 48 games there last season"
 Khalifa Diop,CLE,4,1.358,1.358,new,2026-09-02,HoopsRumors + CLE reporting,"deliberately small deal that helped Cleveland fit under its first-apron hard cap for the pending Harden signing"
+Ben Simmons,SAC,1,3.52,2.45,new,2026-09-07,Spotrac + HoopsRumors + HoopsHype,"1yr $3,524,115 cash against a $2,449,421 cap hit (minimum-salary reimbursement); FULLY non-guaranteed, roughly $1M of it earned only if he is on the roster, so re-check before opening night"
+Lonnie Walker IV,DEN,1,3.29,2.45,new,2026-09-10,Spotrac (Keith Smith) + Basketball-Reference + HoopsRumors,"Exhibit 10: $3,286,399 cash against a $2,449,421 cap hit. PROVISIONAL - an Exhibit 10 is very likely waived before opening night. Agreed 8/5, processed 9/10"
+Anthony Gill,WAS,1,3.07,2.45,resign,2026-09-15,Spotrac + HoopsRumors,"1yr vet min re-sign; $3,066,143 cash against a $2,449,421 cap hit (minimum-salary reimbursement, 6 years of service)"

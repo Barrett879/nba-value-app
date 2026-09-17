@@ -82,8 +82,16 @@ def main():
         note = (r.get("notes") or "").strip()
         proj = False
         if sal <= 0:
-            # unsigned: the roster file carries "est value $12.3M" for these
-            m = re.search(r"\$([0-9.]+)M", note)
+            # Unsigned: the roster file carries "est value $12.3M" for these.
+            # Anchor on the PHRASE, never on any dollar figure in the note. The
+            # notes are prose and routinely quote other money -- a stretch
+            # charge, the non-guaranteed half of a waived salary -- and a bare
+            # $N.NM search silently priced Cam Whitmore at Cleveland's dead
+            # money ($1.819M), John Konchar at Minnesota's ($2.06M) and Taj
+            # Gibson at the part of his salary nobody pays. A wrong price is
+            # worse than no price, because no price drops the player and a
+            # wrong one puts him on the board looking like a bargain.
+            m = re.search(r"est\s+value\s*\$([0-9.]+)M", note, re.I)
             if m:
                 sal, proj = float(m.group(1)), True
             elif kind == "two_way":

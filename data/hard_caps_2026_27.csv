@@ -49,6 +49,6 @@ asof,team,cap,trigger,source,notes
 2026-07-27,POR,apron1,Took back more than 100% of outgoing salary acquiring Ja Morant for Grant and Murray with expanded matching,Yahoo Sports (Kelly Iko),confirmed by verifier
 2026-07-27,SAC,apron1,Signed Precious Achiuwa with the full bi-annual exception ($5.48M),spotrac.com/nba/sacramento-kings/cap,confirmed by verifier
 2026-07-27,SAS,apron1,Signed Tobias Harris with the full non-taxpayer midlevel (2yr/$31M Jul 6),salaryswish.com hard-cap tracker,confirmed by verifier
-2026-07-27,TOR,apron1,Aggregated Ingram and Dick and took back more than 100% of outgoing salary in the Kawhi Leonard trade (promoted to official with the master roster),hoopsrumors.com tracker (expected on official),pending-official trade promoted per Barrett 2026-07-27; reverse if the NBA voids it
+2026-09-17,TOR,apron1,Aggregated Ingram and Dick and took back more than 100% of outgoing salary in the Kawhi Leonard trade ($50.3M in vs $47.13M out via an expanded trade exception),NBA player-movement feed + HoopsRumors,"NO LONGER PROVISIONAL: the trade was officially processed 2026-09-14. Barrett promoted this row on 7/27 ahead of the league and it proved correct."
 2026-07-27,UTA,apron1,Split the non-taxpayer midlevel between Jaxson Hayes ($6M) and Josh Okogie ($6M),x.com/YossiGozlan,confirmed by verifier
 2026-07-27,WAS,apron1,Used the prior-year Olynyk trade exception to acquire Deandre Ayton and acquired Khris Middleton via sign-and-trade (Jul 8),hoopsrumors.com hard-cap tracker,confirmed by verifier

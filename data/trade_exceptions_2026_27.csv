@@ -51,7 +51,7 @@ asof,team,amount_M,player,created,expires,notes,source
 ,LAC,0.145357,Chris Paul,2026-02-05,2027-02-05,"$2,150,917 used absorbing Johni Broome 7/28/26 (Broome is yr2 of a 4yr deal so the minimum exception could not be used); $145,357 remaining; prior-season TPE use re-triggers the apron-1 hard cap LAC already carries (Hachimura NTMLE)",HoopsRumors TPE tracker + HoopsHype + 213hoops
 ,LAC,1.314427,Ivica Zubac,2026-02-05,2027-02-05,"From the Ivica Zubac trade with IND; full $1,314,427 remaining.; single-source (Pincus tracker), small residual",Pincus tracker only
 ,MEM,28.87292,Jaren Jackson Jr.,2026-02-03,2027-02-03,"From the Jaren Jackson Jr. trade with UTA at the Feb 2026 deadline; full $28,872,920 remaining. Largest outstanding TPE among the 10 teams checked.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
-,MEM,4.314089,Ja Morant,2026-06-29,2027-06-29,"From the Ja Morant trade with POR; full $4,314,089 remaining.",Pincus tracker + SalarySwish + Spotrac
+,MEM,4.314089,Ja Morant,2026-06-29,2027-06-29,"From the Ja Morant trade with POR. PARTIALLY USED 9/8/26: Memphis absorbed Micah Peavy ($2.15M) into this exception rather than creating a new one, so the remaining balance is LOWER than the $4,314,089 shown. The exact residue is single-sourced (Keith Smith/Spotrac) and is not restated here until a second source confirms it - treat this amount as an upper bound.",Pincus tracker + SalarySwish + Spotrac (9/17 use single-sourced)
 ,MIL,25.456566,Giannis Antetokounmpo,2026-07-06,2027-07-06,"From the Giannis trade with MIA; full $25,456,566 remaining. Second-largest outstanding TPE among the 10 teams checked.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,MIL,0.085763,Bobby Portis,2026-07-06,2027-07-06,"From the Bobby Portis trade with MIA; $85,763 remaining (residual sliver, effectively unusable).",Pincus tracker + SalarySwish + Spotrac
 ,MIN,10.774038,Mike Conley,2026-02-03,2027-02-03,"From the Mike Conley trade with CHI; full $10,774,038 remaining.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
@@ -76,3 +76,4 @@ asof,team,amount_M,player,created,expires,notes,source
 ,UTA,15.054411,Walker Kessler,2026-07-08,2027-07-08,"Kessler to Lakers, July 2026. Pincus lists expiry 7/7/27.; verified 2026-07-28",Pincus tracker + SalarySwish + Spotrac
 ,UTA,2.296274,Jock Landale,2026-02-05,2027-02-05,Trade with MEM; fully unused,Pincus tracker + SalarySwish + Spotrac
 ,WAS,6,Jaden Hardy,2026-07-07,2027-07-07,Hardy re-traded to Lakers July 2026; verified 2026-07-28,Pincus tracker + SalarySwish + Spotrac
+2026-09-17,NOP,7.021895,Jordan Hawkins,2026-09-08,2027-09-08,"Created by sending Hawkins to MEM in the four-player trade; his full $7,021,895 outgoing salary.",HoopsRumors + Spotrac

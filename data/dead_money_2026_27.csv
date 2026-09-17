@@ -7,7 +7,7 @@
 #
 # Source: Spotrac 2026-27 team cap tables (the "Dead Money Cap" section), read
 # 2026-07-29 (re-verified 08-18 Highsmith; 08-23 Klay; 08-26 DeRozan; 09-04 three
-# more stretches). Every team
+# more stretches; 09-17 two waivers, Gibson and Carter). Every team
 # below reconciles to the Dead Cap column on Spotrac's
 # league cap tracker; the 20 teams not listed here carry none.
 #
@@ -37,3 +37,5 @@ asof,team,player,amount_M,status,notes
 2026-08-23,DAL,Klay Thompson,7.700,waived,"buyout 8/21/26 of his $17.5M final year - gave back ~$9.8M; waived, clears 8/23; ~$7.7M dead (no stretch reported); expected to sign MIA"
 2026-09-04,CLE,Cam Whitmore,1.819,waived,"waived and stretched 8/28/26; his $5.458M expiring charges $1.819M a year through 2028-29, which is what cleared Cleveland under its first-apron hard cap for Harden"
 2026-09-04,MIN,John Konchar,2.060,waived,"acquired from UTA 8/29/26 and waived the same day; $6.17M stretched across three seasons"
+2026-09-17,NOP,Taj Gibson,0.148828,waived,"acquired from MEM 9/8/26 and waived 9/9; of his $3,815,861 only $148,828 was guaranteed, so that is the whole charge and the other $3.67M is charged to nobody"
+2026-09-17,ATL,Devin Carter,5.158,waived,"waived 9/11/26 with his $5,158,080 fully guaranteed, so Atlanta carries all of it. He signed a BOS Exhibit 10 on 9/14 which is a $0 cap hit and produces no set-off yet"
