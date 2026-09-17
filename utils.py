@@ -1752,6 +1752,44 @@ COMMON_CSS = """
     .sub-nav a:hover { color: var(--fg-1); text-decoration: none; }
     .sub-nav a.active { color: var(--fg-1); border-bottom-color: var(--accent-red); }
 
+    /* ── Cross-link to the WNBA site, right-aligned inside the nav ────────────
+       In the FLOW, not a third pinned element. Two controls are already pinned
+       top-right (the brightness button at right:1rem and the Barrett Score help
+       at right:3.1rem), and that pair was tuned by measurement: at 375px the
+       help label already collided with "Front Office" and had to collapse to a
+       "?". Pinning a third thing there would mean redoing that math and getting
+       it wrong on some width nobody checked.
+       As a flex item with margin-left:auto it sits at the right end of the bar
+       and CANNOT overlap the section links, because flex will not let it. All it
+       needs is padding to clear the two pinned controls above it. */
+    .top-nav .cross-site {
+        margin-left: auto;
+        white-space: nowrap;
+        font-weight: 600;
+        color: var(--accent-red);
+        border: 1px solid transparent;
+    }
+    .top-nav .cross-site:hover {
+        color: var(--fg-1);
+        border-color: var(--accent-red);
+        text-decoration: none;
+    }
+    .top-nav .cross-short { display: none; }
+    /* Reserve the right edge only when the link is actually rendered: 3.1rem to
+       the help control plus its ~150px label, rounded up. */
+    .top-nav.has-cross { padding-right: 13rem; }
+    @media (max-width: 900px) {
+        /* The full sentence stops fitting here; keep the destination, drop the
+           pitch. */
+        .top-nav .cross-long { display: none; }
+        .top-nav .cross-short { display: inline; }
+    }
+    @media (max-width: 460px) {
+        /* Below this the help control collapses to a "?", so the reserved strip
+           shrinks with it. */
+        .top-nav.has-cross { padding-right: 5rem; }
+    }
+
     /* ── Responsive nav: keep the links clear of the pinned brightness button ──
        Only the theme button is pinned (position:fixed) top-right; reserve its
        narrow width so the tabs don't slide under it, and shrink the tabs as the
@@ -2512,6 +2550,33 @@ def _nav_search_script(rows: str) -> str:
         "})();</script>")
 
 
+# ── Cross-link to SwishValue, the WNBA site ──────────────────────────────────
+# Empty by default, and that is the point: swishvalue.com does not exist yet, and
+# a nav link to a domain that does not resolve is worse than no link. Unset, this
+# renders nothing at all. Set SWISHVALUE_URL in the Render dashboard the day the
+# site goes live and the link appears on the next restart, with no deploy and so
+# none of the ~45s of downtime a deploy costs this service.
+SWISHVALUE_URL = os.environ.get("SWISHVALUE_URL", "").strip()
+
+# Two labels because the nav is tight. The long one shows on a normal screen; CSS
+# swaps to the short one below 900px, where the full sentence would push the
+# section links under the pinned controls.
+SWISHVALUE_LABEL = os.environ.get("SWISHVALUE_LABEL", "Need more hoops? WNBA")
+SWISHVALUE_LABEL_SHORT = os.environ.get("SWISHVALUE_LABEL_SHORT", "WNBA")
+
+
+def _cross_site_link() -> str:
+    """The SwishValue link for the nav, or "" when no URL is configured."""
+    if not SWISHVALUE_URL:
+        return ""
+    return (
+        f'<a class="cross-site" href="{html.escape(SWISHVALUE_URL, quote=True)}" '
+        f'target="_top" rel="noopener">'
+        f'<span class="cross-long">{html.escape(SWISHVALUE_LABEL)}</span>'
+        f'<span class="cross-short">{html.escape(SWISHVALUE_LABEL_SHORT)}</span>'
+        f'</a>')
+
+
 def render_nav(current: str) -> None:
     """Render the top nav bar with the playoff toggle pinned right.
 
@@ -2529,7 +2594,15 @@ def render_nav(current: str) -> None:
         links += f'<a class="{css_class}" href="{home}" target="_top">{name}</a>'
     rows = _nav_search_rows()
     search = _NAV_SEARCH_MARKUP if rows else ""
-    st.markdown(f'<div class="top-nav">{links}{search}</div>', unsafe_allow_html=True)
+    cross = _cross_site_link()
+    # `has-cross` reserves room on the right for the two pinned controls (the
+    # brightness button and the Barrett Score help), which sit ON TOP of this bar
+    # rather than in it. Without the extra padding the link slides underneath
+    # them. The class only appears when the link does, so the layout of the bar
+    # is untouched while SWISHVALUE_URL is unset.
+    bar_class = "top-nav has-cross" if cross else "top-nav"
+    st.markdown(f'<div class="{bar_class}">{links}{search}{cross}</div>',
+                unsafe_allow_html=True)
     if rows:
         import streamlit.components.v1 as _components
         _components.html(_nav_search_script(rows), height=0)
