@@ -139,6 +139,20 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
   font-size:.55rem;font-weight:800;color:var(--fg3)}
 .ptable .pn b{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ptable .proj{color:var(--fg5);font-size:.62rem;margin-left:.2rem}
+/* ── all-time: one row per player, his other seasons behind a click ─────── */
+.yrs{flex:0 0 auto;margin-left:.3rem;background:var(--track);color:var(--fg4);
+  border:1px solid transparent;border-radius:999px;cursor:pointer;
+  font-size:.58rem;font-weight:800;line-height:1;padding:.22rem .4rem;
+  font-variant-numeric:tabular-nums;-webkit-user-select:none;user-select:none}
+.yrs:hover{border-color:var(--teal);color:var(--teal)}
+.yrs.on{background:var(--teal);color:var(--panel)}
+.ptable tr.alt{background:var(--tintz)}
+.ptable tr.alt td{border-bottom-color:transparent;padding-top:.22rem;padding-bottom:.22rem}
+.ptable tr.alt:last-of-type td{border-bottom-color:var(--line)}
+.ptable tr.alt .pn{padding-left:1.35rem}
+.ptable tr.alt .pn b{font-weight:600;color:var(--fg3)}
+.ptable tr.alt td{color:var(--fg3)}
+.ptable .best{color:var(--teal);font-size:.58rem;font-weight:800;margin-left:.3rem}
 .ptable .tw{color:var(--fg5);font-size:.62rem}
 .empty{padding:1.2rem;text-align:center;color:var(--fg5);font-size:.8rem}
 .hint{font-size:.7rem;color:var(--fg5);margin:.15rem 0 .5rem}
@@ -298,6 +312,7 @@ const state = {
   active: 0,
   rostersBy: {cur: [], all: []},   // each mode keeps its own draft
   q: "", pos: "", sort: "bs", desc: true,
+  open: {},                    // all-time: player name -> his seasons expanded
 };
 Object.defineProperty(state, "rosters", {get(){ return state.rostersBy[state.mode]; }});
 
@@ -444,25 +459,57 @@ function leagueStrip(){
 // Points, rebounds and assists stand on their own rather than being summed
 // into a PRA: the sum hid which of the three a player actually produced, and a
 // drafter looking for a rebounder cannot read it out of a combined number.
+// All-time ships one row per PLAYER, not per season: 2120 player-seasons are
+// 488 men, and eleven Jordans in a row is a list to scroll past rather than a
+// board to draft from. The row carries his best season by Barrett Score, which
+// is the site's own measure of a season, and every other season of his sits
+// one click behind it so you can compare and take a different one.
+function groupBySeason(list){
+  const by = new Map();
+  for (const p of list){
+    let g = by.get(p.n);
+    if (!g){ g = {n: p.n, all: []}; by.set(p.n, g); }
+    g.all.push(p);
+  }
+  for (const g of by.values()){
+    g.all.sort((a, b) => (b.bs == null ? -1 : b.bs) - (a.bs == null ? -1 : a.bs));
+    g.best = g.all[0];
+  }
+  return [...by.values()];
+}
+
 const SORTS = [["bs","BS"],["pts","PTS"],["reb","REB"],["ast","AST"],
                ["ts","TS%"],["dleb","D-LEB"],["sal","Salary"]];
 
+// Returns entries of {p, seasons}: p is the row to draw, seasons is his other
+// years in all-time mode and null in this-league mode, where a player has one.
 function poolRows(){
   const spent = takenNames();
   const q = state.q.trim().toLowerCase();
-  let rows = POOL_OF(state.mode).filter(p => !spent.has(p.n)
-    && (!q || p.n.toLowerCase().includes(q))
-    && (!state.pos || (p.pos || "").split("/").includes(state.pos)));
   const k = state.sort;
-  rows.sort((a, b) => {
-    const av = a[k], bv = b[k];
+  const cmp = (av, bv) => {
     if (av == null && bv == null) return 0;
     if (av == null) return 1;                 // blanks always last, either way
     if (bv == null) return -1;
     return state.desc ? bv - av : av - bv;
-  });
-  return rows;
+  };
+  const keep = p => !spent.has(p.n)
+    && (!q || p.n.toLowerCase().includes(q))
+    && (!state.pos || (p.pos || "").split("/").includes(state.pos));
+
+  if (state.mode !== "all"){
+    const rows = POOL_OF("cur").filter(keep);
+    rows.sort((a, b) => cmp(a[k], b[k]));
+    return rows.map(p => ({p, seasons: null}));
+  }
+  // a name is spent as a whole, so filtering the group by its best season is
+  // the same as filtering every season of his
+  const groups = groupBySeason(ALL).filter(g => keep(g.best));
+  groups.sort((a, b) => cmp(a.best[k], b.best[k]));
+  return groups.map(g => ({p: g.best, seasons: g.all}));
 }
+
+const CAP = 500;                 // all-time is 488 players once grouped
 
 function poolPanel(){
   const rows = poolRows(), full = countOf(state.active) >= state.slots;
@@ -478,25 +525,42 @@ function poolPanel(){
     ? `${who} is full. Drop someone, or drag a new player onto the slot you want him in.`
     : `Tap a player to draft him to ${who}${state.view === "all"
         ? " (tap a team's name above to draft to that one instead)" : ""}, `
-      + "or drag him by the handle into the slot you want."}</div>`;
+      + "or drag him by the handle into the slot you want."}${
+    state.mode === "all" && !full
+      ? " Each player shows his best season; click the years badge to compare the rest and take a different one."
+      : ""}</div>`;
   h += `<div class="pool"><table class="ptable"><thead><tr>
     <th>Player</th><th>${state.mode === "all" ? "Season" : "Pos"}</th>
     ${SORTS.map(([k,l]) => `<th class="${state.sort===k?"on":""}" data-sort="${k}">${l}</th>`).join("")}
     </tr></thead><tbody>`;
   if (!rows.length) h += `<tr><td colspan="9"><div class="empty">Nobody left matching that.</div></td></tr>`;
-  for (const p of rows.slice(0, 400)){
-    h += `<tr data-pick="${esc(idOf(p))}"${full ? ' class="cant"' : ""}>
-      <td><span class="pn"><span class="grip" title="Drag into a slot"></span>${face(p)}<b>${esc(p.n)}</b>${p.tw ? '<span class="tw">two-way</span>' : ""}</span></td>
-      <td>${esc(p.yr || p.pos || "—")}</td>
+  const cells = p => `<td>${esc(p.yr || p.pos || "—")}</td>
       <td>${num(p.bs, 1)}</td>
       <td>${num(p.pts, 1)}</td><td>${num(p.reb, 1)}</td><td>${num(p.ast, 1)}</td>
       <td>${p.ts == null ? "—" : p.ts.toFixed(1)}</td><td>${num(p.dleb, 1)}</td>
-      <td>${fmtM(p.sal)}${p.proj ? '<span class="proj" title="No 2026-27 contract on the books, so this is the model’s estimate of what he would command.">est</span>'
-        : p.rank ? `<span class="proj" title="Ranked ${p.rank} by Barrett Score in ${esc(p.yr)}, so he is paid what the ${ORD(p.rank)}-highest-paid player of 2025-26 is paid.">#${p.rank}</span>` : ""}</td>
+      <td>${fmtM(p.sal)}${p.proj ? '<span class="proj" title="No 2026-27 contract on the books, so this is the model\u2019s estimate of what he would command.">est</span>'
+        : p.rank ? `<span class="proj" title="Ranked ${p.rank} by Barrett Score in ${esc(p.yr)}, so he is paid what the ${ORD(p.rank)}-highest-paid player of 2025-26 is paid.">#${p.rank}</span>` : ""}</td>`;
+
+  for (const {p, seasons} of rows.slice(0, CAP)){
+    const open = !!state.open[p.n], more = seasons && seasons.length > 1;
+    h += `<tr data-pick="${esc(idOf(p))}"${full ? ' class="cant"' : ""}>
+      <td><span class="pn"><span class="grip" title="Drag into a slot"></span>${face(p)}<b>${esc(p.n)}</b>${p.tw ? '<span class="tw">two-way</span>' : ""}${
+        more ? `<button class="yrs${open ? " on" : ""}" data-yrs="${esc(p.n)}"
+          title="${open ? "Hide" : "Compare"} his ${seasons.length} seasons">${seasons.length} yrs</button>` : ""}</span></td>
+      ${cells(p)}
     </tr>`;
+    if (open && more){
+      for (const s of seasons){
+        h += `<tr class="alt${full ? " cant" : ""}" data-pick="${esc(idOf(s))}">
+          <td><span class="pn"><span class="grip" title="Drag into a slot"></span><b>${esc(s.n)}</b>${
+            s === p ? '<span class="best">best</span>' : ""}</span></td>
+          ${cells(s)}
+        </tr>`;
+      }
+    }
   }
   h += `</tbody></table></div>`;
-  if (rows.length > 400) h += `<div class="hint">Showing the top 400. Search to narrow.</div>`;
+  if (rows.length > CAP) h += `<div class="hint">Showing the top ${CAP}. Search to narrow.</div>`;
   return h;
 }
 
@@ -590,6 +654,7 @@ function wire(){
     while (r.length < state.teams) r.push(blank());
     if (r.length > state.teams) r.length = state.teams;
     state.pos = "";                    // no positions in the historical frame
+    state.open = {};
     render();
   });
   const ns = root.querySelector("#nslots");
@@ -616,11 +681,23 @@ function wire(){
   root.querySelectorAll(".tchip[data-team],.tcolhead[data-team]").forEach(b => b.onclick = () => {
     state.active = Number(b.dataset.team); render();
   });
+  root.querySelectorAll("[data-yrs]").forEach(b => b.onclick = e => {
+    e.stopPropagation();                 // the row underneath still drafts
+    const n = b.dataset.yrs;
+    if (state.open[n]) delete state.open[n]; else state.open[n] = true;
+    // redraw only the pool so the page does not jump back to the top
+    const panes = root.querySelectorAll(".grid2 > .panel, .panel");
+    const pane = [...panes].find(x => x.querySelector(".pool"));
+    if (pane){ pane.innerHTML = poolPanel(); wire(); fitFrame(); }
+    else render();
+  });
   root.querySelectorAll("[data-pick]").forEach(tr => tr.onclick = () => {
     if (suppressClick) return;           // this "click" is the tail of a drag
     const i = state.active, at = firstFree(state.rosters[i]);
     if (at < 0) return;
-    state.rosters[i][at] = tr.dataset.pick; render();
+    state.rosters[i][at] = tr.dataset.pick;
+    delete state.open[tr.dataset.pick.split("|")[0]];
+    render();
   });
   root.querySelectorAll("[data-drop]").forEach(b => b.onclick = e => {
     e.stopPropagation();
