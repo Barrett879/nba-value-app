@@ -101,29 +101,23 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
    grid collapses to one column rather than squeezing. minmax(0,1fr) and not a
    bare 1fr: bare 1fr floors at min-content, and one long name would then push
    the whole grid wider than its panel. */
-.slots{display:grid;gap:4px;grid-auto-flow:column;
+.slots{display:grid;gap:6px;grid-auto-flow:column;
   grid-template-rows:repeat(5,auto);grid-auto-columns:minmax(0,1fr)}
-/* The player list sets the rhythm. A pool row is 43px, so a slot is 39px in a
-   4px gap to land on the same pitch, and the headshot and the two text lines
-   have to fit inside that rather than setting it. */
-.slot{display:flex;align-items:center;gap:.4rem;background:var(--card);
-  border:1px solid var(--line);border-radius:10px;padding:.14rem .4rem;
-  min-height:39px;height:39px}
-.slot .no{flex:0 0 auto;width:13px;font-size:.58rem;font-weight:800;color:var(--fg5);
+.slot{display:flex;align-items:center;gap:.5rem;background:var(--card);
+  border:1px solid var(--line);border-radius:11px;padding:.4rem .5rem;min-height:48px}
+.slot .no{flex:0 0 auto;width:14px;font-size:.6rem;font-weight:800;color:var(--fg5);
   font-variant-numeric:tabular-nums;text-align:right}
 .slot.empty{border-style:dashed;color:var(--fg5);justify-content:center;
   font-size:.72rem;letter-spacing:.04em}
-.slot img,.slot .noimg{width:26px;height:26px;border-radius:50%;object-fit:cover;
+.slot img,.slot .noimg{width:32px;height:32px;border-radius:50%;object-fit:cover;
   object-position:top;background:var(--track);flex:0 0 auto}
 .slot .noimg{display:flex;align-items:center;justify-content:center;font-size:.62rem;
   font-weight:800;color:var(--fg3)}
 .slot .who{min-width:0;flex:1}
-.slot .nm{display:block;font-size:.74rem;font-weight:700;white-space:nowrap;
-  overflow:hidden;text-overflow:ellipsis;line-height:1.15}
-.slot .sub{display:block;font-size:.6rem;color:var(--fg5);line-height:1.1;
-  font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;
-  text-overflow:ellipsis}
-.slot .money{font-size:.73rem;font-weight:800;font-variant-numeric:tabular-nums;
+.slot .nm{display:block;font-size:.78rem;font-weight:700;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.slot .sub{font-size:.64rem;color:var(--fg5);font-variant-numeric:tabular-nums}
+.slot .money{font-size:.78rem;font-weight:800;font-variant-numeric:tabular-nums;
   flex:0 0 auto}
 .slot .drop{flex:0 0 auto;background:none;border:none;color:var(--fg5);cursor:pointer;
   font-size:1rem;line-height:1;padding:.1rem .2rem;border-radius:6px}
@@ -263,7 +257,7 @@ select,input[type=text]{background:var(--card);color:var(--fg1);
 .tslots{display:grid;gap:3px;grid-template-columns:minmax(0,1fr)}
 /* One shared legend instead of five labels under all thirty bars. */
 .boardlegend{margin:0 0 .55rem}
-.slot.mini{min-height:0;height:auto;padding:.22rem .3rem;gap:.32rem;border-radius:8px}
+.slot.mini{min-height:0;padding:.22rem .3rem;gap:.32rem;border-radius:8px}
 .slot.mini .no{width:11px;font-size:.55rem}
 .slot.mini .grip{width:9px;height:14px;padding:4px 3px;background-size:4.5px 5px}
 .slot.mini img,.slot.mini .noimg{width:19px;height:19px}
