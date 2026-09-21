@@ -5537,6 +5537,11 @@ def _bootstrap_warm() -> None:
         fetch_next_year_contracts(season_to_espn_year(SEASONS[0]), cache_v=7)
         fetch_rookie_scale_players(SEASONS[0])
         fetch_dlebron(SEASONS[0])
+        # Draft classes are only ever touched when a visitor SELECTS a player,
+        # so unlike everything above this one had nothing priming it: the warm
+        # session and the homepage both go their whole lives without needing it,
+        # and the first person to click a player paid for the cold miss.
+        fetch_draft_classes()
     except Exception:
         pass
     # Remaining seasons in the background
@@ -5607,7 +5612,15 @@ def fetch_draft_classes() -> pd.DataFrame:
             stale = pd.read_parquet(path)
         except Exception:
             stale = None
-    if stale is not None and len(stale) and _dc_fresh(path, ttl=86400):
+    # 30 days, not 24 hours. The draft happens once a year in late June, so a
+    # committed parquet is correct for months; at ttl=86400 the shipped file was
+    # judged stale within a day of every deploy and EVERY cold in-memory cache
+    # fell through to the live NBA API below. That call is not fast from a cloud
+    # IP: measured at a full 15s timeout even from a residential one, and with
+    # nba_api's retries it read as roughly 45 seconds of the page hanging. It
+    # then fell back to this same stale parquet anyway, so the wait bought
+    # nothing. Rebuilding the file and committing it is the real refresh path.
+    if stale is not None and len(stale) and _dc_fresh(path, ttl=30 * 86_400):
         return stale
     try:
         from nba_api.stats.endpoints import drafthistory

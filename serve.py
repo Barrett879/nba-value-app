@@ -126,6 +126,10 @@ def _background_warm() -> None:
             utils.season_to_espn_year(utils.SEASONS[0]), cache_v=7)),
         ("rookie scale", lambda: utils.fetch_rookie_scale_players(utils.SEASONS[0])),
         ("d-lebron", lambda: utils.fetch_dlebron(utils.SEASONS[0])),
+        # Only the player-hub panel reads this, and only when a visitor selects
+        # somebody, so no other warm step reached it and the first click after
+        # any restart paid a cold miss on the request path.
+        ("draft classes", lambda: utils.fetch_draft_classes()),
         ("player name index", utils.get_all_player_names),
         ("all-season frames", lambda: utils.build_all_seasons_combined(min_threshold=0)),
     ]:
