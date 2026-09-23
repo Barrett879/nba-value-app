@@ -3229,7 +3229,51 @@ def _atomic_to_parquet(df: pd.DataFrame, path: Path) -> None:
     os.replace(tmp, path)
 
 
-@st.cache_data(ttl=3600, show_spinner="Fetching league stats...")
+# ── never block a visitor request on the network ──────────────────────────────
+# A request must never wait on stats.nba.com. Its retry loops are 3 attempts at
+# a 15s timeout, which is exactly where the 45 seconds a visitor saw came from,
+# and they end by serving the same stale parquet the request already had in
+# hand. So the request path returns what is on disk and any refresh happens on a
+# daemon thread.
+#
+# File mtime cannot be trusted as the freshness signal here. Render's /data copy
+# is seeded once with shutil.copy2, which PRESERVES mtime, and the seed is
+# gap-fill only so it never overwrites. That copy is therefore permanently old
+# however recent the committed file is, which is why raising a TTL looked right
+# locally and changed nothing in production.
+# _refresh_in_background() below already does exactly this; these fetchers had
+# simply never been wired to it.
+
+
+def _league_stats_live(season: str, season_type: str, path):
+    """The blocking NBA-API fetch. Only called with no cache on disk, or from a
+    background thread."""
+    time.sleep(0.5)
+    result = None
+    delay = 1
+    for _ in range(3):
+        try:
+            result = leaguedashplayerstats.LeagueDashPlayerStats(
+                season=season,
+                per_mode_detailed="PerGame",
+                season_type_all_star=season_type,
+                timeout=15,
+            )
+            break
+        except Exception:
+            time.sleep(delay)
+            delay = min(delay * 2, 15)
+    if result is None:
+        return None
+    df = result.get_data_frames()[0]
+    try:
+        _atomic_to_parquet(df, path)
+    except Exception:
+        pass
+    return df
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
 def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.DataFrame:
     """Per-game player stats for one season.
 
@@ -3245,37 +3289,21 @@ def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.D
             stale = pd.read_parquet(path)
         except Exception:
             stale = None
-    if stale is not None and _dc_fresh(path, season=season):
+    # Anything readable on disk is served straight back. If it is past its TTL
+    # the refresh runs on a daemon thread, so the visitor who happens to arrive
+    # on the stale minute is not the one who pays for it. This path feeds the
+    # player hub's stat line through _hub_counting(), which is what made
+    # SELECTING a player slow while the site itself stayed fast.
+    if stale is not None and len(stale):
+        if not _dc_fresh(path, season=season):
+            _refresh_in_background(
+                str(path), lambda: _league_stats_live(season, season_type, path))
         return stale
-    # Live fetch — BOUNDED, and a readable-but-stale parquet always beats blocking:
-    # stats.nba.com errors/blocks under load (July-1 FA frenzy), and the old
-    # infinite-retry loop here hung every Contract Predictor prediction on the
-    # "Fetching league stats..." spinner. Stale-while-error instead.
-    time.sleep(0.5)
-    result = None
-    delay = 1
-    for _ in range(3 if stale is not None else 8):
-        try:
-            result = leaguedashplayerstats.LeagueDashPlayerStats(
-                season=season,
-                per_mode_detailed="PerGame",
-                season_type_all_star=season_type,
-                timeout=15,
-            )
-            break
-        except Exception:
-            time.sleep(delay)
-            delay = min(delay * 2, 15)
-    if result is None:
-        if stale is not None:
-            logger.warning("league stats refresh failed for %s — serving stale parquet", season)
-            return stale
+    # Nothing on disk at all. This one has to block; there is nothing to serve.
+    df = _league_stats_live(season, season_type, path)
+    if df is None:
+        logger.warning("league stats fetch failed for %s and no cache on disk", season)
         return pd.DataFrame()
-    df = result.get_data_frames()[0]
-    try:
-        _atomic_to_parquet(df, path)
-    except Exception:
-        pass
     return df
 
 
@@ -5537,6 +5565,9 @@ def _bootstrap_warm() -> None:
         fetch_next_year_contracts(season_to_espn_year(SEASONS[0]), cache_v=7)
         fetch_rookie_scale_players(SEASONS[0])
         fetch_dlebron(SEASONS[0])
+        # The hub's per-game stat line reads this through _hub_counting(), and
+        # nothing was priming it either.
+        fetch_league_stats(SEASONS[0])
         # Draft classes are only ever touched when a visitor SELECTS a player,
         # so unlike everything above this one had nothing priming it: the warm
         # session and the homepage both go their whole lives without needing it,
@@ -5602,6 +5633,23 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD,
     return combined
 
 
+def _draft_classes_live():
+    """Blocking NBA-API draft-history fetch, for the background refresh only."""
+    from nba_api.stats.endpoints import drafthistory
+    path = _dc_path("draft_history.parquet")
+    time.sleep(0.6)
+    df = drafthistory.DraftHistory(timeout=15).get_data_frames()[0]
+    keep = [c for c in ["PLAYER_NAME", "SEASON", "ROUND_NUMBER", "ROUND_PICK",
+                        "OVERALL_PICK"] if c in df.columns]
+    df = df[keep].copy().rename(columns={"PLAYER_NAME": "Player", "SEASON": "draft_year"})
+    df["draft_year"] = pd.to_numeric(df["draft_year"], errors="coerce")
+    df = df.dropna(subset=["draft_year"])
+    df["draft_year"] = df["draft_year"].astype(int)
+    df["player_norm"] = df["Player"].apply(normalize)
+    _atomic_to_parquet(df, path)
+    return df
+
+
 @st.cache_data(ttl=86400, show_spinner=False)
 def fetch_draft_classes() -> pd.DataFrame:
     """Draft history from the NBA: Player, draft_year (int), round, pick."""
@@ -5620,7 +5668,12 @@ def fetch_draft_classes() -> pd.DataFrame:
     # nba_api's retries it read as roughly 45 seconds of the page hanging. It
     # then fell back to this same stale parquet anyway, so the wait bought
     # nothing. Rebuilding the file and committing it is the real refresh path.
-    if stale is not None and len(stale) and _dc_fresh(path, ttl=30 * 86_400):
+    # Same rule as league stats: if we hold it, serve it and refresh behind the
+    # visitor. The TTL below is now only about WHEN to refresh, never about
+    # whether to make someone wait.
+    if stale is not None and len(stale):
+        if not _dc_fresh(path, ttl=30 * 86_400):
+            _refresh_in_background("draft_history", _draft_classes_live)
         return stale
     try:
         from nba_api.stats.endpoints import drafthistory

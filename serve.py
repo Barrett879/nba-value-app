@@ -129,6 +129,7 @@ def _background_warm() -> None:
         # Only the player-hub panel reads this, and only when a visitor selects
         # somebody, so no other warm step reached it and the first click after
         # any restart paid a cold miss on the request path.
+        ("league stats", lambda: utils.fetch_league_stats(utils.SEASONS[0])),
         ("draft classes", lambda: utils.fetch_draft_classes()),
         ("player name index", utils.get_all_player_names),
         ("all-season frames", lambda: utils.build_all_seasons_combined(min_threshold=0)),
