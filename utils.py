@@ -3353,7 +3353,8 @@ def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.D
 
 
 @st.cache_data(ttl=3600, show_spinner="Fetching advanced stats...")
-def fetch_advanced_stats(season: str, season_type: str = "Regular Season") -> pd.DataFrame:
+def fetch_advanced_stats(season: str, season_type: str = "Regular Season",
+                         _force: bool = False) -> pd.DataFrame:
     """Per-game ADVANCED player stats for one season (NBA Stats API
     MeasureType=Advanced). Returns USG_PCT, TS_PCT, PIE, AST_PCT, REB_PCT,
     OREB_PCT, DREB_PCT, OFF_RATING, DEF_RATING, NET_RATING, EFG_PCT, AST_TO,
@@ -3370,7 +3371,15 @@ def fetch_advanced_stats(season: str, season_type: str = "Regular Season") -> pd
             stale = pd.read_parquet(path)
         except Exception:
             stale = None
-    if stale is not None and _dc_fresh(path, season=season):
+    # Freshness gate FIRST and authoritative: an empty frame is a legitimate
+    # answer for a season the API has no advanced stats for, and gating on
+    # len() instead would send every one of those to the network. That is the
+    # exact mistake that made Compare Players crawl earlier today.
+    if not _force and stale is not None and _dc_fresh(path, season=season):
+        return stale
+    if not _force and stale is not None and len(stale):
+        _refresh_in_background(str(path), lambda: fetch_advanced_stats.__wrapped__(
+            season, season_type, True))
         return stale
     from nba_api.stats.endpoints import leaguedashplayerstats as _ldps
     time.sleep(0.5)
@@ -4798,12 +4807,24 @@ def get_player_id_map() -> dict:
 
 
 @st.cache_data(ttl=86400, show_spinner=False)
-def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
+def fetch_bref_positions(espn_year: int, cache_v: int = 3, _force: bool = False) -> dict:
     """Returns {normalized_name: "Guard"|"Forward"|"Center"} from ESPN salary pages."""
     path = _dc_path(f"bref_positions_{espn_year}_v{cache_v}.pkl")
-    if _dc_fresh(path, ttl=86400):
+    # Serve whatever is on disk and refresh behind the visitor. A request must
+    # never wait on a scrape: these loops retry with 10-15s timeouts, and on
+    # Render the /data copy of this file is seeded once with shutil.copy2
+    # (mtime preserved, gap-fill only never overwrites), so mtime says "stale"
+    # forever and every cold in-memory cache fell through to the network.
+    # _force is how the background thread gets past this gate; Streamlit
+    # ignores leading-underscore params when hashing the cache key.
+    if not _force and path.exists():
         try:
-            return _pkl_load(path)
+            cached = _pkl_load(path)
+            if cached:
+                if not _dc_fresh(path, ttl=86400):
+                    _refresh_in_background(str(path), lambda: fetch_bref_positions.__wrapped__(
+                        espn_year, cache_v, True))
+                return cached
         except Exception:
             pass
     _pos_map = {"G": "Guard", "F": "Forward", "C": "Center"}
@@ -4836,7 +4857,8 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3) -> dict:
     return result
 
 
-def fetch_player_positions_detailed(season: str, cache_v: int = 3) -> dict:
+def fetch_player_positions_detailed(season: str, cache_v: int = 3,
+                                    _force: bool = False) -> dict:
     """Returns {normalized_name: "PG"|"SG"|"SF"|"PF"|"C"} from BBRef
     per-game stats. Much better coverage than the ESPN-salary-page scrape
     in fetch_bref_positions, and gives 5-bucket positions instead of 3.
@@ -4851,10 +4873,18 @@ def fetch_player_positions_detailed(season: str, cache_v: int = 3) -> dict:
     """
     year = season_to_espn_year(season)
     path = _dc_path(f"positions_detailed_{year}_v{cache_v}.pkl")
-    if _dc_fresh(path, ttl=86400):
+    # Serve what is on disk, refresh behind the visitor. See fetch_bref_positions
+    # for why mtime cannot gate this in production.
+    if not _force and path.exists():
         try:
             cached = _pkl_load(path)
             if cached:  # don't trust empty cache files
+                if not _dc_fresh(path, ttl=86400):
+                    # no @st.cache_data on this one, so call it directly:
+                    # there is no __wrapped__ to reach past.
+                    _refresh_in_background(
+                        str(path),
+                        lambda: fetch_player_positions_detailed(season, cache_v, True))
                 return cached
         except Exception:
             pass
@@ -5838,17 +5868,27 @@ def build_draft_tier_lookup() -> dict:
 # with 5 player columns each ending in a position letter (e.g. "Nikola JokićC").
 
 @st.cache_data(ttl=86400, show_spinner=False)
-def fetch_all_nba_selections(cache_v: int = 1) -> dict:
+def fetch_all_nba_selections(cache_v: int = 1, _force: bool = False) -> dict:
     """Returns {normalized_name: [{"season": "YYYY-YY", "team": 1|2|3}, ...]}.
 
     Disk-cached for 1 day. On scrape failure returns whatever was cached
     previously, or an empty dict if no cache exists.
     """
     path = _dc_path(f"all_nba_selections_v{cache_v}.pkl")
-    if _dc_fresh(path, ttl=86400):
+    # Serve whatever is on disk and refresh behind the visitor. A request must
+    # never wait on a scrape: these loops retry with 10-15s timeouts, and on
+    # Render the /data copy of this file is seeded once with shutil.copy2
+    # (mtime preserved, gap-fill only never overwrites), so mtime says "stale"
+    # forever and every cold in-memory cache fell through to the network.
+    # _force is how the background thread gets past this gate; Streamlit
+    # ignores leading-underscore params when hashing the cache key.
+    if not _force and path.exists():
         try:
             cached = _pkl_load(path)
             if cached:
+                if not _dc_fresh(path, ttl=86400):
+                    _refresh_in_background(str(path), lambda: fetch_all_nba_selections.__wrapped__(
+                        cache_v, True))
                 return cached
         except Exception:
             pass
