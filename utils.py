@@ -964,8 +964,12 @@ THEME_BASE_CSS = """
        which is a 1.01 ratio on the dark page: "Type a name: LeBron, Jordan..."
        and "Select up to 10 players to compare" were both unreadable. */
     input::placeholder, textarea::placeholder { color: var(--fg-5) !important; }
-    div[data-baseweb="select"] [data-baseweb="placeholder"],
-    div[data-baseweb="select"] div[class*="placeholder"] { color: var(--fg-5) !important; }
+    /* BaseWeb gives the placeholder no attribute of its own and only unstable
+       emotion classes, so it is reached by depth: it is the innermost div of
+       the select's value area. It exists ONLY when nothing is chosen, because
+       chips replace it, so this cannot bleed into a selected chip's label. */
+    div[data-baseweb="select"] > div > div > div,
+    div[data-baseweb="select"] [data-baseweb="placeholder"] { color: var(--fg-5) !important; }
 
     /* Streamlit's own auto-generated sidebar nav, which this app replaces with
        its own top nav but never removes from the DOM. */
