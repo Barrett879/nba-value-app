@@ -834,7 +834,7 @@ THEME_BASE_CSS = """
         --hairline:    rgba(255, 255, 255, 0.08);   /* divider                  */
         --hairline-soft:rgba(255, 255, 255, 0.04);  /* faint track              */
         --nav-border:  #222;
-        --nav-divider: #333;
+        --nav-divider: #4a4e5c;
         /* tinted value-card surfaces */
         --tint-good:   #1a2e1a;
         --tint-bad:    #2e1a1a;
@@ -892,7 +892,15 @@ THEME_BASE_CSS = """
     [data-testid="stCheckbox"] label,
     [data-testid="stRadio"] label,
     .stCheckbox label, .stRadio label,
-    [data-baseweb="form-control-label"] {
+    [data-baseweb="form-control-label"],
+    /* The option text itself. Streamlit renders it as a <p> INSIDE the label,
+       and that p carries its own colour from the config.toml light base, so
+       colouring the label alone left "Era-Adjusted (default)" at #14142a on a
+       #0a0a14 background: present, correctly positioned, and invisible. */
+    [data-testid="stRadio"] label p,
+    [data-testid="stRadio"] label div,
+    [data-testid="stCheckbox"] label p,
+    .stRadio label p, .stCheckbox label p {
         color: var(--fg-2) !important;
     }
 
@@ -1371,7 +1379,11 @@ table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;
 .tdot{display:inline-block;width:8px;height:8px;border-radius:50%;
   margin-right:0.4rem;background:var(--fg-5);vertical-align:baseline;}
 /* Team abbreviation link to /team/<ABBR>: reads as plain text, reveals on hover. */
-.hv-tlink{color:inherit;text-decoration:none;}
+/* !important because Streamlit's own anchor rule outranks a bare class and
+   painted these #0054a3, a light-theme link blue, inside table cells that were
+   already the right colour. inherit is the intent: the team identity is carried
+   by the coloured dot beside the name, not by the text. */
+.hv-tlink{color:inherit !important;text-decoration:none;}
 .hv-tlink:hover{color:var(--sky);text-decoration:underline;}
 </style>
 """
