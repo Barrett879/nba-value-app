@@ -126,11 +126,45 @@ _share_path = "/Search?" + "&".join(f"player={quote(p)}" for p in selected)
 # available (Safari private mode, older browsers, or iframe permission
 # quirks): try navigator.clipboard first, then execCommand('copy') on a
 # temporary textarea. Either way the user sees the "✓ Copied" flash.
+# The widget is an IFRAME, and CSS custom properties do not cross that
+# boundary: every var(--fg-2) / var(--hairline) / var(--accent-red) below
+# resolved to nothing and fell back to black, which on the dark theme is
+# invisible against the page. "Copy link" only survived because its colour is
+# the literal white. So the tokens are defined HERE, inside the frame, in both
+# palettes, and the theme is sampled from the parent at runtime, the same shape
+# the redraft and rosters components already use.
+#
+# --label replaces the old color:var(--panel) on the heading. --panel is a
+# BACKGROUND token, so that label was unreadable in light mode too (near-white
+# on white); it simply took a dark background for anyone to notice.
 _share_widget = f"""
+<style>
+  :root {{
+    --label: #7b8497; --fg-2: #cdcdd5;
+    --hairline: #242c3a; --hairline-soft: #1a212d; --accent-red: #e74c3c;
+  }}
+  body.light {{
+    --label: #6b7280; --fg-2: #3a3d48;
+    --hairline: #e3e6eb; --hairline-soft: #f2f4f7; --accent-red: #e0483a;
+  }}
+  body {{ background: transparent; margin: 0; }}
+</style>
+<script>
+  (function () {{
+    // Sample the PARENT's text colour: light text means a dark page.
+    try {{
+      var m = getComputedStyle(window.parent.document.body).color.match(/[0-9]+/g);
+      if (m && m.length >= 3) {{
+        var lum = 0.299 * m[0] + 0.587 * m[1] + 0.114 * m[2];
+        document.body.classList.toggle("light", lum <= 128);
+      }}
+    }} catch (e) {{}}
+  }})();
+</script>
 <div style="display:flex; align-items:center; gap:0.6rem;
             margin: 0; flex-wrap:wrap; font-family: 'Source Sans Pro',
             -apple-system, BlinkMacSystemFont, sans-serif;">
-  <span style="font-size:0.78rem; color:var(--panel);
+  <span style="font-size:0.78rem; color:var(--label);
                letter-spacing:0.02em; text-transform:uppercase;
                font-weight:600;">Share this view</span>
   <code id="share-url" style="background:var(--hairline-soft);
