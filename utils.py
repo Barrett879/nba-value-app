@@ -3289,15 +3289,21 @@ def fetch_league_stats(season: str, season_type: str = "Regular Season") -> pd.D
             stale = pd.read_parquet(path)
         except Exception:
             stale = None
-    # Anything readable on disk is served straight back. If it is past its TTL
-    # the refresh runs on a daemon thread, so the visitor who happens to arrive
-    # on the stale minute is not the one who pays for it. This path feeds the
-    # player hub's stat line through _hub_counting(), which is what made
-    # SELECTING a player slow while the site itself stayed fast.
+    # ORDER MATTERS. The freshness gate comes first and is authoritative,
+    # because an EMPTY parquet is a legitimate answer: every season before
+    # 1996-97 has a league-stats file with zero rows, and _dc_fresh treats
+    # historical seasons as immutable so those return instantly. Gating on
+    # len(stale) instead sent all of them to the network, and since
+    # fetch_player_full_career calls this once PER SEASON, loading Michael
+    # Jordan's career meant a dozen blocking fetches back to back.
+    if stale is not None and _dc_fresh(path, season=season):
+        return stale
+    # Stale but readable and non-empty: serve it now and refresh behind the
+    # visitor. This is the hub's stat line path (_hub_counting), the one that
+    # made SELECTING a player hang while the site itself stayed fast.
     if stale is not None and len(stale):
-        if not _dc_fresh(path, season=season):
-            _refresh_in_background(
-                str(path), lambda: _league_stats_live(season, season_type, path))
+        _refresh_in_background(
+            str(path), lambda: _league_stats_live(season, season_type, path))
         return stale
     # Nothing on disk at all. This one has to block; there is nothing to serve.
     df = _league_stats_live(season, season_type, path)
