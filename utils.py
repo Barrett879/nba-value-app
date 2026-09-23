@@ -946,8 +946,31 @@ THEME_BASE_CSS = """
     [data-testid="stTextInput"] input,
     [data-testid="stNumberInput"] input,
     div[data-baseweb="input"] input { color: var(--fg-1) !important; }
+    /* Slider labels. The two testids below are the OLD names; Streamlit now
+       emits stSliderTickBar with plain spans inside, so this rule had silently
+       stopped matching and the min/max labels sat at the light theme's
+       rgba(20,20,42,.6), a 1.09 contrast ratio on the dark page. Both spellings
+       are kept so a rename in either direction cannot break it again. */
     [data-testid="stSlider"] [data-testid="stTickBarMin"],
-    [data-testid="stSlider"] [data-testid="stTickBarMax"] { color: var(--fg-4) !important; }
+    [data-testid="stSlider"] [data-testid="stTickBarMax"],
+    [data-testid="stSliderTickBar"],
+    [data-testid="stSliderTickBar"] span { color: var(--fg-4) !important; }
+    /* The value bubble above the thumb was accent red painted ON the accent-red
+       thumb: a contrast ratio of exactly 1.00, the number invisible against its
+       own control. */
+    [data-testid="stSliderThumbValue"] { color: var(--fg-1) !important; }
+
+    /* Placeholders. config.toml's light base leaves these at rgba(20,20,42,.6),
+       which is a 1.01 ratio on the dark page: "Type a name: LeBron, Jordan..."
+       and "Select up to 10 players to compare" were both unreadable. */
+    input::placeholder, textarea::placeholder { color: var(--fg-5) !important; }
+    div[data-baseweb="select"] [data-baseweb="placeholder"],
+    div[data-baseweb="select"] div[class*="placeholder"] { color: var(--fg-5) !important; }
+
+    /* Streamlit's own auto-generated sidebar nav, which this app replaces with
+       its own top nav but never removes from the DOM. */
+    [data-testid="stSidebarNavLink"] span,
+    [data-testid="stSidebarCollapseButton"] span { color: var(--fg-3) !important; }
     [data-testid="stExpander"] details {
         background: var(--panel) !important;
         border-color: var(--panel-line) !important;

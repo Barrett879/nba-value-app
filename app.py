@@ -941,7 +941,7 @@ st.markdown("""
     color:var(--accent-teal);border-color:var(--accent-teal);
     background:var(--panel-hover);}
 .st-key-board_view [data-testid="stButtonGroup"] button p{font-size:.78rem !important;}
-.hv-plink{color:var(--sky);font-weight:700;text-decoration:none}
+.hv-plink{color:var(--sky) !important;font-weight:700;text-decoration:none}
 .hv-plink:hover{text-decoration:underline}
 /* The hub_slot container exists purely for reconciliation (stable delta paths;
    see its declaration). Flatten it out of layout with display:contents so the
@@ -1228,7 +1228,7 @@ if _sel:
       border: 1px solid var(--panel-line); border-radius: 9px; padding: 0.4rem 0.85rem;
       font-size: 0.8rem; font-weight: 700; color: var(--sky); text-decoration: none; }}
     .hub-go a:hover {{ border-color: var(--sky); }}
-    .hv-plink {{ color: var(--sky); font-weight: 700; text-decoration: none; }}
+    .hv-plink {{ color: var(--sky) !important; font-weight: 700; text-decoration: none; }}
     .hv-plink:hover {{ text-decoration: underline; }}
     </style>
     <div class="hub-banner" style="{_team_style}" data-team="{html.escape(_team, quote=True)}">
