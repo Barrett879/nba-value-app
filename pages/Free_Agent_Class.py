@@ -126,10 +126,14 @@ except Exception:
 
 def _offseason_as_of() -> str:
     """Freshness stamp for the hand-maintained offseason files (real signings +
-    option decisions): the newest "# Verified <date>" leading comment, falling
-    back to file mtime. Same idea as team_suitors._read_as_of."""
+    option decisions + the league-wide roster): the newest "# Verified <date>"
+    leading comment, falling back to file mtime. Same idea as
+    team_suitors._read_as_of, and the same whole-block scan as app.py's copy:
+    master_roster's per-round "Re-verified" lines are not in date order, so
+    stopping at the first match would publish the oldest round."""
     best = None
-    for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv"):
+    for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv",
+                "master_roster.csv"):
         _p = _Path(__file__).parent.parent / "data" / _fn
         d = None
         try:
@@ -141,10 +145,11 @@ def _offseason_as_of() -> str:
                         _m = re.search(r"(\d{4}-\d{2}-\d{2})", _line)
                         if _m:
                             try:
-                                d = datetime.date.fromisoformat(_m.group(1))
+                                _d1 = datetime.date.fromisoformat(_m.group(1))
                             except ValueError:
-                                d = None
-                            break
+                                continue
+                            if d is None or _d1 > d:
+                                d = _d1
         except OSError:
             continue
         if d is None:

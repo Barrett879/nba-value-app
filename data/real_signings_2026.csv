@@ -16,7 +16,7 @@
 #   note        = free text
 #
 # Add a row each time a real signing is reported. Lines starting with # are ignored.
-# Verified 2026-09-04 (deals through September 4, 2026; adversarial web-search rounds:
+# Verified 2026-10-06 (deals through October 6, 2026; adversarial web-search rounds:
 # every row below confirmed by 2+ independent sources - HoopsRumors/ESPN/RealGM/
 # Spotrac/NBA.com transaction log/team releases).
 player,team,years,total_M,yr1_M,type,signed_date,source,note

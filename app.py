@@ -712,14 +712,38 @@ def _hub_salary_supplement() -> dict:
     return out
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_waived() -> set:
+    """Players carrying a 2026-27 dead-money charge, i.e. waived
+    (data/dead_money_2026_27.csv). Used to void a stale option figure: a
+    player who exercised an option in June and was waived in September is not
+    paid that option, so it must not stand in as his salary."""
+    out = set()
+    try:
+        with open(Path(__file__).parent / "data" / "dead_money_2026_27.csv") as fh:
+            for r in _csv.DictReader(l for l in fh if l.strip() and not l.lstrip().startswith("#")):
+                if r.get("player"):
+                    out.add(normalize(r["player"]))
+    except Exception:
+        pass
+    return out
+
+
 def _offseason_as_of() -> str:
     """Freshness stamp for the hand-maintained offseason files (real signings +
-    option decisions + salary supplement): the newest "# Verified <date>" leading
-    comment, falling back to file mtime. Same approach as Free_Agent_Class's
-    _offseason_as_of / team_suitors._read_as_of."""
+    option decisions + salary supplement + the league-wide roster): the newest
+    "# Verified <date>" leading comment, falling back to file mtime. Same
+    approach as Free_Agent_Class's _offseason_as_of / team_suitors._read_as_of.
+
+    Every dated line in the block is read rather than only the first, and
+    master_roster is included: it gains one "Re-verified" line per round and
+    they are not in date order, so stopping at the first match would publish
+    the OLDEST round as the stamp. Reading the roster too means a round that
+    updates it cannot leave the public stamp behind, which is how this went
+    two rounds stale."""
     best = None
     for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv",
-                "salary_supplement_2026_27.csv"):
+                "salary_supplement_2026_27.csv", "master_roster.csv"):
         _p = Path(__file__).parent / "data" / _fn
         d = None
         try:
@@ -731,10 +755,11 @@ def _offseason_as_of() -> str:
                         _m = re.search(r"(\d{4}-\d{2}-\d{2})", _line)
                         if _m:
                             try:
-                                d = datetime.date.fromisoformat(_m.group(1))
+                                _d1 = datetime.date.fromisoformat(_m.group(1))
                             except ValueError:
-                                d = None
-                            break
+                                continue
+                            if d is None or _d1 > d:
+                                d = _d1
         except OSError:
             continue
         if d is None:
@@ -802,8 +827,14 @@ for _i, _r in _pool.iterrows():
     if _next_M is None:
         # Exercised options carry their figure in the decisions file; last
         # resort is the hand-verified supplement for feed-omitted players.
+        # An option figure records a JUNE decision, so a later waiver voids it:
+        # Gary Harris and D'Angelo Russell both opted in and were cut in
+        # September, and the board was showing them the option salary they will
+        # never be paid. The supplement is not gated the same way because it is
+        # hand-verified current and a waived player can be on a new deal
+        # elsewhere (Nembhard: Charlotte dead money, Denver two-way).
         _d, _fig = _hub_decisions().get(_n, (None, None))
-        if _d in ("po_in", "to_in") and _fig:
+        if _d in ("po_in", "to_in") and _fig and _n not in _hub_waived():
             _next_M = float(_fig)
         else:
             _next_M = _hub_salary_supplement().get(_n)

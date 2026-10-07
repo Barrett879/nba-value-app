@@ -1,4 +1,9 @@
-# Verified 2026-09-04 (option outcomes re-checked in the August verification rounds).
+# Verified 2026-10-06 (option outcomes re-checked each verification round).
+# Every po_in/to_in row cross-checked against master_roster on 2026-10-07: these
+# figures are JUNE decisions and a later waiver voids them, so Gary Harris and
+# D'Angelo Russell (both cut in September, both now dead money) are suppressed as
+# a salary source by _hub_waived(). The rows stay: the decision itself is history
+# and the FA list still labels it. Do not treat a figure here as current pay.
 # HoopsValue - actual 2026 player/team OPTION decisions for players still showing in
 # the Free Agent list. Most resolutions are DERIVED automatically: a player who shows a
 # "Player Option" status and also signed a new tracked deal necessarily OPTED OUT, so the
