@@ -519,7 +519,7 @@ from utils import (
     CACHE_DIR, all_seasons_path, html_table, team_cell, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
     fetch_league_stats, SALARY_CAP_M, _pkl_load,
-    FACE_GUARD_SCRIPT,
+    FACE_GUARD_SCRIPT, NameIndex,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
 )
@@ -858,6 +858,105 @@ _by_norm = {r["norm"]: dict(r, rank=i + 1) for i, r in enumerate(_hub_rows)}
 
 _FA_SET = {"UFA", "RFA", "Player Option", "Team Option"}
 
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_roster_kinds() -> dict:
+    """{spelling: kind} from data/master_roster.csv, kind being standard,
+    two_way or free_agent.
+
+    `kind` is a ROSTER fact and that is exactly why it is read here. standard or
+    two_way means the player occupies a 2026-27 roster spot and cannot be
+    signed. free_agent means he is on the market, and the file's team column is
+    then the rights holder rather than an employer.
+
+    It is deliberately NOT a payment fact. A waived player keeps his guaranteed
+    money as his old team's dead money and still reads free_agent here, which is
+    how Gary Harris and D'Angelo Russell are both PAID an option they exercised
+    in June and free to sign anywhere. A guard built on `kind` therefore cannot
+    blank out a correct salary, which is what the reverted dead-money gate did.
+
+    It is also the only file in the repo that covers two-way deals at all: the
+    scraped salary feed omits them, so classify_fa_status falls through to a bare
+    "UFA" and players like Javon Small and Cormac Ryan reached the board as free
+    agents while under contract.
+
+    Empty dict on any failure, which collapses the roster clause below so the
+    board degrades to its previous behaviour rather than to a blank list."""
+    out = {}
+    try:
+        with open(Path(__file__).parent / "data" / "master_roster.csv") as fh:
+            for r in _csv.DictReader(l for l in fh if l.strip()
+                                     and not l.lstrip().startswith("#")):
+                if r.get("player"):
+                    out[r["player"]] = (r.get("kind") or "standard").strip()
+    except Exception:
+        logger.warning("master_roster.csv unreadable: FA availability falls back "
+                       "to the signings and option-decision guards only")
+    return out
+
+
+# ── Off the 2026 market: three sources, each answering only what it can ───────
+# Bound at MODULE level because _board() is a module-level fragment that reads
+# these as globals.
+#
+# 1. A tracked signing beats a stale feed status (the FA Watch card headlined
+#    James Harden hours after his 3yr/$97M).
+_signed_norms = {normalize(k) for k in _hub_signings()}
+# 2. A RESOLVED option is off the market too, and the signings guard cannot see
+#    it, because an option exercise is deliberately NOT a tracked signing: the
+#    salary was set years ago, so scoring the model against it is not a fair
+#    test. Without this the card called Kevin Porter Jr. the best available free
+#    agent while he was under contract to Milwaukee on the $5.39M option he had
+#    exercised. po_in/to_in only: opting OUT, or having an option declined,
+#    genuinely does put a player on the market.
+_resolved_norms = {_k for _k, (_dv, _fv) in _hub_decisions().items()
+                   if _dv in ("po_in", "to_in")}
+# 3. Roster truth, the clause the tab was missing and the only one that can
+#    retire an option at all. The scraped feed records that an option EXISTS,
+#    never whether it was exercised, so it can never clear one. This is also the
+#    only source that reaches two-way deals and the exercises nobody wrote into
+#    option_decisions_2026.csv (DeAndre Ayton, Pat Connaughton, Jamaree Bouyea,
+#    Daeqwon Plowden, Olivier-Maxence Prosper).
+#    Joined through NameIndex, never a bare normalize() key: the roster spells
+#    him "L.J. Cryer", "P.J. Hall", "K.J. Simpson" where the pool says "LJ
+#    Cryer", "PJ Hall", "KJ Simpson", and an exact key reads all three as
+#    unmentioned, which here would mean available.
+_roster_idx = NameIndex(_hub_roster_kinds())
+_roster_kind_by_norm = {_r["norm"]: (_roster_idx.get(_r["Player"]) or "")
+                        for _r in _hub_rows}
+_contracted_norms = {_n for _n, _k in _roster_kind_by_norm.items()
+                     if _k in ("standard", "two_way")}
+# A master_roster free_agent row OVERRIDES an exercised option, and this
+# ordering is load-bearing. Gary Harris and D'Angelo Russell both opted in in
+# June and were waived in September: they are paid that money AND free to sign,
+# so they belong on this board. Hiding them is the reverted dead-money gate
+# pointed the other way.
+_market_norms = {_n for _n, _k in _roster_kind_by_norm.items() if _k == "free_agent"}
+# An EMPTY kind means master_roster says nothing, never "under contract".
+# Kennedy Chandler and Nicolas Batum have no row in any contract file here, so
+# absence has to mean show him.
+_off_market_norms = _signed_norms | _contracted_norms | (_resolved_norms - _market_norms)
+
+
+def _fa_rows(df: pd.DataFrame) -> pd.DataFrame:
+    """The 2026 free-agent slice of `df`: a free-agent contract situation per
+    the feed, minus everyone a roster or signing record places off the market.
+
+    ONE expression, shared by the FA Watch card, the board's "Free agents" pill
+    and the hub verdict line. Those were three hand-copied masks, which is how
+    the Kevin Porter Jr. fix landed on the card alone and left the tab wrong.
+
+    The feed-status conjunct stays on purpose. A handful of players are
+    kind=free_agent in master_roster but read "—" here because the feed still
+    types their voided contract as guaranteed. Admitting them would publish the
+    feed's stale figure in the Actual 2026-27 Salary column; John Konchar's
+    reads $6.17M against the $2.06M-over-three-seasons stretch master_roster
+    records. A missing row beats a wrong number, and fixing those needs the Next
+    column fixed first."""
+    if df.empty or "Status" not in df.columns:
+        return df
+    return df[df["Status"].isin(_FA_SET) & ~df["norm"].isin(_off_market_norms)]
+
 # ── Front Page strip: four clickable feature cards under the search ───────────
 if not _hub_df.empty:
     def _fp_card(kicker: str, name: str, team: str, value_html: str, sub: str) -> str:
@@ -875,23 +974,11 @@ if not _hub_df.empty:
     _r0 = _hub_df.iloc[0]
     _stl_df = _hub_df[_hub_df["Salary"] >= 2.0]       # keep rookie-min noise off the card
     _ovp = _hub_df.loc[_hub_df["DeltaMkt"].idxmax()]
-    # Status comes from the scraped feeds, which lag agreed deals by days; the
-    # hand-verified signings tracker knows the moment a deal is recorded. A
-    # player with a tracked signing is off the market whatever the feed says
-    # (the FA Watch card headlined James Harden hours after his 3yr/$97M).
-    _signed_norms = {normalize(k) for k in _hub_signings()}
-    # A RESOLVED option is off the market too, and the signings guard above does
-    # not catch it because an option exercise is deliberately not a tracked
-    # signing (the salary was set years ago, so it is not a fair model test).
-    # Without this the card called Kevin Porter Jr. the best available free
-    # agent while he was under contract to Milwaukee on the $5.39M option he
-    # had exercised. Only po_in/to_in are excluded: a player who opted OUT or
-    # had an option declined genuinely IS on the market.
-    _resolved_norms = {_k for _k, (_dv, _fv) in _hub_decisions().items()
-                       if _dv in ("po_in", "to_in")}
-    _fa_df = _hub_df[_hub_df["Status"].isin(_FA_SET)
-                     & ~_hub_df["norm"].isin(_signed_norms)
-                     & ~_hub_df["norm"].isin(_resolved_norms)]
+    # Shared with the board's "Free agents" pill and the hub verdict line, so a
+    # fix to one can no longer miss the others. This also stops hiding Gary
+    # Harris and D'Angelo Russell, whom the po_in/to_in subtraction alone
+    # wrongly suppressed: both are paid in 2026-27 and both are available.
+    _fa_df = _fa_rows(_hub_df)
 
     _rail("", "Today around the league")
 
@@ -1000,10 +1087,7 @@ def _board():
     elif _pick == "Overpays":
         _df = _hub_df[_hub_df["DeltaMkt"] >= 5].sort_values("DeltaMkt", ascending=False)
     elif _pick == "Free agents":
-        # same signings cross-check as the FA Watch card: a tracked signing
-        # beats a stale feed status
-        _df = _hub_df[_hub_df["Status"].isin(_FA_SET)
-                      & ~_hub_df["norm"].isin(_signed_norms)]
+        _df = _fa_rows(_hub_df)
     elif _pick == "Max tier":
         _df = _hub_df[_hub_df["norm"].isin(_max_norms)]
     else:
@@ -1125,7 +1209,12 @@ if _sel:
             _vbits.append(f"${_vdm:.1f}M over market value")
         else:
             _vbits.append("paid about right")
-        if str(_sel["Status"]) in _FA_SET:
+        # Same off-market test as the card and the pill. _FA_SET membership
+        # alone told Kevin Porter Jr.'s own panel "hits the market in 2026"
+        # while the chip beside it read the option he had already exercised
+        # with Milwaukee: one line contradicting itself.
+        if (str(_sel["Status"]) in _FA_SET
+                and _sel["norm"] not in _off_market_norms):
             _vbits.append("hits the market in 2026")
         _verdict = " · ".join(_vbits)
         _STATUS_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
@@ -1638,7 +1727,7 @@ _components.html("""
         "All": "Every player in the 2025-26 ranking pool.",
         "Bargains": "Underpaid by $5M or more: 2025-26 salary at least $5M below 2025-26 value.",
         "Overpays": "Overpaid by $5M or more: 2025-26 salary at least $5M above 2025-26 value.",
-        "Free agents": "Hits the 2026 market: UFA, RFA, or an open player/team option.",
+        "Free agents": "UFA, RFA or an open player/team option, with anyone the verified roster already books on a 2026-27 team removed.",
         "Max tier": "Players whose 2026-27 predicted contract sits at their CBA maximum."
     };
     function tag() {
