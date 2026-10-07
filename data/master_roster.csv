@@ -6,6 +6,13 @@
 # Re-verified 2026-09-04: MIN/UTA trade, three waive-and-stretches before the
 # 8/29 deadline (Whitmore, Konchar, Valanciunas), Miami adds Richards and
 # Johnson.
+# Re-verified 2026-10-06: the camp-cut window. Duren re-signed 5yr/$200M at the
+# qualifying-offer deadline; six waivers left real dead money (Russell MEM,
+# Dillingham CHA, Nembhard CHA, Harris DET, Hawkins MEM, Broome LAC); the 9/22
+# ATL/CHA trade has already come apart, with Hield now in CHI and Nembhard on a
+# DEN two-way. EXTENSIONS (George, Ausar Thompson, Curry, Kawhi, Shead, Larsson)
+# all START 2027-28 and change NOTHING here: their 2026-27 figures were already
+# on the books and booking the extension would double-count them.
 # Re-verified 2026-09-17: BOTH of the 9/4 watch items closed, and the first one
 # was a mistake of ours, not a pending event. Harden had NOT signed on 8/20 --
 # that was the agreement, and we booked it as a signing; he actually signed
@@ -26,14 +33,14 @@ asof,team,player,salary_M,kind,pos,notes
 ,ATL,Nickeil Alexander-Walker,14.4,standard,SG/PG,2025 sign-and-trade; 2028-29 player option
 ,ATL,Jock Landale,14.1,standard,C,signed 1yr/$14.1M as FA 7/10/26
 ,ATL,Corey Kispert,13.98,standard,SF/SG,acquired by trade 1/9/26 (same deal as McCollum); TO 2028-29
-,ATL,Buddy Hield,9.66,standard,SG/SF,acquired by trade 2/5/26; 2027-28 PO
+,CHI,Buddy Hield,9.66,standard,SG/SF,"ATL to CHA 9/22/26 in the Finney-Smith trade, then CHA to CHI 9/27 for Rob Dillingham. 2027-28 player option"
 ,ATL,Aaron Wiggins,9.03,standard,SF/SG,acquired by trade 7/6/26
 ,ATL,Kingston Flemings,7.35,standard,PG,"2026 1st round, No. 8 overall"
 ,ATL,Devin Carter,0,free_agent,PG/SG,"WAIVED by ATL 9/11/26 (acquired by trade 6/30/26); his $5,158,080 was fully guaranteed so ATL carries all of it as dead money; signed a BOS Exhibit 10 camp deal 9/14 which is a $0 cap hit"
 ,ATL,Zuby Ejiofor,3.45,standard,C,"2026 1st round, No. 23 overall"
 ,ATL,Asa Newell,3.4,standard,PF/C,2025 No. 23 pick; 2027-28 team option
 ,ATL,Mouhamed Gueye,2.41,standard,PF/C,non-guaranteed until 1/10/27
-,ATL,Ryan Nembhard,2.15,standard,PG,acquired by trade 7/19/26 (same deal as Dort)
+,DEN,Ryan Nembhard,0,two_way,PG,"ATL to CHA 9/22/26 in the Finney-Smith trade, waived by CHA, signed a DEN two-way 9/30. Two-ways are outside the team cap, so $0 here; CHA keeps his $2,150,917 as dead money"
 ,ATL,Henri Veesaar,1.36,standard,C,"2026 2nd round No.52 (drafted by LAC, rights traded to ATL); 4yr/$9,264,648 signed 7/1/2026 via 2nd-round exception; 2026-27 base $1,357,763 (prior $0 cap-hit claim was wrong); first 2 yrs fully gtd, 2029-30 team option"
 ,ATL,Jalen Wilson,0,two_way,SF/PF,two-way signed 2026; 50% gtd first day of regular season
 ,ATL,Keshon Gilbert,0,two_way,SG,"two-way, 2nd year; two-way QO due 6/29/27"
@@ -78,7 +85,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CHA,Grayson Allen,18.13,standard,SG/SF,acquired by trade 7/13/26; 2027-28 PO $19.4M
 ,CHA,Brandon Miller,15.1,standard,SF/SG,rookie scale yr 4; RFA 2027 (QO $21.2M)
 ,CHA,Grant Williams,14.27,standard,PF/SF,expiring; traded to CHA 2/8/24
-,CHA,Dorian Finney-Smith,14.2,standard,SF/PF,"Acquired from HOU 7/6/2026 with three 2nd-round picks for cash (salary dump); unlikely to ever play for CHA per league sources, trade or waive candidate in roster crunch"
+,ATL,Dorian Finney-Smith,14.2,standard,SF/PF,"traded CHA to ATL 9/22/26 for Buddy Hield, Ryan Nembhard and cash; HOU had dumped him on CHA 7/6 with three 2nds"
 ,CHA,Royce O'Neale,10.88,standard,SF/PF,acquired by trade 7/13/26 (same deal as Allen)
 ,CHA,Kon Knueppel,10.52,standard,SG/SF,"2025 No. 4 pick, yr 2; TO 2027-28"
 ,CHA,Tidjane Salaun,8.24,standard,PF/C,"2024 No. 6 pick, yr 3; TO 2027-28"
@@ -102,7 +109,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CHI,Jalen Smith,9.43,standard,C/PF,Final year of 2024 deal; extension eligible
 ,CHI,Zach Collins,8.5,standard,C,On 2yr/$17M veteran extension signed with CHI (through 2027-28)
 ,CHI,Tre Jones,8,standard,PG,Year 2 of 3yr deal re-signed with CHI in 2025
-,CHI,Rob Dillingham,6.89,standard,PG/SG,Acquired 2/5/26 from MIN with Leonard Miller + 4 2nds for Dosunmu and Julian Phillips; rookie scale
+,CHA,Rob Dillingham,0,free_agent,PG/SG,"CHI to CHA 9/27/26 for Buddy Hield, WAIVED 9/28. All $6,889,320 of his rookie-scale year is dead money on Charlotte"
 ,CHI,Matas Buzelis,5.72,standard,SF/PF,Rookie scale yr 3
 ,CHI,Noa Essengue,5.7,standard,PF/C,"2025 No. 12 pick, rookie scale yr 2"
 ,CHI,Dailyn Swain,4.97,standard,SF,No. 15 pick 2026 draft (Texas); signed rookie scale
@@ -165,14 +172,14 @@ asof,team,player,salary_M,kind,pos,notes
 ,DET,John Collins,17,standard,PF/C,"Acquired 7/8/26 from LAC in 6-team trade (DET sent Stewart to MEM, Sasser to DAL, LeVert to MIL)"
 ,DET,Duncan Robinson,15.99,standard,SG/SF,2025 sign-and-trade from MIA; only $2M of 2026-27 guaranteed
 ,DET,Isaiah Joe,11.32,standard,SG/SF,Extension eligible
-,DET,Ausar Thompson,11.12,standard,SF/PF,"Final rookie-scale year; RFA 2027, extension eligible"
+,DET,Ausar Thompson,11.12,standard,SF/PF,"final rookie-scale year. Signed a 5yr $155M extension 9/22/26 STARTING 2027-28 (8% annual rises, $26.7M first year), so this figure is unchanged by it"
 ,DET,Kevin Huerter,9.51,standard,SF/SG,Signed 3yr/$27M on 7/9/26 (2028-29 team option); was on CHI in 2025-26
 ,DET,Ron Holland II,9.07,standard,PF/SF,Rookie scale yr 3
 ,DET,Paul Reed,5.6,standard,C,2026-27 non-guaranteed
 ,DET,Ebuka Okorie,4.48,standard,PG,No. 17 pick 2026 draft (Stanford; DET traded up from 21 with MEM); signed rookie scale
 ,DET,Daniss Jenkins,4,standard,PG/SG,Guaranteed $4M for 2026-27
 ,DET,Javonte Green,3.94,standard,SF/SG,"Veteran depth, expiring"
-,DET,Gary Harris,3.82,standard,SG/SF,Acquired 7/8/26 from MIL in 6-team trade; expiring
+,DET,Gary Harris,0,free_agent,SG/SF,"WAIVED by DET 9/27/26; his $3,815,861 expiring is dead money"
 ,DET,Taurean Prince,3.82,standard,PF/SF,Acquired 7/8/26 from MIL in 6-team trade; expiring
 ,DET,Tolu Smith III,2.41,standard,C,Non-guaranteed for 2026-27 per Spotrac
 ,DET,Chaz Lanier,2.15,standard,SG/PG,"2025 2nd-rounder, yr 2"
@@ -275,7 +282,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Taylor Hendricks,7.81,standard,C/PF,Acquired from UTA Feb 2026 in Jaren Jackson Jr. trade; 2027 RFA
 ,MEM,Zach Edey,6.33,standard,C,2027-28 club option due 10/31/26
 ,MEM,Cedric Coward,6,standard,SG/SF,"2025 first-rounder, yr 2; 2027-28 club option due 10/31/26"
-,MEM,D'Angelo Russell,5.97,standard,PG/SG,"Acquired in July 8 six-team trade (expiring, final year ~$5.9-6.0M); MEM and Russell working toward trade or buyout per RealGM/Yahoo (7/23), still on roster as of 7/27"
+,MEM,D'Angelo Russell,0,free_agent,PG/SG,"WAIVED by MEM 9/25/26. $5,969,250 dead, the player-option year he exercised with WAS in June"
 ,MEM,Kris Murray,5.32,standard,SF/PF,"Acquired from POR June 30, 2026 in Ja Morant trade"
 ,MEM,Walter Clayton Jr.,4.19,standard,PG/SG,Acquired from UTA Feb 2026 in JJJ trade; 2027-28 club option due 10/31/26
 ,NOP,Taj Gibson,0,free_agent,C/PF,"traded MEM to NOP 9/8/26 and WAIVED 9/9; of his $3,815,861 only $148,828 was guaranteed, so NOP carries $148,828 of dead money and the other $3.67M is charged to nobody"
@@ -351,7 +358,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Trey Murphy III,27,standard,SF/SG,Rookie extension through 2029-30
 ,NOP,Herb Jones,14.9,standard,SG/SF,2027-28 player option $24.2M
 ,NOP,Jeremiah Fears,7.9,standard,PG/SG,"2025 lottery pick, yr 2; 2027-28 club option due 10/31/26"
-,MEM,Jordan Hawkins,7.02,standard,SG/PG,"traded NOP to MEM 9/8/26 with Peavy for AJ Johnson and Taj Gibson; final rookie-scale year, 2027 RFA (QO $10.5M); his outgoing salary created a $7.02M NOP trade exception"
+,CHI,Jordan Hawkins,0,two_way,SG/PG,"NOP to MEM 9/8/26, WAIVED by MEM 10/2, signed a CHI two-way 10/6. He gave back $678,882 in the buyout, so MEM carries $6,343,013 not the full $7,021,895, and he makes that exact sum back on the two-way"
 ,NOP,Saddiq Bey,6.56,standard,SF/PF,Cap hit incl. likely incentives (base $6.44M); final year
 ,NOP,Derik Queen,5.42,standard,C,"2025 first-rounder, yr 2; 2027-28 club option due 10/31/26"
 ,NOP,DeAndre Jordan,3.88,standard,C,2yr vet deal; 2027-28 $4.07M guaranteed
@@ -423,7 +430,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,PHI,Jabari Walker,2.58,standard,PF/SF,Signed 2/19/2026; non-guaranteed until 1/10/2027
 ,PHI,Justin Edwards,2.41,standard,SF/PF,2027-28 club option
 ,PHI,Adem Bona,2.3,standard,C,2027-28 club option
-,LAC,Johni Broome,2.15,standard,C,"traded to LAC 7/28/26 with a 2027 2nd for cash (PHI ducking both aprons after LeBron/KCP); 2025 2nd-round pick No.35; partial guarantees"
+,MIL,Johni Broome,0,free_agent,C,"WAIVED by LAC 9/24/26, leaving $2,150,917 dead there; signed a non-guaranteed MIL camp deal 10/6 which is a $0 cap hit until he makes the roster"
 ,PHI,Duke Miles,1.36,standard,SG,"Exhibit 10 camp deal, agreed 6/27/2026 and officially signed early July (undrafted 2026, Vanderbilt); 1yr rookie-minimum $1,357,763 base, fully non-guaranteed ($0 gtd, no cap charge if waived pre-season)"
 ,PHI,Caleb Love,0,two_way,PG/SG,Two-way; undrafted 2025
 ,PHI,Rayan Rupert,0,two_way,SG,Two-way; 2023 2nd-round pick No.43
@@ -507,7 +514,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,TOR,Ja'Kobe Walter,3.81,standard,SG/PG,2027-28 club option decision due 10/31/2026
 ,TOR,Kyle Anderson,2.45,standard,SF/PF,Signed vet-min FA 7/6/2026; discounted cap hit (base $3.88M)
 ,TOR,Trayce Jackson-Davis,2.41,standard,C/PF,Traded from GSW 2/5/2026; non-guaranteed until 1/10/2027
-,TOR,Jamal Shead,2.3,standard,PG/SG,RFA 2027
+,TOR,Jamal Shead,2.3,standard,PG/SG,"signed an extension 10/1/26 that starts 2027-28; this year is unchanged"
 ,TOR,Jamison Battle,2.3,standard,SF/PF,Non-guaranteed; RFA 2027
 ,TOR,Alijah Martin,2.19,standard,SG,2025 2nd-round pick No.39; re-signed 7/3/2026; 2027-28 player option
 ,TOR,Nate Bittle,1.36,standard,C,"Exhibit 10 camp deal signed 7/10/2026 (undrafted 2026, Oregon); 1yr rookie-minimum $1,357,763 base, fully non-guaranteed ($0 gtd); reported candidate for TOR's open two-way slot"
@@ -518,7 +525,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,UTA,Darryn Peterson,13.2,standard,SG/PG,"2026 No. 2 overall pick (Kansas), rookie scale"
 ,UTA,Jusuf Nurkic,11.46,standard,C,Re-signed 2yr/$22M July 2026
 ,UTA,Ace Bailey,9.52,standard,SF/PF,"2025 No. 5 pick, year 2 rookie scale"
-,UTA,Keyonte George,6.56,standard,PG/SG,Final rookie-scale year (RFA 2027)
+,UTA,Keyonte George,6.56,standard,PG/SG,"final rookie-scale year. Signed a 5yr $157.5M extension 9/18/26 that STARTS 2027-28, so this figure is unchanged by it"
 ,MIN,Cody Williams,6.02,standard,SF/SG,Year 3 rookie scale (2024 No. 10); TO decision 2027
 ,UTA,Jaxson Hayes,6,standard,C,Signed 2yr/$12M July 2026 (2nd year TO)
 ,UTA,Josh Okogie,6,standard,SG/SF,Signed 2yr/$12M July 2026 (2nd year TO)
@@ -581,7 +588,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NYK,Bruce Brown,0,free_agent,SG/PG,"signed an NYK camp deal 9/16/26; Spotrac books the 2026-27 cap hit at $0 until he makes the opening-night roster. est value $4.4M"
 ,DEN,Curtis Jones,0,free_agent,G,unsigned free agent; est value $2.9M
 ,DEN,David Roddy,0,free_agent,PF,unsigned free agent
-,DET,Jalen Duren,0,free_agent,C,unsigned free agent; est value $49.5M
+,DET,Jalen Duren,40.16,standard,C,"re-signed 10/2/26 as a restricted FA: 5yr $200M starting THIS season. He accepted at 10:39pm on 10/1, just inside the qualifying-offer deadline, and formally signed 10/2"
 ,DET,Dario Saric,0,free_agent,PF/C,unsigned free agent; est value $3.5M
 ,DET,Wendell Moore Jr.,0,free_agent,SG,unsigned free agent
 ,GSW,Seth Curry,0,free_agent,SG/PG,unsigned free agent; est value $3.9M
@@ -650,5 +657,5 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Hunter Dickinson,0,free_agent,C,"waived from his two-way 8/18/26 (slot went to Malik Dia)"
 ,DEN,Julian Reese,0,free_agent,C,"two-way traded WAS to DEN in the five-team Watson deal 8/19/26 and immediately waived; UFA"
 ,HOU,Tristen Newton,0,free_agent,PG/SG,"waived off his HOU two-way 8/26/26 (slot went to Rafael Castro); 2024 No.49 pick, G League All-NBA first team"
-,CLE,Cam Whitmore,0,free_agent,SF/SG,"waived and STRETCHED 8/28/26 ($1.819M x3 dead money) to clear Cleveland under its first-apron hard cap for Harden"
-,NYK,John Konchar,0,free_agent,SG/SF,"waived and stretched by MIN 8/29/26 ($2.06M x3 still charged to MIN); signed an NYK Exhibit 9 camp deal 9/16/26, a $0 cap hit until he makes the opening-night roster"
+,DEN,Cam Whitmore,0,two_way,SF/SG,"waived and STRETCHED by CLE 8/28/26 ($1.819M x3 still charged to CLE); signed a DEN two-way 9/18/26, outside the team cap"
+,NYK,John Konchar,0,free_agent,SG/SF,"waived and stretched by MIN 8/29/26 ($2.06M x3 still charged to MIN); signed an NYK Exhibit 9 camp deal 9/16/26 and was WAIVED 9/30, which cost nobody anything"

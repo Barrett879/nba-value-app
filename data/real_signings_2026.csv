@@ -223,13 +223,39 @@ Malik Dia,NOP,1,0.68,0.68,two-way,2026-08-18,HoopsRumors + HoopsHype,two-way; NO
 #   real $2,449,421 cap hit against Denver. It is still provisional.
 # NOT CONFIRMED, deliberately left out: a reported Toby Okani signing, which
 #   only ever reached one source and so failed the two-source bar.
-# STILL OPEN as of 9/17: Jalen Duren is an unsigned RFA (DET at 5yr/$190M, his
-#   camp seeking $200M+, $9.6M qualifying offer, 10/1 deadline, sign-and-trade
-#   chatter). Stephen Curry has been extension-eligible since 8/29 for 2yr
-#   $136.7M and has NOT signed; the deal covering his 2026-27 is the 1yr $62.6M
-#   extension he signed in Aug 2024, so beware search results about that one.
-#   Kawhi and Toronto are in advanced talks on a ~2yr/$124M extension, not
-#   signed. Book none of these.
+# --- Round of 2026-10-06, covering 9/18 to 10/6: the camp-cut window ---------
+# All three 9/17 watch items CLOSED. Duren re-signed (row below). Curry signed
+#   an extension 9/25 and Kawhi one 9/22, but BOTH START 2027-28.
+# EXTENSIONS CHANGE NOTHING HERE, and that is the trap this round: Keyonte
+#   George (5yr $157.5M, 9/18), Ausar Thompson (5yr $155M, 9/22), Kawhi Leonard
+#   (9/22), Stephen Curry (9/25), Pelle Larsson (9/22) and Jamal Shead (10/1)
+#   all begin 2027-28. Their 2026-27 salaries were already on the books before
+#   they signed, so booking the extension as a 2026-27 event double-counts the
+#   player. None of them is a row here. George's $6,563,925 and Thompson's
+#   $11,117,925 are rookie-scale years, where salary and cap hit are the same
+#   number, unlike a veteran minimum.
+# Trades: ATL sends Buddy Hield, Ryan Nembhard and cash to CHA for Dorian
+#   Finney-Smith (9/22), and CHA flips Hield to CHI for Rob Dillingham (9/27).
+#   Charlotte kept NEITHER player it acquired on 9/22: Nembhard was waived and
+#   is on a DEN two-way, and it waived Dillingham the day after acquiring him.
+# Six waivers left real dead money, all in dead_money_2026_27.csv: Russell MEM
+#   $5,969,250; Dillingham CHA $6,889,320; Nembhard CHA $2,150,917; Harris DET
+#   $3,815,861; Hawkins MEM $6,343,013; Broome LAC $2,150,917. The Hawkins
+#   figure is NOT his $7,021,895 salary: he gave back $678,882 in the buyout,
+#   exactly the two-way scale he then earned from Chicago, so he is made whole
+#   and Memphis carries the rest. Reporting from 10/2 says the full amount and
+#   is stale.
+# Two-way moves: Cam Whitmore to DEN 9/18, Jordan Hawkins to CHI 10/6, Ryan
+#   Nembhard to DEN 9/30, plus two-way signings at TOR, GSW, NOP, NYK and MEM.
+#   Two-ways sit outside the team cap, so they are $0 on a cap sheet.
+# Camp cuts ran in volume as rosters trimmed toward the 10/20 opener: dozens of
+#   Exhibit 9/10 players signed and waived within days, almost all at $0. They
+#   are not rows here for the same reason as previous rounds. John Konchar's NYK
+#   camp deal ended in a 9/30 waiver that cost nobody anything.
+# STILL OPEN as of 10/6: nothing from the previous watch list. New: the
+#   rookie-scale extension deadline falls later in October, so more extensions
+#   are likely before the next round, and every one of them will again be a
+#   2027-28 event rather than a 2026-27 one.
 # Trades moving 2026-27 salary: Dort (OKC) + Nembhard (DAL, $2150917) to ATL /
 #   Risacher to DAL / three 2nds + $17.7M TPE to OKC (7/19, official); Johni
 #   Broome PHI to LAC (7/28, already reflected in rosters); Dennis Schroder
@@ -261,3 +287,4 @@ Khalifa Diop,CLE,4,1.358,1.358,new,2026-09-02,HoopsRumors + CLE reporting,"delib
 Ben Simmons,SAC,1,3.52,2.45,new,2026-09-07,Spotrac + HoopsRumors + HoopsHype,"1yr $3,524,115 cash against a $2,449,421 cap hit (minimum-salary reimbursement); FULLY non-guaranteed, roughly $1M of it earned only if he is on the roster, so re-check before opening night"
 Lonnie Walker IV,DEN,1,3.29,2.45,new,2026-09-10,Spotrac (Keith Smith) + Basketball-Reference + HoopsRumors,"Exhibit 10: $3,286,399 cash against a $2,449,421 cap hit. PROVISIONAL - an Exhibit 10 is very likely waived before opening night. Agreed 8/5, processed 9/10"
 Anthony Gill,WAS,1,3.07,2.45,resign,2026-09-15,Spotrac + HoopsRumors,"1yr vet min re-sign; $3,066,143 cash against a $2,449,421 cap hit (minimum-salary reimbursement, 6 years of service)"
+Jalen Duren,DET,5,200,40.16,resign,2026-10-02,Pistons release via HoopsRumors + Spotrac + ESPN,"restricted FA re-signing, and it STARTS 2026-27 unlike every other deal in this round. He accepted at 10:39pm on 10/1 just inside the qualifying-offer deadline and formally signed 10/2; DET had been at 5yr $190M and his camp sought $200M+"
