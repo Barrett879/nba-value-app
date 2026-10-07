@@ -880,8 +880,18 @@ if not _hub_df.empty:
     # player with a tracked signing is off the market whatever the feed says
     # (the FA Watch card headlined James Harden hours after his 3yr/$97M).
     _signed_norms = {normalize(k) for k in _hub_signings()}
+    # A RESOLVED option is off the market too, and the signings guard above does
+    # not catch it because an option exercise is deliberately not a tracked
+    # signing (the salary was set years ago, so it is not a fair model test).
+    # Without this the card called Kevin Porter Jr. the best available free
+    # agent while he was under contract to Milwaukee on the $5.39M option he
+    # had exercised. Only po_in/to_in are excluded: a player who opted OUT or
+    # had an option declined genuinely IS on the market.
+    _resolved_norms = {_k for _k, (_dv, _fv) in _hub_decisions().items()
+                       if _dv in ("po_in", "to_in")}
     _fa_df = _hub_df[_hub_df["Status"].isin(_FA_SET)
-                     & ~_hub_df["norm"].isin(_signed_norms)]
+                     & ~_hub_df["norm"].isin(_signed_norms)
+                     & ~_hub_df["norm"].isin(_resolved_norms)]
 
     _rail("", "Today around the league")
 
