@@ -1,13 +1,29 @@
 {
  "season": "2026",
  "scorecard": {
-  "n": 110,
-  "within_4M": 78,
-  "within_5cap": 91,
+  "n": 111,
+  "within_4M": 77,
+  "within_5cap": 90,
   "median_err_M": 1.8,
-  "bias_M": 0.6
+  "bias_M": 0.7
  },
  "signings": [
+  {
+   "player": "Jalen Duren",
+   "team": "DET",
+   "deal": "5yr/$200M",
+   "years": 5,
+   "total_M": 200.0,
+   "actual_M": 40.2,
+   "type": "resign",
+   "date": "2026-10-02",
+   "model_M": 49.5,
+   "low_M": 43.6,
+   "high_M": 55.4,
+   "delta_M": 9.3,
+   "in4": false,
+   "in5cap": false
+  },
   {
    "player": "Anthony Gill",
    "team": "WAS",

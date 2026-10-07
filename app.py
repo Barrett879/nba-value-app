@@ -712,23 +712,6 @@ def _hub_salary_supplement() -> dict:
     return out
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
-def _hub_waived() -> set:
-    """Players carrying a 2026-27 dead-money charge, i.e. waived
-    (data/dead_money_2026_27.csv). Used to void a stale option figure: a
-    player who exercised an option in June and was waived in September is not
-    paid that option, so it must not stand in as his salary."""
-    out = set()
-    try:
-        with open(Path(__file__).parent / "data" / "dead_money_2026_27.csv") as fh:
-            for r in _csv.DictReader(l for l in fh if l.strip() and not l.lstrip().startswith("#")):
-                if r.get("player"):
-                    out.add(normalize(r["player"]))
-    except Exception:
-        pass
-    return out
-
-
 def _offseason_as_of() -> str:
     """Freshness stamp for the hand-maintained offseason files (real signings +
     option decisions + salary supplement + the league-wide roster): the newest
@@ -827,14 +810,13 @@ for _i, _r in _pool.iterrows():
     if _next_M is None:
         # Exercised options carry their figure in the decisions file; last
         # resort is the hand-verified supplement for feed-omitted players.
-        # An option figure records a JUNE decision, so a later waiver voids it:
-        # Gary Harris and D'Angelo Russell both opted in and were cut in
-        # September, and the board was showing them the option salary they will
-        # never be paid. The supplement is not gated the same way because it is
-        # hand-verified current and a waived player can be on a new deal
-        # elsewhere (Nembhard: Charlotte dead money, Denver two-way).
+        # NOTE: a later waiver does NOT void the figure. Gary Harris, D'Angelo
+        # Russell and Ryan Nembhard were all cut in September and are still
+        # PAID that guaranteed money in 2026-27 (it is their team's dead
+        # money), so the figure remains the right answer for this column and
+        # suppressing it would substitute a dash for a correct number.
         _d, _fig = _hub_decisions().get(_n, (None, None))
-        if _d in ("po_in", "to_in") and _fig and _n not in _hub_waived():
+        if _d in ("po_in", "to_in") and _fig:
             _next_M = float(_fig)
         else:
             _next_M = _hub_salary_supplement().get(_n)
