@@ -41,6 +41,9 @@ Marcus Smart,PG/SG,,,moves from the SG column to PG
 Reed Sheppard,SG/PG,,,moves from the PG column to SG
 Ty Jerome,PG/SG,,,moves from the SG column to PG
 Jerami Grant,SF/PF,,,moves from the PF column to SF
-Julian Champagnie,PF/SF,,,moves from the SF column to PF
-Devin Vassell,SF/SG,,,moves from the SG column to SF
+Julian Champagnie,SF/PF,,,"stays in the SF column. Was set PF/SF on 2026-10-20 and revised back the same day, which restores his scraped position; the row is kept so the intent is explicit rather than looking like the override was dropped"
+Devin Vassell,PF/SF,,,"moves from the SG column to PF. Was set SF/SG on 2026-10-20 and revised the same day; he and Champagnie effectively swap, Vassell to PF and Champagnie back to SF"
 Dylan Harper,SG/PG,,,moves from the PG column to SG
+Saddiq Bey,PF/SF,,,moves from the SF column to PF
+Stephon Castle,SF/SG,,,moves from the SG column to SF
+Keldon Johnson,SG/SF,,,moves from the SF column to SG
