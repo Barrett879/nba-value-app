@@ -44,6 +44,9 @@ st.caption(
 # mix today's FA status with stale stat data. So the picker is just the current
 # season; it advances on its own (e.g. to 2026-27) once that becomes SEASONS[0].
 _FA_SEASONS = SEASONS[:1]
+# The class year follows the scored season, so it advances with SEASONS[0]
+# instead of leaving the board headed with an offseason that has closed.
+_FA_YEAR = int(SEASONS[0][:4]) + 1
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", _FA_SEASONS, index=0)
@@ -294,7 +297,7 @@ st.markdown(
 )
 
 render_rail(
-    "The board", "2026 Free Agent Board",
+    "The board", f"{_FA_YEAR} Free Agent Board",
     count=f"{len(fa_df)} free agents",
     meta=f"{_scorecard['n']} signings tracked" if _scorecard else None,
 )

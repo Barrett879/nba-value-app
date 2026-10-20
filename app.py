@@ -550,6 +550,12 @@ _components.html(FACE_GUARD_SCRIPT, height=0)     # hide 404 headshots
 
 _HUB_SEASON = SEASONS[0]
 _NEXT_SEASON = f"{int(_HUB_SEASON[:4]) + 1}-{(int(_HUB_SEASON[:4]) + 2) % 100:02d}"
+# The offseason that FOLLOWS the scored season, which is the free-agent class
+# everyone means by "the 2026 class". Derived, not written out, because the
+# season rollover would otherwise leave the UI advertising a class that closed:
+# the card said "FA watch 2026" and the hub said "hits the market in 2026", and
+# both are wrong the moment 2026-27 becomes SEASONS[0].
+_FA_YEAR = int(_HUB_SEASON[:4]) + 1
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
@@ -1010,7 +1016,7 @@ if not _hub_df.empty:
     if len(_fa_df):
         _fa_top = _fa_df.iloc[0]
         _cards.append(
-            _fp_card("FA watch · 2026", _fa_top["Player"], _fa_top["Team"],
+            _fp_card(f"FA watch · {_FA_YEAR}", _fa_top["Player"], _fa_top["Team"],
                      f'<span class="vrow"><span class="v teal">{_fa_top["Barrett Score"]:.2f}</span>'
                      f'<span class="vunit">Barrett Score</span></span>',
                      "best available free agent right now"))
@@ -1224,7 +1230,7 @@ if _sel:
         # with Milwaukee: one line contradicting itself.
         if (str(_sel["Status"]) in _FA_SET
                 and _sel["norm"] not in _off_market_norms):
-            _vbits.append("hits the market in 2026")
+            _vbits.append(f"hits the market in {_FA_YEAR}")
         _verdict = " · ".join(_vbits)
         _STATUS_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
                         "Player Option": ("po", "PLAYER OPTION"),

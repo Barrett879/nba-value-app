@@ -235,6 +235,15 @@ SALARY_CAP_M = {
     # NBA projection $165M (Shams/ESPN, ~$10M rise). Used to price the
     # Contract Predictor's output in next-season dollars.
     "2026-27": 165.0,
+    # $176M, the league's September 2026 memo to teams (up from an earlier
+    # $174M), a 6.7% rise on $164.96M, with a $213M tax line. NOT final until
+    # June 2027. Present so the season rollover cannot silently misprice max
+    # contracts: _amax_floor and _amax_cap read SALARY_CAP_M.get(_NEXT_SEASON,
+    # 165.0), and once SEASONS[0] becomes 2026-27 that key is "2027-28", so
+    # without this row the max tier would quietly be computed at THIS season's
+    # cap. Do not assume 10% a year, which is what the 2025-26 jump was; growth
+    # has slowed.
+    "2027-28": 176.0,
 }
 
 
@@ -3214,6 +3223,31 @@ def all_seasons_path(min_threshold: int = 0, playoffs: bool = False) -> Path:
                          f"{PLAYOFF_VERSION}_{FORMULA_VERSION}.parquet")
     return _rev_path(f"all_seasons_{min_threshold}_{FORMULA_VERSION}.parquet")
 
+def season_is_live(season: str) -> bool:
+    """True while `season` is still being PLAYED, roughly Oct 1 to Jun 30.
+
+    The season the site SCORES (SEASONS[0]) is not always the season being
+    played, and on 2026-10-20 those diverged for the first time: the board still
+    scored 2025-26 while 2026-27 tipped off. _dc_fresh used to ask only whether
+    the calendar month was outside (7, 8, 9), which is a proxy for "offseason"
+    that silently breaks the moment the two disagree. It was therefore treating
+    FINAL 2025-26 stats as live and queueing a background refetch every hour,
+    forever, for numbers that cannot change again.
+
+    Deriving it from the season label instead of a hand-set flag means the
+    rollover cannot forget to update it: prepending a season to SEASONS is
+    enough, and the old (7, 8, 9) behaviour still falls out of this for a season
+    in its own summer.
+    """
+    start = int(season[:4])
+    t = time.localtime()
+    if t.tm_year == start and t.tm_mon >= 10:
+        return True                      # tipped off, same calendar year
+    if t.tm_year == start + 1 and t.tm_mon <= 6:
+        return True                      # Jan through the June finals
+    return False
+
+
 def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> bool:
     if not path.exists():
         return False
@@ -3225,12 +3259,19 @@ def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> 
     # "refresh" was pure churn that forced live NBA-API calls at request time.
     if ttl is not None:
         effective_ttl = ttl
-    elif season is not None and season != SEASONS[0]:
-        return True          # historical season caches are immutable (version-busted)
-    elif season == SEASONS[0] and time.localtime().tm_mon not in (7, 8, 9):
-        effective_ttl = 3600
+    elif season is not None and not season_is_live(season):
+        # The season is OVER, so its stats are final and the cache is immutable,
+        # whether it is an ancient season or the one we currently score. A
+        # version bump changes the filename, so this still busts when the data
+        # itself changes. Keying on "is it being played" rather than on
+        # "season != SEASONS[0]" is what fixes the 2026-10-20 divergence: with
+        # the old test, FINAL 2025-26 was the scored season and so counted as
+        # mutable, and every cache older than its TTL queued a refetch forever.
+        return True
+    elif season is not None:
+        effective_ttl = 3600            # in progress: new box scores every night
     else:
-        effective_ttl = 2_592_000
+        effective_ttl = 2_592_000       # caller named no season
     return (time.time() - path.stat().st_mtime) < effective_ttl
 
 def _pkl_load(path: Path):
