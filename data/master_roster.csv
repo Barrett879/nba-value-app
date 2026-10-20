@@ -155,7 +155,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,DAL,Tarik Biberovic,2.93,standard,SF,"Draft rights via the Aldama six-teamer; signed 7/10/26 2yr $6M via part of the MLE ($2926829 yr1, 27-28 team option)"
 ,DAL,Moussa Cisse,2.19,standard,C,"Non-guaranteed; $1.09M guarantees 9/1/26, full 10/1/26"
 ,DAL,Tobi Lawal,0.68,two_way,PF,2026 second-round pick on two-way
-,DAL,John Poulakidas,0.68,two_way,SG,Two-way contract
+,DAL,John Poulakidas,0,free_agent,SG,"off the DAL two-way roster in the camp-cut wave; absent from the ESPN roster, and removing him makes DAL 2 two-ways, matching Hoops Rumors; est value $2.3M (model pcv)"
 ,DAL,Jett Howard,0.68,two_way,PF/SF,"Signed two-way July 20, 2026 (two-way Tyler Smith waived); ex-ORL 2023 lottery pick"
 ,DEN,Nikola Jokic,59.03,standard,C,Designated-vet supermax; PO for 2027-28
 ,DEN,Lonnie Walker IV,0,free_agent,SG/SF,"WAIVED by DEN in the camp-cut wave; absent from the ESPN roster, and removing him makes DEN 14 standard, matching the Hoops Rumors count exactly. est value $3.0M (model pcv)"
@@ -222,7 +222,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,HOU,Bogdan Bogdanovic,2.45,standard,SF/SG,"Vet-minimum FA signing, July 2026"
 ,HOU,Jae'Sean Tate,2.45,standard,SF/PF,Re-signed minimum; guarantee date 1/10/27
 ,HOU,Isaiah Crawford,2.45,standard,SF,Multi-year minimum; partial guarantee at opening night
-,HOU,Sean Pedulla,0,free_agent,,"WAIVED by HOU 10/19/26"
+,HOU,Sean Pedulla,0,free_agent,,WAIVED by HOU 10/19/26 [on waivers until 2026-10-21]
 ,HOU,Bruce Thornton,1.36,standard,PG,2026 No. 31 pick (HOU traded 39+53+2029 2nd to NYK to move up); signed 4yr/$9.3M July 7; Spotrac cap table still lags this signing
 ,HOU,Quadir Copeland,0.68,two_way,SG,Two-way contract
 ,IND,Tyrese Haliburton,48.92,standard,PG,Designated rookie max; returning from torn Achilles
@@ -270,7 +270,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,LAL,Collin Sexton,9.37,standard,PG/SG,signed 2yr/$19.2M July 2026 via room exception
 ,LAL,Jaden Hardy,6,standard,PG/SG,3yr/$18M extension (2025)
 ,LAL,Jake LaRavia,6,standard,SF/PF,year 2 of 2yr/$12M
-,LAL,Dalton Knecht,0,free_agent,SG/SF,"WAIVED by LAL 10/19/26 to reach 15 after trade talks failed; $4,201,080 is dead money and the waiver VOIDS his $6.45M 2027-28 team option; est value $4.4M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase)"
+,LAL,Dalton Knecht,0,free_agent,SG/SF,"WAIVED by LAL 10/19/26 to reach 15 after trade talks failed; $4,201,080 is dead money and the waiver VOIDS his $6.45M 2027-28 team option; est value $4.4M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase) [on waivers until 2026-10-21]"
 ,LAL,Cameron Carr,3.32,standard,SG,2026 draft pick No. 25 (Baylor); rookie scale 4yr/$16.82M
 ,LAL,Kevon Looney,2.45,standard,C,signed 1yr/$3.88M vet-min July 2026; min cap hit
 ,LAL,Ziaire Williams,2.45,standard,PF/SF,"signed 1yr/$2.85M Jul 19, 2026; min cap hit"
@@ -290,7 +290,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Cedric Coward,6,standard,SG/SF,"2025 first-rounder, yr 2; 2027-28 club option due 10/31/26"
 ,MEM,D'Angelo Russell,0,free_agent,PG/SG,"WAIVED by MEM 9/25/26. $5,969,250 dead, the player-option year he exercised with WAS in June"
 ,MEM,Kris Murray,5.32,standard,SF/PF,"Acquired from POR June 30, 2026 in Ja Morant trade"
-,MEM,Walter Clayton Jr.,0,free_agent,PG/SG,"WAIVED by MEM 10/19/26 to finalize the roster; acquired from UTA Feb 2026 in the JJJ trade. $4,190,520 dead on MEM and his 2027-28 club option, due 10/31/26, is moot; est value $4.2M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase)"
+,MEM,Walter Clayton Jr.,0,free_agent,PG/SG,"WAIVED by MEM 10/19/26 to finalize the roster; acquired from UTA Feb 2026 in the JJJ trade. $4,190,520 dead on MEM and his 2027-28 club option, due 10/31/26, is moot; est value $4.2M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase) [on waivers until 2026-10-21]"
 ,NOP,Taj Gibson,0,free_agent,C/PF,"traded MEM to NOP 9/8/26 and WAIVED 9/9; of his $3,815,861 only $148,828 was guaranteed, so NOP carries $148,828 of dead money and the other $3.67M is charged to nobody"
 ,NOP,AJ Johnson,3.24,standard,SG/SF,"traded MEM to NOP 9/8/26; WAS to DAL (Feb, AD deal) to MEM (July 8 six-teamer) to NOP; 2027-28 club option due 10/31/26"
 ,MEM,Olivier-Maxence Prosper,2.5,standard,PF/C,Signed after DAL waived him (DAL carries stretched dead money)
@@ -329,7 +329,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MIL,Jaime Jaquez Jr.,5.94,standard,SF/PF,Acquired 7/6/26 from MIA in Giannis trade; final rookie-scale year
 ,MIL,Ousmane Dieng,5.75,standard,PF/C,Signed 3yr/$17.5M on 7/9/26 (2028-29 team option)
 ,MIL,Nate Ament,5.5,standard,PF,No. 13 pick 2026 draft (Tennessee; pick acquired from MIA in Giannis trade); signed 4yr/$25.98M rookie scale 7/8/26
-,MIL,Kevin Porter Jr.,0,free_agent,PG/SG,"WAIVED by MIL 10/19/26 at the roster deadline, after exercising his $5,390,700 player option in June; MIL carries it as dead money. ON WAIVERS as of 10/19, clears about 10/21, and a claim would move the salary to the claiming team; est value $20.7M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase). Note the model is far above his $5.39M option, a known gap on injury-prone high-usage guards, not a data error"
+,MIL,Kevin Porter Jr.,0,free_agent,PG/SG,"WAIVED by MIL 10/19/26 at the roster deadline, after exercising his $5,390,700 player option in June; MIL carries it as dead money. ON WAIVERS as of 10/19, clears about 10/21, and a claim would move the salary to the claiming team; est value $20.7M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase). Note the model is far above his $5.39M option, a known gap on injury-prone high-usage guards, not a data error [on waivers until 2026-10-21]"
 ,MIL,Kel'el Ware,4.65,standard,C/PF,Acquired 7/6/26 from MIA in Giannis trade; rookie scale yr 3
 ,MIL,Ryan Rollins,4,standard,PG/SG,Year 2 of deal re-signed with MIL in 2025
 ,MIL,Kasparas Jakucionis,3.84,standard,PG/SG,Acquired 7/6/26 from MIA in Giannis trade; rookie scale yr 2
@@ -356,7 +356,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MIN,Enrique Freeman,0,free_agent,,"WAIVED by MIN 10/17/26"
 ,MIN,Zyon Pullin,0,two_way,PG,"2-yr two-way signed 2025, covers 2026-27"
 ,MIN,Rocco Zikarsky,0,two_way,C,"2-yr two-way signed 2025, covers 2026-27"
-,MIN,Trey Kaufman-Renn,0,two_way,PF,"2026 No. 59 pick (Purdue); drafted but unsigned - on ESPN roster, no contract on Spotrac/RealGM; PROMOTED to official per Barrett 2026-07-27"
+,MIN,Trey Kaufman-Renn,0,free_agent,PF,"off the MIN two-way roster in the camp-cut wave; absent from the ESPN roster, and removing him makes MIN 2 two-ways, matching Hoops Rumors"
 ,NOP,Zion Williamson,42.17,standard,PF/SF,2027-28 $44.9M guarantees 7/15/27
 ,NOP,Bennedict Mathurin,8,standard,SF/PF,"officially signed 9/10/26 (agreed 8/26): 2yr $16M flat, 2027-28 player option; LAC withdrew his $8.8M QO first, making him unrestricted"
 ,NOP,Jordan Poole,34.04,standard,SG/PG,Expiring final year
@@ -371,7 +371,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Yves Missi,3.51,standard,C,Rookie scale yr 3; 2027-28 club option due 10/31/26
 ,NOP,Bryce McGowens,2.58,standard,SG/SF,Converted from two-way to standard March 2026; 2027-28 club option
 ,NOP,Karlo Matkovic,2.3,standard,PF/C,2027 RFA
-,MEM,Micah Peavy,0,free_agent,SF/SG,"WAIVED by MEM 10/19/26; traded NOP to MEM 9/8/26 and an ankle injury kept him out of the entire preseason. $2,150,917 dead on MEM; est value $3.0M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase)"
+,MEM,Micah Peavy,0,free_agent,SF/SG,"WAIVED by MEM 10/19/26; traded NOP to MEM 9/8/26 and an ankle injury kept him out of the entire preseason. $2,150,917 dead on MEM; est value $3.0M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase) [on waivers until 2026-10-21]"
 ,NOP,Malik Dia,0.68,two_way,PF,"two-way signed 8/18/26 (Hunter Dickinson waived from his two-way the same day)"
 ,NOP,Jaron Pierre Jr.,0.68,two_way,SG,2026 No. 58 pick; two-way official 7/24/26
 ,NOP,Trendon Watford,2.45,standard,PF/SF,"signed 8/17/26: 1yr vet min ($2.85M actual, $2.45M cap hit); PHI had declined his $2.8M team option in June"
@@ -456,8 +456,8 @@ asof,team,player,salary_M,kind,pos,notes
 ,PHX,Oso Ighodaro,2.3,standard,C,3rd year of 2024 second-round deal
 ,PHX,Rasheer Fleming,2.15,standard,PF/C,2nd year of 2025 second-round deal
 ,PHX,Pat Spencer,0,two_way,PG/SG,two-way signed 2026
-,PHX,Koby Brea,0,free_agent,,"WAIVED by PHX 10/19/26; est value $2.2M (model pcv)"
-,PHX,CJ Huntley,0,free_agent,,"WAIVED by PHX 10/19/26"
+,PHX,Koby Brea,0,free_agent,,WAIVED by PHX 10/19/26; est value $2.2M (model pcv) [on waivers until 2026-10-21]
+,PHX,CJ Huntley,0,free_agent,,WAIVED by PHX 10/19/26 [on waivers until 2026-10-21]
 ,POR,Ja Morant,42.17,standard,PG/SG,"Acquired from MEM, official July 6, 2026, for Jerami Grant + Kris Murray + $1M cash; deal runs through 2027-28"
 ,POR,Jrue Holiday,34.8,standard,SG/PG,PO for 2027-28; acquired from BOS June 2025
 ,POR,Shaedon Sharpe,20.09,standard,SG/PG,"Rookie extension (2026) begins 2026-27, through 2029-30"
@@ -491,7 +491,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,SAC,Dylan Cardwell,2.15,standard,C,multi-year deal converted from 2025 rest-of-season contract
 ,SAC,Emanuel Sharp,1.36,standard,SG,"2026 draft pick No. 45 (Houston); 3yr/$6.35M via 2nd-round exception, Y3 team option; not yet on Spotrac cap table, Y1 estimated at rookie min"
 ,SAC,Jonathan Mogbo,0,two_way,PF/C,signed 2yr two-way with SAC 2026 (previously standard deal with TOR)
-,SAC,Adam Flagler,0,free_agent,,"WAIVED by SAC 10/19/26"
+,SAC,Adam Flagler,0,free_agent,,WAIVED by SAC 10/19/26 [on waivers until 2026-10-21]
 ,SAS,De'Aaron Fox,49.49,standard,PG/SG,Yr 1 of max vet extension (30% of cap); BBRef shows $49.8M (stale cap estimate)
 ,SAS,Devin Vassell,27.5,standard,SG/SF,Cap hit incl. incentives ($27.0M gtd; BBRef lists 27.0)
 ,SAS,Keldon Johnson,18,standard,SF/SG,Final year; cap hit incl. incentives ($17.5M base)
@@ -577,7 +577,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,TOR,Malachi Smith,2.45,standard,PG/SG,"on the TOR opening-night roster per ESPN; this row had him as an unsigned BKN free agent, which is why TOR read 13 standard, below the 14 minimum. Salary UNVERIFIED: $2,449,421 is the standard minimum cap hit inferred from the deal type, not a figure found in reporting"
 ,BKN,Keon Johnson,0,free_agent,PG/SG,unsigned free agent
 ,BKN,Tre Scott,0,free_agent,SF/PF,unsigned free agent
-,BKN,Grant Nelson,0,free_agent,SF/PF,unsigned free agent
+,BKN,Grant Nelson,0,two_way,PF/C,"BKN TWO-WAY, on the ESPN roster; this row had him as a free agent, so he was being offered as signable while under contract"
 ,BOS,Max Shulga,0,free_agent,G,unsigned free agent; est value $2.2M
 ,CHA,Malaki Branham,0,free_agent,PG/SG,unsigned free agent; est value $4.8M
 ,CHA,Nick Smith Jr.,0,free_agent,PG/SG,unsigned free agent; est value $4.0M
@@ -589,7 +589,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CHI,Mac McClung,0,free_agent,PG,unsigned free agent; est value $2.2M
 ,CLE,Lonzo Ball,0,free_agent,PG/SG,unsigned free agent; est value $8.5M
 ,CLE,Olivier Sarr,0,free_agent,C,unsigned free agent
-,DAL,Dwight Powell,0,free_agent,C,unsigned free agent; est value $3.9M
+,DAL,Dwight Powell,0,free_agent,C,unsigned free agent; est value $3.9M [on waivers until 2026-10-21]
 ,DAL,Jeremiah Robinson-Earl,0,free_agent,PF/C,unsigned free agent; est value $2.9M
 ,NYK,Bruce Brown,0,free_agent,SG/PG,"signed an NYK camp deal 9/16/26; Spotrac books the 2026-27 cap hit at $0 until he makes the opening-night roster. est value $4.4M"
 ,DEN,Curtis Jones,0,free_agent,G,unsigned free agent; est value $2.9M
@@ -661,7 +661,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,HOU,J.D. Davison,0,free_agent,PG/SG,"waived 8/5/26 (was non-guaranteed; no dead money)"
 ,IND,Ethan Thompson,0,free_agent,SG,"waived from his two-way 8/17/26 (slot went to Braden Smith)"
 ,NOP,Hunter Dickinson,0,free_agent,C,"waived from his two-way 8/18/26 (slot went to Malik Dia)"
-,DEN,Julian Reese,0,free_agent,C,"two-way traded WAS to DEN in the five-team Watson deal 8/19/26 and immediately waived; UFA"
+,NOP,Julian Reese,0,two_way,PF/C,"NOP TWO-WAY, on the ESPN roster; this row had him as a DEN free agent, wrong on both team and status, and he was showing in the top five of the free-agent board"
 ,HOU,Tristen Newton,0,free_agent,PG/SG,"waived off his HOU two-way 8/26/26 (slot went to Rafael Castro); 2024 No.49 pick, G League All-NBA first team"
 ,DEN,Cam Whitmore,0,two_way,SF/SG,"waived and STRETCHED by CLE 8/28/26 ($1.819M x3 still charged to CLE); signed a DEN two-way 9/18/26, outside the team cap"
 ,NYK,John Konchar,0,free_agent,SG/SF,"waived and stretched by MIN 8/29/26 ($2.06M x3 still charged to MIN); signed an NYK Exhibit 9 camp deal 9/16/26 and was WAIVED 9/30, which cost nobody anything"
@@ -671,3 +671,6 @@ asof,team,player,salary_M,kind,pos,notes
 ,NYK,Jaden Akins,0,two_way,SG,"NYK TWO-WAY, on the ESPN opening-night roster; MISSING from this file entirely, which is why NYK read 0 two-ways"
 ,NYK,Tyler Nickel,0,two_way,SF,"NYK TWO-WAY, on the ESPN opening-night roster; MISSING from this file entirely, which is why NYK read 0 two-ways"
 ,NYK,Kevin McCullar Jr.,0,two_way,SG/SF,"NYK TWO-WAY, on the ESPN opening-night roster; MISSING from this file entirely. He was therefore absent from the roster index, and because absence means SHOW he was appearing on the board as an available free agent while under contract. Same defect class as the option-exercise cases, reached by a different route"
+,GSW,Graham Ike,0,two_way,C,"GSW TWO-WAY, on the ESPN roster; MISSING from this file entirely"
+,SAC,Leaky Black,0,two_way,SF/SG,"SAC TWO-WAY, on the ESPN roster; MISSING from this file entirely, and he was appearing on the free-agent board"
+,WAS,Reece Beekman,0,two_way,PG,"WAS TWO-WAY, on the ESPN roster; MISSING from this file entirely"

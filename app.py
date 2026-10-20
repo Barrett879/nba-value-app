@@ -798,6 +798,110 @@ _hub_model_stamp_check()
 _max_norms = {n for n, p in _pcv_by.items() if p.get("is_max")}
 _amax_floor = 0.25 * SALARY_CAP_M.get(_NEXT_SEASON, 165.0) - 0.1
 _hub_cey = _hub_contract_end()
+# Bound HERE, above the _hub_rows loop, because the loop's salary chain needs to
+# know whether the verified roster calls a player a free agent. _market_norms
+# further down is derived from _hub_rows and so cannot be used inside it.
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_roster_kinds() -> dict:
+    """{spelling: kind} from data/master_roster.csv, kind being standard,
+    two_way or free_agent.
+
+    `kind` is a ROSTER fact and that is exactly why it is read here. standard or
+    two_way means the player occupies a 2026-27 roster spot and cannot be
+    signed. free_agent means he is on the market, and the file's team column is
+    then the rights holder rather than an employer.
+
+    It is deliberately NOT a payment fact. A waived player keeps his guaranteed
+    money as his old team's dead money and still reads free_agent here, which is
+    how Gary Harris and D'Angelo Russell are both PAID an option they exercised
+    in June and free to sign anywhere. A guard built on `kind` therefore cannot
+    blank out a correct salary, which is what the reverted dead-money gate did.
+
+    It is also the only file in the repo that covers two-way deals at all: the
+    scraped salary feed omits them, so classify_fa_status falls through to a bare
+    "UFA" and players like Javon Small and Cormac Ryan reached the board as free
+    agents while under contract.
+
+    Empty dict on any failure, which collapses the roster clause below so the
+    board degrades to its previous behaviour rather than to a blank list."""
+    out = {}
+    try:
+        with open(Path(__file__).parent / "data" / "master_roster.csv") as fh:
+            for r in _csv.DictReader(l for l in fh if l.strip()
+                                     and not l.lstrip().startswith("#")):
+                if r.get("player"):
+                    out[r["player"]] = (r.get("kind") or "standard").strip()
+    except Exception:
+        logger.warning("master_roster.csv unreadable: FA availability falls back "
+                       "to the signings and option-decision guards only")
+    return out
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_dead_money() -> dict:
+    """{norm: 2026-27 dead-money charge in $M} from data/dead_money_2026_27.csv.
+
+    For a WAIVED player this is what he is actually paid this season, and it is
+    exact to the dollar, which the scraped feed is not: the feed still types a
+    voided contract as guaranteed, so it reads John Konchar at $6.17M against
+    the $2.06M-a-year stretch the file records. Preferring this over the feed is
+    what makes it safe to show waived players on the free-agent board at all."""
+    out = {}
+    try:
+        with open(Path(__file__).parent / "data" / "dead_money_2026_27.csv") as fh:
+            for r in _csv.DictReader(l for l in fh if l.strip()
+                                     and not l.lstrip().startswith("#")):
+                if r.get("player") and r.get("amount_M"):
+                    try:
+                        out[normalize(r["player"])] = float(r["amount_M"])
+                    except ValueError:
+                        logger.warning("dead_money_2026_27.csv: unparseable amount_M %r for %s",
+                                       r.get("amount_M"), r["player"])
+    except Exception:
+        pass
+    return out
+
+
+_ON_WAIVERS_RE = re.compile(r"on waivers until (\d{4}-\d{2}-\d{2})", re.I)
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_on_waivers() -> set:
+    """Players master_roster says are STILL ON WAIVERS as of today.
+
+    A waived player is not signable until he clears, which is 4pm Central two
+    days after the release. Until then another team may only CLAIM him, so
+    calling him "best available free agent right now" is wrong in exactly the
+    way the card has been wrong three times before. Kevin Porter Jr. was
+    headlining it the morning after being cut, with his claim window still open.
+
+    The marker carries its own expiry date, so it clears itself and nobody has
+    to remember to come back and remove it."""
+    out = set()
+    today = datetime.date.today().isoformat()
+    for _nm, _note in _hub_roster_notes().items():
+        m = _ON_WAIVERS_RE.search(_note or "")
+        if m and today < m.group(1):
+            out.add(normalize(_nm))
+    return out
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_roster_notes() -> dict:
+    """{spelling: notes} from master_roster, for the markers carried in prose."""
+    out = {}
+    try:
+        with open(Path(__file__).parent / "data" / "master_roster.csv") as fh:
+            for r in _csv.DictReader(l for l in fh if l.strip()
+                                     and not l.lstrip().startswith("#")):
+                if r.get("player"):
+                    out[r["player"]] = r.get("notes") or ""
+    except Exception:
+        pass
+    return out
+
+
+_roster_idx = NameIndex(_hub_roster_kinds())
 
 _hub_rows = []
 for _i, _r in _pool.iterrows():
@@ -811,7 +915,16 @@ for _i, _r in _pool.iterrows():
         _status = "Signed"          # tracked 2026 signing that came off the board
     _sg = _hub_signings().get(_n)
     _nx = _nc.get(_n)
+    # For a player the verified roster calls a free agent, the scraped feed is
+    # NOT trustworthy: it still types his voided contract as guaranteed, which
+    # is how it reads John Konchar at $6.17M against the $2.06M-a-year stretch
+    # dead_money records. The dead-money charge is what a waived player is
+    # actually paid, exact to the dollar, so it outranks the feed. A tracked
+    # signing still comes first, because that is a real negotiated figure.
+    _dm = (_hub_dead_money().get(_n)
+           if (_roster_idx.get(_nm) or "") == "free_agent" else None)
     _next_M = (_sg.get("actual_M") if _sg and _sg.get("actual_M") is not None
+               else _dm if _dm is not None
                else (float(_nx["salary"]) / 1e6 if _nx and _nx.get("salary") else None))
     if _next_M is None:
         # Exercised options carry their figure in the decisions file; last
@@ -865,42 +978,6 @@ _by_norm = {r["norm"]: dict(r, rank=i + 1) for i, r in enumerate(_hub_rows)}
 _FA_SET = {"UFA", "RFA", "Player Option", "Team Option"}
 
 
-@st.cache_data(ttl=3600, show_spinner=False)
-def _hub_roster_kinds() -> dict:
-    """{spelling: kind} from data/master_roster.csv, kind being standard,
-    two_way or free_agent.
-
-    `kind` is a ROSTER fact and that is exactly why it is read here. standard or
-    two_way means the player occupies a 2026-27 roster spot and cannot be
-    signed. free_agent means he is on the market, and the file's team column is
-    then the rights holder rather than an employer.
-
-    It is deliberately NOT a payment fact. A waived player keeps his guaranteed
-    money as his old team's dead money and still reads free_agent here, which is
-    how Gary Harris and D'Angelo Russell are both PAID an option they exercised
-    in June and free to sign anywhere. A guard built on `kind` therefore cannot
-    blank out a correct salary, which is what the reverted dead-money gate did.
-
-    It is also the only file in the repo that covers two-way deals at all: the
-    scraped salary feed omits them, so classify_fa_status falls through to a bare
-    "UFA" and players like Javon Small and Cormac Ryan reached the board as free
-    agents while under contract.
-
-    Empty dict on any failure, which collapses the roster clause below so the
-    board degrades to its previous behaviour rather than to a blank list."""
-    out = {}
-    try:
-        with open(Path(__file__).parent / "data" / "master_roster.csv") as fh:
-            for r in _csv.DictReader(l for l in fh if l.strip()
-                                     and not l.lstrip().startswith("#")):
-                if r.get("player"):
-                    out[r["player"]] = (r.get("kind") or "standard").strip()
-    except Exception:
-        logger.warning("master_roster.csv unreadable: FA availability falls back "
-                       "to the signings and option-decision guards only")
-    return out
-
-
 # ── Off the 2026 market: three sources, each answering only what it can ───────
 # Bound at MODULE level because _board() is a module-level fragment that reads
 # these as globals.
@@ -927,7 +1004,6 @@ _resolved_norms = {_k for _k, (_dv, _fv) in _hub_decisions().items()
 #    him "L.J. Cryer", "P.J. Hall", "K.J. Simpson" where the pool says "LJ
 #    Cryer", "PJ Hall", "KJ Simpson", and an exact key reads all three as
 #    unmentioned, which here would mean available.
-_roster_idx = NameIndex(_hub_roster_kinds())
 _roster_kind_by_norm = {_r["norm"]: (_roster_idx.get(_r["Player"]) or "")
                         for _r in _hub_rows}
 _contracted_norms = {_n for _n, _k in _roster_kind_by_norm.items()
@@ -961,16 +1037,36 @@ def _fa_rows(df: pd.DataFrame) -> pd.DataFrame:
     and the hub verdict line. Those were three hand-copied masks, which is how
     the Kevin Porter Jr. fix landed on the card alone and left the tab wrong.
 
-    The feed-status conjunct stays on purpose. A handful of players are
-    kind=free_agent in master_roster but read "—" here because the feed still
-    types their voided contract as guaranteed. Admitting them would publish the
-    feed's stale figure in the Actual 2026-27 Salary column; John Konchar's
-    reads $6.17M against the $2.06M-over-three-seasons stretch master_roster
-    records. A missing row beats a wrong number, and fixing those needs the Next
-    column fixed first."""
+    Membership is EITHER the feed calling it a free-agent situation OR the
+    verified roster calling him a free agent. The roster clause was added once
+    the Next column stopped trusting the feed for these players: previously a
+    waived player with no feed status was left off, because admitting him would
+    have published the feed's stale figure (Konchar at $6.17M against a $2.06M
+    stretch). Now that dead_money outranks the feed above, he can be shown with
+    the right number, so leaving him off is no longer the lesser evil. It was
+    never a small set: Knecht, Highsmith, Connaughton, Nance and Sochan were all
+    genuinely available and all invisible here.
+
+    Anyone STILL ON WAIVERS is excluded, because he cannot be signed yet, only
+    claimed. "Best available free agent right now" has to mean available right
+    now."""
     if df.empty or "Status" not in df.columns:
         return df
-    return df[df["Status"].isin(_FA_SET) & ~df["norm"].isin(_off_market_norms)]
+    _available = df["Status"].isin(_FA_SET) | df["norm"].isin(_market_norms)
+    return df[_available
+              & ~df["norm"].isin(_off_market_norms)
+              & ~df["norm"].isin(_hub_on_waivers())]
+
+
+def _in_fa_class(norm_name: str, status: str) -> bool:
+    """Scalar form of the membership test above, for the one selected player.
+
+    Deliberately WITHOUT the on-waivers exclusion. The board and the card claim
+    a player is available RIGHT NOW, which a man on waivers is not. The hub line
+    only says he reaches the market this cycle, and being cut is how he got
+    there, so the claim holds while his claim window is still open."""
+    return ((status in _FA_SET or norm_name in _market_norms)
+            and norm_name not in _off_market_norms)
 
 # ── Front Page strip: four clickable feature cards under the search ───────────
 if not _hub_df.empty:
@@ -1228,8 +1324,7 @@ if _sel:
         # alone told Kevin Porter Jr.'s own panel "hits the market in 2026"
         # while the chip beside it read the option he had already exercised
         # with Milwaukee: one line contradicting itself.
-        if (str(_sel["Status"]) in _FA_SET
-                and _sel["norm"] not in _off_market_norms):
+        if _in_fa_class(_sel["norm"], str(_sel["Status"])):
             _vbits.append(f"hits the market in {_FA_YEAR}")
         _verdict = " · ".join(_vbits)
         _STATUS_CHIP = {"UFA": ("ufa", "UFA"), "RFA": ("rfa", "RFA"),
