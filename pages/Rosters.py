@@ -25,7 +25,8 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 from utils import (NameIndex, NBA_DIVISIONS, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
-                   _headshot_id_map, fetch_dlebron, render_footer, render_nav,
+                   _headshot_id_map, fetch_dlebron, fetch_injuries, injury_is_out,
+                   render_footer, render_nav,
                    render_page_chrome, script_json, _bootstrap_warm)
 
 st.set_page_config(page_title="Rosters", page_icon="static/favicon.svg", layout="wide")
@@ -110,6 +111,15 @@ def _payload() -> str:
     # as name so a pin can never leak onto a same-named player elsewhere. The
     # rank rides on the player payload; the template sorts pinned players above
     # the score-ranked rest.
+    # Current injury designations (utils.fetch_injuries, ESPN, 4h serve-then-
+    # refresh). Resolved through NameIndex, never a bare normalize() key: ESPN
+    # prints "Jimmy Butler III" where the roster says "Jimmy Butler", and an
+    # exact key reports a torn ACL as healthy.
+    try:
+        _inj_idx = NameIndex(fetch_injuries())
+    except Exception:                                # never block the page
+        _inj_idx = NameIndex()
+
     _pin = {}
     for _row in _read_csv(_ROOT / "data" / "depth_order.csv"):
         _tm, _nm = (_row.get("team") or "").strip(), (_row.get("player") or "").strip()
@@ -351,12 +361,19 @@ def _payload() -> str:
             o = opts.get(name) or {}
             pos = (r.get("pos") or "").strip()
             _pn = (_pin.get(abbr) or NameIndex()).get(name)
+            _ij = _inj_idx.get(name)
             players.append({
                 "n": name, "kind": kind,
                 "pos": pos,
                 "slot": _SLOT.get(pos.split("/")[0].upper(), ""),
                 "dord": _pn[0] if _pn else None,
                 "dnote": (_pn[1] or None) if _pn else None,
+                # inj: the short badge. iout: whether it takes him OUT of the
+                # rotation, which is the only thing that reorders a column.
+                "inj": _ij["status"] if _ij else None,
+                "iret": (_ij.get("ret") or None) if _ij else None,
+                "icmt": (_ij.get("comment") or None) if _ij else None,
+                "iout": bool(_ij and injury_is_out(_ij["status"])),
                 "salary": round(sal, 2),
                 "note": note,
                 "value": round(value, 1) if value is not None else None,

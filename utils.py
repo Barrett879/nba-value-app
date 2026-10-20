@@ -4898,6 +4898,97 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3, _force: bool = False)
     return result
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_injuries(cache_v: int = 1, _force: bool = False) -> dict:
+    """Current injury designations, {ESPN spelling: {status, ret, comment}}.
+
+    Keyed by the name ESPN prints, NOT by a normalized key, because the caller
+    must resolve it through NameIndex: ESPN says "Jimmy Butler III" where the
+    roster says "Jimmy Butler", and a bare normalize() key silently reports a
+    player with a torn ACL as healthy. Same class of miss as the offseason
+    movers that lost their scores.
+
+    No team column is extracted on purpose. The page groups by team but the
+    tables do not carry it, and the caller already knows every player's team
+    from master_roster, so matching on name alone removes a whole parsing
+    dependency on ESPN's layout.
+
+    Serve-then-refresh on a 4h TTL, which is the right cadence for something
+    that moves on game days without being minute-to-minute. A request path must
+    never wait on this scrape; _force is how the background thread gets past
+    the gate, and Streamlit ignores leading-underscore params when hashing.
+
+    SANITY FLOOR: a league-wide page under 20 players is a failed or changed
+    scrape, not a healthy league, so the stale copy is kept instead. Writing a
+    partial result would be worse than serving an old one, which is the lesson
+    from the empty-set caches that broke RFA classification page-wide."""
+    path = _dc_path(f"injuries_v{cache_v}.pkl")
+    if not _force and path.exists():
+        try:
+            cached = _pkl_load(path)
+            if cached:
+                if not _dc_fresh(path, ttl=14400):
+                    _refresh_in_background(
+                        str(path), lambda: fetch_injuries.__wrapped__(cache_v, True))
+                return cached
+        except Exception:
+            pass
+    result: dict = {}
+    try:
+        r = requests.get("https://www.espn.com/nba/injuries",
+                         headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
+        soup = BeautifulSoup(r.text, "html.parser")
+        for tb in soup.find_all("table"):
+            try:
+                df = pd.read_html(io.StringIO(str(tb)))[0]
+            except Exception:
+                continue
+            cols = {str(c).strip().upper(): c for c in df.columns}
+            if "NAME" not in cols or "STATUS" not in cols:
+                continue
+            for _, row in df.iterrows():
+                nm = str(row[cols["NAME"]]).strip()
+                st_ = str(row[cols["STATUS"]]).strip()
+                if not nm or nm.lower() == "nan" or not st_ or st_.lower() == "nan":
+                    continue
+                ret = ""
+                if "EST. RETURN DATE" in cols:
+                    ret = str(row[cols["EST. RETURN DATE"]]).strip()
+                    if ret.lower() == "nan":
+                        ret = ""
+                cmt = ""
+                if "COMMENT" in cols:
+                    cmt = str(row[cols["COMMENT"]]).strip()
+                    if cmt.lower() == "nan":
+                        cmt = ""
+                result[nm] = {"status": st_, "ret": ret, "comment": cmt[:300]}
+    except Exception as e:                                    # noqa: BLE001
+        logger.warning("fetch_injuries scrape failed: %s", e)
+    if len(result) < 20:
+        logger.warning("fetch_injuries got only %d players, keeping the stale copy",
+                       len(result))
+        if path.exists():
+            try:
+                return _pkl_load(path) or {}
+            except Exception:
+                pass
+        return {}
+    _pkl_save(path, result)
+    return result
+
+
+def injury_is_out(status: str) -> bool:
+    """True only for a designation that takes a player OUT of the rotation.
+
+    Day-to-day and game-time decisions deliberately do NOT count. On the
+    morning of the 2026-27 opener ESPN had Stephen Curry day-to-day with an
+    ankle and expected to play, so sorting every listed injury to the bottom of
+    the depth chart would have put him below healthy bench players. Only a real
+    absence changes the rotation."""
+    s = (status or "").strip().lower()
+    return s.startswith("out") or "season" in s
+
+
 def fetch_player_positions_detailed(season: str, cache_v: int = 3,
                                     _force: bool = False) -> dict:
     """Returns {normalized_name: "PG"|"SG"|"SF"|"PF"|"C"} from BBRef

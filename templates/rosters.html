@@ -350,6 +350,25 @@ body:not(.light) .tbtn:not(.on):not(:hover){background:rgba(255,255,255,.05)}
    as a like-for-like comparison. Only ever set when the score is NOT current
    (bs_yr is null for 2025-26), so the current season never carries a label. */
 .dcard .bsyr{margin-left:.2em;color:var(--fg5);font-weight:600}
+/* Injury designation. OUT is red, day-to-day amber, both drawn from the theme
+   tokens so they hold in either mode. The card-level cue dims the HEADSHOT
+   only, never any text: a blanket opacity on an out player's card would have
+   pushed his name and score below the contrast floor the September audit set. */
+.dcard .injb{display:inline-flex;align-items:center;gap:.3em;margin-top:.3rem;
+  padding:.07rem .36rem;border-radius:5px;border:1px solid var(--line);
+  color:var(--fg2);font-size:.62rem;font-weight:800;letter-spacing:.03em;line-height:1.5}
+/* The STATUS colour rides on the border and the dot, which are decorative and
+   carry no contrast floor. The label itself stays on --fg2 so it passes AA in
+   both themes. Colouring the text with --bad/--amberc measured 3.83 and 3.23
+   against the card, both under the 4.5 the September audit set for text this
+   small, and those tokens are theme-injected so they cannot just be darkened. */
+.dcard .injb::before{content:"";width:.44em;height:.44em;border-radius:50%;flex:none}
+.dcard .injb.out{border-color:var(--bad)}
+.dcard .injb.out::before{background:var(--bad)}
+.dcard .injb.dtd{border-color:var(--amberc)}
+.dcard .injb.dtd::before{background:var(--amberc)}
+.dcard .injb .iret{font-weight:600;letter-spacing:0;color:var(--fg4)}
+.dcard.isout img,.dcard.isout .noimg{opacity:.5}
 .dcard .vd{font-size:.64rem;font-weight:700;font-variant-numeric:tabular-nums}
 .drank{position:absolute;top:.3rem;left:.35rem;min-width:1.15em;height:1.15em;line-height:1.15em;
   border-radius:4px;background:var(--track);color:var(--fg5);font-size:.62rem;font-weight:800;
@@ -769,15 +788,35 @@ function depthCard(p, rank){
   // A pinned card looks identical to one that earned its rank, so the reason
   // rides in the tooltip rather than being invisible.
   const pin = p.dord == null ? "" : " | Pinned" + (p.dnote ? ": " + p.dnote : "");
-  return `<div class="dcard${cls}" title="${esc(p.note)}${yt ? esc(" | " + yt) : ""}${esc(pin)}">
+  // Injury designation. The badge is short enough to sit in a narrow column;
+  // the status, return estimate and ESPN's note go in the tooltip.
+  const injBadge = !p.inj ? "" :
+    `<span class="injb${p.iout ? " out" : " dtd"}">${esc(injShort(p.inj))}${
+      p.iret ? `<span class="iret">${esc(p.iret)}</span>` : ""}</span>`;
+  const injTip = !p.inj ? "" : " | " + p.inj + (p.iret ? ", est. return " + p.iret : "")
+    + (p.icmt ? ": " + p.icmt : "");
+  return `<div class="dcard${cls}${p.iout ? " isout" : ""}" title="${esc(p.note)}${yt ? esc(" | " + yt) : ""}${esc(pin)}${esc(injTip)}">
     ${rank ? `<span class="drank${rank === 1 ? " top" : ""}">${rank}</span>` : ""}
     ${img}
     <a class="nm" href="/?player=${encodeURIComponent(p.n)}" target="_top"
        onclick="return hvGo(this)">${esc(p.n)}</a>
     <div class="bs">${p.barrett == null ? "no score"
       : p.barrett.toFixed(1) + " BS" + (p.bs_yr ? `<span class="bsyr">(${esc(p.bs_yr)})</span>` : "")}</div>
-    ${money}${vd}
+    ${money}${vd}${injBadge}
   </div>`;
+}
+
+// "Day-To-Day" is too wide for a depth column, so it shows as DTD. Anything
+// unrecognised is passed through rather than hidden, so a new ESPN label is
+// visible instead of silently dropped.
+function injShort(status){
+  const s = (status || "").trim().toLowerCase();
+  if (s.startsWith("out")) return "OUT";
+  if (s.startsWith("day")) return "DTD";
+  if (s.startsWith("game")) return "GTD";
+  if (s.startsWith("question")) return "QUES";
+  if (s.startsWith("doubt")) return "DOUBT";
+  return (status || "").toUpperCase().slice(0, 5);
 }
 
 function playerCard(p){
@@ -863,7 +902,14 @@ function rosterPanel(t){
     // each column reads top down like a real depth chart: best Barrett Score
     // first, salary only as a tiebreak, and anyone with no score at the bottom
     // (a rookie has not played, so he has nothing to rank on)
-    const cmpD = (a, b) => (b.barrett == null ? -1e9 : b.barrett)
+    // A player who is OUT drops to the bottom of his column regardless of
+    // score, because a depth chart is a rotation and he is not in it. Only a
+    // real absence does this: day-to-day and game-time decisions keep their
+    // place and just carry the badge, since on opening night ESPN had Curry
+    // day-to-day and expected to play, and sorting every listed injury down
+    // would have put him below healthy bench players.
+    const cmpD = (a, b) => (a.iout ? 1 : 0) - (b.iout ? 1 : 0)
+                         || (b.barrett == null ? -1e9 : b.barrett)
                          - (a.barrett == null ? -1e9 : a.barrett)
                          || (b.salary - a.salary);
     // Hand-set order (data/depth_order.csv): a pin's rank is the SLOT it takes
@@ -872,18 +918,29 @@ function rosterPanel(t){
     // the starter above him. A pin moves where a player is LISTED, never his
     // score or his value, both of which still render exactly as computed.
     const orderD = list => {
-      const pins = list.filter(p => p.dord != null).sort((a, b) => a.dord - b.dord);
-      if (!pins.length) return list.sort(cmpD);
-      const rest = list.filter(p => p.dord == null).sort(cmpD), out = [];
+      // A player who is OUT is not in the rotation, so he never occupies a
+      // depth slot and never satisfies a pin's absolute position: he goes to
+      // the end whether he is pinned or not. Without the partition the
+      // slot-filling promoted the highest-scored REMAINING player into the gap
+      // above a pin even when he was out, which put Jimmy Butler (torn ACL,
+      // back in January) at the top of the Warriors' SF column ahead of the
+      // healthy man pinned second. Pins order the available; injuries decide
+      // who is available.
+      const sidelined = list.filter(p => p.iout).sort(cmpD);
+      const active = list.filter(p => !p.iout);
+      const pins = active.filter(p => p.dord != null).sort((a, b) => a.dord - b.dord);
+      if (!pins.length) return active.sort(cmpD).concat(sidelined);
+      const rest = active.filter(p => p.dord == null).sort(cmpD), out = [];
       for (const p of pins) {
         while (out.length < p.dord - 1 && rest.length) out.push(rest.shift());
         out.push(p);
       }
-      return out.concat(rest);
+      return out.concat(rest, sidelined);
     };
     const pool = t.players.filter(p => p.kind !== "free_agent" && match(p));
     h += `<div class="depthhint">Each column is ranked by Barrett Score, best first,
-      with hand-set starters pinned above it.</div>
+      with hand-set starters pinned above it. Players listed OUT drop to the
+      bottom; day-to-day keeps its place and carries a badge.</div>
       <div class="depth">`;
     for (const pos of POS){
       const list = orderD(pool.filter(p => p.slot === pos));
