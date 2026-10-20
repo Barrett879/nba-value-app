@@ -519,7 +519,7 @@ from utils import (
     CACHE_DIR, all_seasons_path, html_table, team_cell, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
     fetch_league_stats, SALARY_CAP_M, _pkl_load,
-    FACE_GUARD_SCRIPT, NameIndex,
+    FACE_GUARD_SCRIPT, NameIndex, fetch_injuries, injury_is_out,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
 )
@@ -802,6 +802,43 @@ _hub_cey = _hub_contract_end()
 # know whether the verified roster calls a player a free agent. _market_norms
 # further down is derived from _hub_rows and so cannot be used inside it.
 @st.cache_data(ttl=3600, show_spinner=False)
+def _hub_position_overrides() -> dict:
+    """{spelling: position} from data/position_overrides.csv, the same hand-set
+    file the Rosters depth chart reads.
+
+    Shared so a player cannot read SG/SF on the board and SF/SG on his own
+    team's depth chart. The overrides are EDITORIAL, a judgement about the role
+    a player fills, and they belong wherever a position is shown rather than on
+    one page.
+
+    A row carrying alt_pos + alt_when_out swaps only while the named player is
+    listed OUT, resolved against the injury feed so it reverts by itself. The
+    feed is served from disk here, never scraped in a request."""
+    out = {}
+    try:
+        _inj = NameIndex(fetch_injuries())
+    except Exception:
+        _inj = NameIndex()
+    try:
+        with open(Path(__file__).parent / "data" / "position_overrides.csv") as fh:
+            for r in _csv.DictReader(l for l in fh if l.strip()
+                                     and not l.lstrip().startswith("#")):
+                nm = (r.get("player") or "").strip()
+                pos = (r.get("pos") or "").strip()
+                if not nm or not pos:
+                    continue
+                alt, dep = (r.get("alt_pos") or "").strip(), (r.get("alt_when_out") or "").strip()
+                if alt and dep:
+                    _d = _inj.get(dep)
+                    if _d and injury_is_out(_d.get("status", "")):
+                        pos = alt
+                out[nm] = pos
+    except Exception:
+        pass
+    return out
+
+
+@st.cache_data(ttl=3600, show_spinner=False)
 def _hub_roster_kinds() -> dict:
     """{spelling: kind} from data/master_roster.csv, kind being standard,
     two_way or free_agent.
@@ -902,6 +939,7 @@ def _hub_roster_notes() -> dict:
 
 
 _roster_idx = NameIndex(_hub_roster_kinds())
+_posov_idx = NameIndex(_hub_position_overrides())
 
 _hub_rows = []
 for _i, _r in _pool.iterrows():
@@ -944,7 +982,11 @@ for _i, _r in _pool.iterrows():
         # The pool's own nba_api id: the career quadrants key on it so a current
         # player never inherits a retired namesake's seasons.
         "PID": (int(_r["PLAYER_ID"]) if pd.notna(_r.get("PLAYER_ID")) else None),
-        "Pos": _ts.resolve_position(_nm, _bref_pos.get(_n, ""), _pos2k),
+        # The hand-set override wins over the scraped position, so the board
+        # and the depth chart agree. Falls through to resolve_position when
+        # there is no override, which is all but ~20 players.
+        "Pos": (_posov_idx.get(_nm)
+                or _ts.resolve_position(_nm, _bref_pos.get(_n, ""), _pos2k)),
         "Status": _status or "—",
         "Barrett Score": float(_r["barrett_score"]),
         "Salary": float(_r["salary"]) / 1e6,
