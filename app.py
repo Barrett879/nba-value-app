@@ -926,16 +926,25 @@ _roster_kind_by_norm = {_r["norm"]: (_roster_idx.get(_r["Player"]) or "")
                         for _r in _hub_rows}
 _contracted_norms = {_n for _n, _k in _roster_kind_by_norm.items()
                      if _k in ("standard", "two_way")}
-# A master_roster free_agent row OVERRIDES an exercised option, and this
-# ordering is load-bearing. Gary Harris and D'Angelo Russell both opted in in
-# June and were waived in September: they are paid that money AND free to sign,
-# so they belong on this board. Hiding them is the reverted dead-money gate
-# pointed the other way.
+# A master_roster free_agent row OVERRIDES BOTH a tracked signing and an
+# exercised option, and that ordering is load-bearing. Both of those record a
+# PAST event; `kind` records the roster today, so when they disagree the roster
+# is simply the more recent fact.
+#   - options: Gary Harris and D'Angelo Russell opted in in June and were waived
+#     in September. They are paid that money AND free to sign.
+#   - signings: Haywood Highsmith re-signed with PHX on 8/17, which is a tracked
+#     row, and PHX waived him again on 10/17. The signings guard alone kept him
+#     off the board as though the August deal still stood. Any signed-then-cut
+#     player hits this, so it recurs every time waivers do.
+# The guard the signings clause exists for still holds, because only an EXPLICIT
+# free_agent row overrides it. A player master_roster does not mention is not in
+# _market_norms, so a tracked signing still wins for him, which is what stopped
+# the card headlining James Harden hours after his 3yr/$97M.
 _market_norms = {_n for _n, _k in _roster_kind_by_norm.items() if _k == "free_agent"}
 # An EMPTY kind means master_roster says nothing, never "under contract".
 # Kennedy Chandler and Nicolas Batum have no row in any contract file here, so
 # absence has to mean show him.
-_off_market_norms = _signed_norms | _contracted_norms | (_resolved_norms - _market_norms)
+_off_market_norms = ((_signed_norms | _resolved_norms) - _market_norms) | _contracted_norms
 
 
 def _fa_rows(df: pd.DataFrame) -> pd.DataFrame:

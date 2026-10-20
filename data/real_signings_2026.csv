@@ -16,7 +16,7 @@
 #   note        = free text
 #
 # Add a row each time a real signing is reported. Lines starting with # are ignored.
-# Verified 2026-10-06 (deals through October 6, 2026; adversarial web-search rounds:
+# Verified 2026-10-19 (deals through October 19, 2026; adversarial web-search rounds:
 # every row below confirmed by 2+ independent sources - HoopsRumors/ESPN/RealGM/
 # Spotrac/NBA.com transaction log/team releases).
 player,team,years,total_M,yr1_M,type,signed_date,source,note
@@ -288,3 +288,25 @@ Ben Simmons,SAC,1,3.52,2.45,new,2026-09-07,Spotrac + HoopsRumors + HoopsHype,"1y
 Lonnie Walker IV,DEN,1,3.29,2.45,new,2026-09-10,Spotrac (Keith Smith) + Basketball-Reference + HoopsRumors,"Exhibit 10: $3,286,399 cash against a $2,449,421 cap hit. PROVISIONAL - an Exhibit 10 is very likely waived before opening night. Agreed 8/5, processed 9/10"
 Anthony Gill,WAS,1,3.07,2.45,resign,2026-09-15,Spotrac + HoopsRumors,"1yr vet min re-sign; $3,066,143 cash against a $2,449,421 cap hit (minimum-salary reimbursement, 6 years of service)"
 Jalen Duren,DET,5,200,40.16,resign,2026-10-02,Pistons release via HoopsRumors + Spotrac + ESPN,"restricted FA re-signing, and it STARTS 2026-27 unlike every other deal in this round. He accepted at 10:39pm on 10/1 just inside the qualifying-offer deadline and formally signed 10/2; DET had been at 5yr $190M and his camp sought $200M+"
+# --- Round of 2026-10-19, covering 10/7 to 10/19: FINAL CUTS, eve of the opener ---
+# NO NEW ROWS, and that is the finding rather than an empty round.
+#
+# FIVE rookie-scale extensions were signed by the 5pm 10/19 deadline: Wembanyama
+# (5yr ~$252M), Brandon Miller (5yr ~$209M), Amen Thompson (5yr $208M), Podziemski
+# (5yr $110M, 5th-year mutual option) and Oso Ighodaro (10/18). EVERY ONE STARTS
+# 2027-28, exactly as the six in the 10/6 round did, so each adds $0 to 2026-27 and
+# booking any of them here would double-count a player already on the books. Bilal
+# Coulibaly was the one 2023 first-rounder who did NOT extend; he hits restricted free
+# agency in 2027, not 2026, so he is not part of this FA class either.
+#
+# The cut wave itself produced no rows because a waiver is not a signing. Roughly 100
+# players were released league-wide and nearly all were Exhibit 10 camp deals, which
+# are a $0 cap hit and leave no dead money when cut before the season. Only five
+# standard contracts went: see master_roster and dead_money_2026_27.
+#
+# Four roster resolutions were deliberately NOT added as rows, which is a judgement
+# call worth recording: James Wiseman took NYK's 14th spot but his Exhibit 9 was
+# signed 9/16 and converting it is not a new negotiation; Tony Bradley was CLAIMED off
+# waivers by UTA, which assumes an existing contract rather than signing one; Devin
+# Carter (BOS) and Nate Bittle (TOR) are two-ways, and a two-way is not a market deal
+# the contract model can fairly be scored against. Add them if that call is wrong.

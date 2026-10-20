@@ -1,7 +1,8 @@
 # Verified 2026-27 salaries for players the scraped next-year feed omits.
-# Verified 2026-10-06 via adversarial web-search rounds (Spotrac / HoopsRumors /
+# Verified 2026-10-19 via adversarial web-search rounds (Spotrac / HoopsRumors /
 # RealGM / NBA transaction log). Every row re-checked against master_roster on
-# 2026-10-07; that check corrected the stale Nembhard note below.
+# 2026-10-07; that check corrected the stale Nembhard note below. Re-checked 2026-10-19
+# against the final-cut wave: all four rows still stand, none of these players moved.
 # RealGM / NBA transaction log); update or remove rows if deals change.
 # Verified to have NO 2026-27 NBA standard contract (the board's dash is
 # correct, do not add rows): E.J. Liddell (QO declined, signed 2yr with Aris

@@ -6,6 +6,12 @@
 # Re-verified 2026-09-04: MIN/UTA trade, three waive-and-stretches before the
 # 8/29 deadline (Whitmore, Konchar, Valanciunas), Miami adds Richards and
 # Johnson.
+# Re-verified 2026-10-19: FINAL CUTS, the eve of the opener. Five standard contracts
+# waived (Kevin Porter Jr. MIL, Knecht LAL, Clayton Jr. and Peavy MEM, Highsmith PHX),
+# four roster spots resolved (Wiseman to NYK's 14th spot, Tony Bradley claimed by UTA,
+# Devin Carter to a BOS two-way, Bittle converted by TOR). The five rookie-scale
+# extensions signed by the 10/19 deadline (Wembanyama, Brandon Miller, Amen Thompson,
+# Podziemski, Ighodaro) ALL start 2027-28 and change no 2026-27 figure here.
 # Re-verified 2026-10-06: the camp-cut window. Duren re-signed 5yr/$200M at the
 # qualifying-offer deadline; six waivers left real dead money (Russell MEM,
 # Dillingham CHA, Nembhard CHA, Harris DET, Hawkins MEM, Broome LAC); the 9/22
@@ -36,7 +42,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CHI,Buddy Hield,9.66,standard,SG/SF,"ATL to CHA 9/22/26 in the Finney-Smith trade, then CHA to CHI 9/27 for Rob Dillingham. 2027-28 player option"
 ,ATL,Aaron Wiggins,9.03,standard,SF/SG,acquired by trade 7/6/26
 ,ATL,Kingston Flemings,7.35,standard,PG,"2026 1st round, No. 8 overall"
-,ATL,Devin Carter,0,free_agent,PG/SG,"WAIVED by ATL 9/11/26 (acquired by trade 6/30/26); his $5,158,080 was fully guaranteed so ATL carries all of it as dead money; signed a BOS Exhibit 10 camp deal 9/14 which is a $0 cap hit"
+,BOS,Devin Carter,0,two_way,PG/SG,"signed a BOS TWO-WAY in the 10/17/26 cut wave, so $0 against the team cap. ATL still carries his $5,158,080 as dead money from the 9/11/26 waive; being paid by one team and employed by another is normal and not a double count"
 ,ATL,Zuby Ejiofor,3.45,standard,C,"2026 1st round, No. 23 overall"
 ,ATL,Asa Newell,3.4,standard,PF/C,2025 No. 23 pick; 2027-28 team option
 ,ATL,Mouhamed Gueye,2.41,standard,PF/C,non-guaranteed until 1/10/27
@@ -264,7 +270,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,LAL,Collin Sexton,9.37,standard,PG/SG,signed 2yr/$19.2M July 2026 via room exception
 ,LAL,Jaden Hardy,6,standard,PG/SG,3yr/$18M extension (2025)
 ,LAL,Jake LaRavia,6,standard,SF/PF,year 2 of 2yr/$12M
-,LAL,Dalton Knecht,4.2,standard,SG/SF,3rd year rookie scale
+,LAL,Dalton Knecht,0,free_agent,SG/SF,"WAIVED by LAL 10/19/26 to reach 15 after trade talks failed; $4,201,080 is dead money and the waiver VOIDS his $6.45M 2027-28 team option; est value $4.4M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase)"
 ,LAL,Cameron Carr,3.32,standard,SG,2026 draft pick No. 25 (Baylor); rookie scale 4yr/$16.82M
 ,LAL,Kevon Looney,2.45,standard,C,signed 1yr/$3.88M vet-min July 2026; min cap hit
 ,LAL,Ziaire Williams,2.45,standard,PF/SF,"signed 1yr/$2.85M Jul 19, 2026; min cap hit"
@@ -284,7 +290,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Cedric Coward,6,standard,SG/SF,"2025 first-rounder, yr 2; 2027-28 club option due 10/31/26"
 ,MEM,D'Angelo Russell,0,free_agent,PG/SG,"WAIVED by MEM 9/25/26. $5,969,250 dead, the player-option year he exercised with WAS in June"
 ,MEM,Kris Murray,5.32,standard,SF/PF,"Acquired from POR June 30, 2026 in Ja Morant trade"
-,MEM,Walter Clayton Jr.,4.19,standard,PG/SG,Acquired from UTA Feb 2026 in JJJ trade; 2027-28 club option due 10/31/26
+,MEM,Walter Clayton Jr.,0,free_agent,PG/SG,"WAIVED by MEM 10/19/26 to finalize the roster; acquired from UTA Feb 2026 in the JJJ trade. $4,190,520 dead on MEM and his 2027-28 club option, due 10/31/26, is moot; est value $4.2M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase)"
 ,NOP,Taj Gibson,0,free_agent,C/PF,"traded MEM to NOP 9/8/26 and WAIVED 9/9; of his $3,815,861 only $148,828 was guaranteed, so NOP carries $148,828 of dead money and the other $3.67M is charged to nobody"
 ,NOP,AJ Johnson,3.24,standard,SG/SF,"traded MEM to NOP 9/8/26; WAS to DAL (Feb, AD deal) to MEM (July 8 six-teamer) to NOP; 2027-28 club option due 10/31/26"
 ,MEM,Olivier-Maxence Prosper,2.5,standard,PF/C,Signed after DAL waived him (DAL carries stretched dead money)
@@ -323,7 +329,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MIL,Jaime Jaquez Jr.,5.94,standard,SF/PF,Acquired 7/6/26 from MIA in Giannis trade; final rookie-scale year
 ,MIL,Ousmane Dieng,5.75,standard,PF/C,Signed 3yr/$17.5M on 7/9/26 (2028-29 team option)
 ,MIL,Nate Ament,5.5,standard,PF,No. 13 pick 2026 draft (Tennessee; pick acquired from MIA in Giannis trade); signed 4yr/$25.98M rookie scale 7/8/26
-,MIL,Kevin Porter Jr.,5.39,standard,PG/SG,2026-27 player-option year of deal signed with MIL in 2025
+,MIL,Kevin Porter Jr.,0,free_agent,PG/SG,"WAIVED by MIL 10/19/26 at the roster deadline, after exercising his $5,390,700 player option in June; MIL carries it as dead money. ON WAIVERS as of 10/19, clears about 10/21, and a claim would move the salary to the claiming team; est value $20.7M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase). Note the model is far above his $5.39M option, a known gap on injury-prone high-usage guards, not a data error"
 ,MIL,Kel'el Ware,4.65,standard,C/PF,Acquired 7/6/26 from MIA in Giannis trade; rookie scale yr 3
 ,MIL,Ryan Rollins,4,standard,PG/SG,Year 2 of deal re-signed with MIL in 2025
 ,MIL,Kasparas Jakucionis,3.84,standard,PG/SG,Acquired 7/6/26 from MIA in Giannis trade; rookie scale yr 2
@@ -365,7 +371,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Yves Missi,3.51,standard,C,Rookie scale yr 3; 2027-28 club option due 10/31/26
 ,NOP,Bryce McGowens,2.58,standard,SG/SF,Converted from two-way to standard March 2026; 2027-28 club option
 ,NOP,Karlo Matkovic,2.3,standard,PF/C,2027 RFA
-,MEM,Micah Peavy,2.15,standard,SF/SG,"traded NOP to MEM 9/8/26; 2025 No. 40 pick, partial guarantees; MEM absorbed him into the Ja Morant trade exception rather than creating a new one"
+,MEM,Micah Peavy,0,free_agent,SF/SG,"WAIVED by MEM 10/19/26; traded NOP to MEM 9/8/26 and an ankle injury kept him out of the entire preseason. $2,150,917 dead on MEM; est value $3.0M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase)"
 ,NOP,Malik Dia,0.68,two_way,PF,"two-way signed 8/18/26 (Hunter Dickinson waived from his two-way the same day)"
 ,NOP,Jaron Pierre Jr.,0.68,two_way,SG,2026 No. 58 pick; two-way official 7/24/26
 ,NOP,Trendon Watford,2.45,standard,PF/SF,"signed 8/17/26: 1yr vet min ($2.85M actual, $2.45M cap hit); PHI had declined his $2.8M team option in June"
@@ -443,7 +449,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,PHX,Khaman Maluach,6.32,standard,C,"2025 first-round pick, year 2 rookie scale"
 ,PHX,Luke Kennard,6.06,standard,SG/PG,"signed 2yr/$12.43M Jul 14, 2026 via taxpayer MLE; 2027-28 player option"
 ,PHX,Jordan Goodwin,5.86,standard,PG/SG,"re-signed 3yr/$19M Jul 7, 2026"
-,PHX,Haywood Highsmith,2.45,standard,SF/PF,"waived 8/12/26 ($1M partial = PHX dead money) and re-signed 8/17/26: 1yr vet min ($3.07M actual, $2.45M cap hit); Exhibit 3 right-knee clause"
+,PHX,Haywood Highsmith,0,free_agent,SF/PF,"WAIVED by PHX 10/17/26, the second time this offseason (also 8/12, then re-signed 8/17). The August re-sign was NON-GUARANTEED until 1/27/27, so this waiver leaves NO dead money and Spotrac carries none; PHX dropped to $7.9M under its second-apron hard cap. Jamaree Bouyea was kept as the 14th man instead; est value $2.9M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase)"
 ,PHX,Koa Peat,2.93,standard,PF,2026 first-round pick (Arizona); rookie scale
 ,PHX,Ryan Dunn,2.78,standard,SF/PF,3rd year rookie scale
 ,PHX,Jamaree Bouyea,2.58,standard,PG/SG,non-guaranteed
@@ -517,7 +523,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,TOR,Jamal Shead,2.3,standard,PG/SG,"signed an extension 10/1/26 that starts 2027-28; this year is unchanged"
 ,TOR,Jamison Battle,2.3,standard,SF/PF,Non-guaranteed; RFA 2027
 ,TOR,Alijah Martin,2.19,standard,SG,2025 2nd-round pick No.39; re-signed 7/3/2026; 2027-28 player option
-,TOR,Nate Bittle,1.36,standard,C,"Exhibit 10 camp deal signed 7/10/2026 (undrafted 2026, Oregon); 1yr rookie-minimum $1,357,763 base, fully non-guaranteed ($0 gtd); reported candidate for TOR's open two-way slot"
+,TOR,Nate Bittle,0,two_way,C,"CONVERTED to a TOR two-way 10/19/26 from the 7/10/26 Exhibit 10 camp deal (undrafted 2026, Oregon), so $0 against the team cap. TOR waived Burnett, Key, Celestine, Degenhart and Sharp in the same wave"
 ,TOR,Jaden Bradley,0,two_way,SG,Two-way; 2026 2nd-round pick No.50
 ,TOR,Chucky Hepburn,0,two_way,PG,Two-way; undrafted 2025
 ,UTA,Jaren Jackson Jr.,49,standard,C/PF,"Acquired from MEM Feb 6, 2026 (8-player deal: Kessler stayed; Hendricks, Anderson, Clayton, Niang + 3 firsts out); vet extension signed 2026, PO 2029-30"
@@ -594,8 +600,8 @@ asof,team,player,salary_M,kind,pos,notes
 ,GSW,Seth Curry,0,free_agent,SG/PG,unsigned free agent; est value $3.9M
 ,HOU,Jeff Green,0,free_agent,PF/C,unsigned free agent; est value $3.9M
 ,HOU,Aaron Holiday,0,free_agent,PG/SG,unsigned free agent; est value $3.5M
-,IND,Tony Bradley,0,free_agent,C,unsigned free agent; est value $3.5M
-,IND,James Wiseman,0,free_agent,C,"reported in the same NYK camp-deal batch 9/16/26 and listed in Spotrac's Knicks $0 group, but not separately verified, so his team is left as-is pending a second source. est value $2.9M"
+,UTA,Tony Bradley,2.45,standard,C,"CLAIMED off waivers by UTA 10/17/26 after NYK waived him 10/15; his deal is NON-GUARANTEED, so he is a week-to-week audition. Salary UNVERIFIED: $2,449,421 is the standard minimum cap hit inferred from the deal type, not a figure found in reporting. Confirm next round"
+,NYK,James Wiseman,2.45,standard,C,"made the NYK roster 10/19/26 in the 14th and final spot, the last minimum slot under the $222M second apron, after entering camp on an Exhibit 9. 1yr minimum: $3,066,143 actual, $2,449,421 cap hit. NYK cut Bruce Brown to clear the spot"
 ,IND,Garrison Mathews,0,free_agent,SG/SF,unsigned free agent; est value $2.9M
 ,IND,Monte Morris,0,free_agent,PG,unsigned free agent
 ,IND,Gabe Mcglothan,0,free_agent,SF/PF,unsigned free agent
