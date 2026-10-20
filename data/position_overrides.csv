@@ -1,0 +1,46 @@
+# HoopsValue - hand-set position overrides for the depth chart.
+#
+# master_roster's `pos` is ROSTER data, scraped and verified from Spotrac and
+# ESPN. These rows are EDITORIAL: a judgement about the role a player actually
+# fills, which is not always the position a feed lists him at. They live here
+# rather than in master_roster so a verification round re-scraping positions
+# cannot quietly erase them, and so the provenance of each file stays one thing.
+#
+# The FIRST position decides which depth column a player lands in (utils _SLOT),
+# so "C/PF" instead of "PF/C" moves him from the PF column to the C column. That
+# is the whole point of most of these rows.
+#
+#   player         = must resolve through NameIndex against master_roster
+#   pos            = the normal position, primary first
+#   alt_pos        = position to use INSTEAD while alt_when_out is listed OUT
+#   alt_when_out   = the player whose absence activates alt_pos
+#
+# The conditional pair exists because a rotation changes shape when a specific
+# player is missing: Draymond Green slides to centre only while Porzingis is
+# out, and Derrick Jones Jr. to small forward only while Ingram is out. Keying
+# it to the injury feed rather than a date means it reverts on its own the day
+# they are back, with nothing to remember.
+#
+# Set 2026-10-20 at Barrett's direction.
+player,pos,alt_pos,alt_when_out,note
+Collin Murray-Boyles,C/PF,,,moves from the PF column to C
+Corey Kispert,SG/SF,,,was SF/SG
+Joan Beringer,C/PF,,,moves from the PF column to C
+Damian Lillard,SG/PG,,,was a bare PG
+Jaren Jackson Jr.,PF/C,,,moves from the C column to PF
+Lauri Markkanen,SF/PF,,,moves from the PF column to SF
+Draymond Green,PF/C,C/PF,Kristaps Porzingis,"centre only while Porzingis is out; reverts to PF/C on his return"
+Derrick Jones Jr.,PF/SF,SF/PF,Brandon Ingram,"small forward only while Ingram is out; reverts to PF/SF on his return"
+Keaton Wagler,SG/PG,,,was a bare PG
+Sandro Mamukelashvili,PF/C,,,moves from the C column to PF
+Devin Booker,PG/SG,,,moves from the SG column to PG
+Jordan Goodwin,SF/SG,,,moves from the PG column to SF
+Ryan Dunn,PF/SF,,,moves from the SF column to PF; his depth pin follows him there
+Zaccharie Risacher,SG/SF,,,moves from the SF column to SG
+Marcus Smart,PG/SG,,,moves from the SG column to PG
+Reed Sheppard,SG/PG,,,moves from the PG column to SG
+Ty Jerome,PG/SG,,,moves from the SG column to PG
+Jerami Grant,SF/PF,,,moves from the PF column to SF
+Julian Champagnie,PF/SF,,,moves from the SF column to PF
+Devin Vassell,SF/SG,,,moves from the SG column to SF
+Dylan Harper,SG/PG,,,moves from the PG column to SG

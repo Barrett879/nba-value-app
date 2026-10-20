@@ -35,7 +35,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from utils import normalize  # noqa: E402
+from utils import NameIndex, normalize  # noqa: E402
 
 # CBA: 15 standard maximum, 14 minimum during the regular season (a team may sit
 # at 13 for up to two weeks, and 28 days across a season, so 13 is a WARN not a
@@ -47,6 +47,12 @@ results: list[tuple[str, str, str]] = []
 
 def record(state: str, name: str, detail: str) -> None:
     results.append((state, name, detail))
+
+
+def rows_of(path) -> list:
+    with open(path) as fh:
+        return list(csv.DictReader(
+            l for l in fh if l.strip() and not l.lstrip().startswith("#")))
 
 
 with open(ROOT / "data" / "master_roster.csv") as fh:
@@ -131,6 +137,45 @@ for r in rows:
 both = [n for n, ks in by_name.items() if "free_agent" in ks and ks & {"standard", "two_way"}]
 record("FAIL" if both else "PASS", "no player both signed and free",
        f"{both[:6]}" if both else "no contradictory rows")
+
+
+# ── 9. the hand-set override files actually resolve ──────────────────────────
+# A misspelled name in either file does NOTHING, silently: the lookup misses and
+# the player keeps his scraped position or his score-ranked slot. Nobody would
+# notice except by staring at the depth chart and wondering why an instruction
+# did not take.
+SLOT_FIRST = {"PG", "SG", "SF", "PF", "C", "G", "F"}
+roster_idx = NameIndex({r["player"]: r for r in rows if r.get("player")})
+for fname, poscol in (("position_overrides.csv", "pos"), ("depth_order.csv", None)):
+    fp = ROOT / "data" / fname
+    if not fp.exists():
+        record("WARN", f"{fname}", "absent")
+        continue
+    unresolved, badpos = [], []
+    for r in rows_of(fp):
+        nm = (r.get("player") or "").strip()
+        if not nm:
+            continue
+        if roster_idx.get(nm) is None:
+            unresolved.append(nm)
+        if poscol:
+            first = ((r.get(poscol) or "").split("/")[0] or "").strip().upper()
+            if first not in SLOT_FIRST:
+                badpos.append(f"{nm}={r.get(poscol)!r}")
+            alt = ((r.get("alt_pos") or "").split("/")[0] or "").strip().upper()
+            if (r.get("alt_pos") or "").strip() and alt not in SLOT_FIRST:
+                badpos.append(f"{nm} alt={r.get('alt_pos')!r}")
+            dep = (r.get("alt_when_out") or "").strip()
+            if dep and roster_idx.get(dep) is None:
+                unresolved.append(f"{dep} (alt_when_out for {nm})")
+    detail = []
+    if unresolved:
+        detail.append("unresolved names: " + ", ".join(unresolved[:5]))
+    if badpos:
+        detail.append("unmappable positions: " + ", ".join(badpos[:5]))
+    record("FAIL" if detail else "PASS", f"{fname} resolves",
+           "; ".join(detail) if detail else
+           f"every player and position in {fname} resolves against master_roster")
 
 
 # ── report ───────────────────────────────────────────────────────────────────

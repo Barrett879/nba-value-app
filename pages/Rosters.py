@@ -120,6 +120,31 @@ def _payload() -> str:
     except Exception:                                # never block the page
         _inj_idx = NameIndex()
 
+    # Hand-set position overrides (data/position_overrides.csv). EDITORIAL, so
+    # they live outside master_roster, whose pos is scraped roster data a
+    # verification round would re-write. The FIRST position decides the depth
+    # column, so most of these rows exist to move a player between columns.
+    #
+    # A row may carry alt_pos + alt_when_out, which swaps the position only
+    # while the named player is listed OUT. Keyed to the injury feed rather
+    # than a date so it reverts by itself the day he is back: Draymond Green is
+    # a centre only while Porzingis is out, Derrick Jones Jr. a small forward
+    # only while Ingram is out.
+    _posov = NameIndex()
+    for _row in _read_csv(_ROOT / "data" / "position_overrides.csv"):
+        _nm = (_row.get("player") or "").strip()
+        _pp = (_row.get("pos") or "").strip()
+        if not _nm or not _pp:
+            continue
+        _alt = (_row.get("alt_pos") or "").strip()
+        _dep = (_row.get("alt_when_out") or "").strip()
+        _use = _pp
+        if _alt and _dep:
+            _di = _inj_idx.get(_dep)
+            if _di and injury_is_out(_di.get("status", "")):
+                _use = _alt
+        _posov.add(_nm, _use)
+
     _pin = {}
     for _row in _read_csv(_ROOT / "data" / "depth_order.csv"):
         _tm, _nm = (_row.get("team") or "").strip(), (_row.get("player") or "").strip()
@@ -359,7 +384,7 @@ def _payload() -> str:
                     value = float(_mm.group(1)) if _mm else None
                 sal = 0.0
             o = opts.get(name) or {}
-            pos = (r.get("pos") or "").strip()
+            pos = (_posov.get(name) or (r.get("pos") or "")).strip()
             _pn = (_pin.get(abbr) or NameIndex()).get(name)
             _ij = _inj_idx.get(name)
             players.append({
