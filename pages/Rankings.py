@@ -11,7 +11,7 @@ import streamlit.components.v1 as components
 import plotly.express as px
 import plotly.graph_objects as go
 from utils import (
-    COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD, SEASON_GAMES_LOOKUP,
+    COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD, SEASON_GAMES_LOOKUP, season_is_live,
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
@@ -63,30 +63,56 @@ ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", SEASONS, index=0)
 
-# Default minimum-minutes drops in playoff mode — playoff GP is 4-28 games,
-# so a 500-min threshold would hide most of the field.
-default_min_threshold = 100 if playoff_mode else DEFAULT_MIN_THRESHOLD
-slider_max = 600 if playoff_mode else 1500
-with ctrl_r:
-    min_threshold = st.slider(
-        "Min total minutes", min_value=0, max_value=slider_max,
-        value=default_min_threshold, step=25 if playoff_mode else 50,
-        help="Hides players with fewer total minutes than this (500 is roughly "
-             "six minutes a game over a full season). Ranks never change: they "
-             "are always computed on the full pool, this only trims the list. "
-             "Drag to 0 to show everyone.",
-    )
-
 # ── Data loading ───────────────────────────────────────────────────────────────
+# Loaded BEFORE the minutes slider is drawn, because the slider's default has to
+# scale to how much of the season has actually been played. This page shows ONE
+# season's own numbers and never falls back to an earlier one, unlike the home
+# board, so a young season has to be usable on its own terms.
 # build_ranked_projected is @st.cache_resource (no copy on hit) — must copy before mutating
-df = build_ranked_projected(season, playoffs=playoff_mode)
-if df.empty:
+_df_all = build_ranked_projected(season, playoffs=playoff_mode)
+if _df_all.empty:
     st.warning(
         f"No {'playoff' if playoff_mode else 'regular season'} data for {season} yet. "
         "Try a previous season or toggle Playoff mode off."
     )
     st.stop()
-df = df[df["total_min"] >= min_threshold].copy()
+
+# Default minimum-minutes drops in playoff mode — playoff GP is 4-28 games,
+# so a 500-min threshold would hide most of the field.
+#
+# It also has to scale for a season IN PROGRESS. 500 minutes is six a game over
+# 82, which nobody can reach in October: one game into 2026-27 the entire field
+# topped out at 40 total minutes, so the fixed default filtered out all 61
+# players and the page stopped with "no players cleared the threshold". Holding
+# the same six-minutes-a-game bar against games actually PLAYED keeps the page
+# meaningful from opening night, and the slider is still free to override.
+_season_gp = int(_df_all["GP"].max() or 0)
+if playoff_mode:
+    default_min_threshold, slider_max = 100, 600
+elif season_is_live(season) and 0 < _season_gp < 82:
+    default_min_threshold = max(1, round(DEFAULT_MIN_THRESHOLD * _season_gp / 82))
+    slider_max = max(50, default_min_threshold * 5)
+else:
+    default_min_threshold, slider_max = DEFAULT_MIN_THRESHOLD, 1500
+_step = 1 if default_min_threshold < 50 else (25 if playoff_mode else 50)
+with ctrl_r:
+    min_threshold = st.slider(
+        "Min total minutes", min_value=0, max_value=slider_max,
+        value=default_min_threshold, step=_step,
+        help=("Hides players with fewer total minutes than this. The default is "
+              "about six minutes a game over the games played so far, so it "
+              f"scales as the season goes ({_season_gp} "
+              f"game{'' if _season_gp == 1 else 's'} in, that is "
+              f"{default_min_threshold}). Ranks never change: they are always "
+              "computed on the full pool, this only trims the list. Drag to 0 "
+              "to show everyone."
+              if season_is_live(season) and 0 < _season_gp < 82 else
+              "Hides players with fewer total minutes than this (500 is roughly "
+              "six minutes a game over a full season). Ranks never change: they "
+              "are always computed on the full pool, this only trims the list. "
+              "Drag to 0 to show everyone."),
+    )
+df = _df_all[_df_all["total_min"] >= min_threshold].copy()
 if df.empty:
     st.warning(
         f"No players cleared the {min_threshold}-minute threshold for "
