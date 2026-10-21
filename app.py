@@ -518,7 +518,7 @@ import plotly.graph_objects as go
 from utils import (
     CACHE_DIR, all_seasons_path, html_table, team_cell, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
-    fetch_league_stats, SALARY_CAP_M, _pkl_load,
+    fetch_league_stats, SALARY_CAP_M, _pkl_load, build_ranked_blended,
     FACE_GUARD_SCRIPT, NameIndex, fetch_injuries, injury_is_out,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
@@ -786,7 +786,13 @@ def _hub_outcome(norm_name: str, status: str | None) -> str | None:
 
 
 # ── Assemble the hub frame (warm caches only) ─────────────────────────────────
-_pool = build_ranked_projected(_HUB_SEASON)
+# Blended, not the raw current-season pool. One game into 2026-27 the raw
+# frame was 61 of ~524 players with a score range WIDER than a full season,
+# and Jokic, Doncic, Antetokounmpo, Curry and Durant were absent because their
+# teams had not played. A player carries his current-season row only once he
+# clears the minutes floor; until then he keeps last season's, tagged with the
+# year. See utils.build_ranked_blended.
+_pool = build_ranked_blended(_HUB_SEASON)
 _pool = _pool.sort_values("barrett_score", ascending=False).reset_index(drop=True)
 
 _bref_pos = fetch_bref_positions(season_to_espn_year(_HUB_SEASON), cache_v=3)
@@ -989,6 +995,11 @@ for _i, _r in _pool.iterrows():
                 or _ts.resolve_position(_nm, _bref_pos.get(_n, ""), _pos2k)),
         "Status": _status or "—",
         "Barrett Score": float(_r["barrett_score"]),
+        # Which season this score actually came from. Blank while it is the
+        # season the board claims; set when the row fell back, so a visitor is
+        # never shown last year's number as though it were this year's.
+        "ScoreYr": (None if str(_r.get("score_season") or _HUB_SEASON) == _HUB_SEASON
+                    else str(_r.get("score_season"))),
         "Salary": float(_r["salary"]) / 1e6,
         "Predicted": (_pcv_by.get(_n) or {}).get("pcv_M"),
         # extra depth for the Right Now quadrant
@@ -1245,7 +1256,11 @@ def _board():
         _df = _hub_df[_hub_df["norm"].isin(_max_norms)]
     else:
         _df = _hub_df
-    _rail("", "2025-26 Player Board", count=f"{len(_df)} players")
+    # Derived, not written out. It read "2025-26 Player Board" literally, so the
+    # moment SEASONS[0] moved to 2026-27 the board was labelled with one season
+    # while showing another's numbers: exactly the silent mislabel the rollover
+    # doc warns about, and invisible because nothing raises.
+    _rail("", f"{_HUB_SEASON} Player Board", count=f"{len(_df)} players")
     st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
              label_visibility="collapsed")
 
@@ -1253,56 +1268,79 @@ def _board():
     # (same expander every inner page shows), not up in the hero.
 
     _view = _df
+    # Headers DERIVE from the seasons they describe. They used to read
+    # "2025-26" and "2026-27" literally, so the rollover left the board
+    # labelling one season while showing another's numbers, with nothing
+    # raising. The score columns are named for the season most rows actually
+    # came from, which while the new season is young is last season, and the
+    # per-row tag marks any row that differs.
+    _score_yr = (_df["ScoreYr"].dropna().mode().iat[0]
+                 if "ScoreYr" in _df and _df["ScoreYr"].notna().any() else _HUB_SEASON)
+    # Per-row year tag, by player rather than as a column, because html_table
+    # renders every column it is handed. It stays INVISIBLE while the board is
+    # uniform, since the header already names the season, and appears only on
+    # the rows that differ. That matters in a few weeks: as players clear the
+    # minutes floor the board becomes a mix, and a single header would then be
+    # hiding which season each number came from.
+    _yr_by_player = (dict(zip(_df["Player"], _df["ScoreYr"]))
+                     if "ScoreYr" in _df else {})
+
+    def _score_cell(v, r):
+        _yr = _yr_by_player.get(r.get("Player"))
+        _t = ("" if not _yr or str(_yr) == str(_score_yr)
+              else f'<span class="hv-bsyr">({str(_yr)[2:]})</span>')
+        return f"{v:.2f}{_t}"
     _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",
                    "ProjValue", "DeltaMkt", "Predicted", "Next"]].rename(columns={
-        "Barrett Score": "2025-26 Barrett Score", "Salary": "2025-26 Salary",
-        "ProjValue": "2025-26 Value", "DeltaMkt": "+/-",
-        "Predicted": "2026-27 Predicted", "Next": "Actual 2026-27 Salary"})
+        "Barrett Score": f"{_score_yr} Barrett Score", "Salary": f"{_score_yr} Salary",
+        "ProjValue": f"{_score_yr} Value", "DeltaMkt": "+/-",
+        "Predicted": f"{_NEXT_SEASON} Predicted", "Next": f"Actual {_NEXT_SEASON} Salary"})
     html_table(
         _view,
         formatters={
             "Player": lambda v: (f'<a class="hv-plink" href="/?player={_urlquote(str(v))}" '
                                  f'target="_top">{html.escape(str(v))}</a>'),
             "Team": team_cell,
-            "2025-26 Barrett Score": lambda v: f"{v:.2f}",
-            "2025-26 Salary": lambda v: f"${v:.2f}M",
-            "2025-26 Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+            f"{_score_yr} Barrett Score": _score_cell,
+            f"{_score_yr} Salary": lambda v: f"${v:.2f}M",
+            f"{_score_yr} Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
                                         else f"${v:.2f}M"),
-            "Actual 2026-27 Salary": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+            f"Actual {_NEXT_SEASON} Salary": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
                                                    else ('<span class="hv-chip max">MAX</span>'
                                                          if normalize(str(r.get("Player", ""))) in _amax_norms else "")
                                                         + f"${v:.2f}M"),
             "+/-": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
                               else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
-            "2026-27 Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
+            f"{_NEXT_SEASON} Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
                                                else ('<span class="hv-chip max">MAX</span>'
                                                      if normalize(str(r.get("Player", ""))) in _max_norms else "")
                                                     + f"${v:.1f}M"),
         },
-        raw={"Player", "Team", "2026-27 Predicted", "Actual 2026-27 Salary"},
+        raw={"Player", "Team", f"{_score_yr} Barrett Score",
+             f"{_NEXT_SEASON} Predicted", f"Actual {_NEXT_SEASON} Salary"},
         styles={
-            "2025-26 Barrett Score": lambda v, _r: (
+            f"{_score_yr} Barrett Score": lambda v, _r: (
                 "" if v is None or (isinstance(v, float) and v != v) else
                 f"background:linear-gradient(90deg,var(--bar-tint) "
                 f"{max(4, min(100, v / _SCORE_MAX * 100)):.0f}%,transparent 0)"),
             "+/-": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) or v == 0
                                   else ("color:var(--value-good);font-weight:700" if v < 0
                                         else "color:var(--value-bad);font-weight:700")),
-            "2026-27 Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
+            f"{_NEXT_SEASON} Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
                                                 else "color:var(--accent-teal)"),
         },
-        aligns={"#": "right", "2025-26 Barrett Score": "right", "2025-26 Salary": "right",
-                "2025-26 Value": "right", "+/-": "right", "2026-27 Predicted": "right",
-                "Actual 2026-27 Salary": "right"},
-        numeric={"#", "2025-26 Barrett Score", "2025-26 Salary", "2025-26 Value",
-                 "+/-", "2026-27 Predicted", "Actual 2026-27 Salary"},
+        aligns={"#": "right", f"{_score_yr} Barrett Score": "right", f"{_score_yr} Salary": "right",
+                f"{_score_yr} Value": "right", "+/-": "right", f"{_NEXT_SEASON} Predicted": "right",
+                f"Actual {_NEXT_SEASON} Salary": "right"},
+        numeric={"#", f"{_score_yr} Barrett Score", f"{_score_yr} Salary", f"{_score_yr} Value",
+                 "+/-", f"{_NEXT_SEASON} Predicted", f"Actual {_NEXT_SEASON} Salary"},
         helps={
-            "2025-26 Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
-            "2025-26 Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
-            "+/-": "2025-26 Salary minus 2025-26 Value. Negative = underpaid.",
-            "2026-27 Predicted": ("The Contract Predictor's model projection: what a NEW deal signed today "
+            f"{_score_yr} Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
+            f"{_score_yr} Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
+            "+/-": f"{_score_yr} Salary minus {_score_yr} Value. Negative = underpaid.",
+            f"{_NEXT_SEASON} Predicted": ("The Contract Predictor's model projection: what a NEW deal signed today "
                                   "would pay, at next season's cap." + _accuracy_note()),
-            "Actual 2026-27 Salary": "What is really on the books for 2026-27: existing contract, exercised option, or the actual new deal signed this summer. Blank = nothing signed yet.",
+            f"Actual {_NEXT_SEASON} Salary": "What is really on the books for 2026-27: existing contract, exercised option, or the actual new deal signed this summer. Blank = nothing signed yet.",
         },
         height=min(760, max(260, len(_view) * 38 + 46)),
     )

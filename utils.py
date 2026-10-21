@@ -188,6 +188,11 @@ def _seed_disk_cache_from_repo() -> None:
 _seed_disk_cache_from_repo()
 
 SEASONS = [
+    # 2026-27 became the scored season on 2026-10-21, the morning after opening
+    # night. Prepending it is the whole rollover: _HUB_SEASON, _NEXT_SEASON,
+    # _FA_YEAR, which caches count as immutable and which cap prices a max
+    # contract are all derived from SEASONS[0]. See docs/season_rollover.md.
+    "2026-27",
     "2025-26", "2024-25", "2023-24", "2022-23", "2021-22", "2020-21", "2019-20",
     "2018-19", "2017-18", "2016-17", "2015-16", "2014-15", "2013-14", "2012-13",
     "2011-12", "2010-11", "2009-10", "2008-09", "2007-08", "2006-07",
@@ -1404,6 +1409,11 @@ table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;
 .hv-chip{display:inline-block;padding:0.05rem 0.45rem;border-radius:999px;
   font-size:0.64rem;font-weight:800;letter-spacing:0.04em;border:1px solid currentColor;
   white-space:nowrap;vertical-align:middle;}
+/* The season a Barrett Score came from, shown only on a row that fell back to
+   an earlier season than the column header names. Muted on --fg5, the same
+   token the Rosters depth chart uses for its own year tag, so it reads as an
+   annotation rather than competing with the number. */
+.hv-bsyr{margin-left:.25em;color:var(--fg5);font-weight:600;font-size:.82em}
 .hv-chip.ufa{color:var(--gold);}
 .hv-chip.rfa{color:var(--sky);}
 .hv-chip.po{color:var(--purple);}
@@ -6577,6 +6587,71 @@ def build_ranked_projected(season: str, playoffs: bool = False) -> pd.DataFrame:
     @st.cache_data. Callers MUST .copy() before mutating columns.
     """
     return apply_projections(apply_rankings(build_raw(season, playoffs)))
+
+
+def build_ranked_blended(season: str, min_minutes: int = 500) -> pd.DataFrame:
+    """The scored pool for a season too young to stand on its own.
+
+    Early in a season a per-game rate over a handful of games is not a rating,
+    it is noise. One game into 2026-27, on 2026-10-21, the current-season frame
+    held 61 of ~524 players and its score range, -8.5 to 57.0, was WIDER than a
+    whole 2025-26 season at -4.0 to 48.5, because the Barrett Score is
+    calibrated to season-scale minutes. Paul George led the league at 57.0 on a
+    single 38-point game, and Jokic, Doncic, Antetokounmpo, Curry and Durant
+    were absent from the board entirely because their teams had not played.
+
+    So a player carries his CURRENT-season row only once he clears
+    min_minutes; until then he keeps the most recent season where he did, and
+    `score_season` records which. Nobody disappears, the scale stays
+    calibrated, and players graduate to live numbers on their own as minutes
+    accumulate, with no second flip to remember.
+
+    A whole ROW moves together, score and salary, so each row stays internally
+    consistent rather than pricing one season's production against another's
+    salary. Ranks are then computed across the blended set.
+
+    Names are matched through NameIndex, not a bare key: the current frame can
+    come from BBRef while the prior one came from the NBA API, and those spell
+    players differently ("Nicolas Claxton" against "Nic Claxton"). An exact
+    match would list such a player TWICE, once from each season.
+    """
+    cur = build_raw(season)
+    idx = SEASONS.index(season) if season in SEASONS else -1
+    prior = SEASONS[idx + 1] if 0 <= idx < len(SEASONS) - 1 else None
+
+    if not len(cur) and prior is None:
+        return apply_projections(apply_rankings(cur))
+
+    live = cur[cur["total_min"] >= min_minutes].copy() if len(cur) else cur.copy()
+    if len(live):
+        live["score_season"] = season
+    frames = [live]
+
+    # ONE season back, not two. Walking back further padded the board with 64
+    # players whose last game was two years ago and who are mostly out of the
+    # league, taking it to 588 when the pool it replaces was 524. The board is
+    # meant to be the current roster, so a player with no usable prior season
+    # simply has no score yet, exactly as before the rollover.
+    taken = NameIndex({n: True for n in live["Player"]}) if len(live) else NameIndex()
+    for back in SEASONS[idx + 1:idx + 2] if idx >= 0 else []:
+        try:
+            old = build_raw(back)
+        except Exception:                                    # never block
+            continue
+        if not len(old):
+            continue
+        keep = old[[taken.get(n) is None for n in old["Player"]]].copy()
+        if not len(keep):
+            continue
+        keep["score_season"] = back
+        frames.append(keep)
+        for n in keep["Player"]:
+            taken.add(n, True)
+
+    blended = pd.concat([f for f in frames if len(f)], ignore_index=True)
+    if not len(blended):
+        return apply_projections(apply_rankings(blended))
+    return apply_projections(apply_rankings(blended))
 
 
 def apply_rankings(df: pd.DataFrame) -> pd.DataFrame:
