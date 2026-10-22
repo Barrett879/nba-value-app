@@ -3777,7 +3777,16 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
     #     Fame asterisk in player names ("Michael Jordan*"). v3 strips it.
     suffix = "_playoff" if playoffs else ""
     disk_path = _dc_path(f"bref_stats_v3_{season}{suffix}.parquet")
-    if _dc_fresh(disk_path, ttl=30 * 86_400):
+    # SEASON-AWARE, not a flat 30 days. This started life as the pre-1996
+    # fallback, where a month was generous for stats that had been final for
+    # decades. It is now also the fallback for the CURRENT season whenever the
+    # NBA API comes back empty, and a 30-day TTL froze 2026-27 solid: on
+    # 2026-10-22 it served 68 players from a day-old cache, in 0s without a
+    # request, while Basketball-Reference had 323 across 28 teams. The live
+    # board sat two nights behind and nothing looked broken.
+    # season= gives a finished season TRUE (immutable, better than 30 days,
+    # since it never refetches) and a season in progress an hour.
+    if _dc_fresh(disk_path, season=season):
         try:
             cached = pd.read_parquet(disk_path)
             required = {"PLAYER_NAME", "TEAM_ABBREVIATION", "GP", "PTS"}
@@ -5436,7 +5445,13 @@ def _raw_disk_fresh(season: str, playoffs: bool = False) -> bool:
     # hourly during the season, monthly in the offseason (stats are final in July).
     if season != SEASONS[0]:
         return True
-    ttl = 3600 if time.localtime().tm_mon not in (7, 8, 9) else 30 * 86_400
+    # season_is_live, not the calendar month. This was the second copy of the
+    # month heuristic that _dc_fresh used to carry, and it fails the same way:
+    # the month is only a proxy for "in season" while the season being SCORED
+    # is also the one being PLAYED. Those diverged for the first time on
+    # 2026-10-20, and between then and the rollover a FINISHED 2025-26 counted
+    # as live and refetched hourly forever.
+    ttl = 3600 if season_is_live(season) else 30 * 86_400
     return (time.time() - p.stat().st_mtime) < ttl
 
 
