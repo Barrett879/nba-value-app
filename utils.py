@@ -93,6 +93,7 @@
 ╚══════════════════════════════════════════════════════════════════════════╝
 """
 import html
+import csv
 import json
 import logging
 import math
@@ -103,6 +104,7 @@ import os
 import pickle
 import threading
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from functools import lru_cache
 import unicodedata
 from pathlib import Path
 import requests
@@ -5576,6 +5578,46 @@ def _spawn_raw_refresh(season: str, playoffs: bool = False) -> None:
         logger.warning("could not start raw refresh thread for %s: %s", key, e)
 
 
+@lru_cache(maxsize=1)
+def _name_canon_map() -> dict:
+    """variant spelling -> canonical spelling, from data/name_canon.csv.
+
+    A player can arrive under two spellings because the source changes with
+    the era: BBRef carries diacritics, the NBA Stats API spells the 1990s
+    imports in plain ASCII. Legacy groups by the raw Player string, so an
+    unresolved pair splits a career in half.
+    """
+    out: dict[str, str] = {}
+    try:
+        fp = Path(__file__).resolve().parent / "data" / "name_canon.csv"
+        with open(fp, newline="", encoding="utf-8") as fh:
+            for row in csv.DictReader(
+                    l for l in fh if l.strip() and not l.lstrip().startswith("#")):
+                v = (row.get("variant") or "").strip()
+                c = (row.get("canonical") or "").strip()
+                if v and c and v != c:
+                    out[v] = c
+    except Exception:                       # a missing map must never break a build
+        return {}
+    return out
+
+
+def _apply_name_canon(df: "pd.DataFrame") -> "pd.DataFrame":
+    """Fold variant spellings onto the canonical one, in place.
+
+    Applied on the cache READ path as well as the live build, so a parquet
+    written before a row existed is corrected on read and never has to be
+    rewritten. Cheap enough to run every time: one dict lookup per row.
+    """
+    m = _name_canon_map()
+    if not m:
+        return df
+    for col in ("Player", "PLAYER_NAME"):
+        if col in df.columns:
+            df[col] = df[col].astype(str).replace(m)
+    return df
+
+
 @st.cache_data(ttl=3600, show_spinner="Building rankings...")
 def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
     """Serve the raw Barrett-score frame, stale-while-revalidate.
@@ -5596,6 +5638,10 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
             # in player names ("Michael Jordan*").
             if "Player" in cached.columns:
                 cached["Player"] = cached["Player"].astype(str).str.rstrip("*").str.strip()
+            # Fold variant spellings (Toni Kukoc -> Toni Kukoc with its accent)
+            # on READ, so a parquet written before data/name_canon.csv gained a
+            # row is corrected without being rebuilt.
+            _apply_name_canon(cached)
         except Exception as e:
             # Corrupted file — fall through to a live rebuild (which also
             # rewrites it). Spawning happens only after a successful read, so
@@ -5795,6 +5841,10 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
         "MIN": "MPG",
     })
 
+    # Fold variant spellings before persisting, so the parquet is written
+    # canonical and the read path's pass becomes a no-op for it.
+    _apply_name_canon(result)
+
     # ── Persist to disk so future cold-starts skip the API entirely ───────────
     try:
         _atomic_to_parquet(result, _raw_disk_path(season, playoffs))
@@ -5901,7 +5951,10 @@ def build_all_seasons_combined(min_threshold: int = DEFAULT_MIN_THRESHOLD,
     # was pure churn (and in the offseason the data cannot change at all).
     if _dc_fresh(path, season=SEASONS[0]):
         try:
-            return pd.read_parquet(path)
+            # Canonicalise on read: this path returns the pooled parquet
+            # WITHOUT going through build_raw, so it needs its own pass or a
+            # cached pool keeps a split career alive until the next rebuild.
+            return _apply_name_canon(pd.read_parquet(path))
         except Exception:
             pass
 

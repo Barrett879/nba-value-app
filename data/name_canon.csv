@@ -1,0 +1,31 @@
+# HoopsValue - canonical player spellings.
+#
+# The same player can arrive under two spellings because the SOURCE changes
+# with the era. Basketball-Reference carries diacritics; the NBA Stats API
+# spells these players in plain ASCII for the 1990s, though it does return
+# accents for modern players (Jokic and Doncic both arrive correct today).
+# The seam falls at 1995-96/1996-97, which is exactly where
+# fetch_bref_player_stats stops being the primary source.
+#
+# Left unresolved this is not cosmetic. The Legacy page aggregates with
+# groupby("Player") on the raw string, so Toni Kukoc had a three-season career
+# and a nine-season one, and his career totals, consistency ranking and
+# archetype placement were all computed on halves.
+#
+# The accented spelling is canonical, at Barrett's direction on 2026-10-22.
+#
+#   variant   = the spelling as a source delivers it
+#   canonical = the spelling the site uses everywhere
+#
+# Applied in utils._apply_name_canon on BOTH the cache read path and the live
+# build, so a stale parquet is corrected on read and never needs rewriting.
+# Add a row here rather than editing a cache: a cache gets rebuilt, this does
+# not. scripts/check_name_canon.py fails if a row stops resolving or if a new
+# split appears that is not listed here.
+variant,canonical,note
+George Zidek,George Zídek,NBA API 1996-97 and 1997-98 against BBRef 1995-96
+Sarunas Marciulionis,Šarūnas Marčiulionis,NBA API 1996-97 against six BBRef seasons from 1989-90
+Sasha Danilovic,Sasha Danilović,NBA API 1996-97 against BBRef 1995-96
+Stojko Vrankovic,Stojko Vranković,NBA API 1996-97 to 1998-99 against BBRef 1990-91 and 1991-92
+Toni Kukoc,Toni Kukoč,NBA API nine seasons from 1996-97 against BBRef three from 1993-94
+Zan Tabak,Žan Tabak,NBA API 1996-97 to 2000-01 against BBRef 1994-95 and 1995-96
