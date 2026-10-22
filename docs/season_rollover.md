@@ -69,6 +69,60 @@ When it reports READY:
    and commit them, or accept one slow cold start.
 6. Re-run the preflight after deploying and confirm it still reports READY with
    the new `SEASONS[0]`.
+7. **Run the post-flip gate.** This is the step whose absence broke Team
+   Analysis on 2026-10-22.
+
+   ```bash
+   /opt/anaconda3/bin/python3 -u scripts/check_season_surfaces.py
+   ```
+
+   The preflight above is a PRE-flip gate and it disarms itself by succeeding:
+   the moment `SEASONS[0]` moves it rolls forward to the NEXT flip, so every
+   leftover from the one you just did stops being reported on the day it
+   becomes real. Step 3 was skipped for exactly that reason and nothing said
+   so.
+
+   `check_season_surfaces.py` covers what the preflight never did, which is
+   whether a PAGE still works:
+
+   - a minutes floor sized for a complete season. `DEFAULT_MIN_THRESHOLD` is a
+     noise filter in April and an empty page in October; use
+     `utils.live_min_threshold`, never the constant, for a live-season default.
+   - season strings written as literals. `"2025-26"` means "the season being
+     scored" in one place and "the last complete season" in another, and after
+     a flip half of them are quietly a year stale while the page still renders.
+     Derive `_CUR = SEASONS[0]` and `_PRIOR = SEASONS[1]` and say which you
+     mean.
+   - hand-maintained files named by year, and overrides that pin a season the
+     page has stopped loading.
+   - the behavioural check: build the real pool at the real default and assert
+     somebody survives.
+
+8. Re-run `scripts/check_name_canon.py`. A flip changes which SOURCE serves the
+   live season, and the sources disagree about diacritics. On 2026-10-22 the
+   NBA API returned nothing for 2026-27, so the BBRef fallback served it and
+   four players arrived accented for the live season and ASCII for the one
+   before. Add rows to `data/name_canon.csv`.
+
+## Why the preflight was not enough
+
+Written after 2026-10-22, when Barrett opened Team Analysis and found an empty
+chart under the words "Salary coverage for 2026-27 is 0%". Coverage was 100%.
+
+The preflight checked the salary cap, the stat caches, the derived FA class
+year and the accuracy tracker, and all of those held. It checked DATA. What
+broke was PRESENTATION: a 500-minute floor against a league whose busiest
+player had 41 minutes.
+
+Two lessons worth keeping separate from the checklist above.
+
+**A gate that only runs before the event cannot catch what the event leaves
+behind.** Hence step 7.
+
+**Fixing the surface that was reported is not fixing the defect.** Rankings had
+this identical bug a day earlier and was fixed in isolation. Four pages carried
+it. The habit that catches this is to ask, every time, which OTHER callers
+share the assumption, and then to write the check that answers it permanently.
 
 ## What changes about the verification rounds
 
