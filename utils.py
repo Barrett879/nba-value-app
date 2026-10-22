@@ -3211,7 +3211,21 @@ def _dc_path(name: str) -> Path:
 # the documented remedy and touches ONLY the current season: _raw_disk_path
 # applies _rev_path solely when season == SEASONS[0], so the ~50 historical
 # parquets keep their names and are never orphaned into a rebuild.
-DATA_REV = "r3"
+#   r4 (2026-10-22): the r3 parquet was rebuilt from BBRef HTML that requests
+#   had decoded as latin-1, because BBRef sends a bare "text/html" with no
+#   charset. Fifteen players arrived as mojibake ("Luka DonÄ\x8diÄ\x87"), their
+#   names missed the salary join, and _build_raw_live's dropna dropped them from
+#   the pool: Luka Doncic was simply absent from the Lakers' rankings. Fixed at
+#   the source by utils._html_text, so this bump ships a parquet whose names
+#   decode correctly: 297 players against r3's 284, the thirteen gained being
+#   exactly the accented names, none lost. The two still absent, Chris Manon
+#   and David Jones Garcia, are two-ways, which the ESPN salary feed omits for
+#   unrelated and already-known reasons.
+#   Checked and NOT the same bug as r2: the 2025-26 parquets carry 19 accented
+#   names with zero mojibake, Diabate and Schroder among them, so r2 really was
+#   the stale snapshot it says it was. They appear in both lists only because a
+#   28-player gap was bound to include some accented names.
+DATA_REV = "r4"
 
 
 def _rev_path(name: str) -> Path:
@@ -3472,6 +3486,53 @@ def fetch_advanced_stats(season: str, season_type: str = "Regular Season",
     return df
 
 
+# ── HTML decoding ────────────────────────────────────────────────────────────
+# requests guesses a response's encoding from the HTTP Content-Type header, and
+# when a server sends no charset there it falls back to ISO-8859-1, because RFC
+# 2616 said to. Basketball-Reference sends a bare "text/html" and a document
+# that declares <meta charset="utf-8">, so r.text silently decoded every UTF-8
+# name as latin-1: "Luka Dončić" arrived as "Luka DonÄ\x8diÄ\x87".
+#
+# That is not a cosmetic bug. normalize() folds accents, so a correctly decoded
+# "Dončić" matches ESPN's ASCII "Doncic" and the salary join succeeds. Mojibake
+# normalizes to "dona\x8dia\x87", the join misses, and _build_raw_live's
+# dropna(subset=["salary"]) removes the player from the pool entirely. On
+# 2026-10-22 that is why Luka Dončić was missing from the Lakers' rankings,
+# along with fourteen other players with accented names.
+#
+# This was already diagnosed and hand-patched at five call sites with a local
+# r.encoding = "utf-8", and the sites added later missed it. One helper, used
+# everywhere, is the only version of this fix that stays fixed; the companion
+# check is scripts/check_html_decoding.py.
+#
+# The rule is what a browser does: an explicit charset in the HTTP header wins,
+# otherwise the document's own <meta charset> decides, otherwise UTF-8. Never
+# blanket-force UTF-8, because ESPN's salary pages DO declare iso-8859-1 and
+# overriding a server that was explicit is how you create the mirror of this
+# bug in the other direction.
+_META_CHARSET_RE = re.compile(rb"""<meta[^>]+charset=["']?\s*([a-zA-Z0-9_-]+)""", re.I)
+
+
+def _html_text(r: requests.Response) -> str:
+    """A response's body decoded the way a browser would decode it.
+
+    Use this instead of r.text anywhere the result is parsed as HTML.
+    """
+    if "charset" in (r.headers.get("Content-Type") or "").lower():
+        return r.text                      # the server was explicit; honour it
+    m = _META_CHARSET_RE.search(r.content[:4096])
+    if m:
+        try:
+            enc = m.group(1).decode("ascii", "ignore").strip().lower()
+            "".encode(enc)                 # reject a charset Python cannot use
+            r.encoding = enc
+            return r.text
+        except (LookupError, UnicodeError):
+            pass
+    r.encoding = "utf-8"
+    return r.text
+
+
 @st.cache_data(ttl=86400)
 @st.cache_data(ttl=3600, show_spinner="Fetching salary data...")
 def fetch_salaries(espn_year: int) -> pd.DataFrame:
@@ -3482,7 +3543,7 @@ def fetch_salaries(espn_year: int) -> pd.DataFrame:
             r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
         except Exception:
             break                     # partial pages beat hanging/raising mid-scrape
-        soup = BeautifulSoup(r.text, "html.parser")
+        soup = BeautifulSoup(_html_text(r), "html.parser")
         tables = soup.find_all("table")
         if not tables:
             break
@@ -3526,7 +3587,7 @@ def fetch_hoopshype_salaries(season: str) -> dict:
             r = requests.get(url, headers=headers, timeout=10)
             if r.status_code != 200:
                 continue
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(_html_text(r), "html.parser")
             table = (
                 soup.find("table", {"class": lambda c: c and "hh-salaries" in c})
                 or soup.find("table", class_="hh-salaries-table")
@@ -3580,7 +3641,7 @@ def _bref_team_abbrs(end_year: int) -> list[str]:
         raise RuntimeError(f"BBRef rate-limited on {url}")
     if r.status_code != 200:
         return []
-    return sorted(set(re.findall(rf"/teams/([A-Z]{{3}})/{end_year}\.html", r.text)))
+    return sorted(set(re.findall(rf"/teams/([A-Z]{{3}})/{end_year}\.html", _html_text(r))))
 
 
 def _bref_team_salaries(team_abbr: str, end_year: int) -> list[tuple[str, float]]:
@@ -3595,7 +3656,7 @@ def _bref_team_salaries(team_abbr: str, end_year: int) -> list[tuple[str, float]
         if r.status_code != 200:
             return []
         from bs4 import Comment
-        soup = BeautifulSoup(r.text, "html.parser")
+        soup = BeautifulSoup(_html_text(r), "html.parser")
         for comment in soup.find_all(string=lambda x: isinstance(x, Comment)):
             if 'id="salaries2"' not in comment:
                 continue
@@ -3718,7 +3779,7 @@ def fetch_playoff_rounds(season: str) -> dict:
     # BBRef hides some series tables inside HTML comments. Strip the comment
     # markers so the parser sees one continuous document — but DON'T parse
     # them as tables, we only want the raw HTML for header/link scanning.
-    content = r.text.replace("<!--", "").replace("-->", "")
+    content = _html_text(r).replace("<!--", "").replace("-->", "")
 
     header_re    = re.compile(r"<h[23][^>]*>([^<]+)</h[23]>", re.IGNORECASE)
     team_link_re = re.compile(rf"/teams/([A-Z]{{3}})/{end_year}[/.]")
@@ -3821,7 +3882,7 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
     if r.status_code != 200:
         return pd.DataFrame()
 
-    soup = BeautifulSoup(r.text, "html.parser")
+    soup = BeautifulSoup(_html_text(r), "html.parser")
     table = soup.find("table", id="per_game_stats")
     if table is None:
         # Fallback — sometimes BBRef hides the per_game table inside a comment
@@ -4900,7 +4961,7 @@ def fetch_bref_positions(espn_year: int, cache_v: int = 3, _force: bool = False)
         for page in range(1, 15):
             url = f"https://www.espn.com/nba/salaries/_/year/{espn_year}/page/{page}"
             r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(_html_text(r), "html.parser")
             tables = soup.find_all("table")
             if not tables:
                 break
@@ -4963,7 +5024,7 @@ def fetch_injuries(cache_v: int = 1, _force: bool = False) -> dict:
     try:
         r = requests.get("https://www.espn.com/nba/injuries",
                          headers={"User-Agent": "Mozilla/5.0"}, timeout=15)
-        soup = BeautifulSoup(r.text, "html.parser")
+        soup = BeautifulSoup(_html_text(r), "html.parser")
         for tb in soup.find_all("table"):
             try:
                 df = pd.read_html(io.StringIO(str(tb)))[0]
@@ -5055,10 +5116,7 @@ def fetch_player_positions_detailed(season: str, cache_v: int = 3,
         if r.status_code == 429:
             time.sleep(15)
             r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
-        # Force UTF-8 so accented names (Dončić, Jokić) decode properly
-        # and normalize() can strip diacritics for the lookup key.
-        r.encoding = "utf-8"
-        soup = BeautifulSoup(r.text, "html.parser")
+        soup = BeautifulSoup(_html_text(r), "html.parser")
 
         # Two layouts: BBRef sometimes serves the per-game table inline,
         # other times it wraps the table HTML inside a comment (anti-scraper
@@ -5266,7 +5324,7 @@ def _derive_next_year_contracts(espn_year: int, path, stale: dict | None) -> dic
             headers=_hdrs, timeout=15,
         )
         if r.status_code == 200:
-            soup = BeautifulSoup(r.text, "html.parser")
+            soup = BeautifulSoup(_html_text(r), "html.parser")
             tables = soup.find_all("table")
             fa_table = tables[1] if len(tables) >= 2 else (tables[0] if tables else None)
             if fa_table is not None:
@@ -6066,11 +6124,7 @@ def fetch_all_nba_selections(cache_v: int = 1, _force: bool = False) -> dict:
             # BBRef rate limit — wait and retry once.
             time.sleep(15)
             r = requests.get(url, headers={"User-Agent": _BREF_UA}, timeout=15)
-        # BBRef serves UTF-8 (Jokić, Dončić, etc.) but requests sometimes
-        # auto-detects latin-1 from headers. Force UTF-8 so the accented
-        # names decode correctly and our normalize() can strip diacritics.
-        r.encoding = "utf-8"
-        soup = BeautifulSoup(r.text, "html.parser")
+        soup = BeautifulSoup(_html_text(r), "html.parser")
         table = soup.find("table", id="awards_all_league")
         if table is None:
             # Fall back to comment-wrapped (BBRef pattern for some pages).
@@ -6266,8 +6320,7 @@ def _scrape_contract_end_years(path) -> dict:
         if r.status_code == 429:
             time.sleep(15)
             r = requests.get(f"{base_url}/", headers={"User-Agent": _BREF_UA}, timeout=15)
-        r.encoding = "utf-8"
-        soup = BeautifulSoup(r.text, "html.parser")
+        soup = BeautifulSoup(_html_text(r), "html.parser")
         # Map y1, y2, etc. to season strings from the column headers.
         year_map: dict[str, str] = {}
         for th in soup.find_all("th", attrs={"data-stat": True}):
@@ -6312,8 +6365,7 @@ def _scrape_contract_end_years(path) -> dict:
                     logger.warning("contracts 429 for %s (attempt %d)", team, attempt + 1)
                     continue
                 r.raise_for_status()
-                r.encoding = "utf-8"
-                soup = BeautifulSoup(r.text, "html.parser")
+                soup = BeautifulSoup(_html_text(r), "html.parser")
                 break
             except Exception as e:
                 logger.warning("contracts fetch failed for %s (attempt %d): %s",

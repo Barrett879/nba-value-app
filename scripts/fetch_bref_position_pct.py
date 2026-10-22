@@ -27,7 +27,7 @@ from bs4 import BeautifulSoup
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
-from utils import normalize  # noqa: E402
+from utils import _html_text, normalize  # noqa: E402
 
 SEASON_END = 2026                       # 2025-26
 SEASON_LABEL = "2025-26"
@@ -65,13 +65,14 @@ def _get(url: str, key: str) -> str:
     if r.status_code == 429:
         raise RuntimeError("basketball-reference is rate limiting (429); wait and re-run")
     r.raise_for_status()
-    # BBRef serves UTF-8 without a charset header, and requests then falls back
-    # to ISO-8859-1 for text/*, which turns "Jokic" with its accent into
-    # mojibake and drops the player from every name lookup
-    r.encoding = "utf-8"
-    p.write_text(r.text, encoding="utf-8")
+    # Decode through the shared helper. This file used to hand-set
+    # r.encoding = "utf-8" with a comment naming Jokic, which was correct and
+    # was also the third independent copy of the same fix in the repo; the
+    # sites that did not have it silently dropped every accented name.
+    html = _html_text(r)
+    p.write_text(html, encoding="utf-8")
     time.sleep(PAUSE)
-    return r.text
+    return html
 
 
 def player_ids(end_year: int) -> dict:
