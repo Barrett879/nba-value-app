@@ -3281,6 +3281,35 @@ def season_is_live(season: str) -> bool:
     return False
 
 
+def live_min_threshold(season: str, games_played: int, playoff_mode: bool = False,
+                       base: int | None = None) -> tuple[int, int, int]:
+    """(default, slider_max, step) for a "minimum total minutes" control.
+
+    DEFAULT_MIN_THRESHOLD is a floor for a COMPLETE season. Applied to a
+    season three days old it does not filter noise, it empties the page: on
+    2026-10-22 the whole league topped out at 41 total minutes, so Team
+    Analysis filtered 297 players down to zero and then reported "salary
+    coverage 0%" about the empty frame. The salaries were 100% present.
+
+    So the floor scales with games played while a season is live and snaps
+    back to the full value once it is complete. One game in, that is 6
+    minutes; at 82 games it is 500 again.
+
+    This lives in utils because the same control exists on several pages and
+    the scaled version was written on only one of them. That is the same decay
+    that left nine HTML fetches decoding as latin-1 while three carried a
+    hand-written fix, and the cure is the same: one implementation, used
+    everywhere, with a check that fails when a page stops using it.
+    """
+    floor = DEFAULT_MIN_THRESHOLD if base is None else base
+    if playoff_mode:
+        return 100, 600, 25
+    if season_is_live(season) and 0 < games_played < 82:
+        default = max(1, round(floor * games_played / 82))
+        return default, max(50, default * 5), (1 if default < 50 else 50)
+    return floor, 1500, 50
+
+
 def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> bool:
     if not path.exists():
         return False

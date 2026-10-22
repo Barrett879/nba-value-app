@@ -1,0 +1,27 @@
+# HoopsValue - REAL 2027 free-agency signings (actual reported deals).
+#
+# EMPTY ON PURPOSE. The 2027 class does not open until 2027-07-01, so there is
+# nothing to record yet. The file exists now so the loaders have a real target
+# the moment SEASONS[0] became 2026-27 and _FA_YEAR advanced to 2027. Before it
+# existed, the 2027 board was annotated with 2026 outcomes: the page was titled
+# "2027 Free Agent Board" while every option decision and signed flag beside it
+# came from a class that had already closed.
+#
+# Fill it exactly like data/real_signings_2026.csv, which stays as the closed
+# historical record. Do NOT repoint the salary path at this file: the 2026
+# signings are the facts that set 2026-27 salaries, and the accuracy tracker
+# built from them outranks every other salary source.
+#
+# This is the GROUND TRUTH the model is scored against. It is NOT fed into the
+# projection; scripts/compare_signings.py joins each row to the model's guess.
+#
+#   player      = signed player (match the model's name; aliases handled in the script)
+#   team        = 3-letter abbr (blank if unknown / not relevant)
+#   years       = contract length
+#   total_M     = total value in $M
+#   yr1_M       = first-year salary in $M
+#   type        = resign | sign | extension | minimum | ...
+#   signed_date = YYYY-MM
+#   source      = where the figure came from
+#   note        = anything worth remembering about the deal
+player,team,years,total_M,yr1_M,type,signed_date,source,note

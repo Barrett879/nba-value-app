@@ -22,6 +22,14 @@
 # Add a row here rather than editing a cache: a cache gets rebuilt, this does
 # not. scripts/check_name_canon.py fails if a row stops resolving or if a new
 # split appears that is not listed here.
+#
+# 2026-10-22, second batch. The seam moved. While the NBA Stats API returns
+# nothing for 2026-27 the live season is served by the BBRef fallback, so the
+# SAME player now arrives accented for 2026-27 and ASCII for 2025-26, one
+# season apart instead of thirty. check_name_canon.py caught these four the
+# moment the pooled cache first included 2026-27, which is exactly the drift
+# it was written for. Expect more as the live season fills in, and expect them
+# to stop once the NBA API starts answering for 2026-27.
 variant,canonical,note
 George Zidek,George Zídek,NBA API 1996-97 and 1997-98 against BBRef 1995-96
 Sarunas Marciulionis,Šarūnas Marčiulionis,NBA API 1996-97 against six BBRef seasons from 1989-90
@@ -29,3 +37,7 @@ Sasha Danilovic,Sasha Danilović,NBA API 1996-97 against BBRef 1995-96
 Stojko Vrankovic,Stojko Vranković,NBA API 1996-97 to 1998-99 against BBRef 1990-91 and 1991-92
 Toni Kukoc,Toni Kukoč,NBA API nine seasons from 1996-97 against BBRef three from 1993-94
 Zan Tabak,Žan Tabak,NBA API 1996-97 to 2000-01 against BBRef 1994-95 and 1995-96
+Alperen Sengun,Alperen Şengün,NBA API 2021-22 to 2025-26 against BBRef 2026-27
+Moussa Cisse,Moussa Cissé,NBA API 2025-26 against BBRef 2026-27
+Nolan Traore,Nolan Traoré,NBA API 2025-26 against BBRef 2026-27
+Tristan Da Silva,Tristan da Silva,"NOT an accent case. BBRef capitalises the nobiliary particle in 2026-27; the NBA API and the league itself use the lowercase da, which is the correct Brazilian styling, so here the BBRef form is the variant and the direction reverses"

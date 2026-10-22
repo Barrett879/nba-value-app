@@ -21,7 +21,7 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils import (NameIndex, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
+from utils import (NameIndex, SEASONS, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
                    _headshot_id_map, fetch_dlebron, normalize, render_nav,
                    render_page_chrome, script_json, _bootstrap_warm)
 
@@ -59,8 +59,10 @@ def _payload() -> str:
     import pandas as pd
     _box = NameIndex()
     try:
-        _ls = pd.read_parquet(_ROOT / "cache" / "league_stats_2025_26.parquet")
-        _dl = fetch_dlebron("2025-26")
+        _PRIOR = SEASONS[1]                       # derived: the last complete season
+        _ls = pd.read_parquet(
+            _ROOT / "cache" / f"league_stats_{_PRIOR.replace('-', '_')}.parquet")
+        _dl = fetch_dlebron(_PRIOR)
         for _r in _ls.itertuples():
             _box.add(_r.PLAYER_NAME, {
                 "ppg": round(float(_r.PTS), 1), "apg": round(float(_r.AST), 1),
@@ -95,7 +97,7 @@ def _payload() -> str:
                         "expires": (r.get("expires") or "").strip(),
                         # created before this league year (or unknown, taken
                         # conservatively) = prior-season -> apron-1 trigger
-                        "prior": not created or created < "2026-07"})
+                        "prior": not created or created < f"{SEASONS[0][:4]}-07"})
     for v in tpes.values():
         v.sort(key=lambda x: -x["amt"])
     signings = {}

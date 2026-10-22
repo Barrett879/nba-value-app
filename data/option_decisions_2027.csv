@@ -1,0 +1,16 @@
+# HoopsValue - 2027 option decisions (player and team options on 2026-27 deals).
+#
+# EMPTY ON PURPOSE. These decisions are made in the 2027 offseason, so there is
+# nothing to record yet. The file exists so the 2027 Free Agent Board annotates
+# from its OWN class instead of inheriting 2026's outcomes, which is what it did
+# until 2026-10-22: a board titled 2027 showing decisions that closed in 2026.
+#
+# data/option_decisions_2026.csv stays as the closed historical record. It still
+# determines 2026-27 salaries, and a waived opt-in is still PAID, so nothing
+# here supersedes it.
+#
+#   player    = must match the roster spelling
+#   decision  = po_in | po_out | to_in | to_out
+#   figure_M  = the option figure in $M
+#   note      = source and anything that changes how it reads
+player,decision,figure_M,note

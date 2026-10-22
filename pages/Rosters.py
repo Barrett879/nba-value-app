@@ -24,7 +24,7 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils import (NameIndex, NBA_DIVISIONS, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
+from utils import (NameIndex, NBA_DIVISIONS, SEASONS, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
                    _headshot_id_map, fetch_dlebron, fetch_injuries, injury_is_out,
                    render_footer, render_nav,
                    render_page_chrome, script_json, _bootstrap_warm)
@@ -92,13 +92,26 @@ def _payload() -> str:
     # 21.2 on a full 2024-25. So the rule is the most recent season in which
     # the player cleared MIN_MINUTES; only if neither season clears it does the
     # small sample stand, because that is all there is.
+    # DERIVED, never literal. These were written as "2025-26" and "2024-25"
+    # when 2025-26 was the season being scored. After the flip to 2026-27 the
+    # literals still parsed and still loaded, so nothing failed: the page just
+    # presented last season's score UNTAGGED, as though it were this season's.
+    # That is the rollover's signature failure, a wrong number with no error.
+    _CUR   = SEASONS[0]                              # the season being scored
+    _PRIOR = SEASONS[1]                              # the last complete season
+
+    def _tag(season):
+        """2025-26 -> 25-26, the label the card prints."""
+        return season[2:]
+
     scores, prior_scores, short = NameIndex(), NameIndex(), NameIndex()
+    extra_scores: dict = {}                          # season -> NameIndex, for overrides
     try:
         from utils import build_raw
-        for _r in build_raw("2024-25").itertuples():
-            prior_scores.add(_r.Player, (round(float(_r.barrett_score), 1), "24-25",
+        for _r in build_raw(_PRIOR).itertuples():
+            prior_scores.add(_r.Player, (round(float(_r.barrett_score), 1), _tag(_PRIOR),
                                          float(_r.total_min)))
-        for _r in build_raw("2025-26").itertuples():
+        for _r in build_raw(_CUR).itertuples():
             v = (round(float(_r.barrett_score), 1), None, float(_r.total_min))
             if float(_r.total_min) >= MIN_MINUTES:
                 scores.add(_r.Player, v)
@@ -161,10 +174,27 @@ def _payload() -> str:
     # and the 12.0 that produced ranked him behind a bench big on his own chart.
     # An override forces the season; the card still labels which year it is.
     _season_ovr = NameIndex()
+    _ovr_seasons: set = set()          # NameIndex has no values(); collect while reading
     for _row in _read_csv(_ROOT / "data" / "score_season_override.csv"):
         _nm, _sn = (_row.get("player") or "").strip(), (_row.get("season") or "").strip()
         if _nm and _sn:
             _season_ovr.add(_nm, _sn)
+            _ovr_seasons.add(_sn)
+
+    # A row may pin a season that is neither the scored nor the last complete
+    # one, and after a rollover it usually does: Keegan Murray's row points at
+    # 2024-25, which stopped being loaded the moment 2026-27 became SEASONS[0].
+    # Load those on demand so an override never goes quietly dead.
+    try:
+        from utils import build_raw as _br
+        for _sn in _ovr_seasons - {_CUR, _PRIOR}:
+            _idx = NameIndex()
+            for _r in _br(_sn).itertuples():
+                _idx.add(_r.Player, (round(float(_r.barrett_score), 1), _tag(_sn),
+                                     float(_r.total_min)))
+            extra_scores[_sn] = _idx
+    except Exception:
+        pass
 
     def score_of(name):
         """(score, season tag) under the minutes floor, or the pinned season."""
@@ -173,7 +203,10 @@ def _payload() -> str:
             # 2025-26 lives in `scores` or `short` depending on the floor; the
             # tag comes from the source, so an override to the current season
             # stays untagged exactly like an ordinary current score.
-            for src in ((prior_scores,) if want == "2024-25" else (scores, short)):
+            _srcs = ((prior_scores,) if want == _PRIOR
+                     else (scores, short) if want == _CUR
+                     else ((extra_scores[want],) if want in extra_scores else ()))
+            for src in _srcs:
                 hit = src.get(name)
                 if hit:
                     return hit[0], hit[1]
@@ -198,31 +231,58 @@ def _payload() -> str:
     # For a player whose score already comes from the current season this
     # reproduces the board value exactly; for everyone else it prices the season
     # actually being shown.
-    _score_curve = None
-    try:
-        from utils import build_ranked_projected
-        _proj = build_ranked_projected("2025-26")[["barrett_score", "projected_salary"]]
-        _proj = _proj.dropna().sort_values("barrett_score")
-        _score_curve = (_proj["barrett_score"].to_numpy(dtype=float),
-                        _proj["projected_salary"].to_numpy(dtype=float) / 1e6)
-    except Exception:
-        pass
+    # One curve per season, because the row's value has to be priced off the
+    # SAME season its score came from. A single hardcoded curve was right only
+    # while every score came from one season; after the rollover most scores
+    # come from _PRIOR while a few will cross the floor in _CUR, and pricing
+    # those against the wrong year is the mismatch described just above.
+    _curves: dict = {}
 
-    def value_of(score):
-        """Projected market salary ($M) for a Barrett Score, off the current
-        season's curve. None when the curve is unavailable."""
-        if score is None or _score_curve is None or not len(_score_curve[0]):
+    def _curve_for(season):
+        if season in _curves:
+            return _curves[season]
+        curve = None
+        try:
+            from utils import build_ranked_projected
+            _proj = build_ranked_projected(season)[["barrett_score", "projected_salary"]]
+            _proj = _proj.dropna().sort_values("barrett_score")
+            if len(_proj):
+                curve = (_proj["barrett_score"].to_numpy(dtype=float),
+                         _proj["projected_salary"].to_numpy(dtype=float) / 1e6)
+        except Exception:
+            curve = None
+        _curves[season] = curve
+        return curve
+
+    def value_of(score, tag=None):
+        """Projected market salary ($M) for a Barrett Score, priced off the
+        season that score came from. None when that curve is unavailable.
+
+        `tag` is the card's season label ("25-26"), or None for the scored
+        season, which is exactly what score_of returns alongside the score.
+        """
+        if score is None:
+            return None
+        season = _CUR if not tag else next(
+            (s for s in SEASONS if _tag(s) == tag), _CUR)
+        curve = _curve_for(season)
+        if curve is None or not len(curve[0]):
+            # An incomplete season may have no usable curve yet; fall back to
+            # the last complete one rather than printing no value at all.
+            curve = _curve_for(_PRIOR)
+        if curve is None or not len(curve[0]):
             return None
         import numpy as _np
-        xs, ys = _score_curve
+        xs, ys = curve
         return round(float(_np.interp(float(score), xs, ys)), 1)
 
     # last season's per-game line + D-LEBRON
     box = NameIndex()
     try:
         import pandas as pd
-        _ls = pd.read_parquet(_ROOT / "cache" / "league_stats_2025_26.parquet")
-        _dl = fetch_dlebron("2025-26")
+        _ls = pd.read_parquet(
+            _ROOT / "cache" / f"league_stats_{_PRIOR.replace('-', '_')}.parquet")
+        _dl = fetch_dlebron(_PRIOR)
         for _r in _ls.itertuples():
             box.add(_r.PLAYER_NAME, {
                 "age": int(_r.AGE) if getattr(_r, "AGE", None) == getattr(_r, "AGE", None)
@@ -277,7 +337,8 @@ def _payload() -> str:
     # with New York and the Lakers both 53-29: a leaderboard cut at six has to
     # break that tie on something, and list order is not a reason.
     records = {}
-    for r in _read_csv(_ROOT / "data" / "team_records_2025_26.csv"):
+    _rec_path = _ROOT / "data" / f"team_records_{_PRIOR.replace('-', '_')}.csv"
+    for r in (_read_csv(_rec_path) if _rec_path.exists() else []):
         if r.get("team") and r.get("wins"):
             records[r["team"].strip()] = {
                 "w": int(r["wins"]), "l": int(r["losses"]),
@@ -374,7 +435,7 @@ def _payload() -> str:
                 bar, bar_yr = fv.get("barrett"), fv.get("bs_yr")
             # price the score that is actually on the row; fall back to the
             # board value only when the curve is unavailable
-            value = value_of(bar)
+            value = value_of(bar, bar_yr)
             if value is None:
                 value = m.get("value")
             if kind == "free_agent":
@@ -484,10 +545,10 @@ def _payload() -> str:
              for t in _nbat.get_teams()}
 
     return json.dumps({
-        "season": "2026-27", "asof": asof, "cfg": cfg, "logos": logos,
+        "season": _CUR, "asof": asof, "cfg": cfg, "logos": logos,
         "colors": dict(TEAM_HEX), "colors2": dict(TEAM_HEX_2),
         "divs": _DIVS, "teams": teams,
-        "records": records, "records_season": "2025-26",
+        "records": records, "records_season": _PRIOR,
         "abbrs": sorted(teams),
     }, separators=(",", ":"))
 

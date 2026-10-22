@@ -110,16 +110,27 @@ _signed = {normalize(s["player"]): s
            for s in (_acc or {}).get("signings", []) if s.get("model_M") is not None}
 _scorecard = (_acc or {}).get("scorecard") or {}
 
+# Annotations belong to the class the BOARD is showing, not to whichever class
+# happened to be current when this was written. The board is titled with
+# _FA_YEAR, so until 2026-10-22 a board headed "2027 Free Agent Board" carried
+# every option decision from 2026, a class that had already closed.
+#
+# Only the annotations move. data/option_decisions_2026.csv stays the closed
+# historical record and still sets 2026-27 salaries through app.py's own
+# loader, which is deliberately NOT repointed: the accuracy tracker built from
+# the 2026 files outranks every other salary source, and a gap there renders a
+# signed player as an unsigned free agent.
 _decisions = {}   # normalized name -> (decision, option figure $M or None)
+_dec_file = f"option_decisions_{_FA_YEAR}.csv"
 try:
-    with open(_Path(__file__).parent.parent / "data" / "option_decisions_2026.csv") as _fh:
+    with open(_Path(__file__).parent.parent / "data" / _dec_file) as _fh:
         for _r in _csv.DictReader(l for l in _fh if l.strip() and not l.lstrip().startswith("#")):
             if _r.get("player"):
                 try:
                     _fig = float(_r.get("figure_M") or 0) or None
                 except ValueError:
                     logger.warning(
-                        "option_decisions_2026.csv: unparseable figure_M %r for player %s",
+                        "%s: unparseable figure_M %r for player %s", _dec_file,
                         _r.get("figure_M"), _r["player"])
                     _fig = None
                 _decisions[normalize(_r["player"])] = ((_r.get("decision") or "").strip(), _fig)

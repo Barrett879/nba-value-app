@@ -9,7 +9,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import plotly.express as px
 from utils import (
-    COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD,
+    COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD, live_min_threshold, season_is_live,
     normalize, season_to_espn_year,
     build_ranked_projected,
     fetch_bref_positions, render_nav, render_page_chrome,
@@ -45,26 +45,34 @@ st.caption(
 ctrl_l, ctrl_mid, ctrl_r = st.columns([1, 1, 1])
 with ctrl_l:
     season = st.selectbox("Season", SEASONS, index=0)
-default_threshold = 100 if playoff_mode else DEFAULT_MIN_THRESHOLD
-slider_max = 600 if playoff_mode else 1500
-slider_step = 25 if playoff_mode else 50
-with ctrl_r:
-    min_threshold = st.slider(
-        "Min total minutes", min_value=0, max_value=slider_max,
-        value=default_threshold, step=slider_step,
-        help="Hides players below this threshold. Ranks are always computed on the full pool.",
-    )
 
 # ── Data loading ───────────────────────────────────────────────────────────────
 # build_ranked_projected is @st.cache_resource (no copy on hit) — must copy before mutating
-df = build_ranked_projected(season, playoffs=playoff_mode)
-if df.empty:
+# The frame is loaded BEFORE the slider because the default threshold scales to
+# games played, and that needs the data. A fixed 500 emptied this page three
+# days into 2026-27: nobody in the league had 500 total minutes yet.
+df_all = build_ranked_projected(season, playoffs=playoff_mode)
+if df_all.empty:
     st.warning(
         f"No {'playoff' if playoff_mode else 'regular season'} data for {season} yet. "
         "Try a previous season or toggle Playoff mode off."
     )
     st.stop()
-df = df[df["total_min"] >= min_threshold].copy()
+
+_season_gp = int(df_all["GP"].max() or 0)
+default_threshold, slider_max, slider_step = live_min_threshold(
+    season, _season_gp, playoff_mode)
+with ctrl_r:
+    min_threshold = st.slider(
+        "Min total minutes", min_value=0, max_value=slider_max,
+        value=default_threshold, step=slider_step,
+        help=("Hides players below this threshold. Ranks are always computed on the "
+              "full pool." + ("" if playoff_mode or not season_is_live(season) else
+              f" Early in a season the default scales with games played "
+              f"({_season_gp} game{'' if _season_gp == 1 else 's'} in, that is "
+              f"{default_threshold}), reaching {DEFAULT_MIN_THRESHOLD} at 82.")),
+    )
+df = df_all[df_all["total_min"] >= min_threshold].copy()
 
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
 import team_suitors as _ts
@@ -78,13 +86,25 @@ df["position"] = df["Player"].map(
 _is_pre_1990 = int(season.split("-")[0]) < 1990
 if _is_pre_1990:
     st.warning(PRE_1990_SALARY_NOTE, icon="📜")
-_salary_coverage = (df["salary"] > 0).mean() if len(df) else 0.0
-if _salary_coverage < 0.5 and not _is_pre_1990:
-    st.warning(
-        f"⚠️ Salary coverage for {season} is {_salary_coverage*100:.0f}%. "
-        "Many players have no salary data on file. Team payroll totals below "
-        "are unreliable for this season. Use the Rankings page for player-level analysis."
+# An empty frame is not a salary problem. Reporting "coverage 0%" about zero
+# rows blamed the salary feed for a filter, and sent people to another page to
+# solve something that was not wrong: on 2026-10-22 coverage was 100% at a
+# threshold of 0 and the slider was simply set above the whole league.
+if not len(df):
+    st.info(
+        f"No players clear {min_threshold} total minutes in {season} yet"
+        + (f" (the league leader has {int(df_all['total_min'].max())})."
+           if len(df_all) else ".")
+        + " Lower the minutes filter to see the teams."
     )
+elif not _is_pre_1990:
+    _salary_coverage = (df["salary"] > 0).mean()
+    if _salary_coverage < 0.5:
+        st.warning(
+            f"⚠️ Salary coverage for {season} is {_salary_coverage*100:.0f}%. "
+            "Many players have no salary data on file. Team payroll totals below "
+            "are unreliable for this season. Use the Rankings page for player-level analysis."
+        )
 
 # ══════════════════════════════════════════════════════════════════════════════
 # Team Analysis content

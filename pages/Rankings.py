@@ -12,6 +12,7 @@ import plotly.express as px
 import plotly.graph_objects as go
 from utils import (
     COMMON_CSS, SEASONS, DEFAULT_MIN_THRESHOLD, SEASON_GAMES_LOOKUP, season_is_live,
+    live_min_threshold,
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
@@ -86,15 +87,12 @@ if _df_all.empty:
 # players and the page stopped with "no players cleared the threshold". Holding
 # the same six-minutes-a-game bar against games actually PLAYED keeps the page
 # meaningful from opening night, and the slider is still free to override.
+# Shared with Team Analysis via utils.live_min_threshold. This scaling was
+# written here first and nowhere else, which is precisely why Team Analysis sat
+# empty with "salary coverage 0%" until 2026-10-22.
 _season_gp = int(_df_all["GP"].max() or 0)
-if playoff_mode:
-    default_min_threshold, slider_max = 100, 600
-elif season_is_live(season) and 0 < _season_gp < 82:
-    default_min_threshold = max(1, round(DEFAULT_MIN_THRESHOLD * _season_gp / 82))
-    slider_max = max(50, default_min_threshold * 5)
-else:
-    default_min_threshold, slider_max = DEFAULT_MIN_THRESHOLD, 1500
-_step = 1 if default_min_threshold < 50 else (25 if playoff_mode else 50)
+default_min_threshold, slider_max, _step = live_min_threshold(
+    season, _season_gp, playoff_mode)
 with ctrl_r:
     min_threshold = st.slider(
         "Min total minutes", min_value=0, max_value=slider_max,
