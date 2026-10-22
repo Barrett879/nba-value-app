@@ -3204,7 +3204,14 @@ def _dc_path(name: str) -> Path:
 #   the site had no current-season score for them and fell back to their
 #   2024-25 numbers -- visible as stale (24-25) tags on the depth chart and as
 #   a 494-player board where the shipped data holds 522.
-DATA_REV = "r2"
+# r3 (2026-10-22): the live season was serving opening-night numbers two days
+# on. The 30-day BBRef TTL that froze it is fixed above, but /data still held a
+# raw parquet built from the frozen data, and seeding never overwrites an
+# existing file, so production could not pick the fix up. A DATA_REV bump is
+# the documented remedy and touches ONLY the current season: _raw_disk_path
+# applies _rev_path solely when season == SEASONS[0], so the ~50 historical
+# parquets keep their names and are never orphaned into a rebuild.
+DATA_REV = "r3"
 
 
 def _rev_path(name: str) -> Path:
