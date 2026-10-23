@@ -3227,7 +3227,17 @@ def _dc_path(name: str) -> Path:
 #   names with zero mojibake, Diabate and Schroder among them, so r2 really was
 #   the stale snapshot it says it was. They appear in both lists only because a
 #   28-player gap was bound to include some accented names.
-DATA_REV = "r4"
+#   r5 (2026-10-23): the Oct 22 games were final on ESPN while stats.nba.com
+#   timed out every data endpoint and Basketball-Reference still 404'd both box
+#   scores, so they were hand-entered via data/provisional_box_scores.csv and
+#   the pool went 297 -> 313. Shipping the rebuilt parquet is what puts them on
+#   the site tonight; without the bump /data keeps the r4 copy forever.
+#   NOTE: a bump moves EVERY _rev_path consumer, not just the one being fixed.
+#   all_seasons_{0,500}_v7 resolve through it too, and _rev_path falls back to
+#   the UNSUFFIXED name when the new one is missing, which on Render is the
+#   original mojibake copy. So the all_seasons files are re-copied under r5
+#   here, and check_season_surfaces.py now fails if any of them is missing.
+DATA_REV = "r5"
 
 
 def _rev_path(name: str) -> Path:
@@ -5688,6 +5698,109 @@ def build_raw(season: str, playoffs: bool = False) -> pd.DataFrame:
     return _build_raw_live(season, playoffs)
 
 
+# ── Provisional box scores ───────────────────────────────────────────────────
+# A hand-entered stopgap for games that have been PLAYED but that neither
+# source has published yet. On 2026-10-23 at 1am the Oct 22 games (CLE at PHI,
+# DEN at OKC) were final on ESPN while stats.nba.com was throttling this host
+# and Basketball-Reference still 404'd both box scores, so the site could not
+# show them by any normal route. Barrett asked for them in by hand, explicitly
+# as a temporary measure until the real feed confirms.
+#
+# It SUPERSEDES ITSELF. Each team carries the games it will have played once
+# that box score counts (team_gp_after), and the whole team's provisional block
+# is skipped the moment the authoritative source reports that many games or
+# more. Nothing has to be remembered or cleaned up: the raw parquet rebuilds
+# hourly while a season is live, so the first rebuild after BBRef publishes
+# drops these rows on its own.
+#
+# It is deliberately NOT written into the BBRef cache. That file stays a pure
+# record of what the source said, so "what did the feed actually have" is
+# always answerable.
+@lru_cache(maxsize=4)
+def _provisional_rows(season: str) -> tuple:
+    try:
+        fp = Path(__file__).resolve().parent / "data" / "provisional_box_scores.csv"
+        with open(fp, newline="", encoding="utf-8") as fh:
+            rows = [r for r in csv.DictReader(
+                l for l in fh if l.strip() and not l.lstrip().startswith("#"))
+                if (r.get("season") or "").strip() == season]
+        return tuple(rows)
+    except Exception:
+        return ()
+
+
+# per-game columns combined when a provisional game is folded in
+_PROV_COLS = (("MIN", "min"), ("PTS", "pts"), ("AST", "ast"), ("OREB", "oreb"),
+              ("DREB", "dreb"), ("BLK", "blk"), ("STL", "stl"), ("TOV", "tov"),
+              ("PF", "pf"), ("FGA", "fga"), ("FTA", "fta"))
+
+
+def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.DataFrame":
+    """Fold hand-entered games into a per-game stat frame, where the real feed
+    has not caught up yet. Returns the frame unchanged when it has."""
+    rows = _provisional_rows(season)
+    if not rows or stats.empty or "TEAM_ABBREVIATION" not in stats.columns:
+        return stats
+
+    by_team: dict = {}
+    for r in rows:
+        by_team.setdefault((r.get("team") or "").strip(), []).append(r)
+
+    def _pid(name):
+        try:
+            hit = nba_players_static.find_players_by_full_name(name)
+            if hit:
+                return int(hit[0]["id"])
+        except Exception:
+            pass
+        return -(abs(hash(name)) % (10 ** 9))
+
+    idx = {normalize(str(n)): i for i, n in stats["PLAYER_NAME"].items()}
+    added = []
+    for team, grp in by_team.items():
+        try:
+            gp_after = int(float(grp[0].get("team_gp_after") or 0))
+        except ValueError:
+            continue
+        have = stats[stats["TEAM_ABBREVIATION"] == team]
+        src_gp = float(pd.to_numeric(have["GP"], errors="coerce").max()) if len(have) else 0.0
+        if src_gp == src_gp and src_gp >= gp_after:
+            logger.info("provisional: %s superseded by the feed (GP %s >= %s)",
+                        team, src_gp, gp_after)
+            continue                      # the real feed has this game already
+        for r in grp:
+            name = (r.get("player") or "").strip()
+            # player=TEAM is the published-totals checksum row that
+            # check_provisional.py validates against. It is not a person.
+            if not name or name.upper() == "TEAM":
+                continue
+            key = normalize(name)
+            try:
+                game = {dst: float(r.get(dst) or 0) for _, dst in _PROV_COLS}
+            except ValueError:
+                continue
+            i = idx.get(key)
+            if i is not None:
+                old_gp = float(pd.to_numeric(stats.at[i, "GP"], errors="coerce") or 0)
+                new_gp = old_gp + 1
+                for col, dst in _PROV_COLS:
+                    if col in stats.columns:
+                        old = float(pd.to_numeric(stats.at[i, col], errors="coerce") or 0)
+                        stats.at[i, col] = round((old * old_gp + game[dst]) / new_gp, 3)
+                stats.at[i, "GP"] = new_gp
+            else:
+                row = {"PLAYER_ID": _pid(name), "PLAYER_NAME": name,
+                       "TEAM_ABBREVIATION": team, "GP": 1.0}
+                for col, dst in _PROV_COLS:
+                    row[col] = round(game[dst], 3)
+                added.append(row)
+    if added:
+        stats = pd.concat([stats, pd.DataFrame(added)], ignore_index=True)
+    logger.info("provisional: merged %d team block(s), %d new player rows",
+                len(by_team), len(added))
+    return stats
+
+
 def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
     """Fetch from the APIs, compute the Barrett-score frame, and persist it to
     disk. The expensive path; build_raw only calls this on a true cache miss or
@@ -5714,6 +5827,11 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
             stats = pd.DataFrame()
         if stats.empty:
             return pd.DataFrame()
+
+    # Hand-entered games the feed has not published yet. Folded in BEFORE the
+    # salary join so a player entering the pool this way is priced like any
+    # other. Self-superseding; see _merge_provisional_box_scores.
+    stats = _merge_provisional_box_scores(stats, season)
 
     sal_lookup = ({normalize(n): s for n, s in zip(salaries["name"], salaries["salary"])}
                   if not salaries.empty and "name" in salaries.columns else {})

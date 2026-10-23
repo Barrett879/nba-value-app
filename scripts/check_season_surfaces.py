@@ -193,7 +193,31 @@ record("WARN" if absent else "PASS", "derived filenames resolve",
        ("these degrade quietly rather than raising: " + "; ".join(absent))
        if absent else f"every {PRIOR}-derived file is on disk")
 
-# ── 6. an override may not point at a season nothing loads ───────────────────
+# ── 6. a DATA_REV bump must carry EVERY revisioned file with it ─────────────
+# _rev_path falls back to the UNSUFFIXED filename when the current revision is
+# missing. On Render that fallback is the ORIGINAL seeded copy, so a bump made
+# to ship one corrected file silently reverts every other file that resolves
+# through the same token. On 2026-10-23 bumping r4 -> r5 for the provisional
+# box scores would have taken Legacy back to the mojibake names repaired the
+# day before, with nothing to show for it.
+try:
+    from utils import DATA_REV, all_seasons_path, _raw_disk_path
+    stale = []
+    for label, path in (("all_seasons(0)", all_seasons_path(0)),
+                        ("all_seasons(500)", all_seasons_path(500)),
+                        (f"raw {CUR}", _raw_disk_path(CUR))):
+        if not path.exists():
+            stale.append(f"{label}: {path.name} does not exist")
+        elif f"_{DATA_REV}." not in path.name:
+            stale.append(f"{label}: resolved to {path.name}, which is NOT at {DATA_REV} "
+                         f"(fell back, so a shipped fix is being ignored)")
+    record("FAIL" if stale else "PASS", f"DATA_REV {DATA_REV} files present",
+           "; ".join(stale) if stale else
+           "every revisioned path resolves to a file at the current revision")
+except Exception as e:                                               # noqa: BLE001
+    record("FAIL", "DATA_REV files", str(e))
+
+# ── 7. an override may not point at a season nothing loads ───────────────────
 try:
     import csv as _csv
     ovr = ROOT / "data" / "score_season_override.csv"

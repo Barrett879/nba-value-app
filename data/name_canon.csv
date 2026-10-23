@@ -41,3 +41,8 @@ Alperen Sengun,Alperen Şengün,NBA API 2021-22 to 2025-26 against BBRef 2026-27
 Moussa Cisse,Moussa Cissé,NBA API 2025-26 against BBRef 2026-27
 Nolan Traore,Nolan Traoré,NBA API 2025-26 against BBRef 2026-27
 Tristan Da Silva,Tristan da Silva,"NOT an accent case. BBRef capitalises the nobiliary particle in 2026-27; the NBA API and the league itself use the lowercase da, which is the correct Brazilian styling, so here the BBRef form is the variant and the direction reverses"
+#
+# 2026-10-23. A third source joins the seam: the hand-entered provisional box
+# scores come off ESPN, which spells him without the accent. Same mechanism,
+# same fix, and check_name_canon.py found it the moment the row was merged.
+Nikola Jokic,Nikola Jokić,ESPN box score 2026-27 against the NBA API spelling everywhere else
