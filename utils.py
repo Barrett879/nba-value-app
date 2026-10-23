@@ -94,6 +94,7 @@
 """
 import html
 import csv
+import datetime as _dt
 import json
 import logging
 import math
@@ -3282,7 +3283,13 @@ def _dc_path(name: str) -> Path:
 #   now fails when a team in the stat source is missing from the pool; this
 #   bump is what gets the corrected 319-player file onto /data. It also carries
 #   the first per-team availability pool.
-DATA_REV = "r6"
+#   r7 (2026-10-23): Basketball-Reference published the Oct 22 games, so the
+#   provisional rows superseded themselves exactly as designed and the file is
+#   retired. This ships the pool built purely from the real feed: 317 players,
+#   every score within 0.02 of the hand-entered version, which is a decent
+#   after-the-fact check on that transcription. The residual delta is pool
+#   composition moving league-average TS, not a data disagreement.
+DATA_REV = "r7"
 
 
 def _rev_path(name: str) -> Path:
@@ -5669,6 +5676,38 @@ _raw_refresh_inflight = set()
 _raw_refresh_lock = threading.Lock()
 
 
+def _record_refresh(season: str, playoffs: bool, outcome: str, rows: int,
+                    secs: float, detail: str = "") -> None:
+    """Append the result of a background rebuild to cache/refresh_log.json.
+
+    Written because the refresh path had no evidence trail at all. When the
+    live season froze, the only observable was that numbers stopped moving,
+    which is indistinguishable from a quiet night in the NBA. Keeping the last
+    few attempts on disk means the next person can ask "did it run, and what
+    did it say" instead of guessing.
+
+    Best-effort and never raises: a diagnostic that can break a refresh is
+    worse than no diagnostic.
+    """
+    try:
+        fp = CACHE_DIR / "refresh_log.json"
+        try:
+            hist = json.loads(fp.read_text())
+            if not isinstance(hist, list):
+                hist = []
+        except Exception:
+            hist = []
+        hist.append({
+            "at": _dt.datetime.now(_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "season": season, "playoffs": bool(playoffs),
+            "outcome": outcome, "rows": int(rows), "secs": secs,
+            "detail": detail[:300],
+        })
+        fp.write_text(json.dumps(hist[-25:], indent=1))
+    except Exception:
+        pass
+
+
 def _spawn_raw_refresh(season: str, playoffs: bool = False) -> None:
     """Rebuild a stale raw parquet in a background thread so the foreground
     request serves the cached copy without blocking on the ~20s rebuild."""
@@ -5679,22 +5718,46 @@ def _spawn_raw_refresh(season: str, playoffs: bool = False) -> None:
         _raw_refresh_inflight.add(key)
 
     def _job() -> None:
+        outcome, rows, detail = "failed", 0, ""
+        t0 = time.time()
         try:
-            _build_raw_live(season, playoffs)
-        except Exception:
-            logger.warning("background raw refresh failed for %s", key, exc_info=True)
+            out = _build_raw_live(season, playoffs)
+            rows = 0 if out is None else len(out)
+        except Exception as e:                                       # noqa: BLE001
+            detail = f"{type(e).__name__}: {e}"
+            logger.warning("background raw refresh FAILED for %s", key, exc_info=True)
         else:
-            # Make the fresh parquet visible now: the in-memory memos still
-            # hold the stale frame for up to another hour. Clearing them means
-            # the next request re-reads the disk (~0.1s), not the old memo.
-            # Full clear (not per-args): callers reach these with mixed call
-            # shapes, and a re-read per season is cheap.
-            try:
-                build_raw.clear()
-                build_ranked_projected.clear()
-            except Exception:
-                pass
+            if rows:
+                outcome = "ok"
+                # Make the fresh parquet visible now: the in-memory memos still
+                # hold the stale frame for up to another hour. Clearing them
+                # means the next request re-reads the disk (~0.1s), not the old
+                # memo. Full clear (not per-args): callers reach these with
+                # mixed call shapes, and a re-read per season is cheap.
+                try:
+                    build_raw.clear()
+                    build_ranked_projected.clear()
+                except Exception:
+                    pass
+            else:
+                # An EMPTY rebuild is a failure, not a success. _build_raw_live
+                # returns an empty frame and writes nothing whenever both stat
+                # sources come back empty, and the old code treated that as a
+                # win: it cleared the memos, the next request re-read the same
+                # stale parquet, and the cycle repeated forever with the site
+                # frozen and nothing in the logs. The live season sat two days
+                # behind twice in October 2026 and each time it was "fixed" by
+                # shipping a file, which is what kept this hidden.
+                outcome = "empty"
+                detail = "both stat sources returned nothing; nothing was written"
+                logger.warning(
+                    "background raw refresh for %s produced NO ROWS - the cached "
+                    "parquet is unchanged and the site will keep serving stale "
+                    "data until a source answers. Memos deliberately NOT cleared.",
+                    key)
         finally:
+            _record_refresh(season, playoffs, outcome, rows,
+                            round(time.time() - t0, 1), detail)
             with _raw_refresh_lock:
                 _raw_refresh_inflight.discard(key)
 
