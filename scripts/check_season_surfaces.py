@@ -217,7 +217,37 @@ try:
 except Exception as e:                                               # noqa: BLE001
     record("FAIL", "DATA_REV files", str(e))
 
-# ── 7. an override may not point at a season nothing loads ───────────────────
+# ── 7. no team present in the SOURCE may be missing from the pool ───────────
+# A partial scrape does not raise. _build_raw_live does
+# dropna(subset=["salary"]), so any player the ESPN salary pages happened to
+# miss is simply deleted, and if a run misses a cluster it deletes a whole
+# roster. On 2026-10-23 a shipped build was missing all ten Washington players
+# including Anthony Davis, who had been sixth on the board that morning; the
+# board read 313 players instead of 319 and looked entirely normal.
+#
+# fetch_salaries now refuses a materially short scrape in favour of its last
+# complete one. This is the check that would have caught the shipped file
+# anyway, because it compares two things that must agree and does not care why.
+try:
+    from utils import build_raw, fetch_bref_player_stats
+    pool = build_raw(CUR)
+    src = fetch_bref_player_stats(CUR)
+    if len(pool) and len(src):
+        src_teams = set(src["TEAM_ABBREVIATION"].dropna().unique())
+        pool_teams = set(pool["Team"].dropna().unique())
+        gone = sorted(src_teams - pool_teams)
+        record("FAIL" if gone else "PASS", "no team dropped from the pool",
+               (f"present in the stat source but ABSENT from the pool: {gone}. "
+                f"That is a partial salary scrape deleting rosters, not a real "
+                f"roster change.") if gone else
+               f"all {len(src_teams)} source teams survive into the pool "
+               f"({len(pool_teams)} total with provisional rows)")
+    else:
+        record("WARN", "no team dropped from the pool", "pool or source empty")
+except Exception as e:                                               # noqa: BLE001
+    record("FAIL", "team coverage", str(e))
+
+# ── 8. an override may not point at a season nothing loads ───────────────────
 try:
     import csv as _csv
     ovr = ROOT / "data" / "score_season_override.csv"

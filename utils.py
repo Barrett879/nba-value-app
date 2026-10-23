@@ -2903,6 +2903,43 @@ def base_score(row) -> float:
     )
 
 
+def team_games_played(season: str, stats: "pd.DataFrame | None" = None) -> dict:
+    """{team abbreviation: games that team has played} for a LIVE season.
+
+    Early in a season teams are not on the same game count, and judging
+    availability against the LEAGUE leader punishes a player for his team's
+    schedule. On 2026-10-23 OKC and PHI had played twice and everyone else
+    once, so Paolo Banchero played all 41 minutes of Orlando's only game and
+    was scored 0.874 available, while SGA got 1.000 for the same thing across
+    two. Across the board that was 292 players held to another team's pace.
+
+    The count comes from the stat frame being scored rather than a separate
+    feed, which keeps it consistent by construction: whatever the source says
+    (including a provisional box score folded in by hand) defines both the
+    numerator and the denominator, so they can never disagree. At least one
+    player appears in every game a team plays, so the maximum GP on a roster
+    IS that team's games played.
+
+    It is cached to disk as its own small artifact so the number is
+    inspectable rather than implied, which is what you want when a score moves
+    and nobody can say why.
+    """
+    if stats is None or stats.empty or "TEAM_ABBREVIATION" not in stats.columns:
+        try:
+            return json.loads(_dc_path(f"team_games_{season}.json").read_text())
+        except Exception:
+            return {}
+    gp = pd.to_numeric(stats["GP"], errors="coerce")
+    out = {str(t): int(v) for t, v in
+           gp.groupby(stats["TEAM_ABBREVIATION"]).max().dropna().items()}
+    try:
+        _dc_path(f"team_games_{season}.json").write_text(
+            json.dumps(dict(sorted(out.items())), indent=1))
+    except Exception:
+        pass
+    return out
+
+
 def availability_multiplier(gp: float, total_min: float, season_games: int = 82) -> float:
     """Availability multiplier, punishes missed games + light minutes.
 
@@ -3237,7 +3274,15 @@ def _dc_path(name: str) -> Path:
 #   the UNSUFFIXED name when the new one is missing, which on Render is the
 #   original mojibake copy. So the all_seasons files are re-copied under r5
 #   here, and check_season_surfaces.py now fails if any of them is missing.
-DATA_REV = "r5"
+#   r6 (2026-10-23): r5 shipped a pool with WASHINGTON MISSING. ESPN's salary
+#   scrape came back short during that build, _build_raw_live drops any player
+#   without a salary, and the board went out at 313 players with all ten
+#   Washington names gone, Anthony Davis among them. Nothing raised. The cause
+#   is fixed in fetch_salaries (stale beats partial) and check_season_surfaces
+#   now fails when a team in the stat source is missing from the pool; this
+#   bump is what gets the corrected 319-player file onto /data. It also carries
+#   the first per-team availability pool.
+DATA_REV = "r6"
 
 
 def _rev_path(name: str) -> Path:
@@ -3576,17 +3621,35 @@ def _html_text(r: requests.Response) -> str:
 
 @st.cache_data(ttl=86400)
 @st.cache_data(ttl=3600, show_spinner="Fetching salary data...")
+def _salary_cache_path(espn_year: int) -> Path:
+    """Last COMPLETE ESPN salary scrape for a season. See fetch_salaries."""
+    return _dc_path(f"espn_salaries_v1_{espn_year}.parquet")
+
+
 def fetch_salaries(espn_year: int) -> pd.DataFrame:
     rows = []
+    truncated = False
     for page in range(1, 15):
         url = f"https://www.espn.com/nba/salaries/_/year/{espn_year}/page/{page}"
-        try:
-            r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
-        except Exception:
-            break                     # partial pages beat hanging/raising mid-scrape
+        r = None
+        for _attempt in range(2):     # one retry: a single flaky page used to
+            try:                      # truncate the whole salary list silently
+                r = requests.get(url, headers={"User-Agent": "Mozilla/5.0"}, timeout=10)
+                break
+            except Exception:
+                r = None
+                time.sleep(1.0)
+        if r is None:
+            truncated = True
+            break
         soup = BeautifulSoup(_html_text(r), "html.parser")
         tables = soup.find_all("table")
         if not tables:
+            # No table can mean "past the last page", which is normal, or a
+            # bad response, which is not. Treat a FIRST-page miss as a failure
+            # and anything later as the end of the list.
+            if page == 1:
+                truncated = True
             break
         df = pd.read_html(io.StringIO(str(tables[0])))[0]
         data = df[df[0] != "RK"]
@@ -3602,7 +3665,35 @@ def fetch_salaries(espn_year: int) -> pd.DataFrame:
     combined.columns = ["rank", "name_pos", "team", "salary"]
     combined["name"] = combined["name_pos"].str.replace(r",\s*\w+$", "", regex=True).str.strip()
     combined["salary"] = combined["salary"].str.replace(r"[\$,]", "", regex=True).astype(float)
-    return combined[["name", "salary"]]
+    out = combined[["name", "salary"]]
+
+    # STALE BEATS PARTIAL. A short read here does not look like an error
+    # anywhere downstream: _build_raw_live does dropna(subset=["salary"]), so
+    # every player this scrape happened to miss is silently DELETED from the
+    # board. On 2026-10-23 two rebuilds twenty minutes apart lost ten entirely
+    # different players each, and one of them dropped Washington's whole roster
+    # including Anthony Davis, who had been sixth on the board that morning.
+    # Nothing raised and the page looked normal with 313 players instead of 319.
+    #
+    # So the last complete scrape is kept on disk and a materially smaller one
+    # is refused in its favour. Same doctrine as the other fetchers: serve the
+    # stale thing rather than publish a confidently wrong one.
+    try:
+        prev = pd.read_parquet(_salary_cache_path(espn_year))
+    except Exception:
+        prev = None
+    if prev is not None and len(prev) and len(out) < 0.9 * len(prev):
+        logger.warning(
+            "ESPN salaries for %s came back short (%d rows vs %d cached%s) - "
+            "serving the cached copy so players are not dropped from the pool",
+            espn_year, len(out), len(prev), ", scrape truncated" if truncated else "")
+        return prev
+    if len(out) >= 50:
+        try:
+            _atomic_to_parquet(out, _salary_cache_path(espn_year))
+        except Exception:
+            pass
+    return out
 
 
 @st.cache_data(ttl=86400, show_spinner=False)
@@ -5960,11 +6051,27 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
             gp_ratio = (stats["GP"] / max(season_games, 1)).clip(0, 1)
             stats["avail_mult"] = (0.30 + 0.70 * gp_ratio.pow(0.5)).clip(0.30, 1.0)
     else:
-        # Regular season: GP × MPG via total_min / 2500-cap (default formula).
-        # Vectorised — same math as availability_multiplier() applied to the
-        # whole column at once. min_cap is constant across rows.
-        _min_cap = season_games * (2500 / 82)
-        _ratio = (stats["total_min"] / max(_min_cap, 1)).clip(0, 1)
+        # Regular season: GP × MPG via total_min / 2500-cap.
+        #
+        # The denominator is PER TEAM while the season is live, because teams
+        # are not on the same game count and a league-wide one charges a player
+        # for his team's schedule. A FINISHED season keeps the scheduled total,
+        # deliberately: every team played 82 (or the lockout figure), and
+        # switching history to per-team maxima would quietly re-score every
+        # season on disk whenever a team's iron-man happened to miss a night.
+        #
+        # The playoff branch above has always done this, with team_max_gp. The
+        # regular-season branch never did.
+        if season_is_live(season):
+            _tg = team_games_played(season, stats)
+            _denom = (stats["TEAM_ABBREVIATION"].map(_tg)
+                      .fillna(season_games).clip(lower=1))
+            logger.info("availability: per-team games for %s -> %s",
+                        season, dict(sorted(_tg.items())))
+        else:
+            _denom = float(max(season_games, 1))
+        _min_cap = _denom * (2500 / 82)
+        _ratio = (stats["total_min"] / _min_cap).clip(0, 1)
         stats["avail_mult"] = 0.30 + 0.70 * np.sqrt(_ratio)
     # Canonical Barrett Score is now PACE-ADJUSTED — applies across the whole
     # site (Rankings, Legacy, Trades, Search, etc.) so cross-era comparisons
