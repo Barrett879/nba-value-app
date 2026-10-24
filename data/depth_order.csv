@@ -50,7 +50,7 @@ ATL,Kingston Flemings,2,force second PG 2026-10-20
 MIL,Brayden Burries,2,"force second SG 2026-10-20; 2026 No. 10 pick, so no NBA score to rank on"
 MIL,Gary Trent Jr.,3,force third SG 2026-10-20
 MIL,Nate Ament,3,"third PF as of 2026-10-24, shifted down one when Ousmane Dieng took PF2. Force-started at PF2 on 10/20"
-CHI,Dailyn Swain,2,force second SF 2026-10-20
+CHI,Dailyn Swain,3,"third SF as of 2026-10-24, shifted down one when Isaac Okoro took SF2. Force-set at SF2 on 10/20"
 PHI,Labaron Philon Jr.,3,force third PG 2026-10-20
 BKN,Ben Saraf,3,force third SG 2026-10-20
 LAL,Ziaire Williams,1,"force start 2026-10-20, in the PF column; first LAL pin, so Mamukelashvili falls to 2 on score"
@@ -80,3 +80,4 @@ NOP,Yves Missi,1,"force start at C, 2026-10-24"
 SAS,Dylan Harper,1,"force start at SF, 2026-10-24; moved SG -> SF in the same round"
 DAL,Max Christie,1,"force start at SG, 2026-10-24; Risacher shifts to SG2"
 MIL,Ousmane Dieng,2,"second PF, 2026-10-24; Ament shifts to PF3"
+CHI,Isaac Okoro,2,"second SF, 2026-10-24; position_overrides moves him SG -> SF in the same round. Swain shifts to SF3 under the rule Barrett set that night: the newer pin wins and the older drops a rank rather than being dropped"
