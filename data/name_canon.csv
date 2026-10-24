@@ -46,3 +46,11 @@ Tristan Da Silva,Tristan da Silva,"NOT an accent case. BBRef capitalises the nob
 # scores come off ESPN, which spells him without the accent. Same mechanism,
 # same fix, and check_name_canon.py found it the moment the row was merged.
 Nikola Jokic,Nikola Jokić,ESPN box score 2026-27 against the NBA API spelling everywhere else
+#
+# 2026-10-24. Three more from the same seam, surfaced the moment the Oct 23
+# slate came in through the ESPN box-score API. This is now routine: any night
+# ESPN data enters the pool, its unaccented spellings collide with BBRef's
+# accented ones, and check_name_canon.py names them before they ship.
+Pacome Dadiet,Pacôme Dadiet,ESPN box score API against the BBRef spelling
+Tidjane Salaun,Tidjane Salaün,ESPN box score API against the BBRef spelling
+Karlo Matkovic,Karlo Matković,ESPN box score API against the BBRef spelling

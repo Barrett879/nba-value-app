@@ -3289,7 +3289,12 @@ def _dc_path(name: str) -> Path:
 #   every score within 0.02 of the hand-entered version, which is a decent
 #   after-the-fact check on that transcription. The residual delta is pool
 #   composition moving league-average TS, not a data disagreement.
-DATA_REV = "r7"
+#   r8 (2026-10-24): the Oct 23 slate, twelve games and twenty-four teams,
+#   final on ESPN and not yet on BBRef. Ingested through the new
+#   scripts/fetch_provisional_box_scores.py rather than by hand, because
+#   twenty-four box scores is about three hundred players and transcription
+#   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
+DATA_REV = "r8"
 
 
 def _rev_path(name: str) -> Path:
