@@ -22,6 +22,11 @@
 # they are back, with nothing to remember.
 #
 # Set 2026-10-20 at Barrett's direction.
+#
+# 2026-10-24 batch at Barrett's direction: 21 new rows and 5 revisions.
+# The five revisions reverse or re-aim rows set on 10/20 and are marked as
+# such in their notes, so a row that looks contradictory against the earlier
+# round reads as a decision rather than a mistake.
 player,pos,alt_pos,alt_when_out,note
 Collin Murray-Boyles,C/PF,,,moves from the PF column to C
 Corey Kispert,SG/SF,,,was SF/SG
@@ -29,13 +34,13 @@ Joan Beringer,C/PF,,,moves from the PF column to C
 Damian Lillard,SG/PG,,,was a bare PG
 Jaren Jackson Jr.,PF/C,,,moves from the C column to PF
 Lauri Markkanen,SF/PF,,,moves from the PF column to SF
-Draymond Green,PF/C,C/PF,Kristaps Porzingis,"centre only while Porzingis is out; reverts to PF/C on his return"
-Derrick Jones Jr.,PF/SF,SF/PF,Brandon Ingram,"small forward only while Ingram is out; reverts to PF/SF on his return"
-Keaton Wagler,SG/PG,,,was a bare PG
+Draymond Green,PF/C,C/PF,Kristaps Porzingis,centre only while Porzingis is out; reverts to PF/C on his return
+Derrick Jones Jr.,PF/SF,SF/PF,Brandon Ingram,small forward only while Ingram is out; reverts to PF/SF on his return
+Keaton Wagler,PG/SG,,,revised 2026-10-24 back to the PG column; the 10/20 row had moved him to SG
 Sandro Mamukelashvili,PF/C,,,moves from the C column to PF
 Devin Booker,PG/SG,,,moves from the SG column to PG
-Jordan Goodwin,SF/SG,,,moves from the PG column to SF
-Ryan Dunn,PF/SF,,,moves from the SF column to PF; his depth pin follows him there
+Jordan Goodwin,SG/SF,,,"revised 2026-10-24 from SF/SG, so he moves SF -> SG"
+Ryan Dunn,SF/PF,,,"revised 2026-10-24 back to the SF column, reversing the 10/20 move to PF. His depth pin is keyed by team and name, so it follows him and now means SF2"
 Zaccharie Risacher,SG/SF,,,moves from the SF column to SG
 Marcus Smart,PG/SG,,,moves from the SG column to PG
 Reed Sheppard,SG/PG,,,moves from the PG column to SG
@@ -43,7 +48,28 @@ Ty Jerome,PG/SG,,,moves from the SG column to PG
 Jerami Grant,SF/PF,,,moves from the PF column to SF
 Julian Champagnie,SF/PF,,,"stays in the SF column. Was set PF/SF on 2026-10-20 and revised back the same day, which restores his scraped position; the row is kept so the intent is explicit rather than looking like the override was dropped"
 Devin Vassell,PF/SF,,,"moves from the SG column to PF. Was set SF/SG on 2026-10-20 and revised the same day; he and Champagnie effectively swap, Vassell to PF and Champagnie back to SF"
-Dylan Harper,SG/PG,,,moves from the PG column to SG
+Dylan Harper,SF/SG,,,"revised 2026-10-24 from SG/PG, so he moves SG -> SF"
 Saddiq Bey,PF/SF,,,moves from the SF column to PF
-Stephon Castle,SF/SG,,,moves from the SG column to SF
+Stephon Castle,SG/PG,,,"revised 2026-10-24 from SF/SG, so he moves SF -> SG. He and Harper swap columns again, the mirror of the 10/20 pair"
 Keldon Johnson,SG/SF,,,moves from the SF column to SG
+Derrick White,PG/SG,,,moves from the SG column to PG
+Jordan Walsh,SG/SF,,,moves from the PF column to SG
+Egor Demin,PG/SG,,,moves from the SG column to PG
+Mikel Brown Jr.,SG/PG,,,was a bare PG
+Leonard Miller,PF/SF,,,moves from the SF column to PF
+Noa Essengue,C/PF,,,moves from the PF column to C
+Isaac Okoro,SF/SG,,,moves from the SG column to SF
+Pelle Larsson,SF/SG,,,moves from the SG column to SF
+Simone Fontecchio,PF/SF,,,moves from the SF column to PF
+De'Anthony Melton,SG/PG,,,moves from the PG column to SG
+Gary Payton II,SF/SG,,,moves from the SG column to SF
+Kris Dunn,SG/PG,,,moves from the PG column to SG. The OTHER Dunn: Ryan Dunn is PHX
+Matisse Thybulle,SF/SG,,,moves from the SG column to SF
+Quentin Grimes,SG/SF,,,moves from the SF column to SG
+Drew Timme,PF,,,was PF/C; stays in the PF column and is pinned last there
+Kevin Durant,PF/SF,,,moves from the SG column to PF
+Amen Thompson,SG/SF,,,moves from the SF column to SG; his scraped position reads SF/PG
+Jabari Smith Jr.,SF/PF,,,moves from the PF column to SF
+Cam Spencer,SG/PG,,,moves from the PG column to SG
+Dejounte Murray,SG/PG,,,moves from the PG column to SG
+Jordan Poole,PG/SG,,,moves from the SG column to PG

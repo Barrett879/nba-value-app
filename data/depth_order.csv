@@ -17,6 +17,13 @@
 #
 #   team,player,rank,note   -- player must match the master-roster spelling
 #
+#
+# 2026-10-24 batch at Barrett's direction: 26 new pins, 2 revisions.
+# Cedric Coward was already pinned MEM SG1 from an earlier round, so his
+# "SG1 when healthy again" confirms that row rather than adding one. The
+# condition needs no mechanism: orderD sends anyone listed OUT to the
+# bottom whether pinned or not, so the pin reasserts itself when he returns.
+#
 team,player,rank,note
 MEM,Cameron Boozer,1,2026 lottery pick; no NBA score yet so the automatic rule buries him
 MEM,Scotty Pippen Jr.,2,"second point guard behind Ty Jerome, who is force-started at 1 as of 2026-10-20; this row read 'starting point guard' before that"
@@ -25,25 +32,51 @@ CHI,Caleb Wilson,1,2026 No. 4 pick; no NBA score yet
 IND,Aaron Nesmith,1,starter ahead of Oubre despite the closer scores (11.4 vs 12.4)
 WAS,AJ Dybantsa,1,2026 lottery pick; no NBA score yet
 SAC,Darius Acuff Jr.,1,2026 first-rounder; no NBA score yet
-BKN,Mikel Brown Jr.,1,2026 first-rounder; no NBA score yet
+BKN,Mikel Brown Jr.,2,"second SG as of 2026-10-24, revised from a force start; position_overrides moves him PG -> SG in the same round"
 UTA,Darryn Peterson,1,"2026 No. 2 pick; no NBA score yet, and the automatic rule had him 4th"
 DEN,Christian Braun,1,starting shooting guard; DeRozan is the scorer off the bench
 PHX,Ryan Dunn,2,"second PF as of 2026-10-20. position_overrides moves him from SF to PF, and a pin is keyed by team and name rather than column, so the rank follows him. Earlier notes referred to Highsmith, whom PHX waived 10/17/26"
 GSW,Yaxel Lendeborg,2,"second SF behind a healthy Butler. Both Butler (torn ACL, back about January) and Moody (ruptured patellar tendon, about December) are OUT, so the injury rule sidelines them and this pin leaves Lendeborg first until Butler returns"
-WAS,Alex Sarr,1,"force start 2026-10-20"
+WAS,Alex Sarr,1,force start 2026-10-20
 GSW,De'Anthony Melton,2,"force second point guard 2026-10-20, behind Curry"
-LAC,Keaton Wagler,1,"force start 2026-10-20; 2026 No. 5 pick, so no NBA score to rank on"
-DAL,Zaccharie Risacher,1,"force start 2026-10-20, in the SG column per position_overrides"
+LAC,Keaton Wagler,2,"second PG as of 2026-10-24, revised from the 10/20 force start; position_overrides moves him SG -> PG in the same round and the pin follows"
+DAL,Zaccharie Risacher,2,"second SG as of 2026-10-24, shifted down one when Max Christie took SG1. Force-started here on 10/20"
 MEM,Ty Jerome,1,"force start 2026-10-20, ahead of Pippen who moves to 2"
 MEM,Jaylen Wells,1,"force start 2026-10-20, ahead of Jerami Grant, who has no pin and so falls to 2 on score"
-NOP,Karlo Matkovic,3,"force third PF 2026-10-20"
+NOP,Karlo Matkovic,3,force third PF 2026-10-20
 SAS,Devin Vassell,1,"force start 2026-10-20, in the PF column per position_overrides"
-DEN,Tyus Jones,2,"force second PG 2026-10-20"
-ATL,Kingston Flemings,2,"force second PG 2026-10-20"
+DEN,Tyus Jones,2,force second PG 2026-10-20
+ATL,Kingston Flemings,2,force second PG 2026-10-20
 MIL,Brayden Burries,2,"force second SG 2026-10-20; 2026 No. 10 pick, so no NBA score to rank on"
-MIL,Gary Trent Jr.,3,"force third SG 2026-10-20"
-MIL,Nate Ament,2,"force second PF 2026-10-20; 2026 No. 13 pick, so no NBA score to rank on"
-CHI,Dailyn Swain,2,"force second SF 2026-10-20"
-PHI,Labaron Philon Jr.,3,"force third PG 2026-10-20"
-BKN,Ben Saraf,3,"force third SG 2026-10-20"
+MIL,Gary Trent Jr.,3,force third SG 2026-10-20
+MIL,Nate Ament,3,"third PF as of 2026-10-24, shifted down one when Ousmane Dieng took PF2. Force-started at PF2 on 10/20"
+CHI,Dailyn Swain,2,force second SF 2026-10-20
+PHI,Labaron Philon Jr.,3,force third PG 2026-10-20
+BKN,Ben Saraf,3,force third SG 2026-10-20
 LAL,Ziaire Williams,1,"force start 2026-10-20, in the PF column; first LAL pin, so Mamukelashvili falls to 2 on score"
+BOS,Jordan Walsh,1,"force start at SG, 2026-10-24"
+BOS,Mitchell Robinson,1,"force start at C, 2026-10-24"
+BKN,Egor Demin,1,"force start at PG, 2026-10-24"
+BKN,Nolan Traore,2,"second PG, 2026-10-24"
+TOR,Jamison Battle,2,"second SF, 2026-10-24"
+CHI,Noa Essengue,2,"second C, 2026-10-24; position_overrides moves him PF -> C and the pin follows"
+ATL,Dorian Finney-Smith,3,"third SF, 2026-10-24"
+CHA,Sion James,1,"force start at SG, 2026-10-24"
+MIA,Klay Thompson,1,"force start at SG, 2026-10-24"
+MIA,Simone Fontecchio,3,"third PF, 2026-10-24; moved SF -> PF in the same round"
+DEN,Trevon Brazile,2,"second PF, 2026-10-24"
+DEN,Marvin Bagley III,2,"second C, 2026-10-24"
+LAC,Kris Dunn,1,"force start at SG, 2026-10-24; moved PG -> SG in the same round"
+LAC,Brook Lopez,2,"second C, 2026-10-24"
+LAL,Matisse Thybulle,1,"force start at SF, 2026-10-24; moved SG -> SF in the same round"
+PHX,Khaman Maluach,1,"force start at C, 2026-10-24"
+PHX,Drew Timme,99,"force LAST at PF, 2026-10-24. There is no explicit last-place flag: orderD fills every unpinned slot before placing a pin, so a rank past the end of the column drains the rest first and leaves him at the bottom. 99 is the convention"
+DAL,Morez Johnson Jr.,2,"second C, 2026-10-24"
+HOU,Steven Adams,2,"second C, 2026-10-24"
+MEM,G.G. Jackson,2,"second PF, 2026-10-24; Barrett wrote GG Jackson, the roster spells it G.G."
+MEM,Zach Edey,1,"force start at C, 2026-10-24"
+MEM,Quinten Post,2,"second C, 2026-10-24"
+NOP,Yves Missi,1,"force start at C, 2026-10-24"
+SAS,Dylan Harper,1,"force start at SF, 2026-10-24; moved SG -> SF in the same round"
+DAL,Max Christie,1,"force start at SG, 2026-10-24; Risacher shifts to SG2"
+MIL,Ousmane Dieng,2,"second PF, 2026-10-24; Ament shifts to PF3"
