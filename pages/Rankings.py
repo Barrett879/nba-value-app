@@ -16,7 +16,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    fetch_dlebron, fetch_career_trend, fetch_player_season_splits,
+    fetch_dlebron, fetch_defense_blend, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     html_table,
@@ -485,11 +485,25 @@ dlebron_lookup = fetch_dlebron(season)
 _gp_sum = float(df["GP"].sum())
 league_avg_ts = float((df["ts_pct"] * df["GP"]).sum() / _gp_sum) if _gp_sum > 0 else 0.0
 if not dlebron_lookup:
-    st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) only goes back to 2009-10. "
-            "For this season, defensive contribution is estimated from box-score stats "
-            "(BLK, STL, DREB, and PF) centered on the season's league average. "
-            "Calibrated to roughly match D-LEBRON's scale, but noisier (no on/off, no role-adjustment, "
-            "no luck-adjustment).")
+    # The copy has to follow the metric. This page said "no on/off, no
+    # role-adjustment" for twelve minutes after the blend went live, which was
+    # the exact opposite of what it had started computing.
+    _blend = fetch_defense_blend(season)
+    if _blend:
+        st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) is not published for a "
+                "season in progress. Defensive contribution here is a blend of two on/off "
+                "measures: a role-weighted composite of deterrence and event production, and a "
+                "career-possession-weighted version that reads an established defender off what "
+                "opponents stop doing rather than off his counting stats. Rescaled to "
+                f"D-LEBRON's own range. It covers {len(_blend)} players; anyone below the "
+                "possession floor keeps the box-score estimate. Early in a season it is thin: "
+                "a handful of games moves it a long way.")
+    else:
+        st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) only goes back to 2009-10. "
+                "For this season, defensive contribution is estimated from box-score stats "
+                "(BLK, STL, DREB, and PF) centered on the season's league average. "
+                "Calibrated to roughly match D-LEBRON's scale, but noisier (no on/off, no "
+                "role-adjustment, no luck-adjustment).")
 
 
 def render_splits_panel(player_name, season):
