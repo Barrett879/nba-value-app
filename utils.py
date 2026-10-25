@@ -5630,10 +5630,10 @@ def fetch_defense_blend_meta(season: str) -> dict:
 #
 # Used by build_raw when fetch_dlebron returns 0 for a player.
 
-# The defensive term's weight in base_score, and the 1-10 scale shown to users.
-# It lived as a bare "* 2" in SEVEN places including twice inside the pace
-# adjustment, which is how a single rule drifts: change six and the Score
-# Breakdown stops reconciling with the score it breaks down.
+# The defensive term's weight in base_score. It lived as a bare "* 2" in SEVEN
+# places including twice inside the pace adjustment, which is how a single rule
+# drifts: change six and the Score Breakdown stops reconciling with the score
+# it breaks down.
 DEFENSE_WEIGHT_LIVE = 1.75    # the season being played, scored by the blend
 DEFENSE_WEIGHT_LEGACY = 2.00  # every finished season, unchanged since v1
 
