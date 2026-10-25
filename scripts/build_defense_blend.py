@@ -48,11 +48,11 @@ def zs(s):
     return (s - s.mean()) / (sd if sd and sd == sd else 1.0)
 
 
-def main():
-    season = sys.argv[1] if len(sys.argv) > 1 else "2026-27"
-    prior = "2024-25" if season == "2026-27" else "2023-24"
-
-    # D-LEBRON's real distribution, so the blend lands on the same scale
+def compute(season, prior=None):
+    """The scaled defensive value per player. ONE definition, so the daily
+    monitor measures drift against exactly what a rebuild would write rather
+    than against its own re-derivation of the formula."""
+    prior = prior or ("2024-25" if season == "2026-27" else "2023-24")
     dl = pd.read_parquet(ROOT / "cache" / "dlebron_all.parquet")
     recent = dl[dl.Season.isin(["2024-25", "2025-26"])]["D-LEBRON"].astype(float)
     mu, sd = float(recent.mean()), float(recent.std())
@@ -65,6 +65,12 @@ def main():
     scaled = blend.copy()
     scaled[blend > 0] = blend[blend > 0] * (POS_MAX / pos) if pos > 0 else 0.0
     scaled[blend < 0] = blend[blend < 0] * (abs(NEG_MIN) / abs(neg)) if neg < 0 else 0.0
+    return df, scaled, mu, sd
+
+
+def main():
+    season = sys.argv[1] if len(sys.argv) > 1 else "2026-27"
+    df, scaled, mu, sd = compute(season)
 
     espn, feed, missing = L.feed_gap(season)
     rebuilt = [str(g.get("GameId")) for g in L.games(season)
@@ -93,8 +99,12 @@ def main():
                        "absent and must keep the box proxy. Not computable on "
                        "Render, so this is only as fresh as the last push."),
         },
-        "values": {str(p): round(float(v), 4)
-                   for p, v in zip(df.player, scaled)},
+        # SORTED, so the file is deterministic. Written in frame order it came
+        # out reordered on every rebuild, producing 79-line diffs with zero
+        # values changed -- which makes "has anything actually moved?"
+        # unanswerable by diff, and that is what the daily drift check reads.
+        "values": {k: round(float(v), 4) for k, v in
+                   sorted(zip(df.player.astype(str), scaled), key=lambda kv: kv[0])},
     }
     path = ROOT / "cache" / f"defense_blend_{season.replace('-', '_')}_{VERSION}.json"
     path.write_text(json.dumps(out, indent=1))
