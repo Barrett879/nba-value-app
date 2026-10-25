@@ -5553,6 +5553,30 @@ def fetch_dlebron(season: str) -> dict:
     return {int(row["nba_id"]): float(row["D-LEBRON"]) for _, row in season_df.iterrows()}
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_defense_blend(season: str) -> dict:
+    """The precomputed defensive blend for a season with no published D-LEBRON.
+
+    0.70 * z(option 1) + 0.30 * z(option 4), already rescaled to D-LEBRON's own
+    mean and standard deviation by scripts/build_defense_blend.py, so it drops
+    straight into the term base_score multiplies by 2.
+
+    Built offline and committed because it needs the pbpstats lineup cache and
+    the ESPN rebuilds, which cannot live on Render. It is therefore only as
+    fresh as the last push, and COVERAGE IS PARTIAL: players below the
+    possession floor are absent and keep the box proxy.
+    """
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v1.json")
+    if not path.exists():
+        return {}
+    try:
+        d = json.loads(path.read_text())
+        return {str(k): float(v) for k, v in (d.get("values") or {}).items()}
+    except Exception as e:
+        logger.warning("defense blend unreadable (%s) -- falling back to the proxy", e)
+        return {}
+
+
 # ── D-LEBRON proxy for pre-2009 seasons ────────────────────────────────────
 # Real D-LEBRON (from BBall-Index) only goes back to 2009-10. For older
 # eras, the defensive component of Barrett Score would otherwise be 0 —
@@ -5604,7 +5628,12 @@ _DLEBRON_PROXY_COEFS = {
 #       build_raw so every page (Rankings, Legacy, Trades, Search, all-time
 #       lists) gets era-normalized scores by default. Old un-adjusted view
 #       still available as `barrett_score_raw` for the Search toggle.
-FORMULA_VERSION = "v7"  # v7: D-LEBRON proxy replaces hand-tuned fallback (R²=0.59)
+# v9, NOT v8: a complete set of 50 raw_*_v8.parquet files from July already sits
+# in cache/, so bumping to v8 would READ those stale caches instead of
+# rebuilding and serve scores from an unknown formula without a word.
+FORMULA_VERSION = "v9"  # v9: 0.70/0.30 option 1 + option 4 blend for the live
+#                              season's defensive term, where no published
+#                              D-LEBRON exists yet (v7: box-only proxy)
 
 # Separate version tag for playoff caches so playoff-formula tweaks invalidate
 # only playoff parquets, leaving the regular-season caches valid.
@@ -5901,9 +5930,16 @@ def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.Dat
     if not rows or stats.empty or "TEAM_ABBREVIATION" not in stats.columns:
         return stats
 
+    # Keyed by (team, GAME DATE), not team alone. Keying on team put every
+    # date's rows in one list, took the supersede threshold from whichever row
+    # happened to be first, and then applied them ALL or none: with blocks for
+    # two dates a player gained a game twice and GP went 2 -> 4. It only ever
+    # worked because the fetcher overwrote the file and the file only ever held
+    # one date, so fixing that overwrite is what exposed this.
     by_team: dict = {}
     for r in rows:
-        by_team.setdefault((r.get("team") or "").strip(), []).append(r)
+        key = ((r.get("team") or "").strip(), (r.get("game_date") or "").strip())
+        by_team.setdefault(key, []).append(r)
 
     def _pid(name):
         try:
@@ -5916,7 +5952,9 @@ def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.Dat
 
     idx = {normalize(str(n)): i for i, n in stats["PLAYER_NAME"].items()}
     added = []
-    for team, grp in by_team.items():
+    # Oldest block first, so a team's blocks apply in the order they were played
+    # and each one's threshold is judged against the games already folded in.
+    for (team, gdate), grp in sorted(by_team.items(), key=lambda kv: (kv[0][0], kv[0][1])):
         try:
             gp_after = int(float(grp[0].get("team_gp_after") or 0))
         except ValueError:
@@ -5924,8 +5962,8 @@ def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.Dat
         have = stats[stats["TEAM_ABBREVIATION"] == team]
         src_gp = float(pd.to_numeric(have["GP"], errors="coerce").max()) if len(have) else 0.0
         if src_gp == src_gp and src_gp >= gp_after:
-            logger.info("provisional: %s superseded by the feed (GP %s >= %s)",
-                        team, src_gp, gp_after)
+            logger.info("provisional: %s %s superseded by the feed (GP %s >= %s)",
+                        team, gdate, src_gp, gp_after)
             continue                      # the real feed has this game already
         for r in grp:
             name = (r.get("player") or "").strip()
@@ -6050,13 +6088,28 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
     # fit on the 2009-2025 sample. R² = 0.594, MAE = 0.52 (D-LEBRON units).
     # See _DLEBRON_PROXY_COEFS above.
     if not dlebron:
-        stats["d_lebron"] = (
+        _proxy = (
             _DLEBRON_PROXY_COEFS["intercept"]
             + _DLEBRON_PROXY_COEFS["STL"]  * stats["STL"]
             + _DLEBRON_PROXY_COEFS["BLK"]  * stats["BLK"]
             + _DLEBRON_PROXY_COEFS["DREB"] * stats["DREB"]
             + _DLEBRON_PROXY_COEFS["PF"]   * stats["PF"]
         ).clip(-5, 6)
+        # The on/off blend where we have it, the box proxy for everyone else.
+        # Joined through NameIndex, not a bare normalize(): the blend's names
+        # come from pbpstats and the stat frame's from BBRef, and the two
+        # disagree on suffixes, transliterations and nicknames. A bare key
+        # silently drops those players onto the proxy instead.
+        _blend = fetch_defense_blend(season)
+        if _blend:
+            _ni = NameIndex(_blend)
+            _v = stats["PLAYER_NAME"].map(lambda n: _ni.get(str(n)))
+            _hit = _v.notna()
+            stats["d_lebron"] = np.where(_hit, pd.to_numeric(_v, errors="coerce"), _proxy)
+            logger.info("defense: blend on %d of %d players, box proxy on %d",
+                        int(_hit.sum()), len(stats), int((~_hit).sum()))
+        else:
+            stats["d_lebron"] = _proxy
 
     stats["ts_pct"] = stats["PTS"] / (2 * (stats["FGA"] + 0.44 * stats["FTA"])).replace(0, float("nan"))
     league_avg_ts = (stats["ts_pct"] * stats["GP"]).sum() / stats["GP"].sum()
