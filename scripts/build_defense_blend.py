@@ -32,8 +32,15 @@ import def_lib as L, def_options as O
 logging.disable(logging.NOTSET)
 
 W1 = 0.70
-VERSION = "v1"
-CLIP = (-3.0, 4.0)          # D-LEBRON's own observed range is -2.94 to +3.99
+VERSION = "v2"  # v2: stretched to [-6, +6]; v1 was D-LEBRON-scaled
+
+# The endpoints the defensive value is stretched to. Scaling is PIECEWISE about
+# zero, so the best defender lands exactly on POS_MAX, the worst exactly on
+# NEG_MIN, zero stays zero and the sign of everyone in between is preserved.
+# That is what lets the negative end be moved on its own, to -4 or -3, without
+# touching the positive end.
+POS_MAX = 6.0
+NEG_MIN = -6.0
 
 
 def zs(s):
@@ -54,7 +61,10 @@ def main():
     z1 = zs(pd.Series(np.asarray(O.opt1_two_channel(df), float)))
     z4 = zs(pd.Series(np.asarray(O.opt4_career_blend(df, season=season), float)))
     blend = zs(W1 * z1 + (1 - W1) * z4)
-    scaled = (blend * sd + mu).clip(*CLIP)
+    pos, neg = float(blend.max()), float(blend.min())
+    scaled = blend.copy()
+    scaled[blend > 0] = blend[blend > 0] * (POS_MAX / pos) if pos > 0 else 0.0
+    scaled[blend < 0] = blend[blend < 0] * (abs(NEG_MIN) / abs(neg)) if neg < 0 else 0.0
 
     espn, feed, missing = L.feed_gap(season)
     rebuilt = [str(g.get("GameId")) for g in L.games(season)
@@ -64,9 +74,15 @@ def main():
         "_meta": {
             "season": season, "generated": dt.date.today().isoformat(),
             "formula": f"{W1:.2f} * z(option 1) + {1 - W1:.2f} * z(option 4)",
-            "scaled_to": {"source": "D-LEBRON 2024-25 and 2025-26",
-                          "mean": round(mu, 4), "sd": round(sd, 4),
-                          "clip": list(CLIP)},
+            "scaled_to": {"endpoints": [NEG_MIN, POS_MAX],
+                          "method": "piecewise linear about zero",
+                          "dlebron_reference": {"mean": round(mu, 4),
+                                                "sd": round(sd, 4)},
+                          "warning": ("NOT on D-LEBRON's scale. Historical seasons "
+                                      "carry real D-LEBRON, roughly -3 to +4, so "
+                                      "this season's defenders are stretched wider "
+                                      "than any past season's and the all-time pool "
+                                      "is no longer like for like.")},
             "players": int(len(df)),
             "team_games_max": int(df.g.max()), "team_games_min": int(df.g.min()),
             "lineup_games": len(L.games(season)),
@@ -85,7 +101,8 @@ def main():
 
     print(f"wrote {path}")
     print(f"  {len(out['values'])} players, {df.g.min():.0f}-{df.g.max():.0f} team games")
-    print(f"  scaled to D-LEBRON: mean {mu:+.3f}, sd {sd:.3f}, clipped to {CLIP}")
+    print(f"  stretched to [{NEG_MIN:+.1f}, {POS_MAX:+.1f}] piecewise about zero"
+          f"   (D-LEBRON's own reference: mean {mu:+.3f}, sd {sd:.3f})")
     print(f"  blend range {scaled.min():+.2f} .. {scaled.max():+.2f}"
           f"  (D-LEBRON's own: -2.94 .. +3.99)")
     print(f"  {len(rebuilt)} of {len(L.games(season))} lineup games rebuilt from ESPN,"

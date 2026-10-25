@@ -553,7 +553,7 @@ def render_splits_panel(player_name, season):
             "OREB": f"{r['OREB']:.2f}", "DREB": f"{r['DREB']:.2f}",
             "BLK": f"{r['BLK']:.2f}", "STL": f"{r['STL']:.2f}",
             "TOV": f"{r['TOV']:.2f}", "PF": f"{r['PF']:.2f}",
-            "D-LEBRON": f"{r['d_lebron']:.2f}", "TS%": ts_str,
+            "Defense": f"{r['d_lebron']:.2f}", "TS%": ts_str,
             "Eff. Adj": f"{r['efficiency_adj']:.2f}",
             "Base Score": f"{r['base_score']:.2f}",
             "Avail ×": f"{r['avail_mult']:.3f}",
@@ -564,7 +564,7 @@ def render_splits_panel(player_name, season):
     fmt = pd.DataFrame(rows_out)
 
     _split_num = ["GP", "MPG", "Total MIN", "PTS", "AST", "OREB", "DREB", "BLK",
-                  "STL", "TOV", "PF", "D-LEBRON", "TS%", "Eff. Adj", "Base Score",
+                  "STL", "TOV", "PF", "Defense", "TS%", "Eff. Adj", "Base Score",
                   "Avail ×", "Barrett Score"]
     html_table(
         fmt,
@@ -572,7 +572,7 @@ def render_splits_panel(player_name, season):
         raw={"Team"},
         aligns={c: "right" for c in _split_num},
         helps={
-            "D-LEBRON": "Defensive LEBRON: points prevented per game vs average.",
+            "Defense": "Points prevented per game versus an average defender.",
             "TS%": "True Shooting %. League avg ~57%.",
             "Eff. Adj": "Efficiency adjustment added to Base Score.",
             "Base Score": "Raw per-game value before the availability multiplier.",
@@ -674,7 +674,7 @@ if show_graph_mode:
     gd["Δ Market $M"]      = (gd["value_diff"] / 1e6).round(2)
     gd["Barrett Score"]    = gd["barrett_score"].round(2)
     gd["TS%"]              = (gd["ts_pct"] * 100).round(1)
-    gd["D-LEBRON"]         = gd["d_lebron"].round(2)
+    gd["Defense"]          = gd["d_lebron"].round(2)
     gd["Score Rank"]       = gd["score_rank"]
     gd["Salary Rank"]      = gd["salary_rank"]
 
@@ -686,9 +686,9 @@ if show_graph_mode:
 
     NUMERIC_AXES = [
         "Barrett Score", "Salary $M", "Proj. Salary $M", "Δ Market $M",
-        "GP", "MPG", "D-LEBRON", "TS%", "Score Rank", "Salary Rank",
+        "GP", "MPG", "Defense", "TS%", "Score Rank", "Salary Rank",
     ]
-    COLOR_NUMERIC     = ["Δ Market $M", "Barrett Score", "D-LEBRON", "TS%", "Salary $M"]
+    COLOR_NUMERIC     = ["Δ Market $M", "Barrett Score", "Defense", "TS%", "Salary $M"]
     COLOR_CATEGORICAL = ["position", "Team"]
     COLOR_AXES        = COLOR_NUMERIC + COLOR_CATEGORICAL
 
@@ -899,7 +899,7 @@ if show_splits and splits_df is not None:
         sfmt.columns = ["Player", "Team", "GP", "MPG",
                         "Base Score", "Avail ×", "Barrett Score",
                         "Score Rank", "Salary", "Proj. Salary", "Δ Market",
-                        "Salary Rank", "Rank Diff", "D-LEBRON", "TS%", "Next $"]
+                        "Salary Rank", "Rank Diff", "Defense", "TS%", "Next $"]
         sfmt.insert(0, "#", range(1, len(sfmt) + 1))
     else:
         sfmt = sdisplay[["Player", "Team", "barrett_score", "salary",
@@ -912,7 +912,7 @@ if show_splits and splits_df is not None:
 
     _s_num = {"#", "GP", "MPG", "Base Score", "Avail ×", "Barrett Score",
               "Score Rank", "Salary", "Proj. Salary", "Δ Market", "Salary Rank",
-              "Rank Diff", "D-LEBRON", "TS%"}
+              "Rank Diff", "Defense", "TS%"}
     _s_bar = _score_bar_style(sfmt["Barrett Score"].max())
     html_table(
         sfmt,
@@ -923,7 +923,7 @@ if show_splits and splits_df is not None:
             "Barrett Score": lambda v: f"{v:.2f}", "Score Rank": lambda v: str(int(v)),
             "Salary": _fmt_salary_rs, "Proj. Salary": lambda v: f"${v:.2f}M",
             "Δ Market": lambda v: f"${v:.2f}M", "Salary Rank": lambda v: str(int(v)),
-            "Rank Diff": lambda v: f"{int(v):+d}", "D-LEBRON": lambda v: f"{v:.2f}",
+            "Rank Diff": lambda v: f"{int(v):+d}", "Defense": lambda v: f"{v:.2f}",
             "TS%": lambda v: f"{v:.1f}%",
         },
         raw={"Team", "Next $", "Salary"},
@@ -979,7 +979,7 @@ else:
         "Player", "Team", "GP", "MPG",
         "Base Score", "Avail ×", "Barrett Score",
         "Score Rank", "Salary", "Proj. Salary", "Δ Market", "Salary Rank", "Rank Diff",
-        "D-LEBRON", "TS%",
+        "Defense", "TS%",
     ]
     display_fmt.insert(0, "#", range(1, len(display_fmt) + 1))
     display_fmt["Next $"] = display["next_contract"].values
@@ -994,7 +994,7 @@ else:
     # is actually present, so basic + advanced modes both work from one spec.
     _r_num = {"#", "GP", "MPG", "Base Score", "Avail ×", "Barrett Score",
               "Score Rank", "Salary", "Proj. Salary", "Δ Market", "Salary Rank",
-              "Rank Diff", "D-LEBRON", "TS%"}
+              "Rank Diff", "Defense", "TS%"}
     _r_bar = _score_bar_style(display_fmt["Barrett Score"].max())
     html_table(
         display_fmt,
@@ -1012,7 +1012,7 @@ else:
             "Δ Market":      lambda v: f"${v:.2f}M",
             "Salary Rank":   lambda v: str(int(v)),
             "Rank Diff":     lambda v: f"{int(v):+d}",
-            "D-LEBRON":      lambda v: f"{v:.2f}",
+            "Defense":      lambda v: f"{v:.2f}",
             "TS%":           lambda v: f"{v:.1f}%",
         },
         raw={"Team", "Next $", "Salary"},
@@ -1031,7 +1031,7 @@ else:
             "Proj. Salary": "Salary earned by whoever holds the same rank by pay.",
             "Δ Market": "Actual − Projected. Positive (red) = overpaid; negative (green) = underpaid.",
             "Rank Diff": "Salary Rank − Score Rank. Positive (green) = underpaid.",
-            "D-LEBRON": "Points prevented per game vs average (bball-index.com).",
+            "Defense": "Points prevented per game versus an average defender.",
             "TS%": "True Shooting %. League avg ~57%.",
         },
         height=min(620, max(140, len(display_fmt) * 38 + 46)),

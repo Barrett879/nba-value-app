@@ -3294,7 +3294,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r9"
+DATA_REV = "r10"
 
 
 def _rev_path(name: str) -> Path:
@@ -4592,7 +4592,7 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
                         "STL":           _g("STL"), "BLK": _g("BLK"),
                         "TOV":           _g("TOV"), "PF": _g("PF"),
                         "TS%":           float(br.get("ts_pct", 0) or 0) * 100,
-                        "D-LEBRON":      float(br.get("d_lebron", 0) or 0),
+                        "Defense":       float(br.get("d_lebron", 0) or 0),
                         "EffAdj":        float(br.get("efficiency_adj", 0) or 0),
                         "Avail":         float(br.get("avail_mult", 1.0) or 1.0),
                         "Barrett Score": barrett_canonical,
@@ -4660,7 +4660,7 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
                 # Raw component pieces — used by the "Score Breakdown" view on Search.
                 # All season-level (not per-game) so the breakdown matches the
                 # base-score arithmetic exactly.
-                "D-LEBRON":       float(br_row.get("d_lebron", 0) or 0),
+                "Defense":        float(br_row.get("d_lebron", 0) or 0),
                 "EffAdj":         float(br_row.get("efficiency_adj", 0) or 0),
                 "Avail":          float(br_row.get("avail_mult", 1.0) or 1.0),
                 "Barrett Score":  barrett_canonical,  # pace-adjusted (v6+)
@@ -5566,7 +5566,10 @@ def fetch_defense_blend(season: str) -> dict:
     fresh as the last push, and COVERAGE IS PARTIAL: players below the
     possession floor are absent and keep the box proxy.
     """
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v1.json")
+    # _v2, not _v1: the file's contents changed when the scale was stretched to
+    # [-6, +6], and /data seeds a repo cache only when the FILENAME is missing,
+    # so re-committing under the old name would never reach production.
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v2.json")
     if not path.exists():
         return {}
     try:

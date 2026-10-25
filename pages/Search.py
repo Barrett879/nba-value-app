@@ -606,7 +606,7 @@ if len(selected) == 1:
         ("Scoring",      "#e63946", "PTS"),
         ("Playmaking",   "#f39c12", "AST × 1.5 − TOV / 1.5"),
         ("Rebounding",   "#16d4c1", "OREB / 2 + DREB / 3"),
-        ("Defense",      "#3498db", "BLK / 2 + STL / 1.5 − PF / 3 + D-LEBRON × 2"),
+        ("Defense",      "#3498db", "BLK / 2 + STL / 1.5 − PF / 3 + Defense × 2"),
         ("Efficiency",   "#9b59b6", "TS% vs league avg"),
         ("Availability", "#2ecc71", "GP × MPG vs 82-game cap"),
     ]
