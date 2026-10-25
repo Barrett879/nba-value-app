@@ -5580,6 +5580,25 @@ def fetch_defense_blend(season: str) -> dict:
         return {}
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_defense_blend_meta(season: str) -> dict:
+    """The blend artifact's own _meta block: endpoints, coverage, provenance.
+
+    Exists so user-facing copy can DERIVE what the metric is rather than
+    restate it. The Rankings notice twice described a scale the code had
+    already stopped using -- once saying "no on/off" after the blend went live,
+    once saying "rescaled to D-LEBRON's own range" after it was stretched to
+    [-6, +6]. Copy that reads the artifact cannot drift from it.
+    """
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v2.json")
+    if not path.exists():
+        return {}
+    try:
+        return json.loads(path.read_text()).get("_meta") or {}
+    except Exception:
+        return {}
+
+
 # ── D-LEBRON proxy for pre-2009 seasons ────────────────────────────────────
 # Real D-LEBRON (from BBall-Index) only goes back to 2009-10. For older
 # eras, the defensive component of Barrett Score would otherwise be 0 —

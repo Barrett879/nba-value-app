@@ -16,7 +16,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    fetch_dlebron, fetch_defense_blend, fetch_career_trend, fetch_player_season_splits,
+    fetch_dlebron, fetch_defense_blend, fetch_defense_blend_meta, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
     html_table,
@@ -490,14 +490,21 @@ if not dlebron_lookup:
     # the exact opposite of what it had started computing.
     _blend = fetch_defense_blend(season)
     if _blend:
+        _meta = fetch_defense_blend_meta(season)
+        _ends = (_meta.get("scaled_to") or {}).get("endpoints") or []
+        _scale = (f"The best defender this season sits at {_ends[1]:+.0f} and the worst at "
+                  f"{_ends[0]:+.0f}, and the score counts it twice, so defence swings "
+                  f"{abs(_ends[0]) * 2 + abs(_ends[1]) * 2:.0f} points across the league. "
+                  "Past seasons use BBall Index's own narrower scale, so defensive values "
+                  "are not comparable across seasons.") if len(_ends) == 2 else ""
         st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) is not published for a "
                 "season in progress. Defensive contribution here is a blend of two on/off "
                 "measures: a role-weighted composite of deterrence and event production, and a "
                 "career-possession-weighted version that reads an established defender off what "
-                "opponents stop doing rather than off his counting stats. Rescaled to "
-                f"D-LEBRON's own range. It covers {len(_blend)} players; anyone below the "
-                "possession floor keeps the box-score estimate. Early in a season it is thin: "
-                "a handful of games moves it a long way.")
+                f"opponents stop doing rather than off his counting stats. {_scale} "
+                f"It covers {len(_blend)} players; anyone below the possession floor keeps the "
+                "box-score estimate. Early in a season it is thin: a handful of games moves it "
+                "a long way.")
     else:
         st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) only goes back to 2009-10. "
                 "For this season, defensive contribution is estimated from box-score stats "
