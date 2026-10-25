@@ -16,6 +16,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
+    defense_to_10,
     fetch_dlebron, fetch_defense_blend, fetch_defense_blend_meta, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
@@ -560,7 +561,7 @@ def render_splits_panel(player_name, season):
             "OREB": f"{r['OREB']:.2f}", "DREB": f"{r['DREB']:.2f}",
             "BLK": f"{r['BLK']:.2f}", "STL": f"{r['STL']:.2f}",
             "TOV": f"{r['TOV']:.2f}", "PF": f"{r['PF']:.2f}",
-            "Defense": f"{r['d_lebron']:.2f}", "TS%": ts_str,
+            "Defense": f"{defense_to_10(r['d_lebron']):.1f}", "TS%": ts_str,
             "Eff. Adj": f"{r['efficiency_adj']:.2f}",
             "Base Score": f"{r['base_score']:.2f}",
             "Avail ×": f"{r['avail_mult']:.3f}",
@@ -579,7 +580,7 @@ def render_splits_panel(player_name, season):
         raw={"Team"},
         aligns={c: "right" for c in _split_num},
         helps={
-            "Defense": "Points prevented per game versus an average defender.",
+            "Defense": "Defensive impact on a 1 to 10 scale, 10 being the best defender in the league this season.",
             "TS%": "True Shooting %. League avg ~57%.",
             "Eff. Adj": "Efficiency adjustment added to Base Score.",
             "Base Score": "Raw per-game value before the availability multiplier.",
@@ -704,7 +705,7 @@ if show_graph_mode:
     gd["Δ Market $M"]      = (gd["value_diff"] / 1e6).round(2)
     gd["Barrett Score"]    = gd["barrett_score"].round(2)
     gd["TS%"]              = (gd["ts_pct"] * 100).round(1)
-    gd["Defense"]          = gd["d_lebron"].round(2)
+    gd["Defense"]          = gd["d_lebron"].map(defense_to_10)
     gd["Score Rank"]       = gd["score_rank"]
     gd["Salary Rank"]      = gd["salary_rank"]
 
@@ -953,7 +954,7 @@ if show_splits and splits_df is not None:
             "Barrett Score": lambda v: f"{v:.2f}", "Score Rank": lambda v: str(int(v)),
             "Salary": _fmt_salary_rs, "Proj. Salary": lambda v: f"${v:.2f}M",
             "Δ Market": lambda v: f"${v:.2f}M", "Salary Rank": lambda v: str(int(v)),
-            "Rank Diff": lambda v: f"{int(v):+d}", "Defense": lambda v: f"{v:.2f}",
+            "Rank Diff": lambda v: f"{int(v):+d}", "Defense": lambda v: f"{v:.1f}",
             "TS%": lambda v: f"{v:.1f}%",
         },
         raw={"Team", "Next $", "Salary"},
@@ -1042,7 +1043,7 @@ else:
             "Δ Market":      lambda v: f"${v:.2f}M",
             "Salary Rank":   lambda v: str(int(v)),
             "Rank Diff":     lambda v: f"{int(v):+d}",
-            "Defense":      lambda v: f"{v:.2f}",
+            "Defense":      lambda v: f"{v:.1f}",
             "TS%":           lambda v: f"{v:.1f}%",
         },
         raw={"Team", "Next $", "Salary"},
@@ -1061,7 +1062,7 @@ else:
             "Proj. Salary": "Salary earned by whoever holds the same rank by pay.",
             "Δ Market": "Actual − Projected. Positive (red) = overpaid; negative (green) = underpaid.",
             "Rank Diff": "Salary Rank − Score Rank. Positive (green) = underpaid.",
-            "Defense": "Points prevented per game versus an average defender.",
+            "Defense": "Defensive impact on a 1 to 10 scale, 10 being the best defender in the league this season.",
             "TS%": "True Shooting %. League avg ~57%.",
         },
         height=min(620, max(140, len(display_fmt) * 38 + 46)),

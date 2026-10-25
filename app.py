@@ -13,6 +13,7 @@ import seo_selfheal
 seo_selfheal.ensure_seo_patched()  # SEO shell self-heal for bare "streamlit run" starts
 
 from utils import (
+    defense_to_10,
     _bootstrap_warm,
     THEME_DEFAULT_DARK,
     build_ranked_projected,
@@ -1651,8 +1652,9 @@ if _sel:
                           f"{_ts_avg * 100:.1f}%" if _ts_avg is not None else ""))
             _dl_pool = _pos_pool(col="DLEB")
             _dl_avg = _avg_of(_dl_pool)
-            _prof.append(("Defense", f"{_sel['DLEB']:+.1f}", _scale_of(float(_sel["DLEB"]), _dl_pool),
-                          f"{_dl_avg:+.1f}" if _dl_avg is not None else ""))
+            _prof.append(("Defense", f"{defense_to_10(_sel['DLEB']):.1f}",
+                          _scale_of(float(_sel["DLEB"]), _dl_pool),
+                          f"{defense_to_10(_dl_avg):.1f}" if _dl_avg is not None else ""))
             _bar_c = _thx or "var(--accent-teal)"
             _ladder = "".join(
                 f'<div class="lrow"><span class="ll">{_l}</span>'

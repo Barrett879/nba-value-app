@@ -2900,7 +2900,8 @@ def base_score(row) -> float:
         + row["STL"] / 1.5
         - row["TOV"] / 1.5
         - row["PF"] / 3
-        + d_lebron * 2
+        + d_lebron * defense_weight(
+            row["Season"] if "Season" in getattr(row, "index", ()) else None)
     )
 
 
@@ -3294,7 +3295,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r11"
+DATA_REV = "r12"
 
 
 def _rev_path(name: str) -> Path:
@@ -4265,7 +4266,8 @@ def fetch_monthly_scores(player_id: int, season: str,
             eff_adj = float(min(max(0.15 * (ts_pct - league_avg_ts_val) * 100, -6), 6))
 
         bs = (pts + ast * 1.5 + oreb / 2 + dreb / 3 + blk / 2 + stl / 1.5
-              - tov / 1.5 - pf / 3 + d_lebron_val * 2 + eff_adj * 2)
+              - tov / 1.5 - pf / 3 + d_lebron_val * defense_weight(season)
+              + eff_adj * 2)
 
         # avail_mult uses team_gp as the season-games denominator so that
         # appearing in 30/30 team games = full availability, not 30/82.
@@ -4694,7 +4696,7 @@ def fetch_season_component_distribution(season: str, playoffs: bool = False) -> 
       Scoring     = PTS (per-game)
       Playmaking  = AST × 1.5 − TOV / 1.5
       Rebounding  = OREB / 2 + DREB / 3
-      Defense     = BLK / 2 + STL / 1.5 − PF / 3 + D-LEBRON × 2
+      Defense     = BLK / 2 + STL / 1.5 − PF / 3 + Defense × 1.75 this season
       Efficiency  = efficiency_adj × 2 (signed; TS%-based)
       Availability = avail_mult (0.30 → 1.00 multiplier)
 
@@ -4742,7 +4744,8 @@ def fetch_season_component_distribution(season: str, playoffs: bool = False) -> 
         "Defense":     (merged["BLK"].astype(float) / 2
                         + merged["STL"].astype(float) / 1.5
                         - merged["PF"].astype(float) / 3
-                        + merged.get("d_lebron", 0).astype(float) * 2).values,
+                        + merged.get("d_lebron", 0).astype(float)
+                        * defense_weight(season)).values,
         "Efficiency":  (merged.get("efficiency_adj", 0).astype(float) * 2).values,
         "Availability": merged.get("avail_mult", 1.0).astype(float).values,
     })
@@ -4947,7 +4950,7 @@ def _player_season_splits_raw(player_id: int, season: str,
         + rows["STL"] / 1.5
         - rows["TOV"] / 1.5
         - rows["PF"] / 3
-        + rows["d_lebron"] * 2
+        + rows["d_lebron"] * defense_weight(season)
         + rows["efficiency_adj"] * 2
     )
 
@@ -5623,6 +5626,51 @@ def fetch_defense_blend_meta(season: str) -> dict:
 #
 # Used by build_raw when fetch_dlebron returns 0 for a player.
 
+# The defensive term's weight in base_score, and the 1-10 scale shown to users.
+# It lived as a bare "* 2" in SEVEN places including twice inside the pace
+# adjustment, which is how a single rule drifts: change six and the Score
+# Breakdown stops reconciling with the score it breaks down.
+DEFENSE_WEIGHT_LIVE = 1.75    # the season being played, scored by the blend
+DEFENSE_WEIGHT_LEGACY = 2.00  # every finished season, unchanged since v1
+
+
+def defense_weight(season=None):
+    """How heavily base_score counts the defensive term, by season.
+
+    Season-aware rather than one constant because the weight changed for the
+    LIVE season only. Flipping it globally restates every historical score,
+    which needs FORMULA_VERSION bumped and all ~160 parquets rebuilt and
+    committed -- and that rebuild currently yields EMPTY frames for 1996-97,
+    1997-98 and 1998-99, reproducibly, so history stays on its v7 caches until
+    that source problem is understood.
+
+    A bare constant would also have applied 1.75 silently the first time any
+    old season happened to rebuild, which is the sort of drift nobody notices
+    until two pages disagree.
+    """
+    return (DEFENSE_WEIGHT_LIVE if season and str(season) == SEASONS[0]
+            else DEFENSE_WEIGHT_LEGACY)
+
+# Users see 1-10. Internally the live season's blend runs [-4, +6] and historical
+# D-LEBRON runs about [-3, +4], so both are anchored to the SAME endpoints and
+# clipped, which keeps a 7.5 in 2026-27 meaning what a 7.5 means in 2014-15.
+DEFENSE_SCALE = (-4.0, 6.0)
+
+
+def defense_to_10(v, lo=None, hi=None):
+    """Internal defensive value -> the 1-10 number shown to users."""
+    try:
+        v = float(v)
+    except (TypeError, ValueError):
+        return None
+    lo = DEFENSE_SCALE[0] if lo is None else float(lo)
+    hi = DEFENSE_SCALE[1] if hi is None else float(hi)
+    if hi <= lo:
+        return None
+    x = (v - lo) / (hi - lo)
+    return round(1.0 + 9.0 * min(max(x, 0.0), 1.0), 1)
+
+
 _DLEBRON_PROXY_COEFS = {
     "intercept": -1.355138,
     "STL":       +0.932316,
@@ -5658,7 +5706,13 @@ _DLEBRON_PROXY_COEFS = {
 # at once and ships none, which leaves production rebuilding every season from
 # the network on a request path. That is what emptied the 2026-27 Rankings page
 # at 14:29Z on 2026-10-25. Reseed the CURRENT season through DATA_REV instead.
-FORMULA_VERSION = "v7"  # v7: D-LEBRON proxy replaces hand-tuned fallback (R²=0.59)
+# Stays v7. The 1.75 weight applies to the LIVE season only, so no historical
+# score changes and no historical cache is stale. A v10 bump was built and
+# abandoned: rebuilding all 54 seasons produced EMPTY frames for 1996-97,
+# 1997-98 and 1998-99 on three consecutive attempts each, so the source for
+# those years is broken NOW and the v7 caches predate it. Shipping v10 would
+# have deleted three seasons from Legacy and the all-time pool.
+FORMULA_VERSION = "v7"
 
 # Separate version tag for playoff caches so playoff-formula tweaks invalidate
 # only playoff parquets, leaving the regular-season caches valid.
@@ -6165,7 +6219,7 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
         + stats["STL"] / 1.5
         - stats["TOV"] / 1.5
         - stats["PF"] / 3
-        + _d_lebron * 2
+        + _d_lebron * defense_weight(season)
         + stats["efficiency_adj"] * 2
     )
 
@@ -6225,8 +6279,11 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
     # get scaled by season pace; D-LEBRON and the TS% efficiency adjustment
     # are already era-relative so they're left alone.
     pf = pace_factor(season)
-    volume_part = stats["base_score"] - stats["d_lebron"] * 2 - stats["efficiency_adj"] * 2
-    stats["base_score_pace"] = volume_part * pf + stats["d_lebron"] * 2 + stats["efficiency_adj"] * 2
+    _dw = defense_weight(season)
+    volume_part = (stats["base_score"] - stats["d_lebron"] * _dw
+                   - stats["efficiency_adj"] * 2)
+    stats["base_score_pace"] = (volume_part * pf + stats["d_lebron"] * _dw
+                                + stats["efficiency_adj"] * 2)
     stats["barrett_score"]     = stats["base_score_pace"] * stats["avail_mult"]
     stats["barrett_score_raw"] = stats["base_score"]      * stats["avail_mult"]
 
