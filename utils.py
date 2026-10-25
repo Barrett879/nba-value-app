@@ -1402,31 +1402,37 @@ HV_TABLE_CSS = """
 .hv-row-det[open]>summary::before{transform:rotate(90deg);}
 .hv-row-det>summary:hover::before{border-left-color:var(--accent-red);}
 
-/* Percentile bars, filled in the team's colour. The fill is normalised by
-   utils.team_bar_color so it reads on both themes: LAL's raw purple sits at
-   luminance 0.049 and vanishes on dark, Denver's gold at 0.611 and washes out
-   on light. Rank is DRAWN rather than stated because a bar survives a
-   two-game sample that a percentage does not. */
-.pbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));
-  gap:0 .9rem;margin:.3rem 0 .08rem;padding:.26rem .5rem .26rem .45rem;
-  border-left:3px solid var(--tc);border-radius:0 4px 4px 0;
+/* The panel is a SIBLING ROW spanning every column, revealed with :has() when
+   its summary is open. Nested inside the Player cell it was boxed into ~200px,
+   so an open row was tall on the left and blank across the other twelve cells.
+   :has() has been baseline in every engine since 2023 and needs no JS, which
+   matters: this table renders through st.markdown, which strips scripts. */
+.hv-det-row{display:none;}
+.hv-det-row>td{padding:0 0 .45rem 0 !important;border-top:0 !important;}
+tr:has(details.hv-row-det[open])+tr.hv-det-row{display:table-row;}
+tr:has(details.hv-row-det[open]){border-bottom:0;}
+
+/* Full width, so the bars run across the table instead of stacking. Each one
+   claims at least 150px and the grid fits as many as the width allows, six
+   across on a desktop and wrapping gracefully below that. */
+.pbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:0 1.1rem;padding:.4rem .7rem .3rem .65rem;
+  border-left:3px solid var(--tc);border-radius:0 5px 0 0;
   background:var(--panel-2);}
-.bar{display:grid;grid-template-columns:27px 34px 1fr 28px;align-items:center;
-  gap:.4rem;font-size:.72rem;font-variant-numeric:tabular-nums;line-height:1.5;}
+.bar{display:grid;grid-template-columns:28px 36px 1fr 30px;align-items:center;
+  gap:.4rem;font-size:.72rem;font-variant-numeric:tabular-nums;line-height:1.6;}
 .bar i{font-style:normal;color:var(--fg-5);font-size:.92em;letter-spacing:.03em;}
 .bar b{font-weight:650;text-align:right;}
 .bar u{text-decoration:none;color:var(--fg-5);font-size:.88em;text-align:right;}
 .trk{height:4px;background:var(--panel-line);border-radius:2px;overflow:hidden;}
 .fil{display:block;height:100%;background:var(--tc);border-radius:2px;}
 /* Shooting as makes-attempts, not percentages: 84.6% on two games misleads. */
-.pfoot{display:flex;flex-wrap:wrap;gap:0 .7rem;margin:.1rem 0 .12rem .5rem;
-  font-size:.69rem;color:var(--fg-5);font-variant-numeric:tabular-nums;
+.pfoot{display:flex;flex-wrap:wrap;gap:0 1.1rem;padding:.1rem .7rem .35rem .65rem;
+  border-left:3px solid var(--tc);border-radius:0 0 5px 0;background:var(--panel-2);
+  font-size:.7rem;color:var(--fg-5);font-variant-numeric:tabular-nums;
   line-height:1.6;}
-.pfoot i{font-style:normal;margin-right:.25rem;}
+.pfoot i{font-style:normal;margin-right:.3rem;}
 .pfoot b{font-weight:600;color:var(--fg-2);}
-/* An open row is taller than its neighbours; without this the short cells
-   centre against it and the table looks broken. */
-table.hv-table tbody td{vertical-align:top;}
 .hv-table-wrap{overflow:auto;border:1px solid var(--panel-line);border-radius:10px;
   background:var(--panel-solid);box-shadow:var(--shadow-card);
   margin:0.7rem 0 1.7rem;display:block;}
@@ -1496,9 +1502,21 @@ _HV_SORT_SCRIPT = """
     th.setAttribute('data-dir', asc ? 'asc' : 'desc');
     th.setAttribute('aria-sort', asc ? 'ascending' : 'descending');
     var ind = th.querySelector('.sort-ind'); if (ind) ind.textContent = asc ? ' ▲' : ' ▼';
-    var rows = Array.prototype.slice.call(tbody.querySelectorAll('tr'));
-    rows.sort(function (a, b) {
-      var av = a.children[idx].getAttribute('data-v'), bv = b.children[idx].getAttribute('data-v');
+    // Expandable panels live in a sibling tr.hv-det-row. Sorting every tr
+    // would scatter them away from their players and feed the comparator a
+    // row whose cells carry no data-v, so each row is paired with its panel
+    // first and the pair moves as one.
+    var rows = Array.prototype.slice.call(
+      tbody.querySelectorAll('tr:not(.hv-det-row)'));
+    var pairs = rows.map(function (r) {
+      var n = r.nextElementSibling;
+      return [r, (n && n.className && n.className.indexOf('hv-det-row') >= 0) ? n : null];
+    });
+    pairs.sort(function (pa, pb) {
+      var a = pa[0], b = pb[0];
+      var ac = a.children[idx], bc = b.children[idx];
+      var av = ac ? ac.getAttribute('data-v') : null;
+      var bv = bc ? bc.getAttribute('data-v') : null;
       if (numeric) {
         av = parseFloat(av); bv = parseFloat(bv);
         if (isNaN(av)) av = -Infinity; if (isNaN(bv)) bv = -Infinity;
@@ -1507,7 +1525,10 @@ _HV_SORT_SCRIPT = """
       av = (av || '').toLowerCase(); bv = (bv || '').toLowerCase();
       return av < bv ? (asc ? -1 : 1) : av > bv ? (asc ? 1 : -1) : 0;
     });
-    rows.forEach(function (r) { tbody.appendChild(r); });
+    pairs.forEach(function (pr) {
+      tbody.appendChild(pr[0]);
+      if (pr[1]) tbody.appendChild(pr[1]);
+    });
   }
   doc.addEventListener('click', function (e) {
     var th = e.target.closest ? e.target.closest('.hv-table th[data-sortable]') : null;
@@ -1643,6 +1664,7 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     n_total = len(df)
     df_view = df.head(max_rows) if (max_rows and n_total > max_rows) else df
     rows_html = []
+    _detail_html = ""
     for _, row in df_view.iterrows():
         rd = row.to_dict()
         tds = []
@@ -1681,12 +1703,17 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
             cell = disp if c in raw else html.escape(disp)
             if detail is not None and c == (detail_col or cols[0]):
                 try:
-                    _body = detail(rd)
+                    _detail_html = detail(rd)
                 except Exception:
-                    _body = ""
-                if _body:
-                    cell = (f'<details class="hv-row-det"><summary>{cell}</summary>'
-                            f'<div class="hv-row-body">{_body}</div></details>')
+                    _detail_html = ""
+                if _detail_html:
+                    # The <details> holds ONLY the summary. Its body goes in a
+                    # sibling <tr> spanning every column, revealed by :has().
+                    # Nested in the cell it was confined to the Player column,
+                    # about 200px, so an open row was tall on the left and
+                    # empty across the other twelve cells.
+                    cell = (f'<details class="hv-row-det"><summary>{cell}'
+                            f'</summary></details>')
             tds.append(
                 f'<td data-v="{html.escape(str(sv), quote=True)}"'
                 f'{_acl.get(al, "")}{style_attr}>{cell}</td>'
@@ -1694,6 +1721,11 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
         rstyle = row_style(rd) if row_style else ""
         tr_open = f'<tr style="{rstyle}">' if rstyle else "<tr>"
         rows_html.append(tr_open + "".join(tds) + "</tr>")
+        if detail is not None and _detail_html:
+            rows_html.append(
+                f'<tr class="hv-det-row"><td colspan="{len(cols)}">'
+                f'{_detail_html}</td></tr>')
+        _detail_html = ""
     if max_rows and n_total > max_rows:
         rows_html.append(
             f'<tr><td colspan="{len(cols)}" style="text-align:center;'

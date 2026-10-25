@@ -715,16 +715,16 @@ _pg_idx = NameIndex(_pg) if _pg else None
 # Bars, with the fill in the team's colour. Rank is drawn rather than stated
 # because a bar survives a two-game sample that a percentage does not: 84.6%
 # from the field reads as a bug, "4th in the league" reads as a fact.
-# Three bars, not six. The panel sits inside the Player cell, which is about
-# 200px wide, so the grid collapses to one column and every bar costs a line:
-# six made an open row eight lines tall and pushed its neighbours off screen.
-# Scoring, rebounding and playmaking carry the shape of a player; the rest are
-# more useful as plain numbers in the footer than as six stacked tracks.
+# Six bars again. They were cut to three while the panel was confined to the
+# Player cell and each one cost a line; spanning the full row they sit side by
+# side and the whole panel is two lines tall.
 _PANEL_BARS = [("PTS", "PPG", "PTS_RANK", "{:.1f}"),
                ("REB", "RPG", "REB_RANK", "{:.1f}"),
-               ("AST", "APG", "AST_RANK", "{:.1f}")]
-_PANEL_FOOT = [("STL", "stl", "{:.1f}"), ("BLK", "blk", "{:.1f}"),
-               ("TOV", "tov", "{:.1f}"), ("MIN", "min", "{:.1f}")]
+               ("AST", "APG", "AST_RANK", "{:.1f}"),
+               ("STL", "SPG", "STL_RANK", "{:.1f}"),
+               ("BLK", "BPG", "BLK_RANK", "{:.1f}"),
+               ("MIN", "MPG", "MIN_RANK", "{:.1f}")]
+_PANEL_FOOT = [("TOV", "tov", "{:.1f}"), ("PF", "pf", "{:.1f}")]
 
 
 def _ord(v):
