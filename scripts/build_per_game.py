@@ -1,0 +1,75 @@
+"""Ship the per-game line the Rankings row panel needs.
+
+    /opt/anaconda3/bin/python3 -u scripts/build_per_game.py [season]
+
+The panel cannot fetch this live. build_raw carries no PTS/AST/REB, and on
+Render fetch_league_stats reaches stats.nba.com, which is blocked there, while
+the live season has no committed league_stats parquet to fall back on. The
+panel therefore rendered for all 353 players locally and for NONE in
+production, silently, because an empty lookup just skips the panel.
+
+So it is precomputed here and committed, like the defence blend. Same
+consequence, stated so it is not forgotten: the panel is as fresh as the last
+push, and build_defense_blend.py should be rerun alongside this one.
+
+Written SORTED, so a rebuild with no new games is byte-identical and "has
+anything changed?" stays answerable by diff.
+"""
+from __future__ import annotations
+import json, logging, sys
+import datetime as dt
+from pathlib import Path
+ROOT = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(ROOT))
+logging.disable(logging.WARNING)
+import utils
+logging.disable(logging.NOTSET)
+
+FIELDS = ("PTS", "REB", "OREB", "DREB", "AST", "STL", "BLK", "TOV", "PF",
+          "MIN", "GP", "FG_PCT", "FG3_PCT", "FT_PCT")
+VERSION = "v1"
+
+
+def main():
+    season = sys.argv[1] if len(sys.argv) > 1 else utils.SEASONS[0]
+    src = utils.fetch_league_stats(season)
+    which = "league_stats"
+    if src is None or getattr(src, "empty", True) or "PTS" not in getattr(src, "columns", []):
+        src = utils.fetch_bref_player_stats(season)
+        which = "bref"
+    if src is None or getattr(src, "empty", True):
+        print("FAILED: no per-game source returned anything"); return 1
+
+    keep = [c for c in FIELDS if c in src.columns]
+    vals = {}
+    for name, rec in zip(src["PLAYER_NAME"], src.to_dict("records")):
+        row = {}
+        for c in keep:
+            v = rec.get(c)
+            if v is None or (isinstance(v, float) and v != v):
+                continue
+            row[c] = round(float(v), 4)
+        if row:
+            vals[str(name)] = row
+
+    out = {"_meta": {"season": season, "generated": dt.date.today().isoformat(),
+                     "source": which, "fields": keep, "players": len(vals),
+                     "caveat": "Not fetchable on Render; as fresh as the last push."},
+           "values": {k: vals[k] for k in sorted(vals)}}
+    path = ROOT / "cache" / f"per_game_{season.replace('-', '_')}_{VERSION}.json"
+    path.write_text(json.dumps(out, indent=1))
+
+    # every player the board will show must resolve, or the panel is silently
+    # empty for exactly the awkward names
+    raw = utils.build_raw(season)
+    idx = utils.NameIndex(out["values"])
+    miss = [p for p in raw["Player"] if idx.get(str(p)) is None]
+    print(f"wrote {path}")
+    print(f"  {len(vals)} players from {which}, fields {keep}")
+    print(f"  board coverage: {len(raw) - len(miss)} of {len(raw)}"
+          + (f"  MISSING: {miss[:8]}" if miss else "  (none missing)"))
+    return 1 if miss else 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

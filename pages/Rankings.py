@@ -6,6 +6,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import pandas as pd
+import json
 import streamlit as st
 import streamlit.components.v1 as components
 import plotly.express as px
@@ -16,7 +17,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    NameIndex, fetch_league_stats, fetch_bref_player_stats,
+    NameIndex, _dc_path, fetch_league_stats, fetch_bref_player_stats,
     fetch_dlebron, fetch_defense_blend, fetch_defense_blend_meta, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
@@ -655,10 +656,25 @@ with col_d:
 # disagree on suffixes and transliterations; a bare key silently shows an empty
 # panel for exactly the players whose names are awkward.
 @st.cache_data(ttl=3600, show_spinner=False)
-def _per_game_lookup(_season):
-    src = fetch_league_stats(_season)
+def _per_game_lookup(season_key):
+    """Per-game line for the row panel, from the COMMITTED artifact first.
+
+    The live fetch is the fallback, not the default: on Render it reaches
+    stats.nba.com, which is blocked there, and the live season has no committed
+    league_stats parquet behind it. The first version of this shipped with the
+    live fetch as the only source, so the panel rendered for all 353 players
+    locally and for NONE in production, silently, because an empty lookup just
+    skips the panel. Regenerate with scripts/build_per_game.py.
+    """
+    art = _dc_path(f"per_game_{season_key.replace('-', '_')}_v1.json")
+    if art.exists():
+        try:
+            return json.loads(art.read_text()).get("values") or {}
+        except Exception:
+            pass
+    src = fetch_league_stats(season_key)
     if src is None or getattr(src, "empty", True) or "PTS" not in getattr(src, "columns", []):
-        src = fetch_bref_player_stats(_season)
+        src = fetch_bref_player_stats(season_key)
     if src is None or getattr(src, "empty", True):
         return {}
     keep = [c for c in ("PTS", "REB", "OREB", "DREB", "AST", "STL", "BLK",

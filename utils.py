@@ -1387,6 +1387,24 @@ def render_theme_toggle() -> bool:
 # table that themes via the same tokens, with delegated JS click-to-sort.
 HV_TABLE_CSS = """
 <style>
+/* Expandable row panel, html_table(detail=...). Lives beside the table's own
+   styles rather than in COMMON_CSS: COMMON_CSS does not carry .hv-table, so a
+   rule for a table feature placed there reached a page that never injected it
+   and the panel rendered unstyled. A component's CSS belongs with the
+   component. No JS -- <details> does the work, so a click costs nothing and
+   never triggers a rerun. */
+.hv-row-det>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:.4rem;}
+.hv-row-det>summary::-webkit-details-marker{display:none;}
+.hv-row-det>summary::before{content:"\25B8";font-size:.7em;color:var(--fg-5);
+  transition:transform .12s ease;flex:0 0 auto;}
+.hv-row-det[open]>summary::before{transform:rotate(90deg);}
+.hv-row-det>summary:hover::before{color:var(--accent-red);}
+.hv-row-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));
+  gap:.3rem .9rem;margin:.45rem 0 .2rem 1.1rem;padding:.5rem .6rem;
+  border-left:2px solid var(--panel-line);border-radius:3px;
+  background:var(--panel-2);font-size:.82em;}
+.hv-row-body .k{color:var(--fg-5);margin-right:.3rem;}
+.hv-row-body .v{font-weight:600;}
 .hv-table-wrap{overflow:auto;border:1px solid var(--panel-line);border-radius:10px;
   background:var(--panel-solid);box-shadow:var(--shadow-card);
   margin:0.7rem 0 1.7rem;display:block;}
@@ -1654,26 +1672,6 @@ def stat_cards(items):
 
 
 COMMON_CSS = """
-/* Expandable row panel used by html_table(detail=...). No JS: <details> does
-   the work, so a click costs nothing and never triggers a Streamlit rerun. */
-.hv-row-det > summary {
-  list-style: none; cursor: pointer; display: flex; align-items: center; gap: .4rem;
-}
-.hv-row-det > summary::-webkit-details-marker { display: none; }
-.hv-row-det > summary::before {
-  content: "\25B8"; font-size: .7em; color: var(--fg-5);
-  transition: transform .12s ease; flex: 0 0 auto;
-}
-.hv-row-det[open] > summary::before { transform: rotate(90deg); }
-.hv-row-det > summary:hover::before { color: var(--accent-teal, #16a085); }
-.hv-row-body {
-  display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
-  gap: .3rem .9rem; margin: .45rem 0 .2rem 1.1rem; padding: .5rem .6rem;
-  border-left: 2px solid var(--fg-5, #bbb); border-radius: 3px;
-  background: var(--bg-2, rgba(127,127,127,.06)); font-size: .82em;
-}
-.hv-row-body .k { color: var(--fg-5); margin-right: .3rem; }
-.hv-row-body .v { font-weight: 600; }
 
 <style>
     /* Theme tokens (:root) are injected separately by inject_theme() so the
