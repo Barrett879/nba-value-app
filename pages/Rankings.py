@@ -605,7 +605,11 @@ _career_avg_rnk = (
     .reset_index()
     .sort_values("avg_score", ascending=False)
 )
-_current_players = set(df["Player"].unique())
+# Also from _df_all: the same defect as the Team filter twenty lines below.
+# Options drawn from the filtered frame drop players as the slider rises, and a
+# keyed multiselect holding a player who is no longer an option loses him
+# without a word.
+_current_players = set(_df_all["Player"].unique())
 all_player_names = (
     _career_avg_rnk[_career_avg_rnk["Player"].isin(_current_players)]["Player"].tolist()
 )
@@ -630,8 +634,15 @@ with col_b:
         "Most Underpaid", "Most Overpaid",
     ])
 with col_c:
-    team_options = ["All"] + sorted(df["Team"].unique().tolist())
-    team_filter = st.selectbox("Team", team_options)
+    # From _df_all, the pool BEFORE the minutes slider, not from df after it.
+    # Built from df, a team whose players all fell below the threshold vanished
+    # from the list mid-session: raising the slider with LAL selected dropped
+    # LAL out of the options, and an unkeyed selectbox whose options changed is
+    # a NEW widget to Streamlit, so the selection silently reset to "All" and
+    # the team could not even be typed back in. The option list has to be a
+    # property of the season, not of the current filter.
+    team_options = ["All"] + sorted(_df_all["Team"].dropna().unique().tolist())
+    team_filter = st.selectbox("Team", team_options, key="rankings_team")
 with col_d:
     pos_options = ["All", "PG", "SG", "SF", "PF", "C"]
     pos_filter = st.selectbox("Position", pos_options)
@@ -652,6 +663,18 @@ sort_map = {
 }
 sort_col, sort_asc = sort_map[view]
 display = display.sort_values(sort_col, ascending=sort_asc).reset_index(drop=True)
+
+# Now that the team list is the whole league rather than whoever survived the
+# slider, a team with nobody above the threshold is reachable. Say so, instead
+# of rendering an empty table that reads like a loading failure.
+if display.empty:
+    _bits = [b for b in (f"{team_filter}" if team_filter != "All" else "",
+                         f"{pos_filter}" if pos_filter != "All" else "",
+                         f'matching "{search}"' if search else "") if b]
+    st.warning(
+        f"No {' '.join(_bits) or 'player'} cleared the {min_threshold}-minute "
+        f"threshold. Lower it with the slider above, or widen the filters."
+    )
 
 tog_a, tog_b, tog_c, tog_rest = st.columns([1, 1, 1, 5])
 with tog_a:
