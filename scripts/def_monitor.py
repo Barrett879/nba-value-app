@@ -311,6 +311,41 @@ def main():
     except Exception as e:
         note.append(f"blend drift check failed: {type(e).__name__}: {str(e)[:90]}")
 
+    # ---- is the SHIPPED per-game panel data stale? ---------------------
+    # Second artifact with the same property as the blend: it cannot be built
+    # on Render, so the Rankings row panel is only as fresh as the last push.
+    # One unwatched artifact is an oversight; two is a pattern, so it gets the
+    # same check rather than a note in somebody's head.
+    try:
+        import glob as _g
+        _pg = sorted(_g.glob(str(ROOT / "cache" /
+                     f"per_game_{SEASON.replace('-', '_')}_v*.json")))
+        if _pg:
+            _shipped = json.loads(Path(_pg[-1]).read_text())
+            _sv = _shipped.get("values") or {}
+            _src = L.players(SEASON)
+            _live = {str(n): float(g) for n, g in zip(_src["PLAYER_NAME"], _src["GP"])}
+            _moved = [k for k in set(_sv) & set(_live)
+                      if abs(float(_sv[k].get("GP", 0)) - _live[k]) > 0.5]
+            rec["per_game"] = {
+                "file": Path(_pg[-1]).name,
+                "generated": (_shipped.get("_meta") or {}).get("generated"),
+                "players_shipped": len(_sv),
+                "players_with_more_games_now": len(_moved),
+                "new_players": len(set(_live) - set(_sv)),
+            }
+            if _moved or (set(_live) - set(_sv)):
+                rec["per_game_is_stale"] = True
+                note.append(
+                    f"SHIPPED PANEL DATA IS STALE: {len(_moved)} players have played "
+                    f"more games than the artifact records and "
+                    f"{len(set(_live) - set(_sv))} are new. Rerun "
+                    f"scripts/build_per_game.py and push.")
+            else:
+                rec["per_game_is_stale"] = False
+    except Exception as e:
+        note.append(f"per-game drift check failed: {type(e).__name__}: {str(e)[:80]}")
+
     if n < 4:
         rec["verdict"] = f"waiting for sample: {n} team games, a forward holdout needs 4"
     else:
@@ -373,7 +408,7 @@ def main():
                 rec["dlebron_players"] = 0
                 note.append(f"no current-season D-LEBRON yet ({type(e).__name__})")
 
-            # ---- churn against the previous run --------------------------------
+    # ---- churn against the previous run --------------------------------
             board = zs(0.80 * px + 0.20 * o13)
             prev = sorted(OUT.glob("board_*.json"))
             if prev:

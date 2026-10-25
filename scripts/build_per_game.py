@@ -40,6 +40,16 @@ def main():
     if src is None or getattr(src, "empty", True):
         print("FAILED: no per-game source returned anything"); return 1
 
+    # Fold in the provisional box scores, exactly as def_lib.players does.
+    # Without this the panel reports FEWER games than the board: the first
+    # build had Brandon Miller at 3 while every other surface said 5, because
+    # the rest of the pipeline merges provisional games and this did not.
+    # Two readings of "games played" on one page is worse than a stale panel.
+    try:
+        src = utils._merge_provisional_box_scores(src, season)
+    except Exception as e:
+        print(f"  WARNING: provisional merge skipped ({type(e).__name__})")
+
     keep = [c for c in FIELDS if c in src.columns]
     vals = {}
     for name, rec in zip(src["PLAYER_NAME"], src.to_dict("records")):
