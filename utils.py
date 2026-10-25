@@ -6123,13 +6123,20 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
                 lambda n: bref_lookup.get(normalize(n), float("nan"))
             )
 
-    # Pre-1996 has sparse salary coverage (BBRef team pages miss most players,
-    # HoopsHype starts ~1990, ESPN starts ~2000). Dropping salary-less rows
-    # would leave only ~50 players per season → bogus "1/50" ranks for legends
-    # like MJ. For those years, keep everyone with valid stats and fill missing
-    # salaries with 0 (already documented as "salary unavailable" in the UI).
-    pre_1996 = int(season.split("-")[0]) < 1996
-    if pre_1996:
+    # Seasons with no reliable salary source keep every player with valid stats
+    # and fill the missing salary with 0, already documented as "salary
+    # unavailable" in the UI. Dropping salary-less rows there would leave ~50
+    # players and bogus "1/50" ranks for legends like MJ.
+    #
+    # The cutoff was 1996 while the reason given for it, ESPN's coverage
+    # starting around 2000, extends to 1999-2000. That three-season gap was not
+    # theoretical: 1996-97, 1997-98 and 1998-99 have ESPN missing by era,
+    # HoopsHype answering 402, and BBRef team pages as the ONLY source. When
+    # that scrape came back empty on 2026-10-25, every row lost its salary and
+    # dropna deleted the entire season: 0, 1 and 1 rows against 390, 401 and
+    # 229 in the caches built in July. The rebuild then cached the wreckage.
+    no_salary_source = int(season.split("-")[0]) < 2000
+    if no_salary_source:
         stats["salary"] = stats["salary"].fillna(0)
     else:
         stats = stats.dropna(subset=["salary"])
@@ -6288,7 +6295,40 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
 
     # ── Persist to disk so future cold-starts skip the API entirely ───────────
     try:
-        _atomic_to_parquet(result, _raw_disk_path(season, playoffs))
+        # A rebuild that collapses must not overwrite a healthy cache. The
+        # 1996-99 seasons above lost their only salary source and rebuilt to a
+        # single row, and nothing objected: the file was written, every deploy
+        # check passed, and three seasons would have vanished from Legacy and
+        # the all-time pool. Stale-but-complete beats fresh-but-empty, and the
+        # refusal is logged so it cannot pass as success.
+        _prev_path = _raw_disk_path(season, playoffs)
+        _prev = None
+        if _prev_path.exists():
+            try:
+                _prev = pd.read_parquet(_prev_path)
+            except Exception:
+                _prev = None
+        if _prev is not None and len(_prev) >= 50:
+            _n_now, _n_was = len(result), len(_prev)
+            # Row count AND salary coverage, because the two fail differently.
+            # 1997-98 lost its whole season to a row collapse; it ALSO rebuilds
+            # today with 183 real salaries against the 401 cached in July, which
+            # no row-count check would catch since the row count went UP.
+            _sal_now = int((pd.to_numeric(result.get("salary"), errors="coerce")
+                            .fillna(0) > 0).sum()) if "salary" in result else _n_now
+            _sal_was = int((pd.to_numeric(_prev.get("salary"), errors="coerce")
+                            .fillna(0) > 0).sum()) if "salary" in _prev else _n_was
+            _why = None
+            if _n_now < 0.5 * _n_was:
+                _why = f"rows collapsed to {_n_now} against {_n_was} cached"
+            elif _sal_was >= 50 and _sal_now < 0.5 * _sal_was:
+                _why = (f"salary coverage fell to {_sal_now} against {_sal_was} "
+                        f"cached, on {_n_now} rows")
+            if _why:
+                logger.error("raw rebuild for %s: %s - REFUSING to overwrite; "
+                             "serving the existing cache", season, _why)
+                return _prev
+        _atomic_to_parquet(result, _prev_path)
     except Exception as e:
         # A failed persist means the parquet never freshens and the hourly
         # background rebuild keeps recomputing for nothing — surface it.
