@@ -1651,8 +1651,8 @@ if _sel:
                           f"{_ts_avg * 100:.1f}%" if _ts_avg is not None else ""))
             _dl_pool = _pos_pool(col="DLEB")
             _dl_avg = _avg_of(_dl_pool)
-            _prof.append(("Defense", f"{_sel['DLEB']:+.1f}", _scale_of(float(_sel["DLEB"]), _dl_pool),
-                          f"{_dl_avg:+.1f}" if _dl_avg is not None else ""))
+            _prof.append(("Defense", f"{_sel['DLEB']:.1f}", _scale_of(float(_sel["DLEB"]), _dl_pool),
+                          f"{_dl_avg:.1f}" if _dl_avg is not None else ""))
             _bar_c = _thx or "var(--accent-teal)"
             _ladder = "".join(
                 f'<div class="lrow"><span class="ll">{_l}</span>'
