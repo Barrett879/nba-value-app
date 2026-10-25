@@ -4594,11 +4594,10 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
                         "STL":           _g("STL"), "BLK": _g("BLK"),
                         "TOV":           _g("TOV"), "PF": _g("PF"),
                         "TS%":           float(br.get("ts_pct", 0) or 0) * 100,
-                        # RAW, not the 1-10 number. Search multiplies this by
-                        # defense_weight to rebuild the Defense component, so it
-                        # has to stay on the internal scale or the breakdown
-                        # stops reconciling with the score. defense_to_10 is for
-                        # display surfaces only.
+                        # Search multiplies this by defense_weight to rebuild
+                        # the Defense component, so it must stay on the internal
+                        # scale or the breakdown stops reconciling with the
+                        # score it breaks down.
                         "Defense":       float(br.get("d_lebron", 0) or 0),
                         "EffAdj":        float(br.get("efficiency_adj", 0) or 0),
                         "Avail":         float(br.get("avail_mult", 1.0) or 1.0),
@@ -5655,26 +5654,6 @@ def defense_weight(season=None):
     """
     return (DEFENSE_WEIGHT_LIVE if season and str(season) == SEASONS[0]
             else DEFENSE_WEIGHT_LEGACY)
-
-# Users see 1-10. Internally the live season's blend runs [-4, +6] and historical
-# D-LEBRON runs about [-3, +4], so both are anchored to the SAME endpoints and
-# clipped, which keeps a 7.5 in 2026-27 meaning what a 7.5 means in 2014-15.
-DEFENSE_SCALE = (-4.0, 6.0)
-
-
-def defense_to_10(v, lo=None, hi=None):
-    """Internal defensive value -> the 1-10 number shown to users."""
-    try:
-        v = float(v)
-    except (TypeError, ValueError):
-        return None
-    lo = DEFENSE_SCALE[0] if lo is None else float(lo)
-    hi = DEFENSE_SCALE[1] if hi is None else float(hi)
-    if hi <= lo:
-        return None
-    x = (v - lo) / (hi - lo)
-    return round(1.0 + 9.0 * min(max(x, 0.0), 1.0), 1)
-
 
 _DLEBRON_PROXY_COEFS = {
     "intercept": -1.355138,
