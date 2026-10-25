@@ -1415,8 +1415,8 @@ tr:has(details.hv-row-det[open]){border-bottom:0;}
 /* Full width, so the bars run across the table instead of stacking. Each one
    claims at least 150px and the grid fits as many as the width allows, six
    across on a desktop and wrapping gracefully below that. */
-.pbars{padding:.4rem .7rem .3rem .65rem;border-left:3px solid var(--tc);
-  border-radius:0 5px 0 0;background:var(--panel-2);}
+.pbars{padding:.4rem .7rem .38rem .65rem;border-left:3px solid var(--tc);
+  border-radius:0 5px 5px 0;background:var(--panel-2);}
 /* Two explicit rows of five, so the columns line up between them instead of
    reflowing to whatever the width allows. */
 .pbrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0 1.1rem;}
@@ -1428,13 +1428,6 @@ tr:has(details.hv-row-det[open]){border-bottom:0;}
 .bar u{text-decoration:none;color:var(--fg-5);font-size:.88em;text-align:right;}
 .trk{height:4px;background:var(--panel-line);border-radius:2px;overflow:hidden;}
 .fil{display:block;height:100%;background:var(--tc);border-radius:2px;}
-/* Shooting as makes-attempts, not percentages: 84.6% on two games misleads. */
-.pfoot{display:flex;flex-wrap:wrap;gap:0 1.1rem;padding:.1rem .7rem .35rem .65rem;
-  border-left:3px solid var(--tc);border-radius:0 0 5px 0;background:var(--panel-2);
-  font-size:.7rem;color:var(--fg-5);font-variant-numeric:tabular-nums;
-  line-height:1.6;}
-.pfoot i{font-style:normal;margin-right:.3rem;}
-.pfoot b{font-weight:600;color:var(--fg-2);}
 .hv-table-wrap{overflow:auto;border:1px solid var(--panel-line);border-radius:10px;
   background:var(--panel-solid);box-shadow:var(--shadow-card);
   margin:0.7rem 0 1.7rem;display:block;}

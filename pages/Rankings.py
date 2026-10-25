@@ -715,6 +715,12 @@ _bar_pool = int(_pg_meta.get("ranked_pool") or 0)
 # moves the bar, the same way the notice above derives its endpoints.
 _def_ends = tuple((fetch_defense_blend_meta(season).get("scaled_to") or {})
                   .get("endpoints") or (-4.0, 6.0))
+# TS% and Defence come from the board frame keyed by player, NOT from the row
+# dict. The row dict only carries the columns the CURRENT view renders, so in
+# simple view those two cells do not exist and both bars silently vanished --
+# visible in Barrett's screenshot as a panel that stops after PFPG.
+_ts_by_player = dict(zip(df["Player"], df["ts_pct"])) if "ts_pct" in df else {}
+_def_by_player = dict(zip(df["Player"], df["d_lebron"])) if "d_lebron" in df else {}
 _pg_idx = NameIndex(_pg) if _pg else None
 
 # Bars, with the fill in the team's colour. Rank is drawn rather than stated
@@ -728,7 +734,7 @@ _PANEL_ROW1 = [("PTS", "PPG", "PTS_RANK"), ("AST", "APG", "AST_RANK"),
 _PANEL_ROW2 = [("MIN", "MPG", "MIN_RANK"), ("TOV", "TPG", None),
                ("PF", "PFPG", None), ("__TS", "TS%", None),
                ("__DEF", "DEF", None)]
-_PANEL_FOOT = [("FGM", "FGA", "fg"), ("FG3M", "FG3A", "3p"), ("FTM", "FTA", "ft")]
+_PANEL_LOWER_IS_BETTER = {"TOV", "PF"}
 
 
 def _ord(v):
@@ -753,15 +759,16 @@ def _row_panel(rd):
         percentile: percentile saturates where it matters, since everyone in
         the league's top 25 of 388 drew at 94-100%."""
         if key == "__TS":
-            v = rd.get("TS%")
+            v = _ts_by_player.get(str(rd.get("Player", "")))
             if v is None or v != v:
                 return ""
-            txt, width = f"{float(v):.1f}%", min(100.0, max(3.0, float(v) / 65.0 * 100.0))
+            v = float(v) * 100.0
+            txt, width = f"{v:.1f}%", min(100.0, max(3.0, v / 65.0 * 100.0))
             return (f'<span class="bar"><i>{label}</i><b>{txt}</b>'
                     f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
                     f'</span></span><u></u></span>')
         if key == "__DEF":
-            v = rd.get("Defense")
+            v = _def_by_player.get(str(rd.get("Player", "")))
             if v is None or v != v:
                 return ""
             # Signed, so position in its range rather than a proportion of it.
@@ -780,6 +787,12 @@ def _row_panel(rd):
             width = min(100.0, max(3.0, float(v) / float(ref) * 100.0)) if ref else 0.0
         except (TypeError, ValueError, ZeroDivisionError):
             width = 0.0
+        # Turnovers and fouls are the only stats here where MORE is worse, so
+        # filling them like the rest made 4.5 fouls look like an achievement.
+        # Inverted, every bar on the panel now means the same thing: longer is
+        # better. The number beside it is still the raw count.
+        if key in _PANEL_LOWER_IS_BETTER and width:
+            width = min(100.0, max(3.0, 100.0 - width))
         return (f'<span class="bar"><i>{label}</i><b>{float(v):.1f}</b>'
                 f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
                 f'</span></span><u>{_ord(r) if has_rank else ""}</u></span>')
@@ -789,18 +802,7 @@ def _row_panel(rd):
     if not r1 and not r2:
         return ""
     bars = [f'<div class="pbrow">{r1}</div>', f'<div class="pbrow">{r2}</div>']
-    shot = []
-    # shooting stays as makes-attempts: a percentage on two games misleads
-    for mk, at, lab in _PANEL_FOOT:
-        m, a = rec.get(mk), rec.get(at)
-        if m is None or a is None or m != m or a != a or float(a) <= 0:
-            continue
-        shot.append(f'<span><i>{lab}</i><b>{float(m):.1f}-{float(a):.1f}</b></span>')
-    pm = rec.get("PLUS_MINUS")
-    if pm is not None and pm == pm:
-        shot.append(f'<span><i>+/-</i><b>{float(pm):+.1f}</b></span>')
-    foot = f'<div class="pfoot">{"".join(shot)}</div>' if shot else ""
-    return f'<div class="pbars" style="--tc:{col}">{"".join(bars)}</div>{foot}'
+    return f'<div class="pbars" style="--tc:{col}">{"".join(bars)}</div>'
 
 
 display = df.copy()
