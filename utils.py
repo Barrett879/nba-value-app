@@ -3294,7 +3294,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r10"
+DATA_REV = "r11"
 
 
 def _rev_path(name: str) -> Path:
@@ -5566,10 +5566,11 @@ def fetch_defense_blend(season: str) -> dict:
     fresh as the last push, and COVERAGE IS PARTIAL: players below the
     possession floor are absent and keep the box proxy.
     """
-    # _v2, not _v1: the file's contents changed when the scale was stretched to
-    # [-6, +6], and /data seeds a repo cache only when the FILENAME is missing,
-    # so re-committing under the old name would never reach production.
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v2.json")
+    # The version climbs every time the VALUES change, because /data seeds a
+    # repo cache only when the FILENAME is missing: v1 D-LEBRON-scaled,
+    # v2 [-6, +6], v3 [-4, +6]. Re-committing under an old name would leave
+    # production on the previous numbers with the code reading correctly.
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v3.json")
     if not path.exists():
         return {}
     try:
@@ -5590,7 +5591,7 @@ def fetch_defense_blend_meta(season: str) -> dict:
     once saying "rescaled to D-LEBRON's own range" after it was stretched to
     [-6, +6]. Copy that reads the artifact cannot drift from it.
     """
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v2.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v3.json")
     if not path.exists():
         return {}
     try:

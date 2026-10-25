@@ -32,7 +32,7 @@ import def_lib as L, def_options as O
 logging.disable(logging.NOTSET)
 
 W1 = 0.70
-VERSION = "v2"  # v2: stretched to [-6, +6]; v1 was D-LEBRON-scaled
+VERSION = "v3"  # v3: [-4, +6]; v2 was [-6, +6]; v1 was D-LEBRON-scaled
 
 # The endpoints the defensive value is stretched to. Scaling is PIECEWISE about
 # zero, so the best defender lands exactly on POS_MAX, the worst exactly on
@@ -40,7 +40,7 @@ VERSION = "v2"  # v2: stretched to [-6, +6]; v1 was D-LEBRON-scaled
 # That is what lets the negative end be moved on its own, to -4 or -3, without
 # touching the positive end.
 POS_MAX = 6.0
-NEG_MIN = -6.0
+NEG_MIN = -4.0
 
 
 def zs(s):
