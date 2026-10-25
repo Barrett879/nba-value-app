@@ -81,7 +81,7 @@ def main():
     if len(rot) < 30:
         rot = src
     scale = {}
-    for c in ("PTS", "REB", "AST", "STL", "BLK", "MIN"):
+    for c in ("PTS", "REB", "AST", "STL", "BLK", "MIN", "TOV", "PF"):
         if c not in src.columns:
             continue
         v = pd.to_numeric(rot[c], errors="coerce").dropna()

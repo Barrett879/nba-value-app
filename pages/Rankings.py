@@ -710,21 +710,25 @@ _pg = _per_game_lookup(season)
 _pg_meta = _per_game_meta(season)
 _bar_ref = _pg_meta.get("bar_scale") or {}
 _bar_pool = int(_pg_meta.get("ranked_pool") or 0)
+# Defence is signed, so its bar shows position within the season's own range
+# rather than a proportion. Read from the blend artifact so moving the scale
+# moves the bar, the same way the notice above derives its endpoints.
+_def_ends = tuple((fetch_defense_blend_meta(season).get("scaled_to") or {})
+                  .get("endpoints") or (-4.0, 6.0))
 _pg_idx = NameIndex(_pg) if _pg else None
 
 # Bars, with the fill in the team's colour. Rank is drawn rather than stated
 # because a bar survives a two-game sample that a percentage does not: 84.6%
 # from the field reads as a bug, "4th in the league" reads as a fact.
-# Six bars again. They were cut to three while the panel was confined to the
-# Player cell and each one cost a line; spanning the full row they sit side by
-# side and the whole panel is two lines tall.
-_PANEL_BARS = [("PTS", "PPG", "PTS_RANK", "{:.1f}"),
-               ("REB", "RPG", "REB_RANK", "{:.1f}"),
-               ("AST", "APG", "AST_RANK", "{:.1f}"),
-               ("STL", "SPG", "STL_RANK", "{:.1f}"),
-               ("BLK", "BPG", "BLK_RANK", "{:.1f}"),
-               ("MIN", "MPG", "MIN_RANK", "{:.1f}")]
-_PANEL_FOOT = [("TOV", "tov", "{:.1f}"), ("PF", "pf", "{:.1f}")]
+# Two deliberate rows of five, in Barrett's order. The production line first,
+# the cost-and-context line second.
+_PANEL_ROW1 = [("PTS", "PPG", "PTS_RANK"), ("AST", "APG", "AST_RANK"),
+               ("REB", "RPG", "REB_RANK"), ("STL", "SPG", "STL_RANK"),
+               ("BLK", "BPG", "BLK_RANK")]
+_PANEL_ROW2 = [("MIN", "MPG", "MIN_RANK"), ("TOV", "TPG", None),
+               ("PF", "PFPG", None), ("__TS", "TS%", None),
+               ("__DEF", "DEF", None)]
+_PANEL_FOOT = [("FGM", "FGA", "fg"), ("FG3M", "FG3A", "3p"), ("FTM", "FTA", "ft")]
 
 
 def _ord(v):
@@ -743,40 +747,51 @@ def _row_panel(rd):
         return ""
     pool = _bar_pool
     col = team_bar_color(str(rd.get("Team", "")))
-    bars = []
-    for key, label, rank_key, fmt in _PANEL_BARS:
+
+    def _one(key, label, rank_key):
+        """One bar. Width is value against a high REFERENCE value, not rank
+        percentile: percentile saturates where it matters, since everyone in
+        the league's top 25 of 388 drew at 94-100%."""
+        if key == "__TS":
+            v = rd.get("TS%")
+            if v is None or v != v:
+                return ""
+            txt, width = f"{float(v):.1f}%", min(100.0, max(3.0, float(v) / 65.0 * 100.0))
+            return (f'<span class="bar"><i>{label}</i><b>{txt}</b>'
+                    f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
+                    f'</span></span><u></u></span>')
+        if key == "__DEF":
+            v = rd.get("Defense")
+            if v is None or v != v:
+                return ""
+            # Signed, so position in its range rather than a proportion of it.
+            lo, hi = _def_ends
+            width = min(100.0, max(3.0, (float(v) - lo) / (hi - lo) * 100.0))
+            return (f'<span class="bar"><i>{label}</i><b>{float(v):.2f}</b>'
+                    f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
+                    f'</span></span><u></u></span>')
         v = rec.get(key)
         if v is None or (isinstance(v, float) and v != v):
-            continue
-        try:
-            txt = fmt.format(float(v))
-        except (TypeError, ValueError):
-            continue
-        r = rec.get(rank_key)
+            return ""
+        r = rec.get(rank_key) if rank_key else None
         has_rank = pool > 0 and r is not None and r == r and int(r) > 0
-        # Width is value against a high REFERENCE value, not rank percentile.
-        # Percentile saturates where it matters: everyone in the league's top
-        # 25 of 388 drew at 94-100% and the bar said nothing about the players
-        # anyone is actually looking at. Rank stays, as the number on the right.
         ref = _bar_ref.get(key)
         try:
             width = min(100.0, max(3.0, float(v) / float(ref) * 100.0)) if ref else 0.0
         except (TypeError, ValueError, ZeroDivisionError):
             width = 0.0
-        bars.append(
-            f'<span class="bar"><i>{label}</i><b>{_h.escape(txt)}</b>'
-            f'<span class="trk"><span class="fil" style="width:{width:.0f}%"></span></span>'
-            f'<u>{_ord(r) if has_rank else ""}</u></span>')
-    if not bars:
+        return (f'<span class="bar"><i>{label}</i><b>{float(v):.1f}</b>'
+                f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
+                f'</span></span><u>{_ord(r) if has_rank else ""}</u></span>')
+
+    r1 = "".join(_one(*b) for b in _PANEL_ROW1)
+    r2 = "".join(_one(*b) for b in _PANEL_ROW2)
+    if not r1 and not r2:
         return ""
+    bars = [f'<div class="pbrow">{r1}</div>', f'<div class="pbrow">{r2}</div>']
     shot = []
-    for key, lab, fmt in _PANEL_FOOT:
-        fv = rec.get(key)
-        if fv is None or fv != fv:
-            continue
-        shot.append(f'<span><i>{lab}</i><b>{fmt.format(float(fv))}</b></span>')
     # shooting stays as makes-attempts: a percentage on two games misleads
-    for mk, at, lab in (("FGM", "FGA", "fg"), ("FG3M", "FG3A", "3p"), ("FTM", "FTA", "ft")):
+    for mk, at, lab in _PANEL_FOOT:
         m, a = rec.get(mk), rec.get(at)
         if m is None or a is None or m != m or a != a or float(a) <= 0:
             continue

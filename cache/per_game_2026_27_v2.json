@@ -41,7 +41,9 @@
    "AST": 7.25,
    "STL": 2.5,
    "BLK": 2.0,
-   "MIN": 35.35
+   "MIN": 35.35,
+   "TOV": 4.0,
+   "PF": 4.0
   },
   "bar_scale_note": "95th percentile among players at 12+ minutes; bars are value/reference, capped at 100%",
   "caveat": "Not fetchable on Render; as fresh as the last push."

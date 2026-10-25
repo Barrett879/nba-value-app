@@ -1415,10 +1415,12 @@ tr:has(details.hv-row-det[open]){border-bottom:0;}
 /* Full width, so the bars run across the table instead of stacking. Each one
    claims at least 150px and the grid fits as many as the width allows, six
    across on a desktop and wrapping gracefully below that. */
-.pbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
-  gap:0 1.1rem;padding:.4rem .7rem .3rem .65rem;
-  border-left:3px solid var(--tc);border-radius:0 5px 0 0;
-  background:var(--panel-2);}
+.pbars{padding:.4rem .7rem .3rem .65rem;border-left:3px solid var(--tc);
+  border-radius:0 5px 0 0;background:var(--panel-2);}
+/* Two explicit rows of five, so the columns line up between them instead of
+   reflowing to whatever the width allows. */
+.pbrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0 1.1rem;}
+.hv-det-pad{padding:0 !important;border-top:0 !important;background:none;}
 .bar{display:grid;grid-template-columns:28px 36px 1fr 30px;align-items:center;
   gap:.4rem;font-size:.72rem;font-variant-numeric:tabular-nums;line-height:1.6;}
 .bar i{font-style:normal;color:var(--fg-5);font-size:.92em;letter-spacing:.03em;}
@@ -1722,9 +1724,15 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
         tr_open = f'<tr style="{rstyle}">' if rstyle else "<tr>"
         rows_html.append(tr_open + "".join(tds) + "</tr>")
         if detail is not None and _detail_html:
+            # Empty cells for every column BEFORE the disclosure, then one
+            # spanning the rest. That aligns the panel with the player's name
+            # whatever width the "#" column happens to take, rather than
+            # guessing a padding value that drifts when the column resizes.
+            _lead = cols.index(detail_col) if (detail_col in cols) else 0
+            _pad = "".join('<td class="hv-det-pad"></td>' for _ in range(_lead))
             rows_html.append(
-                f'<tr class="hv-det-row"><td colspan="{len(cols)}">'
-                f'{_detail_html}</td></tr>')
+                f'<tr class="hv-det-row">{_pad}'
+                f'<td colspan="{len(cols) - _lead}">{_detail_html}</td></tr>')
         _detail_html = ""
     if max_rows and n_total > max_rows:
         rows_html.append(
