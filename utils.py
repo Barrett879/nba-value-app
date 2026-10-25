@@ -1388,23 +1388,34 @@ def render_theme_toggle() -> bool:
 HV_TABLE_CSS = """
 <style>
 /* Expandable row panel, html_table(detail=...). Lives beside the table's own
-   styles rather than in COMMON_CSS: COMMON_CSS does not carry .hv-table, so a
-   rule for a table feature placed there reached a page that never injected it
-   and the panel rendered unstyled. A component's CSS belongs with the
-   component. No JS -- <details> does the work, so a click costs nothing and
-   never triggers a rerun. */
-.hv-row-det>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:.4rem;}
+   styles rather than in COMMON_CSS, which does not carry .hv-table: a rule for
+   a table feature placed there reached a page that never injected it.
+
+   The marker is drawn with borders, not content:"\25B8". That escape did not
+   parse through Streamlit's markdown and every row rendered a literal "B8"
+   next to the player name, collapsed or not. A CSS triangle has no glyph to
+   mangle. No JS either -- <details> does the work, so a click costs nothing. */
+.hv-row-det>summary{list-style:none;cursor:pointer;display:inline-flex;
+  align-items:center;gap:.4rem;}
 .hv-row-det>summary::-webkit-details-marker{display:none;}
-.hv-row-det>summary::before{content:"\25B8";font-size:.7em;color:var(--fg-5);
-  transition:transform .12s ease;flex:0 0 auto;}
+.hv-row-det>summary::before{content:"";flex:0 0 auto;width:0;height:0;
+  border-left:4px solid var(--fg-5);border-top:3.5px solid transparent;
+  border-bottom:3.5px solid transparent;transition:transform .12s ease;}
 .hv-row-det[open]>summary::before{transform:rotate(90deg);}
-.hv-row-det>summary:hover::before{color:var(--accent-red);}
-.hv-row-body{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));
-  gap:.3rem .9rem;margin:.45rem 0 .2rem 1.1rem;padding:.5rem .6rem;
+.hv-row-det>summary:hover::before{border-left-color:var(--accent-red);}
+/* One compact strip that wraps, not a grid. The grid version forced a 3-row
+   block and tripled the row height, which left every other cell floating in
+   the middle of a tall row. */
+.hv-row-body{display:flex;flex-wrap:wrap;gap:.1rem .8rem;
+  margin:.3rem 0 .15rem 0;padding:.3rem .5rem;
   border-left:2px solid var(--panel-line);border-radius:3px;
-  background:var(--panel-2);font-size:.82em;}
-.hv-row-body .k{color:var(--fg-5);margin-right:.3rem;}
+  background:var(--panel-2);font-size:.78em;line-height:1.55;}
+.hv-row-body>span{white-space:nowrap;}
+.hv-row-body .k{color:var(--fg-5);margin-right:.25rem;}
 .hv-row-body .v{font-weight:600;}
+/* With a panel open the row is taller than its neighbours; without this the
+   short cells centre themselves against it and the table looks broken. */
+table.hv-table tbody td{vertical-align:top;}
 .hv-table-wrap{overflow:auto;border:1px solid var(--panel-line);border-radius:10px;
   background:var(--panel-solid);box-shadow:var(--shadow-card);
   margin:0.7rem 0 1.7rem;display:block;}
