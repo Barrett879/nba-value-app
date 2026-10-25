@@ -721,6 +721,36 @@ _def_ends = tuple((fetch_defense_blend_meta(season).get("scaled_to") or {})
 # visible in Barrett's screenshot as a panel that stops after PFPG.
 _ts_by_player = dict(zip(df["Player"], df["ts_pct"])) if "ts_pct" in df else {}
 _def_by_player = dict(zip(df["Player"], df["d_lebron"])) if "d_lebron" in df else {}
+
+
+def _rank_map(pairs, best_is_low):
+    """Competition ranks over (player, value) pairs. Ties share a rank.
+
+    These four are computed here rather than taken from the feed. The API does
+    rank turnovers and fouls, but MOST-first, which would have printed "1st"
+    beside the shortest bar on a panel where every other bar means longer is
+    better. TS% and Defence are not API stats at all. Ranked low-is-best for
+    turnovers and fouls, so the number agrees with the bar beside it.
+    """
+    vals = [(k, float(v)) for k, v in pairs if v is not None and v == v]
+    vals.sort(key=lambda kv: kv[1], reverse=not best_is_low)
+    out, prev, prev_rank = {}, None, 0
+    for i, (k, v) in enumerate(vals, 1):
+        if prev is None or v != prev:
+            prev_rank, prev = i, v
+        out[k] = prev_rank
+    return out
+
+
+# Ranked among ROTATION players, 12+ minutes, not the whole 388. Fewest
+# turnovers across everyone would crown whoever played ninety seconds, and the
+# same goes for a two-minute player's true shooting.
+_rot = {k for k, v in _pg.items()
+        if (v.get("MIN") or 0) and float(v.get("MIN") or 0) >= 12.0}
+_tov_rank = _rank_map([(k, v.get("TOV")) for k, v in _pg.items() if k in _rot], True)
+_pf_rank = _rank_map([(k, v.get("PF")) for k, v in _pg.items() if k in _rot], True)
+_ts_rank = _rank_map([(k, v) for k, v in _ts_by_player.items() if k in _rot], False)
+_def_rank = _rank_map(list(_def_by_player.items()), False)
 _pg_idx = NameIndex(_pg) if _pg else None
 
 # Bars, with the fill in the team's colour. Rank is drawn rather than stated
@@ -764,9 +794,10 @@ def _row_panel(rd):
                 return ""
             v = float(v) * 100.0
             txt, width = f"{v:.1f}%", min(100.0, max(3.0, v / 65.0 * 100.0))
+            _r = _ts_rank.get(str(rd.get("Player", "")))
             return (f'<span class="bar"><i>{label}</i><b>{txt}</b>'
                     f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
-                    f'</span></span><u></u></span>')
+                    f'</span></span><u>{_ord(_r) if _r else ""}</u></span>')
         if key == "__DEF":
             v = _def_by_player.get(str(rd.get("Player", "")))
             if v is None or v != v:
@@ -774,14 +805,19 @@ def _row_panel(rd):
             # Signed, so position in its range rather than a proportion of it.
             lo, hi = _def_ends
             width = min(100.0, max(3.0, (float(v) - lo) / (hi - lo) * 100.0))
+            _r = _def_rank.get(str(rd.get("Player", "")))
             return (f'<span class="bar"><i>{label}</i><b>{float(v):.2f}</b>'
                     f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
-                    f'</span></span><u></u></span>')
+                    f'</span></span><u>{_ord(_r) if _r else ""}</u></span>')
         v = rec.get(key)
         if v is None or (isinstance(v, float) and v != v):
             return ""
         r = rec.get(rank_key) if rank_key else None
-        has_rank = pool > 0 and r is not None and r == r and int(r) > 0
+        if key == "TOV":
+            r = _tov_rank.get(str(rd.get("Player", "")))
+        elif key == "PF":
+            r = _pf_rank.get(str(rd.get("Player", "")))
+        has_rank = r is not None and r == r and int(r) > 0
         ref = _bar_ref.get(key)
         try:
             width = min(100.0, max(3.0, float(v) / float(ref) * 100.0)) if ref else 0.0
