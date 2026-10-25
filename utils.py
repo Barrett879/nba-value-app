@@ -1520,7 +1520,7 @@ def team_cell(v) -> str:
 
 def html_table(df, *, formatters=None, styles=None, aligns=None,
                numeric=None, helps=None, height=560, row_style=None,
-               max_rows=1000, raw=None):
+               max_rows=1000, raw=None, detail=None, detail_col=None):
     """Render a DataFrame as a themed, sortable HTML table (follows light/dark).
 
     formatters: {col: value -> display str}          (default str(value))
@@ -1534,6 +1534,16 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     raw:        iterable of cols whose FORMATTED value is trusted HTML and rendered
                 unescaped (e.g. an <a> player link built by our own formatter —
                 never user input). All other columns stay escaped.
+    detail:     row_dict -> trusted HTML, or None/"" for no panel. The cell named
+                by detail_col becomes a <details> whose summary is that cell's
+                normal content, so clicking the row opens the panel underneath it.
+    detail_col: which column carries the disclosure (default: the first).
+
+    The panel is plain <details>, deliberately. This table renders through
+    st.markdown, which strips <script>, and a components.html iframe is not an
+    option here: on a Render cold start the iframe serves the app HOMEPAGE
+    instead of the component. <details> needs no JavaScript and no round trip,
+    so the panel opens instantly instead of costing a rerun per click.
     """
     import html
     formatters = formatters or {}
@@ -1594,6 +1604,14 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
                 sv = disp
             style_attr = f' style="{stl}"' if stl else ""
             cell = disp if c in raw else html.escape(disp)
+            if detail is not None and c == (detail_col or cols[0]):
+                try:
+                    _body = detail(rd)
+                except Exception:
+                    _body = ""
+                if _body:
+                    cell = (f'<details class="hv-row-det"><summary>{cell}</summary>'
+                            f'<div class="hv-row-body">{_body}</div></details>')
             tds.append(
                 f'<td data-v="{html.escape(str(sv), quote=True)}"'
                 f'{_acl.get(al, "")}{style_attr}>{cell}</td>'
@@ -1636,6 +1654,27 @@ def stat_cards(items):
 
 
 COMMON_CSS = """
+/* Expandable row panel used by html_table(detail=...). No JS: <details> does
+   the work, so a click costs nothing and never triggers a Streamlit rerun. */
+.hv-row-det > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: center; gap: .4rem;
+}
+.hv-row-det > summary::-webkit-details-marker { display: none; }
+.hv-row-det > summary::before {
+  content: "\25B8"; font-size: .7em; color: var(--fg-5);
+  transition: transform .12s ease; flex: 0 0 auto;
+}
+.hv-row-det[open] > summary::before { transform: rotate(90deg); }
+.hv-row-det > summary:hover::before { color: var(--accent-teal, #16a085); }
+.hv-row-body {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+  gap: .3rem .9rem; margin: .45rem 0 .2rem 1.1rem; padding: .5rem .6rem;
+  border-left: 2px solid var(--fg-5, #bbb); border-radius: 3px;
+  background: var(--bg-2, rgba(127,127,127,.06)); font-size: .82em;
+}
+.hv-row-body .k { color: var(--fg-5); margin-right: .3rem; }
+.hv-row-body .v { font-weight: 600; }
+
 <style>
     /* Theme tokens (:root) are injected separately by inject_theme() so the
        home page (which doesn't use this stylesheet) shares one source of

@@ -16,6 +16,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
+    NameIndex, fetch_league_stats, fetch_bref_player_stats,
     fetch_dlebron, fetch_defense_blend, fetch_defense_blend_meta, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
@@ -647,6 +648,59 @@ with col_d:
     pos_options = ["All", "PG", "SG", "SF", "PF", "C"]
     pos_filter = st.selectbox("Position", pos_options)
 
+# ── Per-game line for the expandable row panel ────────────────────────────
+# build_raw carries no PTS/AST/REB -- it only keeps what the score needs -- so
+# the panel reads the box feed directly. Joined through NameIndex rather than a
+# bare normalize() because the two frames come from different sources and
+# disagree on suffixes and transliterations; a bare key silently shows an empty
+# panel for exactly the players whose names are awkward.
+@st.cache_data(ttl=3600, show_spinner=False)
+def _per_game_lookup(_season):
+    src = fetch_league_stats(_season)
+    if src is None or getattr(src, "empty", True) or "PTS" not in getattr(src, "columns", []):
+        src = fetch_bref_player_stats(_season)
+    if src is None or getattr(src, "empty", True):
+        return {}
+    keep = [c for c in ("PTS", "REB", "OREB", "DREB", "AST", "STL", "BLK",
+                        "TOV", "PF", "MIN", "GP", "FG_PCT", "FG3_PCT", "FT_PCT")
+            if c in src.columns]
+    return {str(n): {c: r[c] for c in keep}
+            for n, r in zip(src["PLAYER_NAME"], src.to_dict("records"))}
+
+
+_pg = _per_game_lookup(season)
+_pg_idx = NameIndex(_pg) if _pg else None
+
+_PANEL_FIELDS = [("PTS", "PPG", "{:.1f}"), ("REB", "RPG", "{:.1f}"),
+                 ("AST", "APG", "{:.1f}"), ("STL", "SPG", "{:.1f}"),
+                 ("BLK", "BPG", "{:.1f}"), ("TOV", "TOV", "{:.1f}"),
+                 ("PF", "PF", "{:.1f}"), ("MIN", "MPG", "{:.1f}"),
+                 ("FG_PCT", "FG%", "{:.1%}"), ("FG3_PCT", "3P%", "{:.1%}"),
+                 ("FT_PCT", "FT%", "{:.1%}")]
+
+
+def _row_panel(rd):
+    """The stat line that drops down when a row is clicked."""
+    if _pg_idx is None:
+        return ""
+    import html as _h
+    rec = _pg_idx.get(str(rd.get("Player", "")))
+    if not rec:
+        return ""
+    bits = []
+    for key, label, fmt in _PANEL_FIELDS:
+        v = rec.get(key)
+        if v is None or (isinstance(v, float) and v != v):
+            continue
+        try:
+            txt = fmt.format(float(v))
+        except (TypeError, ValueError):
+            continue
+        bits.append(f'<span><span class="k">{label}</span>'
+                    f'<span class="v">{_h.escape(txt)}</span></span>')
+    return "".join(bits)
+
+
 display = df.copy()
 if search:
     display = display[display["Player"].str.contains(search, case=False, regex=False)]
@@ -1065,6 +1119,8 @@ else:
             "TS%": "True Shooting %. League avg ~57%.",
         },
         height=min(620, max(140, len(display_fmt) * 38 + 46)),
+        detail=_row_panel,
+        detail_col="Player",
     )
     dl_col_r, cap_col_r = st.columns([1, 9])
     with dl_col_r:
