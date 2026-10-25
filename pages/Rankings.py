@@ -17,7 +17,8 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    NameIndex, _dc_path, fetch_league_stats, fetch_bref_player_stats,
+    NameIndex, _dc_path, team_bar_color,
+    fetch_league_stats, fetch_bref_player_stats,
     fetch_dlebron, fetch_defense_blend, fetch_defense_blend_meta, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
     _fmt_salary, fmt_next_contract,
@@ -666,10 +667,14 @@ def _per_game_lookup(season_key):
     locally and for NONE in production, silently, because an empty lookup just
     skips the panel. Regenerate with scripts/build_per_game.py.
     """
-    art = _dc_path(f"per_game_{season_key.replace('-', '_')}_v1.json")
+    art = _dc_path(f"per_game_{season_key.replace('-', '_')}_v2.json")
     if art.exists():
         try:
-            return json.loads(art.read_text()).get("values") or {}
+            _d = json.loads(art.read_text())
+            _meta_d = _d.get("_meta") or {}
+            _pool_holder["n"] = int(_meta_d.get("ranked_pool") or 0)
+            _pool_holder["scale"] = _meta_d.get("bar_scale") or {}
+            return _d.get("values") or {}
         except Exception:
             pass
     src = fetch_league_stats(season_key)
@@ -684,15 +689,25 @@ def _per_game_lookup(season_key):
             for n, r in zip(src["PLAYER_NAME"], src.to_dict("records"))}
 
 
+_pool_holder = {}
 _pg = _per_game_lookup(season)
 _pg_idx = NameIndex(_pg) if _pg else None
 
-_PANEL_FIELDS = [("PTS", "PPG", "{:.1f}"), ("REB", "RPG", "{:.1f}"),
-                 ("AST", "APG", "{:.1f}"), ("STL", "SPG", "{:.1f}"),
-                 ("BLK", "BPG", "{:.1f}"), ("TOV", "TOV", "{:.1f}"),
-                 ("PF", "PF", "{:.1f}"), ("MIN", "MPG", "{:.1f}"),
-                 ("FG_PCT", "FG%", "{:.1%}"), ("FG3_PCT", "3P%", "{:.1%}"),
-                 ("FT_PCT", "FT%", "{:.1%}")]
+# Bars, with the fill in the team's colour. Rank is drawn rather than stated
+# because a bar survives a two-game sample that a percentage does not: 84.6%
+# from the field reads as a bug, "4th in the league" reads as a fact.
+_PANEL_BARS = [("PTS", "PPG", "PTS_RANK", "{:.1f}"),
+               ("REB", "RPG", "REB_RANK", "{:.1f}"),
+               ("AST", "APG", "AST_RANK", "{:.1f}"),
+               ("STL", "SPG", "STL_RANK", "{:.1f}"),
+               ("BLK", "BPG", "BLK_RANK", "{:.1f}"),
+               ("MIN", "MPG", "MIN_RANK", "{:.1f}")]
+
+
+def _ord(v):
+    v = int(v)
+    suf = "th" if 10 <= v % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(v % 10, "th")
+    return f"{v}{suf}"
 
 
 def _row_panel(rd):
@@ -703,8 +718,10 @@ def _row_panel(rd):
     rec = _pg_idx.get(str(rd.get("Player", "")))
     if not rec:
         return ""
-    bits = []
-    for key, label, fmt in _PANEL_FIELDS:
+    pool = _pool_holder.get("n") or 0
+    col = team_bar_color(str(rd.get("Team", "")))
+    bars = []
+    for key, label, rank_key, fmt in _PANEL_BARS:
         v = rec.get(key)
         if v is None or (isinstance(v, float) and v != v):
             continue
@@ -712,9 +729,35 @@ def _row_panel(rd):
             txt = fmt.format(float(v))
         except (TypeError, ValueError):
             continue
-        bits.append(f'<span><span class="k">{label}</span>'
-                    f'<span class="v">{_h.escape(txt)}</span></span>')
-    return "".join(bits)
+        r = rec.get(rank_key)
+        has_rank = pool > 0 and r is not None and r == r and int(r) > 0
+        # Width is value against a high REFERENCE value, not rank percentile.
+        # Percentile saturates where it matters: everyone in the league's top
+        # 25 of 388 drew at 94-100% and the bar said nothing about the players
+        # anyone is actually looking at. Rank stays, as the number on the right.
+        ref = (_pool_holder.get("scale") or {}).get(key)
+        try:
+            width = min(100.0, max(3.0, float(v) / float(ref) * 100.0)) if ref else 0.0
+        except (TypeError, ValueError, ZeroDivisionError):
+            width = 0.0
+        bars.append(
+            f'<span class="bar"><i>{label}</i><b>{_h.escape(txt)}</b>'
+            f'<span class="trk"><span class="fil" style="width:{width:.0f}%"></span></span>'
+            f'<u>{_ord(r) if has_rank else ""}</u></span>')
+    if not bars:
+        return ""
+    # shooting stays as makes-attempts: a percentage on two games misleads
+    shot = []
+    for mk, at, lab in (("FGM", "FGA", "FG"), ("FG3M", "FG3A", "3P"), ("FTM", "FTA", "FT")):
+        m, a = rec.get(mk), rec.get(at)
+        if m is None or a is None or m != m or a != a or float(a) <= 0:
+            continue
+        shot.append(f'<span><i>{lab}</i><b>{float(m):.1f}-{float(a):.1f}</b></span>')
+    pm = rec.get("PLUS_MINUS")
+    if pm is not None and pm == pm:
+        shot.append(f'<span><i>+/-</i><b>{float(pm):+.1f}</b></span>')
+    foot = f'<div class="pfoot">{"".join(shot)}</div>' if shot else ""
+    return f'<div class="pbars" style="--tc:{col}">{"".join(bars)}</div>{foot}'
 
 
 display = df.copy()

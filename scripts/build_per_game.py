@@ -18,6 +18,8 @@ anything changed?" stays answerable by diff.
 from __future__ import annotations
 import json, logging, sys
 import datetime as dt
+import numpy as np
+import pandas as pd
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -26,8 +28,14 @@ import utils
 logging.disable(logging.NOTSET)
 
 FIELDS = ("PTS", "REB", "OREB", "DREB", "AST", "STL", "BLK", "TOV", "PF",
-          "MIN", "GP", "FG_PCT", "FG3_PCT", "FT_PCT")
-VERSION = "v1"
+          "MIN", "GP", "FG_PCT", "FG3_PCT", "FT_PCT",
+          "FGM", "FGA", "FG3M", "FG3A", "FTM", "FTA", "PLUS_MINUS",
+          # League ranks ship with the feed, so the panel can draw where a
+          # player sits instead of asking the reader to know what 8.5 rebounds
+          # means. Free: no extra request, no second artifact to keep fresh.
+          "PTS_RANK", "REB_RANK", "AST_RANK", "STL_RANK", "BLK_RANK",
+          "MIN_RANK", "FG_PCT_RANK")
+VERSION = "v2"  # v2 adds ranks and makes/attempts; v1 was the bare per-game line
 
 
 def main():
@@ -62,8 +70,30 @@ def main():
         if row:
             vals[str(name)] = row
 
+    # Reference values the panel's bars are drawn against. Rank percentile was
+    # tried first and is useless at the top of the board: everyone in the top
+    # 25 of 388 renders at 94-100% and the bar stops carrying information
+    # exactly where people look. A bar against a high reference VALUE keeps its
+    # range. The reference is the 95th percentile among rotation players, not
+    # the maximum, so one 36-point night on two games cannot flatten everyone.
+    rot = src[pd.to_numeric(src.get("MIN"), errors="coerce").fillna(0) >= 12] \
+        if "MIN" in src.columns else src
+    if len(rot) < 30:
+        rot = src
+    scale = {}
+    for c in ("PTS", "REB", "AST", "STL", "BLK", "MIN"):
+        if c not in src.columns:
+            continue
+        v = pd.to_numeric(rot[c], errors="coerce").dropna()
+        if len(v):
+            scale[c] = round(float(np.percentile(v, 95)), 3) or 1.0
+
     out = {"_meta": {"season": season, "generated": dt.date.today().isoformat(),
                      "source": which, "fields": keep, "players": len(vals),
+                     "ranked_pool": int(len(src)),
+                     "bar_scale": scale,
+                     "bar_scale_note": ("95th percentile among players at 12+ minutes; "
+                                        "bars are value/reference, capped at 100%"),
                      "caveat": "Not fetchable on Render; as fresh as the last push."},
            "values": {k: vals[k] for k in sorted(vals)}}
     path = ROOT / "cache" / f"per_game_{season.replace('-', '_')}_{VERSION}.json"

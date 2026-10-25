@@ -1388,13 +1388,11 @@ def render_theme_toggle() -> bool:
 HV_TABLE_CSS = """
 <style>
 /* Expandable row panel, html_table(detail=...). Lives beside the table's own
-   styles rather than in COMMON_CSS, which does not carry .hv-table: a rule for
-   a table feature placed there reached a page that never injected it.
+   styles rather than in COMMON_CSS, which does not carry .hv-table.
 
-   The marker is drawn with borders, not content:"\25B8". That escape did not
-   parse through Streamlit's markdown and every row rendered a literal "B8"
-   next to the player name, collapsed or not. A CSS triangle has no glyph to
-   mangle. No JS either -- <details> does the work, so a click costs nothing. */
+   The marker is drawn with borders, not content:"\25B8": that escape did not
+   survive Streamlit's markdown and every row rendered a literal "B8". A CSS
+   triangle has no glyph to mangle. No JS either -- <details> does the work. */
 .hv-row-det>summary{list-style:none;cursor:pointer;display:inline-flex;
   align-items:center;gap:.4rem;}
 .hv-row-det>summary::-webkit-details-marker{display:none;}
@@ -1403,18 +1401,30 @@ HV_TABLE_CSS = """
   border-bottom:3.5px solid transparent;transition:transform .12s ease;}
 .hv-row-det[open]>summary::before{transform:rotate(90deg);}
 .hv-row-det>summary:hover::before{border-left-color:var(--accent-red);}
-/* One compact strip that wraps, not a grid. The grid version forced a 3-row
-   block and tripled the row height, which left every other cell floating in
-   the middle of a tall row. */
-.hv-row-body{display:flex;flex-wrap:wrap;gap:.1rem .8rem;
-  margin:.3rem 0 .15rem 0;padding:.3rem .5rem;
-  border-left:2px solid var(--panel-line);border-radius:3px;
-  background:var(--panel-2);font-size:.78em;line-height:1.55;}
-.hv-row-body>span{white-space:nowrap;}
-.hv-row-body .k{color:var(--fg-5);margin-right:.25rem;}
-.hv-row-body .v{font-weight:600;}
-/* With a panel open the row is taller than its neighbours; without this the
-   short cells centre themselves against it and the table looks broken. */
+
+/* Percentile bars, filled in the team's colour. The fill is normalised by
+   utils.team_bar_color so it reads on both themes: LAL's raw purple sits at
+   luminance 0.049 and vanishes on dark, Denver's gold at 0.611 and washes out
+   on light. Rank is DRAWN rather than stated because a bar survives a
+   two-game sample that a percentage does not. */
+.pbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
+  gap:.05rem .9rem;margin:.35rem 0 .1rem;padding:.3rem .55rem .3rem .5rem;
+  border-left:3px solid var(--tc);border-radius:0 4px 4px 0;
+  background:var(--panel-2);}
+.bar{display:grid;grid-template-columns:30px 38px 1fr 30px;align-items:center;
+  gap:.45rem;font-size:.74rem;font-variant-numeric:tabular-nums;line-height:1.75;}
+.bar i{font-style:normal;color:var(--fg-5);font-size:.92em;letter-spacing:.03em;}
+.bar b{font-weight:650;text-align:right;}
+.bar u{text-decoration:none;color:var(--fg-5);font-size:.88em;text-align:right;}
+.trk{height:4px;background:var(--panel-line);border-radius:2px;overflow:hidden;}
+.fil{display:block;height:100%;background:var(--tc);border-radius:2px;}
+/* Shooting as makes-attempts, not percentages: 84.6% on two games misleads. */
+.pfoot{display:flex;flex-wrap:wrap;gap:.1rem .85rem;margin:.1rem 0 .15rem .55rem;
+  font-size:.72rem;color:var(--fg-5);font-variant-numeric:tabular-nums;}
+.pfoot i{font-style:normal;margin-right:.25rem;}
+.pfoot b{font-weight:600;color:var(--fg-2);}
+/* An open row is taller than its neighbours; without this the short cells
+   centre against it and the table looks broken. */
 table.hv-table tbody td{vertical-align:top;}
 .hv-table-wrap{overflow:auto;border:1px solid var(--panel-line);border-radius:10px;
   background:var(--panel-solid);box-shadow:var(--shadow-card);
@@ -1545,6 +1555,41 @@ def team_cell(v) -> str:
     if ab in _team_page_set():
         return f'{dot}<a class="hv-tlink" href="/Rosters?team={escq}" target="_top">{esc}</a>'
     return f"{dot}{esc}"
+
+
+def team_bar_color(team: str, lo: float = 0.22, hi: float = 0.48) -> str:
+    """A team colour that stays visible on BOTH themes, hue preserved.
+
+    Raw team colours cannot be used as a fill: LAL's purple sits at luminance
+    0.049 and vanishes on the dark theme, Denver's gold at 0.611 and washes out
+    on the light one. Blending toward white or black until the relative
+    luminance lands between lo and hi keeps the colour recognisably the team's
+    while guaranteeing it reads either way. One colour, not a per-theme pair,
+    because the site's theme is a runtime toggle and the HTML is built once.
+    """
+    hexv = (TEAM_HEX.get(team) or "#888888").lstrip("#")
+    if len(hexv) != 6:
+        return "#888888"
+    try:
+        r, g, b = (int(hexv[i:i + 2], 16) for i in (0, 2, 4))
+    except ValueError:
+        return "#888888"
+
+    def _lum(rr, gg, bb):
+        def ch(c):
+            c = c / 255.0
+            return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+        return 0.2126 * ch(rr) + 0.7152 * ch(gg) + 0.0722 * ch(bb)
+
+    for _ in range(24):
+        L = _lum(r, g, b)
+        if L < lo:
+            r, g, b = (round(c + (255 - c) * 0.12) for c in (r, g, b))
+        elif L > hi:
+            r, g, b = (round(c * 0.88) for c in (r, g, b))
+        else:
+            break
+    return f"#{r:02x}{g:02x}{b:02x}"
 
 
 def html_table(df, *, formatters=None, styles=None, aligns=None,
