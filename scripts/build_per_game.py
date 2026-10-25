@@ -35,7 +35,13 @@ FIELDS = ("PTS", "REB", "OREB", "DREB", "AST", "STL", "BLK", "TOV", "PF",
           # means. Free: no extra request, no second artifact to keep fresh.
           "PTS_RANK", "REB_RANK", "AST_RANK", "STL_RANK", "BLK_RANK",
           "MIN_RANK", "FG_PCT_RANK")
-VERSION = "v2"  # v2 adds ranks and makes/attempts; v1 was the bare per-game line
+# v3 adds the TOV and PF bar references. They were added to v2 IN PLACE, and
+# that never reached production: /data seeds a repo cache only when the
+# FILENAME is missing, so the first v2 (with no TOV/PF reference) stayed on the
+# disk forever and those two bars rendered at zero width on the live site while
+# working perfectly here. Contents change => filename changes. The check below
+# now enforces it rather than relying on remembering.
+VERSION = "v3"
 
 
 def main():
@@ -97,6 +103,27 @@ def main():
                      "caveat": "Not fetchable on Render; as fresh as the last push."},
            "values": {k: vals[k] for k in sorted(vals)}}
     path = ROOT / "cache" / f"per_game_{season.replace('-', '_')}_{VERSION}.json"
+
+    # Refuse to change an existing artifact's SHAPE under the same name. New
+    # numbers are fine and expected -- that is a daily rebuild. A different set
+    # of fields or bar references is not: production would keep the old file
+    # and the new bars would silently render empty, which is exactly what
+    # happened to TOV and PF on 2026-10-25.
+    if path.exists():
+        try:
+            prev = json.loads(path.read_text())
+            pm = prev.get("_meta") or {}
+            if (set(pm.get("fields") or []) != set(keep)
+                    or set((pm.get("bar_scale") or {})) != set(scale)):
+                print(f"REFUSING to write {path.name}: its SHAPE changed but the "
+                      f"version did not.\n  fields added/removed: "
+                      f"{set(keep) ^ set(pm.get('fields') or [])}\n  bar refs "
+                      f"added/removed: {set(scale) ^ set(pm.get('bar_scale') or {})}\n"
+                      f"  Bump VERSION in this script and in the reader in "
+                      f"pages/Rankings.py, then rerun.")
+                return 1
+        except Exception:
+            pass
     path.write_text(json.dumps(out, indent=1))
 
     # every player the board will show must resolve, or the panel is silently
