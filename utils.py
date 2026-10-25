@@ -4594,6 +4594,11 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
                         "STL":           _g("STL"), "BLK": _g("BLK"),
                         "TOV":           _g("TOV"), "PF": _g("PF"),
                         "TS%":           float(br.get("ts_pct", 0) or 0) * 100,
+                        # RAW, not the 1-10 number. Search multiplies this by
+                        # defense_weight to rebuild the Defense component, so it
+                        # has to stay on the internal scale or the breakdown
+                        # stops reconciling with the score. defense_to_10 is for
+                        # display surfaces only.
                         "Defense":       float(br.get("d_lebron", 0) or 0),
                         "EffAdj":        float(br.get("efficiency_adj", 0) or 0),
                         "Avail":         float(br.get("avail_mult", 1.0) or 1.0),
@@ -4662,7 +4667,7 @@ def fetch_player_full_career(player_name: str, playoffs: bool = False) -> pd.Dat
                 # Raw component pieces — used by the "Score Breakdown" view on Search.
                 # All season-level (not per-game) so the breakdown matches the
                 # base-score arithmetic exactly.
-                "Defense":        float(br_row.get("d_lebron", 0) or 0),
+                "Defense":        float(br_row.get("d_lebron", 0) or 0),  # raw, see above
                 "EffAdj":         float(br_row.get("efficiency_adj", 0) or 0),
                 "Avail":          float(br_row.get("avail_mult", 1.0) or 1.0),
                 "Barrett Score":  barrett_canonical,  # pace-adjusted (v6+)

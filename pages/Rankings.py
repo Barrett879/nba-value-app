@@ -927,6 +927,11 @@ if show_splits and splits_df is not None:
         sfmt["projected_salary"] = sfmt["projected_salary"] / 1_000_000
         sfmt["value_diff"]       = sfmt["value_diff"] / 1_000_000
         sfmt["ts_pct"]           = sfmt["ts_pct"] * 100
+        # Converted HERE, beside the other in-place conversions, because the
+        # columns are renamed POSITIONALLY below: d_lebron becomes "Defense" by
+        # position, so renaming alone left the header saying Defense while the
+        # cells still held the raw internal value.
+        sfmt["d_lebron"]         = sfmt["d_lebron"].map(defense_to_10)
         sfmt.columns = ["Player", "Team", "GP", "MPG",
                         "Base Score", "Avail ×", "Barrett Score",
                         "Score Rank", "Salary", "Proj. Salary", "Δ Market",
@@ -1006,6 +1011,7 @@ else:
     display_fmt["projected_salary"] = display_fmt["projected_salary"] / 1_000_000
     display_fmt["value_diff"]       = display_fmt["value_diff"] / 1_000_000
     display_fmt["ts_pct"]           = display_fmt["ts_pct"] * 100
+    display_fmt["d_lebron"]         = display_fmt["d_lebron"].map(defense_to_10)
     display_fmt.columns = [
         "Player", "Team", "GP", "MPG",
         "Base Score", "Avail ×", "Barrett Score",
