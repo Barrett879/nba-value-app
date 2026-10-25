@@ -218,10 +218,30 @@ def main() -> int:
 #   min..pf     = this GAME's totals, not per-game averages.
 """
     out = ROOT / "data" / "provisional_box_scores.csv"
+    # MERGE on (team, game_date), never a blind overwrite. Opening this "w" and
+    # writing only the requested date silently DELETED every block from every
+    # other date: running it for 10/24 would have dropped the 300 rows already
+    # here for 10/22 and 10/23. Blocks still supersede themselves through
+    # team_gp_after; that is a reason to let them expire, not to erase them.
+    keep, dropped = [], 0
+    if out.exists():
+        mine = {(r[hdr.split(",").index("team")], r[hdr.split(",").index("game_date")])
+                for r in rows}
+        with open(out, newline="", encoding="utf-8") as fh:
+            for r in csv.reader(fh):
+                if not r or r[0].startswith("#") or r[0] == "season":
+                    continue
+                key = (r[hdr.split(",").index("team")],
+                       r[hdr.split(",").index("game_date")])
+                if key in mine:
+                    dropped += 1          # this run supersedes that block
+                else:
+                    keep.append(r)
     with open(out, "w", newline="", encoding="utf-8") as fh:
         fh.write(preamble + hdr + "\n")
-        csv.writer(fh).writerows(rows)
-    print(f"\n  wrote {out}\n")
+        csv.writer(fh).writerows(rows + keep)
+    print(f"\n  wrote {out}: {len(rows)} new rows, {len(keep)} kept from other "
+          f"dates, {dropped} replaced\n")
     return 0
 
 
