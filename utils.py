@@ -1407,20 +1407,21 @@ HV_TABLE_CSS = """
    luminance 0.049 and vanishes on dark, Denver's gold at 0.611 and washes out
    on light. Rank is DRAWN rather than stated because a bar survives a
    two-game sample that a percentage does not. */
-.pbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(168px,1fr));
-  gap:.05rem .9rem;margin:.35rem 0 .1rem;padding:.3rem .55rem .3rem .5rem;
+.pbars{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));
+  gap:0 .9rem;margin:.3rem 0 .08rem;padding:.26rem .5rem .26rem .45rem;
   border-left:3px solid var(--tc);border-radius:0 4px 4px 0;
   background:var(--panel-2);}
-.bar{display:grid;grid-template-columns:30px 38px 1fr 30px;align-items:center;
-  gap:.45rem;font-size:.74rem;font-variant-numeric:tabular-nums;line-height:1.75;}
+.bar{display:grid;grid-template-columns:27px 34px 1fr 28px;align-items:center;
+  gap:.4rem;font-size:.72rem;font-variant-numeric:tabular-nums;line-height:1.5;}
 .bar i{font-style:normal;color:var(--fg-5);font-size:.92em;letter-spacing:.03em;}
 .bar b{font-weight:650;text-align:right;}
 .bar u{text-decoration:none;color:var(--fg-5);font-size:.88em;text-align:right;}
 .trk{height:4px;background:var(--panel-line);border-radius:2px;overflow:hidden;}
 .fil{display:block;height:100%;background:var(--tc);border-radius:2px;}
 /* Shooting as makes-attempts, not percentages: 84.6% on two games misleads. */
-.pfoot{display:flex;flex-wrap:wrap;gap:.1rem .85rem;margin:.1rem 0 .15rem .55rem;
-  font-size:.72rem;color:var(--fg-5);font-variant-numeric:tabular-nums;}
+.pfoot{display:flex;flex-wrap:wrap;gap:0 .7rem;margin:.1rem 0 .12rem .5rem;
+  font-size:.69rem;color:var(--fg-5);font-variant-numeric:tabular-nums;
+  line-height:1.6;}
 .pfoot i{font-style:normal;margin-right:.25rem;}
 .pfoot b{font-weight:600;color:var(--fg-2);}
 /* An open row is taller than its neighbours; without this the short cells

@@ -671,9 +671,6 @@ def _per_game_lookup(season_key):
     if art.exists():
         try:
             _d = json.loads(art.read_text())
-            _meta_d = _d.get("_meta") or {}
-            _pool_holder["n"] = int(_meta_d.get("ranked_pool") or 0)
-            _pool_holder["scale"] = _meta_d.get("bar_scale") or {}
             return _d.get("values") or {}
         except Exception:
             pass
@@ -689,19 +686,45 @@ def _per_game_lookup(season_key):
             for n, r in zip(src["PLAYER_NAME"], src.to_dict("records"))}
 
 
-_pool_holder = {}
+@st.cache_data(ttl=3600, show_spinner=False)
+def _per_game_meta(season_key):
+    """The artifact's _meta: the bar reference values and the ranked pool.
+
+    Its own cached function, NOT a side effect of _per_game_lookup. The first
+    version set a module-level dict from inside that cached function, which
+    does not run on a cache hit, and the dict was reassigned to {} further down
+    the file anyway -- so the references were empty on every path and every bar
+    rendered at zero width. A cached function that mutates a global is a
+    function whose work silently stops happening.
+    """
+    art = _dc_path(f"per_game_{season_key.replace('-', '_')}_v2.json")
+    if art.exists():
+        try:
+            return json.loads(art.read_text()).get("_meta") or {}
+        except Exception:
+            pass
+    return {}
+
+
 _pg = _per_game_lookup(season)
+_pg_meta = _per_game_meta(season)
+_bar_ref = _pg_meta.get("bar_scale") or {}
+_bar_pool = int(_pg_meta.get("ranked_pool") or 0)
 _pg_idx = NameIndex(_pg) if _pg else None
 
 # Bars, with the fill in the team's colour. Rank is drawn rather than stated
 # because a bar survives a two-game sample that a percentage does not: 84.6%
 # from the field reads as a bug, "4th in the league" reads as a fact.
+# Three bars, not six. The panel sits inside the Player cell, which is about
+# 200px wide, so the grid collapses to one column and every bar costs a line:
+# six made an open row eight lines tall and pushed its neighbours off screen.
+# Scoring, rebounding and playmaking carry the shape of a player; the rest are
+# more useful as plain numbers in the footer than as six stacked tracks.
 _PANEL_BARS = [("PTS", "PPG", "PTS_RANK", "{:.1f}"),
                ("REB", "RPG", "REB_RANK", "{:.1f}"),
-               ("AST", "APG", "AST_RANK", "{:.1f}"),
-               ("STL", "SPG", "STL_RANK", "{:.1f}"),
-               ("BLK", "BPG", "BLK_RANK", "{:.1f}"),
-               ("MIN", "MPG", "MIN_RANK", "{:.1f}")]
+               ("AST", "APG", "AST_RANK", "{:.1f}")]
+_PANEL_FOOT = [("STL", "stl", "{:.1f}"), ("BLK", "blk", "{:.1f}"),
+               ("TOV", "tov", "{:.1f}"), ("MIN", "min", "{:.1f}")]
 
 
 def _ord(v):
@@ -718,7 +741,7 @@ def _row_panel(rd):
     rec = _pg_idx.get(str(rd.get("Player", "")))
     if not rec:
         return ""
-    pool = _pool_holder.get("n") or 0
+    pool = _bar_pool
     col = team_bar_color(str(rd.get("Team", "")))
     bars = []
     for key, label, rank_key, fmt in _PANEL_BARS:
@@ -735,7 +758,7 @@ def _row_panel(rd):
         # Percentile saturates where it matters: everyone in the league's top
         # 25 of 388 drew at 94-100% and the bar said nothing about the players
         # anyone is actually looking at. Rank stays, as the number on the right.
-        ref = (_pool_holder.get("scale") or {}).get(key)
+        ref = _bar_ref.get(key)
         try:
             width = min(100.0, max(3.0, float(v) / float(ref) * 100.0)) if ref else 0.0
         except (TypeError, ValueError, ZeroDivisionError):
@@ -746,9 +769,14 @@ def _row_panel(rd):
             f'<u>{_ord(r) if has_rank else ""}</u></span>')
     if not bars:
         return ""
-    # shooting stays as makes-attempts: a percentage on two games misleads
     shot = []
-    for mk, at, lab in (("FGM", "FGA", "FG"), ("FG3M", "FG3A", "3P"), ("FTM", "FTA", "FT")):
+    for key, lab, fmt in _PANEL_FOOT:
+        fv = rec.get(key)
+        if fv is None or fv != fv:
+            continue
+        shot.append(f'<span><i>{lab}</i><b>{fmt.format(float(fv))}</b></span>')
+    # shooting stays as makes-attempts: a percentage on two games misleads
+    for mk, at, lab in (("FGM", "FGA", "fg"), ("FG3M", "FG3A", "3p"), ("FTM", "FTA", "ft")):
         m, a = rec.get(mk), rec.get(at)
         if m is None or a is None or m != m or a != a or float(a) <= 0:
             continue
