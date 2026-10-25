@@ -3294,7 +3294,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r8"
+DATA_REV = "r9"
 
 
 def _rev_path(name: str) -> Path:
@@ -5628,12 +5628,14 @@ _DLEBRON_PROXY_COEFS = {
 #       build_raw so every page (Rankings, Legacy, Trades, Search, all-time
 #       lists) gets era-normalized scores by default. Old un-adjusted view
 #       still available as `barrett_score_raw` for the Search toggle.
-# v9, NOT v8: a complete set of 50 raw_*_v8.parquet files from July already sits
-# in cache/, so bumping to v8 would READ those stale caches instead of
-# rebuilding and serve scores from an unknown formula without a word.
-FORMULA_VERSION = "v9"  # v9: 0.70/0.30 option 1 + option 4 blend for the live
-#                              season's defensive term, where no published
-#                              D-LEBRON exists yet (v7: box-only proxy)
+# Stays v7. The defensive blend changes scores ONLY where there is no published
+# D-LEBRON *and* a blend file exists, which today is the live season alone --
+# every historical season still takes the box proxy and its v7 cache is still
+# correct. Bumping this invalidates all ~160 committed parquets back to 1973-74
+# at once and ships none, which leaves production rebuilding every season from
+# the network on a request path. That is what emptied the 2026-27 Rankings page
+# at 14:29Z on 2026-10-25. Reseed the CURRENT season through DATA_REV instead.
+FORMULA_VERSION = "v7"  # v7: D-LEBRON proxy replaces hand-tuned fallback (R²=0.59)
 
 # Separate version tag for playoff caches so playoff-formula tweaks invalidate
 # only playoff parquets, leaving the regular-season caches valid.
