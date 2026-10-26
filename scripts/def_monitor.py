@@ -45,7 +45,7 @@ Appends one line to cache/def_monitor/log.jsonl. Writes nothing the site reads.
 Designed to be run unattended: network failures are logged, never raised.
 """
 from __future__ import annotations
-import json, logging, sys, time, urllib.request, warnings
+import json, logging, re, sys, time, urllib.request, warnings
 import datetime as dt
 from pathlib import Path
 
@@ -69,6 +69,7 @@ def _quiet_import():
         import numpy, pandas                      # noqa: F401
         import def_lib, def_options               # noqa: F401
         import def_backtest                       # noqa: F401
+        import utils                              # noqa: F401
     finally:
         logging.disable(logging.NOTSET)
     # One warning survives the import window because fetch_bref_player_stats is
@@ -200,6 +201,7 @@ def main():
     _quiet_import()
     import numpy as np, pandas as pd
     import def_lib as L, def_options as O
+    import utils
     from def_backtest import shipped_proxy, truth
 
     def zs(s):
@@ -318,8 +320,13 @@ def main():
     # same check rather than a note in somebody's head.
     try:
         import glob as _g
+        # Sorted NUMERICALLY, not lexicographically: plain sorted() puts v10
+        # before v4, so the moment the version reaches double digits [-1]
+        # silently starts picking v9 and the staleness check reads the wrong
+        # artifact while reporting success.
         _pg = sorted(_g.glob(str(ROOT / "cache" /
-                     f"per_game_{SEASON.replace('-', '_')}_v*.json")))
+                     f"per_game_{SEASON.replace('-', '_')}_v*.json")),
+                     key=lambda f: int(re.search(r"_v(\d+)\.json$", f).group(1)))
         if _pg:
             _shipped = json.loads(Path(_pg[-1]).read_text())
             _sv = _shipped.get("values") or {}
@@ -345,6 +352,43 @@ def main():
                 rec["per_game_is_stale"] = False
     except Exception as e:
         note.append(f"per-game drift check failed: {type(e).__name__}: {str(e)[:80]}")
+
+    # ---- does any team's board show more games than it has played? ------
+    # A consistency check cannot catch a double count: the frame stays
+    # perfectly consistent with itself while every per-game average for that
+    # team is divided by the wrong denominator. So this compares against a
+    # source that counts games a DIFFERENT way -- the board comes from the
+    # stat feed, the truth comes from the schedule. On 2026-10-25 the
+    # provisional merge folded already-counted games back in for the three
+    # franchises whose BBRef code differs from their NBA code, and Charlotte
+    # showed 5 games on a night it had played 3.
+    try:
+        _bp = utils._rev_path(
+            f"raw_{SEASON.replace('-', '_')}_{utils.FORMULA_VERSION}.parquet")
+        if _bp.exists():
+            _board = pd.read_parquet(_bp)
+            _played, _, _ = L.feed_gap(SEASON)
+            _over, _unknown = [], []
+            for _t, _grp in _board.groupby("Team"):
+                _gp = float(pd.to_numeric(_grp["GP"], errors="coerce").max())
+                _truth = _played.get(_t)
+                if _truth is None:
+                    _unknown.append(_t)          # a code that leaked through untranslated
+                elif _gp > _truth:
+                    _over.append((_t, _gp, _truth))
+            rec["board_gp"] = {"file": _bp.name,
+                               "teams_over": [list(x) for x in _over],
+                               "teams_not_in_schedule": _unknown}
+            if _over or _unknown:
+                rec["board_gp_is_wrong"] = True
+                note.append(
+                    f"BOARD GAMES PLAYED IS WRONG: {len(_over)} team(s) show more games "
+                    f"than they have played{' and ' + str(len(_unknown)) + ' team code(s) are not in the schedule' if _unknown else ''}. "
+                    f"Run scripts/check_board_gp.py; see utils.resolve_team_code.")
+            else:
+                rec["board_gp_is_wrong"] = False
+    except Exception as e:
+        note.append(f"board GP check failed: {type(e).__name__}: {str(e)[:80]}")
 
     if n < 4:
         rec["verdict"] = f"waiting for sample: {n} team games, a forward holdout needs 4"
