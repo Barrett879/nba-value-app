@@ -390,6 +390,51 @@ def main():
     except Exception as e:
         note.append(f"board GP check failed: {type(e).__name__}: {str(e)[:80]}")
 
+    # ---- is the board's defence actually the blend? --------------------
+    # d_lebron has two possible sources, the on/off blend and the box proxy,
+    # and they are indistinguishable by shape. build_raw silently takes the
+    # proxy when the blend artifact is missing, which is correct for pre-2009
+    # seasons and catastrophic for this one. On 2026-10-25 the board was built
+    # before build_defense_blend wrote the new version and the live site served
+    # 362 players on the proxy, 63 of them more than two points off.
+    try:
+        _bp = utils._rev_path(
+            f"raw_{SEASON.replace('-', '_')}_{utils.FORMULA_VERSION}.parquet")
+        _bl = utils.fetch_defense_blend(SEASON)
+        if _bp.exists():
+            if not _bl:
+                rec["defense_source_is_wrong"] = True
+                note.append("BOARD DEFENCE IS THE BOX PROXY: there is no blend artifact "
+                            "for this season, so every player is on the fallback metric.")
+            else:
+                _bd = pd.read_parquet(_bp)
+                _ni = utils.NameIndex(dict(_bl))
+                _n, _off = 0, 0
+                for _p, _v in zip(_bd["Player"], _bd["d_lebron"]):
+                    _w = _ni.get(str(_p))
+                    if _w is None:
+                        continue
+                    _n += 1
+                    if abs(float(_v) - float(_w)) > 0.005:
+                        _off += 1
+                rec["defense_source"] = {"file": _bp.name, "shared_players": _n,
+                                         "disagreeing": _off}
+                if _n and _off:
+                    rec["defense_source_is_wrong"] = True
+                    note.append(
+                        f"BOARD DEFENCE DOES NOT MATCH THE BLEND: {_off} of {_n} shared "
+                        f"players disagree, so the board was built against a different "
+                        f"artifact. Run scripts/check_defense_source.py; rebuild with "
+                        f"scripts/refresh_live_season.py.")
+                elif not _n:
+                    rec["defense_source_is_wrong"] = True
+                    note.append("BOARD DEFENCE: not one board player matched the blend by "
+                                "name. That is a join failure, not a coverage gap.")
+                else:
+                    rec["defense_source_is_wrong"] = False
+    except Exception as e:
+        note.append(f"defence source check failed: {type(e).__name__}: {str(e)[:80]}")
+
     if n < 4:
         rec["verdict"] = f"waiting for sample: {n} team games, a forward holdout needs 4"
     else:

@@ -3422,7 +3422,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r14"  # 2026-10-25 late slate (MEM@SAC)
+DATA_REV = "r15"  # 2026-10-25 late slate, board rebuilt AGAINST the v5 blend (r14 shipped the box proxy)
 
 
 def _rev_path(name: str) -> Path:
@@ -6309,6 +6309,23 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
             stats["d_lebron"] = np.where(_hit, pd.to_numeric(_v, errors="coerce"), _proxy)
             logger.info("defense: blend on %d of %d players, box proxy on %d",
                         int(_hit.sum()), len(stats), int((~_hit).sum()))
+        elif season == SEASONS[0]:
+            # ABSENCE MUST SHOW. For a pre-2009 season the proxy IS the answer,
+            # but for the season being scored a missing blend means the whole
+            # league just silently changed defensive metric. That happened on
+            # 2026-10-25: the board was rebuilt BEFORE build_defense_blend
+            # wrote the new version, fetch_defense_blend returned {}, and the
+            # live site scored 362 players off the box proxy -- 63 of them
+            # moved by more than 2 points, Kris Dunn by -4.5 -- with nothing
+            # anywhere saying so. An artifact this load-bearing cannot go
+            # missing quietly.
+            logger.warning(
+                "DEFENSE: no blend artifact for %s -- the ENTIRE board is falling "
+                "back to the box proxy. Build it (scripts/build_defense_blend.py) "
+                "BEFORE rebuilding the board, or bump DATA_REV and rebuild once it "
+                "exists. See scripts/refresh_live_season.py, which orders this.",
+                season)
+            stats["d_lebron"] = _proxy
         else:
             stats["d_lebron"] = _proxy
 
