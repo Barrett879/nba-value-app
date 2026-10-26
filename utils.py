@@ -3422,7 +3422,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r13"  # 2026-10-25 slate
+DATA_REV = "r14"  # 2026-10-25 late slate (MEM@SAC)
 
 
 def _rev_path(name: str) -> Path:
@@ -5704,7 +5704,7 @@ def fetch_defense_blend(season: str) -> dict:
     # repo cache only when the FILENAME is missing: v1 D-LEBRON-scaled,
     # v2 [-6, +6], v3 [-4, +6]. Re-committing under an old name would leave
     # production on the previous numbers with the code reading correctly.
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v4.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v5.json")
     if not path.exists():
         return {}
     try:
@@ -5725,7 +5725,7 @@ def fetch_defense_blend_meta(season: str) -> dict:
     once saying "rescaled to D-LEBRON's own range" after it was stretched to
     [-6, +6]. Copy that reads the artifact cannot drift from it.
     """
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v4.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v5.json")
     if not path.exists():
         return {}
     try:
