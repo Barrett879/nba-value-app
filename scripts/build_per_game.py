@@ -41,7 +41,7 @@ FIELDS = ("PTS", "REB", "OREB", "DREB", "AST", "STL", "BLK", "TOV", "PF",
 # disk forever and those two bars rendered at zero width on the live site while
 # working perfectly here. Contents change => filename changes. The check below
 # now enforces it rather than relying on remembering.
-VERSION = "v3"
+VERSION = "v4"  # v4: 2026-10-25 slate
 
 
 def main():

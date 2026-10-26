@@ -144,8 +144,31 @@ def main() -> int:
                       "tov": num(t.get("TO")), "stl": num(t.get("STL")),
                       "blk": num(t.get("BLK")), "oreb": num(t.get("OREB")),
                       "dreb": num(t.get("DREB")), "pf": num(t.get("PF"))}
-            bad = [k for k, want in totals.items()
-                   if abs(sum(p[k] for p in players) - want) > 1e-6]
+            # ESPN's own team row and its own player rows sometimes disagree
+            # by ONE on a single shot-count column: on 2026-10-25 the Clippers'
+            # players summed to 37-82 from the field while the team row said
+            # 37-81. Refusing an entire night's update over one attempt in
+            # someone else's arithmetic is the wrong trade, so a gap of exactly
+            # 1 on ONE of the shot-count columns is tolerated and reported.
+            # Everything else still has to reconcile exactly, and two sloppy
+            # columns still fail: the point of the check is that a block which
+            # is wrong in SHAPE never reaches disk.
+            _TOL_1 = {"fga", "fta"}
+            bad, tolerated = [], []
+            for k, want in totals.items():
+                gap = abs(sum(p[k] for p in players) - want)
+                if gap <= 1e-6:
+                    continue
+                if k in _TOL_1 and gap <= 1 + 1e-6:
+                    tolerated.append(f"{k} off by {gap:.0f}")
+                else:
+                    bad.append(k)
+            if len(tolerated) > 1:
+                bad.extend(t.split()[0] for t in tolerated)
+                tolerated = []
+            if tolerated:
+                print(f"  {bref}  ESPN's own totals disagree with its player rows: "
+                      f"{', '.join(tolerated)} -- tolerated, players are the source")
             shifted = [p["player"] for p in players
                        if abs(p["reb"] - (p["oreb"] + p["dreb"])) > 1e-6]
             if bad or shifted:

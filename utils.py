@@ -3422,7 +3422,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r12"
+DATA_REV = "r13"  # 2026-10-25 slate
 
 
 def _rev_path(name: str) -> Path:
@@ -5704,7 +5704,7 @@ def fetch_defense_blend(season: str) -> dict:
     # repo cache only when the FILENAME is missing: v1 D-LEBRON-scaled,
     # v2 [-6, +6], v3 [-4, +6]. Re-committing under an old name would leave
     # production on the previous numbers with the code reading correctly.
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v3.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v4.json")
     if not path.exists():
         return {}
     try:
@@ -5725,7 +5725,7 @@ def fetch_defense_blend_meta(season: str) -> dict:
     once saying "rescaled to D-LEBRON's own range" after it was stretched to
     [-6, +6]. Copy that reads the artifact cannot drift from it.
     """
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v3.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v4.json")
     if not path.exists():
         return {}
     try:
@@ -6149,6 +6149,10 @@ def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.Dat
             gp_after = int(float(grp[0].get("team_gp_after") or 0))
         except ValueError:
             continue
+        # The provisional file is written in BBRef codes; this frame may be in
+        # either dialect. Resolve before looking up, or the three mismatched
+        # teams silently double count. See resolve_team_code.
+        team = resolve_team_code(team, stats["TEAM_ABBREVIATION"].dropna().unique())
         have = stats[stats["TEAM_ABBREVIATION"] == team]
         src_gp = float(pd.to_numeric(have["GP"], errors="coerce").max()) if len(have) else 0.0
         if src_gp == src_gp and src_gp >= gp_after:
@@ -6881,6 +6885,40 @@ _BBREF_TEAMS = [
     "HOU", "IND", "LAC", "LAL", "MEM", "MIA", "MIL", "MIN", "NOP", "NYK",
     "OKC", "ORL", "PHI", "PHO", "POR", "SAC", "SAS", "TOR", "UTA", "WAS",
 ]
+
+# Three franchises are spelled differently by BBRef and by the NBA feed, and a
+# frame can arrive in EITHER vocabulary: fetch_league_stats returns NBA codes,
+# fetch_bref_player_stats returns BBRef codes, and which one build_raw gets
+# depends on whether stats.nba.com is reachable -- it is locally and is blocked
+# on Render. So a team code alone does not identify a column value; it has to
+# be resolved against the frame in hand. Getting that wrong is not a cosmetic
+# mismatch: on 2026-10-25 the provisional merge looked up BBRef codes in an
+# NBA-coded frame, found no rows, read that as "the feed does not have this
+# game yet", and folded already-counted games in a second time. Charlotte
+# showed 5 games played on a night it had played 3.
+BBREF_TO_NBA = {"PHO": "PHX", "CHO": "CHA", "BRK": "BKN", "NOH": "NOP"}
+NBA_TO_BBREF = {v: k for k, v in BBREF_TO_NBA.items()}
+
+
+def resolve_team_code(team: str, known) -> str:
+    """Spell `team` the way `known` spells it, whichever vocabulary that is.
+
+    Falls back to matching the vocabulary of the codes in `known` when the team
+    appears under neither name, so a team the frame has no rows for at all
+    still lands under a code the rest of the pipeline agrees with.
+    """
+    team = (team or "").strip()
+    known = set(known)
+    if team in known:
+        return team
+    for alt in (BBREF_TO_NBA.get(team), NBA_TO_BBREF.get(team)):
+        if alt and alt in known:
+            return alt
+    # No rows under either name. Match the frame's dialect instead of guessing.
+    frame_is_bref = bool(known & set(BBREF_TO_NBA))
+    if frame_is_bref:
+        return NBA_TO_BBREF.get(team, team)
+    return BBREF_TO_NBA.get(team, team)
 
 
 # One background refresh per cache key at a time, per process. Request-path

@@ -20,7 +20,7 @@ which is why a gate that runs against the working tree cannot catch this.
 Run it before any push that touches either constant. Exit code 1 on failure.
 """
 from __future__ import annotations
-import logging, subprocess, sys
+import logging, re, subprocess, sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
@@ -36,6 +36,28 @@ def tracked():
     out = subprocess.run(["git", "ls-files", "cache/"], cwd=ROOT,
                          capture_output=True, text=True, check=True).stdout
     return {line.strip() for line in out.splitlines() if line.strip()}
+
+
+# The two JSON artifacts are version-named by their OWN constants, not by
+# FORMULA_VERSION or DATA_REV, and the readers spell that version as a literal.
+# So the name production asks for lives in the READER, and the builder's
+# constant only says what was last written. A bump to one and not the other is
+# how the TOV and PF bars shipped empty on 2026-10-25: contents changed under a
+# name production already had, so /data never reseeded.
+ARTIFACTS = [
+    # label, reader file, reader regex, builder file
+    ("per_game", "pages/Rankings.py", r'per_game_\{season_key\.replace[^}]*\}_(v\d+)\.json',
+     "scripts/build_per_game.py"),
+    ("defense_blend", "utils.py", r'defense_blend_\{season\.replace[^}]*\}_(v\d+)\.json',
+     "scripts/build_defense_blend.py"),
+]
+
+
+def artifact_versions(label, reader, pattern, builder):
+    """What the reader asks for, and what the builder last wrote."""
+    hits = set(re.findall(pattern, (ROOT / reader).read_text()))
+    built = re.search(r'^VERSION = "(v\d+)"', (ROOT / builder).read_text(), re.M)
+    return hits, (built.group(1) if built else None)
 
 
 def main():
@@ -60,6 +82,29 @@ def main():
               + (f"   -> would serve stale {Path(legacy).name}" if fb else ""))
         if not ok and not fb:
             bad.append(w)
+
+    print("\nversioned JSON artifacts (named by their own constant, not by DATA_REV):")
+    for label, reader, pattern, builder in ARTIFACTS:
+        asked, built = artifact_versions(label, reader, pattern, builder)
+        if not asked:
+            print(f"  CANNOT TELL  {label}: no version literal found in {reader}")
+            bad.append(f"{label} version unreadable from {reader}")
+            continue
+        if len(asked) > 1:
+            print(f"  INCONSISTENT  {label}: {reader} asks for {sorted(asked)}")
+            bad.append(f"{label} readers disagree: {sorted(asked)}")
+        for ver in sorted(asked):
+            name = f"cache/{label}_{LIVE.replace('-', '_')}_{ver}.json"
+            ok = name in have
+            print(f"  {'ok  ' if ok else 'MISSING'}  {name}")
+            if not ok:
+                bad.append(name)
+        if built and built not in asked:
+            # Half a bump. The builder wrote a name nothing reads, and the
+            # readers keep asking for the old one, which production already has.
+            print(f"  PARTIAL BUMP  {builder} writes {built} but {reader} "
+                  f"reads {sorted(asked)}")
+            bad.append(f"{label}: builder at {built}, reader at {sorted(asked)}")
 
     # A formula bump also invalidates every historical season at once.
     hist = [f for f in have if f.startswith("cache/raw_") and f.endswith(".parquet")
