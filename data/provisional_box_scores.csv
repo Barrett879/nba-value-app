@@ -1,7 +1,7 @@
 # HoopsValue - PROVISIONAL box scores, from ESPN's box-score API.
 #
 # TEMPORARY, and generated. Rebuild with:
-#   scripts/fetch_provisional_box_scores.py 2026-10-25 --write
+#   scripts/fetch_provisional_box_scores.py 2026-10-26 --write
 #
 # These are games that have been PLAYED but that neither stat source has
 # published yet. Basketball-Reference posts a night's games some hours later,
@@ -23,6 +23,236 @@
 #   player=TEAM = published totals, the checksum row. Never merged.
 #   min..pf     = this GAME's totals, not per-game averages.
 season,game_date,team,opponent,team_gp_after,player,min,pts,fga,fta,reb,ast,tov,stl,blk,oreb,dreb,pf,source
+2026-27,2026-10-26,WAS,CHO,4,Anthony Davis,36,29,22,4,10,0,0,1,0,0,10,2,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Kyshawn George,29,20,14,2,4,2,4,0,1,1,3,5,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Alex Sarr,26,12,6,6,6,1,0,0,2,3,3,2,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Trae Young,38,22,20,1,6,10,2,0,0,0,6,1,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Bilal Coulibaly,29,3,5,2,5,1,1,1,0,1,4,5,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Khris Middleton,13,0,0,0,1,0,1,0,0,0,1,3,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Justin Champagnie,4,2,1,0,2,0,0,0,0,1,1,1,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Deandre Ayton,12,0,1,0,4,2,1,0,0,2,2,0,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Bub Carrington,28,6,7,0,0,3,1,1,0,0,0,3,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Will Riley,4,2,1,0,0,0,2,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,Tre Johnson,23,7,8,0,3,2,2,1,0,2,1,2,ESPN box score API
+2026-27,2026-10-26,WAS,CHO,4,TEAM,,103,85,15,41,21,14,4,3,10,31,24,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,CHO,WAS,4,Moussa Diabate,35,11,6,4,17,3,1,1,3,11,6,3,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Brandon Miller,36,39,28,5,6,1,2,3,2,2,4,3,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Naz Reid,29,18,22,1,12,1,4,1,0,2,10,4,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Dennis Schroder,36,8,15,0,2,5,0,1,0,0,2,3,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Sion James,29,5,4,0,2,3,1,0,0,0,2,1,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Royce O'Neale,7,0,1,0,0,1,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Tidjane Salaun,16,5,6,0,5,0,0,1,0,2,3,0,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Ryan Kalkbrenner,13,6,4,0,4,1,0,0,0,1,3,0,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Grayson Allen,28,15,8,7,2,1,2,0,0,0,2,1,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,Christian Anderson,11,3,3,0,4,1,1,1,0,2,2,0,ESPN box score API
+2026-27,2026-10-26,CHO,WAS,4,TEAM,,110,97,17,54,17,11,8,5,20,34,15,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,MIN,CLE,4,Jaden McDaniels,37,14,9,0,6,4,0,0,0,0,6,6,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,Jonathan Kuminga,36,10,10,4,10,1,0,1,1,3,7,2,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,Rudy Gobert,36,5,9,8,20,2,2,1,1,8,12,1,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,LaMelo Ball,31,11,11,2,0,6,7,1,0,0,0,4,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,Anthony Edwards,41,47,34,6,4,4,4,2,2,1,3,3,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,Trey Lyles,13,3,1,0,1,1,0,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,Joan Beringer,17,12,6,0,7,0,0,0,2,3,4,1,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,Ayo Dosunmu,26,9,10,0,1,0,3,1,1,1,0,2,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,Terrence Shannon Jr.,24,14,11,3,4,5,1,1,0,1,3,3,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,Bones Hyland,5,0,1,0,1,2,0,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,MIN,CLE,4,TEAM,,125,102,23,54,25,17,7,7,17,37,22,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,CLE,MIN,3,Jarrett Allen,27,10,7,4,9,2,0,1,2,2,7,2,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,Evan Mobley,38,18,12,6,10,3,1,0,2,4,6,3,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,James Harden,39,19,17,2,5,9,3,2,0,1,4,5,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,Donovan Mitchell,38,26,21,1,5,7,3,2,1,1,4,2,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,Peyton Watson,37,15,13,6,8,1,2,3,4,1,7,1,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,Mario Hezonja,15,3,5,0,3,1,0,0,0,0,3,0,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,Sam Merrill,31,9,8,2,4,2,0,1,0,1,3,5,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,Jaylon Tyson,20,11,9,2,4,5,1,0,0,2,2,4,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,Meleek Thomas,19,16,10,0,2,0,2,1,0,1,1,2,ESPN box score API
+2026-27,2026-10-26,CLE,MIN,3,TEAM,,127,102,23,50,30,12,10,9,13,37,24,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,CHI,BOS,4,Jalen Smith,20,7,8,1,6,1,2,0,0,2,4,3,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Matas Buzelis,22,11,6,4,1,2,2,1,0,1,0,2,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Caleb Wilson,32,17,15,4,5,3,3,1,2,0,5,3,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Norman Powell,24,20,11,7,1,2,2,4,0,0,1,3,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Josh Giddey,24,11,7,2,1,4,2,1,1,1,0,2,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Zach Collins,6,2,5,0,2,0,0,0,0,1,1,0,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Isaac Okoro,11,1,2,2,1,4,0,1,1,0,1,1,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Leonard Miller,14,9,7,0,9,0,2,0,0,3,6,2,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Tobe Awaka,12,4,3,0,6,0,0,0,1,4,2,3,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Noa Essengue,16,0,5,2,4,0,1,1,0,2,2,5,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Buddy Hield,13,3,2,0,0,1,1,1,0,0,0,1,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Tre Jones,15,8,2,8,1,0,2,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Jordan Hawkins,7,4,3,1,1,0,0,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Dailyn Swain,12,2,3,0,2,2,4,2,0,0,2,1,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,Jaylin Sellers,12,0,5,0,0,1,3,0,0,0,0,2,ESPN box score API
+2026-27,2026-10-26,CHI,BOS,4,TEAM,,99,84,31,40,20,24,12,5,14,26,28,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,BOS,CHI,3,Paul George,25,16,14,4,5,2,4,0,0,3,2,4,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Jayson Tatum,28,23,17,8,7,6,3,1,0,1,6,4,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Mitchell Robinson,16,7,3,2,7,0,1,0,0,3,4,4,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Derrick White,18,5,4,0,6,4,6,3,1,2,4,1,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Jordan Walsh,18,4,5,0,3,2,3,3,0,0,3,2,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Sam Hauser,20,11,7,0,4,1,0,0,0,2,2,4,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Chris Cenac Jr.,5,3,2,0,1,0,0,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Luka Garza,13,6,3,6,3,2,2,1,0,3,0,3,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Neemias Queta,19,7,5,2,5,1,0,0,2,1,4,0,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Mike Conley,7,6,2,0,0,0,1,2,0,0,0,1,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Payton Pritchard,22,28,16,1,1,4,1,2,0,0,1,1,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Ron Harper Jr.,7,3,4,0,1,0,0,1,0,1,0,0,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Baylor Scheierman,18,2,5,0,6,2,3,1,0,2,4,3,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,Hugo Gonzalez,24,13,6,6,5,2,0,0,1,1,4,1,ESPN box score API
+2026-27,2026-10-26,BOS,CHI,3,TEAM,,134,93,29,54,26,24,14,4,19,35,28,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,DAL,MIA,4,Daniel Gafford,26,8,5,0,9,3,1,1,2,3,6,6,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,P.J. Washington,41,20,15,4,9,2,3,2,1,3,6,2,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,Cooper Flagg,40,29,23,3,6,11,5,5,3,0,6,3,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,Kyrie Irving,33,18,17,2,6,6,2,2,0,3,3,1,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,Max Christie,26,11,6,2,5,3,2,0,0,0,5,2,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,Morez Johnson Jr.,15,6,4,0,2,1,1,0,0,1,1,4,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,Zaccharie Risacher,30,6,13,2,8,1,0,1,3,2,6,2,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,Sergio de Larrea,6,0,1,0,1,0,0,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,Marcus Sasser,8,0,3,0,1,0,0,0,0,1,0,0,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,Walter Clayton Jr.,17,15,7,1,4,4,2,0,1,0,4,3,ESPN box score API
+2026-27,2026-10-26,DAL,MIA,4,TEAM,,113,94,14,51,31,16,11,10,13,38,23,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,MIA,DAL,4,Giannis Antetokounmpo,39,29,23,7,14,11,5,0,1,4,10,0,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,Andrew Wiggins,34,12,12,0,3,1,1,0,0,1,2,2,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,Bam Adebayo,30,8,10,4,8,3,1,2,2,3,5,0,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,Klay Thompson,15,6,8,0,1,1,0,0,0,0,1,2,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,Davion Mitchell,33,21,15,2,0,2,4,3,0,0,0,2,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,Bobby Portis,24,10,11,2,12,2,3,0,2,2,10,2,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,Tim Hardaway Jr.,16,5,5,4,2,1,0,0,0,0,2,1,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,Dru Smith,15,6,2,0,2,1,0,1,0,0,2,2,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,Pelle Larsson,34,12,6,6,0,4,0,3,0,0,0,3,ESPN box score API
+2026-27,2026-10-26,MIA,DAL,4,TEAM,,109,92,25,42,26,14,9,5,10,32,14,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,IND,MIL,4,Pascal Siakam,37,20,17,4,13,6,4,0,0,4,9,1,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Jay Huff,23,6,8,0,6,1,2,0,0,1,5,3,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Kelly Oubre Jr.,23,9,7,5,3,1,1,0,2,2,1,3,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Aaron Nesmith,21,13,11,0,0,1,1,1,1,0,0,2,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Tyrese Haliburton,35,22,17,3,6,9,1,1,1,0,6,1,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Larry Nance Jr.,19,2,6,0,3,1,1,1,1,0,3,1,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Obi Toppin,23,14,13,0,6,2,0,0,1,1,5,1,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Jalen Slawson,3,2,1,0,1,0,1,0,0,1,0,1,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Jarace Walker,29,10,12,4,8,2,1,2,2,4,4,2,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Kobe Brown,0,0,1,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Quenton Jackson,27,4,3,2,2,4,1,0,0,1,1,4,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,Braden Smith,0,0,0,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,IND,MIL,4,TEAM,,102,96,18,48,27,13,5,8,14,34,19,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,MIL,IND,4,Kyle Kuzma,29,17,10,1,7,3,2,0,0,0,7,3,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Jaime Jaquez Jr.,25,8,13,0,6,0,0,1,0,2,4,0,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Myles Turner,28,6,7,2,9,4,3,1,4,3,6,2,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Tyler Herro,32,23,14,10,10,7,2,1,1,1,9,3,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Ryan Rollins,32,19,14,4,2,4,1,0,0,1,1,4,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Ousmane Dieng,3,0,1,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Nate Ament,14,7,8,0,3,0,0,0,0,1,2,1,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Kel'el Ware,19,16,13,2,14,0,0,1,0,5,9,3,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,AJ Green,20,3,6,0,4,3,0,1,0,1,3,2,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Brayden Burries,16,4,5,0,2,1,1,1,0,1,1,1,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,Kasparas Jakucionis,21,7,4,2,4,5,2,0,0,1,3,3,ESPN box score API
+2026-27,2026-10-26,MIL,IND,4,TEAM,,110,95,21,61,27,11,6,5,16,45,22,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,PHO,OKC,3,Dillon Brooks,33,19,14,12,5,5,0,3,1,1,4,3,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Miles Bridges,32,17,17,2,8,4,3,1,0,4,4,2,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Khaman Maluach,26,12,10,2,7,1,4,1,1,2,5,4,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Devin Booker,34,3,7,1,2,7,0,0,0,1,1,3,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Jalen Green,31,20,13,4,4,4,1,0,1,1,3,1,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Ryan Dunn,14,6,4,2,2,1,1,0,1,0,2,1,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Koa Peat,3,0,0,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Rasheer Fleming,3,0,1,0,1,0,0,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Duop Reath,7,5,1,2,3,0,1,0,1,1,2,1,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Luke Kennard,16,9,5,0,1,2,0,0,0,0,1,3,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Jordan Goodwin,17,12,9,0,4,2,0,0,0,4,0,3,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Collin Gillespie,23,9,9,0,1,2,2,2,0,0,1,3,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,Jamaree Bouyea,3,2,1,0,0,1,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,PHO,OKC,3,TEAM,,114,91,25,38,29,12,7,5,14,24,24,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,OKC,PHO,4,Isaiah Hartenstein,26,15,7,3,13,3,1,0,0,6,7,2,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Kenrich Williams,24,3,6,1,7,0,0,1,1,2,5,1,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Shai Gilgeous-Alexander,30,26,18,4,3,3,4,0,2,0,3,5,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Jared McCain,30,18,14,3,3,4,2,1,1,1,2,1,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Ajay Mitchell,25,30,16,10,2,5,1,0,1,0,2,4,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Jaylin Williams,26,6,5,0,6,3,1,1,0,0,6,0,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Brooks Barnhizer,3,0,0,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Aday Mara,20,11,6,4,10,2,4,0,2,3,7,5,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Alex Caruso,9,9,5,0,2,3,0,0,0,0,2,0,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Josh Dix,22,0,3,0,1,0,1,0,0,0,1,1,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,Bennett Stirtz,25,7,6,4,1,1,2,0,0,0,1,1,ESPN box score API
+2026-27,2026-10-26,OKC,PHO,4,TEAM,,125,86,29,48,24,16,3,7,12,36,20,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,ATL,HOU,4,Onyeka Okongwu,29,11,10,0,9,1,1,2,1,5,4,2,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Jalen Johnson,36,21,14,12,9,4,4,2,2,1,8,5,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,CJ McCollum,30,20,16,0,1,3,1,3,0,0,1,2,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Nickeil Alexander-Walker,29,12,13,2,2,3,3,1,0,1,1,4,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Dyson Daniels,28,4,8,0,0,4,0,1,0,0,0,1,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Dorian Finney-Smith,1,0,0,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Corey Kispert,1,5,2,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Asa Newell,1,0,0,0,1,0,0,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Zuby Ejiofor,1,0,0,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Jock Landale,18,8,8,3,6,4,0,0,1,4,2,3,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Luguentz Dort,21,11,11,3,2,1,0,0,0,2,0,3,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Aaron Wiggins,27,12,12,0,4,3,0,1,0,0,4,3,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,Kingston Flemings,18,6,4,1,1,3,4,0,0,0,1,2,ESPN box score API
+2026-27,2026-10-26,ATL,HOU,4,TEAM,,110,98,21,35,26,13,10,4,13,22,25,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,HOU,ATL,4,Kevin Durant,30,22,13,10,9,3,4,1,4,0,9,4,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Jabari Smith Jr.,39,16,13,3,12,5,1,1,1,0,12,2,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Alperen Sengun,37,29,15,8,9,9,6,6,1,5,4,4,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Fred VanVleet,29,5,7,1,4,5,2,0,0,1,3,2,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Amen Thompson,28,15,8,4,5,2,5,0,0,3,2,1,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Jae'Sean Tate,1,0,0,0,1,0,1,0,0,1,0,1,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Tari Eason,33,13,8,5,8,2,1,0,3,1,7,2,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Isaiah Crawford,1,0,1,0,0,0,0,0,0,0,0,1,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Clint Capela,4,2,1,0,2,0,0,0,0,1,1,1,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Bogdan Bogdanovic,13,5,3,0,2,1,0,1,0,0,2,2,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Reed Sheppard,24,13,12,1,0,4,1,2,0,0,0,2,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,Bruce Thornton,1,0,0,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,HOU,ATL,4,TEAM,,120,81,32,52,31,21,11,9,12,40,22,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,MEM,UTA,4,Cedric Coward,31,16,12,0,11,3,2,1,0,1,10,5,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Cameron Boozer,31,13,12,4,7,4,1,0,1,0,7,3,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Jaylen Wells,30,14,9,2,3,0,0,0,0,0,3,3,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Zach Edey,21,4,2,4,3,2,3,0,2,1,2,5,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Ty Jerome,30,15,15,7,1,8,1,1,0,0,1,4,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Jerami Grant,24,13,6,3,3,0,1,0,1,1,2,1,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,GG Jackson,16,4,7,0,1,2,1,1,0,0,1,2,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Isaiah Stewart,15,4,4,0,4,0,1,0,0,1,3,2,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Quinten Post,12,12,6,0,2,1,1,0,0,0,2,1,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Scotty Pippen Jr.,13,7,7,2,2,1,1,2,0,1,1,1,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,Cam Spencer,18,8,5,0,5,5,0,0,0,1,4,2,ESPN box score API
+2026-27,2026-10-26,MEM,UTA,4,TEAM,,110,85,22,42,26,12,5,4,6,36,29,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,UTA,MEM,4,Lauri Markkanen,6,2,2,2,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Jaren Jackson Jr.,10,6,5,3,3,2,0,0,0,0,3,1,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Keyonte George,33,26,17,9,3,6,2,0,0,1,2,4,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Ace Bailey,34,17,10,2,10,3,1,0,3,4,6,2,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Darryn Peterson,26,14,18,1,7,4,0,1,0,2,5,2,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Kyle Filipowski,8,0,3,0,1,0,2,0,0,0,1,1,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Brice Sensabaugh,9,11,6,0,2,0,2,0,0,0,2,1,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Tony Bradley,6,2,2,0,1,0,2,0,0,1,0,2,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Mo Bamba,29,14,8,0,7,1,1,0,4,3,4,1,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Svi Mykhailiuk,13,0,4,0,1,0,0,1,0,0,1,1,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Josh Okogie,21,0,4,0,2,0,1,0,1,1,1,0,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Josh Green,25,6,4,1,4,1,2,1,0,0,4,4,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,Isaiah Collier,21,7,9,7,8,8,0,0,0,2,6,2,ESPN box score API
+2026-27,2026-10-26,UTA,MEM,4,TEAM,,105,92,25,49,25,13,3,8,14,35,21,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,GSW,DEN,4,Draymond Green,27,3,2,0,4,7,5,0,0,1,3,2,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Gui Santos,28,13,6,2,3,1,0,1,0,0,3,4,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Yaxel Lendeborg,31,31,19,13,12,6,3,0,1,4,8,2,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Stephen Curry,27,24,8,5,3,3,3,2,0,0,3,1,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Brandin Podziemski,33,18,14,1,7,5,0,1,0,3,4,2,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Georges Niang,18,9,7,0,2,0,1,0,0,0,2,3,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Graham Ike,3,3,1,0,0,1,1,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Malevy Leons,3,0,0,0,1,0,0,0,0,0,1,1,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Al Horford,19,11,5,0,3,0,0,0,0,0,3,0,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Charles Bassey,2,0,1,0,1,0,0,0,0,1,0,1,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Gary Payton II,12,7,7,0,2,0,0,1,0,1,1,1,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,De'Anthony Melton,19,3,6,0,4,3,0,0,0,2,2,4,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Brandon Williams,15,6,6,0,3,3,4,0,1,1,2,2,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,LJ Cryer,3,6,3,0,0,2,0,0,0,0,0,1,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,Will Richard,3,0,0,0,0,0,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,GSW,DEN,4,TEAM,,134,85,21,45,31,17,5,2,13,32,24,"ESPN published totals (checksum row, never merged)"
+2026-27,2026-10-26,DEN,GSW,3,Aaron Gordon,25,7,10,3,4,2,1,1,0,1,3,3,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Bryce Hopkins,31,13,9,2,3,1,0,0,0,1,2,3,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Nikola Jokic,35,19,18,3,7,11,1,1,3,2,5,1,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Jamal Murray,36,19,13,0,6,8,3,3,0,0,6,0,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Christian Braun,34,9,9,0,4,2,3,3,0,2,2,5,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Marvin Bagley III,11,7,3,4,2,0,0,0,1,2,0,0,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Zeke Nnaji,4,5,1,2,1,0,0,0,0,0,1,0,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,DaRon Holmes II,4,0,1,0,0,1,0,1,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Trevon Brazile,17,6,2,1,1,0,1,0,0,1,0,2,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Cam Whitmore,4,4,2,1,0,1,1,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,DeMar DeRozan,29,21,15,5,4,2,1,2,1,1,3,2,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Tyus Jones,9,0,0,0,0,2,0,2,1,0,0,1,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,Ryan Nembhard,4,4,1,2,0,1,0,0,0,0,0,0,ESPN box score API
+2026-27,2026-10-26,DEN,GSW,3,TEAM,,114,84,23,32,31,11,13,6,10,22,17,"ESPN published totals (checksum row, never merged)"
 2026-27,2026-10-25,LAL,UTA,3,Ziaire Williams,30,11,9,2,2,1,0,1,0,1,1,2,ESPN box score API
 2026-27,2026-10-25,LAL,UTA,3,Walker Kessler,28,2,2,0,7,0,1,0,1,1,6,4,ESPN box score API
 2026-27,2026-10-25,LAL,UTA,3,Matisse Thybulle,26,11,8,0,1,1,0,3,1,0,1,1,ESPN box score API

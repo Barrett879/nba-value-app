@@ -370,7 +370,24 @@ if __name__ == "__main__":
             sys.exit(0)
         E2N = {"GS": "GSW", "NO": "NOP", "NY": "NYK", "SA": "SAS", "UTAH": "UTA",
                "WSH": "WAS", "PHO": "PHX"}
-        wrote = 0
+
+        # Writing the lineup file is only half the job. def_lib.games() reads
+        # games_<season>.json and ignores anything not listed there, so an
+        # unregistered rebuild sits on disk doing NOTHING: feed_gap keeps
+        # reporting the game missing and the blend keeps excluding it. That was
+        # a hand-step done twice on 2026-10-25, which is twice it could have
+        # been forgotten. Idempotent, so re-running backfill is safe.
+        def register(gid, iso, matchup):
+            gf = PB / "games_2026-27.json"
+            gs = json.loads(gf.read_text()) if gf.exists() else []
+            if any(str(g.get("GameId")) == gid for g in gs):
+                return 0
+            gs.append({"GameId": gid, "Date": iso, "_source": "espn_backfill",
+                       "_matchup": matchup})
+            gf.write_text(json.dumps(gs, indent=1))
+            return 1
+
+        wrote = registered = 0
         for d in sorted({d for _m, d in want}):
             sb = get("https://site.api.espn.com/apis/site/v2/sports/basketball/nba/"
                      f"scoreboard?dates={d}")
@@ -394,7 +411,11 @@ if __name__ == "__main__":
                 flag = "  HIGH VIOLATIONS" if max(v.values()) > 6 else ""
                 print(f"wrote lineupopp_{gid}.json  {a}@{h}  {iso}  violations {v}{flag}")
                 wrote += 1
-        print(f"\n{wrote} games rebuilt from ESPN")
+                registered += register(gid, iso, f"{a}@{h}")
+        print(f"\n{wrote} games rebuilt from ESPN, {registered} added to "
+              f"games_2026-27.json")
+        if wrote != registered:
+            print(f"  NOTE: {wrote - registered} were already registered")
     elif mode == "write":
         # The GameId is SYNTHETIC on purpose: "E" + the ESPN event id. Guessing
         # a real NBA id from gaps in the sequence (which is what the first two

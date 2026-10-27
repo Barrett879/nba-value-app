@@ -41,7 +41,7 @@ FIELDS = ("PTS", "REB", "OREB", "DREB", "AST", "STL", "BLK", "TOV", "PF",
 # disk forever and those two bars rendered at zero width on the live site while
 # working perfectly here. Contents change => filename changes. The check below
 # now enforces it rather than relying on remembering.
-VERSION = "v5"  # v5: 2026-10-25 late slate (MEM@SAC); v4 was the same night before it finished
+VERSION = "v6"  # v6: 2026-10-26 slate (9 games)
 
 
 def main():
