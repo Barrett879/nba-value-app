@@ -35,13 +35,17 @@ FIELDS = ("PTS", "REB", "OREB", "DREB", "AST", "STL", "BLK", "TOV", "PF",
           # means. Free: no extra request, no second artifact to keep fresh.
           "PTS_RANK", "REB_RANK", "AST_RANK", "STL_RANK", "BLK_RANK",
           "MIN_RANK", "FG_PCT_RANK")
+# The six ranks the panel draws are RECOMPUTED after the provisional merge (see
+# main). FG_PCT_RANK is left exactly as the feed gave it: the merge updates FGA
+# but not FGM, so the shooting percentages here are pre-merge and self-consistent
+# with each other. Nothing displays them. Do not start.
 # v3 adds the TOV and PF bar references. They were added to v2 IN PLACE, and
 # that never reached production: /data seeds a repo cache only when the
 # FILENAME is missing, so the first v2 (with no TOV/PF reference) stayed on the
 # disk forever and those two bars rendered at zero width on the live site while
 # working perfectly here. Contents change => filename changes. The check below
 # now enforces it rather than relying on remembering.
-VERSION = "v6"  # v6: 2026-10-26 slate (9 games)
+VERSION = "v7"  # v7: ranks recomputed post-merge; REB now merged
 
 
 def main():
@@ -63,6 +67,23 @@ def main():
         src = utils._merge_provisional_box_scores(src, season)
     except Exception as e:
         print(f"  WARNING: provisional merge skipped ({type(e).__name__})")
+
+    # Ranks must be recomputed AFTER the merge, never carried from the feed.
+    # The feed's ranks describe the feed's numbers, and the merge moves those
+    # numbers: Ty Jerome went 34.7 -> 29.8 when a quiet fourth game folded in
+    # and kept 1st, while Anthony Edwards went 28.7 -> 33.3 and kept 6th. The
+    # panel then showed "34.3 PPG, 2nd" above "29.8 PPG, 1st", which is how
+    # Barrett found it. A rank is a statement ABOUT a value, so it cannot
+    # outlive an edit to that value.
+    #
+    # Same pool the feed used (every player in the frame), so the numbers stay
+    # comparable with what shipped before; only the staleness is removed.
+    for _stat in ("PTS", "REB", "AST", "STL", "BLK", "MIN"):
+        _rk = f"{_stat}_RANK"
+        if _stat not in src.columns or _rk not in src.columns:
+            continue
+        _v = pd.to_numeric(src[_stat], errors="coerce")
+        src[_rk] = _v.rank(ascending=False, method="min").astype("Int64")
 
     keep = [c for c in FIELDS if c in src.columns]
     vals = {}

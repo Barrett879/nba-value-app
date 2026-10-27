@@ -92,6 +92,7 @@
 ║     always wrapped in try/except + logger.warning so failures surface.   ║
 ╚══════════════════════════════════════════════════════════════════════════╝
 """
+import hashlib
 import html
 import csv
 import datetime as _dt
@@ -4258,7 +4259,7 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
 
     # Map BBRef player names to NBA Stats player IDs where possible. Static
     # list covers most players including pre-1996. For unknown players we
-    # generate a stable synthetic negative ID from the name hash.
+    # generate a deterministic synthetic negative ID from the name.
     def _resolve_pid(name: str) -> int:
         try:
             results = nba_players_static.find_players_by_full_name(name)
@@ -4266,7 +4267,13 @@ def fetch_bref_player_stats(season: str, playoffs: bool = False) -> pd.DataFrame
                 return int(results[0]["id"])
         except Exception:
             pass
-        return -(abs(hash(name)) % (10 ** 9))
+        # Deterministic, NOT hash(): Python salts string hashing per
+        # process, so this drew a different id on every build. Harmless
+        # for scoring, which never reads the id, but it churned the
+        # parquet on every rebuild and made the id useless as a
+        # cross-build key for exactly the players new enough to need one.
+        return -(int(hashlib.md5(name.encode('utf-8')).hexdigest()[:12], 16)
+                 % (10 ** 9))
     df["PLAYER_ID"] = df["PLAYER_NAME"].apply(_resolve_pid)
 
     # Final column set + dropna on the essentials
@@ -6131,9 +6138,14 @@ def _provisional_rows(season: str) -> tuple:
 
 
 # per-game columns combined when a provisional game is folded in
-_PROV_COLS = (("MIN", "min"), ("PTS", "pts"), ("AST", "ast"), ("OREB", "oreb"),
-              ("DREB", "dreb"), ("BLK", "blk"), ("STL", "stl"), ("TOV", "tov"),
-              ("PF", "pf"), ("FGA", "fga"), ("FTA", "fta"))
+# REB belongs here even though OREB and DREB are already in it. The provisional
+# file has always carried a `reb` column; leaving it out meant a merged player's
+# OREB and DREB moved while his REB did not, so REB stopped equalling their sum
+# for 213 of 413 players and the panel's RPG went stale for every one of them.
+# Derived totals do not come along for free just because their parts do.
+_PROV_COLS = (("MIN", "min"), ("PTS", "pts"), ("AST", "ast"), ("REB", "reb"),
+              ("OREB", "oreb"), ("DREB", "dreb"), ("BLK", "blk"), ("STL", "stl"),
+              ("TOV", "tov"), ("PF", "pf"), ("FGA", "fga"), ("FTA", "fta"))
 
 
 def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.DataFrame":
@@ -6161,7 +6173,13 @@ def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.Dat
                 return int(hit[0]["id"])
         except Exception:
             pass
-        return -(abs(hash(name)) % (10 ** 9))
+        # Deterministic, NOT hash(): Python salts string hashing per
+        # process, so this drew a different id on every build. Harmless
+        # for scoring, which never reads the id, but it churned the
+        # parquet on every rebuild and made the id useless as a
+        # cross-build key for exactly the players new enough to need one.
+        return -(int(hashlib.md5(name.encode('utf-8')).hexdigest()[:12], 16)
+                 % (10 ** 9))
 
     idx = {normalize(str(n)): i for i, n in stats["PLAYER_NAME"].items()}
     added = []
