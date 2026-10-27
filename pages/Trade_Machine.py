@@ -279,9 +279,17 @@ _html = ((_ROOT / "templates" / "trade_machine.html").read_text()
 # rosters (window.frameElement, same-origin srcdoc), so nothing scrolls inside.
 components.html(_html, height=1000, scrolling=False)
 
+# Seasons come from the payload, not from a literal. The caption used to claim
+# "2026-27 market values" while team_pages.json carried value_season 2025-26:
+# the CONTRACTS are 2026-27 but the values are graded off the last complete
+# season, and the copy had quietly drifted from the data it describes. Reading
+# the same field the builder writes means changing the basis moves the sentence
+# with it.
+_meta = json.loads((_ROOT / "cache" / "team_pages.json").read_text())
 st.caption(
     "Legality uses the verified 2023 CBA rules; ambiguous edge cases resolve "
     "conservatively. The in-browser engine proves itself against the verified "
-    "Python engine's test vectors on every load. Player values are the "
-    "model's 2026-27 market values."
+    "Python engine's test vectors on every load. Salaries and contracts are "
+    f"{_meta['contract_season']}; player values are the model's market values "
+    f"from {_meta['value_season']}, the last complete season."
 )
