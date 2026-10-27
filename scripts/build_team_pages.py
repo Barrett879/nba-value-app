@@ -40,6 +40,32 @@ def main() -> None:
     # now come from one place and cannot disagree.
     value_season = ros["value_season"]
     df = utils.build_ranked_projected(value_season)
+
+    # Hand-set position overrides (data/position_overrides.csv), the same file
+    # the Rosters depth chart honours. They are EDITORIAL: a judgement about the
+    # role a player actually fills, which the scraped roster position often gets
+    # wrong. Applied HERE rather than in each page so one file feeds the Trade
+    # Machine, Redraft and Rosters alike.
+    #
+    # It matters more here than anywhere else, because the trade card shows only
+    # the PRIMARY position, so an override that merely reorders a pair is the
+    # whole displayed value. Without this, 39 players rendered the wrong single
+    # position: Kevin Durant as SG, Devin Booker as SG, Lauri Markkanen as PF,
+    # Jaren Jackson Jr. as C.
+    #
+    # Only the base `pos` is taken. The alt_pos / alt_when_out pair is keyed to
+    # the live injury feed and reshapes a depth chart while someone is out; a
+    # trade card is about the player, not tonight's rotation.
+    import csv as _csv
+    overrides = utils.NameIndex()
+    ov_path = ROOT / "data" / "position_overrides.csv"
+    if ov_path.exists():
+        for _r in _csv.DictReader(
+                ln for ln in ov_path.read_text(encoding="utf-8").splitlines()
+                if not ln.lstrip().startswith("#")):
+            if (_r.get("player") or "").strip() and (_r.get("pos") or "").strip():
+                overrides.add(_r["player"].strip(), _r["pos"].strip())
+    applied = 0
     # NameIndex, not a plain dict: the roster feed writes "C.J. McCollum" and
     # "Nicolas Claxton" where the board has "CJ McCollum" and "Nic Claxton", and
     # an exact-key miss left those players with no market value at all.
@@ -53,8 +79,13 @@ def main() -> None:
             sal = p.get("salary")
             val = mval.get(p["n"])
             vd = round(sal - val, 1) if (val is not None and sal is not None) else None
+            _ov = overrides.get(p["n"])
+            _pos = p.get("pos", "")
+            if _ov and _ov != _pos:
+                _pos = _ov
+                applied += 1
             players.append({
-                "n": p["n"], "role": p["role"], "pos": p.get("pos", ""),
+                "n": p["n"], "role": p["role"], "pos": _pos,
                 "barrett": p.get("barrett"), "bs_yr": p.get("bs_yr"),
                 "salary": sal,
                 "value": round(val, 1) if val is not None else None,
@@ -75,6 +106,7 @@ def main() -> None:
     OUT.write_text(json.dumps(payload, separators=(",", ":")))
     print(f"wrote {OUT.name}  ({len(teams)} teams, {OUT.stat().st_size // 1024}KB, "
           f"value {payload['value_season']} / roster {payload['contract_season']})")
+    print(f"  position overrides applied: {applied}")
     for probe in ("LAL", "DEN", "OKC"):
         t = teams.get(probe)
         if t:
