@@ -1421,10 +1421,19 @@ tr:has(details.hv-row-det[open]){border-bottom:0;}
    reflowing to whatever the width allows. */
 .pbrow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0 1.1rem;}
 .hv-det-pad{padding:0 !important;border-top:0 !important;background:none;}
-.bar{display:grid;grid-template-columns:28px 36px 1fr 30px;align-items:center;
-  gap:.4rem;font-size:.72rem;font-variant-numeric:tabular-nums;line-height:1.6;}
-.bar i{font-style:normal;color:var(--fg-5);font-size:.92em;letter-spacing:.03em;}
-.bar b{font-weight:650;text-align:right;}
+/* Columns measured against their real content rather than guessed, so the bar
+   can start as far left as the text actually allows.
+   The value is LEFT-aligned and sits tight against its own label: a
+   right-aligned number in a fixed cell pushes a short value like "1.0" away
+   from the title it belongs to and strands the bar further right again.
+   The two constraints were "PFPG", which needs 33px here and was overflowing
+   a 28px cell, and the TS% value, which needed 41px only because it repeated
+   the "%" its own label already carries. Dropping that suffix is what let the
+   whole group move left instead of right. */
+.bar{display:grid;grid-template-columns:33px 30px 1fr 30px;align-items:center;
+  gap:.2rem;font-size:.72rem;font-variant-numeric:tabular-nums;line-height:1.6;}
+.bar i{font-style:normal;color:var(--fg-5);font-size:.9em;letter-spacing:0;}
+.bar b{font-weight:650;text-align:left;}
 .bar u{text-decoration:none;color:var(--fg-5);font-size:.88em;text-align:right;}
 .trk{height:4px;background:var(--panel-line);border-radius:2px;overflow:hidden;}
 .fil{display:block;height:100%;background:var(--tc);border-radius:2px;}

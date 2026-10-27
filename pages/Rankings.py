@@ -737,11 +737,15 @@ _def_by_player = dict(zip(df["Player"], df["d_lebron"])) if "d_lebron" in df els
 def _rank_map(pairs, best_is_low):
     """Competition ranks over (player, value) pairs. Ties share a rank.
 
-    These four are computed here rather than taken from the feed. The API does
-    rank turnovers and fouls, but MOST-first, which would have printed "1st"
-    beside the shortest bar on a panel where every other bar means longer is
-    better. TS% and Defence are not API stats at all. Ranked low-is-best for
-    turnovers and fouls, so the number agrees with the bar beside it.
+    These four are computed here rather than taken from the feed: TS% and
+    Defence are not API stats at all, and turnovers and fouls need a pool of
+    rotation players rather than the whole league.
+
+    Turnovers and fouls rank MOST-first, on Barrett's call. The number and the
+    bar deliberately disagree: 1st means the most turnovers in the league while
+    the bar beside it sits empty, because the bar means "longer is better" on
+    every one of the ten and inverting it for two would be worse. Read the rank
+    as the leaderboard position and the bar as the verdict.
     """
     vals = [(k, float(v)) for k, v in pairs if v is not None and v == v]
     vals.sort(key=lambda kv: kv[1], reverse=not best_is_low)
@@ -758,9 +762,17 @@ def _rank_map(pairs, best_is_low):
 # same goes for a two-minute player's true shooting.
 _rot = {k for k, v in _pg.items()
         if (v.get("MIN") or 0) and float(v.get("MIN") or 0) >= 12.0}
-_tov_rank = _rank_map([(k, v.get("TOV")) for k, v in _pg.items() if k in _rot], True)
-_pf_rank = _rank_map([(k, v.get("PF")) for k, v in _pg.items() if k in _rot], True)
+_tov_rank = _rank_map([(k, v.get("TOV")) for k, v in _pg.items() if k in _rot], False)
+_pf_rank = _rank_map([(k, v.get("PF")) for k, v in _pg.items() if k in _rot], False)
 _ts_rank = _rank_map([(k, v) for k, v in _ts_by_player.items() if k in _rot], False)
+
+# TS% is scaled across the ROTATION pool's own spread rather than against a
+# fixed 65% reference, so the worst true shooter on the panel reads empty and
+# the best reads full. A fixed reference wasted most of the track: real TS%
+# lives in a narrow band, so every bar sat in the same middling third.
+_ts_pool = [float(v) * 100.0 for k, v in _ts_by_player.items()
+            if k in _rot and v is not None and v == v]
+_TS_LO, _TS_HI = (min(_ts_pool), max(_ts_pool)) if _ts_pool else (0.0, 100.0)
 _def_rank = _rank_map(list(_def_by_player.items()), False)
 _pg_idx = NameIndex(_pg) if _pg else None
 
@@ -804,7 +816,12 @@ def _row_panel(rd):
             if v is None or v != v:
                 return ""
             v = float(v) * 100.0
-            txt, width = f"{v:.1f}%", min(100.0, max(3.0, v / 65.0 * 100.0))
+            # Position in the pool's range, like DEF below, not a proportion of
+            # a fixed 65%. Floor of 0 rather than 3, so the pool minimum really
+            # is empty instead of showing a stub that means nothing.
+            _span = (_TS_HI - _TS_LO) or 1.0
+            txt = f"{v:.1f}"
+            width = min(100.0, max(0.0, (v - _TS_LO) / _span * 100.0))
             _r = _ts_rank.get(str(rd.get("Player", "")))
             return (f'<span class="bar"><i>{label}</i><b>{txt}</b>'
                     f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
@@ -839,7 +856,10 @@ def _row_panel(rd):
         # Inverted, every bar on the panel now means the same thing: longer is
         # better. The number beside it is still the raw count.
         if key in _PANEL_LOWER_IS_BETTER and width:
-            width = min(100.0, max(3.0, 100.0 - width))
+            # Floor of 0, not 3: the league leader in turnovers should read as
+            # an EMPTY bar, not a stub. A 3% sliver says "a little" where the
+            # honest answer is "none of this is good".
+            width = min(100.0, max(0.0, 100.0 - width))
         return (f'<span class="bar"><i>{label}</i><b>{float(v):.1f}</b>'
                 f'<span class="trk"><span class="fil" style="width:{width:.0f}%">'
                 f'</span></span><u>{_ord(r) if has_rank else ""}</u></span>')
