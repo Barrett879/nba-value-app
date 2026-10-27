@@ -29,9 +29,17 @@ OUT = ROOT / "cache" / "team_pages.json"
 
 def main() -> None:
     ros = json.loads(ROS.read_text(encoding="utf-8"))
-    # Market value ($M) per player = the board's 2025-26 projected market salary,
-    # keyed by normalized name. Used to grade each 2026-27 contract.
-    df = utils.build_ranked_projected(utils.SEASONS[0])
+    # Market value ($M) per player = the projected market salary from the season
+    # this file SAYS it values players on, which is the last COMPLETE one.
+    #
+    # Taken from the roster JSON, deliberately, not from SEASONS[0]. Those were
+    # the same thing when this was written and stopped being the same thing at
+    # the 2026-10-20 rollover: SEASONS[0] became 2026-27, so a rebuild would
+    # have graded every contract against a four-game sample while the payload
+    # went on labelling itself value_season 2025-26. The label and the numbers
+    # now come from one place and cannot disagree.
+    value_season = ros["value_season"]
+    df = utils.build_ranked_projected(value_season)
     # NameIndex, not a plain dict: the roster feed writes "C.J. McCollum" and
     # "Nicolas Claxton" where the board has "CJ McCollum" and "Nic Claxton", and
     # an exact-key miss left those players with no market value at all.
@@ -59,7 +67,7 @@ def main() -> None:
                        "unsigned": t.get("unsigned", [])}
 
     payload = {
-        "value_season": ros["value_season"],
+        "value_season": value_season,
         "contract_season": ros["contract_season"],
         "cap_M": ros["cap_M"], "apron2_M": ros["apron2_M"],
         "teams": dict(sorted(teams.items())),
