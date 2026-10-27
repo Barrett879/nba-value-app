@@ -125,7 +125,8 @@ def main(season: str, board_only: bool = False) -> int:
     # ---- prove it ----
     ok = True
     for label, script in (("defence really is the blend", "scripts/check_defense_source.py"),
-                          ("games played vs the schedule", "scripts/check_board_gp.py")):
+                          ("games played vs the schedule", "scripts/check_board_gp.py"),
+                          ("Next $ is populated", "scripts/check_next_contracts.py")):
         ok = run(label, [script, season]) and ok
     ok = run("every cache production asks for is committed",
              ["scripts/check_cache_seeding.py"]) and ok

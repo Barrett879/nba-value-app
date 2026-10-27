@@ -5572,8 +5572,14 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
     # Stale but present: serve it now, refresh behind -- the derive hits ESPN
     # and Spotrac with 15s timeouts, request paths do not wait for that.
     if stale:
+        # Pass the REAL stale dict, not None. The sanity gate below needs it for
+        # the "stale had option flags and this scrape has none" test, and with
+        # None that test silently cannot fire -- so a scrape that returned 400
+        # guaranteed salaries and zero options would overwrite a good file. The
+        # len < 200 floor happens to catch today's failure mode, but it would
+        # not catch that one.
         _refresh_in_background(path.name,
-                               lambda: _derive_next_year_contracts(espn_year, path, None))
+                               lambda: _derive_next_year_contracts(espn_year, path, stale))
         return stale
     return _derive_next_year_contracts(espn_year, path, stale)
 

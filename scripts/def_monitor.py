@@ -435,6 +435,38 @@ def main():
     except Exception as e:
         note.append(f"defence source check failed: {type(e).__name__}: {str(e)[:80]}")
 
+    # ---- is the Next $ column populated, or a wall of dashes? -----------
+    # The sentinel is load-bearing: an absent player renders as the gray dash
+    # and the legend calls that UFA, so an empty feed reads as "everybody is a
+    # free agent" rather than as a fault. It sat broken from the 2026-10-20
+    # season flip until 2026-10-27 because next_contracts_2027_v7.pkl had never
+    # been built, and the live derivation cannot build it mid-season: ESPN only
+    # publishes a season's salaries once that season starts.
+    try:
+        _ey = utils.season_to_espn_year(SEASON)
+        _nc = utils.fetch_next_year_contracts(_ey, cache_v=7)
+        _bp = utils._rev_path(
+            f"raw_{SEASON.replace('-', '_')}_{utils.FORMULA_VERSION}.parquet")
+        if _bp.exists():
+            _bd = pd.read_parquet(_bp)
+            _filled = sum(1 for _p in _bd["Player"]
+                          if utils.fmt_next_contract(_p, _nc) != "\u2014")
+            _cov = _filled / len(_bd) if len(_bd) else 0.0
+            rec["next_contracts"] = {"file": f"next_contracts_{_ey}_v7.pkl",
+                                     "entries": len(_nc), "board_rows": len(_bd),
+                                     "with_value": _filled, "coverage": round(_cov, 3)}
+            if len(_nc) < 200 or _cov < 0.50:
+                rec["next_contracts_is_empty"] = True
+                note.append(
+                    f"NEXT $ COLUMN IS EMPTY: {_filled} of {len(_bd)} board players "
+                    f"({_cov:.0%}) have a next-season figure, feed has {len(_nc)} "
+                    f"entries. Rebuild with scripts/build_next_contracts.py; see "
+                    f"scripts/check_next_contracts.py.")
+            else:
+                rec["next_contracts_is_empty"] = False
+    except Exception as e:
+        note.append(f"next-contracts check failed: {type(e).__name__}: {str(e)[:80]}")
+
     if n < 4:
         rec["verdict"] = f"waiting for sample: {n} team games, a forward holdout needs 4"
     else:

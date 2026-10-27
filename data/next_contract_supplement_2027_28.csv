@@ -1,0 +1,10 @@
+# Next-season (2027-28) money for players Spotrac's per-team /yearly/ pages omit.
+# scripts/build_next_contracts.py reads this AFTER the scrape and fills only
+# players it could not resolve, so an entry here never overrides a live figure.
+#
+# Every row needs a source. These are not guesses: a wrong number here is
+# indistinguishable from a scraped one once it reaches the column.
+#
+# type: guaranteed | team_option | player_option | rfa
+player,salary,type,source
+LeBron James,4070000,player_option,"data/master_roster.csv: signed vet-min 1+1 on 2026-07-26, 2027-28 player option $4.07M (Spotrac's PHI /yearly/ page omits him entirely, 16 rows, verified 2026-10-27)"
