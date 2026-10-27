@@ -1462,6 +1462,14 @@ table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;
 .hv-chip.rfa{color:var(--sky);}
 .hv-chip.po{color:var(--purple);}
 .hv-chip.to{color:var(--orange);}
+/* Next $ cell: the TO/PO/RFA chip centred against the figure beside it.
+   .hv-chip uses vertical-align:middle, which aligns the chip's box to the
+   parent's BASELINE plus half an x-height -- not to the visual centre of the
+   text. Measured on the live board, that put every chip 1.19px low against its
+   own dollar figure. Flex centres the two boxes against each other, and it is
+   scoped to this cell so the same chip elsewhere (Rosters, Trade Machine, the
+   FA tabs) keeps the inline-baseline behaviour those layouts expect. */
+.hv-table .hv-next{display:inline-flex;align-items:center;gap:0.3rem;}
 .hv-chip.signed,.hv-chip.muted{color:var(--fg-5);border-color:var(--hairline);}
 .hv-chip.max{color:var(--gold);border-radius:4px;font-size:0.6rem;
   padding:0 0.3rem;margin-right:0.35rem;}

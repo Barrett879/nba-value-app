@@ -428,17 +428,28 @@ def _hsty_delta(v, _row):
 
 def _fmt_next_chip(v):
     """Next-contract cell: money + a status chip (TO/PO/RFA), muted sentinel.
-    Output is trusted HTML — the column must be listed in raw=."""
+    Output is trusted HTML — the column must be listed in raw=.
+
+    Money and chip share a flex wrapper (.hv-next) purely so the chip centres
+    against the figure. The chip's own vertical-align:middle lines it up with
+    the baseline rather than the text's centre, which measured 1.19px low on
+    every row.
+    """
     s = str(v)
+
+    def cell(money="", chip=""):
+        inner = f'<span class="hv-next-m">{money}</span>' if money else ""
+        return f'<span class="hv-next">{inner}{chip}</span>'
+
     if s == "—":
-        return '<span style="color:var(--fg-6)">—</span>'
+        return cell('<span style="color:var(--fg-6)">—</span>')
     if s == "RFA":
-        return '<span class="hv-chip rfa">RFA</span>'
+        return cell("", '<span class="hv-chip rfa">RFA</span>')
     if s.endswith(" TO"):
-        return f'{html.escape(s[:-3])} <span class="hv-chip to">TO</span>'
+        return cell(html.escape(s[:-3]), '<span class="hv-chip to">TO</span>')
     if s.endswith(" PO"):
-        return f'{html.escape(s[:-3])} <span class="hv-chip po">PO</span>'
-    return html.escape(s)
+        return cell(html.escape(s[:-3]), '<span class="hv-chip po">PO</span>')
+    return cell(html.escape(s))
 
 def _fmt_team_dot(v):
     """Team cell: team-color dot + abbrev, linked to that team's value page when
