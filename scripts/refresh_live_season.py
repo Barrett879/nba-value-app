@@ -124,9 +124,15 @@ def main(season: str, board_only: bool = False) -> int:
 
     # ---- prove it ----
     ok = True
+    # check_season_surfaces carries the "no team dropped from the pool" test,
+    # which is the one that catches a short salary scrape deleting a roster. It
+    # existed since 2026-10-23 and was never in this pipeline, so on 2026-10-28
+    # a build that had lost all of Washington passed every check this script
+    # ran and would have shipped. A check nobody runs is a check nobody has.
     for label, script in (("defence really is the blend", "scripts/check_defense_source.py"),
                           ("games played vs the schedule", "scripts/check_board_gp.py"),
-                          ("Next $ is populated", "scripts/check_next_contracts.py")):
+                          ("Next $ is populated", "scripts/check_next_contracts.py"),
+                          ("no team dropped from the pool", "scripts/check_season_surfaces.py")):
         ok = run(label, [script, season]) and ok
     ok = run("every cache production asks for is committed",
              ["scripts/check_cache_seeding.py"]) and ok

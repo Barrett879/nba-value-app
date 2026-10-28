@@ -6492,9 +6492,20 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
         # refusal is logged so it cannot pass as success.
         _prev_path = _raw_disk_path(season, playoffs)
         _prev = None
-        if _prev_path.exists():
+        # Compare against the newest revision that ACTUALLY EXISTS, not just
+        # the path we are about to write. A DATA_REV bump invents a filename
+        # nothing has yet, so _prev_path.exists() was False on every refresh and
+        # this whole guard silently did nothing at exactly the moment it was
+        # needed. On 2026-10-28 ESPN's salary endpoint answered 202 with an
+        # empty body, the rebuild dropped all twelve Washington players, and the
+        # only reason it did not ship is that a human noticed the row count.
+        for _cand in sorted(
+                CACHE_DIR.glob(_prev_path.name.split(f"_{DATA_REV}")[0] + "*.parquet"),
+                key=lambda f: f.stat().st_mtime, reverse=True):
             try:
-                _prev = pd.read_parquet(_prev_path)
+                _prev = pd.read_parquet(_cand)
+                if len(_prev) >= 50:
+                    break
             except Exception:
                 _prev = None
         if _prev is not None and len(_prev) >= 50:
@@ -6508,8 +6519,17 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
             _sal_was = int((pd.to_numeric(_prev.get("salary"), errors="coerce")
                             .fillna(0) > 0).sum()) if "salary" in _prev else _n_was
             _why = None
+            # A TEAM going missing is the shape this actually fails in, and it
+            # is nowhere near a 50% collapse: losing all of Washington is 12 of
+            # 372 rows, about 3%. Both ratio tests below passed on that build.
+            _t_now = set(result["Team"].dropna().unique()) if "Team" in result else set()
+            _t_was = set(_prev["Team"].dropna().unique()) if "Team" in _prev else set()
+            _gone = sorted(_t_was - _t_now)
             if _n_now < 0.5 * _n_was:
                 _why = f"rows collapsed to {_n_now} against {_n_was} cached"
+            elif _gone:
+                _why = (f"team(s) {_gone} present in the cached board and absent "
+                        f"from the rebuild, on {_n_now} rows against {_n_was}")
             elif _sal_was >= 50 and _sal_now < 0.5 * _sal_was:
                 _why = (f"salary coverage fell to {_sal_now} against {_sal_was} "
                         f"cached, on {_n_now} rows")
