@@ -3440,7 +3440,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r16"  # 2026-10-26 slate (9 games)
+DATA_REV = "r17"  # 2026-10-27 slate (4 games)
 
 
 def _rev_path(name: str) -> Path:
@@ -5578,6 +5578,142 @@ def _derive_rookie_scale_players(season: str, path, stale: set | None) -> set:
         return set()
 
 
+# Spotrac's per-team slugs. ONE copy, imported by scripts/build_next_contracts.py
+# rather than pasted there, because a 30-entry map in two places is a map that
+# drifts. Note la-clippers, which is not los-angeles-clippers; that typo cost a
+# whole team on the first run of the next-contracts builder.
+SPOTRAC_SLUG = {
+    "ATL": "atlanta-hawks", "BOS": "boston-celtics", "BKN": "brooklyn-nets",
+    "CHA": "charlotte-hornets", "CHI": "chicago-bulls", "CLE": "cleveland-cavaliers",
+    "DAL": "dallas-mavericks", "DEN": "denver-nuggets", "DET": "detroit-pistons",
+    "GSW": "golden-state-warriors", "HOU": "houston-rockets", "IND": "indiana-pacers",
+    "LAC": "la-clippers", "LAL": "los-angeles-lakers", "MEM": "memphis-grizzlies",
+    "MIA": "miami-heat", "MIL": "milwaukee-bucks", "MIN": "minnesota-timberwolves",
+    "NOP": "new-orleans-pelicans", "NYK": "new-york-knicks", "OKC": "oklahoma-city-thunder",
+    "ORL": "orlando-magic", "PHI": "philadelphia-76ers", "PHX": "phoenix-suns",
+    "POR": "portland-trail-blazers", "SAC": "sacramento-kings", "SAS": "san-antonio-spurs",
+    "TOR": "toronto-raptors", "UTA": "utah-jazz", "WAS": "washington-wizards",
+}
+
+# Spotrac glues the cap percentage onto the money with no separator
+# ("$30,000,00018.2%"), so the comma grouping is the delimiter: take $ plus up
+# to three digits plus as many ",ddd" groups as follow. Stripping a trailing
+# percentage instead eats back into the salary, which turned Jokic into $0.1M
+# on the first pass of the next-contracts builder.
+_SPOTRAC_MONEY = re.compile(r"\$(\d{1,3}(?:,\d{3})*)")
+
+
+def _last_known_salaries(season: str, playoffs: bool = False) -> dict:
+    """{normalized name: salary} from the newest raw board already on disk.
+
+    Salaries barely move in-season, so the last board we built is a better
+    answer than nothing by a wide margin: _build_raw_live DROPS a player with
+    no salary, which is how a dead source deletes a roster rather than
+    degrading. Tried before any live second source so that an outage changes
+    WHICH players are priced, never what the priced ones are worth. A basis
+    swap in the middle of a season is a decision, not a fallback.
+    """
+    try:
+        base = _raw_disk_path(season, playoffs).name.split(f"_{DATA_REV}")[0]
+        for cand in sorted(CACHE_DIR.glob(base + "*.parquet"),
+                           key=lambda f: f.stat().st_mtime, reverse=True):
+            d = pd.read_parquet(cand)
+            if "salary" not in d.columns or "Player" not in d.columns or len(d) < 50:
+                continue
+            out = {normalize(str(n)): float(v)
+                   for n, v in zip(d["Player"], d["salary"])
+                   if v is not None and v == v and float(v) > 0}
+            if out:
+                logger.info("salaries: %d carried from %s", len(out), cand.name)
+                return out
+    except Exception as e:
+        logger.warning("last-known salaries unavailable: %s", type(e).__name__)
+    return {}
+
+
+def fetch_spotrac_salaries(season: str, cache_v: int = 1) -> dict:
+    """{normalized name: salary} for `season`, from Spotrac's per-team pages.
+
+    A SECOND current-season salary source, because ESPN is a single point of
+    failure that has now taken the board down twice. On 2026-10-23 a short
+    scrape deleted ten Washington players; on 2026-10-28 the endpoint began
+    answering 202 with an empty body and deleted all twelve, and neither
+    hoopshype (0 entries) nor SALARY_SUPPLEMENT (empty) could cover it. A real
+    browser loads the same ESPN page fine, so the block is on this client's
+    signature and retrying it harder would not have helped.
+
+    Used only when the primary chain leaves rows unpriced, and cached on disk,
+    because this is 30 requests and must never sit on a request path warm.
+    Stale beats empty: a scrape that returns too little is discarded rather
+    than cached, exactly like fetch_next_year_contracts.
+    """
+    label = season if "-" in season else None
+    if label is None:
+        return {}
+    path = _dc_path(f"spotrac_salaries_{season.replace('-', '_')}_v{cache_v}.pkl")
+    stale = None
+    if path.exists():
+        try:
+            stale = _pkl_load(path)
+        except Exception:
+            stale = None
+    if stale and _dc_fresh(path, ttl=86400):
+        return stale
+
+    out: dict = {}
+    hdrs = {"User-Agent": _BREF_UA if "_BREF_UA" in globals() else
+            ("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
+             "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"),
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9"}
+    failed = []
+    for abbr, slug in SPOTRAC_SLUG.items():
+        try:
+            r = requests.get(f"https://www.spotrac.com/nba/{slug}/yearly/",
+                             headers=hdrs, timeout=25)
+            r.raise_for_status()
+            tables = pd.read_html(io.StringIO(_html_text(r)))
+            seen_active = False
+            for t in tables:
+                cols = {str(c).strip(): c for c in t.columns}
+                if label not in cols:
+                    continue
+                # The FIRST table with a season column is the active roster;
+                # Dead Money and Cap Hold follow it and owe nobody anything.
+                if seen_active:
+                    break
+                seen_active = True
+                for _, row in t.iterrows():
+                    disp = re.split(r"\s{2,}", str(row[t.columns[0]]).strip())[-1]
+                    disp = " ".join(disp.split())
+                    if not disp or disp.lower().startswith("incomplete roster"):
+                        continue
+                    cell = " ".join(str(row[cols[label]] or "").split())
+                    up = cell.upper()
+                    # "UFA / $31.5M" and "RFA / $15.1M" are CAP HOLDS, not pay.
+                    if not cell or up.startswith("UFA") or up.startswith("RFA") \
+                            or "two-way" in cell.lower():
+                        continue
+                    m = _SPOTRAC_MONEY.search(cell)
+                    if m:
+                        out.setdefault(normalize(disp),
+                                       float(m.group(1).replace(",", "")))
+            time.sleep(0.3)
+        except Exception as e:
+            failed.append(abbr)
+            logger.warning("spotrac salaries: %s failed (%s)", abbr, type(e).__name__)
+
+    # A partial scrape is how a roster disappears, which is the whole reason
+    # this exists. Refuse it rather than cache it.
+    if failed or len(out) < 300:
+        logger.error("spotrac salaries: %d players, %d team page(s) failed %s "
+                     "-- discarding, serving what was cached", len(out), len(failed), failed)
+        return stale or {}
+    _pkl_save(path, out)
+    logger.info("spotrac salaries: %d players across %d teams", len(out), len(SPOTRAC_SLUG))
+    return out
+
+
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
     """
@@ -5734,7 +5870,7 @@ def fetch_defense_blend(season: str) -> dict:
     # repo cache only when the FILENAME is missing: v1 D-LEBRON-scaled,
     # v2 [-6, +6], v3 [-4, +6]. Re-committing under an old name would leave
     # production on the previous numbers with the code reading correctly.
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v6.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v7.json")
     if not path.exists():
         return {}
     try:
@@ -5755,7 +5891,7 @@ def fetch_defense_blend_meta(season: str) -> dict:
     once saying "rescaled to D-LEBRON's own range" after it was stretched to
     [-6, +6]. Copy that reads the artifact cannot drift from it.
     """
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v6.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v7.json")
     if not path.exists():
         return {}
     try:
@@ -6283,6 +6419,32 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
             stats.loc[missing_mask, "salary"] = stats.loc[missing_mask, "PLAYER_NAME"].apply(
                 lambda n: hh_lookup.get(normalize(n), float("nan"))
             )
+
+    # Live season only, and only once the sources above have had their turn.
+    # ESPN is a single point of failure that has taken the board down twice: a
+    # short scrape on 2026-10-23 and a 202-with-empty-body on 2026-10-28, each
+    # time deleting a whole roster because a player with no salary is dropped
+    # rather than shown. Carry the last board's salaries first, so an outage
+    # changes which players are priced and never what the priced ones are
+    # worth, then let Spotrac price anyone genuinely new.
+    if season == SEASONS[0] and stats["salary"].isna().any():
+        for _src, _label in ((_last_known_salaries(season, playoffs), "last board"),
+                             (fetch_spotrac_salaries(season), "spotrac")):
+            if not _src:
+                continue
+            _missing = stats["salary"].isna()
+            if not _missing.any():
+                break
+            # NameIndex, not a bare dict: these feeds spell "C.J. McCollum" and
+            # "Nic Claxton" differently from the stat frame, and an exact-key
+            # join left 17 players unpriced in testing, which is 17 players
+            # deleted from the board.
+            _ni = NameIndex(dict(_src))
+            _filled = stats.loc[_missing, "PLAYER_NAME"].apply(
+                lambda n: _ni.get(str(n)))
+            stats.loc[_missing, "salary"] = pd.to_numeric(_filled, errors="coerce")
+            logger.info("salaries: %s covered %d of %d missing",
+                        _label, int(_filled.notna().sum()), int(_missing.sum()))
 
     # Pre-2000 fallback: ESPN doesn't have those years, so scrape BBRef team
     # pages for salaries. We trigger this only when most rows are still missing

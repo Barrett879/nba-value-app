@@ -229,12 +229,18 @@ except Exception as e:                                               # noqa: BLE
 # complete one. This is the check that would have caught the shipped file
 # anyway, because it compares two things that must agree and does not care why.
 try:
-    from utils import build_raw, fetch_bref_player_stats
+    from utils import build_raw, fetch_bref_player_stats, resolve_team_code
     pool = build_raw(CUR)
     src = fetch_bref_player_stats(CUR)
     if len(pool) and len(src):
-        src_teams = set(src["TEAM_ABBREVIATION"].dropna().unique())
         pool_teams = set(pool["Team"].dropna().unique())
+        # The source here is BBRef, which spells three teams CHO, BRK and PHO
+        # where the pool says CHA, BKN and PHX. Comparing the raw strings
+        # reported those three as "dropped" on every single run, beside the one
+        # that genuinely was, so the real finding arrived wearing three false
+        # ones. Resolve into the pool's dialect first.
+        src_teams = {resolve_team_code(t, pool_teams)
+                     for t in src["TEAM_ABBREVIATION"].dropna().unique()}
         gone = sorted(src_teams - pool_teams)
         record("FAIL" if gone else "PASS", "no team dropped from the pool",
                (f"present in the stat source but ABSENT from the pool: {gone}. "
