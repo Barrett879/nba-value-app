@@ -56,7 +56,35 @@ def main() -> None:
     # Only the base `pos` is taken. The alt_pos / alt_when_out pair is keyed to
     # the live injury feed and reshapes a depth chart while someone is out; a
     # trade card is about the player, not tonight's rotation.
+    # data/master_roster.csv, used for the TWO things it alone knows and
+    # nothing else. Deliberately NOT as the roster spine: it carries no Barrett
+    # score, no projected signings and no `real` flag, and it is hand-edited,
+    # so making it the spine would bind a nightly pipeline to an editing
+    # cadence. Reconciling against it keeps both properties.
+    #
+    #   kind == free_agent  ->  not on anybody's roster. The `team` column on
+    #       those rows is the team that WAIVED him, which is why joining on
+    #       team alone leaves a waived player sitting on a trade card.
+    #   pos                 ->  filled only where the roster feed has none.
+    #
+    # Its TEAM column is NOT used. It had Walter Clayton Jr. and Micah Peavy on
+    # MEM on 2026-10-29 while both had already played for DAL and OKC, so the
+    # live stat feed is the fresher source for where a player actually is.
+    # Absence from master_roster means KEEP: only an explicit free_agent row
+    # removes anybody.
     import csv as _csv
+    mr_kind, mr_pos = utils.NameIndex(), utils.NameIndex()
+    mr_path = ROOT / "data" / "master_roster.csv"
+    if mr_path.exists():
+        for _r in _csv.reader(ln for ln in mr_path.read_text(encoding="utf-8").splitlines()
+                              if not ln.lstrip().startswith("#")):
+            # headerless: _, team, player, salary, kind, pos, note
+            if len(_r) < 6 or not _r[2].strip() or _r[2].strip() == "player":
+                continue
+            mr_kind.add(_r[2].strip(), _r[4].strip())
+            if _r[5].strip() and _r[5].strip().lower() != "nan":
+                mr_pos.add(_r[2].strip(), _r[5].strip())
+
     overrides = utils.NameIndex()
     ov_path = ROOT / "data" / "position_overrides.csv"
     if ov_path.exists():
@@ -65,7 +93,8 @@ def main() -> None:
                 if not ln.lstrip().startswith("#")):
             if (_r.get("player") or "").strip() and (_r.get("pos") or "").strip():
                 overrides.add(_r["player"].strip(), _r["pos"].strip())
-    applied = 0
+    applied = filled = 0
+    waived: list = []
     # NameIndex, not a plain dict: the roster feed writes "C.J. McCollum" and
     # "Nicolas Claxton" where the board has "CJ McCollum" and "Nic Claxton", and
     # an exact-key miss left those players with no market value at all.
@@ -79,11 +108,19 @@ def main() -> None:
             sal = p.get("salary")
             val = mval.get(p["n"])
             vd = round(sal - val, 1) if (val is not None and sal is not None) else None
+            if mr_kind.get(p["n"]) == "free_agent":
+                waived.append((abbr, p["n"]))
+                continue
             _ov = overrides.get(p["n"])
             _pos = p.get("pos", "")
             if _ov and _ov != _pos:
                 _pos = _ov
                 applied += 1
+            elif not _pos.strip() or _pos.strip() == "\u2014":
+                _mp = mr_pos.get(p["n"])
+                if _mp:
+                    _pos = _mp
+                    filled += 1
             players.append({
                 "n": p["n"], "role": p["role"], "pos": _pos,
                 "barrett": p.get("barrett"), "bs_yr": p.get("bs_yr"),
@@ -97,6 +134,16 @@ def main() -> None:
                        "payroll": t["total"], "room": t["room"], "players": players,
                        "unsigned": t.get("unsigned", [])}
 
+    # A hand-edited file that goes wrong should cost a few rows, never a roster.
+    # Anything past this is a corrupted or wildly stale master_roster, not a
+    # real transaction wave, and refusing beats writing it.
+    _cap = 40
+    if len(waived) > _cap:
+        raise SystemExit(
+            f"REFUSING: master_roster would drop {len(waived)} players as free "
+            f"agents, over the {_cap} cap. That is a bad file, not a roster "
+            f"change. Nothing written.")
+
     payload = {
         "value_season": value_season,
         "contract_season": ros["contract_season"],
@@ -107,6 +154,10 @@ def main() -> None:
     print(f"wrote {OUT.name}  ({len(teams)} teams, {OUT.stat().st_size // 1024}KB, "
           f"value {payload['value_season']} / roster {payload['contract_season']})")
     print(f"  position overrides applied: {applied}")
+    print(f"  positions filled from master_roster: {filled}")
+    print(f"  dropped as free agents per master_roster: {len(waived)}")
+    for _ab, _n in waived:
+        print(f"     {_ab}  {_n}")
     for probe in ("LAL", "DEN", "OKC"):
         t = teams.get(probe)
         if t:
