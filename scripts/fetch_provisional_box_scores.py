@@ -54,10 +54,27 @@ COLS = ["MIN", "PTS", "FG", "3PT", "FT", "REB", "AST", "TO", "STL", "BLK",
         "OREB", "DREB", "PF", "+/-"]
 
 
-def get(url: str) -> dict:
-    req = urllib.request.Request(url, headers=UA)
-    with urllib.request.urlopen(req, timeout=25) as r:
-        return json.loads(r.read().decode("utf-8"))
+def get(url: str, tries: int = 4) -> dict:
+    """One ESPN call, with retries.
+
+    A single "connection reset by peer" used to abort the whole run, and on a
+    nightly job that fetches a dozen games the odds of at least one reset are
+    not small: it happened on the first real run of scripts/nightly.py. The
+    last failure is re-raised rather than swallowed, because a date we decided
+    we need and cannot fetch means a team's players sit a game behind every
+    other surface, and that must stop the run rather than ship quietly.
+    """
+    last = None
+    for attempt in range(tries):
+        try:
+            req = urllib.request.Request(url, headers=UA)
+            with urllib.request.urlopen(req, timeout=25) as r:
+                return json.loads(r.read().decode("utf-8"))
+        except Exception as e:                      # reset, timeout, 5xx
+            last = e
+            if attempt < tries - 1:
+                time.sleep(1.5 * (attempt + 1))
+    raise last
 
 
 def num(s) -> float:
