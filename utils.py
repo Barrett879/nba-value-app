@@ -3440,7 +3440,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r18"  # 2026-10-27 slate (4 games)
+DATA_REV = "r19"  # 2026-10-27 slate (4 games)
 
 
 def _rev_path(name: str) -> Path:
@@ -5870,7 +5870,7 @@ def fetch_defense_blend(season: str) -> dict:
     # repo cache only when the FILENAME is missing: v1 D-LEBRON-scaled,
     # v2 [-6, +6], v3 [-4, +6]. Re-committing under an old name would leave
     # production on the previous numbers with the code reading correctly.
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v8.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v9.json")
     if not path.exists():
         return {}
     try:
@@ -5891,7 +5891,7 @@ def fetch_defense_blend_meta(season: str) -> dict:
     once saying "rescaled to D-LEBRON's own range" after it was stretched to
     [-6, +6]. Copy that reads the artifact cannot drift from it.
     """
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v8.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v9.json")
     if not path.exists():
         return {}
     try:
@@ -6318,6 +6318,16 @@ def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.Dat
                  % (10 ** 9))
 
     idx = {normalize(str(n)): i for i, n in stats["PLAYER_NAME"].items()}
+    # Rows for players the stat feed has never heard of, keyed so a SECOND
+    # block for the same player accumulates into the row the first one made.
+    # Without this, idx never learns about what was just added, and a player
+    # absent from the feed who appears on two dates got two rows of GP 1 rather
+    # than one row of GP 2. Five players were doubled on 2026-10-29 (Bobby
+    # Portis, Mo Bamba, Taurean Prince, Meleek Thomas, Terrence Shannon Jr.),
+    # each with half his stats twice, and because duplicate names break
+    # Series.map the Rankings page raised InvalidIndexError the moment the
+    # minutes floor dropped far enough to show them.
+    pending: dict = {}
     added = []
     # Oldest block first, so a team's blocks apply in the order they were played
     # and each one's threshold is judged against the games already folded in.
@@ -6356,14 +6366,32 @@ def _merge_provisional_box_scores(stats: "pd.DataFrame", season: str) -> "pd.Dat
                         old = float(pd.to_numeric(stats.at[i, col], errors="coerce") or 0)
                         stats.at[i, col] = round((old * old_gp + game[dst]) / new_gp, 3)
                 stats.at[i, "GP"] = new_gp
+            elif key in pending:
+                row = pending[key]
+                old_gp = float(row["GP"])
+                new_gp = old_gp + 1
+                for col, dst in _PROV_COLS:
+                    row[col] = round((float(row.get(col, 0.0)) * old_gp
+                                      + game[dst]) / new_gp, 3)
+                row["GP"] = new_gp
             else:
                 row = {"PLAYER_ID": _pid(name), "PLAYER_NAME": name,
                        "TEAM_ABBREVIATION": team, "GP": 1.0}
                 for col, dst in _PROV_COLS:
                     row[col] = round(game[dst], 3)
+                pending[key] = row
                 added.append(row)
     if added:
         stats = pd.concat([stats, pd.DataFrame(added)], ignore_index=True)
+    # Duplicate names are not a cosmetic problem here: Rankings maps a
+    # per-player Series onto the board, and pandas raises InvalidIndexError on
+    # a non-unique index, so one doubled player takes the whole page down.
+    _dups = stats["PLAYER_NAME"].astype(str).str.strip()
+    _dups = sorted(_dups[_dups.duplicated()].unique())
+    if _dups:
+        logger.error("provisional: %d duplicated player name(s) after the merge: "
+                     "%s -- the page that maps by name will raise on this",
+                     len(_dups), _dups[:8])
     logger.info("provisional: merged %d team block(s), %d new player rows",
                 len(by_team), len(added))
     return stats

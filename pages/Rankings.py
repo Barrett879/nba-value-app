@@ -678,7 +678,7 @@ def _per_game_lookup(season_key):
     locally and for NONE in production, silently, because an empty lookup just
     skips the panel. Regenerate with scripts/build_per_game.py.
     """
-    art = _dc_path(f"per_game_{season_key.replace('-', '_')}_v9.json")
+    art = _dc_path(f"per_game_{season_key.replace('-', '_')}_v10.json")
     if art.exists():
         try:
             _d = json.loads(art.read_text())
@@ -708,7 +708,7 @@ def _per_game_meta(season_key):
     rendered at zero width. A cached function that mutates a global is a
     function whose work silently stops happening.
     """
-    art = _dc_path(f"per_game_{season_key.replace('-', '_')}_v9.json")
+    art = _dc_path(f"per_game_{season_key.replace('-', '_')}_v10.json")
     if art.exists():
         try:
             return json.loads(art.read_text()).get("_meta") or {}
