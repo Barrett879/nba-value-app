@@ -1763,6 +1763,15 @@ if _sel:
       border-top: 3px solid var(--logo-sage) !important; }}
     [data-testid="stVerticalBlockBorderWrapper"] .hv-table-wrap,
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hv-table-wrap {{ margin: 0.3rem 0 0.5rem; }}
+    /* A table inside a fixed-height scroll box carries a 16px bottom margin
+       from the markdown base styles, so the box has 16px of blank to scroll
+       past AFTER its last row -- dead space that still counts as overflow and
+       still shows a scrollbar. Zero it inside the quadrants and a wrap whose
+       max-height clears its rows renders at exactly the table's height: no
+       scroll, and the card does not pay for the margin. */
+    [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hv-table-wrap > table,
+    [data-testid="stVerticalBlockBorderWrapper"]:has([class*="st-key-hub_q"]) .hv-table-wrap > table {{
+      margin-bottom: 0 !important; }}
     .hub-qh {{ display: flex; align-items: center; gap: 0.5rem; font-size: 0.7rem;
       font-weight: 800; letter-spacing: 0.07em;
       text-transform: uppercase; color: var(--fg-4); margin-bottom: 0.35rem; }}
@@ -1840,6 +1849,20 @@ if _sel:
             _pid = int(_same.groupby("PLAYER_ID")["Season"].max().idxmax()) if len(_same) else None
         _mine = (_car[_car["PLAYER_ID"] == _pid] if _pid is not None
                  else _car.iloc[0:0]).sort_values("Season")
+
+        # The comparison tables size themselves to the rows they were given,
+        # instead of carrying a height somebody typed. A typed height is a
+        # number sized for a row count AT THE MOMENT IT WAS WRITTEN, and it
+        # stops being true the next time the count changes: height=452 was
+        # sized when these lists were shorter, and had been quietly scrolling
+        # the 11th player out of sight ever since. Measured at 100% zoom and
+        # identical at 1024 and 1440 (the wrap scrolls SIDEWAYS, so a long name
+        # never wraps and a row never grows): header 40px, row 41px. The +4
+        # covers the wrap's own borders with a px or two to spare. html_table
+        # applies this as a MAX-height, so a shorter list renders shorter and
+        # a longer one still scrolls rather than bursting the card.
+        def _hub_table_h(n_rows: int) -> int:
+            return 40 + 41 * int(n_rows) + 4
 
         _left, _right = st.columns(2)
 
@@ -2172,10 +2195,9 @@ if _sel:
                                           if normalize(str(rd.get("Player", ""))) == _n else ""),
                     aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Value": "right"},
                     numeric={"#", "Barrett Score", "Salary", "Value"},
-                    height=452,
+                    height=_hub_table_h(len(_sim_view)),
                 )
-                st.markdown(f'<div class="hub-note">Closest current Barrett Scores in the {_BOARD_SEASON} pool.</div>'
-                            '<div class="hub-go"><a href="/Rankings" target="_top">Full current rankings →</a></div>',
+                st.markdown('<div class="hub-go"><a href="/Rankings" target="_top">Full current rankings →</a></div>',
                             unsafe_allow_html=True)
 
         with _right:   # ── Quadrant 4: Career Twins (all eras) ──────────────────────
@@ -2226,12 +2248,9 @@ if _sel:
                         aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
                                 "Top Salary": "right"},
                         numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
-                        height=452,
+                        height=_hub_table_h(len(_tw_view)),
                     )
-                    st.markdown(f'<div class="hub-note">Closest career averages, all eras: '
-                                f'{html.escape(_sel["Player"])} at {_me["avg"]:.2f} over '
-                                f'{int(_me["yrs"])} season{"s" if _me["yrs"] != 1 else ""}.</div>'
-                                f'<div class="hub-go"><a href="/Legacy" target="_top">Compare eras in Legacy →</a></div>',
+                    st.markdown('<div class="hub-go"><a href="/Legacy" target="_top">Compare eras in Legacy →</a></div>',
                                 unsafe_allow_html=True)
                 else:
                     st.markdown('<div class="hub-note">No career history on file yet.</div>',
