@@ -331,10 +331,21 @@ except Exception as e:                                               # noqa: BLE
 # one knob (Barrett, 2026-10-29), and a page that writes its own number has
 # opted out of it in a way only a reader can notice. So: no surface may gate
 # total_min on a literal.
+# Deliberate exceptions. A floor that does NOT choose which season a card SHOWS
+# is allowed, and listing it here is the point at which someone has to say so in
+# writing. Anything not on this list fails, including a new name that looks like
+# one of these: the whole value of the check is that it is strict.
+_FLOOR_ALLOW = {
+    ("Rosters.py", "ORDER_MIN_MINUTES"):
+        "orders a depth chart column, which is a claim about the rotation that "
+        "six games cannot support (Mikal Bridges: 2690 min at 22.8 last season, "
+        "-0.5 on 135 this one, sorted third behind 87 and 34 minutes). The "
+        "season each card PRINTS still comes from BLEND_MIN_MINUTES.",
+}
 try:
     import re as _re
     _FLOOR_NAME = _re.compile(r"MIN_MINUTES|MIN_THRESHOLD|MINUTES_FLOOR", _re.I)
-    _offenders, _scanned = [], 0
+    _offenders, _scanned, _allowed = [], 0, []
     for _f in PAGES:
         try:
             _tree = ast.parse(_f.read_text(encoding="utf-8"))
@@ -348,7 +359,11 @@ try:
                     and _FLOOR_NAME.search(_n.targets[0].id)
                     and isinstance(_n.value, ast.Constant)
                     and isinstance(_n.value.value, (int, float))):
-                _offenders.append(f"{_f.name}:{_n.lineno} {_n.targets[0].id} = {_n.value.value}")
+                if (_f.name, _n.targets[0].id) in _FLOOR_ALLOW:
+                    _allowed.append(f"{_f.name}:{_n.targets[0].id}")
+                else:
+                    _offenders.append(
+                        f"{_f.name}:{_n.lineno} {_n.targets[0].id} = {_n.value.value}")
             # ... total_min >= <number>, the gate itself, however it is spelled
             if isinstance(_n, ast.Compare) and len(_n.comparators) == 1:
                 _src = ast.dump(_n.left)
@@ -363,7 +378,8 @@ try:
                "shows a different season from the rest of the site and says nothing")
     else:
         record("PASS", "no surface writes its own minutes floor",
-               f"{_scanned} surface(s) defer to BLEND_MIN_MINUTES = {BLEND_MIN_MINUTES}")
+               f"{_scanned} surface(s) defer to BLEND_MIN_MINUTES = {BLEND_MIN_MINUTES}"
+               + (f"; allowed non-display floor(s): {', '.join(_allowed)}" if _allowed else ""))
 except Exception as e:                                               # noqa: BLE001
     record("FAIL", "no surface writes its own minutes floor", str(e))
 

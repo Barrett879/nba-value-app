@@ -68,6 +68,23 @@ _TODAY = _dt.date.today().isoformat()
 # utils.build_ranked_blended. It belongs in that one place, where changing it
 # moves every surface together.
 MIN_MINUTES = BLEND_MIN_MINUTES
+# ...and the floor that DOES belong to this page, because it answers a different
+# question. MIN_MINUTES decides which season's number the card PRINTS, which is
+# a site-wide call. This one decides the ORDER of a depth chart column, which is
+# a claim about the rotation -- who is the second shooting guard -- and six
+# games cannot support that claim however current they are.
+#
+# Dropping the floor for both at once showed exactly why they are separate:
+# Mikal Bridges played 2690 minutes last season at 22.8 and has -0.5 on 135
+# minutes this one, so the column reordered him from SG1 to SG3 behind two
+# players with 87 and 34 minutes. The number on his card is not wrong, it is
+# just early; the ORDER built on it is a statement nobody would make out loud.
+#
+# So a column is ordered by the most recent season in which the player cleared
+# this floor, which is what this page did before 2026-10-30. It self-expires:
+# as players cross 500 minutes in the live season, around January, each one
+# moves onto his current line on his own, with no second flip to remember.
+ORDER_MIN_MINUTES = 500
 # feeds spell a few teams the old way
 _ABBR_FIX = {"PHO": "PHX", "CHO": "CHA", "BRK": "BKN", "NOH": "NOP"}
 # every player lands in exactly one depth-chart column; master_roster carries a
@@ -237,6 +254,27 @@ def _payload() -> str:
             if hit:
                 return hit[0], hit[1]
         return None, None
+
+    def order_of(name):
+        """The score a depth-chart column SORTS on. Not the one it prints.
+
+        The most recent season in which the player cleared ORDER_MIN_MINUTES;
+        if neither season clears it, the one with more minutes, because that is
+        the larger sample rather than merely the newer one. A season pinned in
+        score_season_override.csv wins outright, so a card and its position in
+        the column never disagree about which year they are describing.
+        """
+        if _season_ovr.get(name):
+            return (score_of(name) or (None, None))[0]
+        _cur = scores.get(name) or short.get(name)
+        _pri = prior_scores.get(name)
+        for _hit in (_cur, _pri):                    # most recent that clears
+            if _hit and _hit[2] >= ORDER_MIN_MINUTES:
+                return _hit[0]
+        _have = [_h for _h in (_cur, _pri) if _h]
+        if not _have:
+            return None
+        return max(_have, key=lambda _h: _h[2])[0]   # neither: bigger sample
 
     # Market value has to be priced off the SAME score the row displays.
     #
@@ -498,6 +536,8 @@ def _payload() -> str:
                 "vd": (round(sal - value, 1)
                        if (value is not None and kind == "standard") else None),
                 "barrett": bar, "bs_yr": bar_yr,
+                # what the column SORTS on; see ORDER_MIN_MINUTES
+                "ord": order_of(name),
                 **(box.get(name) or {}),
                 "opt": o.get("d") or None,
                 "opt_note": o.get("note") or None,
@@ -522,6 +562,7 @@ def _payload() -> str:
                 "salary": 0.0, "note": "unsigned free agent",
                 "value": round(fv["value"], 1) if fv.get("value") is not None else None,
                 "vd": None, "barrett": fv.get("barrett"), "bs_yr": fv.get("bs_yr"),
+                "ord": None,   # free agents sort by model value, not by column
                 **(box.get(nm) or {}),
                 "opt": None, "opt_note": None,
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
@@ -532,7 +573,7 @@ def _payload() -> str:
         tw = [p for p in players if p["kind"] == "two_way"]
         fas = [p for p in players if p["kind"] == "free_agent"]
         std.sort(key=lambda p: -p["salary"])
-        tw.sort(key=lambda p: -(p["barrett"] or 0))
+        tw.sort(key=lambda p: -(p["ord"] if p["ord"] is not None else (p["barrett"] or 0)))
         fas.sort(key=lambda p: -(p["value"] or 0))
         dead_rows = dead.get(abbr, [])
         dead_tot = round(sum(d["amt"] for d in dead_rows), 1)

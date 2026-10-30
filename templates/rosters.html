@@ -908,9 +908,19 @@ function rosterPanel(t){
     // place and just carry the badge, since on opening night ESPN had Curry
     // day-to-day and expected to play, and sorting every listed injury down
     // would have put him below healthy bench players.
+    // Sorts on `ord`, NOT on the score the card prints. A depth chart column is
+    // a claim about the rotation, and early in a season the live number cannot
+    // carry one: Mikal Bridges played 2690 minutes at 22.8 last season and has
+    // -0.5 on 135 minutes this one, which sorted him third behind two players
+    // with 87 and 34 minutes. `ord` is the most recent season in which he
+    // cleared a real minutes floor, so the ORDER holds while the printed score
+    // goes live, and each player moves onto his current line as he earns it.
+    // See ORDER_MIN_MINUTES in pages/Rosters.py. Falls back to the printed
+    // score for anyone the server left without an `ord`.
+    const ordOf = p => (p.ord != null ? p.ord : p.barrett);
     const cmpD = (a, b) => (a.iout ? 1 : 0) - (b.iout ? 1 : 0)
-                         || (b.barrett == null ? -1e9 : b.barrett)
-                         - (a.barrett == null ? -1e9 : a.barrett)
+                         || (ordOf(b) == null ? -1e9 : ordOf(b))
+                         - (ordOf(a) == null ? -1e9 : ordOf(a))
                          || (b.salary - a.salary);
     // Hand-set order (data/depth_order.csv): a pin's rank is the SLOT it takes
     // in the column, and the unpinned fill in around it by score. Absolute
@@ -939,8 +949,11 @@ function rosterPanel(t){
     };
     const pool = t.players.filter(p => p.kind !== "free_agent" && match(p));
     h += `<div class="depthhint">Each column is ranked by Barrett Score, best first,
-      with hand-set starters pinned above it. Players listed OUT drop to the
-      bottom; day-to-day keeps its place and carries a badge.</div>
+      with hand-set starters pinned above it. The ranking uses each player's last
+      season of real minutes until he has a full one here, so a few early games
+      cannot reorder a rotation; the score on the card is always the current one.
+      Players listed OUT drop to the bottom; day-to-day keeps its place and
+      carries a badge.</div>
       <div class="depth">`;
     for (const pos of POS){
       const list = orderD(pool.filter(p => p.slot === pos));
