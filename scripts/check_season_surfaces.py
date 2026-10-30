@@ -49,7 +49,8 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from utils import (BLEND_MIN_MINUTES, DEFAULT_MIN_THRESHOLD, SEASONS,  # noqa: E402
-                   live_min_threshold, season_is_live)
+                   TWO_WAY_SALARY, live_min_threshold, season_is_live,
+                   two_way_players)
 
 CUR, PRIOR = SEASONS[0], SEASONS[1]
 PAGES = sorted((ROOT / "pages").glob("*.py")) + [ROOT / "app.py"]
@@ -382,6 +383,36 @@ try:
                + (f"; allowed non-display floor(s): {', '.join(_allowed)}" if _allowed else ""))
 except Exception as e:                                               # noqa: BLE001
     record("FAIL", "no surface writes its own minutes floor", str(e))
+
+
+# ---------------------------------------------------------------- 6. two-ways
+# The salary feed does not carry two-way contracts and a player with no salary
+# is dropped from the scored pool, so two-ways are priced from
+# utils.TWO_WAY_SALARY. That table is keyed by season, which is exactly the
+# shape that goes quietly dead at a rollover -- and it already did once, as the
+# 68-row 2025-26 SALARY_SUPPLEMENT block that nobody carried forward. On
+# 2026-10-30 that left THIRTY two-way players with no Barrett Score anywhere on
+# the site, found only because Barrett asked why one card said "no score".
+#
+# A missing entry is a failure, not a default. Fail here and the next rollover
+# says so on the day instead of silently deleting a population.
+try:
+    _scale = TWO_WAY_SALARY.get(CUR)
+    _roster_tw = len(two_way_players())
+    if not _scale:
+        record("FAIL", "two-way scale for the scored season",
+               f"TWO_WAY_SALARY has no entry for {CUR}, so every two-way player "
+               f"({_roster_tw} on master_roster) is unpriced and drops out of the "
+               f"pool with no Barrett Score anywhere")
+    elif not _roster_tw:
+        record("FAIL", "two-way scale for the scored season",
+               "master_roster lists no two-way players, so the scale fills nobody; "
+               "that file is the only source of two-way membership")
+    else:
+        record("PASS", "two-way scale for the scored season",
+               f"${_scale:,} for {CUR}, filling {_roster_tw} master_roster two-ways")
+except Exception as e:                                               # noqa: BLE001
+    record("FAIL", "two-way scale for the scored season", str(e))
 
 
 print()

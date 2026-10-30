@@ -559,6 +559,60 @@ SEASON_GAMES_LOOKUP = {
 # ESPN's historical salary rankings omit players who exercised player options
 # (they're listed as "cap holds" rather than active salaries in some years).
 # This supplement covers confirmed gaps so those players still appear in rankings.
+# ── Two-way scale ────────────────────────────────────────────────────────────
+# The ESPN salary feed does not carry two-way contracts, and a player with no
+# salary is DROPPED from the scored pool a few lines into _build_raw_live. So
+# every two-way player on the board is priced from this table instead.
+#
+# SALARY_SUPPLEMENT below used to do this job by hand: 68 rows for 2025-26, one
+# per player, "Without this they vanish from the Rankings". It is keyed by
+# season, so the flip to 2026-27 emptied it, and on 2026-10-30 THIRTY two-way
+# players had no Barrett Score anywhere on the site. Barrett found it by asking
+# why Graham Ike's card said "no score". That is the hand-maintained-file
+# failure this repo keeps paying for, so this replaces the name list with one
+# number per season and takes the membership from master_roster's `kind`,
+# which is already the only file in the repo that covers two-way deals at all.
+# A two-way signed mid-season is picked up the moment that file names him.
+#
+# A season with no entry here is a FAILURE, not a default: scripts/
+# check_season_surfaces.py fails when SEASONS[0] is missing, so the next
+# rollover says so instead of quietly dropping thirty players again.
+#
+# Figures are the league two-way salary, half the rookie minimum:
+#   2026-27  $678,882  (rookie min $1,357,763, cap $164,961,000) -- Hoops Rumors
+#            cap-setting article, corroborated twice inside this repo by rows
+#            Barrett verified independently: data/salary_supplement_2026_27.csv
+#            (Amari Williams, Ryan Nembhard) and 15 master_roster rows at 0.68.
+#   2025-26  $636,435  -- the figure the 2025-26 SALARY_SUPPLEMENT block used
+#            for every two-way row it filled.
+TWO_WAY_SALARY: dict[str, int] = {
+    "2026-27": 678_882,
+    "2025-26": 636_435,
+}
+
+
+@lru_cache(maxsize=1)
+def two_way_players() -> tuple:
+    """Spellings on a two-way deal, from data/master_roster.csv `kind`.
+
+    Returns a tuple so the lru_cache is safe; callers wrap it in a NameIndex.
+    Empty on any failure, which simply leaves those players unpriced exactly as
+    they were before this existed, rather than mispricing anyone.
+    """
+    out = []
+    try:
+        fp = Path(__file__).resolve().parent / "data" / "master_roster.csv"
+        with open(fp, newline="", encoding="utf-8") as fh:
+            for r in csv.DictReader(l for l in fh if l.strip()
+                                    and not l.lstrip().startswith("#")):
+                if r.get("player") and (r.get("kind") or "").strip() == "two_way":
+                    out.append(r["player"].strip())
+    except Exception:
+        logger.warning("master_roster.csv unreadable: two-way players will have "
+                       "no salary and so no Barrett Score")
+    return tuple(out)
+
+
 SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
     # ── Current-season fill-ins ────────────────────────────────────────────
     # Players who played real minutes but are absent from the ESPN salary feed
@@ -6582,6 +6636,19 @@ def _build_raw_live(season: str, playoffs: bool = False) -> pd.DataFrame:
     # that scrape came back empty on 2026-10-25, every row lost its salary and
     # dropna deleted the entire season: 0, 1 and 1 rows against 390, 401 and
     # 229 in the caches built in July. The rebuild then cached the wreckage.
+    # Two-way deals, last: every source above gets first refusal, so a player
+    # whose two-way was converted to a standard contract keeps the real figure
+    # the feed gave him. Only a player master_roster still calls two_way, and
+    # whom nothing else priced, is filled from the scale. See TWO_WAY_SALARY.
+    _tw_scale = TWO_WAY_SALARY.get(season)
+    if _tw_scale and stats["salary"].isna().any():
+        _tw_ni = NameIndex({_n: _tw_scale for _n in two_way_players()})
+        _missing = stats["salary"].isna()
+        _filled = stats.loc[_missing, "PLAYER_NAME"].apply(lambda n: _tw_ni.get(str(n)))
+        stats.loc[_missing, "salary"] = pd.to_numeric(_filled, errors="coerce")
+        logger.info("salaries: two-way scale covered %d of %d missing",
+                    int(_filled.notna().sum()), int(_missing.sum()))
+
     no_salary_source = int(season.split("-")[0]) < 2000
     if no_salary_source:
         stats["salary"] = stats["salary"].fillna(0)
