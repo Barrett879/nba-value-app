@@ -48,6 +48,11 @@ ARTIFACTS = [
     # label, reader file, reader regex, builder file
     ("per_game", "pages/Rankings.py", r'per_game_\{season_key\.replace[^}]*\}_(v\d+)\.json',
      "scripts/build_per_game.py"),
+    # Second reader of the SAME artifact: app.py's hub profile. It read the live
+    # stats feed instead until 2026-10-30, which is blocked on Render, so five
+    # of the seven profile rows were missing in production and present locally.
+    ("per_game", "app.py", r'per_game_\{_HUB_SEASON\.replace[^}]*\}_(v\d+)\.json',
+     "scripts/build_per_game.py"),
     ("defense_blend", "utils.py", r'defense_blend_\{season\.replace[^}]*\}_(v\d+)\.json',
      "scripts/build_defense_blend.py"),
 ]
@@ -96,7 +101,7 @@ def main():
         for ver in sorted(asked):
             name = f"cache/{label}_{LIVE.replace('-', '_')}_{ver}.json"
             ok = name in have
-            print(f"  {'ok  ' if ok else 'MISSING'}  {name}")
+            print(f"  {'ok  ' if ok else 'MISSING'}  {name}   <- {reader}")
             if not ok:
                 bad.append(name)
         if built and built not in asked:
@@ -105,6 +110,20 @@ def main():
             print(f"  PARTIAL BUMP  {builder} writes {built} but {reader} "
                   f"reads {sorted(asked)}")
             bad.append(f"{label}: builder at {built}, reader at {sorted(asked)}")
+
+    by_stem = {}
+    for label, reader, pattern, builder in ARTIFACTS:
+        asked, _ = artifact_versions(label, reader, pattern, builder)
+        by_stem.setdefault(label, []).append((reader, sorted(asked)))
+    for stem, readers in by_stem.items():
+        vers = {tuple(v) for _, v in readers if v}
+        if len(readers) > 1 and len(vers) > 1:
+            detail = ", ".join(f"{r} asks {v}" for r, v in readers)
+            print(f"  READERS DISAGREE  {stem}: {detail}")
+            bad.append(f"{stem} readers disagree across files: {detail}")
+        elif len(readers) > 1:
+            print(f"  ok    {stem}: all {len(readers)} readers agree on "
+                  f"{readers[0][1]}")
 
     # A formula bump also invalidates every historical season at once.
     hist = [f for f in have if f.startswith("cache/raw_") and f.endswith(".parquet")

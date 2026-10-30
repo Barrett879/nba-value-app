@@ -692,11 +692,45 @@ def _hub_career_agg() -> pd.DataFrame:
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def _hub_counting() -> dict:
-    """Per-game box-score line for the current season, keyed by normalized name
-    (the same warm league-stats parquet the pool build reads)."""
+    """{spelling: (PTS, REB, AST, STL, BLK)} for the current season, from the
+    COMMITTED artifact first and the live fetch only as a fallback.
+
+    THE LIVE FETCH CANNOT BE THE DEFAULT. It reaches stats.nba.com, which is
+    blocked from Render, and the live season has no committed league_stats
+    parquet behind it -- every other season from 1973-74 to 2025-26 has one,
+    2026-27 never did. So this raised in production, the except returned {},
+    and `if _bx:` silently skipped five of the seven rows on the Right Now
+    profile: Points, Rebounds, Assists, Steals and Blocks were missing from
+    EVERY player's hub, leaving a bordered card with a hole in it. Locally the
+    cache exists, so it looked perfect.
+
+    pages/Rankings.py already learned this exact lesson and its _per_game_lookup
+    says so in its own docstring. The fix landed there and never reached here,
+    which is the hand-copied-mask failure the _fa_rows docstring also warns
+    about, in a third costume.
+
+    The v11 literal is a READER version: scripts/build_per_game.py writes it and
+    this has to move with it. app.py is registered for that bump in
+    scripts/nightly.py (VERSIONED) and checked by scripts/check_cache_seeding.py.
+    """
+    art = CACHE_DIR / f"per_game_{_HUB_SEASON.replace('-', '_')}_v11.json"
+    if art.exists():
+        try:
+            _vals = (_json.loads(art.read_text()).get("values") or {})
+            out = {}
+            for _nm, _d in _vals.items():
+                try:
+                    out[str(_nm)] = (float(_d["PTS"]), float(_d["REB"]), float(_d["AST"]),
+                                     float(_d["STL"]), float(_d["BLK"]))
+                except (KeyError, TypeError, ValueError):
+                    continue
+            if out:
+                return out
+        except Exception:
+            logger.warning("per_game artifact unreadable; falling back to the live feed")
     try:
         _df = fetch_league_stats(_HUB_SEASON)
-        return {normalize(str(r["PLAYER_NAME"])):
+        return {str(r["PLAYER_NAME"]):
                 (float(r["PTS"]), float(r["REB"]), float(r["AST"]),
                  float(r["STL"]), float(r["BLK"]))
                 for _, r in _df.iterrows()}
@@ -1695,11 +1729,15 @@ if _sel:
                               f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
                               if _ci.get("end_season") else
                               '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
-            _bx = _hub_counting().get(_n)
+            # NameIndex, not a bare normalize() key: the artifact and the board
+            # come from different sources and disagree on suffixes and
+            # transliterations ("C.J. McCollum" vs "CJ McCollum"), and a miss
+            # here just drops five rows off the card without a word.
+            _bx_idx = NameIndex(_hub_counting())
+            _bx = _bx_idx.get(_sel["Player"])
             # Position profile: each stat as a percentile bar among the player's
             # primary-position peers this season (tick on the track = median).
             _pos_prim = str(_sel["Pos"]).split("/")[0].strip()
-            _bx_all = _hub_counting()
 
             # Rotation-minutes floor: low-minute players (two-ways, garbage time)
             # distort the min/avg/max endpoints, especially on rate stats where a
@@ -1719,7 +1757,7 @@ if _sel:
                     if col is not None:
                         _vals.append(float(_r0[col]))
                     else:
-                        _b0 = _bx_all.get(_r0["norm"])
+                        _b0 = _bx_idx.get(_r0["Player"])
                         if _b0:
                             _vals.append(float(_b0[idx]))
                 return _vals

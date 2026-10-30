@@ -50,7 +50,13 @@ PY_ = sys.executable
 VERSIONED = {
     "per_game": [("scripts/build_per_game.py", r'^VERSION = "v(\d+)"'),
                  ("pages/Rankings.py",
-                  r"per_game_\{season_key\.replace\('-', '_'\)\}_v(\d+)\.json")],
+                  r"per_game_\{season_key\.replace\('-', '_'\)\}_v(\d+)\.json"),
+                 # app.py's hub reads the same artifact. Added 2026-10-30 WITH
+                 # that reader: a literal this script does not know about is a
+                 # reader that silently stops opening anything the next time the
+                 # builder moves.
+                 ("app.py",
+                  r"per_game_\{_HUB_SEASON\.replace\('-', '_'\)\}_v(\d+)\.json")],
     "defense_blend": [("scripts/build_defense_blend.py", r'^VERSION = "v(\d+)"'),
                       ("utils.py",
                        r"defense_blend_\{season\.replace\('-', '_'\)\}_v(\d+)\.json")],
