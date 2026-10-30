@@ -1692,6 +1692,27 @@ if _sel:
        padding goes back to normal. */
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go {{
       position: static; display: flex; margin: 0.5rem 0 0 !important; }}
+    /* All four buttons on ONE y-level, without going back to position:absolute
+       (which is what rendered a button across its own caption). Flex does it in
+       flow: the card is a column, the last thing in it takes an auto top
+       margin, and the free space collects ABOVE the button instead of below.
+       When there is no free space the margin is simply 0 and the button follows
+       the content, so it can never sit on top of anything. */
+    [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) {{
+      display: flex; flex-direction: column; }}
+    [data-testid="stVerticalBlock"][class*="st-key-hub_q"] {{
+      flex: 1 1 auto; display: flex; flex-direction: column; }}
+    [data-testid="stVerticalBlock"][class*="st-key-hub_q"]
+      > [data-testid="stElementContainer"]:last-child {{ margin-top: auto; }}
+    /* Right Now is one markdown blob rather than separate elements, so the push
+       has to happen INSIDE it: the chain goes flex too and the button itself
+       takes the auto margin. */
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stElementContainer"]:has(.hub-go),
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stMarkdown"]:has(.hub-go),
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stMarkdownContainer"]:has(.hub-go) {{
+      flex: 1 1 auto; display: flex; flex-direction: column; }}
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) .hub-go {{
+      margin: auto 0 0 !important; padding-top: 0.5rem; }}
     /* ...EXCEPT Right Now, and only Right Now. The other three quadrants are
        tables built to scroll UNDER a pinned button with a reserved strip, and
        they still do. Right Now is prose and bars, so its height varies with the
