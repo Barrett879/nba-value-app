@@ -1636,7 +1636,7 @@ if _sel:
          9px below the card edge for exactly that player. The three shorter cards spend the extra on
          TABLE ROWS instead of white space (see the height= on each). */
       height: 630px !important; max-height: 630px !important;
-      overflow-y: auto !important; padding: 0.55rem 0.8rem 3.3rem !important;
+      overflow-y: auto !important; padding: 0.55rem 0.8rem 0.9rem !important;
       position: relative; margin-bottom: 0.9rem; }}
     /* Phones: drop the fixed height so the four quadrants flow full-length instead
        of trapping content in small inner-scroll boxes. Desktop is untouched.
@@ -1675,8 +1675,16 @@ if _sel:
        instead of floating over it. Raising the fixed height was the other
        option and was worse -- one card needs 768px and the other three need
        576, so it buys dead space in three places to fix one. */
+    /* IN FLOW, in all four. It was position:absolute at the card's bottom edge,
+       which works only while the content stops short of that edge -- and the
+       moment it does not, the button renders ON TOP of whatever is there.
+       Growing the comparison tables did exactly that: "Full current rankings"
+       landed across "...es in the 2026-27 pool." A button that overlaps its own
+       caption is worse than one sitting a few pixels higher than its
+       neighbour's, and with no absolute strip to reserve, the card's bottom
+       padding goes back to normal. */
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go {{
-      position: absolute; left: 0.9rem; bottom: 0.7rem; z-index: 2; margin: 0; }}
+      position: static; display: flex; margin: 0.5rem 0 0 !important; }}
     /* ...EXCEPT Right Now, and only Right Now. The other three quadrants are
        tables built to scroll UNDER a pinned button with a reserved strip, and
        they still do. Right Now is prose and bars, so its height varies with the
@@ -1702,8 +1710,6 @@ if _sel:
          35px to 26, so it is flex alone. */
       position: static; display: flex; align-items: flex-end;
       margin: auto 0 0 !important; padding-top: 0.7rem; }}
-    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) {{
-      padding-bottom: 0.9rem !important; }}
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go a {{
       margin-top: 0; }}
     /* Per-quadrant identity accents. */
@@ -2102,7 +2108,7 @@ if _sel:
                                           if normalize(str(rd.get("Player", ""))) == _n else ""),
                     aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Value": "right"},
                     numeric={"#", "Barrett Score", "Salary", "Value"},
-                    height=494,
+                    height=452,
                 )
                 st.markdown(f'<div class="hub-note">Closest current Barrett Scores in the {_BOARD_SEASON} pool.</div>'
                             '<div class="hub-go"><a href="/Rankings" target="_top">Full current rankings →</a></div>',
@@ -2156,7 +2162,7 @@ if _sel:
                         aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
                                 "Top Salary": "right"},
                         numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
-                        height=494,
+                        height=452,
                     )
                     st.markdown(f'<div class="hub-note">Closest career averages, all eras: '
                                 f'{html.escape(_sel["Player"])} at {_me["avg"]:.2f} over '
