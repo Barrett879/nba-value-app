@@ -1311,8 +1311,30 @@ def _board():
                 f"numbers, which this early is a small sample. The rest have not "
                 f"played yet and still carry {_prior_season}, tagged with the year "
                 f"on their row.")
-    st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
-             label_visibility="collapsed")
+    # Filters left, a way out on the right. The board is a summary: it has no
+    # minutes filter, no team or position filter and no sort, all of which live
+    # on Rankings, so anyone who wants to actually dig needs a door. Same row
+    # as the pills rather than under the table, because that is where the eye
+    # already is when the five filters turn out not to be enough.
+    _pills_col, _more_col = st.columns([5, 1], vertical_alignment="center")
+    with _pills_col:
+        st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
+                 label_visibility="collapsed")
+    with _more_col:
+        st.markdown(
+            "<style>"
+            ".board-more{text-align:right;line-height:1}"
+            ".board-more a{display:inline-block;background:var(--panel);"
+            "border:1px solid var(--panel-line);border-radius:9px;"
+            "padding:0.34rem 0.7rem;font-size:0.78rem;font-weight:700;"
+            "color:var(--sky);text-decoration:none;white-space:nowrap}"
+            ".board-more a:hover{border-color:var(--sky)}"
+            "</style>"
+            '<div class="board-more">'
+            '<a href="/Rankings" target="_top" '
+            'title="Every player, with minutes, team and position filters">'
+            "More &rarr;</a></div>",
+            unsafe_allow_html=True)
 
     # The score column is the board's main event, so its explainer lives here
     # (same expander every inner page shows), not up in the hero.
