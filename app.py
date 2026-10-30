@@ -1643,7 +1643,9 @@ if _sel:
          wherever the content fits and lets the card grow where it does not,
          which is the one failure mode worth never having. */
       min-height: 630px !important;
-      padding: 0.55rem 0.8rem 0.9rem !important;
+      /* the bottom pad is what sits under the pinned button, so it is the knob
+         for "not flush with the edge" */
+      padding: 0.55rem 0.8rem 1.4rem !important;
       position: relative; margin-bottom: 0.9rem; }}
     /* Phones: drop the fixed height so the four quadrants flow full-length instead
        of trapping content in small inner-scroll boxes. Desktop is untouched.
@@ -1769,7 +1771,7 @@ if _sel:
       [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2),
       [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3),
       [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
-        min-height: 710px !important; }}
+        min-height: 725px !important; }}
     }}
     .hub-stat .v {{ font-size: 1.55rem; font-weight: 800; color: var(--fg-1); }}
     .hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
@@ -2056,7 +2058,13 @@ if _sel:
                                      cliponaxis=False,
                                      hovertemplate="Peak: %{y:.2f}<extra></extra>")
                     _fig.update_layout(
-                        height=175, margin=dict(t=6, b=6, l=6, r=6), showlegend=False,
+                        # 230, not 175: Career carried the most unused space of
+                        # the four cards and the chart is the only thing in it
+                        # worth giving that space to. Sized off the SLACK AT THE
+                        # WIDEST layout, which is the binding one -- 66px at
+                        # 1440 against 147 at 1024 -- so it cannot overflow
+                        # there. The season table below it is untouched.
+                        height=230, margin=dict(t=6, b=6, l=6, r=6), showlegend=False,
                         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
                         yaxis=dict(range=[0, _ymax], rangemode="tozero"),
                         yaxis2=dict(overlaying="y", side="right", showticklabels=False,
