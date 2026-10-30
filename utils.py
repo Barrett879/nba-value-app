@@ -3360,68 +3360,86 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
     return None
 
 
-# ── Retirement ────────────────────────────────────────────────────────────────
-# A retired player is not a free agent, and nothing else in the repo can say so.
-# `kind` in master_roster cannot: it answers "does he occupy a 2026-27 roster
-# spot", and free_agent is still the TRUE answer for a retired man -- he holds
-# no spot. The salary feed cannot: it goes on typing him as a UFA forever.
+# ── Not an NBA free agent ─────────────────────────────────────────────────────
+# One file for every reason a man on the board is NOT somebody a team could sign
+# off it, because the free-agent surfaces ask ONE question and it is not "is he
+# unsigned". Three reasons so far and they are not interchangeable in the world,
+# only in their effect here:
 #
-# It also cannot ride as a note in master_roster, which was the first design
-# here, because master_roster does not know every player this has to cover.
-# MEASURED before trusting it: of 35 free agents on the board tonight, FIVE have
-# no master_roster row at all (Nicolas Batum, Markelle Fultz, Cody Martin,
-# A.J. Lawson, E.J. Liddell) and reach the board purely on the feed's status.
-# A retired veteran is precisely the player who has fallen out of every roster
-# file, so keying retirement off roster membership gets the dependency backwards.
+#   retired      announced it. Permanent until he un-retires, and the row goes.
+#   g_league     on a G League roster or affiliate deal. Nominally signable, so
+#                this is the subtle one: no NBA contract means every feed reads
+#                him as a free agent, and he floats to the top of a board sorted
+#                by last season's NBA rate. Kennedy Chandler led it on 11 games
+#                of two 10-day deals while playing for the Valley Suns.
+#   overseas     under contract abroad. Not signable without a buyout.
+#   nba_contract under an NBA deal (standard, two-way or 10-day) that
+#                master_roster does not carry a row for. master_roster's `kind`
+#                is the better place to say this and says it first; this reason
+#                exists only for the players it has never heard of, and it
+#                deliberately does NOT touch roster counts, which is why it is
+#                here rather than as an invented master_roster row.
 #
-# So it is its own file, like position_overrides.csv and dead_money_2026_27.csv:
-# a hand-verified editorial fact, one row per player, with the announcement date
-# and the source beside it. The date and source are REQUIRED. Without them the
-# row is an assertion with no provenance, and "he has not played in a while" is
-# how a player who never announced anything ends up labelled retired on a public
-# page.
-RETIRED_PATH = Path(__file__).resolve().parent / "data" / "retired_players.csv"
+# Nothing else in the repo can say any of it. `kind` in master_roster cannot:
+# free_agent is still TRUE of all three, because none of them holds an NBA roster
+# spot. The salary feed cannot: it has no NBA contract for them, which it reports
+# as free agency. And it cannot live as a note in master_roster, which was the
+# first design and was wrong — MEASURED before trusting it, five of the 35 free
+# agents on the board have no master_roster row at all. A player who has left the
+# NBA is exactly the player who has fallen out of the roster files, so keying
+# this off roster membership gets the dependency backwards.
+#
+# since + source are REQUIRED. Without them a row is an assertion with no
+# provenance, and "he has not played in a while" is how a man who is simply
+# unsigned ends up labelled gone from the league on a public page.
+UNAVAILABLE_PATH = Path(__file__).resolve().parent / "data" / "unavailable_players.csv"
+UNAVAILABLE_REASONS = ("retired", "g_league", "overseas", "nba_contract")
 
 
-def retired_players(path: "Path | None" = None) -> dict:
-    """{spelling: {"announced", "source", "note"}} for players who have retired.
+def unavailable_players(path: "Path | None" = None) -> dict:
+    """{spelling: {"reason", "since", "source", "note"}} for players who are not
+    NBA free agents, whatever the salary feed says about them.
 
-    THE one reader. Six surfaces ask "can a team sign him today" and the last
-    time that test got hand-copied instead of shared, a fix landed on the home
-    page card alone and left the tab wrong.
+    THE one reader. Seven surfaces ask "could a team sign him today" and the
+    last time that test got hand-copied instead of shared, a fix landed on the
+    home page card alone and left the tab wrong.
 
-    Spellings, not normalized keys, because every caller joins them through
+    Spellings, not normalized keys, because every caller joins through
     NameIndex: the file writes "K.J. Simpson" where the board writes "KJ
-    Simpson", and an exact-key miss here fails OPEN -- it would publish a
-    retired player as the best available free agent, which is the exact failure
-    this exists to prevent.
+    Simpson", and an exact-key miss here fails OPEN — it publishes a man who
+    left the league as the best available free agent, which is the whole
+    failure this exists to prevent.
 
-    A row missing its date or source is DROPPED and logged, not honoured.
+    A row with an unknown reason, no date or no source is DROPPED and logged,
+    never honoured.
     """
     out = {}
     try:
         import csv as _csv_mod
-        src = Path(path) if path else RETIRED_PATH
+        src = Path(path) if path else UNAVAILABLE_PATH
         if not src.exists():
             return out
         with open(src) as fh:
             for r in _csv_mod.DictReader(l for l in fh if l.strip()
                                          and not l.lstrip().startswith("#")):
                 name = (r.get("player") or "").strip()
-                announced = (r.get("announced") or "").strip()
+                reason = (r.get("reason") or "").strip().lower()
+                since = (r.get("since") or "").strip()
                 source = (r.get("source") or "").strip()
                 if not name:
                     continue
-                if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", announced) or not source:
+                if (reason not in UNAVAILABLE_REASONS
+                        or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", since)
+                        or not source):
                     logger.warning(
-                        "retired_players.csv: dropping %r -- a retirement needs a "
-                        "YYYY-MM-DD date and a source, got %r / %r",
-                        name, announced, source)
+                        "unavailable_players.csv: dropping %r — needs a reason in "
+                        "%s, a YYYY-MM-DD date and a source; got %r / %r / %r",
+                        name, UNAVAILABLE_REASONS, reason, since, source)
                     continue
-                out[name] = {"announced": announced, "source": source,
-                             "note": (r.get("note") or "").strip()}
+                out[name] = {"reason": reason, "since": since,
+                             "source": source, "note": (r.get("note") or "").strip()}
     except Exception:
-        logger.warning("retired_players.csv unreadable: retirements ignored")
+        logger.warning("unavailable_players.csv unreadable: everyone reads as available")
     return out
 
 

@@ -28,7 +28,7 @@ from utils import (NameIndex, NBA_DIVISIONS, SEASONS, TEAM_CONFERENCE, TEAM_HEX,
                    _headshot_id_map, fetch_dlebron, fetch_injuries, injury_is_out,
                    render_footer, render_nav,
                    render_page_chrome, script_json, _bootstrap_warm,
-                   retired_players)
+                   unavailable_players)
 
 st.set_page_config(page_title="Rosters", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
@@ -411,7 +411,7 @@ def _payload() -> str:
 
     # Retirements, joined through NameIndex because the file's spelling and the
     # roster's need not agree.
-    _RETIRED = NameIndex(retired_players())
+    _GONE = NameIndex(unavailable_players())
 
     by_team = {}
     for r in master:
@@ -432,7 +432,7 @@ def _payload() -> str:
             # rights holder could re-sign, so he is on none of this team's books.
             # The row stays in master_roster because it carries the dead money
             # and the announcement; it just does not belong on a team page.
-            if _RETIRED.get(name):
+            if _GONE.get(name):
                 continue
             m = model.get(name) or {}
             fv = fa_val.get(name) or {}
@@ -492,7 +492,7 @@ def _payload() -> str:
         for p in players:
             have.add(p["n"], True)
         for nm in extra_fas.get(abbr, []):
-            if have.get(nm) or _RETIRED.get(nm):
+            if have.get(nm) or _GONE.get(nm):
                 continue
             fv = fa_val.get(nm) or {}
             pid = heads.get(nm)

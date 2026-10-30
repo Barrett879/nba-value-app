@@ -15,7 +15,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    _fmt_salary, fmt_next_contract, classify_fa_status, retired_players, NameIndex,
+    _fmt_salary, fmt_next_contract, classify_fa_status, unavailable_players, NameIndex,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
     theme_fig, html_table, render_rail,
     render_barrett_score_explainer, _bootstrap_warm,
@@ -222,11 +222,20 @@ _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
 # the 2026 CLASS, so a retired player KEEPS his row -- he really did become a
 # free agent this cycle -- but retirement is what happened to him, and he is not
 # "still on the market".
-_retired_idx = NameIndex(retired_players())
+_gone_idx = NameIndex(unavailable_players())
 
 
-def _is_retired(name: str) -> bool:
-    return bool(_retired_idx.get(name))
+_GONE_LABEL = {"retired": "Retired", "g_league": "G League",
+               "overseas": "Overseas", "nba_contract": "Under contract"}
+
+
+def _gone_label(name: str) -> str | None:
+    """What became of him, when it is not a signing: Retired / G League /
+    Overseas. This page is a record of the 2026 CLASS, so he KEEPS his row —
+    he really did reach free agency this cycle — but that is the outcome, and
+    he is not "still on the market"."""
+    r = _gone_idx.get(name)
+    return _GONE_LABEL.get(r["reason"]) if r else None
 
 
 def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
@@ -250,8 +259,9 @@ def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
         parts.append("Signed")
     # Last, and on its own if nothing else applies: it is the outcome, not a
     # footnote to one.
-    if _is_retired(name):
-        parts.append("Retired")
+    _gl = _gone_label(name)
+    if _gl:
+        parts.append(_gl)
     return " · ".join(parts) if parts else next_contract_str
 
 
@@ -367,7 +377,7 @@ elif fa_show == "Available":
         n = normalize(p)
         if n in _signed:
             return False
-        if _is_retired(p):          # not signed, and never going to be
+        if _gone_label(p):          # retired, in the G League, or playing abroad
             return False
         return _decisions.get(n, (None, None))[0] not in ("po_in", "to_in")
     fa_display = fa_display[fa_display["Player"].map(_still_free)]

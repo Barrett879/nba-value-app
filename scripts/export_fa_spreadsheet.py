@@ -21,14 +21,15 @@ from openpyxl.utils import get_column_letter
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
-from utils import normalize, retired_players  # noqa: E402
+from utils import normalize, unavailable_players  # noqa: E402
 
-# Confirmed retirements (data/retired_players.csv). Bound HERE, above the
+# Players who are not NBA free agents at all (data/unavailable_players.csv:
+# retired, in the G League, or under contract abroad). Bound HERE, above the
 # simulation, because the sim is the first thing that can go wrong with one:
-# left in its candidate pool, a retired player does not merely linger on a list,
+# left in its candidate pool, such a player does not merely linger on a list,
 # he gets PROJECTED A CONTRACT. Westbrook was being projected to re-sign with
 # Sacramento at $5M three months after he announced he was done.
-_RETIRED_FA = {normalize(_n) for _n in retired_players()}
+_GONE_FA = {normalize(_n) for _n in unavailable_players()}
 
 OUT = Path.home() / "Downloads" / "HoopsValue_FreeAgency_2026.xlsx"
 
@@ -340,7 +341,7 @@ for _t2 in list(sim_by_team):
     sim_by_team[_t2] = [p for p in sim_by_team[_t2]
                         if normalize(p["player"]) not in master_names
                         and normalize(p["player"]) not in master_pending
-                        and normalize(p["player"]) not in _RETIRED_FA]
+                        and normalize(p["player"]) not in _GONE_FA]
 
 team_order = sorted(TEAMS, key=lambda t: TEAMS[t]["name"])
 
@@ -565,7 +566,7 @@ for p in sim["players"]:
 # canonical for the pool, and any hand-added FA appears without code changes
 _master_fa = {}
 _all_master = set()
-_retired_fa = _RETIRED_FA
+_retired_fa = _GONE_FA
 for _r0 in csv.DictReader([l for l in _mr.read_text().splitlines()
                            if not l.lstrip().startswith("#")]):
     if not _r0.get("player"):
@@ -642,7 +643,7 @@ for _tm in team_order:
     _uns = []
     for x in fa_rows:
         _nu = normalize(x[1])
-        if x[0] != _tm or (x[3] or 0) < 8.0 or _nu in _RETIRED_FA or _nu in _seen_uns:
+        if x[0] != _tm or (x[3] or 0) < 8.0 or _nu in _GONE_FA or _nu in _seen_uns:
             continue
         _seen_uns.add(_nu)
         _uns.append({"n": x[1], "barrett": x[3]})

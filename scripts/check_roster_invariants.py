@@ -139,39 +139,41 @@ record("FAIL" if both else "PASS", "no player both signed and free",
        f"{both[:6]}" if both else "no contradictory rows")
 
 
-# ── 8b. data/retired_players.csv ────────────────────────────────────────────
-# Two ways this file goes wrong, both silent. A row that fails validation (no
-# date, no source) is DROPPED by utils.retired_players, so the player goes on
-# being offered as a free agent -- the exact failure the file exists to prevent.
-# And a name nobody can resolve does nothing at all, which looks identical to
-# the player not being retired.
-from utils import retired_players, NameIndex, RETIRED_PATH  # noqa: E402
-_ret = retired_players()
+# ── 8b. data/unavailable_players.csv ───────────────────────────────────────
+# Two ways this file goes wrong, both silent. A row that fails validation (bad
+# reason, no date, no source) is DROPPED by utils.unavailable_players, so the
+# player goes on being offered as a free agent -- the exact failure the file
+# exists to prevent. And a name nobody can resolve does nothing at all, which
+# looks identical to the player being available.
+from utils import unavailable_players, NameIndex, UNAVAILABLE_PATH  # noqa: E402
+_gone = unavailable_players()
 _raw = 0
-if RETIRED_PATH.exists():
-    with open(RETIRED_PATH) as fh:
+if UNAVAILABLE_PATH.exists():
+    with open(UNAVAILABLE_PATH) as fh:
         _raw = sum(1 for r in csv.DictReader(l for l in fh if l.strip()
                                              and not l.lstrip().startswith("#"))
                    if (r.get("player") or "").strip())
-record("FAIL" if _raw != len(_ret) else "PASS", "retirements carry date + source",
-       (f"{_raw - len(_ret)} of {_raw} row(s) dropped for a missing or malformed "
-        f"date/source, so they do nothing") if _raw != len(_ret)
-       else (f"all {_raw} row(s) valid: {', '.join(sorted(_ret))}" if _ret
-             else "no retirements on file"))
+_by_reason = collections.Counter(v["reason"] for v in _gone.values())
+record("FAIL" if _raw != len(_gone) else "PASS", "unavailable rows carry reason + date + source",
+       (f"{_raw - len(_gone)} of {_raw} row(s) dropped as invalid, so they do nothing")
+       if _raw != len(_gone)
+       else (f"all {_raw} valid: " + ", ".join(f"{n} {r}" for r, n in sorted(_by_reason.items()))
+             if _gone else "nobody listed"))
 
 _mr_idx = NameIndex({r["player"]: True for r in rows})
-_unresolved = [n for n in _ret if not _mr_idx.get(n)]
-record("WARN" if _unresolved else "PASS", "retirements resolve against a roster row",
-       (f"{_unresolved} have no master_roster row. NOT an error by itself -- a "
-        f"retired veteran is exactly the player who falls out of the roster "
-        f"files, and the free-agent surfaces join on the BOARD's names, not "
-        f"this one. Check the spelling matches the board.")
-       if _unresolved else f"all {len(_ret)} resolve")
+_unresolved = [n for n in _gone if not _mr_idx.get(n)]
+record("WARN" if _unresolved else "PASS", "unavailable names resolve against a roster row",
+       (f"{len(_unresolved)} have no master_roster row: {_unresolved[:8]}. NOT an error by "
+        f"itself -- a player who has left the NBA is exactly the one who falls out of the "
+        f"roster files, and the free-agent surfaces join on the BOARD's names, not this "
+        f"one. Check the spelling matches the board.")
+       if _unresolved else f"all {len(_gone)} resolve")
 
-_ret_rostered = [n for n in _ret
-                 if by_name[normalize(n)] & {"standard", "two_way"}]
-record("FAIL" if _ret_rostered else "PASS", "nobody retired and rostered",
-       f"{_ret_rostered}" if _ret_rostered else "no contradictory rows")
+_gone_rostered = [n for n in _gone
+                  if by_name[normalize(n)] & {"standard", "two_way"}]
+record("FAIL" if _gone_rostered else "PASS", "nobody unavailable and rostered",
+       (f"{_gone_rostered} hold an NBA roster spot per master_roster, so one of the two "
+        f"files is wrong") if _gone_rostered else "no contradictory rows")
 
 
 # ── 9. the hand-set override files actually resolve ──────────────────────────

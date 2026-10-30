@@ -1,0 +1,108 @@
+# Players the free-agent surfaces must NOT offer, whatever the salary feed says.
+#
+# The surfaces ask ONE question: could a team sign him today? "Unsigned" is not
+# the same question, and the gap between them is how a G League guard on 11
+# games of two 10-day deals came to lead the board as the best available free
+# agent in the NBA.
+#
+# reason:
+#   retired    he announced it. Remove the row if he un-retires.
+#   g_league   on a G League roster or affiliate deal. Nominally signable, which
+#              is exactly why he slips through: no NBA contract reads as free.
+#   overseas   under contract abroad; not signable without a buyout.
+#
+# Under contract to an NBA team is NOT in here. master_roster's `kind` already
+# says that, and says it better.
+#
+# THE BAR, strict because every row is a public claim about a real person:
+#   retired  -> the player, his team or the league ANNOUNCED it. Not "expected
+#               to", not "considering", not unsigned-at-38.
+#   g_league -> he is on a named G League roster, or was waived on an Exhibit 10
+#               and reported to that team's affiliate.
+#   overseas -> a signing with a named club, reported with a date.
+#
+# since + source are REQUIRED: utils.unavailable_players() drops and logs any
+# row without them, so an undated assertion does nothing rather than quietly
+# taking effect. Verify with scripts/check_roster_invariants.py.
+player,reason,since,source,note
+Chris Paul,retired,2026-02-13,ESPN,"Announced on Instagram on the first day of All-Star weekend after 21 seasons; Adam Silver issued a league statement the same day. Waived by TOR hours earlier, which is incidental: the announcement is what confirms it. https://www.espn.com/nba/story/_/id/47920879/chris-paul-announces-retirement-nba-21-seasons"
+P.J. Tucker,retired,2026-05-07,NBC Sports,"Announced on his own Instagram, 14 seasons, 2021 title with MIL. https://www.nbcsports.com/nba/news/p-j-tucker-officially-retires-from-nba-after-14-seasons-won-title-with-2021-milwaukee-bucks"
+Damion Lee,retired,2026-05-12,Yahoo Sports,"https://sports.yahoo.com/articles/former-warrior-announces-retirement-nba-135453717.html"
+Garrett Temple,retired,2026-07-04,Hoops Rumors,"Retired as a player to join the DAL coaching staff. https://www.hoopsrumors.com/2026/07/garrett-temple-retiring-as-player-joining-mavs-coaching-staff.html"
+Kyle Lowry,retired,2026-07-07,ESPN,"Retired on a one-day contract with TOR. https://www.espn.com/nba/story/_/id/49295320/kyle-lowry-retires-signing-one-day-contract-raptors"
+Josh Richardson,retired,2026-07-29,Hoops Rumors,"Announced on social media the evening of 7/29; several outlets date the aggregation 7/30. https://www.hoopsrumors.com/2026/07/josh-richardson-announces-retirement.html"
+Russell Westbrook,retired,2026-08-12,ESPN,"Announced on social media after 18 seasons; ESPN reports he turned down offers from SAC and WAS, which is why a salary feed still types him a UFA. https://www.espn.com/nba/story/_/id/49592048/russell-westbrook-announces-nba-retirement-18-seasons"
+Taj Gibson,retired,2026-09-14,ESPN,"Retired and joined the CHI coaching staff. https://www.espn.com/nba/story/_/id/49942221/taj-gibson-announces-retirement-joins-bulls-assistant-coach"
+Nicolas Batum,retired,2026-09-21,ESPN,"Announced after 18 NBA seasons. Has no master_roster row at all, which is why this file cannot live inside master_roster. https://www.espn.com/nba/story/_/id/49999756/nicolas-batum-announces-retirement-18-nba-seasons"
+Kennedy Chandler,g_league,2026-10-17,RotoWire,"PHX signed him to a camp deal 9/26 and WAIVED him 10/17; on the Valley Suns (PHX affiliate) 2026-27 training camp roster, unasterisked, so no two-way. His UTA tag is from two 10-day deals in spring 2026 that conveyed no rights, and the 12.80 score is an 11-game sample at 32.3 mpg. Real position is PG, 6-0, not SF/PF. https://www.rotowire.com/basketball/headlines/kennedy-chandler-news-waived-saturday-535034"
+Alondes Williams,g_league,2026-10-17,RotoWire,"WAS signed him to an Exhibit 10 on 10/11 and waived him 10/17; reported to Capital City Go-Go, who hold his returning rights. Score is a 4-game sample off a February 10-day. Real position PG/SG, 6-4, not SF/PF. https://www.rotowire.com/basketball/headlines/alondes-williams-news-waived-saturday-535058"
+Bez Mbeng,g_league,2026-10-17,Hoops Rumors,"On the Sioux Falls Skyforce (MIA affiliate) roster; one MIA preseason game 10/4, no NBA regular-season games. Real position SG/guard, not SF/PF."
+Dariq Whitehead,g_league,2026-10-17,Hoops Rumors,"On the Oklahoma City Blue (OKC affiliate) roster; no 2026-27 NBA games."
+Kadary Richmond,g_league,2026-10-17,Hoops Rumors,"On the Cleveland Charge (CLE affiliate) roster; no 2026-27 NBA games. Real position guard, 6-6, not SF/PF."
+John Konchar,overseas,2026-10-22,Hoops Rumors,"Signed a two-year deal with Olympiacos (Greece / EuroLeague), his first time playing outside North America. https://www.hoopsrumors.com/2026/10/john-konchar-signs-with-olympiacos.html"
+D'Angelo Russell,overseas,2026-10-17,ESPN,"Signed with the Shanghai Sharks (CBA). Still PAID his exercised option as WAS dead money, which is why the salary row stays right while the availability was wrong."
+Sharife Cooper,overseas,2026-10-10,Eurohoops,"Signed with the Liaoning Flying Leopards (CBA); 5 CBA games played, zero 2026-27 NBA games."
+DaQuan Jeffries,overseas,2026-09-20,Eurohoops,"Signed with Besiktas (Turkey, BSL / EuroLeague)."
+Malaki Branham,g_league,2026-09-03,"workflow-verified 2026-10-30, two independent agents","Osceola Magic (NBA G League, Orlando Magic affiliate). Listed position SG. https://stats.gleague.nba.com/stats/commonallplayers?LeagueID=20&Season=2026-27&IsOnlyCurrentSeason=1"
+Toby Okani,g_league,2026-09-30,"workflow-verified 2026-10-30, two independent agents","Westchester Knicks (NBA G League, New York Knicks affiliate). Listed position SF. https://westchester.gleague.nba.com/roster"
+Miles Kelly,g_league,2026-10-11,"workflow-verified 2026-10-30, two independent agents","Santa Cruz Warriors (NBA G League, Golden State affiliate). Listed position SG/PG. https://www.hoopsrumors.com/2026/10/warriors-waive-miles-kelly.html"
+Yuki Kawamura,g_league,2026-10-12,"workflow-verified 2026-10-30, two independent agents","San Diego Clippers (NBA G League, LAC affiliate). Listed position PG. https://sandiego.gleague.nba.com/roster"
+Taelon Peter,g_league,2026-10-14,"workflow-verified 2026-10-30, two independent agents","Austin Spurs (NBA G League, San Antonio Spurs affiliate). Listed position SG. https://austin.gleague.nba.com/roster"
+Trey Jemison III,g_league,2026-10-14,"workflow-verified 2026-10-30, two independent agents","Raptors 905 (NBA G League, Toronto affiliate). Listed position C. https://stats.gleague.nba.com/stats/commonteamroster?LeagueID=20&TeamID=1612709920&Season=2026-27"
+Jahmir Young,g_league,2026-10-14,"workflow-verified 2026-10-30, two independent agents","Coachella Valley Lakers (NBA G League, Los Angeles Lakers affiliate). Listed position PG. https://coachellavalley.gleague.nba.com/roster"
+JD Davison,g_league,2026-10-16,"workflow-verified 2026-10-30, two independent agents","Osceola Magic (NBA G League, Orlando Magic affiliate). Listed position PG. https://osceola.gleague.nba.com/roster"
+Caleb Houstan,g_league,2026-10-16,"workflow-verified 2026-10-30, two independent agents","Rip City Remix (G League, Portland Trail Blazers affiliate). Listed position SF. https://ripcity.gleague.nba.com/roster"
+Dalen Terry,g_league,2026-10-17,"workflow-verified 2026-10-30, two independent agents","Santa Cruz Warriors (NBA G League, Golden State affiliate). Listed position SF. https://www.nba.com/player/1631207/dalen-terry"
+Dillon Jones,g_league,2026-10-17,"workflow-verified 2026-10-30, two independent agents","Delaware Blue Coats (NBA G League, Philadelphia 76ers affiliate). Listed position SF. https://bluecoats.gleague.nba.com/roster"
+Chris Livingston,g_league,2026-10-17,"workflow-verified 2026-10-30, two independent agents","Capital City Go-Go (NBA G League, Washington Wizards affiliate). Listed position SF. https://stats.gleague.nba.com/stats/commonteamroster?LeagueID=20&Season=2026-27&TeamID=1612709928"
+Hayden Gray,g_league,2026-10-23,"workflow-verified 2026-10-30, two independent agents","Maine Celtics (NBA G League, Boston Celtics affiliate). Listed position SG. https://basketball.realgm.com/player/Hayden-Gray/Timeline/184899"
+Tyler Smith,g_league,2026-10-24,"workflow-verified 2026-10-30, two independent agents","Rio Grande Valley Vipers (NBA G League, Houston Rockets affiliate). Listed position PF. https://stats.gleague.nba.com/stats/commonteamroster?LeagueID=20&Season=2026-27&TeamID=1612709908"
+Jeremy Sochan,g_league,2026-10-24,"workflow-verified 2026-10-30, two independent agents","Texas Legends (NBA G League, Dallas Mavericks affiliate). Listed position PF. https://bleacherreport.com/articles/25519718-nba-g-league-draft-2026-results-full-team-rosters-basketball-league"
+Johni Broome,g_league,2026-10-24,"workflow-verified 2026-10-30, two independent agents","Wisconsin Herd (NBA G League, Milwaukee Bucks affiliate). Listed position PF/C. https://wisconsin.gleague.nba.com/news/wisconsin-herd-announces-2026-training-camp-roster"
+Tyler Burton,g_league,2026-10-26,"workflow-verified 2026-10-30, two independent agents","Santa Cruz Warriors (NBA G League, Golden State affiliate). Listed position SF. https://www.oursportscentral.com/services/releases/santa-cruz-warriors-announce-2026-training-camp-roster/n-6424794"
+Koby Brea,g_league,2026-10-26,"workflow-verified 2026-10-30, two independent agents","Valley Suns (NBA G League, Phoenix Suns affiliate). Listed position SG. https://www.hoopsrumors.com/2026/10/pacific-notes-acuff-pedulla-suns-brea-huntley-castro.html"
+John Poulakidas,g_league,2026-10-27,"workflow-verified 2026-10-30, two independent agents","San Diego Clippers (NBA G League, LA Clippers affiliate). Listed position SG. https://www.eurohoops.net/en/nba-news/2026649/john-poulakidas-to-san-diego-clippers-g-league/"
+Omer Yurtseven,g_league,2026-10-28,"workflow-verified 2026-10-30, two independent agents","Rio Grande Valley Vipers (NBA G League, Houston Rockets affiliate). Listed position C. https://www.hoopsrumors.com/2026/10/southwest-notes-risacher-sengun-yurtseven-jerome.html"
+TyTy Washington Jr.,g_league,2026-10-30,"workflow-verified 2026-10-30, two independent agents","exact start date not established; status verified 2026-10-30. San Diego Clippers (NBA G League, LA Clippers affiliate). Listed position PG. https://site.web.api.espn.com/apis/common/v3/sports/basketball/nba-development/athletes/4683749 (ESPN, retrieved 2026-10-30: team = San Diego Clippers, Active, Guard, 6-3, jersey 15); cross-checked against https://site.api.espn.com/apis/site/v2/sports/basketball/nba/teams/lac/roster (response timestamp 2026-10-30T07:26:25Z, season 2026-27, 19 players, he is absent) and https://www.basketball-reference.com/players/w/washity02.html (no 2026-27 team row)"
+Curtis Jones,g_league,2026-10-30,"workflow-verified 2026-10-30, two independent agents","exact start date not established; status verified 2026-10-30. Cleveland Charge (NBA G League, Cavaliers affiliate). Listed position SG. https://cleveland.gleague.nba.com/roster"
+N'Faly Dante,g_league,2026-10-30,"workflow-verified 2026-10-30, two independent agents","exact start date not established; status verified 2026-10-30. Westchester Knicks (NBA G League, New York Knicks affiliate). Listed position C. https://en.wikipedia.org/wiki/Westchester_Knicks"
+Pete Nance,nba_contract,2026-10-19,"workflow-verified 2026-10-30, two independent agents",Milwaukee Bucks (two-way contract). Listed position PF. https://www.hoopsrumors.com/2026/10/bucks-re-sign-pete-nance-to-two-way-contract.html
+Walter Clayton Jr.,nba_contract,2026-10-21,"workflow-verified 2026-10-30, two independent agents",Dallas Mavericks (DAL) — two-way; G League affiliate Texas Legends. Listed position PG. https://gleague.nba.com/news/mavericks-sign-walter-clayton-jr-to-two-way-contract
+Dalton Knecht,nba_contract,2026-10-23,"workflow-verified 2026-10-30, two independent agents","New York Knicks (two-way, G League affiliate Westchester). Listed position SF. https://www.basketball-reference.com/teams/NYK/2027.html"
+Kobe Bufkin,nba_contract,2026-10-23,"workflow-verified 2026-10-30, two independent agents",Utah Jazz. Listed position SG. https://www.basketball-reference.com/leagues/NBA_2027_transactions.html
+Micah Peavy,nba_contract,2026-10-24,"workflow-verified 2026-10-30, two independent agents",Oklahoma City Thunder (two-way; G League affiliate Oklahoma City Blue). Listed position SG. https://www.basketball-reference.com/teams/OKC/2027.html
+Lawson Lovering,nba_contract,2026-10-28,"workflow-verified 2026-10-30, two independent agents",Los Angeles Lakers (two-way). Listed position C. https://www.hoopsrumors.com/2026/10/lakers-add-lovering-on-two-way-deal-waive-okereke.html
+Blake Wesley,nba_contract,2026-10-29,"workflow-verified 2026-10-30, two independent agents","LA Clippers (10-day hardship contract, expires 2026-11-07). Listed position SG. https://www.hoopsrumors.com/blake-wesley"
+Nigel Hayes-Davis,overseas,2026-02-12,"workflow-verified 2026-10-30, two independent agents",Panathinaikos AKTOR Athens (Greek Basket League / EuroLeague). Listed position PF. https://www.paobc.gr/en/team/
+Joe Ingles,overseas,2026-05-19,"workflow-verified 2026-10-30, two independent agents",Melbourne United (Australian NBL). Listed position SF. https://nbl.com.au/teams/melbourne-united
+Xavier Tillman,overseas,2026-06-24,"workflow-verified 2026-10-30, two independent agents","Trabzonspor (Basketbol Super Ligi, Turkey), jersey #23. Listed position PF/C. https://en.wikipedia.org/wiki/Xavier_Tillman"
+Bobi Klintman,overseas,2026-07-02,"workflow-verified 2026-10-30, two independent agents","Virtus Bologna (Italy, Lega Basket Serie A / EuroLeague), No. 34. Listed position SF/PF. https://www.virtus.it/a1-maschile/roster/"
+Amir Coffey,overseas,2026-07-10,"workflow-verified 2026-10-30, two independent agents",Hapoel IBI Tel Aviv (Israel) - EuroLeague + Israeli BSL. Listed position SG/SF. https://www.euroleaguebasketball.net/en/euroleague/teams/hapoel-ibi-tel-aviv/roster/hta/
+Andersson Garcia,overseas,2026-07-14,"workflow-verified 2026-10-30, two independent agents","Río Breogán (Liga ACB, Spain). Listed position SF. https://www.cbbreogan.com/equipo"
+Jeremiah Robinson-Earl,overseas,2026-07-16,"workflow-verified 2026-10-30, two independent agents",Aris Thessaloniki (Greek Basket League / EuroCup). Listed position PF/C. https://www.euroleaguebasketball.net/en/eurocup/teams/aris-thessaloniki/roster/ari/?season=2026-27
+Tyson Etienne,overseas,2026-07-16,"workflow-verified 2026-10-30, two independent agents","Paris Basketball (LNB Elite / EuroLeague, France). Listed position PG. https://www.eurohoops.net/en/euroleague/1991706/tyson-etienne-to-paris-euroleague/ (signing, 2026-07-16); https://parisbasketball.com/en/player/tyson-etienne-2/ (current roster, #9, PG); https://www.rotowire.com/euro/player/tyson-etienne-1580 (EuroLeague game logs through 2026-10-17); https://en.wikipedia.org/wiki/Tyson_Etienne"
+Tyrese Martin,overseas,2026-07-24,"workflow-verified 2026-10-30, two independent agents","FC Barcelona (EuroLeague / Liga ACB, Spain). Listed position SG/SF. https://www.euroleaguebasketball.net/en/euroleague/players/tyrese-martin/015138/"
+Johnny Juzang,overseas,2026-07-27,"workflow-verified 2026-10-30, two independent agents",Fenerbahce Tarfin Istanbul (Turkish BSL / EuroLeague). Listed position SG/SF. https://www.euroleaguebasketball.net/en/euroleague/teams/fenerbahce-tarfin-istanbul/roster/ulk/?season=2026-27
+A.J. Lawson,overseas,2026-07-27,"workflow-verified 2026-10-30, two independent agents","Saski Baskonia (Kosner Baskonia) — Liga ACB / EuroLeague, Vitoria-Gasteiz, Spain. Listed position SG. https://www.acb.com/es/liga/equipos/kosner-baskonia-3"
+Lucas Williamson,overseas,2026-07-29,"workflow-verified 2026-10-30, two independent agents","PGE Start Lublin (Poland, PLK). Listed position SG. https://www.hoopsrumors.com/2026/10/nba-free-agents-who-signed-with-overseas-teams.html"
+Cole Anthony,overseas,2026-08-04,"workflow-verified 2026-10-30, two independent agents","Melbourne United (NBL, Australia). Listed position PG. https://www.espn.com/nbl/story?id=49533063&_slug_=nbl-team-melbourne-united-sign-former-nba-bucks-magic-player-cole-anthony"
+Mac McClung,overseas,2026-08-06,"workflow-verified 2026-10-30, two independent agents","Bàsquet Girona (FIATC Girona), Liga ACB / Spain. Listed position PG/SG. https://basquetgirona.com/jugador/mac-mcclung/"
+Lachlan Olbrich,overseas,2026-08-10,"workflow-verified 2026-10-30, two independent agents","Alvark Tokyo (B.League, Japan). Listed position PF/C. https://www.alvark-tokyo.jp/news/detail/team/id=24223"
+MarJon Beauchamp,overseas,2026-08-12,"workflow-verified 2026-10-30, two independent agents",FC Bayern Munich (EuroLeague / Germany). Listed position SF. https://www.basketball-reference.com/international/teams/bayern-muenchen/2027.html
+Mouhamadou Gueye,overseas,2026-08-13,"workflow-verified 2026-10-30, two independent agents","Valencia Basket (Spain — EuroLeague / Liga ACB), jersey #16. Listed position PF. https://www.valenciabasket.com/en/mo-gueye-completes-his-signing-with-valencia-basket"
+Ethan Thompson,overseas,2026-08-16,"workflow-verified 2026-10-30, two independent agents",Partizan Mozzart Bet Belgrade (EuroLeague / Serbia). Listed position SG. https://www.eurohoops.net/en/euroleague/1999014/ethan-thompson-to-partizan-euroleague/
+Garrison Mathews,overseas,2026-08-18,"workflow-verified 2026-10-30, two independent agents",Olimpia Milano (EA7 Emporio Armani Milan) - Italian LBA / EuroLeague. Listed position SG. https://www.olimpiamilano.com/en/roster/
+Aaron Holiday,overseas,2026-08-19,"workflow-verified 2026-10-30, two independent agents","Maxima Roma (Lega Basket Serie A, Italy; also EuroCup). Listed position PG. https://sportando.basketball/aaron-holiday-e-il-nuovo-playmaker-della-maxima-roma/"
+Javonte Cooke,overseas,2026-08-21,"workflow-verified 2026-10-30, two independent agents","Beijing Royal Fighters (CBA, China) - No. 15. Listed position SG. https://sportando.basketball/javonte-cooke-firma-con-i-beijing-royal-fighters/"
+Isaiah Livers,overseas,2026-08-26,"workflow-verified 2026-10-30, two independent agents","Yokohama B-Corsairs (B.League, Japan). Listed position PF/SF. https://b-corsairs.com/news/team_20260826_2/"
+Thanasis Antetokounmpo,overseas,2026-09-01,"workflow-verified 2026-10-30, two independent agents",Aris Thessaloniki (Greek Basket League). Listed position PF/SF. https://en.wikipedia.org/wiki/Thanasis_Antetokounmpo
+Dalano Banton,overseas,2026-09-08,"workflow-verified 2026-10-30, two independent agents",Shandong Hi-Speed Kirin (Chinese CBA). Listed position PG. https://www.basketball-reference.com/international/players/dalano-banton-1.html
+Nick Smith Jr.,overseas,2026-09-13,"workflow-verified 2026-10-30, two independent agents","Real Madrid (Liga ACB / EuroLeague, Spain). Listed position SG. https://basketball.realgm.com/player/Nick-Smith-Jr/Summary/151487"
+Hunter Tyson,overseas,2026-09-21,"workflow-verified 2026-10-30, two independent agents","Maxima Roma (Italy, Lega Basket Serie A + EuroCup). Listed position SF/PF - listed ""Ala"". https://www.legabasket.it/protagonisti/squadre/2026/1762/maxima-roma"
+Kelly Olynyk,overseas,2026-10-03,"workflow-verified 2026-10-30, two independent agents","BC Roma (Italy, Lega Basket Serie A + EuroCup). Listed position C/PF. https://www.hoopsrumors.com/2026/10/kelly-olynyk-reportedly-expected-to-sign-with-bc-roma.html"
+Cameron Payne,overseas,2026-10-03,"workflow-verified 2026-10-30, two independent agents","Anadolu Efes (Istanbul, Turkey - EuroLeague / Turkish BSL). Listed position PG. https://www.eurohoops.net/en/euroleague/2015769/anadolu-efes-signs-cameron-payne-after-mike-james-injury/"
+Christian Koloko,overseas,2026-10-18,"workflow-verified 2026-10-30, two independent agents","Crvena Zvezda Meridianbet Belgrade (EuroLeague, Serbia). Listed position C. https://www.euroleaguebasketball.net/en/euroleague/players/christian-koloko/015396/?season=2026-27"
+Luke Travers,overseas,2026-10-30,"workflow-verified 2026-10-30, two independent agents","exact start date not established; status verified 2026-10-30. Melbourne United (NBL, Australia). Listed position SG/SF. https://nbl.com.au/teams/melbourne-united"
+E.J. Liddell,overseas,2026-10-30,"workflow-verified 2026-10-30, two independent agents",exact start date not established; status verified 2026-10-30. Aris Thessaloniki (Aris B.C.) - Greek Basket League (GBL) + EuroCup. Listed position PF. https://www.basketball-reference.com/international/players/ej-liddell-1.html
+Guerschon Yabusele,overseas,2026-10-30,"workflow-verified 2026-10-30, two independent agents",exact start date not established; status verified 2026-10-30. Panathinaikos AKTOR Athens (EuroLeague / Greek Basket League). Listed position PF/C. https://www.basketball-reference.com/international/players/guerschon-yabusele-1.html
+Brandon Clarke,retired,2026-05-11,"workflow-verified 2026-10-30, two independent agents",Listed position PF. https://en.wikipedia.org/wiki/Brandon_Clarke

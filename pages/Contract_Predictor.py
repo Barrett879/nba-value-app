@@ -74,7 +74,7 @@ from utils import (
     # HV visual kit — rails, headshots, team accents
     render_rail, face_img, TEAM_HEX, hex_rgba,
     # Calibration constants — single source of truth in utils
-    SALARY_CAP_M, cap_dollars, retired_players, NameIndex,
+    SALARY_CAP_M, cap_dollars, unavailable_players, NameIndex,
     CONTRACT_POSITION_MULTIPLIERS as POSITION_MULTIPLIERS,
     HEALTHY_SEASON_GP, NEW_CONTRACT_PCT, SUPERMAX_CAP_PCT,
     tiered_age_multiplier, durability_multiplier, playoff_bonus_multiplier,
@@ -1740,12 +1740,13 @@ try:
         # contract players the salary feed omits, e.g. Will Richard, are excluded).
         return classify_fa_status(_n, fmt_next_contract(_n, _fa_next),
                                   _fa_rookie, CURRENT_SEASON) is not None
-    # ...minus anyone who has retired. The toggle says "free agents", and he is
-    # not one. He stays in the picker with the toggle OFF, because "what would
-    # he be worth" is still a fair question to ask about him.
-    _retired_idx = NameIndex(retired_players())
+    # ...minus anyone who has left the NBA: retired, in the G League, or under
+    # contract abroad. The toggle says "free agents", and none of them is one.
+    # They stay in the picker with the toggle OFF, because "what would he be
+    # worth" is still a fair question to ask about any of them.
+    _gone_idx = NameIndex(unavailable_players())
     _fa_names = [n for n in active_names
-                 if _is_free_agent(n) and not _retired_idx.get(n)] or active_names
+                 if _is_free_agent(n) and not _gone_idx.get(n)] or active_names
 except Exception:
     _fa_names = active_names
 
