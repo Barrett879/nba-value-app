@@ -691,7 +691,7 @@ def _hub_career_agg() -> pd.DataFrame:
 
 
 @st.cache_data(ttl=3600, show_spinner=False)
-def _hub_counting() -> dict:
+def _hub_counting(season: str | None = None) -> dict:
     """{spelling: (PTS, REB, AST, STL, BLK)} for the current season, from the
     COMMITTED artifact first and the live fetch only as a fallback.
 
@@ -713,6 +713,20 @@ def _hub_counting() -> dict:
     this has to move with it. app.py is registered for that bump in
     scripts/nightly.py (VERSIONED) and checked by scripts/check_cache_seeding.py.
     """
+    season = season or _HUB_SEASON
+    if season != _HUB_SEASON:
+        # A COMPLETE season. Its league_stats parquet is committed for every
+        # year from 1973-74 on, and _dc_fresh treats a finished season as
+        # immutable, so this returns from disk and never reaches the network —
+        # verified with sockets blocked: 582 rows in 0.12s.
+        try:
+            _df = fetch_league_stats(season)
+            return {str(r["PLAYER_NAME"]):
+                    (float(r["PTS"]), float(r["REB"]), float(r["AST"]),
+                     float(r["STL"]), float(r["BLK"]))
+                    for _, r in _df.iterrows()}
+        except Exception:
+            return {}
     art = CACHE_DIR / f"per_game_{_HUB_SEASON.replace('-', '_')}_v11.json"
     if art.exists():
         try:
@@ -1634,8 +1648,32 @@ if _sel:
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stMarkdown"]:has(.hub-go),
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) [data-testid="stMarkdownContainer"]:has(.hub-go) {{
       position: static !important; }}
+    /* The button used to be position:absolute at the card's bottom edge. That
+       pins it tidily when the content is SHORTER than the 580px box, and
+       collides the moment the content is longer: the card scrolls internally
+       and whatever is passing under the button sits on top of it. Right Now
+       crossed that line when the five box-score rows came back (768px of
+       content in a 580px box), so the salary row rendered through the button.
+
+       Flex column with min-height:100% does both jobs. Short content: the auto
+       margin pushes the button to the bottom exactly as before. Long content:
+       the margin collapses to nothing and the button follows the content
+       instead of floating over it. Raising the fixed height was the other
+       option and was worse -- one card needs 768px and the other three need
+       576, so it buys dead space in three places to fix one. */
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go {{
       position: absolute; left: 0.9rem; bottom: 0.7rem; z-index: 2; margin: 0; }}
+    /* ...EXCEPT Right Now, and only Right Now. The other three quadrants are
+       tables built to scroll UNDER a pinned button with a reserved strip, and
+       they still do. Right Now is prose and bars, so its height varies with the
+       player, and floating a button over it means the salary row renders
+       through the button for anyone whose card is long. Flow + auto margin does
+       both jobs here: pinned to the bottom while there is room, following the
+       content when there is not. */
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stMarkdownContainer"]:has(.hub-go) {{
+      display: flex; flex-direction: column; min-height: 100%; }}
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) .hub-go {{
+      position: static; margin: auto 0 0 !important; padding-top: 0.7rem; }}
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go a {{
       margin-top: 0; }}
     /* Per-quadrant identity accents. */
@@ -1729,12 +1767,28 @@ if _sel:
                               f' · next contract window <b>{html.escape(str(_ci.get("signing_season") or "now"))}</b>.</div>'
                               if _ci.get("end_season") else
                               '<div class="hub-note">No future salary on the books · signing his next deal now.</div>')
-            # NameIndex, not a bare normalize() key: the artifact and the board
-            # come from different sources and disagree on suffixes and
-            # transliterations ("C.J. McCollum" vs "CJ McCollum"), and a miss
-            # here just drops five rows off the card without a word.
-            _bx_idx = NameIndex(_hub_counting())
-            _bx = _bx_idx.get(_sel["Player"])
+            # Each row's box line comes from the season THAT ROW is on, which is
+            # the same rule the board already uses for the score: a player who
+            # has not played yet carries his last complete season, tagged. 158
+            # of 572 are in that position, and reading them all from the current
+            # season left their profile with two rows and no explanation — while
+            # the TS% and Defense bars beside the hole were quietly last
+            # season's under a caption that said "this season".
+            #
+            # NameIndex, not a bare normalize() key: the sources disagree on
+            # suffixes and transliterations ("C.J. McCollum" vs "CJ McCollum"),
+            # and a miss here just drops five rows off the card without a word.
+            _bx_by_season: dict = {}
+
+            def _bx_for(_row):
+                _yr = str(_row.get("ScoreYr") or _HUB_SEASON)
+                if _yr not in _bx_by_season:
+                    _bx_by_season[_yr] = NameIndex(_hub_counting(_yr))
+                return _bx_by_season[_yr].get(_row["Player"])
+
+            _row_yr = str(_sel.get("ScoreYr") or _HUB_SEASON)
+            _row_is_prior = _row_yr != _HUB_SEASON
+            _bx = _bx_for(_sel)
             # Position profile: each stat as a percentile bar among the player's
             # primary-position peers this season (tick on the track = median).
             _pos_prim = str(_sel["Pos"]).split("/")[0].strip()
@@ -1757,7 +1811,7 @@ if _sel:
                     if col is not None:
                         _vals.append(float(_r0[col]))
                     else:
-                        _b0 = _bx_idx.get(_r0["Player"])
+                        _b0 = _bx_for(_r0)
                         if _b0:
                             _vals.append(float(_b0[idx]))
                 return _vals
@@ -1809,6 +1863,18 @@ if _sel:
             _dl_avg = _avg_of(_dl_pool)
             _prof.append(("Defense", f"{_sel['DLEB']:.1f}", _scale_of(float(_sel["DLEB"]), _dl_pool),
                           f"{_dl_avg:.1f}" if _dl_avg is not None else ""))
+            # Say it on the card. A profile of last season's numbers under a
+            # heading that reads 2026-27 is the mislabel the rollover doc warns
+            # about, and the version of it that used to show here was worse: the
+            # five box rows silently vanished and the two that remained were
+            # last season's without saying so.
+            _prior_note = (f'<div class="hub-note" style="margin-top:0.3rem">'
+                           f'No {html.escape(_HUB_SEASON)} games yet &middot; these are his '
+                           f'<b>{html.escape(_row_yr)}</b> numbers.</div>') if _row_is_prior else ""
+            # And say what the TRACK is, which stopped being "this season" the
+            # moment each peer started being read on his own most recent one.
+            _track_basis = ("this season" if not (_BOARD_IS_PRIOR or _BOARD_IS_MIXED)
+                            else "each on his most recent season")
             _bar_c = _thx or "var(--accent-teal)"
             _ladder = "".join(
                 f'<div class="lrow"><span class="ll">{_l}</span>'
@@ -1862,7 +1928,8 @@ if _sel:
       <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_pred_txt}{(" &middot; " + _pred_sub) if _pred_sub else ""}</div><div class="l" title="{html.escape(_pred_tip)}">{_pred_label}</div></div>
     </div>
     <div class="hub-ladder">{_ladder}</div>
-    <div class="hub-note" style="margin-top:0.3rem" title="Low-minute players are excluded so a garbage-time fluke cannot set the scale's endpoints.">Track runs lowest to highest rotation {html.escape(_pos_prim)} (15+ MPG) this season · middle tick = the {_center_word} (small number).</div>
+    {_prior_note}
+    <div class="hub-note" style="margin-top:0.3rem" title="Low-minute players are excluded so a garbage-time fluke cannot set the scale's endpoints.">Track runs lowest to highest rotation {html.escape(_pos_prim)} (15+ MPG) {_track_basis} · middle tick = the {_center_word} (small number).</div>
     <div class="hub-stats" style="margin-top:1.1rem">
       <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
       <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
