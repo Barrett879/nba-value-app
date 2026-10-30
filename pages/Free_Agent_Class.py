@@ -15,7 +15,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    _fmt_salary, fmt_next_contract, classify_fa_status,
+    _fmt_salary, fmt_next_contract, classify_fa_status, retired_players, NameIndex,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
     theme_fig, html_table, render_rail,
     render_barrett_score_explainer, _bootstrap_warm,
@@ -217,6 +217,18 @@ n_to  = (fa_df["Status"] == "Team Option").sum()
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
                   "to_in": "TO Picked Up", "to_out": "TO Declined"}
 
+# Retirement, joined through NameIndex because these are master_roster spellings
+# ("C.J. McCollum") against the board's ("CJ McCollum"). This page is a record of
+# the 2026 CLASS, so a retired player KEEPS his row -- he really did become a
+# free agent this cycle -- but retirement is what happened to him, and he is not
+# "still on the market".
+_retired_idx = NameIndex(retired_players())
+
+
+def _is_retired(name: str) -> bool:
+    return bool(_retired_idx.get(name))
+
+
 def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
     """What actually happened to this free agent: their option decision and/or a
     signing. Falls back to the pending option figure when nothing has resolved yet."""
@@ -236,6 +248,10 @@ def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
         parts.append(label)
     if signed:
         parts.append("Signed")
+    # Last, and on its own if nothing else applies: it is the outcome, not a
+    # footnote to one.
+    if _is_retired(name):
+        parts.append("Retired")
     return " · ".join(parts) if parts else next_contract_str
 
 
@@ -350,6 +366,8 @@ elif fa_show == "Available":
     def _still_free(p):
         n = normalize(p)
         if n in _signed:
+            return False
+        if _is_retired(p):          # not signed, and never going to be
             return False
         return _decisions.get(n, (None, None))[0] not in ("po_in", "to_in")
     fa_display = fa_display[fa_display["Player"].map(_still_free)]

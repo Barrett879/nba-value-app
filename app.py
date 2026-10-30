@@ -519,7 +519,7 @@ from utils import (
     CACHE_DIR, all_seasons_path, html_table, team_cell, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
     fetch_league_stats, _pkl_load, BLEND_MIN_MINUTES, build_ranked_blended,
-    FACE_GUARD_SCRIPT, NameIndex, fetch_injuries, injury_is_out,
+    FACE_GUARD_SCRIPT, NameIndex, fetch_injuries, injury_is_out, retired_players,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
 )
@@ -1085,6 +1085,24 @@ _market_norms = {_n for _n, _k in _roster_kind_by_norm.items() if _k == "free_ag
 # Kennedy Chandler and Nicolas Batum have no row in any contract file here, so
 # absence has to mean show him.
 _off_market_norms = ((_signed_norms | _resolved_norms) - _market_norms) | _contracted_norms
+# 4. Retirement, which no other clause can express. A retired player's row still
+#    reads free_agent, correctly -- he occupies nobody's roster spot -- so he
+#    lands in _market_norms and the feed goes on calling him a UFA forever. Both
+#    are true and both are beside the point: the card claims he can be signed
+#    today, and he cannot. Westbrook was headlining it.
+#
+#    Resolved through NameIndex against the BOARD's spelling, never a bare
+#    normalize(). data/retired_players.csv writes "K.J. Simpson" where the board
+#    writes "KJ Simpson", and a missed key here fails OPEN -- it would publish a
+#    retired player as the best available free agent, which is the exact failure
+#    being fixed.
+@st.cache_data(ttl=3600, show_spinner=False)
+def _hub_retired() -> dict:
+    return retired_players()
+
+
+_retired_idx = NameIndex(_hub_retired())
+_retired_norms = {_r["norm"] for _r in _hub_rows if _retired_idx.get(_r["Player"])}
 
 
 def _fa_rows(df: pd.DataFrame) -> pd.DataFrame:
@@ -1106,14 +1124,15 @@ def _fa_rows(df: pd.DataFrame) -> pd.DataFrame:
     genuinely available and all invisible here.
 
     Anyone STILL ON WAIVERS is excluded, because he cannot be signed yet, only
-    claimed. "Best available free agent right now" has to mean available right
-    now."""
+    claimed, and anyone RETIRED is excluded, because he cannot be signed at all.
+    "Best available free agent right now" has to mean available right now."""
     if df.empty or "Status" not in df.columns:
         return df
     _available = df["Status"].isin(_FA_SET) | df["norm"].isin(_market_norms)
     return df[_available
               & ~df["norm"].isin(_off_market_norms)
-              & ~df["norm"].isin(_hub_on_waivers())]
+              & ~df["norm"].isin(_hub_on_waivers())
+              & ~df["norm"].isin(_retired_norms)]
 
 
 def _in_fa_class(norm_name: str, status: str) -> bool:
@@ -1122,9 +1141,14 @@ def _in_fa_class(norm_name: str, status: str) -> bool:
     Deliberately WITHOUT the on-waivers exclusion. The board and the card claim
     a player is available RIGHT NOW, which a man on waivers is not. The hub line
     only says he reaches the market this cycle, and being cut is how he got
-    there, so the claim holds while his claim window is still open."""
+    there, so the claim holds while his claim window is still open.
+
+    Retirement IS excluded, and the difference is not an inconsistency. Waivers
+    are a date he passes through on his way onto the market; retirement means he
+    never arrives on it."""
     return ((status in _FA_SET or norm_name in _market_norms)
-            and norm_name not in _off_market_norms)
+            and norm_name not in _off_market_norms
+            and norm_name not in _retired_norms)
 
 # ── Front Page strip: four clickable feature cards under the search ───────────
 if not _hub_df.empty:
@@ -1475,6 +1499,13 @@ if _sel:
                         "Player Option": ("po", "PLAYER OPTION"),
                         "Team Option": ("to", "TEAM OPTION"), "Signed": ("signed", "SIGNED")}
         _chip = _STATUS_CHIP.get(str(_sel["Status"]))
+        # Retirement OVERRIDES the feed's chip. The salary feed goes on typing a
+        # retired player as a UFA forever, and with the "hits the market" clause
+        # now correctly suppressed above, leaving the chip alone would reproduce
+        # exactly the self-contradicting line the comment above describes: no
+        # mention of free agency in the verdict, a UFA badge beside it.
+        if _sel["norm"] in _retired_norms:
+            _chip = ("muted", "RETIRED")
         _status_html = (f'<span class="hv-chip {_chip[0]}">{_chip[1]}</span>' if _chip
                         else (f'<b>{html.escape(str(_sel["Status"]))}</b>'
                               if str(_sel["Status"]) not in ("", "—") else ""))

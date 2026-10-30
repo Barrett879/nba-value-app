@@ -27,7 +27,8 @@ import streamlit.components.v1 as components
 from utils import (NameIndex, NBA_DIVISIONS, SEASONS, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
                    _headshot_id_map, fetch_dlebron, fetch_injuries, injury_is_out,
                    render_footer, render_nav,
-                   render_page_chrome, script_json, _bootstrap_warm)
+                   render_page_chrome, script_json, _bootstrap_warm,
+                   retired_players)
 
 st.set_page_config(page_title="Rosters", page_icon="static/favicon.svg", layout="wide")
 render_page_chrome()
@@ -408,6 +409,10 @@ def _payload() -> str:
     _conf = TEAM_CONFERENCE                      # derived once, in utils
     _div = {ab: d for ds in _DIVS.values() for d, abs_ in ds.items() for ab in abs_}
 
+    # Retirements, joined through NameIndex because the file's spelling and the
+    # roster's need not agree.
+    _RETIRED = NameIndex(retired_players())
+
     by_team = {}
     for r in master:
         ab = (r.get("team") or "").strip()
@@ -423,6 +428,12 @@ def _payload() -> str:
             kind = (r.get("kind") or "standard").strip()
             sal = float(r.get("salary_M") or 0)
             note = (r.get("notes") or "").strip()
+            # A retired player holds no roster spot and is not a free agent the
+            # rights holder could re-sign, so he is on none of this team's books.
+            # The row stays in master_roster because it carries the dead money
+            # and the announcement; it just does not belong on a team page.
+            if _RETIRED.get(name):
+                continue
             m = model.get(name) or {}
             fv = fa_val.get(name) or {}
             pid = heads.get(name)
@@ -481,7 +492,7 @@ def _payload() -> str:
         for p in players:
             have.add(p["n"], True)
         for nm in extra_fas.get(abbr, []):
-            if have.get(nm):
+            if have.get(nm) or _RETIRED.get(nm):
                 continue
             fv = fa_val.get(nm) or {}
             pid = heads.get(nm)

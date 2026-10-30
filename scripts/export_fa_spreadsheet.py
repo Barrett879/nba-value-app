@@ -21,7 +21,14 @@ from openpyxl.utils import get_column_letter
 
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
-from utils import normalize  # noqa: E402
+from utils import normalize, retired_players  # noqa: E402
+
+# Confirmed retirements (data/retired_players.csv). Bound HERE, above the
+# simulation, because the sim is the first thing that can go wrong with one:
+# left in its candidate pool, a retired player does not merely linger on a list,
+# he gets PROJECTED A CONTRACT. Westbrook was being projected to re-sign with
+# Sacramento at $5M three months after he announced he was done.
+_RETIRED_FA = {normalize(_n) for _n in retired_players()}
 
 OUT = Path.home() / "Downloads" / "HoopsValue_FreeAgency_2026.xlsx"
 
@@ -332,7 +339,8 @@ for r in csv.DictReader([l for l in _mr.read_text().splitlines() if not l.lstrip
 for _t2 in list(sim_by_team):
     sim_by_team[_t2] = [p for p in sim_by_team[_t2]
                         if normalize(p["player"]) not in master_names
-                        and normalize(p["player"]) not in master_pending]
+                        and normalize(p["player"]) not in master_pending
+                        and normalize(p["player"]) not in _RETIRED_FA]
 
 team_order = sorted(TEAMS, key=lambda t: TEAMS[t]["name"])
 
@@ -557,14 +565,24 @@ for p in sim["players"]:
 # canonical for the pool, and any hand-added FA appears without code changes
 _master_fa = {}
 _all_master = set()
+_retired_fa = _RETIRED_FA
 for _r0 in csv.DictReader([l for l in _mr.read_text().splitlines()
                            if not l.lstrip().startswith("#")]):
     if not _r0.get("player"):
+        continue
+    if normalize(_r0["player"]) in _retired_fa:
+        # Retired: he holds no roster spot and cannot be signed, so he belongs
+        # in NEITHER set. _all_master would read as "signed, leave him alone";
+        # _master_fa would offer him to the Trade Machine's sign-and-trade
+        # builder as one of his old team's own free agents.
         continue
     if (_r0.get("kind") or "").strip() == "free_agent":
         _master_fa[normalize(_r0["player"])] = _r0
     else:
         _all_master.add(normalize(_r0["player"]))
+# ...and out of the COMPUTED pool too, which reaches players by a different
+# route (the incumbent join above) and would otherwise put him back.
+_pool = [x for x in _pool if normalize(x["n"]) not in _retired_fa]
 _by_name = {normalize(x["n"]): x for x in _pool}
 for _n0, _r0 in _master_fa.items():
     row = _by_name.get(_n0)
@@ -615,8 +633,19 @@ _ros = {"value_season": sim.get("season", "2025-26"),
         "cap_M": CAP, "apron2_M": AP2, "teams": {}}
 for _tm in team_order:
     _rows = [r for r in detail if r[0] == _tm]
-    _uns = [{"n": x[1], "barrett": x[3]} for x in fa_rows
-            if x[0] == _tm and (x[3] or 0) >= 8.0]        # rotation-level only
+    # Rotation-level only, never a retired player, and never the same man twice.
+    # Both guards were earned here: with Westbrook removed from the SIM he fell
+    # straight through onto this list instead, and arrived TWICE, because
+    # fa_rows can carry a player under two entries. A team's "notable unsigned"
+    # is a current-availability claim like any other.
+    _seen_uns = set()
+    _uns = []
+    for x in fa_rows:
+        _nu = normalize(x[1])
+        if x[0] != _tm or (x[3] or 0) < 8.0 or _nu in _RETIRED_FA or _nu in _seen_uns:
+            continue
+        _seen_uns.add(_nu)
+        _uns.append({"n": x[1], "barrett": x[3]})
     _ros["teams"][_tm] = {
         "abbr": _tm, "name": TEAMS[_tm]["name"],
         "total": agg[_tm]["total"], "size": agg[_tm]["size"], "room": agg[_tm]["room"],

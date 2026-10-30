@@ -3360,6 +3360,71 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
     return None
 
 
+# ── Retirement ────────────────────────────────────────────────────────────────
+# A retired player is not a free agent, and nothing else in the repo can say so.
+# `kind` in master_roster cannot: it answers "does he occupy a 2026-27 roster
+# spot", and free_agent is still the TRUE answer for a retired man -- he holds
+# no spot. The salary feed cannot: it goes on typing him as a UFA forever.
+#
+# It also cannot ride as a note in master_roster, which was the first design
+# here, because master_roster does not know every player this has to cover.
+# MEASURED before trusting it: of 35 free agents on the board tonight, FIVE have
+# no master_roster row at all (Nicolas Batum, Markelle Fultz, Cody Martin,
+# A.J. Lawson, E.J. Liddell) and reach the board purely on the feed's status.
+# A retired veteran is precisely the player who has fallen out of every roster
+# file, so keying retirement off roster membership gets the dependency backwards.
+#
+# So it is its own file, like position_overrides.csv and dead_money_2026_27.csv:
+# a hand-verified editorial fact, one row per player, with the announcement date
+# and the source beside it. The date and source are REQUIRED. Without them the
+# row is an assertion with no provenance, and "he has not played in a while" is
+# how a player who never announced anything ends up labelled retired on a public
+# page.
+RETIRED_PATH = Path(__file__).resolve().parent / "data" / "retired_players.csv"
+
+
+def retired_players(path: "Path | None" = None) -> dict:
+    """{spelling: {"announced", "source", "note"}} for players who have retired.
+
+    THE one reader. Six surfaces ask "can a team sign him today" and the last
+    time that test got hand-copied instead of shared, a fix landed on the home
+    page card alone and left the tab wrong.
+
+    Spellings, not normalized keys, because every caller joins them through
+    NameIndex: the file writes "K.J. Simpson" where the board writes "KJ
+    Simpson", and an exact-key miss here fails OPEN -- it would publish a
+    retired player as the best available free agent, which is the exact failure
+    this exists to prevent.
+
+    A row missing its date or source is DROPPED and logged, not honoured.
+    """
+    out = {}
+    try:
+        import csv as _csv_mod
+        src = Path(path) if path else RETIRED_PATH
+        if not src.exists():
+            return out
+        with open(src) as fh:
+            for r in _csv_mod.DictReader(l for l in fh if l.strip()
+                                         and not l.lstrip().startswith("#")):
+                name = (r.get("player") or "").strip()
+                announced = (r.get("announced") or "").strip()
+                source = (r.get("source") or "").strip()
+                if not name:
+                    continue
+                if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", announced) or not source:
+                    logger.warning(
+                        "retired_players.csv: dropping %r -- a retirement needs a "
+                        "YYYY-MM-DD date and a source, got %r / %r",
+                        name, announced, source)
+                    continue
+                out[name] = {"announced": announced, "source": source,
+                             "note": (r.get("note") or "").strip()}
+    except Exception:
+        logger.warning("retired_players.csv unreadable: retirements ignored")
+    return out
+
+
 def style_rookie_salary(row, rookie_scale: set):
     """Color the Salary cell purple for rookie-scale players."""
     result = pd.Series('', index=row.index)

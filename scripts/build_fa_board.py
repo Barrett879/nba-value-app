@@ -22,11 +22,14 @@ sys.path.insert(0, str(ROOT))
 warnings.filterwarnings("ignore")
 from utils import (normalize, DEFAULT_MIN_THRESHOLD,  # noqa: E402
                    option_opt_in_prob, OPTION_OPT_IN_THRESHOLD,
-                   classify_fa_status)
+                   classify_fa_status, retired_players, NameIndex)
 import team_suitors as ts  # noqa: E402
 
 OUT = ROOT / "cache" / "fa_board_v1.json"
 POSITIONS = ["PG", "SG", "SF", "PF", "C"]
+# master_roster spellings against board spellings, so NameIndex, not a bare key.
+_RETIRED_IDX = NameIndex(retired_players())
+retired_out: list = []
 STARTER = 15.0          # a league-average starter's Barrett Score (for needs)
 MIN_MONEY = 7.0         # at/below this an offer is low-cost depth money, not a real bid
 MIN_SALARY = 3.0        # at/below this it's a true veteran-minimum deal (vs BAE-level depth)
@@ -162,6 +165,11 @@ for _, r in qualified.iterrows():
         continue
     if _optout:
         st_ = "UFA"
+    # A retired player is not a free agent any team can plan around, so he does
+    # not belong on a board whose whole purpose is ranking who is signable.
+    if _RETIRED_IDX.get(name):
+        retired_out.append(name)
+        continue
     cands.append({
         "name": name, "status": st_,
         "value_M": value_M,
@@ -171,7 +179,8 @@ for _, r in qualified.iterrows():
         "age": age,
         "team": _team_of(name, r["Team"], f.get("current_team")),
     })
-print(f"  {len(cands)} free agents  ({len(opted_in)} option-holders excluded as likely opt-ins)")
+print(f"  {len(cands)} free agents  ({len(opted_in)} option-holders excluded as likely opt-ins"
+      + (f", {len(retired_out)} retired: {', '.join(retired_out)}" if retired_out else "") + ")")
 for x in opted_in:
     print(f"    opt-in: {x}")
 
