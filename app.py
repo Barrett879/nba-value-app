@@ -795,6 +795,32 @@ def _hub_outcome(norm_name: str, status: str | None) -> str | None:
 _pool = build_ranked_blended(_HUB_SEASON)
 _pool = _pool.sort_values("barrett_score", ascending=False).reset_index(drop=True)
 
+# The season this board's NUMBERS actually come from, read off the rows rather
+# than assumed from SEASONS[0].
+#
+# build_ranked_blended keeps a player on his most recent 500-minute season
+# until he clears 500 in the current one, so for the first couple of months of
+# a season every row is still last season's. On 2026-10-29 that was 524 of 524
+# rows, with the most minutes anyone had played being 187.
+#
+# Labelling the board "2026-27" in that state is worse than the literal it
+# replaced: the old copy said "2025-26 Player Board" and was right until the
+# rollover, and deriving it from SEASONS[0] made it name a season none of the
+# data came from. Derive it from the data and it cannot be wrong in either
+# direction.
+_SCORE_SEASONS = ([str(x) for x in _pool["score_season"].dropna().unique()]
+                  if "score_season" in _pool.columns else [])
+_n_live = (int((_pool["score_season"].astype(str) == _HUB_SEASON).sum())
+           if "score_season" in _pool.columns else len(_pool))
+# One season in the pool: name it. Mixed: it is genuinely this season's board,
+# carrying some rows that have not graduated yet.
+_BOARD_SEASON = (_SCORE_SEASONS[0] if len(_SCORE_SEASONS) == 1 else _HUB_SEASON)
+# True while ANY row is still on a prior season, not only while every row is.
+# The note matters most DURING the changeover, when some rows are live and some
+# are not and the board looks inconsistent to anyone reading it closely.
+_BOARD_IS_MIXED = 0 < _n_live < len(_pool)
+_BOARD_IS_PRIOR = _n_live == 0
+
 _bref_pos = fetch_bref_positions(season_to_espn_year(_HUB_SEASON), cache_v=3)
 _pos2k = _ts.load_player_positions()
 _nc = fetch_next_year_contracts(season_to_espn_year(_HUB_SEASON), cache_v=7)
@@ -1260,7 +1286,24 @@ def _board():
     # moment SEASONS[0] moved to 2026-27 the board was labelled with one season
     # while showing another's numbers: exactly the silent mislabel the rollover
     # doc warns about, and invisible because nothing raises.
-    _rail("", f"{_HUB_SEASON} Player Board", count=f"{len(_df)} players")
+    _rail("", f"{_BOARD_SEASON} Player Board", count=f"{len(_df)} players")
+    if _BOARD_IS_PRIOR or _BOARD_IS_MIXED:
+        # Say it on the page. A board of last season's numbers under this
+        # season's heading is the kind of thing that reads as a bug, and the
+        # reason is a deliberate one worth one sentence.
+        _prior_season = next((x for x in _SCORE_SEASONS if x != _HUB_SEASON), "")
+        if _BOARD_IS_PRIOR:
+            st.caption(
+                f"Scores and salaries are {_BOARD_SEASON}, the last complete season. "
+                f"A player moves to his {_HUB_SEASON} line once he has played 500 "
+                f"minutes, so this early a per-game rate is a sample rather than a "
+                f"rating. None of the {len(_pool)} have crossed yet.")
+        else:
+            st.caption(
+                f"{_n_live} of {len(_pool)} players are on their {_HUB_SEASON} "
+                f"numbers. The rest still carry {_prior_season}, and move across "
+                f"once they have played 500 minutes, because this early a per-game "
+                f"rate is a sample rather than a rating.")
     st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
              label_visibility="collapsed")
 
@@ -1541,7 +1584,7 @@ if _sel:
     {_status_seg}</span>
         <span style="display:block;font-style:italic;color:var(--fg-3);font-size:0.82rem;margin-top:2px">{html.escape(_verdict)}</span>
       </span>
-      <span class="rank"><span class="v">#{_sel["rank"]}</span><span class="l">2025-26 rank</span></span>
+      <span class="rank"><span class="v">#{_sel["rank"]}</span><span class="l">{_BOARD_SEASON} rank</span></span>
     </div>
     """, unsafe_allow_html=True)
 
@@ -1687,10 +1730,10 @@ if _sel:
                 _sl = min(_sl_c, key=lambda c: abs(float(c["Salary"]) - _me_sal), default=None)
                 _lines = []
                 if _pf is not None:
-                    _lines.append(f'Similar 2025-26 performance: <b>{html.escape(str(_pf["Player"]))}</b> '
+                    _lines.append(f'Similar {_BOARD_SEASON} performance: <b>{html.escape(str(_pf["Player"]))}</b> '
                                   f'({float(_pf["Barrett Score"]):.1f} Barrett Score)')
                 if _sl is not None:
-                    _lines.append(f'Similar 2025-26 salary: <b>{html.escape(str(_sl["Player"]))}</b> '
+                    _lines.append(f'Similar {_BOARD_SEASON} salary: <b>{html.escape(str(_sl["Player"]))}</b> '
                                   f'(&#36;{float(_sl["Salary"]):.1f}M)')
                 if _lines:
                     _anchor_note = '<div class="hub-note">' + "<br>".join(_lines) + "</div>"
@@ -1698,7 +1741,7 @@ if _sel:
                 _anchor_note = ""
             with st.container(border=True, key="hub_q1"):
                 st.markdown(f"""
-    <div class="hub-qh">Right now · <b>2025-26</b></div>
+    <div class="hub-qh">Right now · <b>{_BOARD_SEASON}</b></div>
     <div class="hub-stats" style="margin-top:0.7rem">
       <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">{_sel["Barrett Score"]:.2f}</div><div class="l">Barrett Score</div></div>
       <div class="hub-stat"><div class="v" style="color:var(--accent-teal)">#{_sel["rank"]}</div><div class="l">League rank</div></div>
@@ -1836,7 +1879,7 @@ if _sel:
                     numeric={"#", "Barrett Score", "Salary", "Predicted"},
                     height=404,
                 )
-                st.markdown('<div class="hub-note">Closest current Barrett Scores in the 2025-26 pool.</div>'
+                st.markdown(f'<div class="hub-note">Closest current Barrett Scores in the {_BOARD_SEASON} pool.</div>'
                             '<div class="hub-go"><a href="/Rankings" target="_top">Full current rankings →</a></div>',
                             unsafe_allow_html=True)
 
@@ -1914,9 +1957,9 @@ _components.html("""
     if (doc.__hvPillTips) return;
     doc.__hvPillTips = true;
     var TIPS = {
-        "All": "Every player in the 2025-26 ranking pool.",
-        "Bargains": "Underpaid by $5M or more: 2025-26 salary at least $5M below 2025-26 value.",
-        "Overpays": "Overpaid by $5M or more: 2025-26 salary at least $5M above 2025-26 value.",
+        "All": f"Every player in the {_BOARD_SEASON} ranking pool.",
+        "Bargains": f"Underpaid by $5M or more: {_BOARD_SEASON} salary at least $5M below {_BOARD_SEASON} value.",
+        "Overpays": f"Overpaid by $5M or more: {_BOARD_SEASON} salary at least $5M above {_BOARD_SEASON} value.",
         "Free agents": "UFA, RFA or an open player/team option, with anyone the verified roster already books on a 2026-27 team removed.",
         "Max tier": "Players whose 2026-27 predicted contract sits at their CBA maximum."
     };
