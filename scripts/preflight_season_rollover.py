@@ -68,15 +68,16 @@ else:
     record("WAIT", "new season has not started", f"{NEW} is not live yet")
 
 # ── 2. the cap for the season AFTER the flip ──────────────────────────────────
-# _amax_floor / _amax_cap read SALARY_CAP_M.get(_NEXT_SEASON, 165.0). A missing
-# key does not raise, it prices the max tier at a stale cap, so this is exactly
-# the silent-wrong-number class.
+# Everything that prices a projected contract reads
+# SALARY_CAP_M.get(CONTRACT_SEASON, 165.0) — the Contract Predictor, the FA
+# board, the player hub. A missing key does not raise, it prices next year's
+# deals at this year's cap, so this is exactly the silent-wrong-number class.
 if NEW_NEXT in SALARY_CAP_M:
     record("PASS", f"salary cap for {NEW_NEXT}",
-           f"${SALARY_CAP_M[NEW_NEXT]:.1f}M present, so the max tier is priced correctly")
+           f"${SALARY_CAP_M[NEW_NEXT]:.1f}M present, so projected contracts are priced correctly")
 else:
     record("FAIL", f"salary cap for {NEW_NEXT}",
-           f"MISSING: _amax_floor/_amax_cap would silently fall back to $165.0M. "
+           f"MISSING: every projected contract would silently fall back to $165.0M. "
            f"Add a projection to SALARY_CAP_M and cite the league memo.")
 
 # ── 3. enough games played in the new season ─────────────────────────────────

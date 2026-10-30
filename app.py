@@ -518,7 +518,7 @@ import plotly.graph_objects as go
 from utils import (
     CACHE_DIR, all_seasons_path, html_table, team_cell, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
-    fetch_league_stats, SALARY_CAP_M, _pkl_load, BLEND_MIN_MINUTES, build_ranked_blended,
+    fetch_league_stats, _pkl_load, BLEND_MIN_MINUTES, build_ranked_blended,
     FACE_GUARD_SCRIPT, NameIndex, fetch_injuries, injury_is_out,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
@@ -526,19 +526,6 @@ from utils import (
 import streamlit.components.v1 as _components
 import team_suitors as _ts
 
-
-@st.cache_data(ttl=3600, show_spinner=False)
-def _accuracy_note() -> str:
-    """Model accuracy sentence for the 2026-27 Predicted column tooltip."""
-    try:
-        _sc = (_json.loads((Path(__file__).parent / "cache" / "accuracy_tracker_v1.json")
-                           .read_text()).get("scorecard") or {})
-        if _sc.get("n"):
-            return (f" So far {_sc['within_4M']:.0f}% of {_sc['n']} real 2026 signings "
-                    f"land within $4M of the actual deal.")
-    except Exception:
-        pass
-    return ""
 
 # The homepage is self-contained chrome (no render_page_chrome), so it must emit
 # the themed-table CSS itself — without it the table has no overflow container
@@ -828,7 +815,6 @@ _rookies = fetch_rookie_scale_players(_HUB_SEASON)
 _pcv_by = _hub_pcv()
 _hub_model_stamp_check()
 _max_norms = {n for n, p in _pcv_by.items() if p.get("is_max")}
-_amax_floor = 0.25 * SALARY_CAP_M.get(_NEXT_SEASON, 165.0) - 0.1
 _hub_cey = _hub_contract_end()
 # Bound HERE, above the _hub_rows loop, because the loop's salary chain needs to
 # know whether the verified roster calls a player a free agent. _market_norms
@@ -1045,19 +1031,6 @@ for _i, _r in _pool.iterrows():
     })
 _hub_df = pd.DataFrame(_hub_rows)
 _hub_df.insert(0, "#", range(1, len(_hub_df) + 1))
-# MAX chips on ACTUAL next-season salaries: norms whose salary sits at/above
-# their own CBA max (25/30/35% of the 2026-27 cap by service years; mid-contract
-# raises exceed the new-deal max, so >= catches them too). max_pct comes
-# precomputed from the hub build cache — recomputing eligibility here was
-# seconds of service-year lookups inside the request. Records without max_pct
-# (pre-v2 cache) simply get no chip: cosmetic, so degrade silently.
-_amax_cap = SALARY_CAP_M.get(_NEXT_SEASON, 165.0)
-_amax_norms = set()
-for _ar in _hub_rows:
-    if _ar.get("Next") and float(_ar["Next"]) >= _amax_floor:
-        _mp = (_pcv_by.get(_ar["norm"]) or {}).get("max_pct")
-        if _mp and float(_ar["Next"]) >= float(_mp) * _amax_cap - 0.05:
-            _amax_norms.add(_ar["norm"])
 _by_norm = {r["norm"]: dict(r, rank=i + 1) for i, r in enumerate(_hub_rows)}
 
 _FA_SET = {"UFA", "RFA", "Player Option", "Team Option"}
@@ -1262,15 +1235,29 @@ st.markdown("""
 [data-testid="stMarkdownContainer"]:has(.hv-rail),
 [data-testid="stMarkdownContainer"]:has(.fp-grid),
 [data-testid="stMarkdownContainer"]:has(.hub-banner){margin-bottom:0 !important;}
-/* Board fragment: tighten rail-to-pills and pills-to-table. The pills'
-   element container (.st-key-board_view) is a DIRECT child of the fragment's
-   inner stVerticalBlock in 1.51, so target that block's gap; the old
-   "> stLayoutWrapper" form matched an outer zero-height block and did
-   nothing. */
-[data-testid="stVerticalBlock"]:has(> .st-key-board_view){
+/* Board fragment: tighten rail-to-note, note-to-pills and pills-to-table,
+   all of which otherwise take the sitewide 1.7rem block gap (measured 27.2px
+   on each of the three).
+
+   This selector has now broken TWICE by keying off Streamlit's own wrapper
+   nesting: first as "> stLayoutWrapper", which matched an outer zero-height
+   block; then as "> .st-key-board_view", which stopped matching the moment
+   the pills moved into st.columns and gained a wrapper of their own. So it no
+   longer describes a path. The board is wrapped in a keyed container, and the
+   block to space is identified by what it CONTAINS: the one whose direct child
+   holds the table. The key scopes it, which matters because the hub's own
+   bordered quadrants hold tables the same way. */
+[data-testid="stVerticalBlock"].st-key-board_block
+    [data-testid="stVerticalBlock"]:has(> [data-testid="stElementContainer"] .hv-table-wrap){
     gap:0.45rem !important;}
-[data-testid="stVerticalBlock"]:has(> .st-key-board_view) .hv-table-wrap{
+[data-testid="stVerticalBlock"].st-key-board_block .hv-table-wrap{
     margin-top:0.2rem;}
+/* The board's explanatory note is an st.caption, which brings its own 7.2px
+   top and 11.2px bottom margins on top of the gap above. Inside the board that
+   reads as the note drifting away from the heading it explains, so the block
+   gap is the only thing setting the rhythm here. */
+[data-testid="stVerticalBlock"].st-key-board_block
+    [data-testid="stCaptionContainer"]{margin-top:0 !important;margin-bottom:0 !important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1374,11 +1361,16 @@ def _board():
         _t = ("" if not _yr or str(_yr) == str(_score_yr)
               else f'<span class="hv-bsyr">({str(_yr)[2:]})</span>')
         return f"{v:.2f}{_t}"
+    # The two forward-looking columns, "{next} Predicted" and "Actual {next}
+    # Salary", live on the Contract Predictor and the Rankings board. The home
+    # board is about THIS season's value, and carrying next season's money here
+    # made it ten columns wide, so it scrolled sideways before the eye got to
+    # the verdict. Barrett asked for them off the homepage; they are not
+    # removed anywhere else.
     _view = _view[["#", "Player", "Team", "Pos", "Barrett Score", "Salary",
-                   "ProjValue", "DeltaMkt", "Predicted", "Next"]].rename(columns={
+                   "ProjValue", "DeltaMkt"]].rename(columns={
         "Barrett Score": f"{_score_yr} Barrett Score", "Salary": f"{_score_yr} Salary",
-        "ProjValue": f"{_score_yr} Value", "DeltaMkt": "+/-",
-        "Predicted": f"{_NEXT_SEASON} Predicted", "Next": f"Actual {_NEXT_SEASON} Salary"})
+        "ProjValue": f"{_score_yr} Value", "DeltaMkt": "+/-"})
     html_table(
         _view,
         formatters={
@@ -1389,19 +1381,10 @@ def _board():
             f"{_score_yr} Salary": lambda v: f"${v:.2f}M",
             f"{_score_yr} Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
                                         else f"${v:.2f}M"),
-            f"Actual {_NEXT_SEASON} Salary": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
-                                                   else ('<span class="hv-chip max">MAX</span>'
-                                                         if normalize(str(r.get("Player", ""))) in _amax_norms else "")
-                                                        + f"${v:.2f}M"),
             "+/-": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
                               else ("-" if v < 0 else "+") + f"${abs(v):.1f}M"),
-            f"{_NEXT_SEASON} Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
-                                               else ('<span class="hv-chip max">MAX</span>'
-                                                     if normalize(str(r.get("Player", ""))) in _max_norms else "")
-                                                    + f"${v:.1f}M"),
         },
-        raw={"Player", "Team", f"{_score_yr} Barrett Score",
-             f"{_NEXT_SEASON} Predicted", f"Actual {_NEXT_SEASON} Salary"},
+        raw={"Player", "Team", f"{_score_yr} Barrett Score"},
         styles={
             f"{_score_yr} Barrett Score": lambda v, _r: (
                 "" if v is None or (isinstance(v, float) and v != v) else
@@ -1410,27 +1393,24 @@ def _board():
             "+/-": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) or v == 0
                                   else ("color:var(--value-good);font-weight:700" if v < 0
                                         else "color:var(--value-bad);font-weight:700")),
-            f"{_NEXT_SEASON} Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
-                                                else "color:var(--accent-teal)"),
         },
         aligns={"#": "right", f"{_score_yr} Barrett Score": "right", f"{_score_yr} Salary": "right",
-                f"{_score_yr} Value": "right", "+/-": "right", f"{_NEXT_SEASON} Predicted": "right",
-                f"Actual {_NEXT_SEASON} Salary": "right"},
+                f"{_score_yr} Value": "right", "+/-": "right"},
         numeric={"#", f"{_score_yr} Barrett Score", f"{_score_yr} Salary", f"{_score_yr} Value",
-                 "+/-", f"{_NEXT_SEASON} Predicted", f"Actual {_NEXT_SEASON} Salary"},
+                 "+/-"},
         helps={
             f"{_score_yr} Barrett Score": "Base Score × Availability Multiplier. Higher = more valuable.",
             f"{_score_yr} Value": "Market value from Current Rankings: the salary of the player at the same Barrett Score rank this season.",
             "+/-": f"{_score_yr} Salary minus {_score_yr} Value. Negative = underpaid.",
-            f"{_NEXT_SEASON} Predicted": ("The Contract Predictor's model projection: what a NEW deal signed today "
-                                  "would pay, at next season's cap." + _accuracy_note()),
-            f"Actual {_NEXT_SEASON} Salary": "What is really on the books for 2026-27: existing contract, exercised option, or the actual new deal signed this summer. Blank = nothing signed yet.",
         },
         height=min(760, max(260, len(_view) * 38 + 46)),
     )
 
 
-_board()
+# Keyed container so the board's spacing CSS has something stable to hold on
+# to; see the gap rules above for why a structural selector was not enough.
+with st.container(key="board_block"):
+    _board()
 
 # ── Hub fill — runs AFTER the board so the board is never blocked (see the
 #    _hub_slot declaration above the board for the full reasoning). ─────────

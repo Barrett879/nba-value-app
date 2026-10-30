@@ -246,12 +246,14 @@ SALARY_CAP_M = {
     "2026-27": 165.0,
     # $176M, the league's September 2026 memo to teams (up from an earlier
     # $174M), a 6.7% rise on $164.96M, with a $213M tax line. NOT final until
-    # June 2027. Present so the season rollover cannot silently misprice max
-    # contracts: _amax_floor and _amax_cap read SALARY_CAP_M.get(_NEXT_SEASON,
-    # 165.0), and once SEASONS[0] becomes 2026-27 that key is "2027-28", so
-    # without this row the max tier would quietly be computed at THIS season's
-    # cap. Do not assume 10% a year, which is what the 2025-26 jump was; growth
-    # has slowed.
+    # June 2027. Present so the season rollover cannot silently misprice a
+    # projected contract: the Contract Predictor and the FA board price every
+    # deal against CONTRACT_SEASON, the season AFTER the one being played, and
+    # all of them read this table through a .get() with a stale default. Once
+    # SEASONS[0] becomes 2026-27 that key is "2027-28", so without this row
+    # every projected deal would quietly be priced at THIS season's cap. Do not
+    # assume 10% a year, which is what the 2025-26 jump was; growth has
+    # slowed.
     "2027-28": 176.0,
 }
 
