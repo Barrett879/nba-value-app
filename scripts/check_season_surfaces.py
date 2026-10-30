@@ -48,8 +48,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from utils import (DEFAULT_MIN_THRESHOLD, SEASONS, live_min_threshold,  # noqa: E402
-                   season_is_live)
+from utils import (BLEND_MIN_MINUTES, DEFAULT_MIN_THRESHOLD, SEASONS,  # noqa: E402
+                   live_min_threshold, season_is_live)
 
 CUR, PRIOR = SEASONS[0], SEASONS[1]
 PAGES = sorted((ROOT / "pages").glob("*.py")) + [ROOT / "app.py"]
@@ -317,6 +317,55 @@ try:
                f"both use {_pool_builder}()")
 except Exception as e:                                               # noqa: BLE001
     record("FAIL", "search routes by the hub's pool", str(e))
+
+
+# ---------------------------------------------------------------- 5. one floor
+# Check 1 above catches a minutes floor that EMPTIES a page, because an empty
+# page is loud. Rosters had the same literal and was silent: its floor did not
+# drop anyone, it reached back a season instead, so the page stayed full and
+# simply showed 2025-26 for every player on every roster while the hub showed
+# 2026-27 for the same man. Luka read 44.0 against the hub's 50.9. Nothing
+# raised, nothing emptied, and the surviving check passed throughout.
+#
+# The floor is not a page's decision to make. utils.BLEND_MIN_MINUTES is the
+# one knob (Barrett, 2026-10-29), and a page that writes its own number has
+# opted out of it in a way only a reader can notice. So: no surface may gate
+# total_min on a literal.
+try:
+    import re as _re
+    _FLOOR_NAME = _re.compile(r"MIN_MINUTES|MIN_THRESHOLD|MINUTES_FLOOR", _re.I)
+    _offenders, _scanned = [], 0
+    for _f in PAGES:
+        try:
+            _tree = ast.parse(_f.read_text(encoding="utf-8"))
+        except Exception:                                            # noqa: BLE001
+            continue
+        _scanned += 1
+        for _n in ast.walk(_tree):
+            # NAME = <number>, where NAME reads like a minutes floor
+            if (isinstance(_n, ast.Assign) and len(_n.targets) == 1
+                    and isinstance(_n.targets[0], ast.Name)
+                    and _FLOOR_NAME.search(_n.targets[0].id)
+                    and isinstance(_n.value, ast.Constant)
+                    and isinstance(_n.value.value, (int, float))):
+                _offenders.append(f"{_f.name}:{_n.lineno} {_n.targets[0].id} = {_n.value.value}")
+            # ... total_min >= <number>, the gate itself, however it is spelled
+            if isinstance(_n, ast.Compare) and len(_n.comparators) == 1:
+                _src = ast.dump(_n.left)
+                if "total_min" in _src and isinstance(_n.comparators[0], ast.Constant) \
+                        and isinstance(_n.comparators[0].value, (int, float)) \
+                        and _n.comparators[0].value != 0:
+                    _offenders.append(f"{_f.name}:{_n.lineno} total_min gated on "
+                                      f"{_n.comparators[0].value}")
+    if _offenders:
+        record("FAIL", "no surface writes its own minutes floor",
+               "; ".join(_offenders) + " -- use utils.BLEND_MIN_MINUTES, or the page "
+               "shows a different season from the rest of the site and says nothing")
+    else:
+        record("PASS", "no surface writes its own minutes floor",
+               f"{_scanned} surface(s) defer to BLEND_MIN_MINUTES = {BLEND_MIN_MINUTES}")
+except Exception as e:                                               # noqa: BLE001
+    record("FAIL", "no surface writes its own minutes floor", str(e))
 
 
 print()

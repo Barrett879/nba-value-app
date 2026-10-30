@@ -24,7 +24,8 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 
-from utils import (NameIndex, NBA_DIVISIONS, SEASONS, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
+from utils import (BLEND_MIN_MINUTES, NameIndex, NBA_DIVISIONS, SEASONS, TEAM_CONFERENCE,
+                   TEAM_HEX, TEAM_HEX_2,
                    _headshot_id_map, fetch_dlebron, fetch_injuries, injury_is_out,
                    render_footer, render_nav,
                    render_page_chrome, script_json, _bootstrap_warm,
@@ -46,9 +47,27 @@ _ROOT = Path(__file__).parent.parent
 # Used to expire lapsed trade exceptions. A frozen literal here silently
 # resurrects TPEs that have already expired.
 _TODAY = _dt.date.today().isoformat()
-# a Barrett Score under this many minutes is a small-sample artifact, so the
-# page reaches back a season rather than showing it
-MIN_MINUTES = 500
+# Which season a card shows is the SITE's decision, not this page's.
+# utils.BLEND_MIN_MINUTES is the one knob that makes it (Barrett, 2026-10-29:
+# the current season everywhere, with only a player who has not played at all
+# falling back), and the hub and the team pages both read it.
+#
+# A local 500 here meant this page never got that decision. On 2026-10-30 the
+# season's minutes leader was at 201, so NOT ONE of 396 scored players cleared
+# the floor: every card on every depth chart showed a 2025-26 number tagged
+# (25-26) while the hub showed 2026-27 for the same player. Luka read 44.0
+# against the hub's 50.9.
+#
+# The floor was also only ever applied to the CURRENT season -- nothing floored
+# the season it fell back TO. Walker Kessler is the player the original comment
+# cited as the reason for the floor, 5 games and 154 minutes in 2025-26, and
+# the rule rejected his 152 current-season minutes and then printed that 154
+# minute sample instead. Same sample size, opposite verdict.
+#
+# The argument for a higher threshold is real and is written out in full at
+# utils.build_ranked_blended. It belongs in that one place, where changing it
+# moves every surface together.
+MIN_MINUTES = BLEND_MIN_MINUTES
 # feeds spell a few teams the old way
 _ABBR_FIX = {"PHO": "PHX", "CHO": "CHA", "BRK": "BKN", "NOH": "NOP"}
 # every player lands in exactly one depth-chart column; master_roster carries a
@@ -88,11 +107,13 @@ def _payload() -> str:
 
     heads = NameIndex(_headshot_id_map())
 
-    # Barrett Scores, with a minutes floor. A score off a handful of games is
-    # noise: Walker Kessler played 5 games in 2025-26 and scores 12.8, against
-    # 21.2 on a full 2024-25. So the rule is the most recent season in which
-    # the player cleared MIN_MINUTES; only if neither season clears it does the
-    # small sample stand, because that is all there is.
+    # Barrett Scores: the most recent season in which the player cleared
+    # MIN_MINUTES, which is the site-wide knob (see its definition above). At
+    # the knob's current value of 0 that means the current season for anyone
+    # who has played at all, and the last complete season for anyone who has
+    # not, tagged so the card says which -- the same rule, from the same
+    # constant, as utils.build_ranked_blended and so as the hub and the team
+    # pages. Raise the knob and every surface reaches back together.
     # DERIVED, never literal. These were written as "2025-26" and "2024-25"
     # when 2025-26 was the season being scored. After the flip to 2026-27 the
     # literals still parsed and still loaded, so nothing failed: the page just
