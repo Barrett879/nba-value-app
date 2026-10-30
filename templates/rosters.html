@@ -328,7 +328,6 @@ body:not(.light) .tbtn:not(.on):not(:hover){background:rgba(255,255,255,.05)}
 .dcol .empty{font-size:.72rem}
 /* depth-chart cards are their own shape: a five-column grid is far too narrow
    for the list card's headshot + name + stats + money row */
-.depthhint{font-size:.7rem;color:var(--fg5);margin:-.15rem 0 .45rem .1rem}
 .dcard{position:relative;display:block;text-align:center;background:var(--card);border:1px solid var(--line);
   border-top:3px solid transparent;border-radius:11px;padding:.5rem .4rem .45rem;margin-bottom:6px;
   transition:border-color .12s,box-shadow .12s,transform .12s}
@@ -948,13 +947,11 @@ function rosterPanel(t){
       return out.concat(rest, sidelined);
     };
     const pool = t.players.filter(p => p.kind !== "free_agent" && match(p));
-    h += `<div class="depthhint">Each column is ranked by Barrett Score, best first,
-      with hand-set starters pinned above it. The ranking uses each player's last
-      season of real minutes until he has a full one here, so a few early games
-      cannot reorder a rotation; the score on the card is always the current one.
-      Players listed OUT drop to the bottom; day-to-day keeps its place and
-      carries a badge.</div>
-      <div class="depth">`;
+    // The hint that used to sit here is gone at Barrett's request (2026-10-30).
+    // The rules it described are unchanged and are documented where they are
+    // implemented: cmpD and orderD just above, and ORDER_MIN_MINUTES in
+    // pages/Rosters.py.
+    h += `<div class="depth">`;
     for (const pos of POS){
       const list = orderD(pool.filter(p => p.slot === pos));
       h += `<div class="dcol"><div class="dhead">${pos}<span class="cnt">${list.length}</span></div>`;
