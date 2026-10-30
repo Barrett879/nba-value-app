@@ -1635,8 +1635,15 @@ if _sel:
          before those rows existed. 600 was the first try and left the button
          9px below the card edge for exactly that player. The three shorter cards spend the extra on
          TABLE ROWS instead of white space (see the height= on each). */
-      height: 630px !important; max-height: 630px !important;
-      overflow-y: auto !important; padding: 0.55rem 0.8rem 0.9rem !important;
+      /* A FLOOR, not a cap. 630px is what the cards need at desktop width, so
+         at that width all four match and the 2x2 lines up. But Right Now's
+         height depends on the WIDTH -- 603px of content at 1440, 750 at 1024,
+         because everything in it wraps -- and a hard height there put the
+         button 132px below the card edge. min-height keeps the alignment
+         wherever the content fits and lets the card grow where it does not,
+         which is the one failure mode worth never having. */
+      min-height: 630px !important;
+      padding: 0.55rem 0.8rem 0.9rem !important;
       position: relative; margin-bottom: 0.9rem; }}
     /* Phones: drop the fixed height so the four quadrants flow full-length instead
        of trapping content in small inner-scroll boxes. Desktop is untouched.
@@ -1692,24 +1699,12 @@ if _sel:
        through the button for anyone whose card is long. Flow + auto margin does
        both jobs here: pinned to the bottom while there is room, following the
        content when there is not. */
-    /* min-height:100% only resolves if every ancestor up to the sized card has a
-       definite height, so give them one. Without this the auto margin has no
-       free space to absorb and the button simply follows the content, sitting
-       45px higher than the other three buttons on a short card. */
-    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) > .st-key-hub_q1,
-    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stElementContainer"]:has(.hub-go),
-    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stMarkdown"]:has(.hub-go) {{
-      height: 100%; }}
-    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stMarkdownContainer"]:has(.hub-go) {{
-      display: flex; flex-direction: column; min-height: 100%; }}
-    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) .hub-go {{
-      /* flex, not block: an inline-block link inside a block makes a line box
-         whose strut leaves ~17px of descender space under the button, which is
-         why it sat higher than the other three even with the auto margin.
-         line-height:0 also killed the strut but shrank the button itself from
-         35px to 26, so it is flex alone. */
-      position: static; display: flex; align-items: flex-end;
-      margin: auto 0 0 !important; padding-top: 0.7rem; }}
+    /* Right Now needs no special case any more. It had a height:100% chain and
+       an auto top margin to pin its button to the card's bottom while the other
+       three used position:absolute for the same effect. Now that all four are
+       simply in flow, that machinery only did harm: the percentage heights
+       resolved against the padded card and threw the button 145px BELOW the
+       edge at 1024px wide, while the content itself fitted with 3px to spare. */
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go a {{
       margin-top: 0; }}
     /* Per-quadrant identity accents. */
@@ -1733,6 +1728,28 @@ if _sel:
     .hub-qh::after {{ content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, {_rule}, var(--hairline-soft)); }}
     .hub-qh b {{ color: var(--accent-teal); }}
     .hub-stats {{ display: flex; gap: 1.7rem; flex-wrap: wrap; margin-top: 0.3rem; }}
+    /* Between the phone breakpoint and a roomy desktop the quadrant is ~460px
+       wide and these four stats wrap to 2x2, which doubles the block. Two of
+       them in Right Now is ~145px, and that is the whole reason its card
+       outgrew the others at 1024 and stepped the second row down. Tightening
+       the gap keeps all four on one line instead. */
+    @media (min-width: 641px) and (max-width: 1200px) {{
+      .hub-stats {{ gap: 0.75rem; }}
+      .hub-stat .v {{ font-size: 1.3rem; }}
+      /* ...and the floor rises with the width, because the notes still wrap to
+         two lines in a 460px card. One number cannot serve both: 630 is right
+         at 1440 and leaves Right Now 47px tall here, 710 is right here and
+         would waste 80px there. */
+      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1),
+      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q2),
+      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q3),
+      [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q4),
+      [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q1),
+      [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q2),
+      [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q3),
+      [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
+        min-height: 710px !important; }}
+    }}
     .hub-stat .v {{ font-size: 1.55rem; font-weight: 800; color: var(--fg-1); }}
     .hub-stat .l {{ font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.05em;
       color: var(--fg-4); font-weight: 600; margin-top: 0.1rem; }}
