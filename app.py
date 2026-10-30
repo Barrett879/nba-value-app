@@ -15,7 +15,11 @@ seo_selfheal.ensure_seo_patched()  # SEO shell self-heal for bare "streamlit run
 from utils import (
     _bootstrap_warm,
     THEME_DEFAULT_DARK,
-    build_ranked_projected,
+    # Needed up here, not just in the hub's import block below, because the
+    # search box routes on it: it decides whether a picked or deep-linked name
+    # opens the hub or goes to Compare Players, and that runs ~40 lines from
+    # here. It replaced build_ranked_projected, which nothing else here used.
+    build_ranked_blended,
     fetch_next_year_contracts,
     fetch_rookie_scale_players,
     fetch_player_career_with_rank,
@@ -474,9 +478,24 @@ with _search_col:
         key="home_search_select",
     )
     if _picked:
-        # Current-pool players open the hub panel right here; historical
-        # players (pre-2025-26) go to the full Compare Players page.
-        _cur_norms = {normalize(str(_p)) for _p in build_ranked_projected(SEASONS[0])["Player"]}
+        # Players the HUB can show open the panel right here; everyone else —
+        # legends from before the board's seasons — goes to Compare Players.
+        #
+        # The test has to be the hub's OWN pool, which is build_ranked_blended.
+        # It used to be build_ranked_projected, the CURRENT-season frame, and
+        # the two agreed right up until BLEND_MIN_MINUTES went to 0 and the
+        # board became blended. After that the hub held 572 players and this
+        # test knew about 396, so every one of the other 176 — anyone still
+        # carrying a prior season, Kevin Love, Lonzo Ball, Chris Paul — was
+        # bounced to Compare Players by a test that no longer described the
+        # thing it was gating. Same shape as the board caption that named a
+        # season none of its rows came from: a derived value outliving what it
+        # was derived from.
+        #
+        # Cost is nil: blended is memoized after its first build and the board
+        # builds it below on this same run, so on a rerun this is 0.01s, and
+        # the whole block only runs when something was actually picked.
+        _cur_norms = {normalize(str(_p)) for _p in build_ranked_blended(SEASONS[0])["Player"]}
         if normalize(_picked) in _cur_norms:
             if st.query_params.get("player") != _picked:
                 st.query_params["player"] = _picked

@@ -272,6 +272,53 @@ except Exception as e:                                               # noqa: BLE
     record("FAIL", "season overrides", str(e))
 
 
+# ── 9. the search box routes by the pool the hub actually resolves from ──────
+# The homepage decides, for a picked or deep-linked name, whether to open the
+# hub panel or send the visitor to Compare Players. That decision is a
+# MEMBERSHIP TEST, and it has to be the hub's own pool.
+#
+# It was not. The test named build_ranked_projected (the CURRENT-season frame)
+# while the hub resolves from build_ranked_blended. The two agreed until
+# BLEND_MIN_MINUTES went to 0; after that the hub held 572 players and the test
+# knew 396, so all 176 players still carrying a prior season were bounced off
+# their own hub -- a board row that silently led somewhere else. The page threw
+# nothing, which is why it survived a season-wide sweep.
+#
+# Checked at SOURCE level because the two sites are 700 lines apart and nothing
+# at runtime forces them to agree.
+try:
+    _app = ast.parse((ROOT / "app.py").read_text())
+    _route_builder = _pool_builder = None
+    for _n in ast.walk(_app):
+        # _cur_norms = {... for _p in BUILDER(...)["Player"]}
+        if (isinstance(_n, ast.Assign) and len(_n.targets) == 1
+                and isinstance(_n.targets[0], ast.Name) and _n.targets[0].id == "_cur_norms"):
+            for _c in ast.walk(_n.value):
+                if isinstance(_c, ast.Call) and isinstance(_c.func, ast.Name) \
+                        and _c.func.id.startswith("build_ranked"):
+                    _route_builder = _c.func.id
+        # _pool = BUILDER(...)
+        if (isinstance(_n, ast.Assign) and len(_n.targets) == 1
+                and isinstance(_n.targets[0], ast.Name) and _n.targets[0].id == "_pool"
+                and isinstance(_n.value, ast.Call) and isinstance(_n.value.func, ast.Name)
+                and _n.value.func.id.startswith("build_ranked")):
+            _pool_builder = _pool_builder or _n.value.func.id
+    if not _route_builder or not _pool_builder:
+        record("WARN", "search routes by the hub's pool",
+               f"could not locate both sites in app.py (route={_route_builder}, "
+               f"hub={_pool_builder}); the check has drifted from the code")
+    elif _route_builder != _pool_builder:
+        record("FAIL", "search routes by the hub's pool",
+               f"the search box routes on {_route_builder}() but the hub resolves from "
+               f"{_pool_builder}(), so every player in one and not the other is sent "
+               f"away from a panel that would have rendered")
+    else:
+        record("PASS", "search routes by the hub's pool",
+               f"both use {_pool_builder}()")
+except Exception as e:                                               # noqa: BLE001
+    record("FAIL", "search routes by the hub's pool", str(e))
+
+
 print()
 print(f"  SEASON SURFACES    scored: {CUR}   last complete: {PRIOR}"
       f"   live: {season_is_live(CUR)}")
