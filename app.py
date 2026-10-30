@@ -869,10 +869,9 @@ _n_live = (int((_pool["score_season"].astype(str) == _HUB_SEASON).sum())
 # One season in the pool: name it. Mixed: it is genuinely this season's board,
 # carrying some rows that have not graduated yet.
 _BOARD_SEASON = (_SCORE_SEASONS[0] if len(_SCORE_SEASONS) == 1 else _HUB_SEASON)
-# True while ANY row is still on a prior season, not only while every row is.
-# The note matters most DURING the changeover, when some rows are live and some
-# are not and the board looks inconsistent to anyone reading it closely.
-_BOARD_IS_MIXED = 0 < _n_live < len(_pool)
+# True only while EVERY row is still on a prior season. The mixed case had a
+# flag and a caption of its own until 2026-10-30; the caption went at Barrett's
+# request and the flag went with it rather than sitting here unread.
 _BOARD_IS_PRIOR = _n_live == 0
 
 _bref_pos = fetch_bref_positions(season_to_espn_year(_HUB_SEASON), cache_v=3)
@@ -1379,24 +1378,22 @@ def _board():
     # while showing another's numbers: exactly the silent mislabel the rollover
     # doc warns about, and invisible because nothing raises.
     _rail("", f"{_BOARD_SEASON} Player Board", count=f"{len(_df)} players")
-    if _BOARD_IS_PRIOR or _BOARD_IS_MIXED:
-        # Say it on the page. A board of last season's numbers under this
-        # season's heading is the kind of thing that reads as a bug, and the
-        # reason is a deliberate one worth one sentence.
-        _prior_season = next((x for x in _SCORE_SEASONS if x != _HUB_SEASON), "")
+    # The MIXED-board note is gone at Barrett's request (2026-10-30). It said
+    # how many of the pool were on current-season numbers and that the rest
+    # still carried last season, which the rows already say for themselves:
+    # every prior-season row is tagged with its year.
+    #
+    # The ALL-PRIOR note below stays, because it covers a different and much
+    # louder case: right after a rollover the heading names the new season
+    # while every number on the board comes from the old one, with no per-row
+    # tag to explain it because there is nothing to contrast against.
+    if _BOARD_IS_PRIOR:
         _cross = (f"once he has played {BLEND_MIN_MINUTES} minutes"
                   if BLEND_MIN_MINUTES else "as soon as he plays")
-        if _BOARD_IS_PRIOR:
-            st.caption(
-                f"Scores and salaries are {_BOARD_SEASON}, the last complete season. "
-                f"A player moves to his {_HUB_SEASON} line {_cross}. "
-                f"None of the {len(_pool)} have crossed yet.")
-        else:
-            st.caption(
-                f"{_n_live} of {len(_pool)} players are on their {_HUB_SEASON} "
-                f"numbers, which this early is a small sample. The rest have not "
-                f"played yet and still carry {_prior_season}, tagged with the year "
-                f"on their row.")
+        st.caption(
+            f"Scores and salaries are {_BOARD_SEASON}, the last complete season. "
+            f"A player moves to his {_HUB_SEASON} line {_cross}. "
+            f"None of the {len(_pool)} have crossed yet.")
     # Filters left, a way out on the right. The board is a summary: it has no
     # minutes filter, no team or position filter and no sort, all of which live
     # on Rankings, so anyone who wants to actually dig needs a door. Same row
