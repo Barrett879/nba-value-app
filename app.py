@@ -1704,6 +1704,24 @@ if _sel:
       display: flex; flex-direction: column; }}
     [data-testid="stVerticalBlock"][class*="st-key-hub_q"] {{
       flex: 1 1 auto; display: flex; flex-direction: column; }}
+    /* st.container(border=True) draws its OWN border, and on this Streamlit
+       version it lands on the inner stVerticalBlock while the card styling
+       above lands on the stLayoutWrapper around it -- so every quadrant was
+       rendering two nested rounded boxes, the themed one and a default one
+       8px inside it. The button sits flush against the INNER edge (the
+       stMarkdownContainer's -16px bottom margin spends exactly the inner's
+       15px pad plus its 1px border), so the card's bottom padding reads as a
+       gap between two borders rather than as air under the button. Drop the
+       inner border and only the themed card is drawn, with the button 22px
+       above the one edge there is. Keep the inner PADDING: it is what absorbs
+       that negative margin, and zeroing it drops the button back onto the
+       edge. These selectors cannot hit the card itself -- it is a
+       stLayoutWrapper or a stVerticalBlockBorderWrapper, never a
+       stVerticalBlock -- so on a version that skins the wrapper instead this
+       rule is simply a no-op. */
+    [data-testid="stVerticalBlock"][class*="st-key-hub_q"] {{
+      border: 0 !important; border-radius: 0 !important;
+      background: transparent !important; box-shadow: none !important; }}
     [data-testid="stVerticalBlock"][class*="st-key-hub_q"]
       > [data-testid="stElementContainer"]:last-child {{ margin-top: auto; }}
     /* Right Now is one markdown blob rather than separate elements, so the push
