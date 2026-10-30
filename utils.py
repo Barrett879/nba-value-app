@@ -7630,7 +7630,24 @@ def build_ranked_projected(season: str, playoffs: bool = False) -> pd.DataFrame:
     return apply_projections(apply_rankings(build_raw(season, playoffs)))
 
 
-def build_ranked_blended(season: str, min_minutes: int = 500) -> pd.DataFrame:
+# How many minutes a player must have logged in the CURRENT season before the
+# hub shows his current-season line instead of his last complete one.
+#
+# 0 means the hub is the current season: everyone who has played is on this
+# season's numbers, and the handful who have not yet played keep their last
+# season's row, visibly tagged with its year. Barrett set this on 2026-10-29
+# after being shown the trade-off, which is real and worth restating: five
+# games in, a per-game rate is a small sample, so the top of the board moves a
+# lot from night to night. Raise this number to damp that; 500 restores the
+# old behaviour of holding everyone on the last complete season until roughly
+# mid-December.
+#
+# One knob, in one place, because the alternative is a season literal scattered
+# across a dozen files, which is how this site has been bitten repeatedly.
+BLEND_MIN_MINUTES = 0
+
+
+def build_ranked_blended(season: str, min_minutes: int | None = None) -> pd.DataFrame:
     """The scored pool for a season too young to stand on its own.
 
     Early in a season a per-game rate over a handful of games is not a rating,
@@ -7643,9 +7660,15 @@ def build_ranked_blended(season: str, min_minutes: int = 500) -> pd.DataFrame:
 
     So a player carries his CURRENT-season row only once he clears
     min_minutes; until then he keeps the most recent season where he did, and
-    `score_season` records which. Nobody disappears, the scale stays
-    calibrated, and players graduate to live numbers on their own as minutes
-    accumulate, with no second flip to remember.
+    `score_season` records which. Nobody disappears, and players graduate to
+    live numbers on their own as minutes accumulate, with no second flip to
+    remember.
+
+    min_minutes defaults to BLEND_MIN_MINUTES, which Barrett set to 0 on
+    2026-10-29: the hub is the current season, and only a player who has not
+    played at all falls back. The paragraph above is still the argument for a
+    HIGHER threshold, kept because it is the reason the knob exists and the
+    thing to read before changing it back.
 
     A whole ROW moves together, score and salary, so each row stays internally
     consistent rather than pricing one season's production against another's
@@ -7656,6 +7679,7 @@ def build_ranked_blended(season: str, min_minutes: int = 500) -> pd.DataFrame:
     players differently ("Nicolas Claxton" against "Nic Claxton"). An exact
     match would list such a player TWICE, once from each season.
     """
+    min_minutes = BLEND_MIN_MINUTES if min_minutes is None else min_minutes
     cur = build_raw(season)
     idx = SEASONS.index(season) if season in SEASONS else -1
     prior = SEASONS[idx + 1] if 0 <= idx < len(SEASONS) - 1 else None

@@ -289,7 +289,8 @@ _meta = json.loads((_ROOT / "cache" / "team_pages.json").read_text())
 st.caption(
     "Legality uses the verified 2023 CBA rules; ambiguous edge cases resolve "
     "conservatively. The in-browser engine proves itself against the verified "
-    "Python engine's test vectors on every load. Salaries and contracts are "
-    f"{_meta['contract_season']}; player values are the model's market values "
-    f"from {_meta['value_season']}, the last complete season."
+    "Python engine's test vectors on every load. Salaries, contracts and "
+    f"player values are all {_meta['contract_season']}. A player who has not "
+    f"played yet carries his last complete season, marked on his card with "
+    f"the year."
 )

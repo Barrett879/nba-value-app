@@ -413,8 +413,11 @@ def team_page_html(abbr: str):
         team = data.get("teams", {}).get(abbr)
         if not team:
             return None
-        vseason = data.get("value_season", "2025-26")
-        cseason = data.get("contract_season", "2026-27")
+        # Defaults match each other and the payload rather than naming a
+        # season literally: value and contract seasons are the same thing now,
+        # and a literal here would outlive the next rollover.
+        cseason = data.get("contract_season", "")
+        vseason = data.get("value_season", cseason)
         name = team["name"]
         esc = lambda s: _html.escape(str(s), quote=True)  # noqa: E731
 

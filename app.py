@@ -518,7 +518,7 @@ import plotly.graph_objects as go
 from utils import (
     CACHE_DIR, all_seasons_path, html_table, team_cell, theme_fig, get_player_draft_info,
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
-    fetch_league_stats, SALARY_CAP_M, _pkl_load, build_ranked_blended,
+    fetch_league_stats, SALARY_CAP_M, _pkl_load, BLEND_MIN_MINUTES, build_ranked_blended,
     FACE_GUARD_SCRIPT, NameIndex, fetch_injuries, injury_is_out,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
@@ -1024,8 +1024,14 @@ for _i, _r in _pool.iterrows():
         # Which season this score actually came from. Blank while it is the
         # season the board claims; set when the row fell back, so a visitor is
         # never shown last year's number as though it were this year's.
-        "ScoreYr": (None if str(_r.get("score_season") or _HUB_SEASON) == _HUB_SEASON
-                    else str(_r.get("score_season"))),
+        # The row's ACTUAL season, always, never None for the current one. It
+        # used to be None for current rows, which broke the moment the board
+        # became a mix: _score_yr takes the mode of the non-null values, so it
+        # resolved to the PRIOR season whenever a single prior row existed, and
+        # the per-row tag compares against that same value and so marked
+        # nothing. The header would have read 2025-26 over a board that was 392
+        # of 571 rows 2026-27, with no tag anywhere saying so.
+        "ScoreYr": str(_r.get("score_season") or _HUB_SEASON),
         "Salary": float(_r["salary"]) / 1e6,
         "Predicted": (_pcv_by.get(_n) or {}).get("pcv_M"),
         # extra depth for the Right Now quadrant
@@ -1292,18 +1298,19 @@ def _board():
         # season's heading is the kind of thing that reads as a bug, and the
         # reason is a deliberate one worth one sentence.
         _prior_season = next((x for x in _SCORE_SEASONS if x != _HUB_SEASON), "")
+        _cross = (f"once he has played {BLEND_MIN_MINUTES} minutes"
+                  if BLEND_MIN_MINUTES else "as soon as he plays")
         if _BOARD_IS_PRIOR:
             st.caption(
                 f"Scores and salaries are {_BOARD_SEASON}, the last complete season. "
-                f"A player moves to his {_HUB_SEASON} line once he has played 500 "
-                f"minutes, so this early a per-game rate is a sample rather than a "
-                f"rating. None of the {len(_pool)} have crossed yet.")
+                f"A player moves to his {_HUB_SEASON} line {_cross}. "
+                f"None of the {len(_pool)} have crossed yet.")
         else:
             st.caption(
                 f"{_n_live} of {len(_pool)} players are on their {_HUB_SEASON} "
-                f"numbers. The rest still carry {_prior_season}, and move across "
-                f"once they have played 500 minutes, because this early a per-game "
-                f"rate is a sample rather than a rating.")
+                f"numbers, which this early is a small sample. The rest have not "
+                f"played yet and still carry {_prior_season}, tagged with the year "
+                f"on their row.")
     st.pills("View", _BOARD_VIEWS, default="All", key="board_view",
              label_visibility="collapsed")
 
@@ -1317,7 +1324,10 @@ def _board():
     # raising. The score columns are named for the season most rows actually
     # came from, which while the new season is young is last season, and the
     # per-row tag marks any row that differs.
-    _score_yr = (_df["ScoreYr"].dropna().mode().iat[0]
+    # Mode over EVERY row, not over the non-null ones. See the ScoreYr comment
+    # above: dropna() here read the prior season off a handful of rows and
+    # named the whole board with it.
+    _score_yr = (_df["ScoreYr"].mode().iat[0]
                  if "ScoreYr" in _df and _df["ScoreYr"].notna().any() else _HUB_SEASON)
     # Per-row year tag, by player rather than as a column, because html_table
     # renders every column it is handed. It stays INVISIBLE while the board is
