@@ -1323,17 +1323,26 @@ def _board():
     with _more_col:
         st.markdown(
             "<style>"
-            ".board-more{text-align:right;line-height:1}"
-            ".board-more a{display:inline-block;background:var(--panel);"
+            '[data-testid="stElementContainer"]:has(.board-more)'
+            "{min-height:32px;display:flex;align-items:stretch}"
+            '[data-testid="stElementContainer"]:has(.board-more) '
+            '[data-testid="stMarkdown"],'
+            '[data-testid="stElementContainer"]:has(.board-more) '
+            '[data-testid="stMarkdownContainer"]'
+            "{flex:1;display:flex;align-items:center;margin:0}"
+            ".board-more{flex:1;display:flex;justify-content:flex-end;"
+            "align-items:center;line-height:1}"
+            ".board-more a{display:flex;align-items:center;height:32px;"
+            "box-sizing:border-box;background:var(--panel);"
             "border:1px solid var(--panel-line);border-radius:9px;"
-            "padding:0.34rem 0.7rem;font-size:0.78rem;font-weight:700;"
+            "padding:0 0.75rem;font-size:0.78rem;font-weight:700;line-height:1;"
             "color:var(--sky);text-decoration:none;white-space:nowrap}"
             ".board-more a:hover{border-color:var(--sky)}"
             "</style>"
             '<div class="board-more">'
             '<a href="/Rankings" target="_top" '
             'title="Every player, with minutes, team and position filters">'
-            "More &rarr;</a></div>",
+            "See all players</a></div>",
             unsafe_allow_html=True)
 
     # The score column is the board's main event, so its explainer lives here
