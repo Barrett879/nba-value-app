@@ -1353,6 +1353,10 @@ st.markdown("""
    gap is the only thing setting the rhythm here. */
 [data-testid="stVerticalBlock"].st-key-board_block
     [data-testid="stCaptionContainer"]{margin-top:0 !important;margin-bottom:0 !important;}
+/* ...and the <p> inside it carries a 16px bottom margin that stMarkdownContainer's
+   -16px only half cancels, which is the gap between the note and the pills. */
+[data-testid="stVerticalBlock"].st-key-board_block
+    [data-testid="stCaptionContainer"] p:last-child{margin-bottom:0 !important;}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1621,7 +1625,17 @@ if _sel:
     [data-testid="stVerticalBlockBorderWrapper"]:has(.st-key-hub_q4) {{
       background: var(--panel-solid); border: 1px solid var(--panel-line) !important;
       border-radius: 14px !important; box-shadow: var(--shadow-card);
-      height: 580px !important; max-height: 580px !important;
+      /* The height is uniform ON PURPOSE and cannot simply be dropped: the
+         "2x2" is two COLUMNS of two cards, so q3's top is set by q1's height.
+         Letting each size to content put the second row 25px lower on one side
+         than the other -- a worse defect than the blank strip it removed.
+         630px is what Right Now needs with its seven profile rows AND the
+         prior-season note, MEASURED on a player who has both (598px of content
+         plus the card's own padding), rather than the 580 that was picked
+         before those rows existed. 600 was the first try and left the button
+         9px below the card edge for exactly that player. The three shorter cards spend the extra on
+         TABLE ROWS instead of white space (see the height= on each). */
+      height: 630px !important; max-height: 630px !important;
       overflow-y: auto !important; padding: 0.55rem 0.8rem 3.3rem !important;
       position: relative; margin-bottom: 0.9rem; }}
     /* Phones: drop the fixed height so the four quadrants flow full-length instead
@@ -1670,10 +1684,26 @@ if _sel:
        through the button for anyone whose card is long. Flow + auto margin does
        both jobs here: pinned to the bottom while there is room, following the
        content when there is not. */
+    /* min-height:100% only resolves if every ancestor up to the sized card has a
+       definite height, so give them one. Without this the auto margin has no
+       free space to absorb and the button simply follows the content, sitting
+       45px higher than the other three buttons on a short card. */
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) > .st-key-hub_q1,
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stElementContainer"]:has(.hub-go),
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stMarkdown"]:has(.hub-go) {{
+      height: 100%; }}
     [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) [data-testid="stMarkdownContainer"]:has(.hub-go) {{
       display: flex; flex-direction: column; min-height: 100%; }}
     [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) .hub-go {{
-      position: static; margin: auto 0 0 !important; padding-top: 0.7rem; }}
+      /* flex, not block: an inline-block link inside a block makes a line box
+         whose strut leaves ~17px of descender space under the button, which is
+         why it sat higher than the other three even with the auto margin.
+         line-height:0 also killed the strut but shrank the button itself from
+         35px to 26, so it is flex alone. */
+      position: static; display: flex; align-items: flex-end;
+      margin: auto 0 0 !important; padding-top: 0.7rem; }}
+    [data-testid="stLayoutWrapper"]:has(> .st-key-hub_q1) {{
+      padding-bottom: 0.9rem !important; }}
     [data-testid="stLayoutWrapper"]:has(> [class*="st-key-hub_q"]) .hub-go a {{
       margin-top: 0; }}
     /* Per-quadrant identity accents. */
@@ -1871,10 +1901,11 @@ if _sel:
             _prior_note = (f'<div class="hub-note" style="margin-top:0.3rem">'
                            f'No {html.escape(_HUB_SEASON)} games yet &middot; these are his '
                            f'<b>{html.escape(_row_yr)}</b> numbers.</div>') if _row_is_prior else ""
-            # And say what the TRACK is, which stopped being "this season" the
-            # moment each peer started being read on his own most recent one.
-            _track_basis = ("this season" if not (_BOARD_IS_PRIOR or _BOARD_IS_MIXED)
-                            else "each on his most recent season")
+            # The caption names no season at all. It used to say "this season",
+            # which stopped being true once each peer was read on his own most
+            # recent one, and spelling THAT out ran the line to two and pushed
+            # the card past its box. The per-player note above already says
+            # whose numbers these are, which is the part that matters.
             _bar_c = _thx or "var(--accent-teal)"
             _ladder = "".join(
                 f'<div class="lrow"><span class="ll">{_l}</span>'
@@ -1929,7 +1960,7 @@ if _sel:
     </div>
     <div class="hub-ladder">{_ladder}</div>
     {_prior_note}
-    <div class="hub-note" style="margin-top:0.3rem" title="Low-minute players are excluded so a garbage-time fluke cannot set the scale's endpoints.">Track runs lowest to highest rotation {html.escape(_pos_prim)} (15+ MPG) {_track_basis} · middle tick = the {_center_word} (small number).</div>
+    <div class="hub-note" style="margin-top:0.3rem" title="Low-minute players are excluded so a garbage-time fluke cannot set the scale's endpoints.">Track runs lowest to highest rotation {html.escape(_pos_prim)} (15+ MPG) · middle tick = the {_center_word} (small number).</div>
     <div class="hub-stats" style="margin-top:1.1rem">
       <div class="hub-stat"><div class="v">${_sel["Salary"]:.1f}M</div><div class="l">Salary</div></div>
       <div class="hub-stat"><div class="v" style="color:{_d_color}">{_d_txt}</div><div class="l">{_d_lbl} vs market</div></div>
@@ -1957,7 +1988,12 @@ if _sel:
                     _fig.add_bar(x=_mine["Season"], y=_mine["salary"] / 1e6, yaxis="y2",
                                  marker_color=_hex_rgba(_chex, 0.22),
                                  hovertemplate="$%{y:.1f}M<extra></extra>")
-                    _base = float(_mine["barrett_score"].min()) - 2
+                    # Fill from zero, and scale the axis 0 -> career best. A
+                    # floating baseline just under the lowest season exaggerated
+                    # every wobble: Luka's 2024-25 dip read like a collapse
+                    # because the axis started at 28.
+                    _base = 0.0
+                    _ymax = float(_mine["barrett_score"].max())
                     _fig.add_scatter(x=_mine["Season"], y=[_base] * len(_mine),
                                      mode="lines", line=dict(width=0),
                                      hoverinfo="skip", showlegend=False)
@@ -1971,10 +2007,14 @@ if _sel:
                                      mode="markers",
                                      marker=dict(color="#f1c40f", size=11,
                                                  line=dict(color="#b8860b", width=1)),
+                                     # the peak sits exactly on the top of the
+                                     # range now, so let it draw past the axis
+                                     cliponaxis=False,
                                      hovertemplate="Peak: %{y:.2f}<extra></extra>")
                     _fig.update_layout(
                         height=175, margin=dict(t=6, b=6, l=6, r=6), showlegend=False,
                         paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+                        yaxis=dict(range=[0, _ymax], rangemode="tozero"),
                         yaxis2=dict(overlaying="y", side="right", showticklabels=False,
                                     showgrid=False, rangemode="tozero",
                                     range=[0, float(_mine["salary"].max()) / 1e6 * 3.2]),
@@ -2019,7 +2059,14 @@ if _sel:
                 # Pin the selected player into the list so the comparison has an anchor.
                 _sim = (pd.concat([_sim, _hub_df[_hub_df["norm"] == _n]])
                         .sort_values("Barrett Score", ascending=False))
-                _sim_view = _sim[["#", "Player", "Team", "Barrett Score", "Salary", "Predicted"]].copy()
+                # Market VALUE, not the predicted next contract: the same
+                # ProjValue the board and Current Rankings show, which is the
+                # salary of the player at that Barrett Score rank this season.
+                # "Predicted" answered a different question from the Salary
+                # column beside it (what a NEW deal would pay), so the two never
+                # compared.
+                _sim_view = _sim[["#", "Player", "Team", "Barrett Score", "Salary",
+                                  "ProjValue"]].copy().rename(columns={"ProjValue": "Value"})
                 _s_lo = float(_sim_view["Barrett Score"].min())
                 _s_hi = float(_sim_view["Barrett Score"].max())
                 _s_rng = (_s_hi - _s_lo) or 1.0
@@ -2039,25 +2086,23 @@ if _sel:
                         "Team": team_cell,
                         "Barrett Score": lambda v: f"{v:.2f}",
                         "Salary": lambda v: f"${v:.1f}M",
-                        "Predicted": lambda v, r: ("—" if v is None or (isinstance(v, float) and v != v)
-                                                   else ('<span class="hv-chip max">MAX</span>'
-                                                         if normalize(str(r.get("Player", ""))) in _max_norms else "")
-                                                        + f"${v:.1f}M"),
+                        "Value": lambda v: ("—" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                            else f"${v:.1f}M"),
                     },
-                    raw={"Player", "Team", "Predicted"},
+                    raw={"Player", "Team"},
                     styles={
                         "Barrett Score": lambda v, _r: (
                             f"background:linear-gradient(90deg,var(--bar-tint) "
                             f"{max(2, min(100, v / (_s_hi or 1) * 100)):.0f}%,transparent 0)"),
-                        "Predicted": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v)
-                                                    else "color:var(--accent-teal)"),
+                        "Value": lambda v, _r: ("color:var(--fg-6)" if v is None or (isinstance(v, float) and v != v) or v == 0
+                                                else "color:var(--accent-teal)"),
                     },
                     row_style=lambda rd: ((f"background:{_hex_rgba(_thx, 0.10)};font-weight:600" if _thx
                                            else "background:var(--panel-hover);font-weight:600")
                                           if normalize(str(rd.get("Player", ""))) == _n else ""),
-                    aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Predicted": "right"},
-                    numeric={"#", "Barrett Score", "Salary", "Predicted"},
-                    height=404,
+                    aligns={"#": "right", "Barrett Score": "right", "Salary": "right", "Value": "right"},
+                    numeric={"#", "Barrett Score", "Salary", "Value"},
+                    height=494,
                 )
                 st.markdown(f'<div class="hub-note">Closest current Barrett Scores in the {_BOARD_SEASON} pool.</div>'
                             '<div class="hub-go"><a href="/Rankings" target="_top">Full current rankings →</a></div>',
@@ -2111,7 +2156,7 @@ if _sel:
                         aligns={"Avg Score": "right", "Peak": "right", "Best Rank": "right",
                                 "Top Salary": "right"},
                         numeric={"Avg Score", "Peak", "Best Rank", "Top Salary"},
-                        height=404,
+                        height=494,
                     )
                     st.markdown(f'<div class="hub-note">Closest career averages, all eras: '
                                 f'{html.escape(_sel["Player"])} at {_me["avg"]:.2f} over '
