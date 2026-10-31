@@ -499,27 +499,16 @@ dlebron_lookup = fetch_dlebron(season)
 _gp_sum = float(df["GP"].sum())
 league_avg_ts = float((df["ts_pct"] * df["GP"]).sum() / _gp_sum) if _gp_sum > 0 else 0.0
 if not dlebron_lookup:
-    # The copy has to follow the metric. This page said "no on/off, no
-    # role-adjustment" for twelve minutes after the blend went live, which was
-    # the exact opposite of what it had started computing.
-    _blend = fetch_defense_blend(season)
-    if _blend:
-        _meta = fetch_defense_blend_meta(season)
-        _ends = (_meta.get("scaled_to") or {}).get("endpoints") or []
-        _scale = (f"The best defender this season sits at {_ends[1]:+.0f} and the worst at "
-                  f"{_ends[0]:+.0f}, and the score counts it twice, so defence swings "
-                  f"{abs(_ends[0]) * 2 + abs(_ends[1]) * 2:.0f} points across the league. "
-                  "Past seasons use BBall Index's own narrower scale, so defensive values "
-                  "are not comparable across seasons.") if len(_ends) == 2 else ""
-        st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) is not published for a "
-                "season in progress. Defensive contribution here is a blend of two on/off "
-                "measures: a role-weighted composite of deterrence and event production, and a "
-                "career-possession-weighted version that reads an established defender off what "
-                f"opponents stop doing rather than off his counting stats. {_scale} "
-                f"It covers {len(_blend)} players; anyone below the possession floor keeps the "
-                "box-score estimate. Early in a season it is thin: a handful of games moves it "
-                "a long way.")
-    else:
+    # The note that DESCRIBED the blend was removed at Barrett's request
+    # (2026-10-31). The blend itself is unchanged; only the explanation is gone.
+    #
+    # What stays is the gate under it, and it is load-bearing. The copy has to
+    # follow the metric: this page said "no on/off, no role-adjustment" for
+    # twelve minutes after the blend went live, which was the exact opposite of
+    # what it had started computing. So the box-score note below is gated on the
+    # BLEND being absent, never on D-LEBRON being absent, and removing the other
+    # branch must not quietly turn that back into the same claim.
+    if not fetch_defense_blend(season):
         st.info("D-LEBRON (BBall Index's RAPM-based defensive metric) only goes back to 2009-10. "
                 "For this season, defensive contribution is estimated from box-score stats "
                 "(BLK, STL, DREB, and PF) centered on the season's league average. "
