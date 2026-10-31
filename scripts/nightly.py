@@ -169,7 +169,7 @@ def main() -> int:
                if len(src) else {})
     played = L.espn_completed(season)
     cutoff = (dt.date.today() - dt.timedelta(days=args.days)).strftime("%Y%m%d")
-    behind = sorted({d for (a, h), d in played.items() if d >= cutoff and (
+    behind = sorted({d for (a, h, _k), d in played.items() if d >= cutoff and (
         feed_gp.get(utils.resolve_team_code(a, set(feed_gp)), 0) < espn.get(a, 0)
         or feed_gp.get(utils.resolve_team_code(h, set(feed_gp)), 0) < espn.get(h, 0))})
     if behind:
