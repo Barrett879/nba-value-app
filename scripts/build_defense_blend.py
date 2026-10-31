@@ -32,7 +32,7 @@ import def_lib as L, def_options as O
 logging.disable(logging.NOTSET)
 
 W1 = 0.70
-VERSION = "v11"  # v7: 2026-10-27 slate (4 games)
+VERSION = "v12"  # v7: 2026-10-27 slate (4 games)
 
 # The endpoints the defensive value is stretched to. Scaling is PIECEWISE about
 # zero, so the best defender lands exactly on POS_MAX, the worst exactly on
