@@ -170,22 +170,54 @@ def main() -> int:
             # Everything else still has to reconcile exactly, and two sloppy
             # columns still fail: the point of the check is that a block which
             # is wrong in SHAPE never reaches disk.
-            _TOL_1 = {"fga", "fta"}
+            # Which columns disagree, and by how much.
+            gaps = {k: sum(p[k] for p in players) - want
+                    for k, want in totals.items()}
+            off = {k: g for k, g in gaps.items() if abs(g) > 1e-6}
+
+            # The player rows are only SOUND or NOT; the team row is a
+            # checksum, not a source. So tolerate ESPN's arithmetic only when
+            # three independent things say the player set is complete:
+            #
+            #   pts reconciles EXACTLY. A missing, duplicated or shifted player
+            #     moves it, and it is the column the Barrett Score leans on
+            #     hardest.
+            #   the minutes sum to a LEGAL game: 5 men x 48, plus 25 per
+            #     overtime. This is the one that catches a missing player, and
+            #     it needs nothing from ESPN's totals row (which leaves MIN
+            #     blank), so it cannot be fooled by the same bad arithmetic.
+            #     ESPN rounds each player's minutes to a whole number, so the
+            #     sum drifts: Washington and Minnesota both read 242 on
+            #     2026-10-30. The tolerance is therefore half a minute per
+            #     player, which is exactly the rounding and nothing more, so a
+            #     man who played any real minutes still cannot go missing
+            #     unnoticed.
+            #   every gap is exactly 1. A parse shift moves columns by a lot;
+            #     ESPN being sloppy moves them by one.
+            #
+            # On 2026-10-29 Sacramento tripped the old rule: reb, dreb, stl and
+            # blk each off by one against a team row whose pts, fg, ast, tov,
+            # oreb and pf all reconciled, with 240 minutes and reb == oreb+dreb
+            # for all nine players. The block was right and the checksum row was
+            # wrong, and refusing it stopped the WHOLE NIGHTLY, which is the
+            # trade this comment already said was the wrong one when it was
+            # written for fga alone.
+            _mins = sum(p["min"] for p in players)
+            _legal = min((240 + 25 * _ot for _ot in range(5)),
+                         key=lambda _t: abs(_mins - _t))
+            _min_tol = max(2.0, len(players) / 2.0)
+            _legal_min = abs(_mins - _legal) <= _min_tol
+            _pts_ok = abs(gaps.get("pts", 0)) <= 1e-6
+            _all_by_one = all(abs(g) <= 1 + 1e-6 for g in off.values())
             bad, tolerated = [], []
-            for k, want in totals.items():
-                gap = abs(sum(p[k] for p in players) - want)
-                if gap <= 1e-6:
-                    continue
-                if k in _TOL_1 and gap <= 1 + 1e-6:
-                    tolerated.append(f"{k} off by {gap:.0f}")
-                else:
-                    bad.append(k)
-            if len(tolerated) > 1:
-                bad.extend(t.split()[0] for t in tolerated)
-                tolerated = []
+            if off and _pts_ok and _legal_min and _all_by_one:
+                tolerated = [f"{k} off by {abs(g):.0f}" for k, g in sorted(off.items())]
+            else:
+                bad = sorted(off)
             if tolerated:
                 print(f"  {bref}  ESPN's own totals disagree with its player rows: "
-                      f"{', '.join(tolerated)} -- tolerated, players are the source")
+                      f"{', '.join(tolerated)} -- tolerated, players are the source "
+                      f"(pts exact, {_mins:g} min against {_legal:g}, every gap 1)")
             shifted = [p["player"] for p in players
                        if abs(p["reb"] - (p["oreb"] + p["dreb"])) > 1e-6]
             if bad or shifted:
