@@ -306,9 +306,16 @@ def main() -> int:
 
     # ---- 6 SHIP --------------------------------------------------------
     paths = [str(f.relative_to(ROOT)) for f in new_files]
-    paths += ["utils.py", "pages/Rankings.py",
-              "scripts/build_per_game.py", "scripts/build_defense_blend.py",
-              "data/provisional_box_scores.csv"]
+    # DERIVED from VERSIONED, not typed out again. This was a second hand-kept
+    # list of the same files, and on 2026-10-31 the two drifted exactly as you
+    # would expect: app.py was added to VERSIONED on the 30th, so the nightly
+    # BUMPED its per_game literal and never STAGED it. Production kept the old
+    # literal while the repo shipped the new artifact, so the hub's ladder read
+    # a file nobody was writing any more: Luka's card said 5 games in its
+    # header and showed his 4-game averages underneath, for two refreshes.
+    # A file this script edits is a file this script ships.
+    paths += sorted({site for sites in VERSIONED.values() for site, _rx in sites})
+    paths += ["data/provisional_box_scores.csv"]
     extra = subprocess.run(["git", "diff", "--name-only", "--",
                             "cache/bref_stats_v3_" + season + ".parquet"],
                            cwd=ROOT, capture_output=True, text=True).stdout.split()
@@ -323,6 +330,15 @@ def main() -> int:
     subprocess.run(["git", "add", "--"] + paths, cwd=ROOT, check=True)
     staged = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=ROOT,
                             capture_output=True, text=True).stdout
+    # Belt and braces for the above: nothing this run EDITED may be left
+    # behind. Deriving the list makes the drift impossible; this makes it
+    # visible if the derivation is ever wrong again.
+    left = [f for f in subprocess.run(
+        ["git", "diff", "--name-only"], cwd=ROOT,
+        capture_output=True, text=True).stdout.split()
+        if f in {site for sites in VERSIONED.values() for site, _rx in sites}]
+    if left:
+        return rollback("version literals bumped but not staged: " + ", ".join(left))
     private = re.search(r"(^|/)(agency_db\.py|private_pages/|data/player_agents|"
                         r"data/agency_contacts|cache/agent_contracts|"
                         r"scripts/build_agent_db\.py|scripts/audit_agents\.py)",
