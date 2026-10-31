@@ -275,7 +275,7 @@ _ESPN_DIR = ROOT / "cache" / "espn_sched"
 
 
 def espn_completed(season, today=None):
-    """{(away, home): date} for every COMPLETED game of the season, per ESPN.
+    """{(away, home, date): date} for every COMPLETED game of the season, per ESPN.
 
     This exists because pbpstats' own get-games list is INCOMPLETE and saying so
     costs nothing: on 2026-10-24 it listed 26 games while ESPN had 28 completed
@@ -283,6 +283,17 @@ def espn_completed(season, today=None):
     not processed at all, so they could not be fetched by id either. Four teams
     were therefore short a played game, and the ingest reported "fetched 0, no
     errors" because it only ever compared itself to that list.
+
+    THE DATE IS PART OF THE KEY, and that is the whole point. This was keyed on
+    (away, home) alone, which silently cannot hold a repeat matchup: the second
+    meeting overwrote the first and the game ceased to exist for everything
+    downstream. By 2026-10-31 twelve pairs had met twice, among them CHI at BOS
+    on the 26th and the 30th and ORL at TOR on the 28th and the 30th, so
+    Boston, Chicago, Orlando and Toronto were each counted one game short.
+    check_board_gp then reported those four teams as having played MORE games
+    than the schedule -- the board was right and the "truth" it was checked
+    against was missing games. A dict keyed by matchup is a dict that assumes
+    teams meet once a season.
 
     Each past date is cached, since a finished date never changes; the last two
     days are always refetched in case a late game went final.
@@ -300,7 +311,7 @@ def espn_completed(season, today=None):
         if fp.exists() and not fresh:
             try:
                 for a, h, d in json.loads(fp.read_text()):
-                    out[(a, h)] = d
+                    out[(a, h, d)] = d
                 day += _d.timedelta(days=1)
                 continue
             except Exception:
@@ -327,7 +338,7 @@ def espn_completed(season, today=None):
             a = _ESPN_TO_NBA.get(ab["away"], ab["away"])
             h = _ESPN_TO_NBA.get(ab["home"], ab["home"])
             rows.append([a, h, k])
-            out[(a, h)] = k
+            out[(a, h, k)] = k
         if not fresh:
             fp.write_text(json.dumps(rows))
         day += _d.timedelta(days=1)
@@ -348,12 +359,18 @@ def feed_gap(season, today=None):
         feed[ab] += 1
     for g in games(season):
         d = json.loads((PB / f"lineupopp_{g['GameId']}.json").read_text())
-        have.add((d.get("away_team_abbreviation"), d.get("home_team_abbreviation")))
+        # The DATE is part of the identity here too: without it the second
+        # meeting of a pair looks like one the feed already has, and a game
+        # that is genuinely missing is never rebuilt. The lineup files carry
+        # their own date; ESPN's keys are YYYYMMDD, so normalise.
+        have.add((d.get("away_team_abbreviation"), d.get("home_team_abbreviation"),
+                  str(d.get("date") or "").replace("-", "")))
     espn = Counter()
-    for (a, h) in played:
+    for (a, h, _d) in played:
         espn[a] += 1
         espn[h] += 1
-    missing = sorted((f"{a}@{h}", d) for (a, h), d in played.items() if (a, h) not in have)
+    missing = sorted((f"{a}@{h}", d) for (a, h, _k), d in played.items()
+                     if (a, h, d) not in have)
     return dict(espn), dict(feed), missing
 
 

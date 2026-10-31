@@ -41,6 +41,16 @@ import argparse, datetime as dt, json, re, shutil, subprocess, sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
+# Every data check refresh_live_season runs EXCEPT check_cache_seeding, which
+# cannot pass until the new files are staged. Kept in one place because the
+# resume path and the did-only-seeding-fail gate both have to mean the same
+# set, and they drifted apart once already.
+DATA_CHECKS = (
+    ("scripts/check_defense_source.py", "defence really is the blend"),
+    ("scripts/check_board_gp.py", "games played vs the schedule"),
+    ("scripts/check_next_contracts.py", "Next $ is populated"),
+    ("scripts/check_season_surfaces.py", "no team dropped from the pool"),
+)
 sys.path.insert(0, str(ROOT))
 sys.path.insert(0, str(ROOT / "scripts"))
 PY_ = sys.executable
@@ -238,25 +248,34 @@ def main() -> int:
         if resuming:
             print("\n--- build + checks " + "-" * 44)
             print("  already built; re-running the checks only")
-            ok = all(sh([c], lbl, check=False) for c, lbl in (
-                ("scripts/check_defense_source.py", "defence really is the blend"),
-                ("scripts/check_board_gp.py", "games played vs the schedule"),
-                ("scripts/check_next_contracts.py", "Next $ is populated"),
-                ("scripts/check_season_surfaces.py", "no team dropped from the pool")))
+            ok = all(sh([c], lbl, check=False) for c, lbl in DATA_CHECKS)
         else:
             ok = sh(["scripts/refresh_live_season.py"], "build + checks", check=False)
     except Exception as e:
         return rollback(f"build raised {type(e).__name__}: {e}")
     if not ok:
-        # check_cache_seeding fails until the files are staged, which is
-        # expected here; anything else is real.
-        staged_only = subprocess.run(
-            [PY_, "-u", "scripts/check_defense_source.py"], cwd=ROOT,
-            capture_output=True).returncode == 0
-        if not staged_only:
-            return rollback("a data check failed")
+        # check_cache_seeding cannot pass until the new files are staged, so a
+        # failure here is expected and is the ONLY one that is.
+        #
+        # Deciding that used to be a single re-run of check_defense_source: if
+        # defence passed, the run concluded that seeding was the only failure
+        # and shipped. That is a proxy that does not measure the thing it
+        # gates. On 2026-10-31 check_board_gp FAILED, defence passed, and the
+        # nightly committed and pushed while printing "the only failure was
+        # check_cache_seeding". The board happened to be right and the
+        # SCHEDULE was stale, so nothing bad shipped, which is luck and not a
+        # design.
+        #
+        # So re-run every data check and require all of them. Slower by the
+        # cost of four read-only scripts, on a path that only runs when
+        # something has already failed.
+        failed = [lbl for c, lbl in DATA_CHECKS
+                  if subprocess.run([PY_, "-u", c], cwd=ROOT,
+                                    capture_output=True).returncode != 0]
+        if failed:
+            return rollback("data check(s) failed: " + ", ".join(failed))
         print("\n  (the only failure was check_cache_seeding, which cannot pass "
-              "until the new files are staged)")
+              "until the new files are staged; every data check re-run and passed)")
 
     # ---- 5 VERIFY ------------------------------------------------------
     print("\n--- verify against the previous revision " + "-" * 22)
