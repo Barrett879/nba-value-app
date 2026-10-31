@@ -56,6 +56,19 @@ st.markdown("""
       margin-top: 2rem !important;
       margin-bottom: 2rem !important;
   }
+  /* Air above the search / sort / team / position row. It sat flush against
+     the Compare players multiselect at exactly 0px, which read as cramped once
+     the defensive-blend notice that used to separate them was removed.
+     0.6rem matches this page's own rhythm, where stacked blocks sit 7 to 11px
+     apart; the vertical block itself has gap:0, so spacing here is per-element.
+
+     Anchored on the KEYED team selectbox inside the row, not on a path through
+     the generated DOM. A selector that describes a path stops matching the
+     moment the layout code moves, without raising, and this file has paid that
+     before. :has() asks what the row CONTAINS, which survives reordering. */
+  [data-testid="stHorizontalBlock"]:has(.st-key-rankings_team) {
+      margin-top: 0.6rem;
+  }
 </style>
 """, unsafe_allow_html=True)
 
