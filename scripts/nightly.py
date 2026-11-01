@@ -117,8 +117,24 @@ def board_summary(path: Path) -> dict | None:
     if not path.exists():
         return None
     d = pd.read_parquet(path)
+    # Players are compared through NameIndex, not as raw strings. A name is not
+    # a player: on 2026-11-01 this gate rolled the night back reporting that
+    # Bobby Portis, Terrence Shannon Jr., Bogoljub Markovic and Karim Lopez had
+    # "vanished", when in fact the board had been carrying Portis and Shannon
+    # TWICE each under two spellings with their games split across the rows
+    # (Portis 3 GP + 3 GP, Shannon 3 GP + 4 GP), and the rebuild merged each
+    # into one complete row -- 6 GP and 7 GP -- while Markovic and Lopez moved
+    # off synthetic negative ids onto real ones with their diacritics restored.
+    # Nobody was lost; duplicate PLAYER_IDs went 2 to 0. Comparing raw strings
+    # makes every spelling repair look like a disappearance and blocks it.
+    #
+    # A genuinely dropped player still fires, because he matches nothing under
+    # NameIndex either. The tolerance collapses spelling variants and nothing
+    # else.
+    from utils import NameIndex as _NI
+    _idx = _NI({str(n): str(n) for n in d["Player"].dropna()})
     return {"rows": len(d), "teams": sorted(d["Team"].dropna().unique()),
-            "players": set(d["Player"].dropna()),
+            "players": set(d["Player"].dropna()), "_index": _idx,
             "salaries": {str(a): float(b) for a, b in zip(d["Player"], d["salary"])
                          if b is not None and b == b}}
 
@@ -285,7 +301,9 @@ def main() -> int:
     if prev is None:
         print("  no previous revision to compare against")
     else:
-        gone_p = sorted(prev["players"] - new["players"])
+        # Resolved through the NEW board's index, so a rename or a merge is not
+        # a loss. See board_summary.
+        gone_p = sorted(n for n in prev["players"] if new["_index"].get(n) is None)
         gone_t = sorted(set(prev["teams"]) - set(new["teams"]))
         moved = [(n, prev["salaries"][n], new["salaries"][n])
                  for n in prev["salaries"]
