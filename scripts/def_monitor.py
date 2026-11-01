@@ -278,8 +278,17 @@ def main():
     try:
         import importlib, glob
         bdb = importlib.import_module("build_defense_blend")
-        shipped_path = sorted(glob.glob(str(ROOT / "cache" /
-                              f"defense_blend_{SEASON.replace('-', '_')}_v*.json")))
+        # Sorted NUMERICALLY. A plain sorted() is lexicographic, so the moment
+        # a v10 existed "v9" sorted last and this compared the live recompute
+        # against a FIVE-DAY-OLD artifact: on 2026-11-01 it was still reading
+        # v9 from 10-29 while the site served v13, reporting 299 players moved
+        # and a max move of 3.04 against a baseline nothing had used since the
+        # 30th. The per-game check twenty lines below already sorts by the
+        # integer; this one never got the same treatment.
+        shipped_path = sorted(
+            glob.glob(str(ROOT / "cache" /
+                      f"defense_blend_{SEASON.replace('-', '_')}_v*.json")),
+            key=lambda f: int(re.search(r"_v(\d+)\.json$", f).group(1)))
         if shipped_path:
             shipped = json.loads(Path(shipped_path[-1]).read_text())
             sv = shipped.get("values") or {}
@@ -303,13 +312,31 @@ def main():
             }
             stale = (len(moved) or set(live) ^ set(sv))
             rec["blend_is_stale"] = bool(stale)
+            # WHY it moved, which decides whether anyone should act. The box
+            # half of both channels is scraped live at build time (the live
+            # season has no committed league_stats parquet), so a rebuild at a
+            # different hour moves players even with no new basketball -- and
+            # because every step is pool-relative, two z-scores and a stretch
+            # to the pool's own max and min, one player's input moves everyone.
+            # Measured 2026-11-01: 184 of 348 moved, max 0.595, zero new games.
+            # Without this line "STALE" reads as "deploy", and deploying costs
+            # 45 seconds of downtime for numbers that will move again by lunch.
+            _new_games = (bd_now := len(L.games(SEASON))) != (
+                (shipped.get("_meta") or {}).get("lineup_games"))
+            rec["blend_drift"]["explained_by_new_games"] = bool(_new_games)
             if stale:
                 note.append(
                     f"SHIPPED BLEND IS STALE: {len(moved)} players moved by more than "
-                    f"0.05, {len(set(live) - set(sv))} new. To refresh and deploy, bump "
-                    f"VERSION in build_defense_blend.py and DATA_REV in utils.py, rerun "
-                    f"build_defense_blend.py, rebuild the three revisioned caches, then "
-                    f"check_cache_seeding.py and push.")
+                    f"0.05, {len(set(live) - set(sv))} new. "
+                    + ("New games since the shipped build, so this is real: to refresh "
+                       "and deploy, bump VERSION in build_defense_blend.py and DATA_REV "
+                       "in utils.py, rerun build_defense_blend.py, rebuild the three "
+                       "revisioned caches, then check_cache_seeding.py and push."
+                       if _new_games else
+                       f"NO new games since it was built ({bd_now} then and now), so this "
+                       "is the live box scrape moving under a pool-relative formula, not "
+                       "basketball. Deploying would ship different numbers, not fresher "
+                       "ones."))
     except Exception as e:
         note.append(f"blend drift check failed: {type(e).__name__}: {str(e)[:90]}")
 

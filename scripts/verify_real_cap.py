@@ -9,6 +9,7 @@ we can eyeball whether capped-out teams read as capped and rebuilders as flush.
 
 Usage:  python -u scripts/verify_real_cap.py
 """
+import re
 import sys, glob, pickle, warnings
 from pathlib import Path
 ROOT = Path(__file__).parent.parent
@@ -39,7 +40,11 @@ def load_team_map() -> pd.DataFrame:
 
 def load_next_contracts() -> dict:
     """{norm_name: {salary, type}} from the cached next_contracts pkl (espn 2026)."""
-    cands = sorted(glob.glob(str(CACHE / "next_contracts_2026_v*.pkl")))
+    # Numeric, not lexicographic: only v7 exists today, so this is latent, but
+    # the day a v10 is written a plain sorted() picks v9. def_monitor.py had
+    # exactly that and spent three days comparing against a stale artifact.
+    cands = sorted(glob.glob(str(CACHE / "next_contracts_2026_v*.pkl")),
+                   key=lambda f: int(re.search(r"_v(\d+)\.pkl$", f).group(1)))
     if not cands:
         print("!! no next_contracts_2026_v*.pkl in cache — run the app once to warm it")
         return {}
