@@ -566,23 +566,16 @@ html_table(
     height=min(820, max(220, len(fa_fmt) * 38 + 46)),
 )
 
-fa_dl_col, fa_cap_col = st.columns([1, 5])
-with fa_dl_col:
-    st.download_button(
-        "Export CSV",
-        data=fa_fmt.to_csv(index=False),
-        file_name=f"barrett_score_free_agents_{season}.csv",
-        mime="text/csv",
-        key="fa_csv",
-    )
-with fa_cap_col:
-    st.caption(
-        f"**{len(fa_display)}** free agents shown · "
-        "**Proj. Value** = salary of the player at the same Barrett Score rank in the current pool, "
-        "a market-rate anchor for what this player should cost. "
-        "**Δ Market**: green = underpaid (will demand raise) · red = overpaid (value risk). "
-        "Purple salary with the small RS mark = rookie scale."
-    )
+# Export CSV removed at Barrett's request (2026-11-01). The caption had a
+# column of its own only to sit beside that button, so it goes back to full
+# width rather than leaving an empty sixth on its left.
+st.caption(
+    f"**{len(fa_display)}** free agents shown · "
+    "**Proj. Value** = salary of the player at the same Barrett Score rank in the current pool, "
+    "a market-rate anchor for what this player should cost. "
+    "**Δ Market**: green = underpaid (will demand raise) · red = overpaid (value risk). "
+    "Purple salary with the small RS mark = rookie scale."
+)
 
 if not fa_display.empty:
     render_rail("The class", "Position breakdown",

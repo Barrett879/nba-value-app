@@ -1053,8 +1053,11 @@ THEME_BASE_CSS = """
         background: var(--panel) !important;
         border-color: var(--panel-line) !important;
     }
-    /* Default st.button / st.download_button (the ✕ remove buttons, Export CSV)
-, Streamlit's light-config white doesn't follow the runtime dark theme.
+    /* Default st.button / st.download_button: Streamlit's light-config white
+       does not follow the runtime dark theme. Today that is the ✕ remove
+       buttons; the Export CSV buttons this also named were removed on
+       2026-11-01, and the stDownloadButton selectors are kept deliberately so
+       a future download button is not born unstyled in dark mode.
        The brightness/theme button keeps its own chrome-stripped look via a
        higher-specificity rule in COMMON_CSS (loads after this). */
     [data-testid="stButton"] button, .stButton button,

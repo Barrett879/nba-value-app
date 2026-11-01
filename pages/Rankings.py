@@ -1192,23 +1192,16 @@ if show_splits and splits_df is not None:
                               if rd.get("Team") == "TOT" else ""),
         height=600,
     )
-    dl_col, cap_col = st.columns([1, 9])
-    with dl_col:
-        st.download_button(
-            "Export CSV",
-            data=sfmt.to_csv(index=False),
-            file_name=f"barrett_score_splits_{season}.csv",
-            mime="text/csv",
-            key="splits_csv",
-        )
-    with cap_col:
-        st.caption(
-            f"{len(sdisplay)} rows shown. **TOT** = full season combined. "
-            "Players who switched teams mid-season appear as separate stints. "
-            "**Δ Market** = Actual − Projected. "
-            "Purple salary with the small RS mark = rookie scale. "
-            "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA."
-        )
+    # Export CSV removed at Barrett's request (2026-11-01). The caption had a
+    # column of its own only to sit beside that button, so it goes back to full
+    # width rather than leaving an empty tenth on its left.
+    st.caption(
+        f"{len(sdisplay)} rows shown. **TOT** = full season combined. "
+        "Players who switched teams mid-season appear as separate stints. "
+        "**Δ Market** = Actual − Projected. "
+        "Purple salary with the small RS mark = rookie scale. "
+        "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA."
+    )
 else:
     # ── Rankings table ────────────────────────────────────────────────────
     # Use pace-adjusted base_score for the display so Base × Avail = Barrett
@@ -1295,24 +1288,15 @@ else:
         detail=_row_panel,
         detail_col="Player",
     )
-    dl_col_r, cap_col_r = st.columns([1, 9])
-    with dl_col_r:
-        st.download_button(
-            "Export CSV",
-            data=display_fmt.to_csv(index=False),
-            file_name=f"barrett_score_{season}.csv",
-            mime="text/csv",
-            key="rankings_csv",
-        )
-    with cap_col_r:
-        if advanced:
-            st.caption("**Rank Diff** = Salary Rank − Score Rank. **Δ Market** = Actual − Projected (red = overpaid, green = underpaid). "
-                       "Purple salary with the small RS mark = rookie scale contract (1st-round pick, yrs 1–4). "
-                       "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.")
-        else:
-            st.caption("**Proj. Salary** = what this player would earn paid by Barrett Score rank. **Δ Market** = Actual − Projected. "
-                       "Purple salary with the small RS mark = rookie scale contract (1st-round pick, yrs 1–4). "
-                       "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.")
+    # Export CSV removed at Barrett's request (2026-11-01); see the note above.
+    if advanced:
+        st.caption("**Rank Diff** = Salary Rank − Score Rank. **Δ Market** = Actual − Projected (red = overpaid, green = underpaid). "
+                   "Purple salary with the small RS mark = rookie scale contract (1st-round pick, yrs 1–4). "
+                   "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.")
+    else:
+        st.caption("**Proj. Salary** = what this player would earn paid by Barrett Score rank. **Δ Market** = Actual − Projected. "
+                   "Purple salary with the small RS mark = rookie scale contract (1st-round pick, yrs 1–4). "
+                   "**Next $**: plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.")
 
 # ── Fill panel placeholder (above multiselect) ────────────────────────────
 new_selected = st.session_state.get("rankings_selected", [])
