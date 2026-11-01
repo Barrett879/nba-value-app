@@ -503,6 +503,15 @@ def _payload() -> str:
                 bar, bar_yr = m.get("barrett"), m.get("bs_yr")
             if bar is None:
                 bar, bar_yr = fv.get("barrett"), fv.get("bs_yr")
+            # Three sources, and they do not agree on how to WRITE a season.
+            # score_of tags "25-26" via _tag(); team_pages and the FA board
+            # both carry the full "2025-26". Whichever one answers, the card
+            # prints its string raw, so on 2026-11-01 five of 581 rows read
+            # "(2025-26)" beside seventy-three reading "(25-26)" -- on the same
+            # page, for no reason a reader could see. Normalise at the point of
+            # choice rather than in three producers.
+            if bar_yr and len(str(bar_yr)) > 5:
+                bar_yr = _tag(str(bar_yr))
             # price the score that is actually on the row; fall back to the
             # board value only when the curve is unavailable
             value = value_of(bar, bar_yr)
