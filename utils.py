@@ -3582,7 +3582,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r23"  # 2026-10-27 slate (4 games)
+DATA_REV = "r24"  # 2026-10-27 slate (4 games)
 
 
 def _rev_path(name: str) -> Path:
@@ -6012,7 +6012,7 @@ def fetch_defense_blend(season: str) -> dict:
     # repo cache only when the FILENAME is missing: v1 D-LEBRON-scaled,
     # v2 [-6, +6], v3 [-4, +6]. Re-committing under an old name would leave
     # production on the previous numbers with the code reading correctly.
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v13.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v14.json")
     if not path.exists():
         return {}
     try:
@@ -6033,7 +6033,7 @@ def fetch_defense_blend_meta(season: str) -> dict:
     once saying "rescaled to D-LEBRON's own range" after it was stretched to
     [-6, +6]. Copy that reads the artifact cannot drift from it.
     """
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v13.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v14.json")
     if not path.exists():
         return {}
     try:
@@ -6069,7 +6069,21 @@ def fetch_defense_blend_meta(season: str) -> dict:
 # places including twice inside the pace adjustment, which is how a single rule
 # drifts: change six and the Score Breakdown stops reconciling with the score
 # it breaks down.
-DEFENSE_WEIGHT_LIVE = 1.75    # the season being played, scored by the blend
+# Both 2.00 since 2026-11-01, and the function stays because the two CAN
+# diverge again, not because they must.
+#
+# 1.75 was never a judgement about how much defence matters. It was damping for
+# a live blend whose spread was artificially wide: the commit that introduced it
+# records "the live blend runs [-4, +6] and historical D-LEBRON about [-3, +4]".
+# That blend measured sd 1.75 against real D-LEBRON's 1.05, so it was 1.67x too
+# wide and 1.75/2.00 damped it by only 0.875x -- the live season was still
+# carrying roughly 46% more defensive weight than any finished one.
+#
+# The rebuilt composite is scaled to D-LEBRON's own mean and sd and measures
+# 1.11 against 1.05, a 1.05x match. There is nothing left to damp, so the live
+# season goes back to the weight every finished season has always used and the
+# all-time pool is like for like again.
+DEFENSE_WEIGHT_LIVE = 2.00    # the season being played, scored by the blend
 DEFENSE_WEIGHT_LEGACY = 2.00  # every finished season, unchanged since v1
 
 
