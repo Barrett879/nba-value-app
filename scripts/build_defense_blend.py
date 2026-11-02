@@ -104,7 +104,7 @@ W_DBPM, W_FAST, W_ONOFF = 0.60, 0.30, 0.10
 SHRINK_MIN = 150.0
 
 W1 = 0.70          # inside the on/off sub-blend, which is now only 10% of the whole
-VERSION = "v15"  # v7: 2026-10-27 slate (4 games)
+VERSION = "v16"  # v7: 2026-10-27 slate (4 games)
 
 # The display scale, Barrett's call on 2026-10-25 (c9c804f, then e1778ff pulled
 # the floor in from -6 to -4). The stretch is piecewise about zero, so the best
