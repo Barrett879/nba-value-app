@@ -74,11 +74,34 @@ def build(season, prior="2024-25", max_games=None):
         df["_prior_sd_rim"] = np.nanstd([v[0] for v in pr.values()])
         df["_prior_mu_pps"] = np.nanmean([v[1] for v in pr.values()])
         df["_prior_sd_pps"] = np.nanstd([v[1] for v in pr.values()])
+    # A pool row with no box row has every box channel at zero, and zero is not
+    # a measurement here: it is the pool average wearing a measurement's clothes.
+    # It used to be kept with a warning, which meant the shipped artifact carried
+    # a plausible near-average defensive value for someone we know nothing about
+    # -- on 2026-11-01 that someone was Toronto's HEAD COACH, keyed by his raw
+    # ESPN id, sitting at -0.0334 among 354 "players". Dropped instead, which is
+    # what the artifact's own caveat already promises for anyone below the
+    # possession floor: absent, so the board keeps its box proxy.
+    #
+    # The message names the CAUSE, because the three causes need three different
+    # fixes and the old one-line warning could not tell them apart.
     missed = df[df.GP == 0]
     if len(missed):
-        print(f"  WARNING: {len(missed)} pool players have NO box row and were "
-              f"zero-filled, which is not a score: "
-              f"{', '.join(missed.player.astype(str))}")
+        from utils import normalize
+        bk = set(pl.index)
+        for n in missed.player.astype(str):
+            norm = normalize(n)
+            if norm.replace(" ", "").isdigit():
+                why = ("an unresolved feed id, not a player -- fix the feed that "
+                       "emitted it, do not alias it")
+            elif " ".join(reversed(norm.split())) in bk:
+                why = (f"name ORDER differs from the box feed, which has "
+                       f"{' '.join(reversed(norm.split()))!r}; NameIndex cannot "
+                       f"bridge a reversal, so add it to def_lib.DEF_ALIASES")
+            else:
+                why = "no box row in this season's feed"
+            print(f"  DROPPED from the pool: {n!r} -- {why}")
+        df = df[df.GP > 0].reset_index(drop=True)
     return df
 
 

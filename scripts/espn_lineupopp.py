@@ -37,6 +37,12 @@ CORNER_Y = 14.0                    # a three below this y is a corner three
 SHOT_WORDS = ("Shot", "Jump", "Layup", "Dunk", "Hook", "Tip", "Floating",
               "Finger Roll", "Fade Away", "Bank")
 
+# Play types that are not evidence of being on the floor, so they never trigger
+# the lineup repair below. See the comment at that repair for why a technical
+# foul belongs here beside the clock stoppages.
+NON_FLOOR = ("End Period", "Full Timeout", "Short Timeout", "Official Timeout",
+             "Technical Foul")
+
 
 def get(url, tries=4):
     d = 3.0
@@ -94,6 +100,7 @@ def build(event_id, local_date=None):
     other = {ids[0]: ids[1], ids[1]: ids[0]}
     agg = defaultdict(lambda: defaultdict(float))   # (defending tid, lineup) -> stats
     viol = defaultdict(int)
+    nonplayer = defaultdict(int)       # participant ids absent from the box score
 
     def lineup_key(tid):
         return ", ".join(sorted(names.get(a, a) for a in on[tid]))
@@ -134,8 +141,26 @@ def build(event_id, local_date=None):
                 on[tid].discard(cout); on[tid].add(cin)
             continue
 
-        if tid in on and parts and ttype not in ("End Period", "Full Timeout",
-                                                 "Short Timeout", "Official Timeout"):
+        # A play's primary participant is taken as evidence that he was on the
+        # floor, which repairs a substitution ESPN did not state. Two kinds of
+        # participant are NOT that evidence, and both gates are needed:
+        #
+        #   NOT IN THE BOX SCORE'S ATHLETE LIST. That list is the positive test
+        #   for "is this a player in this game"; a coach never appears in it.
+        #   On 2026-11-01 TOR@LAL, "Darko Rajakovic technical foul" (Q2 1:55)
+        #   and "JJ Redick technical foul" (Q4 6:27) each named a HEAD COACH as
+        #   the only participant. Rajakovic was added to Toronto's five, a real
+        #   player was evicted to keep it at five, and nothing substitutes a
+        #   coach out -- so he defended 57 possessions across 11 lineups and
+        #   reached the shipped defensive pool as its 354th member, keyed by his
+        #   raw ESPN id, zero-filled, indistinguishable from a measurement.
+        #
+        #   A TECHNICAL FOUL, whoever earned it, because a technical says
+        #   nothing about being on the floor: a bench player can earn one, and
+        #   he IS in the athlete list, so the roster test alone would admit him.
+        if parts and parts[0] not in names:
+            nonplayer[parts[0]] += 1
+        elif tid in on and parts and ttype not in NON_FLOOR:
             if parts[0] not in on[tid]:
                 viol[tid] += 1
                 on[tid].add(parts[0])
@@ -218,7 +243,10 @@ def build(event_id, local_date=None):
     out = {"stats": {}, "home_team_abbreviation": None, "away_team_abbreviation": None,
            "date": date, "league": "nba", "season": "", "season_type": "Regular Season",
            "_source": "espn", "_event_id": str(event_id),
-           "_lineup_violations": {teams[t]: viol[t] for t in teams}}
+           "_lineup_violations": {teams[t]: viol[t] for t in teams},
+           # Kept in the file so a non-player participant is a recorded fact
+           # about the rebuild rather than something a reader has to re-derive.
+           "_nonplayer_participants": {k: v for k, v in sorted(nonplayer.items())}}
     for tid, ab in teams.items():
         out[f"{side_of[tid].lower()}_team_abbreviation"] = ab
     rows = defaultdict(list)
@@ -296,6 +324,26 @@ def selfcheck(events):
                 print(f"{doc['away_team_abbreviation']}@{doc['home_team_abbreviation']:6} "
                       f"{ab:5} {fld:12} {got:8.0f} {want:8.0f} {got - want:7.0f}")
         print()
+
+
+def unnamed_in_lineups(doc):
+    """Names in this document that are not names: bare feed ids.
+
+    The gate in build() is what prevents these; this is what PROVES it, at the
+    only moment that matters, because a bare id in a "Name" field does not fail
+    anywhere downstream. def_options.build() keys the defensive pool on these
+    strings, finds no box row, and fills every box channel with zero -- so the
+    id arrives on the board as a plausible near-average defender instead of as
+    an error. Checked before a file is written, never after.
+    """
+    bad = set()
+    for side in ("Home", "Away"):
+        for r in (doc["stats"].get(side) or {}).get("FullGame") or []:
+            for w in str(r.get("Name", "")).split(","):
+                w = w.strip()
+                if w and w.replace(" ", "").isdigit():
+                    bad.add(w)
+    return sorted(bad)
 
 
 def per_player(doc):
@@ -406,6 +454,11 @@ if __name__ == "__main__":
                 gid = f"E{x['id']}"
                 doc["GameId"] = gid
                 doc["_matchup"] = f"{a}@{h}"
+                unnamed = unnamed_in_lineups(doc)
+                if unnamed:
+                    print(f"  REFUSED {a}@{h} {iso}: {len(unnamed)} lineup slot(s) "
+                          f"hold a bare feed id, not a name: {', '.join(unnamed)}")
+                    continue
                 (PB / f"lineupopp_{gid}.json").write_text(json.dumps(doc))
                 v = doc["_lineup_violations"]
                 flag = "  HIGH VIOLATIONS" if max(v.values()) > 6 else ""
@@ -429,6 +482,11 @@ if __name__ == "__main__":
             doc["GameId"] = gid
             doc["_matchup"] = (f"{doc['away_team_abbreviation']}@"
                                f"{doc['home_team_abbreviation']}")
+            unnamed = unnamed_in_lineups(doc)
+            if unnamed:
+                print(f"REFUSED {doc['_matchup']}: {len(unnamed)} lineup slot(s) hold "
+                      f"a bare feed id, not a name: {', '.join(unnamed)}")
+                continue
             (PB / f"lineupopp_{gid}.json").write_text(json.dumps(doc))
             print(f"wrote lineupopp_{gid}.json  {doc['_matchup']}  {doc['date']}  "
                   f"violations {doc['_lineup_violations']}")

@@ -93,8 +93,16 @@ def _canon_names(season):
     normalize()-keyed fold leaves each player split across two rows with two
     partial on/off splits and no duplicate-key warning to show it.
 
-    The canonical spelling is the most frequent one, ties broken alphabetically
-    so the choice is deterministic rather than filesystem-order dependent.
+    The canonical spelling is THE BOX TABLE'S OWN, because that is the name the
+    rest of the system speaks: utils.build_ranked_blended looks the blend up by
+    the stat frame's PLAYER_NAME, so an artifact keyed in the lineup feed's
+    dialect has to be matched by NameIndex, and NameIndex cannot bridge every
+    difference. Yang Hansen is the case that forced it: pbpstats files him
+    given-name-first ("Hansen Yang") and that was the more frequent spelling, so
+    the artifact was keyed on a reversal of his box name and the board silently
+    kept the box proxy for him. Only when the box key does not resolve does this
+    fall back to the most frequent lineup spelling, ties broken alphabetically,
+    so the choice stays deterministic rather than filesystem-order dependent.
     """
     counts = defaultdict(lambda: defaultdict(int))
     for g in games(season):
@@ -106,9 +114,21 @@ def _canon_names(season):
                     x = x.strip()
                     if x:
                         counts[box_key(season, x)][x] += 1
+    box = players(season)
+    k2n = {}
+    for k, n in zip(box.key, box.PLAYER_NAME):
+        k2n.setdefault(str(k), []).append(str(n))
     out = {}
-    for variants in counts.values():
-        best = sorted(variants.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
+    for k, variants in counts.items():
+        # Alphabetically first, not frame-order first: two box rows can share a
+        # key (their names normalise the same, e.g. "Jr." against "Jr"), and the
+        # artifact's keys have to be stable across rebuilds or the daily drift
+        # check reads a rename as a player leaving and another arriving.
+        box_names = sorted(set(k2n.get(str(k), [])))
+        if box_names:
+            best = box_names[0]
+        else:
+            best = sorted(variants.items(), key=lambda kv: (-kv[1], kv[0]))[0][0]
         for raw in variants:
             out[raw] = best
     return out
@@ -244,7 +264,18 @@ def players(season):
 # transliteration of the same umlaut while "Bub"/"Carlton" is a nickname with no
 # letters in common. Everything else -- the "III" suffix on Butler, "Alex" for
 # "Alexandre", the dropped "Jr." on Boston -- NameIndex already resolves.
-DEF_ALIASES = {"jakob poltl": "Jakob Poeltl", "carlton carrington": "Bub Carrington"}
+# "Hansen Yang"/"Yang Hansen" is a different kind of disagreement from the two
+# above: not a spelling but the ORDER of the two names, which the feeds split on
+# for Chinese names (pbpstats files him given-name-first, the box feed
+# surname-first). NameIndex cannot bridge it by construction -- it requires a
+# MATCHING SURNAME before it will consider a prefix relation, and under a
+# reversal neither name is in the slot it compares. Left as an explicit alias
+# rather than a general "try it reversed" rule in NameIndex: a reversal that
+# matched the wrong player would silently move one man's defensive stats onto
+# another, and def_options.build() now names the reversed form in its drop
+# message, so the next such player is a one-line addition here, not a hunt.
+DEF_ALIASES = {"jakob poltl": "Jakob Poeltl", "carlton carrington": "Bub Carrington",
+               "hansen yang": "Yang Hansen"}
 
 
 @lru_cache(maxsize=None)
