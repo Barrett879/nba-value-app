@@ -6,11 +6,14 @@ Writes cache/defense_blend_<season>_<VERSION>.json: {player name: value}, for
 the season the site is scoring while BBall Index has not yet published a real
 D-LEBRON for it.
 
-score = 0.60 * z(DBPM) + 0.30 * z(BLK/36 + DREB/36) + 0.10 * z(the old on/off
-blend), shrunk by min/(min+SHRINK_MIN), then stretched PIECEWISE ABOUT ZERO so
-the best defender lands exactly on POS_MAX and the worst exactly on NEG_MIN.
-base_score multiplies it by utils.defense_weight(season), 1.75 for the live
-season.
+score = W1 * z(option 1) + (1 - W1) * z(option 4), shrunk by
+min/(min+SHRINK_MIN), then stretched PIECEWISE ABOUT ZERO so the best defender
+lands exactly on POS_MAX and the worst exactly on NEG_MIN. base_score multiplies
+it by utils.defense_weight(season), 1.75 for the live season.
+
+This is the pre-Trae-Young blend, restored on 2026-11-02 at Barrett's request
+after the 2026-11-01 DBPM rebuild. See the note above the weights for what the
+revert costs against real D-LEBRON and for where the cheapest adjustment is.
 
 The stretch is a display decision, Barrett's, 2026-10-25. It is deliberately
 NOT D-LEBRON's own scale: real D-LEBRON across the 17 seasons in
@@ -56,23 +59,40 @@ logging.disable(logging.NOTSET)
 # 15+ mpg). Weights were chosen on 2024-25 and HELD OUT on 2023-24:
 #
 #                                    2024-25   2023-24
-#     the old on/off blend            +0.591    +0.599
-#     DBPM alone                      +0.820    +0.826
-#     this composite                  +0.872    +0.895
+#     THE BLEND BELOW, which ships     +0.591    +0.599
+#     DBPM alone                       +0.820    +0.826
+#     the DBPM composite, reverted     +0.872    +0.895
 #
-# DBPM is legal under the current-season constraint: its coefficients were fit
-# on multi-year RAPM but are now fixed constants, so applying them needs only
-# this season's box score. That is the same thing utils._DLEBRON_PROXY_COEFS
-# already does. What is NOT legal, and is not used, is a player-specific prior
-# carried across seasons (EPM, DARKO, DRIP).
+# Everything above is the research record of the rebuild that this file no
+# longer implements, kept because it is the measurement the next change should
+# argue with. The one live claim in it is the last row's absence: the shipping
+# formula is the FIRST row.
 #
-# The FAST channel is blocks and defensive rebound rate, which arrive earliest:
-# DARKO's published half-lives are ~41 games for blocks and ~46 for defensive
-# rebounds against ~75 for steal rate, and our own disjoint split-half on this
-# season agreed independently (DREB +0.52, BLK +0.34, STL +0.07). Steals are
-# deliberately NOT in it: they are the slowest-arriving channel and they are
-# what a gambling guard accumulates.
-W_DBPM, W_FAST, W_ONOFF = 0.60, 0.30, 0.10
+# DBPM would be legal under the current-season constraint, for whenever this is
+# revisited: its coefficients were fit on multi-year RAPM but are now fixed
+# constants, so applying them needs only this season's box score, the same thing
+# utils._DLEBRON_PROXY_COEFS already does. What is NOT legal, and has never been
+# used, is a player-specific prior carried across seasons (EPM, DARKO, DRIP).
+#
+# REVERTED 2026-11-02, Barrett's call: "i kind of want to change it back to
+# before i made the trae young comment, and then adjust from there". So the
+# composite is the pre-Trae on/off blend again, W1 * option 1 + (1-W1) * option
+# 4, and W_DBPM / W_FAST / W_ONOFF are gone with the channels they weighted.
+#
+# What that costs, measured and stated rather than discovered later: against
+# real D-LEBRON on finished seasons the pre-Trae blend scored +0.535 (2024-25)
+# and +0.591 (2023-24); the DBPM composite it replaces scored +0.872 and +0.895.
+# Trae Young returns to +2.19, 43rd of 353, which is the number that started
+# this. None of that is an argument against the revert -- it is Barrett's call
+# and he made it knowing the figures -- but it is why the rebuild existed.
+#
+# For adjusting from here, the useful measurement is that the pre-Trae metric's
+# two halves pull in opposite directions. Its BOX half, which lives inside
+# option 1 as z(sqrt BLK) + z(STL) + 0.3 z(DREB) at 55% of option 1, scores
+# +0.716 alone on 11 seasons. The full blend scores +0.535. The ON/OFF channels
+# are what drag it down, and they are 45% of option 1 plus all of option 4.
+# Raising the box half is the cheapest adjustment available and it is also the
+# playmaking-heavy direction, since steals carry a full z-term there.
 
 # Minutes shrink, in TOTAL minutes. Every channel here is a rate, and a rate on
 # a tiny denominator is not a measurement: the first build of this composite put
@@ -104,7 +124,7 @@ W_DBPM, W_FAST, W_ONOFF = 0.60, 0.30, 0.10
 SHRINK_MIN = 150.0
 
 W1 = 0.70          # inside the on/off sub-blend, which is now only 10% of the whole
-VERSION = "v17"  # v7: 2026-10-27 slate (4 games)
+VERSION = "v18"  # v7: 2026-10-27 slate (4 games)
 
 # The display scale, Barrett's call on 2026-10-25 (c9c804f, then e1778ff pulled
 # the floor in from -6 to -4). The stretch is piecewise about zero, so the best
@@ -138,30 +158,17 @@ def compute(season, prior=None):
     df = O.build(season, prior=prior)
     z1 = zs(pd.Series(np.asarray(O.opt1_two_channel(df), float)))
     z4 = zs(pd.Series(np.asarray(O.opt4_career_blend(df, season=season), float)))
-    onoff = zs(W1 * z1 + (1 - W1) * z4)
+    comp = zs(W1 * z1 + (1 - W1) * z4)
 
-    # Box spine and the fast channel, both from THIS season only.
+    # Rates need a denominator before they mean anything. See SHRINK_MIN. This
+    # is the ONE piece of the 2026-11-01 rebuild kept across the revert, and
+    # Barrett was told so: the pre-Trae metric had no shrink, and without it
+    # Kawhi Leonard is the 4th best defender in the league on 52 total minutes
+    # and Collin Gillespie the 10th on 106. Set SHRINK_MIN = 0.0 to have the
+    # pre-Trae metric with nothing added at all.
     box = L.players(season).set_index("key")
     key = df.key.astype(str)
-    dbpm = pd.Series(box.dbpm.reindex(key).values, index=df.index)
     mins = pd.Series(box.MIN.reindex(key).values, index=df.index).replace(0, np.nan)
-    per36 = lambda c: pd.Series(box[c].reindex(key).values, index=df.index) / mins * 36
-    blk36, dreb36 = per36("BLK"), per36("DREB")
-    fast = zs(blk36.fillna(blk36.median())) + zs(dreb36.fillna(dreb36.median()))
-
-    # A player with no dbpm yet keeps the other two, renormalised, rather than
-    # being dropped or silently zero-filled. On 2026-11-01 that was 30 of 349,
-    # among them Robert Williams III and Bobby Portis Jr.
-    has = dbpm.notna()
-    comp = pd.Series(index=df.index, dtype=float)
-    if has.any():
-        comp[has] = (W_DBPM * zs(dbpm[has]) + W_FAST * zs(fast[has])
-                     + W_ONOFF * zs(onoff[has]))
-    if (~has).any():
-        comp[~has] = (W_FAST * zs(fast[~has]) + W_ONOFF * zs(onoff[~has])) \
-                     / (W_FAST + W_ONOFF)
-
-    # Rates need a denominator before they mean anything. See SHRINK_MIN.
     total_min = (mins * pd.Series(box.GP.reindex(key).values, index=df.index))
     comp = zs(comp) * (total_min / (total_min + SHRINK_MIN)).fillna(0.0)
 
@@ -175,19 +182,25 @@ def compute(season, prior=None):
     # rediscovered by surprise:
     #
     # 1. IT SHIFTS THE MEAN, because the two halves scale independently and
-    #    this composite's z is left-skewed: -4.11 .. +3.14, so the negative
-    #    half is multiplied by 0.97 and the positive half by 1.91. The pool
-    #    mean lands at about +0.37 rather than 0, worth roughly +0.58 base
-    #    score to every covered player at weight 1.75. The old on/off blend
-    #    was near symmetric and stretched to a mean of +0.04, so this is new
-    #    with the composite, not inherited. It is UNIFORM within the season,
-    #    so it moves no rank on the live board; it lands entirely on the
-    #    all-time pool, where current players are already favoured by 3.
+    #    nothing makes the pre-stretch z symmetric. MEASURED ON THE 2026-11-02
+    #    POOL, not carried over from the receipts: this blend runs -1.93 .. +4.20,
+    #    so it is RIGHT-skewed and the negative half is multiplied by 2.07 while
+    #    the positive half is multiplied by 1.43. The pool mean lands at -0.250,
+    #    which at weight 1.75 is about -0.44 base score to every covered live
+    #    player. The DBPM composite it replaced was left-skewed the other way
+    #    (-4.63 .. +3.12, mean +0.412, about +0.73 base score), so THE REVERT
+    #    FLIPS THE SIGN of this shift: live players were being favoured against
+    #    the all-time pool and are now penalised against it. The receipts record
+    #    this blend at +0.04 on the 2026-10-25 pool; it is -0.250 today, which is
+    #    why the number gets re-measured and not quoted. It is UNIFORM within the
+    #    season either way, so it moves no rank on the live board; it lands
+    #    entirely on cross-season comparisons.
     #
-    # 2. THE ENDPOINTS ARE POOL-RELATIVE, so one player moves everyone. On
-    #    2026-11-01 the negative anchor is a single player with 101 total
-    #    minutes and a DBPM of -16; drop him and every negative player
-    #    rescales by about +59%. SHRINK_MIN damps him, it does not remove him.
+    # 2. THE ENDPOINTS ARE POOL-RELATIVE, so one player moves everyone. Both
+    #    ends are set by whoever is most extreme, which on a short season is
+    #    often a low-minutes player: on 2026-11-01 the negative anchor had 101
+    #    total minutes, and dropping him rescaled every negative player by
+    #    about +59%. SHRINK_MIN damps that, it does not remove it.
     #
     # 3. IT IS NOT D-LEBRON'S SCALE, so the live season is wider than any
     #    finished one (real D-LEBRON: -3.55 .. +4.41 across the 17 seasons in
@@ -214,14 +227,16 @@ def main():
     out = {
         "_meta": {
             "season": season, "generated": dt.date.today().isoformat(),
-            "formula": (f"{W_DBPM:.2f} * z(DBPM) + {W_FAST:.2f} * z(BLK/36 + DREB/36) "
-                        f"+ {W_ONOFF:.2f} * z({W1:.2f} opt1 + {1 - W1:.2f} opt4), "
+            "formula": (f"{W1:.2f} * z(option 1) + {1 - W1:.2f} * z(option 4), "
                         f"shrunk by min/(min+{SHRINK_MIN:.0f})"),
             "validation": {"method": "Spearman vs real D-LEBRON, 40+ GP and 15+ mpg",
-                           "weights_fit_on": "2024-25", "held_out_on": "2023-24",
-                           "old_onoff_blend": {"2024-25": 0.591, "2023-24": 0.599},
-                           "dbpm_alone": {"2024-25": 0.820, "2023-24": 0.826},
-                           "this_composite": {"2024-25": 0.872, "2023-24": 0.895}},
+                           # Reverted to this blend on 2026-11-02 at Barrett's
+                           # request. The figures are recorded rather than
+                           # removed so the artifact says what it is worth.
+                           "this_blend": {"2024-25": 0.591, "2023-24": 0.599},
+                           "dbpm_composite_replaced": {"2024-25": 0.872,
+                                                       "2023-24": 0.895},
+                           "reverted": "2026-11-02, Barrett's call"},
             "scaled_to": {# pages/Rankings.py sizes its defensive bar from these
                           # and falls back to (-4, 6) if the key is missing, so
                           # the fallback and the real value agree again.
@@ -264,7 +279,7 @@ def main():
 
     print(f"wrote {path}")
     print(f"  {len(out['values'])} players, {df.g.min():.0f}-{df.g.max():.0f} team games")
-    print(f"  {W_DBPM:.2f} DBPM + {W_FAST:.2f} fast(BLK+DREB) + {W_ONOFF:.2f} on/off,"
+    print(f"  {W1:.2f} option 1 + {1 - W1:.2f} option 4 (the pre-Trae blend),"
           f" stretched to [{NEG_MIN:+.1f}, {POS_MAX:+.1f}] piecewise about zero")
     print(f"  pre-stretch z {z_lo:+.2f} .. {z_hi:+.2f}, so the negative half is"
           f" scaled x{abs(NEG_MIN) / abs(z_lo):.2f} and the positive half"
