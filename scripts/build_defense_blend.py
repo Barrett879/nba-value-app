@@ -2,14 +2,23 @@
 
     /opt/anaconda3/bin/python3 -u scripts/build_defense_blend.py [season]
 
-Writes cache/defense_blend_<season>_v1.json: {player name: value} on D-LEBRON's
-own scale, for the season the site is scoring while BBall Index has not yet
-published a real D-LEBRON for it.
+Writes cache/defense_blend_<season>_<VERSION>.json: {player name: value}, for
+the season the site is scoring while BBall Index has not yet published a real
+D-LEBRON for it.
 
-score = 0.70 * z(option 1) + 0.30 * z(option 4), then rescaled to D-LEBRON's
-observed mean and standard deviation so it is a drop-in for the term base_score
-already multiplies by 2. Shipping the raw z would silently compress the
-defensive term by about 10%, since a z has sd 1.00 and D-LEBRON's is 1.11.
+score = 0.60 * z(DBPM) + 0.30 * z(BLK/36 + DREB/36) + 0.10 * z(the old on/off
+blend), shrunk by min/(min+SHRINK_MIN), then stretched PIECEWISE ABOUT ZERO so
+the best defender lands exactly on POS_MAX and the worst exactly on NEG_MIN.
+base_score multiplies it by utils.defense_weight(season), 1.75 for the live
+season.
+
+The stretch is a display decision, Barrett's, 2026-10-25. It is deliberately
+NOT D-LEBRON's own scale: real D-LEBRON across the 17 seasons in
+cache/dlebron_all.parquet runs -3.55 .. +4.41 and has never reached either
+endpoint, so the live season is wider than any finished one and the all-time
+pool favours current players structurally. compute() still returns D-LEBRON's
+mean and sd and main() still writes them to _meta, so what the alternative
+scale would have been stays on the record beside what shipped.
 
 It CANNOT be computed on Render: it needs the pbpstats lineup cache plus the
 ESPN rebuilds, which is already 5 MB and heads toward ~190 MB across a season.
@@ -95,11 +104,21 @@ W_DBPM, W_FAST, W_ONOFF = 0.60, 0.30, 0.10
 SHRINK_MIN = 150.0
 
 W1 = 0.70          # inside the on/off sub-blend, which is now only 10% of the whole
-VERSION = "v14"  # v7: 2026-10-27 slate (4 games)
+VERSION = "v15"  # v7: 2026-10-27 slate (4 games)
 
-# Removed 2026-11-01. compute() scales to D-LEBRON's own mean and sd now, and
-# _meta["scaled_to"]["endpoints"] carries the OBSERVED range instead, which is
-# what pages/Rankings.py sizes its defensive bar from.
+# The display scale, Barrett's call on 2026-10-25 (c9c804f, then e1778ff pulled
+# the floor in from -6 to -4). The stretch is piecewise about zero, so the best
+# defender lands exactly on POS_MAX, the worst exactly on NEG_MIN, zero stays
+# zero and every sign in between is preserved. Piecewise is what lets the two
+# ends move independently.
+#
+# Restored 2026-11-01 after the composite rebuild dropped it. The rebuild put
+# the values on D-LEBRON's own mean and sd, which is the right scale for
+# comparing this season against finished ones but is NOT what the site was
+# agreed to show. The two choices are independent: the stretch is monotone and
+# fixes zero, so it changes no defensive ranking, only the magnitudes.
+POS_MAX = 6.0
+NEG_MIN = -4.0
 
 
 def zs(s):
@@ -146,19 +165,47 @@ def compute(season, prior=None):
     total_min = (mins * pd.Series(box.GP.reindex(key).values, index=df.index))
     comp = zs(comp) * (total_min / (total_min + SHRINK_MIN)).fillna(0.0)
 
-    # On D-LEBRON's OWN scale, which is what this was always supposed to be: a
-    # drop-in for the term base_score multiplies. The piecewise stretch to
-    # [-4, +6] that used to live here forced the extremes onto fixed endpoints
-    # regardless of sample, which made the live season's spread wider than any
-    # real season's (sd 1.76 against D-LEBRON's 1.11) and meant one player's
-    # input moved everyone, since the endpoints are pool-relative.
-    scaled = zs(comp) * sd + mu
-    return df, scaled, mu, sd
+    # Stretched piecewise about zero onto [NEG_MIN, POS_MAX]. The pivot is
+    # zero, which is the pool mean BEFORE the stretch; it is not the mean
+    # after, and that distinction is the whole of the first cost below.
+    #
+    # Three costs, all real, all measured on the 2026-11-01 pool, none of them
+    # a reason not to do it -- the stretch is the agreed display scale -- but
+    # each one is why the rebuild had dropped it, so none of them gets to be
+    # rediscovered by surprise:
+    #
+    # 1. IT SHIFTS THE MEAN, because the two halves scale independently and
+    #    this composite's z is left-skewed: -4.11 .. +3.14, so the negative
+    #    half is multiplied by 0.97 and the positive half by 1.91. The pool
+    #    mean lands at about +0.37 rather than 0, worth roughly +0.58 base
+    #    score to every covered player at weight 1.75. The old on/off blend
+    #    was near symmetric and stretched to a mean of +0.04, so this is new
+    #    with the composite, not inherited. It is UNIFORM within the season,
+    #    so it moves no rank on the live board; it lands entirely on the
+    #    all-time pool, where current players are already favoured by 3.
+    #
+    # 2. THE ENDPOINTS ARE POOL-RELATIVE, so one player moves everyone. On
+    #    2026-11-01 the negative anchor is a single player with 101 total
+    #    minutes and a DBPM of -16; drop him and every negative player
+    #    rescales by about +59%. SHRINK_MIN damps him, it does not remove him.
+    #
+    # 3. IT IS NOT D-LEBRON'S SCALE, so the live season is wider than any
+    #    finished one (real D-LEBRON: -3.55 .. +4.41 across the 17 seasons in
+    #    cache/dlebron_all.parquet, never once reaching either endpoint).
+    #
+    # mu and sd are still returned and still written to _meta, so the scale
+    # this would have had is on the record beside the scale it has.
+    z = zs(comp)
+    pos, neg = float(z.max()), float(z.min())
+    scaled = z.copy()
+    scaled[z > 0] = z[z > 0] * (POS_MAX / pos) if pos > 0 else 0.0
+    scaled[z < 0] = z[z < 0] * (abs(NEG_MIN) / abs(neg)) if neg < 0 else 0.0
+    return df, scaled, mu, sd, neg, pos
 
 
 def main():
     season = sys.argv[1] if len(sys.argv) > 1 else "2026-27"
-    df, scaled, mu, sd = compute(season)
+    df, scaled, mu, sd, z_lo, z_hi = compute(season)
 
     espn, feed, missing = L.feed_gap(season)
     rebuilt = [str(g.get("GameId")) for g in L.games(season)
@@ -175,19 +222,26 @@ def main():
                            "old_onoff_blend": {"2024-25": 0.591, "2023-24": 0.599},
                            "dbpm_alone": {"2024-25": 0.820, "2023-24": 0.826},
                            "this_composite": {"2024-25": 0.872, "2023-24": 0.895}},
-            "scaled_to": {# The OBSERVED range, not fixed endpoints. pages/Rankings.py
-                          # reads this to size its defensive bar and falls back to
-                          # (-4, 6) if it is missing, which would mis-scale every bar
-                          # now that the scale is D-LEBRON's rather than a stretch.
-                          "endpoints": [round(float(scaled.min()), 2),
-                                        round(float(scaled.max()), 2)],
-                          "method": "z, then D-LEBRON's own mean and sd",
+            "scaled_to": {# pages/Rankings.py sizes its defensive bar from these
+                          # and falls back to (-4, 6) if the key is missing, so
+                          # the fallback and the real value agree again.
+                          "endpoints": [NEG_MIN, POS_MAX],
+                          "method": "piecewise linear about zero",
+                          # What the scale WOULD be if it were left on D-LEBRON's
+                          # own mean and sd. Kept so the stretch factor at each
+                          # end is recoverable from the artifact alone.
                           "dlebron_reference": {"mean": round(mu, 4),
                                                 "sd": round(sd, 4)},
-                          "note": ("ON D-LEBRON's scale, so historical seasons and "
-                                   "this one are like for like. Replaced a piecewise "
-                                   "stretch to [-4, +6] that forced the extremes onto "
-                                   "fixed endpoints regardless of sample.")},
+                          "observed_before_stretch": [round(float(z_lo), 2),
+                                                      round(float(z_hi), 2)],
+                          "warning": ("NOT on D-LEBRON's scale. Historical seasons "
+                                      "carry real D-LEBRON, which has never run "
+                                      "outside -3.55 .. +4.41 in 17 seasons, so "
+                                      "this season's defenders sit on a wider scale "
+                                      "than any past season and the all-time pool "
+                                      "favours current players structurally. The "
+                                      "endpoints are pool-relative: one player's "
+                                      "input moves everyone.")},
             "players": int(len(df)),
             "team_games_max": int(df.g.max()), "team_games_min": int(df.g.min()),
             "lineup_games": len(L.games(season)),
@@ -211,9 +265,12 @@ def main():
     print(f"wrote {path}")
     print(f"  {len(out['values'])} players, {df.g.min():.0f}-{df.g.max():.0f} team games")
     print(f"  {W_DBPM:.2f} DBPM + {W_FAST:.2f} fast(BLK+DREB) + {W_ONOFF:.2f} on/off,"
-          f" on D-LEBRON's own scale (mean {mu:+.3f}, sd {sd:.3f})")
+          f" stretched to [{NEG_MIN:+.1f}, {POS_MAX:+.1f}] piecewise about zero")
+    print(f"  pre-stretch z {z_lo:+.2f} .. {z_hi:+.2f}, so the negative half is"
+          f" scaled x{abs(NEG_MIN) / abs(z_lo):.2f} and the positive half"
+          f" x{POS_MAX / z_hi:.2f} (D-LEBRON would be mean {mu:+.3f}, sd {sd:.3f})")
     print(f"  blend range {scaled.min():+.2f} .. {scaled.max():+.2f}"
-          f"  (D-LEBRON's own: -2.94 .. +3.99)")
+          f"  (real D-LEBRON over 17 seasons: -3.55 .. +4.41)")
     print(f"  {len(rebuilt)} of {len(L.games(season))} lineup games rebuilt from ESPN,"
           f" {len(missing)} still missing")
     top = df.assign(v=scaled.values).nlargest(5, "v")

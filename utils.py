@@ -3582,7 +3582,7 @@ def _dc_path(name: str) -> Path:
 #   scripts/fetch_provisional_box_scores.py rather than by hand, because
 #   twenty-four box scores is about three hundred players and transcription
 #   does not scale. Pool 317 -> 344; 26 of 30 teams now on two games.
-DATA_REV = "r24"  # 2026-10-27 slate (4 games)
+DATA_REV = "r25"  # 2026-10-27 slate (4 games)
 
 
 def _rev_path(name: str) -> Path:
@@ -5999,9 +5999,15 @@ def fetch_dlebron(season: str) -> dict:
 def fetch_defense_blend(season: str) -> dict:
     """The precomputed defensive blend for a season with no published D-LEBRON.
 
-    0.70 * z(option 1) + 0.30 * z(option 4), already rescaled to D-LEBRON's own
-    mean and standard deviation by scripts/build_defense_blend.py, so it drops
-    straight into the term base_score multiplies by 2.
+    0.60 * z(DBPM) + 0.30 * z(BLK/36 + DREB/36) + 0.10 * z(the old on/off
+    blend), shrunk by min/(min+150) and then stretched piecewise about zero
+    onto [-4, +6] by scripts/build_defense_blend.py. base_score multiplies it
+    by defense_weight(season), which is 1.75 for the live season.
+
+    NOT on D-LEBRON's scale: the stretch pins the endpoints, so this season's
+    values are wider than any finished season's real D-LEBRON. The artifact's
+    _meta carries the warning and the D-LEBRON mean and sd it would otherwise
+    have used.
 
     Built offline and committed because it needs the pbpstats lineup cache and
     the ESPN rebuilds, which cannot live on Render. It is therefore only as
@@ -6012,7 +6018,7 @@ def fetch_defense_blend(season: str) -> dict:
     # repo cache only when the FILENAME is missing: v1 D-LEBRON-scaled,
     # v2 [-6, +6], v3 [-4, +6]. Re-committing under an old name would leave
     # production on the previous numbers with the code reading correctly.
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v14.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v15.json")
     if not path.exists():
         return {}
     try:
@@ -6033,7 +6039,7 @@ def fetch_defense_blend_meta(season: str) -> dict:
     once saying "rescaled to D-LEBRON's own range" after it was stretched to
     [-6, +6]. Copy that reads the artifact cannot drift from it.
     """
-    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v14.json")
+    path = _dc_path(f"defense_blend_{season.replace('-', '_')}_v15.json")
     if not path.exists():
         return {}
     try:
@@ -6069,21 +6075,36 @@ def fetch_defense_blend_meta(season: str) -> dict:
 # places including twice inside the pace adjustment, which is how a single rule
 # drifts: change six and the Score Breakdown stops reconciling with the score
 # it breaks down.
-# Both 2.00 since 2026-11-01, and the function stays because the two CAN
-# diverge again, not because they must.
+# They diverge, which is why this is a function. LEGACY scores finished seasons
+# off real D-LEBRON; LIVE scores the season in progress off the blend, and the
+# blend is stretched to fixed endpoints, so the two are not the same quantity.
 #
-# 1.75 was never a judgement about how much defence matters. It was damping for
-# a live blend whose spread was artificially wide: the commit that introduced it
-# records "the live blend runs [-4, +6] and historical D-LEBRON about [-3, +4]".
-# That blend measured sd 1.75 against real D-LEBRON's 1.05, so it was 1.67x too
-# wide and 1.75/2.00 damped it by only 0.875x -- the live season was still
-# carrying roughly 46% more defensive weight than any finished one.
+# Why LIVE is 1.75, restored 2026-11-01 along with the stretch:
 #
-# The rebuilt composite is scaled to D-LEBRON's own mean and sd and measures
-# 1.11 against 1.05, a 1.05x match. There is nothing left to damp, so the live
-# season goes back to the weight every finished season has always used and the
-# all-time pool is like for like again.
-DEFENSE_WEIGHT_LIVE = 2.00    # the season being played, scored by the blend
+#   The stretch pins the live blend at exactly [-4, +6], so the weight alone
+#   fixes the defensive term's range in base_score. 1.75 gives -7.00 .. +10.50,
+#   which is precisely what the board carried from 2026-10-25 until the
+#   composite rebuild. 2.00 gives -8.00 .. +12.00, wider than the board has
+#   ever run. Endpoints are what a stretch exists to pin, so endpoints decide.
+#
+#   Measured, not assumed, and the two criteria disagree: on SPREAD rather than
+#   range, 2.00 is the closer match (term sd 2.99 against the pre-rebuild
+#   3.06; 1.75 gives 2.62). They disagree because this composite's z is
+#   left-skewed (-4.11 .. +3.14) where the old on/off blend's was near
+#   symmetric, so the same stretch lands differently on it. See the cost noted
+#   in scripts/build_defense_blend.py: the stretch now shifts the pool mean to
+#   about +0.37, worth roughly +0.58 base score to every covered live player
+#   against the pre-rebuild board. That is a CROSS-SEASON effect only -- it is
+#   uniform within the live season, so it moves no rank on the live board, and
+#   it lands entirely on the all-time pool, where it compounds the structural
+#   advantage the stretch was already known to give current players.
+#
+#   What 2.00 was: set 2026-11-01 when the rebuild put the blend on D-LEBRON's
+#   own narrower scale. The comment then claimed it "restored the swing"; it
+#   did not (0.72x the pre-rebuild term sd, top end +6.90 against +10.50). Its
+#   real motive was like-for-like comparability with finished seasons, which
+#   the stretch gives up by design.
+DEFENSE_WEIGHT_LIVE = 1.75    # the season being played, scored by the blend
 DEFENSE_WEIGHT_LEGACY = 2.00  # every finished season, unchanged since v1
 
 
