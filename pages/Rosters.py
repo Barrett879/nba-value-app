@@ -694,18 +694,4 @@ st.markdown(
     f'<div class="rw-grid">{_cards}</div>',
     unsafe_allow_html=True)
 
-st.caption(
-    "Rosters are the verified 2026-27 books as of the date shown, not a "
-    "projection: model-projected signings are excluded, so payroll is only "
-    "what a team has actually committed. Two-way deals do not count against "
-    f"the cap. Model value reads {SEASONS[0]} production against {SEASONS[0]} money. This "
-    "early in a season that is a small sample, and a player who has not played "
-    "yet carries his last complete season instead, marked with the year; a "
-    "player with neither carries no value and is left out of the surplus on "
-    f"both sides. Committed salary is signed {SEASONS[0]} contracts plus "
-    "dead money still owed to waived and bought-out players, which counts "
-    "against the cap the same way a roster player does. It does not include "
-    "cap holds for the team's own free agents or empty-roster-spot charges."
-)
-
 render_footer()
