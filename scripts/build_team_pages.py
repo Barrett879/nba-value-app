@@ -18,6 +18,7 @@ this. Re-run both after the FA projection / signings update.
 
 Output: cache/team_pages.json
 """
+import datetime as _dt
 import json
 import sys
 from pathlib import Path
@@ -181,6 +182,15 @@ def main() -> None:
             f"change. Nothing written.")
 
     payload = {
+        # When this script last re-joined scores and values onto the roster.
+        # NOT when the roster changed: that is cache/team_rosters_2627.json,
+        # which follows transactions rather than nights.
+        #
+        # Stamped because nothing could previously tell how old this file was.
+        # It carries no marker of its own, the nightly did not rebuild it
+        # until 2026-11-02, and "are these updated?" had to be answered by
+        # reading git log. The page prints it now.
+        "built_at": _dt.date.today().isoformat(),
         "value_season": value_season,
         "contract_season": ros["contract_season"],
         "cap_M": ros["cap_M"], "apron2_M": ros["apron2_M"],

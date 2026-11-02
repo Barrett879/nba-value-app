@@ -55,22 +55,73 @@ def _payload() -> str:
     # "C.J." vs "CJ", "Nic" vs "Nicolas", "Jimmy Butler" vs "Jimmy Butler III",
     # which otherwise costs those players their headshot and their box line
     heads = NameIndex(_headshot_id_map())
-    # last season's per-game line + D-LEBRON, shown on cards in 2-team trades
+    # The per-game line + D-LEBRON shown on cards in 2- and 3-team trades.
+    #
+    # The line follows the SAME season as the Barrett score beside it: the
+    # current one for anyone who has played, his last complete season for
+    # anyone who has not, tagged with the year. That is the BLEND_MIN_MINUTES
+    # = 0 rule Barrett set on 2026-10-29, and the decision is read from
+    # team_pages' own bs_yr rather than taken again here, so one card can
+    # never show a current score next to a prior-season stat line.
+    #
+    # It used to be SEASONS[1] for everybody. "Put the whole site on the
+    # current season" (19a2973) rewrote the caption on this page and missed
+    # the line the caption describes, so a card carried a 2026-27 salary and
+    # score against a 2025-26 stat line with nothing saying so.
     import pandas as pd
-    _box = NameIndex()
+    _PRIOR = SEASONS[1]                           # derived: the last complete season
+    _box_prior, _box_cur = NameIndex(), NameIndex()
     try:
-        _PRIOR = SEASONS[1]                       # derived: the last complete season
         _ls = pd.read_parquet(
             _ROOT / "cache" / f"league_stats_{_PRIOR.replace('-', '_')}.parquet")
         _dl = fetch_dlebron(_PRIOR)
         for _r in _ls.itertuples():
-            _box.add(_r.PLAYER_NAME, {
+            _box_prior.add(_r.PLAYER_NAME, {
                 "ppg": round(float(_r.PTS), 1), "apg": round(float(_r.AST), 1),
                 "rpg": round(float(_r.REB), 1),
                 "dl": (round(float(_dl[_r.PLAYER_ID]), 1)
                        if _dl.get(_r.PLAYER_ID) else None)})
     except Exception:
         pass
+    # Current season from the COMMITTED artifact, never fetch_league_stats:
+    # this is a request path, and on Render the live season is exactly the one
+    # with no league_stats parquet, so the live call returns {} and the line
+    # silently disappears. The version literal below is registered in
+    # nightly.py's VERSIONED under per_game, which is what stops the next
+    # bump leaving this reader opening a file nobody writes any more.
+    try:
+        _art = _ROOT / "cache" / f"per_game_{SEASONS[0].replace('-', '_')}_v20.json"
+        for _nm, _d in (json.loads(_art.read_text()).get("values") or {}).items():
+            _box_cur.add(_nm, {"ppg": round(float(_d["PTS"]), 1),
+                               "apg": round(float(_d["AST"]), 1),
+                               "rpg": round(float(_d["REB"]), 1)})
+    except Exception:
+        pass
+
+    def _card_line(name: str, bs_yr) -> dict:
+        """ppg/apg/rpg for the season this card's score is on, plus D-LEBRON.
+
+        bs_yr is team_pages' tag: None means the blend scored him on the
+        current season, anything else names the season he fell back to.
+
+        D-LEBRON is a full-season third-party metric with no current-season
+        values at all (fetch_dlebron returns 0 entries for a live season), so
+        it is always the prior season for everybody. A constant true of all
+        400 cards is said once in the page caption instead of tagged on each.
+        """
+        prior = _box_prior.get(name) or {}
+        cur = None if bs_yr else _box_cur.get(name)
+        line = cur or prior
+        if not line:
+            return {}
+        out = {"ppg": line["ppg"], "apg": line["apg"], "rpg": line["rpg"],
+               "dl": prior.get("dl")}
+        if cur is None:
+            # Tag exactly what bs_yr tags, and for the same reason. A player
+            # the blend put on the current season but the artifact has no row
+            # for still lands here, and the tag is still the honest one.
+            out["box_yr"] = bs_yr or _PRIOR
+        return out
     # verified master list of 2026-27 hard caps (apron caps triggered by
     # offseason mechanics); missing file or team = not hard-capped
     hard_caps = {}
@@ -140,7 +191,7 @@ def _payload() -> str:
                 "pos": (p.get("pos") or "").split("/")[0],
                 "value": p.get("value"), "barrett": p.get("barrett"),
                 "bs_yr": p.get("bs_yr"),
-                **(_box.get(p["n"]) or {}),
+                **_card_line(p["n"], p.get("bs_yr")),
                 "yrs": (years.get(abbr) or NameIndex()).get(p["n"]),
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None),
@@ -216,7 +267,10 @@ def _payload() -> str:
                 "n": f["n"], "pos": (f.get("pos") or "").strip("—- ").split("/")[0],
                 "value": round(f.get("value") or 2.1, 1),
                 "barrett": f.get("barrett"), "bs_yr": f.get("bs_yr"),
-                **(_box.get(f["n"]) or {}),              # ppg/apg/rpg/dl
+                # Same rule as a roster card: fa_pool carries its own bs_yr,
+                # so a sign-and-trade candidate's line names the season his
+                # score is on too.
+                **_card_line(f["n"], f.get("bs_yr")),
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None)})
         for v in fas.values():
@@ -289,8 +343,11 @@ _meta = json.loads((_ROOT / "cache" / "team_pages.json").read_text())
 st.caption(
     "Legality uses the verified 2023 CBA rules; ambiguous edge cases resolve "
     "conservatively. The in-browser engine proves itself against the verified "
-    "Python engine's test vectors on every load. Salaries, contracts and "
-    f"player values are all {_meta['contract_season']}. A player who has not "
-    f"played yet carries his last complete season, marked on his card with "
-    f"the year."
+    "Python engine's test vectors on every load. Salaries, contracts, player "
+    f"values and the per-game line are all {_meta['contract_season']}. A player "
+    "who has not played yet carries his last complete season, marked on his "
+    f"card with the year. D-LEBRON is a full-season metric, so it is {SEASONS[1]} "
+    "for everyone."
+    + (f" Scores and values rebuilt {_meta['built_at']}."
+       if _meta.get("built_at") else "")
 )

@@ -1179,7 +1179,9 @@ function yrsTitle(y){
 
 function statBits(p,salary){
   // one stat line for every player card: position chip + salary + Barrett
-  // score, plus last season's box line and D-LEBRON on 2- and 3-team boards
+  // score, plus the box line and D-LEBRON on 2- and 3-team boards. The box
+  // line names the season its score is on; D-LEBRON is always the last
+  // complete season, which the page caption says once.
   const nT=picked().length;
   const chip=p.pos?`<span class="poschip">${esc(p.pos)}</span>`:"";
   const out=[fmtM(salary!=null?salary:p.salary)];
@@ -1189,7 +1191,10 @@ function statBits(p,salary){
   if(yl) out.push(`<span class="yrs" title="${esc(yrsTitle(p.yrs))}">${esc(yl)}</span>`);
   if(p.barrett!=null) out.push(p.barrett.toFixed(1)+" BS"+(p.bs_yr?` (${p.bs_yr})`:""));
   if(nT<=3){
-    if(p.ppg!=null) out.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`);
+    // box_yr is set only when the line is NOT the current season, the same
+    // rule and the same shape as bs_yr on the score above it.
+    if(p.ppg!=null) out.push(`${p.ppg.toFixed(1)}p ${p.apg.toFixed(1)}a ${p.rpg.toFixed(1)}r`
+      +(p.box_yr?` (${p.box_yr})`:""));
     if(p.dl!=null) out.push("DLEB "+(p.dl>0?"+":"")+p.dl.toFixed(1));
   }
   return {chip,stats:out};

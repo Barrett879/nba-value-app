@@ -16,6 +16,8 @@ shipping. The steps, in the order they depend on each other:
   4 BUILD        refresh_live_season.py: artifacts BEFORE board, and its five
                  checks
   5 VERIFY       the new revision against the previous one; nobody may vanish
+  5b TEAM PAGES  re-join tonight's scores onto the verified rosters, for the
+                 Trade Machine, Rosters and Redraft
   6 SHIP         stage exactly what changed, commit, push
 
 Anything that fails after step 3 rolls the version bumps back and deletes the
@@ -66,7 +68,15 @@ VERSIONED = {
                  # reader that silently stops opening anything the next time the
                  # builder moves.
                  ("app.py",
-                  r"per_game_\{_HUB_SEASON\.replace\('-', '_'\)\}_v(\d+)\.json")],
+                  r"per_game_\{_HUB_SEASON\.replace\('-', '_'\)\}_v(\d+)\.json"),
+                 # The trade card's per-game line. Added 2026-11-02 WITH that
+                 # reader, for the same reason app.py is here: a literal this
+                 # script does not know about is a reader that silently stops
+                 # opening anything the next time the builder moves, and the
+                 # card would fall back to last season for the whole league
+                 # without raising.
+                 ("pages/Trade_Machine.py",
+                  r"per_game_\{SEASONS\[0\]\.replace\('-', '_'\)\}_v(\d+)\.json")],
     "defense_blend": [("scripts/build_defense_blend.py", r'^VERSION = "v(\d+)"'),
                       ("utils.py",
                        r"defense_blend_\{season\.replace\('-', '_'\)\}_v(\d+)\.json")],
@@ -322,6 +332,26 @@ def main() -> int:
             for n, a, b in sorted(moved, key=lambda x: -abs(x[1] - x[2]))[:5]:
                 print(f"            {n}: {a:,.0f} -> {b:,.0f}")
 
+    # ---- 5b TEAM PAGES -------------------------------------------------
+    # team_pages.json joins tonight's blended scores and market values onto the
+    # verified roster, and Trade Machine, Rosters and Redraft all read it.
+    #
+    # It was NOT in this script until 2026-11-02, so every refresh moved the
+    # board and left those three surfaces behind. On that date it was three
+    # days old and all 18 players sampled off a Trade Machine board carried a
+    # wrong score (Reaves -5.5, Luka +5.2), with the in-browser verdict summing
+    # market values that were out by up to $7.5M a player.
+    #
+    # It runs AFTER verify, not with the build: it is scored off the board, so
+    # rebuilding it before a rollback would leave it keyed to artifacts this
+    # run then deletes. It does not regenerate the ROSTER -- that comes from
+    # cache/team_rosters_2627.json, which follows transactions, not nights.
+    try:
+        if not sh(["scripts/build_team_pages.py"], "team pages", check=False):
+            return rollback("build_team_pages failed")
+    except Exception as e:
+        return rollback(f"build_team_pages raised {type(e).__name__}: {e}")
+
     # ---- 6 SHIP --------------------------------------------------------
     paths = [str(f.relative_to(ROOT)) for f in new_files]
     # DERIVED from VERSIONED, not typed out again. This was a second hand-kept
@@ -333,7 +363,7 @@ def main() -> int:
     # header and showed his 4-game averages underneath, for two refreshes.
     # A file this script edits is a file this script ships.
     paths += sorted({site for sites in VERSIONED.values() for site, _rx in sites})
-    paths += ["data/provisional_box_scores.csv"]
+    paths += ["data/provisional_box_scores.csv", "cache/team_pages.json"]
     extra = subprocess.run(["git", "diff", "--name-only", "--",
                             "cache/bref_stats_v3_" + season + ".parquet"],
                            cwd=ROOT, capture_output=True, text=True).stdout.split()
