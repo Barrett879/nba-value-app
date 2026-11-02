@@ -6,14 +6,20 @@ Writes cache/defense_blend_<season>_<VERSION>.json: {player name: value}, for
 the season the site is scoring while BBall Index has not yet published a real
 D-LEBRON for it.
 
-score = W1 * z(option 1) + (1 - W1) * z(option 4), shrunk by
-min/(min+SHRINK_MIN), then stretched PIECEWISE ABOUT ZERO so the best defender
-lands exactly on POS_MAX and the worst exactly on NEG_MIN. base_score multiplies
-it by utils.defense_weight(season), 1.75 for the live season.
+score = w_base * z(the pre-Trae blend) + W_DBPM_LITE * z(DBPM)
+      + w_chg  * z(charges drawn, as a posterior rate)
 
-This is the pre-Trae-Young blend, restored on 2026-11-02 at Barrett's request
-after the 2026-11-01 DBPM rebuild. See the note above the weights for what the
-revert costs against real D-LEBRON and for where the cheapest adjustment is.
+where the pre-Trae blend is W1 * z(option 1) + (1 - W1) * z(option 4), w_chg is
+W_CHG damped by how many charges the league has drawn, and w_base is whatever is
+left. Then shrunk by min/(min+SHRINK_MIN) and stretched PIECEWISE ABOUT ZERO so
+the best defender lands exactly on POS_MAX and the worst exactly on NEG_MIN.
+base_score multiplies it by utils.defense_weight(season), 1.75 for the live
+season.
+
+The spine is the pre-Trae-Young blend, restored on 2026-11-02 at Barrett's
+request after the 2026-11-01 DBPM rebuild; the DBPM and charges terms were added
+the same day, also his, and both are deliberately small. See the notes above the
+weights for what each one is worth and for what is known to be wrong with them.
 
 The stretch is a display decision, Barrett's, 2026-10-25. It is deliberately
 NOT D-LEBRON's own scale: real D-LEBRON across the 17 seasons in
@@ -124,7 +130,7 @@ logging.disable(logging.NOTSET)
 SHRINK_MIN = 150.0
 
 W1 = 0.70          # inside the on/off sub-blend, which is now only 10% of the whole
-VERSION = "v18"  # v7: 2026-10-27 slate (4 games)
+VERSION = "v19"  # v7: 2026-10-27 slate (4 games)
 
 # The display scale, Barrett's call on 2026-10-25 (c9c804f, then e1778ff pulled
 # the floor in from -6 to -4). The stretch is piecewise about zero, so the best
@@ -139,6 +145,43 @@ VERSION = "v18"  # v7: 2026-10-27 slate (4 games)
 # fixes zero, so it changes no defensive ranking, only the magnitudes.
 POS_MAX = 6.0
 NEG_MIN = -4.0
+
+# ── The slight DBPM blend, and charges drawn ─────────────────────────────────
+# Barrett, 2026-11-02: "can we include charges drawn and blend slightly with
+# adjusted defensive box plus minus?"
+#
+# W_DBPM_LITE is the "slightly". There is NO interior optimum to find: accuracy
+# against real D-LEBRON rises monotonically with it, so the number is a judgement
+# about how much of this metric's character to keep, not a fitted value. Graded
+# on the two seasons that have both lineup caches and real D-LEBRON, 2024-25 as
+# the fit and 2023-24 as the HELD-OUT season, at W_CHG = 0.10:
+#
+#     W_DBPM_LITE   2024-25   2023-24    mean
+#         0.00       +0.584    +0.608    +0.596   <- the pre-Trae blend alone
+#         0.15       +0.666    +0.694    +0.680   <- shipped, closes ~35%
+#         0.30       +0.743    +0.768    +0.755
+#         0.60       +0.836    +0.845    +0.840
+#
+# CHARGES DRAWN is the defensive charge stat, def_lib loads it separately from
+# "Charge Fouls", which is charges COMMITTED and is an offensive act. Two things
+# about it are worth knowing before anyone raises W_CHG:
+#
+#   It correlates NEGATIVELY with real D-LEBRON on its own, about -0.02 to -0.06
+#   in every season and every functional form. It still helps in the blend
+#   (+0.009 on the fit season, +0.011 held out, monotone to at least 0.20), which
+#   is a suppressor effect, not a measurement of charge-taking being valuable.
+#
+#   A z-score of a nearly-all-zero count is STRUCTURALLY A SPIKE, and no amount
+#   of shrinking the rate fixes it, because z re-expands whatever the shrink
+#   compressed. On 2026-11-02 the league had drawn 23 charges in total, 19
+#   players had one and two had two, and the raw z ran -0.49 .. +7.17: Draymond
+#   Green's two charges in 142 minutes would have moved him most of a composite
+#   sd. Hence both guards below.
+W_DBPM_LITE = 0.15      # the "slightly"; monotone, so this is a taste dial
+W_CHG = 0.10            # full-season weight for charges drawn, before damping
+CHG_PRIOR_EVENTS = 1.0  # per-player prior, in league-average events
+CHG_LEAGUE_E0 = 300.0   # league charges before the channel reaches full weight
+CHG_CLIP = 3.0          # cap on the charges z, which is one-sided by nature
 
 
 def zs(s):
@@ -158,7 +201,40 @@ def compute(season, prior=None):
     df = O.build(season, prior=prior)
     z1 = zs(pd.Series(np.asarray(O.opt1_two_channel(df), float)))
     z4 = zs(pd.Series(np.asarray(O.opt4_career_blend(df, season=season), float)))
-    comp = zs(W1 * z1 + (1 - W1) * z4)
+    base = zs(W1 * z1 + (1 - W1) * z4)
+
+    box = L.players(season).set_index("key")
+    key = df.key.astype(str)
+    mins = pd.Series(box.MIN.reindex(key).values, index=df.index).replace(0, np.nan)
+    total_min = (mins * pd.Series(box.GP.reindex(key).values, index=df.index))
+
+    # Charges drawn, as a posterior rate rather than a raw one: a player with one
+    # charge in 60 minutes is not twice the defender of one with the same charge
+    # in 120. CHG_PRIOR_EVENTS worth of league-average rate is the prior, the z
+    # is clipped because the distribution is one-sided while counts are small,
+    # and the whole channel is then damped by how many charges THE LEAGUE has
+    # drawn. That last factor is the honest one: early in a season the channel
+    # carries no information, and that is a fact about the league's sample, not
+    # about any player. On 2026-11-02 it stood at 23/(23+300) = 0.071, so the
+    # channel is nearly inert and opens up as the season fills.
+    chg_total = float(df.CHGD.sum())
+    rate0 = chg_total / max(float(total_min.sum()), 1.0)
+    prior_min = CHG_PRIOR_EVENTS / rate0 if rate0 > 0 else 0.0
+    chg = zs((df.CHGD + CHG_PRIOR_EVENTS)
+             / (total_min.fillna(0.0) + prior_min) * 36).clip(-CHG_CLIP, CHG_CLIP)
+    w_chg = W_CHG * (chg_total / (chg_total + CHG_LEAGUE_E0))
+
+    # DBPM where it exists. A player without one keeps the other two terms
+    # renormalised rather than being handed the pool median, which would score
+    # "no measurement yet" as "exactly average".
+    dbz = zs(pd.Series(box.dbpm.reindex(key).values, index=df.index))
+    has = dbz.notna()
+    w_base = 1.0 - W_DBPM_LITE - w_chg
+    comp = pd.Series(index=df.index, dtype=float)
+    comp[has] = (w_base * base[has] + W_DBPM_LITE * dbz[has] + w_chg * chg[has])
+    if (~has).any():
+        comp[~has] = ((w_base * base[~has] + w_chg * chg[~has])
+                      / (w_base + w_chg))
 
     # Rates need a denominator before they mean anything. See SHRINK_MIN. This
     # is the ONE piece of the 2026-11-01 rebuild kept across the revert, and
@@ -166,10 +242,6 @@ def compute(season, prior=None):
     # Kawhi Leonard is the 4th best defender in the league on 52 total minutes
     # and Collin Gillespie the 10th on 106. Set SHRINK_MIN = 0.0 to have the
     # pre-Trae metric with nothing added at all.
-    box = L.players(season).set_index("key")
-    key = df.key.astype(str)
-    mins = pd.Series(box.MIN.reindex(key).values, index=df.index).replace(0, np.nan)
-    total_min = (mins * pd.Series(box.GP.reindex(key).values, index=df.index))
     comp = zs(comp) * (total_min / (total_min + SHRINK_MIN)).fillna(0.0)
 
     # Stretched piecewise about zero onto [NEG_MIN, POS_MAX]. The pivot is
@@ -213,12 +285,21 @@ def compute(season, prior=None):
     scaled = z.copy()
     scaled[z > 0] = z[z > 0] * (POS_MAX / pos) if pos > 0 else 0.0
     scaled[z < 0] = z[z < 0] * (abs(NEG_MIN) / abs(neg)) if neg < 0 else 0.0
-    return df, scaled, mu, sd, neg, pos
+    # The term weights go back as a dict rather than as more positional values:
+    # this tuple has grown twice already and each time it broke def_monitor,
+    # which unpacks it. Callers that only want the values keep working, and the
+    # monitor now absorbs anything appended here.
+    terms = {"w_base": float(w_base), "w_chg": float(w_chg),
+             "chg_total": chg_total,
+             "chg_damping": chg_total / (chg_total + CHG_LEAGUE_E0)}
+    return df, scaled, mu, sd, neg, pos, terms
 
 
 def main():
     season = sys.argv[1] if len(sys.argv) > 1 else "2026-27"
-    df, scaled, mu, sd, z_lo, z_hi = compute(season)
+    df, scaled, mu, sd, z_lo, z_hi, terms = compute(season)
+    w_base, w_chg = terms["w_base"], terms["w_chg"]
+    chg_total = terms["chg_total"]
 
     espn, feed, missing = L.feed_gap(season)
     rebuilt = [str(g.get("GameId")) for g in L.games(season)
@@ -227,8 +308,16 @@ def main():
     out = {
         "_meta": {
             "season": season, "generated": dt.date.today().isoformat(),
-            "formula": (f"{W1:.2f} * z(option 1) + {1 - W1:.2f} * z(option 4), "
+            "formula": (f"base * z({W1:.2f} opt1 + {1 - W1:.2f} opt4) + "
+                        f"{W_DBPM_LITE:.2f} * z(DBPM) + chg * z(charges drawn), "
                         f"shrunk by min/(min+{SHRINK_MIN:.0f})"),
+            "term_weights": {"pre_trae_blend": round(float(w_base), 4),
+                             "dbpm": W_DBPM_LITE,
+                             "charges_drawn": round(float(w_chg), 4),
+                             "charges_full_weight": W_CHG,
+                             "charges_league_total": int(chg_total),
+                             "charges_damping": round(
+                                 chg_total / (chg_total + CHG_LEAGUE_E0), 4)},
             "validation": {"method": "Spearman vs real D-LEBRON, 40+ GP and 15+ mpg",
                            # Reverted to this blend on 2026-11-02 at Barrett's
                            # request. The figures are recorded rather than
@@ -279,7 +368,9 @@ def main():
 
     print(f"wrote {path}")
     print(f"  {len(out['values'])} players, {df.g.min():.0f}-{df.g.max():.0f} team games")
-    print(f"  {W1:.2f} option 1 + {1 - W1:.2f} option 4 (the pre-Trae blend),"
+    print(f"  {w_base:.3f} pre-Trae blend + {W_DBPM_LITE:.2f} DBPM"
+          f" + {w_chg:.3f} charges drawn ({int(chg_total)} league-wide,"
+          f" damping {chg_total / (chg_total + CHG_LEAGUE_E0):.3f}),"
           f" stretched to [{NEG_MIN:+.1f}, {POS_MAX:+.1f}] piecewise about zero")
     print(f"  pre-stretch z {z_lo:+.2f} .. {z_hi:+.2f}, so the negative half is"
           f" scaled x{abs(NEG_MIN) / abs(z_lo):.2f} and the positive half"

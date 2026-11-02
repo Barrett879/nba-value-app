@@ -52,6 +52,12 @@ def build(season, prior="2024-25", max_games=None):
         # ---- box ------------------------------------------------------
         for c in ("BLK", "STL", "DREB", "PF", "MIN", "GP"):
             d[c] = float(p[c]) if p is not None and c in p and p[c] == p[c] else 0.0
+        # Charges DRAWN, the defensive one. Absent is genuinely zero here rather
+        # than unknown: pbpstats lists every player, so no row means no charge
+        # drawn, not a missing measurement.
+        d["CHGD"] = (float(p["Charge Fouls Drawn"])
+                     if p is not None and "Charge Fouls Drawn" in p
+                     and p["Charge Fouls Drawn"] == p["Charge Fouls Drawn"] else 0.0)
         for c in ("dbpm", "dws", "blk_pct", "stl_pct", "drb_pct", "big", "DefPoss"):
             v = p[c] if p is not None and c in p else np.nan
             d[c] = float(v) if v == v else 0.0

@@ -230,8 +230,15 @@ def players(season):
         p = pd.DataFrame(json.loads(fp.read_text()))
         if "Name" in p.columns:
             p["key"] = p["Name"].map(normalize)
+            # "Charge Fouls" is charges COMMITTED and is an OFFENSIVE act: its
+            # 2025-26 leaders are Towns, Queen, Wembanyama and Zion, players who
+            # charge into defenders. The defensive stat, a defender drawing the
+            # charge, is "Charge Fouls Drawn": Brunson, Podziemski, Smart,
+            # Camara. They correlate -0.004 with each other. Both are carried so
+            # the names stay unambiguous at every use site, and anything scoring
+            # DEFENCE wants Drawn.
             CNT = ["Blocks", "Steals", "DefRebounds", "Fouls", "Charge Fouls",
-                   "BadPassSteals", "LostBallSteals"]
+                   "Charge Fouls Drawn", "BadPassSteals", "LostBallSteals"]
             for c in CNT + ["DefPoss", "DefFGReboundPct"]:
                 p[c] = pd.to_numeric(p[c], errors="coerce") if c in p.columns else 0.0
             p[CNT] = p[CNT].fillna(0.0)

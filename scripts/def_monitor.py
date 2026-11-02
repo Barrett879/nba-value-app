@@ -294,7 +294,9 @@ def main():
             sv = shipped.get("values") or {}
             # compute() returns the pre-stretch extremes too, so the monitor
             # unpacks what the builder returns rather than a fixed four.
-            _df, _scaled, _mu, _sd, _zlo, _zhi = bdb.compute(SEASON)
+            # Starred, so appending to compute()'s return value cannot break
+            # this again. It has happened twice: 4-tuple to 6, then 6 to 7.
+            _df, _scaled, _mu, _sd, _zlo, _zhi, *_rest = bdb.compute(SEASON)
             live = {str(k): round(float(v), 4) for k, v in
                     zip(_df.player.astype(str), _scaled)}
             both = set(sv) & set(live)
