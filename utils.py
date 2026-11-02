@@ -3652,6 +3652,26 @@ def season_is_live(season: str) -> bool:
     return False
 
 
+def last_completed_season(season: str) -> str:
+    """The most recent season actually PLAYED OUT, at or before `season`.
+
+    End-of-season inputs -- All-NBA teams, award shares, anything voted on in
+    May -- exist only for a season that has finished. A season still in progress
+    has no such rows at all, so a lookup anchored on it does not return a
+    partial answer, it returns nothing, and the caller cannot tell the
+    difference between "no selections" and "not voted yet".
+
+    Callers used to pass SEASONS[0] straight through, which was right only
+    while SEASONS[0] WAS the last complete season. Those diverged on
+    2026-10-20 (see season_is_live), and that is the whole bug class this
+    helper exists to close.
+    """
+    if season_is_live(season):
+        y = int(season[:4]) - 1
+        return f"{y}-{(y + 1) % 100:02d}"
+    return season
+
+
 def live_min_threshold(season: str, games_played: int, playoff_mode: bool = False,
                        base: int | None = None) -> tuple[int, int, int]:
     """(default, slider_max, step) for a "minimum total minutes" control.
@@ -7727,7 +7747,9 @@ def get_max_contract_eligibility(player_name: str, current_season: str) -> dict:
             with their team).
 
     Qualifying All-NBA = 1 selection in immediately preceding season
-    OR 2 selections in the past 3 seasons.
+    OR 2 selections in the past 3 seasons. Both windows are measured from the
+    last season actually PLAYED, which is not always `current_season` -- see
+    last_completed_season.
 
     Returns:
         {
@@ -7742,8 +7764,23 @@ def get_max_contract_eligibility(player_name: str, current_season: str) -> dict:
         }
     """
     info = get_player_service_info(player_name)
-    recent = get_all_nba_in_window(player_name, current_season, 3)
-    immediate = get_all_nba_in_window(player_name, current_season, 1)
+    # get_all_nba_in_window's window INCLUDES the season it is anchored on, so
+    # the anchor has to be the last season actually played. The CBA criteria
+    # read "the most recent season", and the season being played has no All-NBA
+    # teams to read: they are announced in May.
+    #
+    # Passing current_season straight through was correct only while SEASONS[0]
+    # was the last complete season. They diverged on 2026-10-20, and from that
+    # morning this asked about the UNPLAYED season and dropped the most recent
+    # real one off the back of the 3-season window. Four players lost a 2025-26
+    # All-NBA selection and with it the designated-rookie bump -- Duren,
+    # Holmgren, Jalen Johnson, Wembanyama, each quietly 25% instead of 30% --
+    # and Edwards and Maxey lost the Designated Vet 35%. Nothing raised: the
+    # window simply came back empty, which is indistinguishable here from a
+    # player who was never selected.
+    anchor = last_completed_season(current_season)
+    recent = get_all_nba_in_window(player_name, anchor, 3)
+    immediate = get_all_nba_in_window(player_name, anchor, 1)
     qualifying = (len(immediate) >= 1) or (len(recent) >= 2)
 
     service = info["service_years"]
