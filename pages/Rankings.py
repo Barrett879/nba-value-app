@@ -1284,7 +1284,22 @@ else:
             "Defense": "Defensive impact in points prevented per game. Higher is better, and the score counts it 1.75 times this season.",
             "TS%": "True Shooting %. League avg ~57%.",
         },
-        height=min(620, max(140, len(display_fmt) * 38 + 46)),
+        # Bounded by the SCREEN, not by a row count, at Barrett's request
+        # 2026-11-02: "make it so the box containing players includes all
+        # players and you are unable to scroll once you select a team".
+        #
+        # The old min(620, len * 38 + 46) had both halves of that wrong. It
+        # capped the box at 620px, so the full board was a 618px window onto
+        # 12,264px of table, and the 38 was a GUESS at the rendered row height,
+        # which is really about 39.4: with BOS selected it computed 464 against
+        # 489 of content and left 27px of scroll that showed nothing.
+        #
+        # No content-derived number at all now. The box takes its natural height
+        # and the viewport is the only bound, so a filtered team fits exactly and
+        # scrolls nowhere, while the whole board fills the screen and keeps its
+        # sticky header. 160px is the room above it: Streamlit's own top chrome
+        # plus the margin this wrapper already carries.
+        height="calc(100vh - 160px)",
         detail=_row_panel,
         detail_col="Player",
     )

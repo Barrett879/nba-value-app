@@ -1686,6 +1686,12 @@ def team_bar_color(team: str, lo: float = 0.22, hi: float = 0.48) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
+def _css_len(v) -> str:
+    """A max-height value for the table wrapper: px for a number, verbatim for a
+    string. Only our own literals reach this, never a request value."""
+    return v if isinstance(v, str) else f"{v}px"
+
+
 def html_table(df, *, formatters=None, styles=None, aligns=None,
                numeric=None, helps=None, height=560, row_style=None,
                max_rows=1000, raw=None, detail=None, detail_col=None):
@@ -1697,6 +1703,16 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     numeric:    iterable of cols sorted by raw numeric value
     helps:      {col: tooltip text}                   (header title=)
     row_style:  row_dict -> css str for the <tr> (e.g. peak-season highlight)
+    height:     the wrapper's CSS max-height. An int is pixels; a STRING is used
+                verbatim, so a call site can pass "calc(100vh - 160px)" and get a
+                box bounded by the SCREEN instead of by a row count. Prefer the
+                string form for any table whose length varies with a filter: a
+                pixel height derived from len(df) has to predict the rendered row
+                height, and when it predicts low the box keeps a few pixels of
+                scroll that serve no purpose. Left unbounded the header would
+                stop sticking, because position:sticky resolves against this
+                wrapper's scrollport and the wrapper needs overflow:auto for the
+                wide tables to scroll sideways.
     max_rows:   cap rendered rows (native grids virtualise; raw HTML doesn't, so
                 very long tables would bloat the DOM). A note row flags the cap.
     raw:        iterable of cols whose FORMATTED value is trusted HTML and rendered
@@ -1811,7 +1827,7 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
             f'Showing top {max_rows:,} of {n_total:,} rows</td></tr>'
         )
     st.markdown(
-        f'<div class="hv-table-wrap" style="max-height:{height}px">'
+        f'<div class="hv-table-wrap" style="max-height:{_css_len(height)}">'
         f'<table class="hv-table"><thead><tr>{"".join(head)}</tr></thead>'
         f'<tbody>{"".join(rows_html)}</tbody></table></div>',
         unsafe_allow_html=True,
