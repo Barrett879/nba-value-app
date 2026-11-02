@@ -541,6 +541,7 @@ from utils import (
     FACE_GUARD_SCRIPT, NameIndex, fetch_injuries, injury_is_out, unavailable_players,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
+    script_json,
 )
 import streamlit.components.v1 as _components
 import team_suitors as _ts
@@ -2261,19 +2262,41 @@ if _as_of:
 
 # Hover tooltips for the filter pills (native title=). Runs from a components
 # iframe; MutationObserver re-stamps after fragment re-renders.
+#
+# The tips are built in PYTHON and spliced in as JSON. They used to be written
+# inline as f"...{_BOARD_SEASON}..." inside a plain, NON-f triple-quoted string,
+# so both the f prefix and the braces reached the browser verbatim. JavaScript
+# read `f"Every player..."` as the identifier f followed by a string literal,
+# threw "Uncaught SyntaxError: Unexpected string", and the WHOLE block never
+# ran, so not one filter pill had a tooltip. Two things hid it: a components
+# iframe reports into its own console rather than the page's, and a missing
+# tooltip looks exactly like a page that was never given one.
+#
+# Splicing a single __TIPS__ placeholder is the idiom pages/Rosters.py and the
+# Trade Machine already use. It also keeps the JS braces out of a Python format
+# string, which is the thing that made an f-string tempting here to begin with.
+_PILL_TIPS = {
+    "All": f"Every player in the {_BOARD_SEASON} ranking pool.",
+    "Bargains": (f"Underpaid by $5M or more: {_BOARD_SEASON} salary at least "
+                 f"$5M below {_BOARD_SEASON} value."),
+    "Overpays": (f"Overpaid by $5M or more: {_BOARD_SEASON} salary at least "
+                 f"$5M above {_BOARD_SEASON} value."),
+    # These two had 2026-27 hardcoded and would have gone stale at the season
+    # flip, which is the same silent failure the rest of the file avoids by
+    # deriving everything from SEASONS.
+    "Free agents": ("UFA, RFA or an open player/team option, with anyone the "
+                    f"verified roster already books on a {_BOARD_SEASON} team "
+                    "removed."),
+    "Max tier": (f"Players whose {_BOARD_SEASON} predicted contract sits at "
+                 "their CBA maximum."),
+}
 _components.html("""
 <script>
 (function () {
     var doc = window.parent.document;
     if (doc.__hvPillTips) return;
     doc.__hvPillTips = true;
-    var TIPS = {
-        "All": f"Every player in the {_BOARD_SEASON} ranking pool.",
-        "Bargains": f"Underpaid by $5M or more: {_BOARD_SEASON} salary at least $5M below {_BOARD_SEASON} value.",
-        "Overpays": f"Overpaid by $5M or more: {_BOARD_SEASON} salary at least $5M above {_BOARD_SEASON} value.",
-        "Free agents": "UFA, RFA or an open player/team option, with anyone the verified roster already books on a 2026-27 team removed.",
-        "Max tier": "Players whose 2026-27 predicted contract sits at their CBA maximum."
-    };
+    var TIPS = __TIPS__;
     function tag() {
         doc.querySelectorAll('.st-key-board_view button').forEach(function (b) {
             var t = (b.textContent || '').trim();
@@ -2284,7 +2307,7 @@ _components.html("""
     new MutationObserver(tag).observe(doc.body, {subtree: true, childList: true});
 })();
 </script>
-""", height=0)
+""".replace("__TIPS__", script_json(_json.dumps(_PILL_TIPS))), height=0)
 
 
 # ── Footer ────────────────────────────────────────────────────────────────────
