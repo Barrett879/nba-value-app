@@ -759,13 +759,43 @@ def _rank_map(pairs, best_is_low):
     return out
 
 
+# EVERYTHING below is keyed by the BOARD's spelling of a name, because that is
+# what _one() looks a rank up with: str(rd["Player"]).
+#
+# _pg is keyed by the STAT FEED's spelling instead, and the two are not always
+# the same string. The board writes "Alperen Şengün" and "Nolan Traoré"; the
+# feed writes them unaccented. Keying these maps off _pg therefore produced a
+# stat line that carried the NUMBERS and no rank beside TPG, PFPG or TS%, since
+# the values come through _pg_idx (name-tolerant) and the ranks did not. Two of
+# 321 rotation players, and both of them accented: the defect was invisible
+# until someone opened one of the two.
+#
+# Worse than the missing labels, `k in _rot` silently SHRANK the TS% rank pool,
+# so those two were ranked against 319 players while everyone else was ranked
+# against 321.
+_pg_idx = NameIndex(_pg) if _pg else None
+_board_names = [str(p) for p in df["Player"]]
+
+
+def _pg_rec(name) -> dict:
+    """The feed's per-game record for a BOARD name, spelling differences and all."""
+    return (_pg_idx.get(str(name)) or {}) if _pg_idx else {}
+
+
+def _mpg(name) -> float:
+    try:
+        m = float(_pg_rec(name).get("MIN"))
+    except (TypeError, ValueError):
+        return 0.0
+    return m if m == m else 0.0
+
+
 # Ranked among ROTATION players, 12+ minutes, not the whole 388. Fewest
 # turnovers across everyone would crown whoever played ninety seconds, and the
 # same goes for a two-minute player's true shooting.
-_rot = {k for k, v in _pg.items()
-        if (v.get("MIN") or 0) and float(v.get("MIN") or 0) >= 12.0}
-_tov_rank = _rank_map([(k, v.get("TOV")) for k, v in _pg.items() if k in _rot], False)
-_pf_rank = _rank_map([(k, v.get("PF")) for k, v in _pg.items() if k in _rot], False)
+_rot = {p for p in _board_names if _mpg(p) >= 12.0}
+_tov_rank = _rank_map([(p, _pg_rec(p).get("TOV")) for p in _rot], False)
+_pf_rank = _rank_map([(p, _pg_rec(p).get("PF")) for p in _rot], False)
 _ts_rank = _rank_map([(k, v) for k, v in _ts_by_player.items() if k in _rot], False)
 
 # TS% is scaled across the ROTATION pool's own spread rather than against a
@@ -776,7 +806,6 @@ _ts_pool = [float(v) * 100.0 for k, v in _ts_by_player.items()
             if k in _rot and v is not None and v == v]
 _TS_LO, _TS_HI = (min(_ts_pool), max(_ts_pool)) if _ts_pool else (0.0, 100.0)
 _def_rank = _rank_map(list(_def_by_player.items()), False)
-_pg_idx = NameIndex(_pg) if _pg else None
 
 # Bars, with the fill in the team's colour. Rank is drawn rather than stated
 # because a bar survives a two-game sample that a percentage does not: 84.6%
