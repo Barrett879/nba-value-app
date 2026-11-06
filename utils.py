@@ -1782,6 +1782,53 @@ def team_bar_color(team: str, lo: float = 0.22, hi: float = 0.48) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
+TEAM_WASH_ALPHA = 0.26      # one opacity for both ends, so it reads colour-to-colour
+
+
+def team_wash(team: str, alpha: float = TEAM_WASH_ALPHA) -> str:
+    """A team's two-tone gradient, as a CSS ``linear-gradient``. "" if unknown.
+
+    The PYTHON MIRROR of teamWash() in templates/trade_machine.html; keep the
+    two in step, because the whole point is that a row on Rankings and a card
+    in the Trade Machine are recognisably the same object.
+
+    Primary and secondary at one opacity, darker end on the left. Both raw team
+    colours rather than team_bar_color's luminance-clamped version: clamping
+    pulls the two ends toward each other, and a gradient between two colours
+    that have been forced to the same lightness is a flat wash with extra
+    steps.
+
+    0.26 is the Trade Machine's own alpha, and it holds here too. Measured
+    across all 30 teams at BOTH ends and in BOTH themes, the worst body-text
+    contrast is 5.93:1 (Orlando, dark), against the 4.5:1 AA floor.
+    """
+    c1, c2 = TEAM_HEX.get(team), TEAM_HEX_2.get(team)
+    if not c1 or not c2:
+        return ""
+
+    def _lum(h):
+        try:
+            r, g, b = _rgb_tuple(h)
+        except Exception:
+            return None
+
+        def ch(c):
+            c = c / 255.0
+            return c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4
+        return 0.2126 * ch(r) + 0.7152 * ch(g) + 0.0722 * ch(b)
+
+    l1, l2 = _lum(c1), _lum(c2)
+    if l1 is None or l2 is None:
+        return ""
+    light, dark = (c1, c2) if l1 >= l2 else (c2, c1)
+
+    def _a(h):
+        r, g, b = _rgb_tuple(h)
+        return f"rgba({r},{g},{b},{alpha})"
+
+    return f"linear-gradient(100deg, {_a(dark)} 0%, {_a(light)} 100%)"
+
+
 def _css_len(v) -> str:
     """A max-height value for the table wrapper: px for a number, verbatim for a
     string. Only our own literals reach this, never a request value."""

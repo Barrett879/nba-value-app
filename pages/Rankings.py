@@ -17,7 +17,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    NameIndex, _dc_path, team_bar_color,
+    NameIndex, _dc_path, team_bar_color, team_wash,
     fetch_league_stats, fetch_bref_player_stats,
     fetch_dlebron, fetch_defense_blend, fetch_defense_blend_meta, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
@@ -933,7 +933,13 @@ if display.empty:
         f"threshold. Lower it with the slider above, or widen the filters."
     )
 
-tog_a, tog_b, tog_c, tog_rest = st.columns([1, 1, 1, 5])
+# 1.3 each, not 1: at 1/8 of the content width a toggle column is about 121px,
+# and "Advanced view" needs ~130px beside its switch, so the label broke
+# mid-word as "Advance / d view". That predates the fourth toggle (the row was
+# [1, 1, 1, 5], the same eighth) but four of them is what made it obvious.
+# Graph mode gets the extra 0.3: its label is the longest that also carries a
+# help icon, so it was the last one still wrapping.
+tog_a, tog_b, tog_c, tog_d, tog_rest = st.columns([1.3, 1.3, 1.3, 1.6, 2.5])
 with tog_a:
     advanced = st.toggle("Advanced view", value=False)
 with tog_b:
@@ -944,9 +950,50 @@ with tog_b:
         show_splits = st.toggle("Splits View", value=False,
                                 help="Per-team stints ranked together. Team-switchers appear as separate rows.")
 with tog_c:
+    team_tint = st.toggle("Team tint", value=False,
+                          help="Shade each row in its team's colour, so one team's "
+                               "players read as a block. Off by default: the plain "
+                               "table is easier to scan when you are reading down a "
+                               "single column.")
+with tog_d:
     show_graph_mode = st.toggle("Graph mode", value=False,
                             help="Plot any two metrics against each other. Default view is "
                                  "Actual vs Projected salary; change axes to explore other relationships.")
+
+
+# Row shading by team. OFF by default, on Barrett's call: "i like the all white
+# better, but i could imagine having team specific colors can help make a list
+# of players more readable". Which is the honest case for it -- 30 teams cannot
+# be told APART by hue (the league is mostly blues and reds), but adjacent rows
+# of the SAME team share one wash and read as a block, which is the thing that
+# helps when you are looking for a team rather than a player.
+#
+# utils.team_wash, which is the python mirror of the Trade Machine's teamWash():
+# primary to secondary at one opacity, darker end left, so a row here and a
+# card there are recognisably the same object. Barrett asked for it directly:
+# "can you make it gradient like the trade machine though please".
+#
+# background-IMAGE, never the background shorthand. The shorthand resets
+# background-image, which is the same trap the .card rule in
+# templates/trade_machine.html carries a comment about.
+#
+# The left bar is team_bar_color rather than the raw primary, for the reason
+# that helper exists: LAL's purple sits at luminance 0.049 and vanishes on the
+# dark theme, Denver's gold at 0.611 and vanishes on the light one, and the
+# HTML is built once while the theme is a runtime toggle. The gradient itself
+# can use the raw colours because it is a 26% wash over the row, not a line.
+
+
+def _team_tint_style(rd) -> str:
+    if not team_tint:
+        return ""
+    t = str(rd.get("Team", "") or "")
+    if not t or t == "TOT":     # an aggregate row belongs to no team
+        return ""
+    wash = team_wash(t)
+    if not wash:
+        return ""
+    return f"background-image:{wash};border-left:3px solid {team_bar_color(t)}"
 
 # ── Graph mode (flexible scatter; defaults match the old Salary view) ─────────
 if show_graph_mode:
@@ -1233,7 +1280,7 @@ if show_splits and splits_df is not None:
         aligns={c: "right" for c in _s_num},
         numeric=_s_num,
         row_style=lambda rd: ("background:var(--panel-2);font-weight:700"
-                              if rd.get("Team") == "TOT" else ""),
+                              if rd.get("Team") == "TOT" else _team_tint_style(rd)),
         height=600,
     )
     # Export CSV removed at Barrett's request (2026-11-01). The caption had a
@@ -1318,6 +1365,7 @@ else:
         },
         aligns={c: "right" for c in _r_num},
         numeric=_r_num,
+        row_style=_team_tint_style,
         helps={
             "Next $": "Next season salary. Plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.",
             "Barrett Score": "Base Score × Availability Multiplier.",
