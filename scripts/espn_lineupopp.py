@@ -101,6 +101,62 @@ def build(event_id, local_date=None):
     agg = defaultdict(lambda: defaultdict(float))   # (defending tid, lineup) -> stats
     viol = defaultdict(int)
     nonplayer = defaultdict(int)       # participant ids absent from the box score
+    oversize = defaultdict(int)        # times the five had to be forced back to five
+    undersize = defaultdict(int)       # times a man had to be recalled to refill it
+    benched = defaultdict(list)        # per team, most recently evicted first
+
+    def _evict(tid, keep):
+        rest = sorted(on[tid] - keep)
+        if not rest:
+            return False
+        a = rest[0]
+        on[tid].discard(a)
+        benched[tid].insert(0, a)      # remember him; he may be needed back
+        oversize[tid] += 1
+        return True
+
+    def _refill(tid):
+        """Take back the most recently evicted player, rather than emit a four.
+
+        He is a real player who was on this floor moments ago, which is the
+        least-wrong body available: the alternative is inventing one from the
+        bench, or shipping a lineup of four.
+        """
+        for a in list(benched[tid]):
+            if a not in on[tid]:
+                benched[tid].remove(a)
+                on[tid].add(a)
+                undersize[tid] += 1
+                return True
+        return False
+
+    def put_on(tid, aid):
+        """Put a player on the floor and keep the five AT five.
+
+        Every widening of a lineup goes through here, because the one that did
+        not is how a sixth man got in. A "Substitution" did `discard(cout);
+        add(cin)`, and discard() is a NO-OP when cout is not on the modelled
+        floor -- ESPN states a sub for a player we already think is on the
+        bench -- so the set grew to six and stayed there until some later sub
+        happened to shrink it. The lineup key is built from this set, so those
+        possessions were credited to SIX defenders: 14 of 81 rebuilt games, 154
+        possessions, worst single game 35 of 201.
+
+        A substitution is net-zero by definition. If our model of the floor
+        disagrees with ESPN about who was on it, the model is already wrong and
+        letting it hold six makes it wronger, so evict deterministically and
+        count it. Alphabetical is arbitrary but reproducible, and matches what
+        the participant repair below already does.
+        """
+        on[tid].add(aid)
+        while len(on[tid]) > 5 and _evict(tid, {aid}):
+            pass
+
+    # ESPN occasionally flags other than five starters. Left alone it is a
+    # lineup that is wrong from tip-off rather than from the first bad sub.
+    for t in teams:
+        while len(on[t]) > 5 and _evict(t, set()):
+            pass
 
     def lineup_key(tid):
         return ", ".join(sorted(names.get(a, a) for a in on[tid]))
@@ -138,7 +194,25 @@ def build(event_id, local_date=None):
                 if len(parts) == 2:
                     cin, cout = parts[0], parts[1]
             if cin and cout:
-                on[tid].discard(cout); on[tid].add(cin)
+                # discard-then-add is net-zero only when cout IS on the floor
+                # and cin is NOT. When cin was already on, the discard costs a
+                # man and nothing replaces him, which is where the four-man
+                # lineups came from -- the mirror of the six-man case and just
+                # as invisible downstream. Repair in whichever direction it
+                # went, and count both.
+                on[tid].discard(cout)
+                put_on(tid, cin)
+                while len(on[tid]) < 5 and _refill(tid):
+                    pass
+                if len(on[tid]) < 5 and cout:
+                    # cin was already on the floor AND nothing has been evicted
+                    # yet, so there is nobody to recall. cout was on this floor
+                    # one play ago, which makes him the least-wrong body there
+                    # is. SAS@DAL 2026-10-24 is the case: Dallas never had an
+                    # eviction all game, so the bench stack was empty when a sub
+                    # took Naji Marshall off and put back someone already on.
+                    on[tid].add(cout)
+                    undersize[tid] += 1
             continue
 
         # A play's primary participant is taken as evidence that he was on the
@@ -163,9 +237,7 @@ def build(event_id, local_date=None):
         elif tid in on and parts and ttype not in NON_FLOOR:
             if parts[0] not in on[tid]:
                 viol[tid] += 1
-                on[tid].add(parts[0])
-                if len(on[tid]) > 5:                # drop whoever we can least justify
-                    on[tid].discard(sorted(on[tid] - {parts[0]})[0])
+                put_on(tid, parts[0])   # drops whoever we can least justify
 
         if tid not in on:
             continue
@@ -246,7 +318,12 @@ def build(event_id, local_date=None):
            "_lineup_violations": {teams[t]: viol[t] for t in teams},
            # Kept in the file so a non-player participant is a recorded fact
            # about the rebuild rather than something a reader has to re-derive.
-           "_nonplayer_participants": {k: v for k, v in sorted(nonplayer.items())}}
+           "_nonplayer_participants": {k: v for k, v in sorted(nonplayer.items())},
+           # How often the five had to be forced back to five. Recorded for the
+           # same reason as the line above: a repair that leaves no trace is
+           # indistinguishable from never having been needed.
+           "_oversize_corrections": {teams[t]: oversize[t] for t in teams},
+           "_undersize_corrections": {teams[t]: undersize[t] for t in teams}}
     for tid, ab in teams.items():
         out[f"{side_of[tid].lower()}_team_abbreviation"] = ab
     rows = defaultdict(list)
@@ -344,6 +421,29 @@ def unnamed_in_lineups(doc):
                 if w and w.replace(" ", "").isdigit():
                     bad.add(w)
     return sorted(bad)
+
+
+def misfit_lineups(doc):
+    """Lineups in this document that do not hold exactly five distinct players.
+
+    put_on() in build() is what prevents these; this is what PROVES it, before
+    anything is written. A six-man lineup fails nowhere downstream: def_lib
+    splits the Name on commas and credits the possession to everyone it finds,
+    so a sixth defender just quietly dilutes five real ones. It reads as data.
+
+    Found 2026-11-05 on PHX@GSW, where 13 of GSW's lineups held six and 35 of
+    their 201 possessions were credited to all six. The violation counter did
+    NOT catch it: BOS@HOU carried a six-man lineup with ZERO violations, and
+    DAL@SAS carried two violations and no six-man lineup, so the two are
+    unrelated and only this test sees the second one.
+    """
+    bad = []
+    for side in ("Home", "Away"):
+        for r in (doc["stats"].get(side) or {}).get("FullGame") or []:
+            who = [w.strip() for w in str(r.get("Name", "")).split(",") if w.strip()]
+            if len(who) != 5 or len(set(who)) != 5:
+                bad.append(f"{side}: {len(who)} ({len(set(who))} distinct)")
+    return bad
 
 
 def per_player(doc):
@@ -459,6 +559,11 @@ if __name__ == "__main__":
                     print(f"  REFUSED {a}@{h} {iso}: {len(unnamed)} lineup slot(s) "
                           f"hold a bare feed id, not a name: {', '.join(unnamed)}")
                     continue
+                misfit = misfit_lineups(doc)
+                if misfit:
+                    print(f"  REFUSED {a}@{h} {iso}: {len(misfit)} lineup(s) do not "
+                          f"hold five distinct players: {'; '.join(misfit[:4])}")
+                    continue
                 (PB / f"lineupopp_{gid}.json").write_text(json.dumps(doc))
                 v = doc["_lineup_violations"]
                 flag = "  HIGH VIOLATIONS" if max(v.values()) > 6 else ""
@@ -486,6 +591,11 @@ if __name__ == "__main__":
             if unnamed:
                 print(f"REFUSED {doc['_matchup']}: {len(unnamed)} lineup slot(s) hold "
                       f"a bare feed id, not a name: {', '.join(unnamed)}")
+                continue
+            misfit = misfit_lineups(doc)
+            if misfit:
+                print(f"REFUSED {doc['_matchup']}: {len(misfit)} lineup(s) do not hold "
+                      f"five distinct players: {'; '.join(misfit[:4])}")
                 continue
             (PB / f"lineupopp_{gid}.json").write_text(json.dumps(doc))
             print(f"wrote lineupopp_{gid}.json  {doc['_matchup']}  {doc['date']}  "

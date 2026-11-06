@@ -13,11 +13,14 @@ shipping. The steps, in the order they depend on each other:
   2 PROVISIONAL  box scores for the dates where the stat feed is behind
   3 BUMP         per_game, defense_blend and DATA_REV, plus the reader literals
                  that have to move with them
+  3b PBPSTATS    refresh the live season's player totals, which is where the
+                 blend's charge counts come from (non-fatal if the feed is down)
   4 BUILD        refresh_live_season.py: artifacts BEFORE board, and its five
                  checks
   5 VERIFY       the new revision against the previous one; nobody may vanish
   5b TEAM PAGES  re-join tonight's scores onto the verified rosters, for the
                  Trade Machine, Rosters and Redraft
+  5c PLAYER HUB  recompute the homepage's projected contracts and Max tier
   6 SHIP         stage exactly what changed, commit, push
 
 Anything that fails after step 3 rolls the version bumps back and deletes the
@@ -269,6 +272,30 @@ def main() -> int:
         print("  versions restored; the tree and the live site are untouched")
         return 1
 
+    # ---- 3b PBPSTATS PLAYER TOTALS -------------------------------------
+    # cache/pbpstats/player_<season>.json is where the defensive blend gets
+    # "Charge Fouls Drawn", so it has to be refreshed BEFORE the build.
+    #
+    # It was not in this script until 2026-11-05, and its fetcher skipped any
+    # season whose file already existed -- right for the ten finished seasons
+    # it also caches, silently wrong for the live one. The file sat at its
+    # 2026-10-24 state, TWO GAMES in, for twelve days: the league's charge total
+    # read 23 all that time, and the blend's own damping took that as "nobody
+    # draws charges" rather than "this file stopped counting".
+    #
+    # A failed refresh is NOT fatal. Stale beats empty here as everywhere else:
+    # the old file still has real counts, and a night should not be lost
+    # because one third-party endpoint was down.
+    if not resuming:
+        try:
+            if not sh(["scripts/exp_pbp_seasons.py"], "pbpstats player totals",
+                      check=False):
+                print("  WARNING: the LIVE season's player totals did not refresh. "
+                      "Charge counts will be whatever the last good fetch left.")
+        except Exception as e:
+            print(f"  WARNING: pbpstats player totals raised "
+                  f"{type(e).__name__}: {e}; continuing on the existing file")
+
     # ---- 4 BUILD -------------------------------------------------------
     try:
         if resuming:
@@ -352,6 +379,23 @@ def main() -> int:
     except Exception as e:
         return rollback(f"build_team_pages raised {type(e).__name__}: {e}")
 
+    # ---- 5c PLAYER HUB -------------------------------------------------
+    # cache/player_hub_pcv_v2.json is the homepage's projected contracts and
+    # the Max tier. Like team_pages it is scored off the board, so it belongs
+    # here, after verify, for the same rollback reason.
+    #
+    # It was not in this script either. Found on 2026-11-05 stamped
+    # season=2025-26, built_at=2026-07-30: three months old, priced at the
+    # WRONG CAP YEAR, and contradicting the live Contract Predictor by $30M on
+    # the player Barrett happened to ask about. 450 players in ~70s, which is
+    # cheap enough to do every night and far cheaper than the next time someone
+    # has to work out why two pages disagree.
+    try:
+        if not sh(["scripts/build_player_hub.py"], "player hub", check=False):
+            return rollback("build_player_hub failed")
+    except Exception as e:
+        return rollback(f"build_player_hub raised {type(e).__name__}: {e}")
+
     # ---- 6 SHIP --------------------------------------------------------
     paths = [str(f.relative_to(ROOT)) for f in new_files]
     # DERIVED from VERSIONED, not typed out again. This was a second hand-kept
@@ -363,7 +407,8 @@ def main() -> int:
     # header and showed his 4-game averages underneath, for two refreshes.
     # A file this script edits is a file this script ships.
     paths += sorted({site for sites in VERSIONED.values() for site, _rx in sites})
-    paths += ["data/provisional_box_scores.csv", "cache/team_pages.json"]
+    paths += ["data/provisional_box_scores.csv", "cache/team_pages.json",
+              "cache/player_hub_pcv_v2.json"]
     extra = subprocess.run(["git", "diff", "--name-only", "--",
                             "cache/bref_stats_v3_" + season + ".parquet"],
                            cwd=ROOT, capture_output=True, text=True).stdout.split()
