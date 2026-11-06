@@ -1785,8 +1785,7 @@ def team_bar_color(team: str, lo: float = 0.22, hi: float = 0.48) -> str:
 TEAM_WASH_ALPHA = 0.26      # one opacity for both ends, so it reads colour-to-colour
 
 
-def team_wash(team: str, alpha: float = TEAM_WASH_ALPHA,
-              bright_first: bool = False) -> str:
+def team_wash(team: str, alpha: float = TEAM_WASH_ALPHA) -> str:
     """A team's two-tone gradient, as a CSS ``linear-gradient``. "" if unknown.
 
     The PYTHON MIRROR of teamWash() in templates/trade_machine.html; keep the
@@ -1827,12 +1826,7 @@ def team_wash(team: str, alpha: float = TEAM_WASH_ALPHA,
         r, g, b = _rgb_tuple(h)
         return f"rgba({r},{g},{b},{alpha})"
 
-    # bright_first flips which end leads. The default is the Trade Machine's
-    # order, darker left; Rankings asks for the flip. Contrast is unaffected
-    # either way, because both ends are on screen regardless and the alpha was
-    # measured against BOTH of them in BOTH themes.
-    first, second = (light, dark) if bright_first else (dark, light)
-    return f"linear-gradient(100deg, {_a(first)} 0%, {_a(second)} 100%)"
+    return f"linear-gradient(100deg, {_a(dark)} 0%, {_a(light)} 100%)"
 
 
 def _css_len(v) -> str:

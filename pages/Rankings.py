@@ -968,12 +968,10 @@ with tog_d:
 # of the SAME team share one wash and read as a block, which is the thing that
 # helps when you are looking for a team rather than a player.
 #
-# utils.team_wash, the python mirror of the Trade Machine's teamWash(): primary
-# to secondary at one opacity. Barrett asked for it directly ("can you make it
-# gradient like the trade machine though please"), then "try to flip the
-# colors", so the rows run BRIGHT end first where a trade card runs dark end
-# first. The two surfaces deliberately differ on direction only; flipping the
-# card to match is one argument here and one line in teamWash().
+# utils.team_wash, which is the python mirror of the Trade Machine's teamWash():
+# primary to secondary at one opacity, darker end left, so a row here and a
+# card there are recognisably the same object. Barrett asked for it directly:
+# "can you make it gradient like the trade machine though please".
 #
 # background-IMAGE, never the background shorthand. The shorthand resets
 # background-image, which is the same trap the .card rule in
@@ -992,7 +990,7 @@ def _team_tint_style(rd) -> str:
     t = str(rd.get("Team", "") or "")
     if not t or t == "TOT":     # an aggregate row belongs to no team
         return ""
-    wash = team_wash(t, bright_first=True)
+    wash = team_wash(t)
     if not wash:
         return ""
     return f"background-image:{wash};border-left:3px solid {team_bar_color(t)}"
