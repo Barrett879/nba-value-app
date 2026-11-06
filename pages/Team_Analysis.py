@@ -13,7 +13,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected,
     fetch_bref_positions, render_nav, render_page_chrome,
-    theme_fig, html_table, render_playoff_toggle,
+    theme_fig, html_table, render_playoff_toggle, money_diverging_scale,
     render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
     render_rail, face_img, TEAM_HEX, hex_rgba,
@@ -133,7 +133,11 @@ fig_teams = px.bar(
     team_grp,
     x="Team", y="net_delta",
     color="net_delta",
-    color_continuous_scale="RdYlGn_r",
+    # Same job as the Rankings scatter's Delta Market, so the same scale: green
+    # underpaying, red overpaying, NEUTRAL at zero. RdYlGn_r put pale yellow at
+    # the midpoint, which is 1.03:1 on white, so the teams nearest break-even
+    # were the hardest bars to see on exactly the chart about break-even.
+    color_continuous_scale=money_diverging_scale(),
     color_continuous_midpoint=0,
     labels={"net_delta": "Net Δ ($M)", "Team": ""},
     height=420,

@@ -26,6 +26,7 @@ from utils import (
     team_cell,
     render_nav, render_page_chrome, render_rail, face_img, TEAM_HEX,
     theme_fig, render_playoff_toggle, render_barrett_score_explainer, _bootstrap_warm,
+    money_diverging_scale, magnitude_scale,
     PRE_1990_SALARY_NOTE,
 )
 import threading
@@ -1007,13 +1008,27 @@ if show_graph_mode:
         height=520,
     )
     if is_color_numeric:
+        # Both scales are theme-aware: RdYlGn_r's pale-yellow midpoint measured
+        # 1.03:1 on white, and its two ends collapse under deuteranopia. See
+        # utils.money_diverging_scale for the numbers.
         scatter_kwargs["color_continuous_scale"] = (
-            "RdYlGn_r" if color_axis == "Δ Market $M" else "Viridis"
+            money_diverging_scale() if color_axis == "Δ Market $M"
+            else magnitude_scale()
         )
         if color_axis == "Δ Market $M":
             scatter_kwargs["color_continuous_midpoint"] = 0
 
     fig_scatter = px.scatter(gd, **scatter_kwargs)
+    # Bigger marks with a surface-coloured ring. This scatter runs to ~450
+    # overlapping points, and at Plotly's 6px default with no ring a cluster
+    # read as one smear; the ring is what separates two dots that touch.
+    #
+    # The ring is the SURFACE colour, not a fixed white: #15171d is in
+    # theme_fig's DARK_OUTLINE set, so light mode flips it to white on its own
+    # and dark mode keeps the dark panel colour. A hardcoded white ring would
+    # have put a bright halo round all 450 dots in dark mode.
+    fig_scatter.update_traces(marker=dict(
+        size=9, line=dict(width=1, color="#15171d")))
 
     # Diagonal "fairly paid" reference only when both axes are salary
     is_salary_view = ({x_axis, y_axis} == {"Proj. Salary $M", "Salary $M"})

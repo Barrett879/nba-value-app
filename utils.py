@@ -1272,7 +1272,11 @@ def theme_fig(fig):
     font, grid = "#3a3d48", "rgba(20,22,40,0.10)"
     try:
         fig.update_layout(
-            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)",
+            # paper stays transparent so the figure sits in the page, but the
+            # PLOT area gets a hairline-weight tint. Fully transparent, the
+            # chart had no edge at all on white: the marks floated on the page
+            # with nothing saying where the data region stopped.
+            paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(20,22,40,0.022)",
             font_color=font,
         )
         # color= retints the whole axis (line+ticks+labels); tickfont_color
@@ -1306,12 +1310,61 @@ def theme_fig(fig):
             if "241,196,15" in cl:
                 return "rgba(168,116,0,0.75)"
             return c
+
+        def _ink(c):
+            """A WHITE guide line or label, authored for the dark canvas, turned
+            into dark ink at the same opacity.
+
+            Only for layout SHAPES and ANNOTATION TEXT. Not for markers: a white
+            marker outline is deliberate in light mode (see DARK_OUTLINE above),
+            so a blanket white remap would undo the ring that separates
+            overlapping dots.
+
+            This is why the Rankings scatter's "fairly paid" diagonal and its
+            label were invisible on white: both are rgba(255,255,255,0.5), and
+            nothing in this function had ever looked at layout.shapes.
+            """
+            if not isinstance(c, str):
+                return c
+            cl = c.lower().replace(" ", "")
+            if cl in ("white", "#fff", "#ffffff"):
+                return "rgba(20,22,40,0.45)"
+            if cl.startswith("rgba(255,255,255"):
+                a = cl[cl.rfind(",") + 1:cl.rfind(")")]
+                try:
+                    a = min(1.0, float(a) * 0.9)
+                except ValueError:
+                    a = 0.45
+                return f"rgba(20,22,40,{a:.3f})"
+            if cl.startswith("rgb(255,255,255"):
+                return "rgba(20,22,40,0.45)"
+            return c
+
+        for shp in (fig.layout.shapes or []):
+            try:
+                if getattr(shp, "line", None) is not None and getattr(shp.line, "color", None):
+                    shp.line.color = _ink(_fix(shp.line.color))
+                if getattr(shp, "fillcolor", None):
+                    shp.fillcolor = _ink(shp.fillcolor)
+            except Exception:
+                pass
         for tr in fig.data:
             try:
-                if getattr(tr, "line", None) is not None and getattr(tr.line, "color", None):
-                    tr.line.color = _fix(tr.line.color)
-                if getattr(tr, "marker", None) is not None and getattr(tr.marker, "color", None):
-                    tr.marker.color = _fix(tr.marker.color)
+                # isinstance(str), NOT truthiness. On a continuous-colour trace
+                # marker.color is a numpy ARRAY of values, and `x is not None
+                # and x` forces bool(array), which raises "truth value of an
+                # array is ambiguous". The except below swallowed it, so for
+                # every px.scatter(color=<numeric>) -- the whole of Graph mode
+                # -- this entire per-trace pass silently did nothing: no yellow
+                # remap, no outline flip, no star fix. Only a string ever needed
+                # remapping anyway, so testing for one fixes it and removes the
+                # trap at the same time.
+                _lc = getattr(getattr(tr, "line", None), "color", None)
+                if isinstance(_lc, str) and _lc:
+                    tr.line.color = _fix(_lc)
+                _mc = getattr(getattr(tr, "marker", None), "color", None)
+                if isinstance(_mc, str) and _mc:
+                    tr.marker.color = _fix(_mc)
                 _ml = getattr(tr.marker, "line", None) if getattr(tr, "marker", None) is not None else None
                 if _ml is not None and getattr(_ml, "color", None):
                     if str(_ml.color).lower().replace(" ", "") in DARK_OUTLINE:
@@ -1334,12 +1387,55 @@ def theme_fig(fig):
         for ann in (fig.layout.annotations or []):
             try:
                 if ann.font and ann.font.color:
-                    ann.font.color = _fix(ann.font.color)
+                    ann.font.color = _ink(_fix(ann.font.color))
             except Exception:
                 pass
     except Exception:
         pass
     return fig
+
+
+def money_diverging_scale():
+    """Plotly colorscale for a signed money axis: green under, red over, NEUTRAL
+    at zero. Returns stops for the ACTIVE theme.
+
+    Replaces RdYlGn_r, which fails twice on a light canvas:
+
+    1. Its midpoint is PALE YELLOW (#ffffbf), contrast 1.03:1 on white. That is
+       invisible, and the midpoint is where most of the league sits, so the
+       densest part of every Delta-Market chart disappeared. The neutral here
+       measures 2.63:1, and a diverging scale is supposed to have a neutral
+       midpoint rather than a third hue anyway.
+
+    2. Its two ends are nearly the same LIGHTNESS (L* 59.8 green, 57.5 red), so
+       deuteranopia collapses them: OKLab dE 5.7, against a target of 8. Hue
+       alone carried the meaning, and red/green is the one pair that costs.
+       Darkening the overpaid end to #6e120c (L* 35.0) separates the poles by
+       lightness as well as hue and lifts that to 15.0.
+
+    Measured, not eyeballed. The good pole is the site's own --value-good token
+    in both modes, so a green dot still means what green means everywhere else.
+    Dark mode keeps today's ends and only swaps the yellow midpoint for grey,
+    because nothing was wrong with it (pole separation there is 10.6).
+    """
+    dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
+    if dark:
+        stops = ["#1e8f54", "#2ecc71", "#6b7280", "#e74c3c", "#a02b1e"]
+    else:
+        stops = ["#0d7a37", "#16a34a", "#9aa0ab", "#c0392b", "#6e120c"]
+    return [[i / (len(stops) - 1), c] for i, c in enumerate(stops)]
+
+
+def magnitude_scale():
+    """Sequential colorscale for a plain magnitude axis, for the active theme.
+
+    Viridis tops out at bright yellow, which works on the dark canvas and
+    vanishes on white, so a HIGH value read as nothing there. Light mode gets a
+    single-hue ramp that runs light to dark instead, which is what a sequential
+    scale is supposed to do on a pale surface.
+    """
+    dark = st.session_state.get("theme_dark", THEME_DEFAULT_DARK)
+    return "Viridis" if dark else "Teal"
 
 
 def value_color(v, vmin, vmax):
