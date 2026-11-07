@@ -3768,6 +3768,23 @@ def last_completed_season(season: str) -> str:
     return season
 
 
+def _slider_step(span: int) -> int:
+    """A step giving the minutes slider at least ~30 stops, snapped DOWN to a
+    round number.
+
+    This was `1 if default < 50 else 50`, a switch on the DEFAULT rather than
+    on the range, and it broke the moment the default crossed 50: ten games
+    into 2026-27 the slider ran 0 to 305 in steps of 50, which is six usable
+    positions, and the default of 61 was not one of them. The span is what
+    decides how fine a step can be, so the span is what it keys on. 1500 still
+    gives 50 and nothing about a complete season changes.
+    """
+    for s in (50, 25, 10, 5, 2):
+        if s <= span / 30:
+            return s
+    return 1
+
+
 def live_min_threshold(season: str, games_played: int, playoff_mode: bool = False,
                        base: int | None = None) -> tuple[int, int, int]:
     """(default, slider_max, step) for a "minimum total minutes" control.
@@ -3793,7 +3810,12 @@ def live_min_threshold(season: str, games_played: int, playoff_mode: bool = Fals
         return 100, 600, 25
     if season_is_live(season) and 0 < games_played < 82:
         default = max(1, round(floor * games_played / 82))
-        return default, max(50, default * 5), (1 if default < 50 else 50)
+        top = max(50, default * 5)
+        step = _slider_step(top)
+        # The default has to SIT ON the step grid. Streamlit draws an off-grid
+        # value once and then snaps to the grid on the first drag, so a default
+        # of 61 against a step of 10 is a number you can see and never get back.
+        return max(step, round(default / step) * step), top, step
     return floor, 1500, 50
 
 
