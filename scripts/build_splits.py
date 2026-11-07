@@ -39,8 +39,8 @@ PAUSE_S = 60        # between them, to let a rate limit clear
 from nba_api.stats.static import teams as nba_teams_static  # noqa: E402
 
 from utils import (  # noqa: E402
-    DATA_REV, FORMULA_VERSION, SEASONS, _rev_path, build_ranked_projected,
-    build_splits_data_live, normalize,
+    CACHE_DIR, DATA_REV, FORMULA_VERSION, SEASONS, build_ranked_projected,
+    build_splits_data_live, normalize, season_is_live,
 )
 
 # .__wrapped__ because build_splits_data_live is @st.cache_data(ttl=3600).
@@ -108,29 +108,36 @@ def main() -> int:
     teams = df.loc[df["Team"] != "TOT", "Team"].nunique()
     print(f"built {stints} stints, {players} players, {teams} teams, {tots} TOT rows")
 
-    path = _rev_path(f"splits_{season.replace('-', '_')}_{FORMULA_VERSION}.pkl")
-    # _rev_path returns the revisioned name for a write when neither file
-    # exists, but it returns the LEGACY name when only that one is present.
-    # A write must always land on the current revision, so spell it out.
-    path = path.parent / (
-        f"splits_{season.replace('-', '_')}_{FORMULA_VERSION}_{DATA_REV}.pkl")
-    with open(path, "wb") as f:
-        pickle.dump({"data": df,
-                     "fetched_at": datetime.now(timezone.utc).isoformat()}, f)
-    print(f"WROTE {path.name}")
+    key = season.replace("-", "_")
+    stamp = {"data": df, "fetched_at": datetime.now(timezone.utc).isoformat()}
+    base = CACHE_DIR / f"splits_{key}_{FORMULA_VERSION}.pkl"
 
-    # A one-time floor under the revisioned name. _rev_path falls back to the
-    # un-revisioned file when the current revision is missing, so a night where
-    # the stats API is down degrades to stale-but-present rather than to no
-    # Splits View at all. Written only when absent: on Render the /data disk
-    # seeds a file only when its NAME is missing, so rewriting this one every
-    # night would churn the repo for a copy production can never receive twice.
-    floor = path.parent / f"splits_{season.replace('-', '_')}_{FORMULA_VERSION}.pkl"
-    if not floor.exists():
-        with open(floor, "wb") as f:
-            pickle.dump({"data": df,
-                         "fetched_at": datetime.now(timezone.utc).isoformat()}, f)
-        print(f"WROTE {floor.name}  (fallback floor, written once)")
+    # A FINISHED season's splits never change again, so it gets ONE stable
+    # filename and no DATA_REV. That matters on Render, where the /data disk
+    # seeds a cache file only when its NAME is missing: a name that never moves
+    # is seeded once and is then correct forever, while a revisioned name for
+    # a static season would ship a new copy every night for no reason.
+    if not season_is_live(season):
+        with open(base, "wb") as f:
+            pickle.dump(stamp, f)
+        print(f"WROTE {base.name}  (finished season, one stable name)")
+        return 0
+
+    # The LIVE season moves every night, so it needs the revisioned name, which
+    # is the only way a new copy reaches that same /data disk.
+    revved = CACHE_DIR / f"splits_{key}_{FORMULA_VERSION}_{DATA_REV}.pkl"
+    with open(revved, "wb") as f:
+        pickle.dump(stamp, f)
+    print(f"WROTE {revved.name}")
+
+    # Plus a one-time floor under the un-revisioned name, which the reader
+    # falls back to, so a night where the stats API is down degrades to
+    # stale-but-present rather than to no Splits View at all. Written only when
+    # absent, for the seeding reason above.
+    if not base.exists():
+        with open(base, "wb") as f:
+            pickle.dump(stamp, f)
+        print(f"WROTE {base.name}  (fallback floor, written once)")
     return 0
 
 

@@ -3768,23 +3768,6 @@ def last_completed_season(season: str) -> str:
     return season
 
 
-def _slider_step(span: int) -> int:
-    """A step giving the minutes slider at least ~30 stops, snapped DOWN to a
-    round number.
-
-    This was `1 if default < 50 else 50`, a switch on the DEFAULT rather than
-    on the range, and it broke the moment the default crossed 50: ten games
-    into 2026-27 the slider ran 0 to 305 in steps of 50, which is six usable
-    positions, and the default of 61 was not one of them. The span is what
-    decides how fine a step can be, so the span is what it keys on. 1500 still
-    gives 50 and nothing about a complete season changes.
-    """
-    for s in (50, 25, 10, 5, 2):
-        if s <= span / 30:
-            return s
-    return 1
-
-
 def live_min_threshold(season: str, games_played: int, playoff_mode: bool = False,
                        base: int | None = None) -> tuple[int, int, int]:
     """(default, slider_max, step) for a "minimum total minutes" control.
@@ -3805,18 +3788,20 @@ def live_min_threshold(season: str, games_played: int, playoff_mode: bool = Fals
     hand-written fix, and the cure is the same: one implementation, used
     everywhere, with a check that fails when a page stops using it.
     """
+    # STEP 1, on every one of these. Barrett asked for it in as many words
+    # after the step had been 50 (six positions across 0 to 305, with a default
+    # of 61 that was not one of them) and then 10. One value for all three
+    # branches, because the thing that made the old behaviour infuriating was
+    # the step CHANGING under you: it keyed on the default, so it flipped from
+    # 1 to 50 the week the default crossed 50. A step of 1 is also the only one
+    # that can never put the default off its own grid.
     floor = DEFAULT_MIN_THRESHOLD if base is None else base
     if playoff_mode:
-        return 100, 600, 25
+        return 100, 600, 1
     if season_is_live(season) and 0 < games_played < 82:
         default = max(1, round(floor * games_played / 82))
-        top = max(50, default * 5)
-        step = _slider_step(top)
-        # The default has to SIT ON the step grid. Streamlit draws an off-grid
-        # value once and then snaps to the grid on the first drag, so a default
-        # of 61 against a step of 10 is a number you can see and never get back.
-        return max(step, round(default / step) * step), top, step
-    return floor, 1500, 50
+        return default, max(50, default * 5), 1
+    return floor, 1500, 1
 
 
 def _dc_fresh(path: Path, season: str | None = None, ttl: int | None = None) -> bool:
@@ -5520,30 +5505,46 @@ def load_splits_from_disk(season: str) -> pd.DataFrame | None:
     # night, and _rev_path still falls back to the un-revisioned one.
     path = _rev_path(f"splits_{season.replace('-', '_')}_{FORMULA_VERSION}.pkl")
     if not path.exists():
-        return None
+        # Seventeen finished seasons carry cache/splits_<season>.pkl, committed
+        # on 2026-06-04 under "Ship precomputed cache so deploys load from
+        # disk, not the NBA API" -- shipped for exactly this reader and never
+        # once opened by it, because the name in the code carries a
+        # FORMULA_VERSION the files never got. The alternative to reading them
+        # is the live NBA API, which Render cannot reach at all, so this is a
+        # fallback to real data rather than to nothing. Scores shown come from
+        # the board anyway for every untraded player; only a traded player's
+        # stint rows use the artifact's own base_score, which is why
+        # scripts/build_splits.py rebuilds these seasons at the current
+        # FORMULA_VERSION and this path is the floor under that.
+        legacy = CACHE_DIR / f"splits_{season.replace('-', '_')}.pkl"
+        if not legacy.exists():
+            return None
+        path = legacy
     with open(path, "rb") as f:
         cached = pickle.load(f)
     return cached["data"]
 
 
 def build_splits_data(season: str, salary_lookup: tuple) -> pd.DataFrame | None:
-    """The per-stint frame, or None when there is nothing to show.
+    """The per-stint frame from disk, or None when there is no artifact.
 
-    None, never an empty DataFrame. build_splits_data_live returns a bare
-    pd.DataFrame() when every team fetch fails, and a frame with no COLUMNS is
-    the one thing the caller cannot survive: it indexes ["total_min"] and
-    raises KeyError, which is what production showed as "this app has
-    encountered an error". On Render the live path fails every time, because
-    the NBA stats API is not reachable from there at all, so this is not a rare
-    branch -- it is the only branch whenever the disk artifact is missing.
+    DISK ONLY. This used to fall back to build_splits_data_live, which is
+    thirty LeagueDashPlayerStats calls, one per team, each with three attempts
+    and exponential backoff -- on a REQUEST PATH. On Render that fallback could
+    never succeed, because the stats API is unreachable from there: it returned
+    a bare pd.DataFrame() with no columns, the caller indexed ["total_min"],
+    and the page died with the KeyError production showed as "this app has
+    encountered an error". Where it CAN succeed it is worse in a different way,
+    because a visitor on a season with no artifact waits minutes for it.
+
+    So the live builder is now a batch concern only, called by
+    scripts/build_splits.py, which has the patience and the retries for it.
+    A missing artifact means None, the caller says so, and nothing hangs.
+
+    salary_lookup is kept in the signature: it is what the live builder needs
+    to price a stint, and build_splits.py assembles it the same way.
     """
-    disk = load_splits_from_disk(season)
-    if disk is not None:
-        return disk
-    live = build_splits_data_live(season, salary_lookup)
-    if live is None or live.empty or "total_min" not in live.columns:
-        return None
-    return live
+    return load_splits_from_disk(season)
 
 
 @st.cache_data(ttl=86400)

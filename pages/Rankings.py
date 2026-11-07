@@ -1120,15 +1120,33 @@ if show_graph_mode:
 
 if show_splits:
     splits_df = build_splits_data(season, salary_lookup)
+    if splits_df is not None:
+        # The stats API spells names in ASCII; the board does not. It sends
+        # "Alperen Sengun" and "Nolan Traore" where the board carries "Alperen
+        # Şengün" and "Nolan Traoré", and EVERY column in this table except
+        # Team, GP and MPG is joined from the board on this string. So a
+        # spelling the board does not share does not blank one cell, it blanks
+        # the whole row: score, salary, projected salary, delta and Next $ at
+        # once, which is what Şengün and Traoré rendered as.
+        #
+        # Canonicalised ONCE, here, through NameIndex -- never a bare
+        # normalize() key -- rather than leaving four downstream joins to each
+        # get it wrong in their own way. Built from the UNFILTERED board so a
+        # player below the minutes threshold still resolves to his real
+        # spelling. .copy() because build_splits_data is cached and this frame
+        # is shared.
+        _canon = NameIndex({n: n for n in _df_all["Player"]})
+        splits_df = splits_df.copy()
+        splits_df["Player"] = [
+            _canon.get(n, n) for n in splits_df["Player"]
+        ]
     if splits_df is None:
-        # Say so. Without this the page falls through to the ordinary board
-        # with the Splits toggle still on, which looks like the toggle does
-        # nothing rather than like the data is missing.
-        st.warning(
-            "Splits are not available for this season yet. They are built "
-            "from a committed artifact that the nightly refresh writes; if "
-            "this persists, the artifact is missing rather than the season "
-            "being empty."
+        # Say so, in the visitor's terms. Without this the page falls through
+        # to the ordinary board with the Splits toggle still lit, which reads
+        # as a toggle that does nothing rather than as a season without data.
+        st.info(
+            f"Per-team splits are not available for {season}. "
+            "They go back to 2009-10; pick a later season to see them."
         )
 
 if show_splits and splits_df is not None:
@@ -1201,6 +1219,16 @@ if show_splits and splits_df is not None:
     sdisplay["Next $"] = sdisplay["Player"].map(_nc_lookup).fillna("—")
 
     render_rail("The board", f"{season} Splits", count=f"{len(sdisplay)} rows")
+    # The honest caption for a season nobody has been traded in yet. Ten games
+    # into 2026-27 there were ZERO players with stats for two teams, so this
+    # table was identical to the main board, and looked broken for it. Say why
+    # rather than let an unchanged table be the answer.
+    if not traded_players:
+        st.caption(
+            f"No player has appeared for more than one team in {season} yet, "
+            "so every row here matches the main board. Splits separate a "
+            "traded player's time with each team once that starts happening."
+        )
 
     if advanced:
         sfmt = sdisplay[["Player", "Team", "GP", "MPG",
