@@ -1166,6 +1166,23 @@ if show_splits and splits_df is not None:
         pos_players = set(df[df["position"].str.contains(pos_filter, regex=False, na=False)]["Player"])
         sdisplay = sdisplay[sdisplay["Player"].isin(pos_players)]
 
+    # DROP WHAT THE BOARD CANNOT PRICE. Every money column here, and the
+    # score itself, is joined FROM the board; a player the board does not
+    # carry comes out as a row of nan rather than as a row.
+    #
+    # Not hypothetical, and not visible from this machine: on 2026-11-07 the
+    # LIVE 2025-26 board carried 347 players where this laptop's carried 379,
+    # because the salary chain reaches fewer sources from Render and the board
+    # drops anyone it cannot price. The splits artifact is built here, against
+    # the bigger board, so 39 rows rendered blank in production while local
+    # showed none. The splits table is a BREAKDOWN of the board, so the
+    # board's population is the right population: a player it does not rank
+    # has nothing to show here, and is not in the ordinary table either.
+    _on_board = set(df["Player"])
+    _unpriced = sorted(set(sdisplay["Player"]) - _on_board)
+    if _unpriced:
+        sdisplay = sdisplay[sdisplay["Player"].isin(_on_board)]
+
     # Use base_score_pace as the displayed "Base Score" so Base × Avail
     # = Barrett Score arithmetic is internally consistent with the
     # canonical (pace-adjusted) Barrett Score column.
@@ -1223,6 +1240,18 @@ if show_splits and splits_df is not None:
     # into 2026-27 there were ZERO players with stats for two teams, so this
     # table was identical to the main board, and looked broken for it. Say why
     # rather than let an unchanged table be the answer.
+    # Say it out loud rather than letting the count quietly differ from the
+    # board's. Nobody vanishes without a line saying who and why.
+    if _unpriced:
+        _names = ", ".join(_unpriced[:6])
+        st.caption(
+            f"{len(_unpriced)} player"
+            f"{'' if len(_unpriced) == 1 else 's'} with time this season "
+            f"{'is' if len(_unpriced) == 1 else 'are'} left out, because the "
+            f"board has no salary for "
+            f"{'him' if len(_unpriced) == 1 else 'them'}: {_names}"
+            f"{', and others' if len(_unpriced) > 6 else ''}."
+        )
     if not traded_players:
         st.caption(
             f"No player has appeared for more than one team in {season} yet, "
