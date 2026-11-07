@@ -72,7 +72,16 @@ def main():
     # The files that carry the CURRENT season, which _rev_path revisions.
     want = [f"cache/raw_{LIVE.replace('-', '_')}_{FV}_{REV}.parquet",
             f"cache/all_seasons_0_{FV}_{REV}.parquet",
-            f"cache/all_seasons_500_{FV}_{REV}.parquet"]
+            f"cache/all_seasons_500_{FV}_{REV}.parquet",
+            # Splits View, added 2026-11-07 WITH the artifact it reads. Without
+            # it this guard said "every cache production will look for is
+            # committed" while the one file Splits View needs was not in the
+            # list at all, and the page fell through to thirty live NBA stats
+            # API calls that Render cannot make: a DataFrame with no columns,
+            # then KeyError on ["total_min"], shown as "this app has
+            # encountered an error". A reader this script does not know about
+            # is a reader it cannot vouch for.
+            f"cache/splits_{LIVE.replace('-', '_')}_{FV}_{REV}.pkl"]
 
     bad = []
     print("files production will ask for once this lands:")
