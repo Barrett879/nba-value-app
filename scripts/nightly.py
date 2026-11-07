@@ -21,6 +21,7 @@ shipping. The steps, in the order they depend on each other:
   5b TEAM PAGES  re-join tonight's scores onto the verified rosters, for the
                  Trade Machine, Rosters and Redraft
   5c PLAYER HUB  recompute the homepage's projected contracts and Max tier
+  5d SPLITS      rebuild the per-stint artifact Splits View reads (non-fatal)
   6 SHIP         stage exactly what changed, commit, push
 
 Anything that fails after step 3 rolls the version bumps back and deletes the
@@ -396,6 +397,33 @@ def main() -> int:
     except Exception as e:
         return rollback(f"build_player_hub raised {type(e).__name__}: {e}")
 
+    # ---- 5d SPLITS ------------------------------------------------------
+    # pages/Rankings.py's Splits View reads a committed pickle and otherwise
+    # falls back to thirty live NBA stats API calls, one per team. That
+    # fallback cannot work on Render, where the stats API is unreachable: every
+    # fetch returned None, the live builder handed back a DataFrame with NO
+    # COLUMNS, and the page raised KeyError on ["total_min"], which production
+    # showed as "this app has encountered an error". Reader and writer had also
+    # drifted -- load_splits_from_disk wanted splits_<season>_<FORMULA>.pkl
+    # while every committed file was splits_<season>.pkl -- so the disk branch
+    # had been dead for EVERY season since the pages were split out.
+    #
+    # Non-fatal, deliberately. _rev_path falls back to the un-revisioned floor
+    # file, so a night where the stats API is down degrades to stale-but-
+    # present splits; losing the whole refresh over one view would be worse.
+    # build_splits.py refuses to write anything short of all 30 teams, which is
+    # the guard that matters: a partial artifact would be SERVED, silently,
+    # with whole teams missing from the view and no error anywhere.
+    splits_path = (ROOT / "cache" /
+                   f"splits_{key}_{utils.FORMULA_VERSION}_r{after['DATA_REV']}.pkl")
+    try:
+        if not sh(["scripts/build_splits.py"], "splits", check=False):
+            print("  WARNING: splits did not rebuild. Splits View will serve "
+                  "the previous artifact through _rev_path's fallback.")
+    except Exception as e:
+        print(f"  WARNING: build_splits raised {type(e).__name__}: {e}; "
+              f"continuing on the existing artifact")
+
     # ---- 6 SHIP --------------------------------------------------------
     paths = [str(f.relative_to(ROOT)) for f in new_files]
     # DERIVED from VERSIONED, not typed out again. This was a second hand-kept
@@ -409,6 +437,14 @@ def main() -> int:
     paths += sorted({site for sites in VERSIONED.values() for site, _rx in sites})
     paths += ["data/provisional_box_scores.csv", "cache/team_pages.json",
               "cache/player_hub_pcv_v2.json"]
+    # Only if it exists: step 5d is non-fatal, so a night the stats API was
+    # down has no new splits file and `git add` on a missing path fails the
+    # whole commit. The un-revisioned floor file is staged too, for the one
+    # run that first creates it.
+    paths += [str(f.relative_to(ROOT)) for f in
+              (splits_path,
+               ROOT / "cache" / f"splits_{key}_{utils.FORMULA_VERSION}.pkl")
+              if f.exists()]
     extra = subprocess.run(["git", "diff", "--name-only", "--",
                             "cache/bref_stats_v3_" + season + ".parquet"],
                            cwd=ROOT, capture_output=True, text=True).stdout.split()

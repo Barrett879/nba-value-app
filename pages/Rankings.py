@@ -1120,6 +1120,16 @@ if show_graph_mode:
 
 if show_splits:
     splits_df = build_splits_data(season, salary_lookup)
+    if splits_df is None:
+        # Say so. Without this the page falls through to the ordinary board
+        # with the Splits toggle still on, which looks like the toggle does
+        # nothing rather than like the data is missing.
+        st.warning(
+            "Splits are not available for this season yet. They are built "
+            "from a committed artifact that the nightly refresh writes; if "
+            "this persists, the artifact is missing rather than the season "
+            "being empty."
+        )
 
 if show_splits and splits_df is not None:
     # ── Splits table ──────────────────────────────────────────────────────

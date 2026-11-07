@@ -5512,7 +5512,13 @@ def build_splits_data_live(season: str, salary_lookup: tuple) -> pd.DataFrame:
 def load_splits_from_disk(season: str) -> pd.DataFrame | None:
     # Splits cache also contains barrett_score values so it's formula-dependent.
     # Same versioning rationale as the combined-seasons parquet above.
-    path = CACHE_DIR / f"splits_{season.replace('-', '_')}_{FORMULA_VERSION}.pkl"
+    #
+    # Through _rev_path, not CACHE_DIR directly, for the reason DATA_REV exists:
+    # Render's /data disk seeds a repo cache file only when that FILENAME is
+    # missing, so a splits file re-committed under one fixed name would reach
+    # production once and never update again. The revisioned name changes every
+    # night, and _rev_path still falls back to the un-revisioned one.
+    path = _rev_path(f"splits_{season.replace('-', '_')}_{FORMULA_VERSION}.pkl")
     if not path.exists():
         return None
     with open(path, "rb") as f:
@@ -5520,11 +5526,24 @@ def load_splits_from_disk(season: str) -> pd.DataFrame | None:
     return cached["data"]
 
 
-def build_splits_data(season: str, salary_lookup: tuple) -> pd.DataFrame:
+def build_splits_data(season: str, salary_lookup: tuple) -> pd.DataFrame | None:
+    """The per-stint frame, or None when there is nothing to show.
+
+    None, never an empty DataFrame. build_splits_data_live returns a bare
+    pd.DataFrame() when every team fetch fails, and a frame with no COLUMNS is
+    the one thing the caller cannot survive: it indexes ["total_min"] and
+    raises KeyError, which is what production showed as "this app has
+    encountered an error". On Render the live path fails every time, because
+    the NBA stats API is not reachable from there at all, so this is not a rare
+    branch -- it is the only branch whenever the disk artifact is missing.
+    """
     disk = load_splits_from_disk(season)
     if disk is not None:
         return disk
-    return build_splits_data_live(season, salary_lookup)
+    live = build_splits_data_live(season, salary_lookup)
+    if live is None or live.empty or "total_min" not in live.columns:
+        return None
+    return live
 
 
 @st.cache_data(ttl=86400)
