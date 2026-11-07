@@ -158,6 +158,35 @@ verified data and some from reporting.
 | 2027-06-30 | cap year ends, so a 2026-27 dead-money charge expires. This is exactly how Cameron Thomas's $845K ended up wrongly sitting in a 2026-27 file | CBA |
 | 2027-07-01 | free agency opens, and the 2027 class becomes live | CBA |
 
+## Ship a BOARD_REV copy for the season that just finished
+
+**This is a step, not a note.** The moment `SEASONS[0]` moves on, the season
+that just ended stops resolving through `_rev_path` and starts resolving to the
+plain `raw_<season>_<FORMULA_VERSION>.parquet`. Render's `/data` disk seeds a
+file only when its NAME is missing, and by then it already holds a copy that
+**Render built itself**, mid-season, with whatever salary coverage it could
+reach from there. That copy wins forever and no re-commit can displace it.
+
+That is not hypothetical. On 2026-11-07 the live 2025-26 board served **347
+players against the repo's 379**, and no committed version of the file has ever
+said 347. Nothing on the site could show it either, because a player the board
+cannot price is simply absent rather than blank; it surfaced only when Splits
+View joined an artifact built on this machine onto that board.
+
+So, at rollover, for the season that just finished:
+
+```bash
+# regular season and playoffs, from the COMMITTED copy, not the working tree
+git show "HEAD:cache/raw_<season>_v7.parquet"              > cache/raw_<season>_v7_b1.parquet
+git show "HEAD:cache/raw_<season>_playoff_p4_v7.parquet"   > cache/raw_<season>_playoff_p4_v7_b1.parquet
+/opt/anaconda3/bin/python3 scripts/check_cache_seeding.py  # must list both as ok
+```
+
+Bump `utils.BOARD_REV` instead if a season already has a `b1` copy that is
+itself wrong. `check_cache_seeding.py` checks every `raw_*_<BOARD_REV>.parquet`
+is tracked, because a copy written and not committed is the same bug under a
+new name.
+
 ## Known gaps, carried forward
 
 - `fetch_monthly_scores` still blocks: it has no disk cache to serve, so it

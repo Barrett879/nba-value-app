@@ -6354,6 +6354,32 @@ FORMULA_VERSION = "v7"
 PLAYOFF_VERSION = "p4"
 
 
+# ── BOARD_REV — DATA_REV's equivalent for a FINISHED season's board ──────────
+# Historical boards are immutable, so they carry no DATA_REV and keep one
+# filename forever. That is right for the data and wrong for Render, because
+# /data seeds a repo file only when its NAME is missing: whatever copy the disk
+# saw first wins for good.
+#
+# Measured 2026-11-07. Production's 2025-26 board served 347 players where the
+# repo's parquet has 379. It was not a stale commit -- no committed version has
+# ever said 347; the versions say 365 (2026-06-04) then 379 (2026-06-14). It is
+# a board RENDER BUILT ITSELF, early, while 2025-26 was still the live season
+# and the repo had no copy to seed, with Render's thinner salary coverage baked
+# in. Every re-commit since has been ignored, and nothing on the site could show
+# it: a player the board cannot price is absent, not blank. It surfaced only
+# because Splits View joined an artifact built HERE onto that board.
+#
+# Bump this and ship a `<name>_<BOARD_REV>.parquet` beside the plain file for
+# any finished season whose live board is wrong. A season with no such copy
+# falls back to the plain name, so this never orphans the ~100 historical
+# parquets into a network rebuild.
+#
+# AT EVERY SEASON ROLLOVER: the season just finished stops using _rev_path and
+# starts using the plain name, which is the exact moment this trap re-arms. Ship
+# a BOARD_REV copy for it. See docs/season_rollover.md.
+BOARD_REV = "b1"
+
+
 def _raw_disk_path(season: str, playoffs: bool = False) -> Path:
     CACHE_DIR.mkdir(parents=True, exist_ok=True)
     if playoffs:
@@ -6364,7 +6390,11 @@ def _raw_disk_path(season: str, playoffs: bool = False) -> Path:
     # Only the CURRENT season's data can change, and only it went stale on the
     # disk; the ~50 historical parquets are immutable and keep their names, so
     # a DATA_REV bump never orphans them into a network rebuild.
-    return _rev_path(name) if season == SEASONS[0] else CACHE_DIR / name
+    if season == SEASONS[0]:
+        return _rev_path(name)
+    stem, _, ext = name.rpartition(".")
+    revved = CACHE_DIR / f"{stem}_{BOARD_REV}.{ext}"
+    return revved if revved.exists() else CACHE_DIR / name
 
 def _raw_disk_fresh(season: str, playoffs: bool = False) -> bool:
     """True if the on-disk parquet exists AND is within its TTL.

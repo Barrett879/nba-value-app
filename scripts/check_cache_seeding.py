@@ -83,6 +83,15 @@ def main():
             # is a reader it cannot vouch for.
             f"cache/splits_{LIVE.replace('-', '_')}_{FV}_{REV}.pkl"]
 
+    # BOARD_REV copies of FINISHED seasons' boards. These exist because /data
+    # seeds a filename once: production served a 2025-26 board of 347 players
+    # that Render built itself, against the repo's 379, and no re-commit under
+    # the same name could ever reach it. A copy that is written but not
+    # TRACKED is the same bug wearing a new name, so the guard checks them.
+    from utils import BOARD_REV
+    want += sorted(f"cache/{f.name}" for f in
+                   (ROOT / "cache").glob(f"raw_*_{BOARD_REV}.parquet"))
+
     bad = []
     print("files production will ask for once this lands:")
     for w in want:
