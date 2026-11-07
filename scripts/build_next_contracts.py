@@ -33,7 +33,7 @@ sys.path.insert(0, str(ROOT))
 logging.disable(logging.WARNING)
 import pandas as pd, requests
 import utils
-from utils import normalize
+from utils import normalize, _html_text
 logging.disable(logging.NOTSET)
 
 NEXT_LABEL = "2027-28"           # the season this file describes
@@ -139,7 +139,12 @@ def team_money(abbr: str) -> dict:
     r.raise_for_status()
     out: dict = {}
     seen_active = False
-    for t in pd.read_html(io.StringIO(r.text)):
+    # _html_text, never r.text: requests falls back to latin-1 when a response
+    # carries no charset, which turns every accented name into mojibake and
+    # drops it from the NameIndex join. This file prices "Next $", so a dropped
+    # name reads as a player with no contract next season. Flagged by
+    # scripts/check_html_decoding.py, which is why that guard exists.
+    for t in pd.read_html(io.StringIO(_html_text(r))):
         cols = {str(c).strip(): c for c in t.columns}
         if NEXT_LABEL not in cols:
             continue
