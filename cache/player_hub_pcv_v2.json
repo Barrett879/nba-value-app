@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-05",
+"built_at": "2026-11-07",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3601,6 +3601,38 @@
 "pcv_M": 2.6,
 "low_M": 0.1,
 "high_M": 5.1,
+"is_max": false,
+"max_pct": 0.25
+},
+"dalen terry": {
+"player": "Dalen Terry",
+"pcv_M": 4.6,
+"low_M": 0.7,
+"high_M": 8.6,
+"is_max": false,
+"max_pct": 0.25
+},
+"santi aldama": {
+"player": "Santi Aldama",
+"pcv_M": 16.8,
+"low_M": 8.0,
+"high_M": 25.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"tacko fall": {
+"player": "Tacko Fall",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"adou thiero": {
+"player": "Adou Thiero",
+"pcv_M": 3.9,
+"low_M": 0.6,
+"high_M": 7.3,
 "is_max": false,
 "max_pct": 0.25
 }
