@@ -17,7 +17,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
-    NameIndex, _dc_path, team_bar_color,
+    NameIndex, _dc_path, team_bar_color, team_bar_color_2,
     fetch_league_stats, fetch_bref_player_stats,
     fetch_dlebron, fetch_defense_blend, fetch_defense_blend_meta, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
@@ -949,42 +949,61 @@ with tog_b:
                                 help="Per-team stints ranked together. Team-switchers appear as separate rows.")
 with tog_c:
     team_colors = st.toggle("Team colors", value=False,
-                            help="A rule down the left of each row in its team's "
-                                 "colour, so one team's players read as a block.")
+                            help="Frame each row in its team's two colours, "
+                                 "primary at the left edge running to secondary "
+                                 "at the right, so one team's players read as a "
+                                 "block.")
 with tog_d:
     show_graph_mode = st.toggle("Graph mode", value=False,
                             help="Plot any two metrics against each other. Default view is "
                                  "Actual vs Projected salary; change axes to explore other relationships.")
 
-# A 3px rule at the left edge of the row, and NOTHING in the data area. The
-# first attempt at this washed the whole row in the team's gradient and Barrett
-# threw it out: "it looks so awful". A full-row colour across 30 teams and 300
-# rows is a lot of colour however it is oriented, which flipping it proved
-# rather than fixed. The rule gives the same grouping cue, costs no contrast on
-# any cell, and is the treatment the Trade Machine cards and the Rosters team
-# cards already use, so it reads as part of the design.
+# A 2px frame around the row in the team's two colours: primary at the left
+# edge, secondary at the right, the long edges running between them. Nothing in
+# the data area -- the first attempt at this washed the whole row in the
+# gradient and Barrett threw it out ("it looks so awful"), so the colour stays
+# on the perimeter where it groups rows without costing any cell contrast.
+#
+# The frame is four background strips, not a border. See the .hv-teamrow block
+# in utils.COMMON_CSS for why: border-image is dropped in the collapsing border
+# model, and a background cannot shift the body cells out of line with the
+# sticky header the way a 3px tr border can.
 #
 # The band is the point. team_bar_color's default [0.22, 0.48] was chosen for a
 # wide bar and leaves five teams under 3:1 against WHITE (Denver 2.1, Utah 2.1,
 # Indiana 2.2, New York 2.6, New Orleans 2.8), because a colour at luminance
-# 0.48 cannot reach 3:1 on a white ground at all. A thin rule is a non-text
+# 0.48 cannot reach 3:1 on a white ground at all. A thin frame is a non-text
 # graphic and 3:1 is its floor, which needs luminance in [0.123, 0.300] to hold
 # on BOTH themes. [0.15, 0.26] sits inside that with room: all 30 teams clear
-# 3.41:1 on white and 3.42:1 on the dark panel, hue untouched (LAL still
-# purple, BOS still green, NYK still orange).
+# 3.41:1 on white and 3.42:1 on the dark panel for BOTH halves of the pair, hue
+# untouched (LAL still purple to gold, BOS still green to gold).
 #
 # Raw TEAM_HEX would fail both ways: 5 teams vanish on white and 7 on dark,
 # LAL's purple worst at 1.7:1.
 _RULE_LO, _RULE_HI = 0.15, 0.26
 
 
-def _team_rule_style(rd) -> str:
+def _row_team(rd) -> str:
+    """The team whose colours frame this row, or "" for no frame. An aggregate
+    row (TOT) belongs to no team."""
     if not team_colors:
         return ""
     t = str(rd.get("Team", "") or "")
-    if not t or t == "TOT":     # an aggregate row belongs to no team
+    return "" if t == "TOT" else t
+
+
+def _team_frame_style(rd) -> str:
+    t = _row_team(rd)
+    if not t:
         return ""
-    return f"border-left:3px solid {team_bar_color(t, _RULE_LO, _RULE_HI)}"
+    # Two custom properties per row, not the whole gradient: the CSS lives once
+    # in COMMON_CSS, so the board carries ~48 bytes a row instead of ~250.
+    return (f"--tm1:{team_bar_color(t, _RULE_LO, _RULE_HI)};"
+            f"--tm2:{team_bar_color_2(t, _RULE_LO, _RULE_HI)}")
+
+
+def _team_frame_class(rd) -> str:
+    return "hv-teamrow" if _row_team(rd) else ""
 
 
 # ── Graph mode (flexible scatter; defaults match the old Salary view) ─────────
@@ -1272,7 +1291,8 @@ if show_splits and splits_df is not None:
         aligns={c: "right" for c in _s_num},
         numeric=_s_num,
         row_style=lambda rd: ("background:var(--panel-2);font-weight:700"
-                              if rd.get("Team") == "TOT" else _team_rule_style(rd)),
+                              if rd.get("Team") == "TOT" else _team_frame_style(rd)),
+        row_class=_team_frame_class,
         height=600,
     )
     # Export CSV removed at Barrett's request (2026-11-01). The caption had a
@@ -1357,7 +1377,8 @@ else:
         },
         aligns={c: "right" for c in _r_num},
         numeric=_r_num,
-        row_style=_team_rule_style,
+        row_style=_team_frame_style,
+        row_class=_team_frame_class,
         helps={
             "Next $": "Next season salary. Plain = guaranteed · TO chip = team option · PO chip = player option · gray = UFA.",
             "Barrett Score": "Base Score × Availability Multiplier.",
