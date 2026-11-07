@@ -1614,28 +1614,6 @@ table.hv-table{width:100%;border-collapse:collapse;font-size:0.85rem;
 .hv-table tbody tr:nth-child(even) td{background:var(--row-tint);}
 .hv-table tbody tr:hover td{background:var(--panel-hover);}  /* must follow zebra */
 .hv-table tbody tr:last-child td{border-bottom:none;}
-/* Team-coloured frame around a row: primary at the left edge, secondary at the
-   right, the two long edges running between them. It is drawn as FOUR
-   background strips, not as a border, for two reasons. border-image is dropped
-   outright in the collapsing border model -- Chrome keeps the computed value
-   and paints border-color instead, which here is transparent, so a tr with
-   `border-image:linear-gradient(...)` renders no border at all (measured). And
-   a background costs no layout: a 3px border on a tr shifts the body cells out
-   of line with the sticky header, a background strip cannot.
-   The cells go transparent so nothing paints over the strips, which moves the
-   zebra and the hover tint up onto the row itself -- background-color sits
-   under background-image, so the frame survives both. */
-.hv-table tbody tr.hv-teamrow{background-color:transparent;
-  background-image:linear-gradient(90deg,var(--tm1),var(--tm2)),
-                   linear-gradient(90deg,var(--tm1),var(--tm2)),
-                   linear-gradient(var(--tm1),var(--tm1)),
-                   linear-gradient(var(--tm2),var(--tm2));
-  background-size:100% 2px,100% 2px,2px 100%,2px 100%;
-  background-position:0 0,0 100%,0 0,100% 0;background-repeat:no-repeat;}
-.hv-table tbody tr.hv-teamrow td{background-color:transparent;
-  border-bottom-color:transparent;}
-.hv-table tbody tr.hv-teamrow:nth-child(even){background-color:var(--row-tint);}
-.hv-table tbody tr.hv-teamrow:hover{background-color:var(--panel-hover);}
 /* Status / label chips inside table cells (and reused by page banners). */
 .hv-chip{display:inline-block;padding:0.05rem 0.45rem;border-radius:999px;
   font-size:0.64rem;font-weight:800;letter-spacing:0.04em;border:1px solid currentColor;
@@ -1769,10 +1747,17 @@ def team_cell(v) -> str:
     return f"{dot}{esc}"
 
 
-def _band_hex(hexv: str, lo: float, hi: float) -> str:
-    """Blend a hex toward white or black until its relative luminance lands in
-    [lo, hi]. Hue is untouched; only lightness moves."""
-    hexv = (hexv or "#888888").lstrip("#")
+def team_bar_color(team: str, lo: float = 0.22, hi: float = 0.48) -> str:
+    """A team colour that stays visible on BOTH themes, hue preserved.
+
+    Raw team colours cannot be used as a fill: LAL's purple sits at luminance
+    0.049 and vanishes on the dark theme, Denver's gold at 0.611 and washes out
+    on the light one. Blending toward white or black until the relative
+    luminance lands between lo and hi keeps the colour recognisably the team's
+    while guaranteeing it reads either way. One colour, not a per-theme pair,
+    because the site's theme is a runtime toggle and the HTML is built once.
+    """
+    hexv = (TEAM_HEX.get(team) or "#888888").lstrip("#")
     if len(hexv) != 6:
         return "#888888"
     try:
@@ -1797,29 +1782,6 @@ def _band_hex(hexv: str, lo: float, hi: float) -> str:
     return f"#{r:02x}{g:02x}{b:02x}"
 
 
-def team_bar_color(team: str, lo: float = 0.22, hi: float = 0.48) -> str:
-    """A team colour that stays visible on BOTH themes, hue preserved.
-
-    Raw team colours cannot be used as a fill: LAL's purple sits at luminance
-    0.049 and vanishes on the dark theme, Denver's gold at 0.611 and washes out
-    on the light one. Blending toward white or black until the relative
-    luminance lands between lo and hi keeps the colour recognisably the team's
-    while guaranteeing it reads either way. One colour, not a per-theme pair,
-    because the site's theme is a runtime toggle and the HTML is built once.
-    """
-    return _band_hex(TEAM_HEX.get(team), lo, hi)
-
-
-def team_bar_color_2(team: str, lo: float = 0.22, hi: float = 0.48) -> str:
-    """team_bar_color for the OTHER half of the pair (TEAM_HEX_2).
-
-    Banded by the same rule, so a primary/secondary pair is guaranteed to clear
-    the same contrast floor. Teams whose second colour is charcoal land on a
-    mid grey: that is the brand (Chicago is red and black), not a bug.
-    """
-    return _band_hex(TEAM_HEX_2.get(team), lo, hi)
-
-
 def _css_len(v) -> str:
     """A max-height value for the table wrapper: px for a number, verbatim for a
     string. Only our own literals reach this, never a request value."""
@@ -1828,8 +1790,7 @@ def _css_len(v) -> str:
 
 def html_table(df, *, formatters=None, styles=None, aligns=None,
                numeric=None, helps=None, height=560, row_style=None,
-               max_rows=1000, raw=None, detail=None, detail_col=None,
-               row_class=None):
+               max_rows=1000, raw=None, detail=None, detail_col=None):
     """Render a DataFrame as a themed, sortable HTML table (follows light/dark).
 
     formatters: {col: value -> display str}          (default str(value))
@@ -1838,7 +1799,6 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
     numeric:    iterable of cols sorted by raw numeric value
     helps:      {col: tooltip text}                   (header title=)
     row_style:  row_dict -> css str for the <tr> (e.g. peak-season highlight)
-    row_class:  row_dict -> class str for the <tr> (e.g. the team-colour frame)
     height:     the wrapper's CSS max-height. An int is pixels; a STRING is used
                 verbatim, so a call site can pass "calc(100vh - 160px)" and get a
                 box bounded by the SCREEN instead of by a row count. Prefer the
@@ -1943,10 +1903,7 @@ def html_table(df, *, formatters=None, styles=None, aligns=None,
                 f'{_acl.get(al, "")}{style_attr}>{cell}</td>'
             )
         rstyle = row_style(rd) if row_style else ""
-        rclass = row_class(rd) if row_class else ""
-        _attrs = (f' class="{rclass}"' if rclass else "") + \
-                 (f' style="{rstyle}"' if rstyle else "")
-        tr_open = f'<tr{_attrs}>' if _attrs else "<tr>"
+        tr_open = f'<tr style="{rstyle}">' if rstyle else "<tr>"
         rows_html.append(tr_open + "".join(tds) + "</tr>")
         if detail is not None and _detail_html:
             # Empty cells for every column BEFORE the disclosure, then one
