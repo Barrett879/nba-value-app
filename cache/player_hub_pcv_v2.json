@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-07",
+"built_at": "2026-11-08",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3635,6 +3635,22 @@
 "high_M": 7.3,
 "is_max": false,
 "max_pct": 0.25
+},
+"spencer jones": {
+"player": "Spencer Jones",
+"pcv_M": 11.4,
+"low_M": 3.9,
+"high_M": 19.0,
+"is_max": false,
+"max_pct": 0.25
+},
+"t.j. mcconnell": {
+"player": "T.J. McConnell",
+"pcv_M": 6.7,
+"low_M": 1.5,
+"high_M": 12.0,
+"is_max": false,
+"max_pct": 0.35
 }
 },
 "contract_end": {
