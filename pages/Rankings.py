@@ -1178,8 +1178,19 @@ if show_splits and splits_df is not None:
     # showed none. The splits table is a BREAKDOWN of the board, so the
     # board's population is the right population: a player it does not rank
     # has nothing to show here, and is not in the ordinary table either.
+    # TWO causes, and they are not the same thing. A player the board does not
+    # carry AT ALL has no salary, which is the 2025-26 case: 31 of them, because
+    # the board drops whoever it cannot price. A player the board carries but
+    # does not RANK at this threshold is a boundary case: the two frames compute
+    # total minutes slightly differently (splits rounds MPG x GP), so Chris
+    # Youngblood came out 67 against the board's 66 on a 67-minute threshold.
+    # The first caption said "no salary" for both and was simply wrong about the
+    # second -- Youngblood has a salary, he is one minute short.
     _on_board = set(df["Player"])
+    _all_board = set(_df_all["Player"])
     _unpriced = sorted(set(sdisplay["Player"]) - _on_board)
+    _below = [p for p in _unpriced if p in _all_board]
+    _nosal = [p for p in _unpriced if p not in _all_board]
     if _unpriced:
         sdisplay = sdisplay[sdisplay["Player"].isin(_on_board)]
 
@@ -1242,15 +1253,23 @@ if show_splits and splits_df is not None:
     # rather than let an unchanged table be the answer.
     # Say it out loud rather than letting the count quietly differ from the
     # board's. Nobody vanishes without a line saying who and why.
-    if _unpriced:
-        _names = ", ".join(_unpriced[:6])
+    _why = []
+    if _nosal:
+        _why.append(
+            f"the board has no salary for {', '.join(_nosal[:5])}"
+            f"{f' and {len(_nosal) - 5} more' if len(_nosal) > 5 else ''}")
+    if _below:
+        _why.append(
+            f"{', '.join(_below[:5])}"
+            f"{f' and {len(_below) - 5} more' if len(_below) > 5 else ''} "
+            f"{'falls' if len(_below) == 1 else 'fall'} under the "
+            f"{min_threshold}-minute mark on the board's own count")
+    if _why:
         st.caption(
             f"{len(_unpriced)} player"
             f"{'' if len(_unpriced) == 1 else 's'} with time this season "
-            f"{'is' if len(_unpriced) == 1 else 'are'} left out, because the "
-            f"board has no salary for "
-            f"{'him' if len(_unpriced) == 1 else 'them'}: {_names}"
-            f"{', and others' if len(_unpriced) > 6 else ''}."
+            f"{'is' if len(_unpriced) == 1 else 'are'} left out: "
+            + "; ".join(_why) + "."
         )
     if not traded_players:
         st.caption(
