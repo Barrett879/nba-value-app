@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-08",
+"built_at": "2026-11-09",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3651,6 +3651,22 @@
 "high_M": 12.0,
 "is_max": false,
 "max_pct": 0.35
+},
+"nic claxton": {
+"player": "Nic Claxton",
+"pcv_M": 15.9,
+"low_M": 7.3,
+"high_M": 24.6,
+"is_max": false,
+"max_pct": 0.3
+},
+"rocco zikarsky": {
+"player": "Rocco Zikarsky",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.8,
+"is_max": false,
+"max_pct": 0.25
 }
 },
 "contract_end": {
