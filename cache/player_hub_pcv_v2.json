@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-09",
+"built_at": "2026-11-10",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3667,6 +3667,14 @@
 "high_M": 5.8,
 "is_max": false,
 "max_pct": 0.25
+},
+"malachi smith": {
+"player": "Malachi Smith",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9,
+"is_max": false,
+"max_pct": 0.25
 }
 },
 "contract_end": {
@@ -5962,6 +5970,13 @@
 "ajay mitchell": {
 "end_season": "2027-28",
 "last_year_type": "team_option",
+"signing_season": "2028-29",
+"years_remaining": 2,
+"current_team": "OKC"
+},
+"dalen terry": {
+"end_season": "2027-28",
+"last_year_type": "guaranteed",
 "signing_season": "2028-29",
 "years_remaining": 2,
 "current_team": "OKC"
