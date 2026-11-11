@@ -130,7 +130,7 @@ logging.disable(logging.NOTSET)
 SHRINK_MIN = 150.0
 
 W1 = 0.70          # inside the on/off sub-blend, which is now only 10% of the whole
-VERSION = "v26"  # v7: 2026-10-27 slate (4 games)
+VERSION = "v27"  # v7: 2026-10-27 slate (4 games)
 
 # The display scale, Barrett's call on 2026-10-25 (c9c804f, then e1778ff pulled
 # the floor in from -6 to -4). The stretch is piecewise about zero, so the best
