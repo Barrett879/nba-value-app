@@ -240,8 +240,22 @@ try:
         # reported those three as "dropped" on every single run, beside the one
         # that genuinely was, so the real finding arrived wearing three false
         # ones. Resolve into the pool's dialect first.
+        #
+        # BBRef also emits a MULTI-TEAM AGGREGATE row for anyone who has
+        # changed teams: "2TM" for two, "3TM" for three, and "TOT" in older
+        # frames. These are not teams, so they resolve to themselves and then
+        # read as a 31st team that vanished from the pool.
+        #
+        # That is not hypothetical. The 2026-11-12 nightly rolled back on
+        # ['2TM'], which was ONE row: Nique Clifford, the season's first player
+        # to change teams. He was on the board the whole time, at OKC with 10
+        # GP and a salary, because the pool is built from fetch_league_stats
+        # (30 clean codes), while this guard reads BBRef. A whole refresh was
+        # lost to an aggregate row.
+        _AGGREGATE = {"TOT"}
         src_teams = {resolve_team_code(t, pool_teams)
-                     for t in src["TEAM_ABBREVIATION"].dropna().unique()}
+                     for t in src["TEAM_ABBREVIATION"].dropna().unique()
+                     if t not in _AGGREGATE and not re.fullmatch(r"\d+TM", str(t))}
         gone = sorted(src_teams - pool_teams)
         record("FAIL" if gone else "PASS", "no team dropped from the pool",
                (f"present in the stat source but ABSENT from the pool: {gone}. "
