@@ -376,7 +376,28 @@ def _install_extra_routes() -> None:
 
             head = get
 
+        def _xml_esc(u: str) -> str:
+            """A <loc> must be XML-escaped. player_url percent-encodes the name
+            (so & arrives as %26 already), but escaping here costs nothing and
+            means no future name spelling can produce invalid XML."""
+            return (u.replace("&", "&amp;").replace("<", "&lt;")
+                     .replace(">", "&gt;").replace('"', "&quot;"))
+
         class _SitemapHandler(tornado.web.RequestHandler):
+            """The sitemap. Until 2026-11-12 it declared eleven URLs: the
+            homepage and ten sections. The several hundred per-player landing
+            pages at /?player=<name> were not in it and were not linked from any
+            crawlable HTML either (the only such links live on the team pages,
+            which are parked and 404), so nothing could reach them. They are the
+            long tail the site is actually built to answer: a search for one
+            player's contract value.
+
+            Player entries carry a <lastmod> taken from the share_meta build
+            stamp, which is the real moment that page's numbers changed (the
+            nightly rebuilds it). The section routes carry none on purpose: an
+            invented lastmod that never matches reality teaches Google to ignore
+            the field."""
+
             def get(self):
                 paths = list(_SITEMAP_PATHS)
                 if _team_pages_on:
@@ -388,10 +409,24 @@ def _install_extra_routes() -> None:
                 urls = "".join(
                     f"<url><loc>https://hoopsvalue.com{p}</loc></url>"
                     for p in paths)
+                n_players = 0
+                try:
+                    players = seo_selfheal.player_urls()
+                    stamp = (seo_selfheal.share_meta_built_at() or "")[:10]
+                    lm = f"<lastmod>{stamp}</lastmod>" if len(stamp) == 10 else ""
+                    urls += "".join(
+                        f"<url><loc>{_xml_esc(u)}</loc>{lm}</url>"
+                        for _nm, u in players)
+                    n_players = len(players)
+                except Exception as e:
+                    _log(f"sitemap: player URLs skipped ({e})")
                 self.set_header("Content-Type", "application/xml; charset=utf-8")
                 self.write('<?xml version="1.0" encoding="UTF-8"?>'
                            '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
                            f"{urls}</urlset>")
+                if not n_players:
+                    _log("sitemap: 0 player URLs (share_meta.json missing or "
+                         "pre-dates the 'n' field)")
 
             head = get
 
@@ -442,6 +477,11 @@ def _install_extra_routes() -> None:
             _orig_app_init(self, handlers, *args, **kwargs)
             self.transforms.append(_NoindexTransform)
         tornado.web.Application.__init__ = _app_init
+        try:
+            _np = len(seo_selfheal.player_urls())
+        except Exception:
+            _np = 0
+        _log(f"sitemap: {len(_SITEMAP_PATHS)} sections + {_np} player pages")
         _log("extra routes installed: /robots.txt /sitemap.xml /team/*"
              + (" / (player OG)" if _base_shell else "")
              + " + onrender noindex header")

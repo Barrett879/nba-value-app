@@ -32,9 +32,9 @@ import unicodedata
 
 import streamlit
 
-MARKER = "hv-seo-v6"
+MARKER = "hv-seo-v8"
 _OLD_MARKERS = ("hv-seo-v1", "hv-seo-v2", "hv-seo-v3", "hv-seo-v4",
-                "hv-seo-v5")
+                "hv-seo-v5", "hv-seo-v6", "hv-seo-v7")
 
 TITLE = "HoopsValue · NBA Player Value, Contract Predictions & Rankings"
 DESC = ("HoopsValue scores every NBA player since 1973 by their on-court value "
@@ -44,7 +44,8 @@ DESC = ("HoopsValue scores every NBA player since 1973 by their on-court value "
 # on a Streamlit SPA, so it carries the value prop in natural language (not
 # keyword stuffing) covering the searches the site actually answers.
 _BODY_COPY = (
-    "HoopsValue rates every NBA player with the Barrett Score, a single value "
+    "HoopsValue, sometimes written Hoops Value, rates every NBA player with the "
+    "Barrett Score, a single value "
     "metric built from scoring, playmaking, rebounding, defense, efficiency, and "
     "availability, then holds it up against the player's salary to reveal who is "
     "underpaid, overpaid, or paid about right. Browse current NBA player rankings "
@@ -95,6 +96,92 @@ _OG_IMAGE_TAGS = (
 )
 _TWITTER_IMAGE_TAG = f'<meta name="twitter:image" content="{OG_IMAGE}"/>'
 
+SITE = "https://hoopsvalue.com"
+
+# Structured data. Two jobs: tell Google this is one named site with a search
+# action (so "hoopsvalue" resolves to an entity rather than a string), and
+# declare the two-word spelling as an alternateName, because nothing on the
+# site ever writes "Hoops Value" and that is how people type it.
+_SITE_JSONLD = {
+    "@context": "https://schema.org",
+    "@graph": [
+        {
+            "@type": "WebSite",
+            "@id": f"{SITE}/#website",
+            "url": f"{SITE}/",
+            "name": "HoopsValue",
+            "alternateName": ["Hoops Value", "hoopsvalue", "hoopsvalue.com"],
+            "description": DESC,
+            "inLanguage": "en-US",
+            "publisher": {"@id": f"{SITE}/#org"},
+            "potentialAction": {
+                "@type": "SearchAction",
+                "target": {"@type": "EntryPoint",
+                           "urlTemplate": f"{SITE}/?player={{search_term_string}}"},
+                "query-input": "required name=search_term_string",
+            },
+        },
+        {
+            "@type": "Organization",
+            "@id": f"{SITE}/#org",
+            "name": "HoopsValue",
+            "alternateName": "Hoops Value",
+            "url": f"{SITE}/",
+            "logo": {"@type": "ImageObject", "url": OG_IMAGE},
+            "description": DESC,
+        },
+    ],
+}
+
+
+def _jsonld_tag(obj) -> str:
+    """One <script type="application/ld+json"> for obj. ensure_ascii escapes
+    non-ASCII names to their unicode form, and "</" is escaped so no player
+    name or copy change can close the script tag early."""
+    body = json.dumps(obj, separators=(",", ":"), ensure_ascii=True).replace("</", "<\\/")
+    return f'<script type="application/ld+json">{body}</script>'
+
+
+def _add_jsonld(html: str, obj) -> str:
+    """Append a JSON-LD block before </head>. Additive: a page can carry the
+    site graph from the base shell AND its own entity."""
+    return html.replace("</head>", _jsonld_tag(obj) + "</head>", 1)
+
+
+def _swap_noscript(html: str, body: str) -> str:
+    """Replace the shell's crawlable no-JS block with `body`.
+
+    The <noscript> block is most of the text a crawler reads on a Streamlit
+    SPA, so a route that does not replace it is a near-duplicate of the
+    homepage no matter how good its <title> is. lambda replacement: a player
+    name containing a backslash must not be read as a group reference."""
+    if "<noscript" not in html:
+        return html
+    return re.sub(r"<noscript>.*?</noscript>", lambda m: body, html,
+                  count=1, flags=re.S)
+
+
+def _home_body() -> str:
+    """The homepage's crawlable no-JS block. One definition, used by both the
+    fresh-patch and the marker-upgrade paths."""
+    nav = "".join(f'<li><a href="/{slug}">{label}</a></li>' for slug, label in PAGES)
+    return (
+        f"<noscript><header><h1>{TITLE}</h1>"
+        "<p>NBA player value, contract predictions, salary analysis, and rankings.</p>"
+        f"</header><main><p>{DESC}</p><p>{_BODY_COPY}</p><p>{_BODY_Q}</p>"
+        f"<ul>{nav}</ul></main></noscript>"
+    )
+
+
+def _ordinal(n) -> str:
+    try:
+        n = int(n)
+    except Exception:
+        return ""
+    suffix = "th" if 10 <= n % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(n % 10, "th")
+    return f"{n}{suffix}"
+
+
 _patched_this_process = False  # skip the file read on Streamlit re-runs
 
 
@@ -135,13 +222,7 @@ def seo_html(html: str) -> str:
             '<meta name="twitter:card" content="summary_large_image"/>'
             f'{_TWITTER_IMAGE_TAG}'
         )
-        nav = "".join(f'<li><a href="/{slug}">{label}</a></li>' for slug, label in PAGES)
-        body = (
-            f"<noscript><header><h1>{TITLE}</h1>"
-            "<p>NBA player value, contract predictions, salary analysis, and rankings.</p></header>"
-            f"<main><p>{DESC}</p><p>{_BODY_COPY}</p><p>{_BODY_Q}</p>"
-            f"<ul>{nav}</ul></main></noscript>"
-        )
+        body = _home_body()
         if "<title>Streamlit</title>" in html:
             html = html.replace("<title>Streamlit</title>", f"<title>{TITLE}</title>{head}")
         else:
@@ -159,6 +240,20 @@ def seo_html(html: str) -> str:
         "", html, flags=re.I)
     if 'rel="apple-touch-icon"' not in html:
         html = html.replace("</head>", FAVICON_TAG + "</head>", 1)
+    # Outside the fresh/upgrade branches on purpose: a shell already carrying an
+    # older marker takes the upgrade path, which injects no head tags, so a
+    # JSON-LD block added inside that branch would never reach a locally
+    # pre-patched streamlit. Presence check keeps re-runs from doubling it.
+    if "application/ld+json" not in html:
+        html = _add_jsonld(html, _SITE_JSONLD)
+    # The old-marker upgrade path bumped the marker and the og:image and left
+    # the BODY exactly as the version that first patched the file wrote it. A
+    # shell here was reporting marker v7 over a four-link nav from v1, which
+    # means the crawlable copy, the nav and this JSON-LD all silently stopped
+    # following the code. The body is generated from constants in this module,
+    # so regenerate it every time; a shell already on the current marker
+    # returned at the top and is never touched, so this stays idempotent.
+    html = _swap_noscript(html, _home_body())
     return html
 
 
@@ -211,6 +306,49 @@ def _share_meta() -> dict:
     return _SHARE_META
 
 
+def share_meta_built_at() -> str:
+    """ISO stamp of the share_meta build, or "" for a file that predates it.
+    serve.py uses the date as the player URLs' <lastmod>."""
+    try:
+        return str(_share_meta().get("_meta", {}).get("built_at", ""))
+    except Exception:
+        return ""
+
+
+# How many player links the /Rankings no-JS body carries. The sitemap lists
+# every player, but a sitemap is a hint and an internal link is a path: without
+# one, the only crawlable links to any player page lived on the team pages,
+# which are parked and 404. 150 keeps the page's link count sane while covering
+# everyone a value search is plausibly about.
+_TOP_LINKS_N = 150
+_top_links_cache = None
+
+
+def _top_player_links(n: int = _TOP_LINKS_N) -> str:
+    """<li> links to the n best-ranked players, with the team and score so the
+    anchor text carries meaning. Memoized: one pass over share_meta per
+    process, not per request."""
+    global _top_links_cache
+    if _top_links_cache is None:
+        try:
+            esc = lambda x: _html.escape(str(x), quote=True)  # noqa: E731
+            recs = [r for k, r in _share_meta().items()
+                    if not k.startswith("_") and isinstance(r, dict)
+                    and r.get("n") and isinstance(r.get("r"), int)]
+            recs.sort(key=lambda r: r["r"])
+            out = []
+            for r in recs[:n]:
+                tail = ""
+                if isinstance(r.get("s"), (int, float)):
+                    tail = f' ({esc(r.get("tm", ""))}, {r["s"]:.1f} Barrett Score)'
+                out.append(f'<li><a href="{esc(player_url(r["n"]))}">'
+                           f'{esc(r["n"])}</a>{tail}</li>')
+            _top_links_cache = "".join(out)
+        except Exception:
+            _top_links_cache = ""
+    return _top_links_cache
+
+
 # Per-page title/description for the routes in the sitemap. Without these every
 # route served the homepage's tags AND — the real damage — the homepage's
 # canonical, which told Google that /Rankings, /Rosters, /Contract_Predictor and
@@ -218,7 +356,7 @@ def _share_meta() -> dict:
 # URLs to be indexed while the canonical disclaimed all nine.
 _PAGE_META = {
     "/Rankings": (
-        "NBA Player Rankings by Value — Barrett Score | HoopsValue",
+        "NBA Player Rankings by Value: Barrett Score | HoopsValue",
         "Every NBA player ranked by the Barrett Score and set against his salary, "
         "so you can see who is underpaid, overpaid, or paid about right."),
     "/Search": (
@@ -234,37 +372,135 @@ _PAGE_META = {
         "The real 2026-27 books team by team: every contract, dead money, trade "
         "exceptions and picks, read against the cap, the tax line and both aprons."),
     "/Team_Analysis": (
-        "NBA Team Value Analysis — Payroll vs Production | HoopsValue",
+        "NBA Team Value Analysis: Payroll vs Production | HoopsValue",
         "Which NBA front offices get the most on-court value per dollar, and which "
         "are paying for production they are not getting."),
     "/Contract_Predictor": (
-        "NBA Contract Predictor — What Is a Player Worth? | HoopsValue",
+        "NBA Contract Predictor: What Is a Player Worth? | HoopsValue",
         "Estimate what any NBA player would command on a new contract today, with "
         "comparable signings, likely suitors, and the model's track record."),
     "/Free_Agent_Class": (
-        "2026 NBA Free Agent Class — Values and Predictions | HoopsValue",
+        "2026 NBA Free Agent Class: Values and Predictions | HoopsValue",
         "The full 2026 NBA free agent class ranked by value, with predicted "
         "contracts and how each deal has actually landed."),
     "/Redraft": (
-        "NBA Redraft — Rebuild Any Roster Under the Cap | HoopsValue",
+        "NBA Redraft: Rebuild Any Roster Under the Cap | HoopsValue",
         "Strip every team status off every player and refill 15 roster spots "
         "under the real 2026-27 cap. Contracts come with the players, and the "
         "bar tracks the floor, cap, tax and both aprons."),
     "/Trade_Machine": (
-        "NBA Trade Machine — CBA-Legal Trades | HoopsValue",
+        "NBA Trade Machine: CBA-Legal Trades | HoopsValue",
         "Build NBA trades and see instantly whether they are legal under the 2023 "
         "CBA: salary matching, aprons, hard caps and trade exceptions."),
     "/About": (
-        "About HoopsValue — Methodology and Data Sources",
+        "About HoopsValue: Methodology and Data Sources",
         "How the Barrett Score is built, how the contract model is trained and "
         "tested, and where the data comes from."),
 }
 
 
+# Crawlable no-JS body per route. Without this every indexable route served
+# the HOMEPAGE'S <noscript> block, so ten URLs shipped ten different titles
+# over one identical body. On a JS app that block is most of the text Google
+# reads, and near-identical bodies are what it folds together as duplicates.
+# One <h1> that matches the <title>, two sentences of real description, and the
+# shared nav so each route links to the others.
+_PAGE_BODY = {
+    "/Rankings": (
+        "NBA Player Rankings by Value",
+        "Every NBA player ranked by the Barrett Score, a single value metric built "
+        "from scoring, playmaking, rebounding, defense, efficiency and availability. "
+        "Each player's score sits next to his salary and the market value the model "
+        "puts on that production.",
+        "Sort by value, by salary, or by the gap between them to find who is "
+        "underpaid and who is overpaid, filter by minutes played, and split a "
+        "traded player's season by the teams he played for."),
+    "/Search": (
+        "Search Any NBA Player's Value and Contract",
+        "Look up any NBA player from 1973 to today and see his Barrett Score, "
+        "salary, market value, and how his production compares to what he is paid.",
+        "Compare two players head to head across any season, or follow one player's "
+        "value through his whole career."),
+    "/Legacy": (
+        "NBA Career Value Leaders, 1973 to Today",
+        "Career Barrett Score leaders across five decades of NBA basketball, with "
+        "peak seasons, longevity, and value measured against salary.",
+        "Every season since 1973-74 is scored on the same formula, so a 1970s "
+        "season and a season from this year sit on one scale."),
+    "/Rosters": (
+        "NBA Rosters and Salary Books, All 30 Teams",
+        "Every team's roster with the real contracts behind it: salary by player, "
+        "dead money, trade exceptions and draft picks, read against the cap, the "
+        "tax line and both aprons.",
+        "Each roster is also valued, so you can see which contracts a team is "
+        "winning on and which ones it is carrying."),
+    "/Team_Analysis": (
+        "NBA Team Value Analysis, Payroll Against Production",
+        "Which NBA front offices get the most on-court value per dollar, and which "
+        "are paying for production they are not getting.",
+        "Every team's payroll is set against the value its players actually "
+        "produced, ranked league wide."),
+    "/Contract_Predictor": (
+        "NBA Contract Predictor",
+        "Estimate what any NBA player would command on a new contract today. The "
+        "model is trained on real signings and reports comparable deals, likely "
+        "suitors, and its own track record.",
+        "Change a player's role, minutes or production and watch the predicted "
+        "contract move with it."),
+    "/Free_Agent_Class": (
+        "NBA Free Agent Class, Values and Predictions",
+        "The full free agent class ranked by value, with a predicted contract for "
+        "each player and, once a deal is signed, how the real one compares.",
+        "Projections stay fixed once published, so the model is scored against "
+        "what actually happened rather than quietly rewritten."),
+    "/Redraft": (
+        "NBA Redraft, Rebuild Any Roster Under the Cap",
+        "Strip every team status off every player and refill fifteen roster spots "
+        "under the real cap. Contracts come with the players, and the bar tracks "
+        "the floor, the cap, the tax line and both aprons.",
+        "Build the roster you would actually pay for and see what it costs."),
+    "/Trade_Machine": (
+        "NBA Trade Machine, CBA-Legal Trades",
+        "Build NBA trades and see instantly whether they are legal under the 2023 "
+        "CBA: salary matching, aprons, hard caps, trade exceptions and "
+        "sign-and-trades.",
+        "Every trade is also valued, so the legality check and the question of who "
+        "wins it are answered side by side."),
+    "/About": (
+        "About HoopsValue and the Barrett Score",
+        "How the Barrett Score is built, how the contract model is trained and "
+        "tested, and where the data comes from.",
+        "HoopsValue, sometimes written Hoops Value, covers every NBA player and "
+        "every season back to 1973-74."),
+}
+
+
+def _nav_html() -> str:
+    return "".join(f'<li><a href="/{slug}">{label}</a></li>' for slug, label in PAGES)
+
+
+def _route_body(path: str) -> str:
+    """The <noscript> block for a known route, or "" when there is none."""
+    ent = _PAGE_BODY.get(path)
+    if not ent:
+        return ""
+    h1, p1, p2 = ent
+    extra = ""
+    if path == "/Rankings":  # the crawl path down to the player landing pages
+        links = _top_player_links()
+        if links:
+            extra = (f"<h2>Top {_TOP_LINKS_N} NBA players by value</h2>"
+                     f"<ul>{links}</ul>")
+    return (f"<noscript><header><h1>{h1}</h1></header><main>"
+            f"<p>{p1}</p><p>{p2}</p>{extra}"
+            f"<p>More on HoopsValue:</p><ul>{_nav_html()}</ul>"
+            '<p><a href="/">HoopsValue home</a></p></main></noscript>')
+
+
 def page_shell(base_html: str, path: str) -> str:
-    """Return base_html with canonical/og:url — and, where known, title and
-    description — pointed at `path` instead of the homepage. Never raises;
-    an unknown path returns base_html untouched."""
+    """Return base_html with canonical/og:url, and, where known, title,
+    description and the crawlable no-JS body, pointed at `path` instead of the
+    homepage. Never raises; an unknown path returns base_html untouched."""
     try:
         path = "/" + (path or "").strip("/")
         if path == "/":
@@ -285,22 +521,156 @@ def page_shell(base_html: str, path: str) -> str:
                          lambda m: m.group(1) + t + m.group(2), out, count=1)
             out = re.sub(r'(<meta property="og:description" content=")[^"]*(")',
                          lambda m: m.group(1) + d + m.group(2), out, count=1)
+        body = _route_body(path)
+        if body:
+            out = _swap_noscript(out, body)
         return out
     except Exception:
         return base_html
 
 
+def player_url(name: str) -> str:
+    """The ONE canonical URL for a player page. Always built from the display
+    name in the record, never from the requested string, so /?player=Nikola%20Vucevic
+    and /?player=Nikola%20Vu%C4%8Devi%C4%87 both canonicalise to the same URL
+    instead of competing as two pages for one player."""
+    return f"{SITE}/?player=" + _urlq(name)
+
+
+def player_urls() -> list:
+    """[(display_name, canonical_url)] for every player with a record. Feeds
+    serve.py's sitemap: the normalized keys cannot be turned back into a display
+    name, so a record without "n" is skipped rather than guessed at (a short
+    sitemap beats a sitemap of 404s)."""
+    out = []
+    for key, rec in _share_meta().items():
+        if key.startswith("_") or not isinstance(rec, dict):
+            continue
+        nm = rec.get("n")
+        if nm:
+            out.append((nm, player_url(nm)))
+    out.sort(key=lambda x: x[0])
+    return out
+
+
+def _verdict(vd):
+    """Prose for the salary-against-value gap. vd is $M, positive = overpaid."""
+    if not isinstance(vd, (int, float)):
+        return ""
+    if vd <= -2:
+        return f"underpaid by ${-vd:.1f}M"
+    if vd >= 2:
+        return f"overpaid by ${vd:.1f}M"
+    return "paid about what he is worth"
+
+
+def _player_body(rec: dict, url: str) -> str:
+    """The crawlable no-JS block for one player: an <h1> that matches the
+    <title>, his actual numbers as a list, and links out.
+
+    Before this, a /?player= URL carried a perfect per-player title and
+    description over the HOMEPAGE'S body text, so the only page content Google
+    could read never mentioned the player it was titled after."""
+    esc = lambda s: _html.escape(str(s), quote=True)  # noqa: E731
+    nm = esc(rec.get("n", ""))
+    tm = esc(rec.get("tm", ""))
+    season = esc(_share_meta().get("_meta", {}).get("season", ""))
+    team_name = ""
+    try:
+        team_name = team_pages().get("teams", {}).get(rec.get("tm", ""), {}).get("name", "")
+    except Exception:
+        team_name = ""
+    team_txt = esc(team_name) if team_name else tm
+
+    items = []
+    if isinstance(rec.get("s"), (int, float)):
+        rank = _ordinal(rec.get("r"))
+        # "sy" is set only when the score came from an EARLIER season than the
+        # one the site is scoring, which is how the hub panel shows it too. A
+        # fallback number presented as this season's is the same misstatement
+        # the stale metadata was making, one row down.
+        sy = rec.get("sy")
+        label = f"Barrett Score ({esc(sy)})" if sy else "Barrett Score"
+        items.append(f"<li>{label}: {rec['s']:.1f}"
+                     + (f", {rank} in the NBA by value" if rank else "") + "</li>")
+    if isinstance(rec.get("pd"), (int, float)):
+        items.append(f"<li>{season} salary: ${rec['pd']:.1f}M</li>".lstrip())
+    if isinstance(rec.get("w"), (int, float)):
+        items.append(f"<li>What that production is worth: ${rec['w']:.1f}M</li>")
+    v = _verdict(rec.get("vd"))
+    if v:
+        items.append(f"<li>Verdict: {v}</li>")
+    if isinstance(rec.get("pcv"), (int, float)):
+        items.append(f"<li>Projected next contract: ${rec['pcv']:.1f}M a year</li>")
+
+    return (
+        f"<noscript><header><h1>{nm}, NBA Value and Contract Prediction</h1></header>"
+        f"<main><p>{esc(rec.get('d', ''))}</p>"
+        f"<p>HoopsValue rates {nm} ({team_txt}) with the Barrett Score, a single "
+        "value metric built from scoring, playmaking, rebounding, defense, "
+        "efficiency and availability, then prices that production at the going "
+        f"rate so you can see whether his contract is a bargain or an overpay.</p>"
+        f"<ul>{''.join(items)}</ul>"
+        f'<p><a href="{esc(url)}">Open {nm} on HoopsValue</a> for his full season '
+        "history, comparable contracts and predicted next deal. You can also browse "
+        '<a href="/Rankings">every NBA player ranked by value</a>, run the '
+        '<a href="/Contract_Predictor">contract predictor</a>, see the '
+        '<a href="/Free_Agent_Class">free agent class</a>, or look through '
+        '<a href="/Rosters">every team\u2019s salary book</a>.</p>'
+        "</main></noscript>")
+
+
+def _player_jsonld(rec: dict, url: str) -> dict:
+    """Person structured data for one player, tied back to the site graph.
+
+    Schema.org has no Barrett Score, so the score and rank ride as
+    additionalProperty PropertyValues: named, numeric, and unambiguous about
+    what produced them."""
+    props = []
+    if isinstance(rec.get("s"), (int, float)):
+        props.append({"@type": "PropertyValue", "name": "Barrett Score",
+                      "value": rec["s"]})
+    if isinstance(rec.get("r"), int):
+        props.append({"@type": "PropertyValue", "name": "HoopsValue rank",
+                      "value": rec["r"]})
+    person = {"@type": "Person", "name": rec.get("n", ""),
+              "jobTitle": "Basketball player", "url": url}
+    team_name = ""
+    try:
+        team_name = team_pages().get("teams", {}).get(rec.get("tm", ""), {}).get("name", "")
+    except Exception:
+        team_name = ""
+    if team_name or rec.get("tm"):
+        person["memberOf"] = {"@type": "SportsTeam",
+                              "name": team_name or rec.get("tm", "")}
+    if props:
+        person["additionalProperty"] = props
+    return {
+        "@context": "https://schema.org",
+        "@type": "ProfilePage",
+        "@id": url + "#page",
+        "url": url,
+        "name": rec.get("t", ""),
+        "description": rec.get("d", ""),
+        "isPartOf": {"@id": f"{SITE}/#website"},
+        "mainEntity": person,
+    }
+
+
 def player_shell(base_html: str, player_name: str) -> str:
-    """Return base_html with the title/description/OG tags swapped for the named
-    player's, or base_html unchanged when the name is unknown. Rewrites whatever
-    currently occupies those four tags (pattern-based, not coupled to the exact
-    TITLE/DESC constants), so it survives base-shell drift. Never raises."""
+    """Return base_html rewritten into a real landing page for the named player:
+    title, description, OG tags, a SELF-REFERENCING canonical, a crawlable no-JS
+    body and Person structured data. Unknown name returns base_html unchanged.
+    Rewrites whatever currently occupies those tags (pattern-based, not coupled
+    to the exact TITLE/DESC constants), so it survives base-shell drift.
+    Never raises."""
     try:
         rec = _share_meta().get(_share_norm(player_name or ""))
         if not rec:
             return base_html
         t = _html.escape(rec["t"], quote=True)
         d = _html.escape(rec["d"], quote=True)
+        url = player_url(rec.get("n") or player_name)
         # lambda replacements: keep re.sub from interpreting \g / backslashes in
         # the player text as group references.
         out = re.sub(r"<title>[^<]*</title>", lambda m: f"<title>{t}</title>",
@@ -311,6 +681,17 @@ def player_shell(base_html: str, player_name: str) -> str:
                      lambda m: m.group(1) + t + m.group(2), out, count=1)
         out = re.sub(r'(<meta property="og:description" content=")[^"]*(")',
                      lambda m: m.group(1) + d + m.group(2), out, count=1)
+        # THE de-indexing bug, fixed 2026-11-12. Every ?player= page inherited
+        # the homepage's <link rel="canonical" href="https://hoopsvalue.com/">,
+        # which tells Google "this is a duplicate of the homepage, index that
+        # instead". Several hundred player pages with good titles and real
+        # numbers were disclaiming themselves, so none of them could rank.
+        out = re.sub(r'(<link rel="canonical" href=")[^"]*(")',
+                     lambda m: m.group(1) + url + m.group(2), out, count=1)
+        out = re.sub(r'(<meta property="og:url" content=")[^"]*(")',
+                     lambda m: m.group(1) + url + m.group(2), out, count=1)
+        out = _swap_noscript(out, _player_body(rec, url))
+        out = _add_jsonld(out, _player_jsonld(rec, url))
         return out
     except Exception:
         return base_html
@@ -451,7 +832,7 @@ def team_page_html(abbr: str):
 
         # cross-links to every other team (link graph for crawlers)
         others = "".join(
-            f'<a href="/Rosters?team={a}">{esc(t["abbr"])}</a>'
+            f'<a href="/team/{a}">{esc(t["abbr"])}</a>'
             for a, t in sorted(data.get("teams", {}).items()))
 
         room = team.get("room")
@@ -489,13 +870,16 @@ def team_page_html(abbr: str):
             '<nav class="top"><a href="/Rankings">Rankings</a>'
             '<a href="/Team_Analysis">Team Analysis</a>'
             '<a href="/Free_Agent_Class">Free Agents</a></nav></header>'
-            f"<h1>{esc(name)} &mdash; {esc(cseason)} Roster</h1>"
+            f"<h1>{esc(name)}, {esc(cseason)} Roster</h1>"
             f'<p class="sub">The {esc(name)} roster for {esc(cseason)}: contracts on the '
             f"books and reported free-agency signings"
             + (", plus the model&rsquo;s projection for spots still unfilled" if n_proj else "")
-            + f". Value reflects each player&rsquo;s {esc(vseason)} season, the latest one "
-            f"played &mdash; {esc(cseason)} has not started yet.</p>"
-            f'<p class="tot">{team["size"]} players <span>·</span> '
+            + (f". Value reflects each player&rsquo;s {esc(vseason)} season, the "
+               f"latest one played; {esc(cseason)} has not started yet.</p>"
+               if vseason != cseason else
+               f". Value reflects each player&rsquo;s {esc(vseason)} production so "
+               "far this season.</p>")
+            + f'<p class="tot">{team["size"]} players <span>·</span> '
             f'{_money(team["payroll"])} payroll'
             + (f' <span>·</span> {aproom}' if aproom else "")
             + (f' <span>·</span> {n_proj} still projected' if n_proj else "") + '</p>'
@@ -512,15 +896,18 @@ def team_page_html(abbr: str):
                     + (f' ({u["barrett"]:.1f} Barrett Score)'
                        if isinstance(u.get("barrett"), (int, float)) else "")
                     for u in team.get("unsigned", [])) +
-                " &mdash; no reported deal yet, and no open roster spot here.</p>"])
+                ". No reported deal yet, and no open roster spot here.</p>"])
                if team.get("unsigned") else "")
             + '<p class="note">Roster and salaries reflect real '
             f"{esc(cseason)} contracts and free-agency signings reported so far"
             + ("; moves marked Projected are the model&rsquo;s best guess for spots "
                "not yet filled" if n_proj else "")
             + ". The Barrett Score and value reflect each player&rsquo;s "
-            f"{esc(vseason)} on-court production &mdash; the most recent season played &mdash; "
-            "since next season&rsquo;s games have not happened. Value is what that production "
+            + (f"{esc(vseason)} on-court production, the most recent season played, "
+               "since next season&rsquo;s games have not happened. "
+               if vseason != cseason else
+               f"{esc(vseason)} on-court production so far this season. ")
+            + "Value is what that production "
             "is worth at the going rate; the verdict compares it to the salary. "
             "Click any player for their full contract prediction.</p>"
             f'<div class="teams"><h2>Browse every team</h2>{others}</div>'

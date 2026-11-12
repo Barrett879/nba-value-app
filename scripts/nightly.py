@@ -21,7 +21,9 @@ shipping. The steps, in the order they depend on each other:
   5b TEAM PAGES  re-join tonight's scores onto the verified rosters, for the
                  Trade Machine, Rosters and Redraft
   5c PLAYER HUB  recompute the homepage's projected contracts and Max tier
-  5d SPLITS      rebuild the per-stint artifact Splits View reads (non-fatal)
+  5d SHARE META  rebuild the per-player SEO/share metadata every /?player=
+                 landing page is titled and described from
+  5e SPLITS      rebuild the per-stint artifact Splits View reads (non-fatal)
   6 SHIP         stage exactly what changed, commit, push
 
 Anything that fails after step 3 rolls the version bumps back and deletes the
@@ -397,7 +399,30 @@ def main() -> int:
     except Exception as e:
         return rollback(f"build_player_hub raised {type(e).__name__}: {e}")
 
-    # ---- 5d SPLITS ------------------------------------------------------
+    # ---- 5d SHARE META --------------------------------------------------
+    # cache/share_meta.json is the title, meta description, crawlable body and
+    # Person structured data for every /?player= landing page, which is what
+    # Google and every link unfurl read. It is scored off the board and reads
+    # 5c's hub for the predicted contract, so it belongs here, after both.
+    #
+    # It was NOT in this script until 2026-11-12 and had not been rebuilt since
+    # 2026-07-14. Measured that night: 388 of 388 players' numbers disagreed
+    # with the live board, 73 board players had no record at all, and 136
+    # records described players no longer on the board. The public page for
+    # Vucevic advertised "BOS, 19.7 Barrett Score, ranked #80, paid $21.5M"
+    # against a board that said "ORL, -1.1, #423, $2.4M". Four months of every
+    # player page contradicting the page it was describing.
+    #
+    # Fatal, not best-effort: the builder refuses to write below 98% board
+    # coverage, so a failure here means it declined to publish a thin file and
+    # the committed one is still the better of the two.
+    try:
+        if not sh(["scripts/build_share_meta.py"], "share meta", check=False):
+            return rollback("build_share_meta failed")
+    except Exception as e:
+        return rollback(f"build_share_meta raised {type(e).__name__}: {e}")
+
+    # ---- 5e SPLITS ------------------------------------------------------
     # pages/Rankings.py's Splits View reads a committed pickle and otherwise
     # falls back to thirty live NBA stats API calls, one per team. That
     # fallback cannot work on Render, where the stats API is unreachable: every
@@ -436,8 +461,8 @@ def main() -> int:
     # A file this script edits is a file this script ships.
     paths += sorted({site for sites in VERSIONED.values() for site, _rx in sites})
     paths += ["data/provisional_box_scores.csv", "cache/team_pages.json",
-              "cache/player_hub_pcv_v2.json"]
-    # Only if it exists: step 5d is non-fatal, so a night the stats API was
+              "cache/player_hub_pcv_v2.json", "cache/share_meta.json"]
+    # Only if it exists: step 5e is non-fatal, so a night the stats API was
     # down has no new splits file and `git add` on a missing path fails the
     # whole commit. The un-revisioned floor file is staged too, for the one
     # run that first creates it.
