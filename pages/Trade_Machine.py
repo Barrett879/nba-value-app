@@ -90,7 +90,7 @@ def _payload() -> str:
     # nightly.py's VERSIONED under per_game, which is what stops the next
     # bump leaving this reader opening a file nobody writes any more.
     try:
-        _art = _ROOT / "cache" / f"per_game_{SEASONS[0].replace('-', '_')}_v28.json"
+        _art = _ROOT / "cache" / f"per_game_{SEASONS[0].replace('-', '_')}_v29.json"
         for _nm, _d in (json.loads(_art.read_text()).get("values") or {}).items():
             _box_cur.add(_nm, {"ppg": round(float(_d["PTS"]), 1),
                                "apg": round(float(_d["AST"]), 1),
