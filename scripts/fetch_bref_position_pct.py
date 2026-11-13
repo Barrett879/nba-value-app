@@ -125,6 +125,12 @@ def season_pcts(end_year: int) -> dict:
                 if not nm or nm == "Player":
                     continue
                 rec = pct(cells, keys)
+                # Keep the DISPLAY spelling too. The dict is keyed by
+                # normalize(), which lowercases and strips accents, so without
+                # this a caller exporting these rows can only write
+                # "nikola jokic". Every consumer reads records by explicit key
+                # (rec.get("mp"), for s in SPOTS), so an extra one is inert.
+                rec["name"] = nm
                 rec["mp"] = cells.get("mp", "")
                 rec["team"] = (cells.get("team_name_abbr") or cells.get("team_id") or "")
                 prev = out.get(normalize(nm))
