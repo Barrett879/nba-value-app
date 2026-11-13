@@ -25,7 +25,7 @@ as the gray sentinel, which the legend defines as UFA. 182 of the 492 players on
 the 2026-27 books genuinely have no 2027-28 season, and they SHOULD show it.
 """
 from __future__ import annotations
-import io, logging, re, sys, time
+import io, json, logging, re, sys, time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -36,9 +36,24 @@ import utils
 from utils import normalize, _html_text
 logging.disable(logging.NOTSET)
 
-NEXT_LABEL = "2027-28"           # the season this file describes
-CSV = ROOT / "data" / "contract_years_2026_27.csv"
-MARK = "2027"                    # key into the CSV's `seasons` field
+# Every season literal is DERIVED, not typed. Hardcoded, they survive a
+# rollover looking correct and are not: the output filename comes from
+# SEASONS[0] via season_to_espn_year, so at the next flip this would have
+# written 2027-28 money into next_contracts_2028_v7.pkl, a file that is
+# supposed to describe 2028-29. Spotrac still publishes a 2027-28 column, so
+# the lookup would succeed, nothing would refuse, and the Next $ column would
+# serve a whole league one season off. See docs/season_rollover.md.
+CUR_SEASON = utils.SEASONS[0]                       # "2026-27"
+_START = int(CUR_SEASON.split("-")[0])              # 2026
+NEXT_LABEL = f"{_START + 1}-{str(_START + 2)[-2:]}"  # "2027-28", the season described
+MARK = str(_START + 1)                              # "2027", key into `seasons`
+CSV = ROOT / "data" / f"contract_years_{CUR_SEASON.replace('-', '_')}.csv"
+SUP = ROOT / "data" / f"next_contract_supplement_{NEXT_LABEL.replace('-', '_')}.csv"
+# How long the committed artifact may go without a rebuild before
+# check_next_contracts fails. Next-season money moves on trades, waivers and
+# extensions, so a week is generous and still well inside the window where a
+# traded player's figure would be wrong.
+MAX_AGE_DAYS = 7
 
 HDRS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -79,6 +94,35 @@ SKIP_MARK = {"W"}                # two-way: no next-season salary to quote
 # percentage never has a comma, so it cannot be swallowed.
 _MONEY = re.compile(r"\$(\d{1,3}(?:,\d{3})*)")
 _MONEY_ABBR = re.compile(r"\$(\d+(?:\.\d+)?)\s*([MK])")
+
+
+def artifact_paths(espn_year: int):
+    """(revisioned, floor, stamp) paths for the Next $ artifact.
+
+    THE REVISIONED NAME IS NOT COSMETIC. Render's /data disk seeds a repo cache
+    file only when its FILENAME is missing, so re-committing the same name
+    never reaches the live site: the first copy the disk ever saw wins forever
+    (utils.DATA_REV's own note, and the 347-vs-379 board incident on
+    2026-11-07). next_contracts_<year>_v7.pkl has been on that disk since the
+    first deploy after 2026-10-27, so wiring a nightly rebuild under that name
+    would have rebuilt it every night, committed it every night, and changed
+    nothing a visitor ever sees.
+
+    So the live artifact gets utils.DATA_REV in its name, exactly as the splits
+    pickle does, and a one-time un-revisioned FLOOR copy stays behind for
+    _rev_path to fall back to, so a night the scrape fails degrades to
+    stale-but-present rather than to a column of dashes.
+    """
+    base = f"next_contracts_{espn_year}_v7.pkl"
+    return (utils._rev_path(base),
+            utils.CACHE_DIR / base,
+            utils.CACHE_DIR / f"next_contracts_{espn_year}_v7_{utils.DATA_REV}.stamp.json")
+
+
+def stamp_path_for(espn_year: int) -> Path:
+    """Sidecar recording when this artifact was last REBUILT. Read by
+    scripts/check_next_contracts.py; see the note where it is written."""
+    return artifact_paths(espn_year)[2]
 
 
 def parse_cell(raw) -> tuple[float | None, str | None]:
@@ -167,8 +211,18 @@ def team_money(abbr: str) -> dict:
 
 
 def main(write: bool) -> int:
+    # A missing CSV must stop the run, not fall back to another season's. The
+    # option TYPE comes from here; without it every team option and player
+    # option silently renders as plain guaranteed money, which is a different
+    # contract than the one the player actually has.
+    if not CSV.exists():
+        print(f"REFUSING: {CSV.relative_to(ROOT)} does not exist.")
+        print(f"The season rolled to {CUR_SEASON} and this file has to be compiled "
+              f"for it before Next $ can name option types. See docs/season_rollover.md.")
+        return 1
     books = pd.read_csv(CSV, comment="#")
-    print(f"{len(books)} players on the 2026-27 books, {books.team.nunique()} teams")
+    print(f"season {CUR_SEASON}, describing {NEXT_LABEL} money (CSV mark {MARK!r})")
+    print(f"{len(books)} players on the {CUR_SEASON} books, {books.team.nunique()} teams")
     print(f"money from Spotrac /yearly/, option type from {CSV.name}\n")
 
     scraped: dict = {}
@@ -226,6 +280,16 @@ def main(write: bool) -> int:
             continue                      # dead money and cap holds owe nothing
         csv_team, csv_player, mark = by_name.get(key, (None, None, None))
         if flag == "rfa":
+            # Spotrac's "RFA / $X" is a cap hold, so type rfa is right and the
+            # CSV cannot overrule it. But when the CSV records a live option
+            # for the same player the two sources genuinely disagree, and that
+            # has to be REPORTED, not just resolved: this is how Tidjane Salaun
+            # went from "$10.4M TO" to "RFA" between two builds with nothing in
+            # the run saying so. Only the ufa branch used to log a conflict, so
+            # an rfa conflict structurally could not appear in the report.
+            if mark in ("T", "P"):
+                disagree.append((csv_team or found_on, csv_player or disp, mark,
+                                 "spotrac says RFA cap hold"))
             contracts[normalize(csv_player or disp)] = {"salary": 0.0, "type": "rfa"}
             continue
         if flag == "ufa":
@@ -251,11 +315,30 @@ def main(write: bool) -> int:
         t = TYPE_OF.get(mark, "guaranteed")
         contracts[normalize(csv_player or disp)] = {"salary": float(salary), "type": t}
 
+    # Players the CSV has but no Spotrac page mentions at all. `unmatched` was
+    # declared and printed and never appended to, so this always reported zero
+    # and the builder could not see a player vanishing from all 30 pages --
+    # which is exactly how LeBron James had to be found by hand and put in the
+    # supplement. Walk the BOOKS, not the scrape, because the scrape by
+    # definition cannot contain who is missing from it.
+    _seen = set(league)
+    for _, row in books.iterrows():
+        keys = {normalize(str(row["player"])),
+                normalize(str(row.get("spotrac_player") or row["player"]))}
+        if keys & _seen:
+            continue
+        marks_r = {q.split(":")[0]: q.split(":")[1]
+                   for q in str(row.get("seasons") or "").split("|") if ":" in q}
+        if marks_r.get(MARK) in SKIP_MARK:
+            continue          # two-way: nothing to quote next season anyway
+        unmatched.append((str(row["team"]), str(row["player"]),
+                          marks_r.get(MARK) or "no " + MARK))
+
     # Players Spotrac's own pages omit entirely. Filled only where the scrape
     # found nothing, so a supplement row can never override a live figure, and
     # every row cites a source -- once it reaches the column a wrong number
     # here is indistinguishable from a scraped one.
-    sup_path = ROOT / "data" / "next_contract_supplement_2027_28.csv"
+    sup_path = SUP
     supplemented = []
     if sup_path.exists():
         sup = pd.read_csv(sup_path, comment="#")
@@ -268,17 +351,69 @@ def main(write: bool) -> int:
             supplemented.append((str(srow["player"]), float(srow["salary"]),
                                  str(srow["type"]).strip()))
 
+    # ---- key the artifact by the spellings the READER will use -------------
+    # utils.fmt_next_contract looks this dict up with a bare
+    # normalize(board_name). The artifact is keyed by Spotrac's and the CSV's
+    # spellings, and those differ from the board's for a long tail of players,
+    # so their money was simply invisible: measured on 2026-11-13, SEVEN board
+    # players rendered the gray dash -- which the legend defines as UFA --
+    # while their records sat in this file under another spelling, $95.5M in
+    # all. Bobby Portis Jr. vs "bobby portis", Nic Claxton vs
+    # "nicolas claxton", Herbert Jones vs "herb jones", P.J. Washington vs
+    # "pj washington", Ronald Holland II vs "ron holland ii".
+    #
+    # utils.NameIndex is the repo's answer to exactly this and was already
+    # being CONSTRUCTED here and then never read. It resolves short given names
+    # to long ones only when the surname matches and exactly one player fits,
+    # which is what keeps Baba Miller off Brandon Miller.
+    #
+    # Aliases are ADDED, never substituted: every existing key still resolves,
+    # so nothing that works today can break, and a record is reachable by both
+    # spellings.
+    aliased = []
+    try:
+        bpath = utils._rev_path(
+            f"raw_{CUR_SEASON.replace('-', '_')}_{utils.FORMULA_VERSION}.parquet")
+        if bpath.exists():
+            idx = utils.NameIndex({k: k for k in contracts})
+            for bn in pd.read_parquet(bpath, columns=["Player"])["Player"].astype(str):
+                k = normalize(bn)
+                if k in contracts:
+                    continue
+                hit = idx.get(bn)
+                if hit and hit in contracts:
+                    contracts[k] = contracts[hit]
+                    aliased.append((bn, hit, contracts[hit]["salary"],
+                                    contracts[hit]["type"]))
+        else:
+            print(f"  note: no board at {bpath.name}, skipping the alias pass")
+    except Exception as e:
+        print(f"  note: alias pass skipped ({type(e).__name__}: {e})")
+
     from collections import Counter
-    print(f"\n{len(contracts)} players with {NEXT_LABEL} money")
+    # An alias is a second KEY onto an existing record, so counting keys would
+    # report seven extra "players" and double-count their types. Distinct
+    # records is the honest figure; the key count is what the reader indexes.
+    n_alias = len(aliased)
+    n_records = len(contracts) - n_alias
+    print(f"\n{n_records} players with {NEXT_LABEL} money"
+          + (f", reachable under {len(contracts)} keys" if n_alias else ""))
+    if aliased:
+        print(f"  aliased to the board's spelling: {len(aliased)} "
+              f"(${sum(a[2] for a in aliased):,.0f} that rendered as the UFA dash)")
+        for bn, key, sal, t in aliased[:12]:
+            print(f"     {bn}  <- {key!r}  ${sal:,.0f} {t}")
     if supplemented:
         print(f"  supplemented (Spotrac omits them): {len(supplemented)}")
         for r in supplemented:
             print("    ", r[0], f"${r[1]:,.0f}", r[2])
-    print("  types:", dict(Counter(v["type"] for v in contracts.values())))
+    _alias_keys = {normalize(a[0]) for a in aliased}
+    print("  types:", dict(Counter(v["type"] for k, v in contracts.items()
+                                   if k not in _alias_keys)))
     print(f"  genuine UFAs (no {MARK} season, render as the gray sentinel): "
           f"{sum(1 for _, r in books.iterrows() if MARK not in str(r.get('seasons') or ''))}")
     for label, rows in (("on a different team than the CSV records", moved),
-                        ("Spotrac has money, the CSV has no 2027 season", csv_missing),
+                        (f"Spotrac has money, the CSV has no {MARK} season", csv_missing),
                         ("two-way, no salary to quote", skipped),
                         ("on the books but not found on the team page", unmatched),
                         ("found but no parsable money", no_money),
@@ -305,17 +440,72 @@ def main(write: bool) -> int:
     lo, hi = min(paid), max(paid)
     print(f"  salary range ${lo:,.0f} .. ${hi:,.0f}")
 
-    if len(contracts) < 200:
-        print(f"\nREFUSING: only {len(contracts)} entries. fetch_next_year_contracts "
+    if n_records < 200:
+        print(f"\nREFUSING: only {n_records} entries. fetch_next_year_contracts "
               f"treats anything under 200 as a failed scrape, so this would never "
               f"be served anyway.")
         return 1
 
-    espn_year = utils.season_to_espn_year(utils.SEASONS[0])
-    path = utils._dc_path(f"next_contracts_{espn_year}_v7.pkl")
+    espn_year = utils.season_to_espn_year(CUR_SEASON)
+    _, floor_path, stamp_path = artifact_paths(espn_year)
+    # Write the CURRENT revision, not whatever _rev_path currently resolves to:
+    # on the first run of a new DATA_REV that would still be the previous
+    # revision's file, so the new name would never be created and Render would
+    # never see this build.
+    path = utils.CACHE_DIR / (f"next_contracts_{espn_year}_v7_{utils.DATA_REV}.pkl")
     if write:
         utils._pkl_save(path, contracts)
-        print(f"\nwrote {path.name}")
+        # _pkl_save swallows every write failure and returns None (utils.py's
+        # bare `except Exception: logger.warning(...)`), so "it returned" is not
+        # "it landed". Without this, a full disk would leave the old artifact in
+        # place under a fresh stamp certifying a rebuild that never happened --
+        # the age gate would then pass forever on frozen data, which is the
+        # exact failure this stamp exists to catch.
+        try:
+            landed = utils._pkl_load(path)
+        except Exception as e:
+            print(f"\nREFUSING: {path.name} could not be read back ({type(e).__name__}). "
+                  f"Not writing a stamp for a build that did not land.")
+            return 1
+        if not isinstance(landed, dict) or len(landed) != len(contracts):
+            print(f"\nREFUSING: {path.name} read back as "
+                  f"{len(landed) if hasattr(landed, '__len__') else type(landed).__name__}, "
+                  f"expected {len(contracts)}. Not writing a stamp for it.")
+            return 1
+        # One-time floor under the un-revisioned name, for _rev_path to fall
+        # back to. Written only when absent, for the seeding reason above.
+        if not floor_path.exists():
+            utils._pkl_save(floor_path, contracts)
+            print(f"wrote {floor_path.name}  (fallback floor, written once)")
+        # A SIDECAR, not a key inside the dict. utils._derive_next_year_contracts
+        # iterates contracts.values() for its option-flag sanity gate, and
+        # fmt_next_contract/classify_fa_status/team_payroll all read records by
+        # name, so a "_meta" entry would be a fake player that one of them
+        # eventually trips over. A separate file cannot.
+        #
+        # It records when the BUILDER RAN, not when the data last changed. That
+        # is the distinction that matters: next-season money is mostly static,
+        # so "the artifact has not changed in a week" is normal while "the
+        # builder has not run in a week" means the step is dead. A git commit
+        # date cannot tell those apart, which is how share_meta.json sat four
+        # months stale behind a check that only counted rows.
+        from collections import Counter as _C
+        stamp = {
+            "built_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            "season": CUR_SEASON,
+            "describes": NEXT_LABEL,
+            "espn_year": espn_year,
+            "entries": n_records,          # distinct players
+            "keys": len(contracts),        # including board-spelling aliases
+            "aliases": n_alias,
+            "types": dict(_C(v["type"] for k, v in contracts.items()
+                             if k not in _alias_keys)),
+            "data_rev": utils.DATA_REV,
+            "artifact": path.name,          # which file this stamp vouches for
+        }
+        stamp_path.write_text(json.dumps(stamp, indent=1, sort_keys=True) + "\n",
+                              encoding="utf-8")
+        print(f"\nwrote {path.name} and {stamp_path.name}")
     else:
         print(f"\ndry run, nothing written. Pass --write to save {path.name}.")
     return 0

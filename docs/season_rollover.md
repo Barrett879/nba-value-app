@@ -187,6 +187,56 @@ itself wrong. `check_cache_seeding.py` checks every `raw_*_<BOARD_REV>.parquet`
 is tracked, because a copy written and not committed is the same bug under a
 new name.
 
+## Compile the contract-years CSV before the flip, or Next $ goes blank
+
+**Also a step, not a note**, and it has already cost a week of production.
+
+The Next $ column cannot be derived live during a season. `fetch_next_year_contracts`
+calls `fetch_salaries(espn_year + 1)`, and ESPN only publishes a season's
+salaries once that season has begun, so for eleven months of the year that call
+returns zero rows and the sanity gate hands back a 4-entry dict. The committed
+artifact is the only real source.
+
+On 2026-10-20 the season flipped, the code began asking for
+`next_contracts_2027_v7.pkl`, which had never been built, and **all 372 players
+showed the gray dash for a week**. Nothing logged, because the legend defines
+that dash as "UFA": an empty column and a league of free agents are the same
+bytes.
+
+Since 2026-11-13 `scripts/build_next_contracts.py` runs as **step 3c of the
+nightly**, deliberately BEFORE the step-4 checks rather than after them (step 4
+fails on a stale rebuild stamp, so a builder downstream of that gate could never
+clear it and the nightly would roll back every night forever), so the artifact rebuilds itself every night and no longer depends on
+anyone remembering. Its season literals are derived from `SEASONS[0]`, so the
+code needs no edit at a rollover. What it still needs is its two **data** files,
+and those are hand-compiled:
+
+```
+data/contract_years_<new SEASONS[0]>.csv              e.g. contract_years_2027_28.csv
+data/next_contract_supplement_<the season after>.csv  e.g. next_contract_supplement_2028_29.csv
+```
+
+The CSV supplies the option TYPE, which Spotrac's yearly cell does not carry.
+Without it the builder **refuses outright** rather than falling back to the
+previous season's file, because the quiet failure here would be every team
+option and player option rendering as plain guaranteed money: a different
+contract than the one the player actually has.
+
+`scripts/check_next_contracts.py` fails when the artifact's sidecar stamp is
+missing, older than seven days, or describes the wrong season, so a rollover
+that forgets this is loud on the first nightly instead of silent for a week.
+Verify with:
+
+```bash
+/opt/anaconda3/bin/python3 scripts/build_next_contracts.py            # dry run, read the report
+/opt/anaconda3/bin/python3 scripts/build_next_contracts.py --write    # the check needs the stamp
+/opt/anaconda3/bin/python3 scripts/check_next_contracts.py            # must PASS
+/opt/anaconda3/bin/python3 scripts/check_next_contracts.py --selftest
+```
+
+The `--write` is not optional in that recipe: the check fails without a stamp,
+and only `--write` produces one.
+
 ## Known gaps, carried forward
 
 - `fetch_monthly_scores` still blocks: it has no disk cache to serve, so it

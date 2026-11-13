@@ -6036,7 +6036,15 @@ def fetch_next_year_contracts(espn_year: int, cache_v: int = 7) -> dict:
     Returns {normalized_name: {"salary": float, "type": str}} for next season.
     type is one of: "guaranteed", "team_option", "player_option", "rfa".
     """
-    path = _dc_path(f"next_contracts_{espn_year}_v{cache_v}.pkl")
+    # _rev_path, not _dc_path. Render's /data seeds a cache file only when its
+    # FILENAME is missing, so this artifact -- which scripts/build_next_contracts.py
+    # now rebuilds every night as step 3b of the nightly -- would have been
+    # committed nightly and ignored by production forever under a fixed name:
+    # the copy seeded after 2026-10-27 would win for the rest of the season.
+    # _rev_path puts DATA_REV in the name and falls back to the un-revisioned
+    # floor when the new one has not landed, so a failed seed degrades to
+    # stale-but-present rather than to a column of dashes.
+    path = _rev_path(f"next_contracts_{espn_year}_v{cache_v}.pkl")
     stale = None
     if path.exists():
         try:

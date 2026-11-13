@@ -1,0 +1,17 @@
+{
+ "aliases": 7,
+ "artifact": "next_contracts_2027_v7_r39.pkl",
+ "built_at": "2026-11-13T03:30:34",
+ "data_rev": "r39",
+ "describes": "2027-28",
+ "entries": 341,
+ "espn_year": 2027,
+ "keys": 348,
+ "season": "2026-27",
+ "types": {
+  "guaranteed": 203,
+  "player_option": 33,
+  "rfa": 22,
+  "team_option": 83
+ }
+}

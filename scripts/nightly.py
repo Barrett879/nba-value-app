@@ -15,6 +15,9 @@ shipping. The steps, in the order they depend on each other:
                  that have to move with them
   3b PBPSTATS    refresh the live season's player totals, which is where the
                  blend's charge counts come from (non-fatal if the feed is down)
+  3c NEXT $      rebuild next season's contracts from Spotrac (non-fatal).
+                 BEFORE the checks, not after: step 4 fails when that artifact
+                 goes stale, so a builder downstream of it could never heal it
   4 BUILD        refresh_live_season.py: artifacts BEFORE board, and its five
                  checks
   5 VERIFY       the new revision against the previous one; nobody may vanish
@@ -24,6 +27,7 @@ shipping. The steps, in the order they depend on each other:
   5d SHARE META  rebuild the per-player SEO/share metadata every /?player=
                  landing page is titled and described from
   5e SPLITS      rebuild the per-stint artifact Splits View reads (non-fatal)
+
   6 SHIP         stage exactly what changed, commit, push
 
 Anything that fails after step 3 rolls the version bumps back and deletes the
@@ -299,6 +303,67 @@ def main() -> int:
             print(f"  WARNING: pbpstats player totals raised "
                   f"{type(e).__name__}: {e}; continuing on the existing file")
 
+    # ---- 3c NEXT CONTRACTS ----------------------------------------------
+    # cache/next_contracts_<espn_year>_v7_<DATA_REV>.pkl is the Next $ column.
+    # Its LIVE derivation cannot work during a season: it calls
+    # fetch_salaries(espn_year + 1) and ESPN only publishes a season's salaries
+    # once that season has begun, so from October to the following autumn it
+    # returns zero rows. Every run of this script prints
+    #
+    #   next-year contracts refresh looked partial (4 entries, flags=True) ...
+    #
+    # which is not a fault; it is that derivation failing exactly as designed
+    # while the stale-beats-empty guard holds the column up. The COMMITTED
+    # artifact is the only real source, and nothing scheduled rebuilt it:
+    # build_next_contracts.py existed from 2026-10-27 and was run by hand once,
+    # while check_next_contracts.py ran nightly and only counted rows, so a
+    # seventeen-day-old file passed every time.
+    #
+    # Seventeen days was enough to matter. The first rebuild dropped five
+    # players whose team options had been DECLINED at the 2026-10-31 rookie
+    # option deadline -- Nikola Topic was being advertised as owed $7.48M next
+    # season while Spotrac's own page read "UFA / $7.5M", a cap hold on a free
+    # agent -- and moved two more onto RFA holds.
+    #
+    # WHY HERE AND NOT AFTER VERIFY, where the other artifact builders live:
+    # step 4 runs check_next_contracts, which now FAILS when this artifact's
+    # rebuild stamp is older than a week. A builder placed after that check
+    # could never clear a stale stamp, so the first night the gate fired the
+    # nightly would roll back before reaching the one step that heals it, and
+    # every night after would do the same. Forever. Unlike team_pages, the hub
+    # and share_meta, this artifact is not scored off the board -- it comes
+    # from Spotrac and a committed CSV -- so nothing ties it to verify, and a
+    # rollback leaves behind a file that is independently correct.
+    #
+    # Non-fatal: it scrapes 30 Spotrac pages, the committed artifact stays
+    # valid if that fails, and losing the whole refresh over it would be worse
+    # than running a day behind. The builder refuses to write on any failed
+    # team page, any implausibly small salary, fewer than 200 entries, or a pkl
+    # that does not read back. The 7-day floor in check_next_contracts is what
+    # catches the step going quiet, and with 3b upstream of it that floor can
+    # always be cleared by the next run.
+    # after['DATA_REV'], never utils.DATA_REV: step 3 rewrote utils.py on disk,
+    # but this process imported utils BEFORE that, so the module constant here
+    # is still the PREVIOUS revision. The builder runs as a subprocess and does
+    # see the new value, so a stale name here would stage the wrong files and
+    # ship a DATA_REV bump with nothing committed under the new name -- the
+    # failure the bump comment in utils.py warns about in capitals.
+    nc_year = utils.season_to_espn_year(season)
+    nc_rev = f"r{after['DATA_REV']}"
+    nc_paths = [utils.CACHE_DIR / f"next_contracts_{nc_year}_v7_{nc_rev}.pkl",
+                utils.CACHE_DIR / f"next_contracts_{nc_year}_v7_{nc_rev}.stamp.json",
+                utils.CACHE_DIR / f"next_contracts_{nc_year}_v7.pkl"]
+    try:
+        if not sh(["scripts/build_next_contracts.py", "--write"],
+                  "next contracts", check=False):
+            print("  WARNING: next contracts did not rebuild. Next $ keeps the "
+                  "committed artifact; check_next_contracts fails once it is a "
+                  "week old, and this step runs again before that check.")
+        print(f"  (expecting {nc_paths[0].name})")
+    except Exception as e:
+        print(f"  WARNING: build_next_contracts raised {type(e).__name__}: {e}; "
+              f"continuing on the existing artifact")
+
     # ---- 4 BUILD -------------------------------------------------------
     try:
         if resuming:
@@ -470,6 +535,19 @@ def main() -> int:
               (splits_path,
                ROOT / "cache" / f"splits_{key}_{utils.FORMULA_VERSION}.pkl")
               if f.exists()]
+    # Same .exists() guard, same reason: step 3b is non-fatal. The revisioned
+    # pkl, its stamp and the one-time floor copy all ship together: the stamp
+    # is the evidence the build ran, and one that shipped without the artifact
+    # it names would assert a freshness that is not on disk -- which is why
+    # check_next_contracts compares stamp["artifact"] against the filename the
+    # reader resolves.
+    #
+    # CACHE_DIR, not ROOT/"cache": they are the same directory here and would
+    # NOT be on a host with /data, where the builder writes to the disk and a
+    # hardcoded repo path would silently stage nothing behind the .exists()
+    # guard.
+    paths += [str(f.relative_to(ROOT)) for f in nc_paths
+              if f.exists() and ROOT in f.parents]
     extra = subprocess.run(["git", "diff", "--name-only", "--",
                             "cache/bref_stats_v3_" + season + ".parquet"],
                            cwd=ROOT, capture_output=True, text=True).stdout.split()
