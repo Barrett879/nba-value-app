@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-13",
+"built_at": "2026-11-14",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3699,6 +3699,22 @@
 "high_M": 27.9,
 "is_max": false,
 "max_pct": 0.3
+},
+"malik dia": {
+"player": "Malik Dia",
+"pcv_M": 4.0,
+"low_M": 0.6,
+"high_M": 7.5,
+"is_max": false,
+"max_pct": 0.25
+},
+"nikola topic": {
+"player": "Nikola Topi\u0107",
+"pcv_M": 4.8,
+"low_M": 0.7,
+"high_M": 9.0,
+"is_max": false,
+"max_pct": 0.25
 }
 },
 "contract_end": {
