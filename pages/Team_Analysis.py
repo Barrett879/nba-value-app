@@ -13,6 +13,7 @@ from utils import (
     normalize, season_to_espn_year,
     build_ranked_projected,
     fetch_bref_positions, render_nav, render_page_chrome,
+    position_layers,
     theme_fig, html_table, render_playoff_toggle, money_diverging_scale,
     render_barrett_score_explainer, _bootstrap_warm,
     PRE_1990_SALARY_NOTE,
@@ -77,9 +78,23 @@ df = df_all[df_all["total_min"] >= min_threshold].copy()
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
 import team_suitors as _ts
 _pos2k = _ts.load_player_positions()
+# Both layers describe the CURRENT roster, so they are taken through the one
+# gate in utils.position_layers rather than applied to whatever season the
+# picker is on. On a historical board they do not just read anachronistically,
+# they name the WRONG PERSON: NameIndex is suffix-insensitive by design, so
+# 1983-84 Rob Williams took Robert Williams III's "C" and 1997-98 Jaren Jackson
+# took his son's editorial "PF/C".
+#   position_overrides.csv  EDITORIAL, outranks every scraped position
+#   master_roster pos       the last resort before group_flex INVENTS one:
+#                           group_flex("") returns SF/PF, so a player no
+#                           source knew was shown at small forward with
+#                           nothing saying so (60 players on 2026-11-13,
+#                           four centres and six point guards among them)
+_posov_idx, _roster_pos = position_layers(season)
 # Curated 2K position (primary + secondary, e.g. "PG/SG"), BBRef coarse fallback.
 df["position"] = df["Player"].map(
-    lambda n: _ts.resolve_position(n, _bref_positions.get(normalize(n), ""), _pos2k))
+    lambda n: _posov_idx.get(n) or _ts.resolve_position(
+        n, _bref_positions.get(normalize(n), ""), _pos2k, _roster_pos))
 
 # Warn when salary coverage is too sparse to make team-level totals meaningful
 # (pre-1996 BBRef team pages miss most players, leaving many at $0).

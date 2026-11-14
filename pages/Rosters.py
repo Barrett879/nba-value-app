@@ -28,6 +28,7 @@ from utils import (BLEND_MIN_MINUTES, NameIndex, NBA_DIVISIONS, SEASONS, TEAM_CO
                    TEAM_HEX, TEAM_HEX_2,
                    _headshot_id_map, fetch_dlebron, fetch_injuries, injury_is_out,
                    render_footer, render_nav,
+                   position_override_index,
                    render_page_chrome, script_json, _bootstrap_warm,
                    unavailable_players)
 
@@ -182,20 +183,13 @@ def _payload() -> str:
     # than a date so it reverts by itself the day he is back: Draymond Green is
     # a centre only while Porzingis is out, Derrick Jones Jr. a small forward
     # only while Ingram is out.
-    _posov = NameIndex()
-    for _row in _read_csv(_ROOT / "data" / "position_overrides.csv"):
-        _nm = (_row.get("player") or "").strip()
-        _pp = (_row.get("pos") or "").strip()
-        if not _nm or not _pp:
-            continue
-        _alt = (_row.get("alt_pos") or "").strip()
-        _dep = (_row.get("alt_when_out") or "").strip()
-        _use = _pp
-        if _alt and _dep:
-            _di = _inj_idx.get(_dep)
-            if _di and injury_is_out(_di.get("status", "")):
-                _use = _alt
-        _posov.add(_nm, _use)
+    # utils.position_overrides() is the single copy of this loader, shared with
+    # the board and, since 2026-11-13, with Rankings / Free Agent Class / Team
+    # Analysis, which had not been applying the file at all. It resolves the
+    # conditional rows against the same injury feed, so this page's behaviour
+    # is unchanged: proved identical over every overridden name and over the
+    # spelling variants before the swap.
+    _posov = position_override_index()
 
     _pin = {}
     for _row in _read_csv(_ROOT / "data" / "depth_order.csv"):

@@ -69,6 +69,7 @@ from utils import (
     get_all_player_names, fetch_player_full_career,
     build_ranked_projected, fetch_league_stats, fetch_advanced_stats,
     fetch_bref_positions, fetch_player_positions_detailed, position_to_bucket,
+    position_layers,
     render_nav, render_page_chrome, render_barrett_score_explainer, _bootstrap_warm,
     html_table,
     # HV visual kit — rails, headshots, team accents
@@ -1068,7 +1069,26 @@ def _curated_pos_map() -> dict:
 def _curated_pos(name: str, bbref_fallback: str = "") -> str:
     """The curated PRIMARY position (PG/SG/SF/PF/C) from the 2K + override file,
     with the BBRef detailed position as the fallback for anyone not listed.
-    This is what the comp gate matches on (strict, single position)."""
+    This is what the comp gate matches on (strict, single position).
+
+    NO ROSTER LAYER HERE, deliberately, unlike the Rankings board and the
+    Suitors depth chart. Three measured reasons, 2026-11-13:
+
+    1. This function is mapped over the HISTORICAL comp pool (pos_primary, in
+       load_historical_signings) as well as the target, and 225 of its 226 rows
+       already carry a specific pos_detailed. The layer would fire on exactly
+       one row and get it WRONG: AJ Green, pos_detailed 'G', whom master_roster
+       lists at SF/PF although the detailed feed says SG and BBRef measures him
+       PG/SG over 217 minutes. That master_roster row looks like an error.
+    2. The gate is a HARD equality match that is never widened, so moving a
+       player's primary can silently drop him to zero comps.
+    3. _pos_display is deliberately the same value, so the page cannot show the
+       roster answer without also moving the gate.
+
+    Fixing the ~28 players whose pos_detailed is missing is worth doing, but it
+    needs its own pass: a decision about the historical side and a measurement
+    of how far predicted values move. It is not a line in a display fix.
+    """
     import team_suitors as _ts
     cpos = _ts.resolve_position(name, bbref_fallback, _curated_pos_map())
     return _ts._primary_position(cpos)
@@ -2661,8 +2681,27 @@ try:
         # single position as the fallback for anyone 2K doesn't list. This is what
         # lets a SG/SF wing compete at both spots and a pure PG stay PG-only.
         _pos2k = _ts.load_player_positions()
+        # ...plus the verified roster position for anyone the detailed feed has
+        # no row for, who would otherwise be slotted into the depth chart at an
+        # INVENTED SF/PF (group_flex of nothing). Below a specific fallback, so
+        # a real detailed position still wins. Suitors is all current-season,
+        # so unlike the comp gate below there is no historical pool to skew.
+        #
+        # NO position_overrides.csv here yet, although this IS a depth chart and
+        # that file's own header says its first position is what decides a
+        # player's depth column. Applying it would move 45 players' slots,
+        # Kevin Durant and Jaren Jackson Jr. among them, and reorder the suitor
+        # list that comes out. That is a ranked model output, not a label, and
+        # it should move on its own measurement rather than inside a display
+        # fix. The roster layer above is a different thing: it only ever
+        # replaces an invented answer, and no curated position changes.
+        # Through the same gate as every other surface. The override half is
+        # DISCARDED on purpose, per the note above: this is a ranked model
+        # output, and the roster half only ever replaces an invented answer.
+        _, _roster_pos = position_layers(CURRENT_SEASON)
         _cr["pos"] = _cr["Player"].map(
-            lambda _p: _ts.resolve_position(_p, _posmap.get(normalize(_p), ""), _pos2k))
+            lambda _p: _ts.resolve_position(_p, _posmap.get(normalize(_p), ""),
+                                            _pos2k, _roster_pos))
         # his current team — captured BEFORE we drop him — so it can appear as a
         # Bird-rights re-signer (a team can always re-sign its own free agent)
         _self_norm = normalize(features.get("name", ""))
@@ -2689,7 +2728,7 @@ try:
         _ts_pos = _ts.resolve_position(
             features.get("name", ""),
             features.get("position_detailed") or features.get("position") or "",
-            _pos2k)
+            _pos2k, _roster_pos)
         # Ground affordability in REAL committed salary: sum each team's actual
         # 2026-27 contracts (the same ESPN feed the FA toggle uses) and recompute
         # cap room + apron tool, overriding the hand-typed cap column. Timeline

@@ -155,9 +155,11 @@ def hoopsvalue_positions(espn_year: int) -> tuple:
 
     board_idx reproduces app.py's chain for the Rankings board and player hub:
     position_overrides.csv wins, then team_suitors.resolve_position over the
-    2K / reviewed / override trio, then group_flex of ESPN's coarse
-    Guard/Forward/Center. roster_idx is what the /Rosters depth chart reads:
-    the same override file, then master_roster.csv's scraped `pos`.
+    2K / reviewed / override trio, then master_roster.csv's verified `pos`,
+    then group_flex of ESPN's coarse Guard/Forward/Center. roster_idx is what
+    the /Rosters depth chart reads: the same override file, then the same
+    master_roster `pos`, so since the roster layer was added to the site on
+    2026-11-13 the two columns agree far more often than they used to.
 
     Lookups go through NameIndex, never a bare normalize() key: master_roster
     says "C.J. McCollum" where BBRef prints "CJ McCollum", and an exact key
@@ -208,6 +210,7 @@ def hoopsvalue_positions(espn_year: int) -> tuple:
     L_rev = names_in(_ts.POS_REVIEWED_PATH)
     L_ovr = names_in(_ts.POS_OVERRIDE_PATH)
     pos_map = _ts.load_player_positions()
+    roster_layer = _ts.roster_position_index()
     try:
         coarse = utils.fetch_bref_positions(espn_year, cache_v=3)
     except Exception:
@@ -218,13 +221,20 @@ def hoopsvalue_positions(espn_year: int) -> tuple:
         hit = ov_idx.get(name)
         if hit:
             return hit, "position_overrides.csv (hand-set)"
-        pos = _ts.resolve_position(name, coarse.get(n, ""), pos_map)
+        pos = _ts.resolve_position(name, coarse.get(n, ""), pos_map, roster_layer)
         if n in L_ovr:
             return pos, "player_positions_override.csv"
         if n in L_rev:
             return pos, "player_positions_reviewed.csv"
         if n in L_2k:
             return pos, "player_positions_2k.csv (NBA 2K26)"
+        # The roster layer, which outranks ESPN's group because ESPN only ever
+        # says Guard / Forward / Center and that names no spot. Added to the
+        # site on 2026-11-13; this column has to follow the chain or the one
+        # instrument built to audit the SF/PF default reports it as still
+        # present for the 56 players it just fixed.
+        if roster_layer.get(name):
+            return pos, "master_roster.csv (verified roster)"
         if coarse.get(n):
             return pos, f"ESPN group only ({coarse.get(n)})"
         # group_flex("") returns SF/PF, so a player the chain knows NOTHING
@@ -480,10 +490,12 @@ def _notes(wb, end_year: int, threshold: float, rows: list, stats: dict) -> None
          "it sorts the disagreements into causes."),
         ("The two columns disagree",
          f"for {len(split)} of {sum(1 for r in rows if r['hv'] and r['roster'])} "
-         f"players with both populated. Mostly because the board's chain has no "
-         f"row for the player and falls back to a GROUP: group_flex returns "
-         f"SF/PF for an unknown player and for ESPN's 'Forward', and SG/PG for "
-         f"'Guard'. Filter Pos source for 'no data' to see the worst of it."),
+         f"players with both populated. Far fewer than before 2026-11-13, when "
+         f"the board had no roster layer and fell back to a GROUP for anyone "
+         f"the curated files missed: group_flex returns SF/PF for an unknown "
+         f"player and for ESPN's 'Forward', and SG/PG for 'Guard'. What is "
+         f"left is mostly a curated file disagreeing with the roster feed. "
+         f"Filter Pos source to see which file answered each row."),
         ("", ""),
         ("Primary agrees",
          "The FIRST-listed spot of Pos (HoopsValue) against BBRef's top spot. "

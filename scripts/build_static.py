@@ -22,7 +22,8 @@ sys.path.insert(0, str(ROOT))
 warnings.filterwarnings("ignore")
 
 import pandas as pd  # noqa: E402
-from utils import build_ranked_projected, SEASONS, DEFAULT_MIN_THRESHOLD, normalize  # noqa: E402
+from utils import (build_ranked_projected, SEASONS, DEFAULT_MIN_THRESHOLD,  # noqa: E402
+                   normalize, position_layers)
 import team_suitors as _ts  # noqa: E402
 
 ONLY = os.environ.get("ONLY", "")  # build just this slug (fast template iteration)
@@ -130,10 +131,30 @@ df = df[df["total_min"] >= DEFAULT_MIN_THRESHOLD].copy()
 df_paid = df[df["salary"] > 0] if "salary" in df.columns else df
 
 _pos_map = _ts.load_player_positions()
+# The verified roster position, the last resort before group_flex INVENTS one:
+# group_flex("") returns SF/PF, so a player no position source knew about was
+# shown at small forward with nothing saying so. 60 players on 2026-11-13,
+# including four centres and six point guards. Below any fallback that names a
+# real spot, so it only ever replaces a guess.
+# Both layers describe the CURRENT roster, so they are taken through the one
+# gate in utils.position_layers rather than applied to whatever season the
+# picker is on. On a historical board they do not just read anachronistically,
+# they name the WRONG PERSON: NameIndex is suffix-insensitive by design, so
+# 1983-84 Rob Williams took Robert Williams III's "C" and 1997-98 Jaren Jackson
+# took his son's editorial "PF/C".
+#   position_overrides.csv  EDITORIAL, outranks every scraped position
+#   master_roster pos       the last resort before group_flex INVENTS one:
+#                           group_flex("") returns SF/PF, so a player no
+#                           source knew was shown at small forward with
+#                           nothing saying so (60 players on 2026-11-13,
+#                           four centres and six point guards among them)
+_posov_idx, _roster_pos = position_layers(CUR)
 
 
 def _pos(name: str) -> str:
-    return _ts._primary_position(_ts.resolve_position(name, "", _pos_map))
+    return _ts._primary_position(
+        _posov_idx.get(name)
+        or _ts.resolve_position(name, "", _pos_map, _roster_pos))
 
 
 # ── Hero cards (best value / biggest steal / most overpaid) ───────────────────
@@ -361,7 +382,9 @@ _detect = _ns["detect_caveats"]
 # uses, so the suitor list matches the app.
 _full = _ns["build_ranked_projected"](CUR).copy()
 # build_rosters needs a position column on the ranked frame; add the curated one.
-_full["pos"] = _full["Player"].map(lambda n: _ts.resolve_position(str(n), "", _pos_map))
+_full["pos"] = _full["Player"].map(
+    lambda n: _posov_idx.get(str(n))
+    or _ts.resolve_position(str(n), "", _pos_map, _roster_pos))
 try:
     _next_c = _ns["fetch_next_year_contracts"](_ns["season_to_espn_year"](CUR), cache_v=7)
     _payroll = pd.DataFrame({"team": _full["Team"].astype(str).values,
@@ -473,8 +496,9 @@ def render_player(p: dict) -> bool:
     if _SUIT:
         try:
             _rost = _ROST[_ROST["player"].map(normalize) != normalize(name)]
-            _pos_ts = _ts.resolve_position(
-                name, f.get("position_detailed") or f.get("position") or "", _pos_map)
+            _pos_ts = _posov_idx.get(name) or _ts.resolve_position(
+                name, f.get("position_detailed") or f.get("position") or "",
+                _pos_map, _roster_pos)
             _sui = _ts.rank_suitors(
                 predicted / 1e6, float(f["barrett_score"]), _pos_ts, _rost, _LAND, n=6,
                 incumbent_team=f.get("current_team"), age=f.get("age"),

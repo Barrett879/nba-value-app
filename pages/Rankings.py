@@ -18,6 +18,7 @@ from utils import (
     build_ranked_projected, build_all_seasons_combined,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     NameIndex, _dc_path, team_bar_color,
+    position_layers,
     fetch_league_stats, fetch_bref_player_stats,
     fetch_dlebron, fetch_defense_blend, fetch_defense_blend_meta, fetch_career_trend, fetch_player_season_splits,
     fetch_monthly_scores, build_splits_data,
@@ -144,10 +145,24 @@ salary_lookup = tuple(
 _bref_positions = fetch_bref_positions(season_to_espn_year(season), cache_v=3)
 import team_suitors as _ts
 _pos2k = _ts.load_player_positions()
+# Both layers describe the CURRENT roster, so they are taken through the one
+# gate in utils.position_layers rather than applied to whatever season the
+# picker is on. On a historical board they do not just read anachronistically,
+# they name the WRONG PERSON: NameIndex is suffix-insensitive by design, so
+# 1983-84 Rob Williams took Robert Williams III's "C" and 1997-98 Jaren Jackson
+# took his son's editorial "PF/C".
+#   position_overrides.csv  EDITORIAL, outranks every scraped position
+#   master_roster pos       the last resort before group_flex INVENTS one:
+#                           group_flex("") returns SF/PF, so a player no
+#                           source knew was shown at small forward with
+#                           nothing saying so (60 players on 2026-11-13,
+#                           four centres and six point guards among them)
+_posov_idx, _roster_pos = position_layers(season)
 # Curated 2K position (primary + secondary, e.g. "PG/SG") — the same source the
 # Contract Predictor matches comps on — with BBRef coarse as the fallback.
 df["position"] = df["Player"].map(
-    lambda n: _ts.resolve_position(n, _bref_positions.get(normalize(n), ""), _pos2k))
+    lambda n: _posov_idx.get(n) or _ts.resolve_position(
+        n, _bref_positions.get(normalize(n), ""), _pos2k, _roster_pos))
 
 _next_contracts = fetch_next_year_contracts(season_to_espn_year(season), cache_v=7)
 _rookie_scale   = fetch_rookie_scale_players(season)

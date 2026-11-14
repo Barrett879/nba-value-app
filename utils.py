@@ -5694,6 +5694,97 @@ def injury_is_out(status: str) -> bool:
     return s.startswith("out") or "season" in s
 
 
+@st.cache_data(ttl=3600, show_spinner=False)
+def position_overrides() -> dict:
+    """{display spelling: position} from data/position_overrides.csv.
+
+    THE hand-set position file, and it outranks every scraped position. The
+    rows are EDITORIAL, a judgement about the role a player actually fills,
+    which is why they live outside master_roster (whose `pos` a verification
+    round re-scrapes) and why every surface that shows a position has to apply
+    them. That had stopped being true: on 2026-11-13 the board and the Rosters
+    depth chart applied this file and the Rankings, Free Agent Class and Team
+    Analysis pages did not, so 39 of 45 overridden players read one position on
+    the board and another on Rankings. Kevin Durant was PF/SF on one and SG/SF
+    on the other; Jaren Jackson Jr. was PF/C against C/PF, which reverses which
+    depth column he belongs in - the thing the file's own header says these
+    rows exist to decide.
+
+    A row carrying alt_pos + alt_when_out swaps only while the named player is
+    listed OUT, resolved against the injury feed so it reverts by itself the
+    day he is back. The feed is served from disk here, never scraped in a
+    request, and is resolved through NameIndex because ESPN prints "Jimmy
+    Butler III" where the roster says "Jimmy Butler".
+
+    Returns a plain dict, keyed by the file's DISPLAY spelling, so the caller
+    wraps it in NameIndex: st.cache_data pickles what it stores, and a dict is
+    the shape every existing caller already built.
+    """
+    try:
+        inj = NameIndex(fetch_injuries())
+    except Exception:
+        inj = NameIndex()
+    out: dict = {}
+    try:
+        with open(Path(__file__).parent / "data" / "position_overrides.csv") as fh:
+            for r in csv.DictReader(l for l in fh if l.strip()
+                                    and not l.lstrip().startswith("#")):
+                nm = (r.get("player") or "").strip()
+                pos = (r.get("pos") or "").strip()
+                if not nm or not pos:
+                    continue
+                alt = (r.get("alt_pos") or "").strip()
+                dep = (r.get("alt_when_out") or "").strip()
+                if alt and dep:
+                    d = inj.get(dep)
+                    if d and injury_is_out(d.get("status", "")):
+                        pos = alt
+                out.setdefault(nm, pos)
+    except Exception:
+        pass
+    return out
+
+
+def position_override_index() -> "NameIndex":
+    """position_overrides() behind the repo's name matcher, ready to .get()."""
+    return NameIndex(position_overrides())
+
+
+def position_layers(season: str):
+    """(override_index, roster_index) for `season`: the two CURRENT-ROSTER
+    position layers, or empty ones for any other season.
+
+    Both layers describe the roster as it is NOW. data/position_overrides.csv
+    is an editorial judgement about the role a player fills this season, and
+    two of its rows swap on tonight's injury feed; master_roster.csv is the
+    2026-27 roster. Neither says anything about 1999-00.
+
+    The gate exists because applying them to a historical board is not merely
+    anachronistic, it names the WRONG PERSON. NameIndex is suffix-insensitive
+    and matches a short given name to a longer one, by design, so a retired
+    player resolves to his modern namesake's row: 1983-84 Rob Williams, a 6'1"
+    point guard, took Robert Williams III's "C"; 1997-98 Jaren Jackson took his
+    son's editorial "PF/C"; 2000-01 Gary Payton took Gary Payton II's "SF/SG".
+    Every historical row either layer touched was a wrong-person match.
+
+    So this is ONE gate in ONE place, and every surface that shows a position
+    goes through it, rather than each page remembering to check its own season
+    picker. Returning None for the roster index is what switches the layer off
+    inside team_suitors.resolve_position; an empty NameIndex does the same for
+    the overrides, since .get() then misses and the caller falls through.
+
+    The curated 2K / reviewed / override trio is NOT gated here. It is applied
+    to every season today, which has the same anachronism without the
+    wrong-person failure (it is keyed by exact normalized name, so a suffix
+    difference misses rather than mismatching). Changing that is a separate
+    decision about historical boards, not part of this gate.
+    """
+    if season != SEASONS[0]:
+        return NameIndex(), None
+    import team_suitors as _ts          # lazy: team_suitors must stay importable
+    return position_override_index(), _ts.roster_position_index()
+
+
 def fetch_player_positions_detailed(season: str, cache_v: int = 3,
                                     _force: bool = False) -> dict:
     """Returns {normalized_name: "PG"|"SG"|"SF"|"PF"|"C"} from BBRef

@@ -37,6 +37,7 @@ CSV_PATH = _DATA / "team_landscape_2026.csv"
 POS_2K_PATH = _DATA / "player_positions_2k.csv"             # NBA 2K26 primary/secondary
 POS_REVIEWED_PATH = _DATA / "player_positions_reviewed.csv" # Barrett's hand-reviewed Excel export (wins over 2K)
 POS_OVERRIDE_PATH = _DATA / "player_positions_override.csv"  # user corrections (win over everything)
+ROSTER_PATH = _DATA / "master_roster.csv"                    # verified roster `pos`, the LAST resort before a group guess
 DEFAULT_NT_MLE = 15.05  # 2026-27 non-taxpayer mid-level exception, $M (Spotrac)
 ROTATION_DEPTH = 3      # starter/rotation boundary: slot 0=starter, 1=key sub, 2=depth (labels)
 INTEREST_DEPTH = 5      # in his market if he'd be ~top-5 at the position (own team gets +2 leash)
@@ -157,13 +158,185 @@ def load_player_positions(pos_path: Path | str = POS_2K_PATH,
     return out
 
 
+def _canon_position(pos: str) -> str:
+    """A roster position label as a resolved position string, primary first.
+
+    'C/PF' stays 'C/PF' and 'PG' stays 'PG', because a label naming real spots
+    is information and expanding it would destroy some: group_flex() keeps only
+    the PRIMARY, so it turns 'SF/SG' into 'SF/PF' and 'C/PF' into 'C'.
+
+    A label that names a GROUP rather than a spot ('G', 'F', 'Forward') is
+    expanded by group_flex instead, because that is all it says: master_roster
+    lists one 'F' and five 'G', and reading 'F' as a flat SF would assert a
+    precision the feed never had.
+
+    Blank returns blank. A roster row with no position must contribute NOTHING,
+    or _norm5('') would silently enter the map as 'SF' - the exact invented
+    answer this layer exists to remove.
+    """
+    raw = (pos or "").strip()
+    if not raw:
+        return ""
+    parts = _spot_parts(raw)
+    return "/".join(parts) if parts else group_flex(raw)
+
+
+def _spot_parts(pos: str) -> list:
+    """The deduped 5-spot labels a position string names, or [] if it names a
+    GROUP or nothing. 'C/PF' -> ['C','PF']; 'SG' -> ['SG']; 'G', 'Forward',
+    '' -> []. The one predicate for "is this label specific, or a guess".
+    """
+    parts, seen = [], set()
+    for part in str(pos or "").replace("-", "/").replace("|", "/").split("/"):
+        q = part.strip().upper()
+        if q and q not in seen:
+            seen.add(q)
+            parts.append(q)
+    return parts if parts and all(q in _POS_IDX for q in parts) else []
+
+
+def load_roster_positions(path: Path | str = ROSTER_PATH) -> dict:
+    """{display spelling: 'C/PF'} from master_roster.csv's verified `pos`.
+
+    The LAST resort in the position chain, below the 2K / reviewed / override
+    trio and above group_flex. It exists because group_flex is a guess and this
+    is not: master_roster is the roster source of truth, compiled from Spotrac
+    and cross-checked against ESPN and RealGM.
+
+    What it fixes: group_flex('') returns SF/PF, because _norm5 falls back to a
+    generic forward, so a player NO position source knew about was DISPLAYED at
+    small forward with nothing marking it as a default. On 2026-11-13 that was
+    60 players, Robert Williams, Tacko Fall, Felix Okpara and Graham Ike among
+    them, all centres, plus six point guards. This layer answers 56 of the 60;
+    the rest are not in master_roster or carry no position in it.
+
+    Keyed by the roster's DISPLAY spelling, not a normalized key, because the
+    caller wraps it in a name-tolerant index - see roster_position_index().
+    """
+    out: dict = {}
+    try:
+        df = pd.read_csv(path, comment="#", skip_blank_lines=True)
+    except Exception:
+        return out
+    if "player" not in df.columns or "pos" not in df.columns:
+        logger.warning("%s: no player/pos columns, roster positions unavailable",
+                       Path(path).name)
+        return out
+    for nm, pos in zip(df["player"], df["pos"]):
+        nm = str(nm).strip()
+        if not nm or nm.lower() == "nan":
+            continue
+        c = _canon_position("" if str(pos).lower() == "nan" else str(pos))
+        if c:
+            out.setdefault(nm, c)
+    return out
+
+
+class _ExactIndex:
+    """Exact-normalized-key lookup, the fallback when utils is unavailable.
+
+    Same `.get(display_name)` shape as utils.NameIndex so resolve_position
+    cannot tell them apart. It misses the spelling variants NameIndex catches
+    ("C.J. McCollum" against "CJ McCollum", "Christian Anderson" against
+    "Christian Anderson Jr."), which costs about six players; it never returns
+    a WRONG position, only no position, so the chain falls through exactly as
+    it did before this layer existed.
+    """
+
+    def __init__(self, items: dict):
+        self._d = {_normalize(k): v for k, v in (items or {}).items()}
+
+    def get(self, name, default=None):
+        return self._d.get(_normalize(str(name)), default)
+
+
+# A one-slot list, not a dict: see roster_position_index for why the
+# publish has to be a single rebind.
+_ROSTER_MEMO: list = [None]
+
+
+def roster_position_index(path: Path | str = ROSTER_PATH):
+    """A name-tolerant lookup over load_roster_positions(), memoized per file.
+
+    Pass the result as resolve_position's `roster` argument. It is memoized
+    because app.py resolves a position inside a per-player loop and this reads
+    a 638-row CSV; the memo is keyed by (path, mtime, size) so editing
+    master_roster is picked up without a restart. mtime can lie after a git
+    checkout or a file copy, and the cost of it lying here is a stale in-process
+    cache until the next restart, which is what an unkeyed memo would give
+    anyway.
+
+    utils.NameIndex is imported LAZILY, for two reasons. It is the repo's one
+    name matcher and the rule is to use it rather than invent a third variant
+    (a bare normalize() key is what dropped seven players' next contracts and
+    $95.5M in October). And importing utils pulls in Streamlit, which this
+    module deliberately does not need: a lazy import keeps `import
+    team_suitors` and `python team_suitors.py` free of it, and only a caller
+    that asks for this layer pays. If the import fails the lookup degrades to
+    exact keys rather than disappearing.
+    """
+    try:
+        st = Path(path).stat()
+        stamp = (str(path), st.st_mtime_ns, st.st_size)
+    except OSError:
+        stamp = (str(path), None, None)
+    # Read and publish the memo as ONE object each way. Streamlit runs each
+    # session's script in its own thread sharing this module global, so a
+    # two-step read (get the stamp, then subscript the value) against a
+    # two-step write (clear, then update) leaves a window where the value is
+    # gone and the reader raises KeyError out of a module-scope binding that
+    # nothing wraps in a try. A single tuple rebind has no such window: a
+    # reader sees either the old pair or the new one.
+    hit = _ROSTER_MEMO[0]
+    if hit is not None and hit[0] == stamp:
+        return hit[1]
+    items = load_roster_positions(path)
+    try:
+        from utils import NameIndex           # noqa: PLC0415 - see docstring
+        idx = NameIndex(items)
+    except Exception as e:                    # pragma: no cover - utils present
+        logger.warning("utils.NameIndex unavailable (%s); roster positions fall "
+                       "back to exact-key matching", e)
+        idx = _ExactIndex(items)
+    _ROSTER_MEMO[0] = (stamp, idx)
+    return idx
+
+
 def resolve_position(name: str, fallback_primary: str = "",
-                     pos_map: dict | None = None) -> str:
-    """A player's final position string. The NBA 2K / override designation if we
-    have one (used EXACTLY — a 2K PG-only stays PG-only); otherwise group_flex() of
-    the BBRef primary (the data-free default, which can't tell PG-only from PG/SG)."""
+                     pos_map: dict | None = None, roster=None) -> str:
+    """A player's final position string.
+
+    The chain, highest first: the NBA 2K / override designation if we have one
+    (used EXACTLY — a 2K PG-only stays PG-only); then group_flex() of
+    `fallback_primary` IF that names a real spot; then `roster`, the verified
+    roster position, when the caller supplies one; then group_flex() of
+    whatever the fallback was, which can't tell PG-only from PG/SG and returns
+    SF/PF when it is given nothing at all.
+
+    The roster layer is deliberately BELOW a specific fallback: group_flex of a
+    real label is a real answer, and the point of this layer is to replace an
+    invented one, never to outrank a feed.
+
+    `roster` is any object with .get(display_name) — utils.NameIndex, or what
+    roster_position_index() hands back. It defaults to None, so every existing
+    caller resolves exactly as it did: the roster layer is opt-in per call
+    site, deliberately, because applying a 2026-27 roster to a historical
+    backtest would be a train/serve skew rather than a fix.
+    """
     if pos_map:
         s = pos_map.get(_normalize(name))
+        if s:
+            return s
+    # The roster layer sits above group_flex but BELOW a fallback that names a
+    # real spot, because group_flex of a specific label is a real answer and
+    # overriding it would be a downgrade, not a fix. Measured on 2026-11-13:
+    # the Contract Predictor passes fetch_player_positions_detailed as its
+    # fallback, and putting the roster above it moved A.J. Green from 'SG/PG'
+    # (the feed says SG, which is right) to 'SF/PF' (what master_roster says,
+    # which is not), along with 64 others. Ordering by specificity confines
+    # this layer to the cases where the alternative is invented.
+    if roster is not None and not _spot_parts(fallback_primary):
+        s = roster.get(name)
         if s:
             return s
     return group_flex(fallback_primary)

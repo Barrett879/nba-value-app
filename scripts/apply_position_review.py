@@ -19,13 +19,18 @@ xls = pd.read_excel("player_positions_review.xlsx")
 # CURRENT resolved baseline (same pipeline that generated the sheet)
 ranked = build_ranked_projected(max(SEASONS, key=lambda s: int(s[:4])))
 posmap = ts.load_player_positions()
+_roster_pos = ts.roster_position_index()
 pick = lambda *c: next((x for x in c if x in ranked.columns), None)
 pcol = pick("Player", "PLAYER_NAME", "name")
 poscol = pick("position_detailed", "position", "POSITION", "Pos")
 baseline = {}
 for _, r in ranked.iterrows():
     nm = str(r[pcol]); bb = str(r[poscol]) if poscol and pd.notna(r[poscol]) else ""
-    baseline[normalize(nm)] = ts.resolve_position(nm, bb, posmap)
+    # Through the SAME chain the site resolves, or the sheet proposes edits
+    # against a position the site no longer shows: the roster layer answers
+    # 56 players that group_flex used to hand an invented SF/PF, and an
+    # off-chain baseline would write a redundant override row for each one.
+    baseline[normalize(nm)] = ts.resolve_position(nm, bb, posmap, _roster_pos)
 
 
 def desired(p, s):

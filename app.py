@@ -539,6 +539,7 @@ from utils import (
     fetch_bref_positions, HV_TABLE_CSS, _HV_SORT_SCRIPT,
     fetch_league_stats, _pkl_load, BLEND_MIN_MINUTES, build_ranked_blended,
     FACE_GUARD_SCRIPT, NameIndex, fetch_injuries, injury_is_out, unavailable_players,
+    position_layers,
     face_img as _face_img, render_rail as _rail, spark_svg as _spark_svg,
     hex_rgba as _hex_rgba, hex_darken as _hex_darken, hex_is_light as _hex_is_light,
     script_json,
@@ -887,43 +888,6 @@ _hub_cey = _hub_contract_end()
 # know whether the verified roster calls a player a free agent. _market_norms
 # further down is derived from _hub_rows and so cannot be used inside it.
 @st.cache_data(ttl=3600, show_spinner=False)
-def _hub_position_overrides() -> dict:
-    """{spelling: position} from data/position_overrides.csv, the same hand-set
-    file the Rosters depth chart reads.
-
-    Shared so a player cannot read SG/SF on the board and SF/SG on his own
-    team's depth chart. The overrides are EDITORIAL, a judgement about the role
-    a player fills, and they belong wherever a position is shown rather than on
-    one page.
-
-    A row carrying alt_pos + alt_when_out swaps only while the named player is
-    listed OUT, resolved against the injury feed so it reverts by itself. The
-    feed is served from disk here, never scraped in a request."""
-    out = {}
-    try:
-        _inj = NameIndex(fetch_injuries())
-    except Exception:
-        _inj = NameIndex()
-    try:
-        with open(Path(__file__).parent / "data" / "position_overrides.csv") as fh:
-            for r in _csv.DictReader(l for l in fh if l.strip()
-                                     and not l.lstrip().startswith("#")):
-                nm = (r.get("player") or "").strip()
-                pos = (r.get("pos") or "").strip()
-                if not nm or not pos:
-                    continue
-                alt, dep = (r.get("alt_pos") or "").strip(), (r.get("alt_when_out") or "").strip()
-                if alt and dep:
-                    _d = _inj.get(dep)
-                    if _d and injury_is_out(_d.get("status", "")):
-                        pos = alt
-                out[nm] = pos
-    except Exception:
-        pass
-    return out
-
-
-@st.cache_data(ttl=3600, show_spinner=False)
 def _hub_roster_kinds() -> dict:
     """{spelling: kind} from data/master_roster.csv, kind being standard,
     two_way or free_agent.
@@ -1024,7 +988,25 @@ def _hub_roster_notes() -> dict:
 
 
 _roster_idx = NameIndex(_hub_roster_kinds())
-_posov_idx = NameIndex(_hub_position_overrides())
+# Both layers describe the CURRENT roster, so they are taken through the one
+# gate in utils.position_layers rather than applied to whatever season the
+# picker is on. On a historical board they do not just read anachronistically,
+# they name the WRONG PERSON: NameIndex is suffix-insensitive by design, so
+# 1983-84 Rob Williams took Robert Williams III's "C" and 1997-98 Jaren Jackson
+# took his son's editorial "PF/C".
+#   position_overrides.csv  EDITORIAL, outranks every scraped position
+#   master_roster pos       the last resort before group_flex INVENTS one:
+#                           group_flex("") returns SF/PF, so a player no
+#                           source knew was shown at small forward with
+#                           nothing saying so (60 players on 2026-11-13,
+#                           four centres and six point guards among them)
+# The hub is SEASONS[0] by construction, so the gate never fires here; it is
+# used anyway so there is one chain and not a second one that happens to be
+# correct. utils.position_overrides is also now the single copy of the
+# override loader, proved to return the same dict this page built and the
+# same NameIndex the Rosters depth chart built, over every overridden name
+# and over the spelling variants (CJ/C.J., Jimmy Butler/Jimmy Butler III).
+_posov_idx, _roster_pos = position_layers(_HUB_SEASON)
 
 _hub_rows = []
 for _i, _r in _pool.iterrows():
@@ -1071,7 +1053,8 @@ for _i, _r in _pool.iterrows():
         # and the depth chart agree. Falls through to resolve_position when
         # there is no override, which is all but ~20 players.
         "Pos": (_posov_idx.get(_nm)
-                or _ts.resolve_position(_nm, _bref_pos.get(_n, ""), _pos2k)),
+                or _ts.resolve_position(_nm, _bref_pos.get(_n, ""), _pos2k,
+                                        _roster_pos)),
         "Status": _status or "—",
         "Barrett Score": float(_r["barrett_score"]),
         # Which season this score actually came from. Blank while it is the
