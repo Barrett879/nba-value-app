@@ -102,6 +102,32 @@ def sh(args, label, check=True):
     return r.returncode == 0
 
 
+def newest_revision(pattern_dir: Path, stem: str, exclude: Path | None = None):
+    """(revision number, path) of the highest-numbered <stem>_r<N>.pkl, or None.
+
+    Ordered by the NUMBER in the name, not by mtime: a git checkout or a
+    shutil.copy2 can hand an old artifact a new timestamp, and r9 sorts after
+    r40 as a string.
+    """
+    best = None
+    rx = re.compile(re.escape(stem) + r"_r(\d+)\.pkl$")
+    for f in pattern_dir.glob(f"{stem}_r*.pkl"):
+        m = rx.search(f.name)
+        if not m or (exclude is not None and f == exclude):
+            continue
+        n = int(m.group(1))
+        if best is None or n > best[0]:
+            best = (n, f)
+    return best
+
+
+def days_old(f: Path) -> float:
+    try:
+        return (dt.datetime.now() - dt.datetime.fromtimestamp(f.stat().st_mtime)).days
+    except OSError:
+        return -1.0
+
+
 def read_versions() -> dict:
     out = {}
     for key, sites in VERSIONED.items():
@@ -504,15 +530,43 @@ def main() -> int:
     # build_splits.py refuses to write anything short of all 30 teams, which is
     # the guard that matters: a partial artifact would be SERVED, silently,
     # with whole teams missing from the view and no error anywhere.
-    splits_path = (ROOT / "cache" /
-                   f"splits_{key}_{utils.FORMULA_VERSION}_r{after['DATA_REV']}.pkl")
+    splits_stem = f"splits_{key}_{utils.FORMULA_VERSION}"
+    splits_path = ROOT / "cache" / f"{splits_stem}_r{after['DATA_REV']}.pkl"
     try:
-        if not sh(["scripts/build_splits.py"], "splits", check=False):
-            print("  WARNING: splits did not rebuild. Splits View will serve "
-                  "the previous artifact through _rev_path's fallback.")
+        built = sh(["scripts/build_splits.py"], "splits", check=False)
     except Exception as e:
-        print(f"  WARNING: build_splits raised {type(e).__name__}: {e}; "
-              f"continuing on the existing artifact")
+        print(f"  WARNING: build_splits raised {type(e).__name__}: {e}")
+        built = False
+    if not built and not splits_path.exists():
+        # The old warning here said Splits View would "serve the previous
+        # artifact through _rev_path's fallback". That was not true, and the
+        # gap is wider than it sounds. _rev_path prefers <name>_<DATA_REV> and
+        # otherwise falls back to the UN-REVISIONED <name>; it does NOT walk
+        # back to the previous revision. On 2026-11-14 that floor file was a
+        # week old. On Render it is worse still: /data seeds a filename ONCE,
+        # so the floor there is frozen at whatever was seeded first and no
+        # re-commit of it ever lands.
+        #
+        # So carry the newest existing revision forward under TONIGHT's name.
+        # A revisioned filename is new, which is exactly the kind Render does
+        # seed, so this is what actually makes "serves the previous artifact"
+        # true. Nothing is invented: the splits genuinely did not change this
+        # revision, because they could not be rebuilt.
+        carried = newest_revision(ROOT / "cache", splits_stem, exclude=splits_path)
+        if carried:
+            rev, src = carried
+            shutil.copyfile(src, splits_path)      # not copy2: let the mtime
+            print(f"  splits did not rebuild; carried r{rev} forward to "       # say when this copy was made
+                  f"{splits_path.name} (from {src.name}, built "
+                  f"{days_old(src):.0f} day(s) ago)")
+        else:
+            floor = ROOT / "cache" / f"{splits_stem}.pkl"
+            print(f"  WARNING: splits did not rebuild and there is no previous "
+                  f"revision to carry forward. Production will fall back to "
+                  f"{floor.name}"
+                  + (f", built {days_old(floor):.0f} day(s) ago"
+                     if floor.exists() else ", WHICH DOES NOT EXIST")
+                  + ". check_cache_seeding will refuse the commit.")
 
     # ---- 6 SHIP --------------------------------------------------------
     paths = [str(f.relative_to(ROOT)) for f in new_files]
@@ -580,6 +634,36 @@ def main() -> int:
         print("\nSTOPPING: a private agency file was staged. Nothing committed.")
         return 1
     print("\n  agency guard: clean")
+
+    # check_cache_seeding was excluded from the fatal set at step 4 because it
+    # "cannot pass until the new files are staged". That excuse has a LIFETIME
+    # and it has now expired: everything this run built is in the index, and
+    # the check reads the index (git ls-files), not the working tree. So ask
+    # it again, and this time mean it.
+    #
+    # This is the same hole as the 2026-10-31 incident recorded at step 4, one
+    # level up. There, "the only failure was check_cache_seeding" was decided
+    # by a proxy, and a real check_board_gp failure shipped; the fix was to
+    # re-run every OTHER check. But the excused check itself was still never
+    # re-asked, and on 2026-11-14 the nightly bumped DATA_REV to r41 and
+    # committed with cache/splits_2026_27_v7_r41.pkl never built, because the
+    # stats API returned nothing ten times running. The check named that file
+    # correctly during the run and the blanket explanation swallowed it.
+    #
+    # A check whose failure is routinely explained away has stopped being a
+    # check.
+    seed = subprocess.run([PY_, "-u", "scripts/check_cache_seeding.py"],
+                          cwd=ROOT, capture_output=True, text=True)
+    if seed.returncode != 0:
+        print(seed.stdout[-3000:])
+        # Unstage first: rollback() deletes the new artifacts, and leaving
+        # them staged-as-added-but-missing would hand the next run a broken
+        # index rather than the clean tree it promises.
+        subprocess.run(["git", "reset", "-q"], cwd=ROOT)
+        return rollback("check_cache_seeding still fails with everything "
+                        "staged: production would ask for a file that exists "
+                        "nowhere")
+    print("  cache seeding: every file production will ask for is in the index")
 
     msg = (f"Refresh {season} through the {behind[-1] if behind else 'current'} slate\n\n"
            f"{sum(espn.values()) // 2} games in the feed, nothing missing. "
