@@ -3715,6 +3715,38 @@
 "high_M": 9.0,
 "is_max": false,
 "max_pct": 0.25
+},
+"bobby portis": {
+"player": "Bobby Portis",
+"pcv_M": 6.4,
+"low_M": 1.3,
+"high_M": 11.5,
+"is_max": false,
+"max_pct": 0.35
+},
+"keshad johnson": {
+"player": "Keshad Johnson",
+"pcv_M": 3.6,
+"low_M": 0.6,
+"high_M": 6.6,
+"is_max": false,
+"max_pct": 0.25
+},
+"tre donaldson": {
+"player": "Tre Donaldson",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.9,
+"is_max": false,
+"max_pct": 0.25
+},
+"terrence shannon jr.": {
+"player": "Terrence Shannon Jr.",
+"pcv_M": 5.1,
+"low_M": 0.7,
+"high_M": 9.5,
+"is_max": false,
+"max_pct": 0.25
 }
 },
 "contract_end": {
