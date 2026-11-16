@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-14",
+"built_at": "2026-11-16",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3747,6 +3747,22 @@
 "high_M": 9.5,
 "is_max": false,
 "max_pct": 0.25
+},
+"devin carter": {
+"player": "Devin Carter",
+"pcv_M": 5.0,
+"low_M": 0.7,
+"high_M": 9.3,
+"is_max": false,
+"max_pct": 0.25
+},
+"mason plumlee": {
+"player": "Mason Plumlee",
+"pcv_M": 6.1,
+"low_M": 1.2,
+"high_M": 11.0,
+"is_max": false,
+"max_pct": 0.35
 }
 },
 "contract_end": {
