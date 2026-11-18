@@ -295,6 +295,65 @@ def compute(season, prior=None):
     return df, scaled, mu, sd, neg, pos, terms
 
 
+def board_index(season):
+    """A NameIndex over the newest board's Player column, or None if there is none.
+
+    WHY THIS ARTIFACT NEEDS TO KNOW ABOUT THE BOARD. Every key here is looked
+    up by the board under the board's own PLAYER_NAME, so a key no board row
+    resolves to is a defensive value computed for nobody. The pool is whoever
+    cleared the possession floor in the lineup data, which is not the same
+    population: a two-way or 10-day signing accumulates NBA minutes without
+    ever reaching the board, because the board drops players with no salary by
+    design. On 2026-11-18 that was Carson Cooper (2 GP, 10.6 min) and Norchad
+    Omier (4 GP, 13.8 min), neither of whom has a salary in any source and
+    neither of whom appears on Basketball Reference's contracts pages at all.
+
+    THE BOARD IS BUILT AFTER THIS FILE, so the revision being built does not
+    exist yet -- see the refresh order, where defense_blend and per_game come
+    BEFORE the board or everyone falls back to the box proxy. So this falls
+    back to the newest board on disk, ordered by the revision NUMBER rather
+    than mtime, exactly as scripts/build_next_contracts.newest_board does.
+
+    Using a board one revision old is safe here for a measured reason, not an
+    assumed one: the orphan set is the SAME two names against every board from
+    r40 (464 rows) through r44 (468 rows), so four revisions of staleness
+    changes the answer not at all. The residual risk is a player who joins the
+    board in the same refresh that first gives him a blend value; he keeps the
+    box proxy for one revision and picks the value up on the next, which is the
+    same soft degradation this file's own coverage caveat already describes.
+
+    Returns None rather than an empty index when no board exists, because
+    filtering against nothing would drop every player in the league.
+    """
+    key = season.replace("-", "_")
+    import re
+    from utils import DATA_REV, FORMULA_VERSION, NameIndex
+    cache = ROOT / "cache"
+    stem = f"raw_{key}_{FORMULA_VERSION}"
+    exact = cache / f"{stem}_{DATA_REV}.parquet"
+    path = exact if exact.exists() else None
+    if path is None:
+        found = []
+        for f in cache.glob(f"{stem}_r*.parquet"):
+            m = re.fullmatch(rf"{re.escape(stem)}_r(\d+)\.parquet", f.name)
+            if m:
+                found.append((int(m.group(1)), f))
+        if found:
+            rev, path = max(found)
+            print(f"  note: no board for {DATA_REV} yet (this file is built "
+                  f"BEFORE the board), filtering against r{rev}")
+        else:
+            floor = cache / f"{stem}.parquet"
+            path = floor if floor.exists() else None
+    if path is None:
+        print("  WARNING: no board parquet on disk, so every pool player is "
+              "kept. Keys the board cannot resolve are values computed for "
+              "nobody; tests/test_defense_pool.py will name them.")
+        return None
+    names = pd.read_parquet(path, columns=["Player"])["Player"].astype(str)
+    return NameIndex({str(n): str(n) for n in names})
+
+
 def main():
     season = sys.argv[1] if len(sys.argv) > 1 else "2026-27"
     df, scaled, mu, sd, z_lo, z_hi, terms = compute(season)
@@ -304,6 +363,44 @@ def main():
     espn, feed, missing = L.feed_gap(season)
     rebuilt = [str(g.get("GameId")) for g in L.games(season)
                if str(g.get("GameId")).startswith("E")]
+
+    # ---- keep only keys the board can resolve ---------------------------
+    # Filtered at the OUTPUT, deliberately not in the pool. The z-scores and
+    # the piecewise stretch are computed over everyone who cleared the
+    # possession floor, which is the right reference population for "where
+    # does this defender stand in the league" -- two-way players are part of
+    # the league. Dropping them from the pool instead would move the mean, the
+    # sd and both observed endpoints, and so would silently re-rank every
+    # defender on the board to fix two keys nobody reads.
+    #
+    # Safe to do after the fact here because the dropped players are mid-pack
+    # and nowhere near the endpoints that set the stretch: on 2026-11-18
+    # Carson Cooper ranked 108th of 427 and Norchad Omier 199th, while the
+    # endpoints were Luke Kennard at -4.00 and Victor Wembanyama at +6.00.
+    # IF A DROPPED PLAYER IS EVER THE POOL MINIMUM OR MAXIMUM, that stops
+    # being true -- he set the scale for everyone and then vanished from the
+    # file -- so that case is called out below rather than left to be noticed.
+    idx = board_index(season)
+    pairs = sorted(zip(df.player.astype(str), scaled), key=lambda kv: kv[0])
+    if idx is None:
+        served, dropped = pairs, []
+    else:
+        served = [(k, v) for k, v in pairs if idx.get(k) is not None]
+        dropped = [(k, v) for k, v in pairs if idx.get(k) is None]
+    if dropped:
+        lo, hi = float(min(v for _, v in pairs)), float(max(v for _, v in pairs))
+        print(f"  {len(dropped)} pool player(s) the board cannot resolve, so "
+              f"dropped from the artifact (a key no board row resolves to is a "
+              f"value computed for nobody):")
+        for k, v in sorted(dropped, key=lambda kv: kv[1]):
+            edge = ("  <- SET AN ENDPOINT OF THE SCALE; every other value was "
+                    "stretched around this player"
+                    if float(v) in (lo, hi) else "")
+            print(f"     {k}  {float(v):+.4f}{edge}")
+        print(f"     either they are not board players (a two-way or 10-day "
+              f"signing has no salary, and the board drops unsalaried players "
+              f"by design), or the board spells them differently -- in which "
+              f"case add a def_lib.DEF_ALIASES entry instead")
 
     out = {
         "_meta": {
@@ -347,6 +444,13 @@ def main():
                                       "endpoints are pool-relative: one player's "
                                       "input moves everyone.")},
             "players": int(len(df)),
+            # The pool and the served set are different populations and the
+            # difference is load-bearing: "players" is who the z-scores and
+            # the stretch were computed over, "served" is who the board can
+            # actually look up. Recording both means a future reader can see
+            # that a key count below the pool count is deliberate.
+            "served": len(served),
+            "dropped_not_on_board": [k for k, _ in dropped],
             "team_games_max": int(df.g.max()), "team_games_min": int(df.g.min()),
             "lineup_games": len(L.games(season)),
             "games_played_espn": sum(espn.values()) // 2,
@@ -360,8 +464,7 @@ def main():
         # out reordered on every rebuild, producing 79-line diffs with zero
         # values changed -- which makes "has anything actually moved?"
         # unanswerable by diff, and that is what the daily drift check reads.
-        "values": {k: round(float(v), 4) for k, v in
-                   sorted(zip(df.player.astype(str), scaled), key=lambda kv: kv[0])},
+        "values": {k: round(float(v), 4) for k, v in served},
     }
     path = ROOT / "cache" / f"defense_blend_{season.replace('-', '_')}_{VERSION}.json"
     path.write_text(json.dumps(out, indent=1))

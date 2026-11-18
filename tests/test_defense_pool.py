@@ -95,10 +95,53 @@ def test_every_key_is_on_the_board():
     orphans = sorted(k for k in values if index.get(str(k)) is None)
     assert not orphans, (
         f"{path.name} has {len(orphans)} key(s) that match no board player: "
-        f"{orphans}. Either the key is not a player, or it is the same player "
-        "under a spelling NameIndex cannot bridge (a reversed name order is the "
-        "one it cannot, by construction, since it compares surnames first). Add "
-        "a def_lib.DEF_ALIASES entry for a spelling; drop a non-player."
+        f"{orphans}. THREE causes, and they want different fixes:\n"
+        "  1. not a person at all (Darko Rajakovic, a head coach, above) -- fix "
+        "the source, do not alias it;\n"
+        "  2. the same player under a spelling NameIndex cannot bridge (a "
+        "reversed name order is the one it cannot, by construction, since it "
+        "compares surnames first) -- add a def_lib.DEF_ALIASES entry;\n"
+        "  3. A REAL PLAYER THE BOARD DOES NOT CARRY. This was missing from "
+        "this message until 2026-11-18 and cost real time, because the first "
+        "two readings are both wrong for it. A two-way or 10-day signing "
+        "accumulates NBA minutes while nobody prices his contract, and the "
+        "board drops players with no salary by design -- Carson Cooper (2 GP) "
+        "and Norchad Omier (4 GP) were exactly this. The builder now filters "
+        "these out and records them in _meta.dropped_not_on_board, so reaching "
+        "this assertion for cause 3 means the filter did not run: check that "
+        "build_defense_blend.board_index() found a board at all, since it "
+        "declines to filter when it cannot (filtering against nothing would "
+        "drop the league)."
+    )
+
+
+def test_the_builder_records_what_it_dropped():
+    """The filter must leave a trace in the artifact.
+
+    Filtering is what makes test_every_key_is_on_the_board pass, which means a
+    real player quietly vanishing from the file now looks exactly like a clean
+    build. The names have to survive somewhere or the only remaining signal is
+    a line in a build log nobody keeps. _meta carries them, and `players` (the
+    pool the z-scores and the stretch were computed over) stays distinct from
+    `served` (who the board can look up), so a key count below the pool count
+    reads as deliberate rather than as loss.
+    """
+    path, values = _blend()
+    meta = json.loads(path.read_text())["_meta"]
+    assert "dropped_not_on_board" in meta, (
+        f"{path.name} has no _meta.dropped_not_on_board. If the filter in "
+        "build_defense_blend.py still runs, the record of what it removed was "
+        "dropped with it."
+    )
+    assert "served" in meta and meta["served"] == len(values), (
+        f"_meta.served ({meta.get('served')}) must equal the number of keys "
+        f"actually written ({len(values)})."
+    )
+    assert meta["served"] + len(meta["dropped_not_on_board"]) == meta["players"], (
+        f"served ({meta['served']}) + dropped "
+        f"({len(meta['dropped_not_on_board'])}) must account for the whole pool "
+        f"({meta['players']}); a gap means players left the artifact by some "
+        f"path that recorded nothing."
     )
 
 
@@ -107,8 +150,13 @@ if __name__ == "__main__":
     # and exit non-zero on the first failure, so a probe reads as PASS or FAIL
     # rather than as a traceback to interpret.
     rc = 0
+    # Every test in this file, or script mode silently covers less than pytest
+    # does and a probe that prints "ALL INVARIANTS HOLD" means something
+    # narrower than it says.
     for name, fn in (("no bare feed ids", test_no_bare_feed_ids),
-                     ("every key is on the board", test_every_key_is_on_the_board)):
+                     ("every key is on the board", test_every_key_is_on_the_board),
+                     ("the builder records what it dropped",
+                      test_the_builder_records_what_it_dropped)):
         try:
             fn()
             print(f"ok  {name}")

@@ -40,6 +40,11 @@
    "warning": "NOT on D-LEBRON's scale. Historical seasons carry real D-LEBRON, which has never run outside -3.55 .. +4.41 in 17 seasons, so this season's defenders sit on a wider scale than any past season and the all-time pool favours current players structurally. The endpoints are pool-relative: one player's input moves everyone."
   },
   "players": 427,
+  "served": 425,
+  "dropped_not_on_board": [
+   "Carson Cooper",
+   "Norchad Omier"
+  ],
   "team_games_max": 19,
   "team_games_min": 2,
   "lineup_games": 221,
@@ -115,7 +120,6 @@
   "Cameron Boozer": 1.073,
   "Cameron Carr": -1.7799,
   "Cameron Johnson": 0.1079,
-  "Carson Cooper": -1.5448,
   "Carter Bryant": -3.27,
   "Cason Wallace": -0.2411,
   "Cedric Coward": 1.5779,
@@ -371,7 +375,6 @@
   "Noa Essengue": -0.8504,
   "Noah Clowney": 0.3626,
   "Nolan Traore": 0.2584,
-  "Norchad Omier": -0.5926,
   "Norman Powell": -1.4336,
   "OG Anunoby": 2.9254,
   "Obi Toppin": -3.3818,
