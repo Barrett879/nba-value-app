@@ -3763,6 +3763,22 @@
 "high_M": 11.0,
 "is_max": false,
 "max_pct": 0.35
+},
+"carson cooper": {
+"player": "Carson Cooper",
+"pcv_M": 2.3,
+"low_M": 0.0,
+"high_M": 4.8,
+"is_max": false,
+"max_pct": 0.25
+},
+"norchad omier": {
+"player": "Norchad Omier",
+"pcv_M": 5.5,
+"low_M": 0.9,
+"high_M": 10.1,
+"is_max": false,
+"max_pct": 0.25
 }
 },
 "contract_end": {
