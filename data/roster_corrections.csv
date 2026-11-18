@@ -12,6 +12,12 @@
 #                                 comes off the roster and reaches free agency
 #
 # team = 3-letter abbreviation (the team that HOLDS the contract/option).
+#
+# 2026-11-18: dropped a stale 'LAC,Norchad Omier,free_agent' row. It was
+# a NO-OP -- line 480 of scripts/build_fa_board.py only honours "waived"
+# and "decline_option", so 'free_agent' was never read -- AND it had
+# become false: he signed a CLE two-way on 2026-11-05. Left in place it
+# would drop him the day anyone taught this file to honour the action.
 # Lines starting with # are ignored.
 team,player,action
 LAL,Kobe Bufkin,waived
@@ -46,7 +52,6 @@ MIA,Jahmir Young,free_agent
 BOS,Max Shulga,free_agent
 UTA,Hayden Gray,free_agent
 MIA,Trevor Keels,free_agent
-LAC,Norchad Omier,free_agent
 CLE,Olivier Sarr,free_agent
 ATL,Christian Koloko,free_agent
 UTA,Bez Mbeng,free_agent

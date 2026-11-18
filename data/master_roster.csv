@@ -136,7 +136,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CLE,Craig Porter Jr.,2.41,standard,PG,Non-guaranteed for 2026-27 per Spotrac
 ,CLE,Tyrese Proctor,2.15,standard,PG/SG,"2025 2nd-rounder, yr 2"
 ,CLE,Meleek Thomas,1.36,standard,SG,2026 2nd-round pick; signed 4yr/$9.26M via 2nd-round exception 7/1/26; salary inferred (~rookie min) - Spotrac cap table shows $0/omits him (see caveats)
-,CLE,Tristan Enaruna,0,two_way,SF,Two-way contract
+,CLE,Tristan Enaruna,0,free_agent,SF,"two-way ENDED 2026-11-07 per BBRef /contracts/CLE.html payroll notes (""Tristan Enaruna Ended November 7, 2026""), the move that opened the slot Riley Minix re-signed into. Kept as free_agent rather than deleted, matching Lawson Lovering, so his 3 played games keep their history while the board correctly stops pricing a contract that no longer exists. Corrected 2026-11-18: leaving him as two_way put CLE at FOUR two-ways, which check_roster_invariants refuses, and showed him on the board at the $678,882 scale as if still signed."
 ,CLE,Riley Minix,0,two_way,SF,Two-way contract
 ,CLE,Ernest Udeh Jr.,0,two_way,C,Signed two-way 7/1/26
 ,DAL,Kyrie Irving,39.49,standard,PG/SG,Yr 2 of 3yr deal; 2027-28 player option $42.4M
@@ -278,7 +278,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,LAL,Bronny James,2.3,standard,PG/SG,3rd year of 2024 second-round deal
 ,LAL,Adou Thiero,2.15,standard,SF/PF,2nd year of 2025 second-round deal
 ,LAL,Chris Manon,0,two_way,SF/SG,two-way signed 2026
-,LAL,AK Okereke,0,two_way,PF,two-way signed 2026
+,LAL,AK Okereke,0,free_agent,PF,"two-way ENDED 2026-10-28 per BBRef /contracts/LAL.html payroll notes (""AK Okereke Ended October 28, 2026""). No board effect -- he has no minutes in the 2026-27 feed -- but leaving him as two_way put LAL at FOUR two-ways alongside Carson Cooper, which check_roster_invariants refuses. Corrected 2026-11-18."
 ,LAL,Arthur Kaluma,0,two_way,PF,"two-way signed Jul 22, 2026"
 ,MEM,Jerami Grant,34.21,standard,PF/SF,"Acquired from POR June 30, 2026 in Ja Morant trade; 2027-28 player option $36.4M"
 ,MEM,Isaiah Stewart,15,standard,C/PF,"Acquired from DET in July 8, 2026 six-team trade; 2027-28 team option $15.0M"
@@ -607,7 +607,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,IND,Gabe Mcglothan,0,free_agent,SF/PF,unsigned free agent
 ,LAC,TyTy Washington Jr.,0,free_agent,PG,unsigned free agent; est value $2.5M
 ,LAC,Dalano Banton,0,free_agent,PG/SG,unsigned free agent
-,LAC,Norchad Omier,0,free_agent,F,unsigned free agent
+,CLE,Norchad Omier,0,two_way,F,"CLE TWO-WAY signed 2026-11-05, verified 2026-11-18 from BBRef /contracts/CLE.html payroll notes and the nba.com/cavaliers release of 2026-11-06 (Riley Minix waived in the corresponding move, which BBRef's notes also show). Was recorded here as an unsigned LAC free agent while he played for Cleveland -- 4 GP, up to 27 min, 13 pts and 8 reb on 11-14 -- so the board dropped him for having no salary and the defensive blend keyed a value nobody could look up. $0 because two-ways sit outside the team cap; utils.TWO_WAY_SALARY prices him at $678,882."
 ,LAL,Maxi Kleber,0,free_agent,C/PF,unsigned free agent; est value $3.5M
 ,LAL,Lachlan Olbrich,0,free_agent,C,unsigned free agent; est value $2.7M
 ,PHX,Drew Timme,0,two_way,PF/C,"CLAIMED off waivers by PHX 10/19/26 after MIN released him, and his Exhibit 10 was converted to a TWO-WAY on the last day that was allowed, so $0 against the cap. With Reath and Pat Spencer he is one of PHX's three two-ways. An earlier version of this row had him as a standard contract at an inferred minimum cap hit, which was wrong"
@@ -674,3 +674,4 @@ asof,team,player,salary_M,kind,pos,notes
 ,GSW,Graham Ike,0,two_way,C,"GSW TWO-WAY, on the ESPN roster; MISSING from this file entirely"
 ,SAC,Leaky Black,0,two_way,SF/SG,"SAC TWO-WAY, on the ESPN roster; MISSING from this file entirely, and he was appearing on the free-agent board"
 ,WAS,Reece Beekman,0,two_way,PG,"WAS TWO-WAY, on the ESPN roster; MISSING from this file entirely"
+,LAL,Carson Cooper,0,two_way,C,"LAL TWO-WAY signed 2026-11-10, verified 2026-11-18 from BBRef /contracts/LAL.html payroll notes (Lawson Lovering waived to open the spot). 6-11 center, undrafted out of Michigan State; his earlier MEM two-way of 2026-09-28 ended 2026-11-07 per /contracts/MEM.html, which is why he shows one MEM game and then LAL minutes. MISSING from this file entirely, so the board dropped him. $0 because two-ways sit outside the team cap."
