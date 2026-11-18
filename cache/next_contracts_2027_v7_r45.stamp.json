@@ -1,0 +1,19 @@
+{
+ "aliases": 7,
+ "artifact": "next_contracts_2027_v7_r45.pkl",
+ "built_at": "2026-11-18T11:28:12",
+ "data_rev": "r45",
+ "describes": "2027-28",
+ "entries": 348,
+ "espn_year": 2027,
+ "keys": 355,
+ "rfa_carried": 20,
+ "season": "2026-27",
+ "source": "Basketball Reference /contracts/players.html",
+ "types": {
+  "guaranteed": 205,
+  "player_option": 36,
+  "rfa": 20,
+  "team_option": 87
+ }
+}
