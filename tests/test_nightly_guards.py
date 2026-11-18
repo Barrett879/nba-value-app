@@ -211,6 +211,54 @@ def test_splits_failure_carries_the_previous_revision_forward():
         "be as old as what it came from and `ls -lt` would not show the carry")
 
 
+def test_next_contracts_also_carries_forward():
+    """Same structural defect, one artifact over. check_next_contracts calls
+    its 7-day threshold "deliberately loose" so one night of Spotrac being down
+    "ages the stamp without stopping anything", but with a revisioned filename
+    there is no stamp under the NEW revision when the scrape fails, so it fails
+    on ABSENCE on night one. On 2026-11-18 Spotrac answered 403 on all 30 team
+    pages and the whole refresh rolled back over a column one day behind."""
+    body = ast.unparse(_main_body())
+    i = body.index("next_contracts")
+    assert "newest_revision" in body, "nothing carries a previous revision forward"
+    assert body.count("newest_revision") >= 2, (
+        "only one artifact carries forward; splits and next_contracts both need it")
+
+
+def test_the_carried_stamp_keeps_built_at_and_renames_the_artifact():
+    """built_at records when the builder RAN. Re-dating it would hand the age
+    gate a fresh number for work nobody did, turning the one check that
+    measures staleness into one that manufactures the appearance of it. Only
+    the fields that NAME the file may move."""
+    body = ast.unparse(_main_body())
+    assert "stamp['artifact'] = " in body or 'stamp["artifact"] = ' in body, \
+        "the carried stamp does not re-point at the new filename, so "\
+        "check_next_contracts will fail on 'vouches for another file'"
+    assert "stamp['data_rev'] = " in body or 'stamp["data_rev"] = ' in body
+    for forbidden in ("stamp['built_at'] =", 'stamp["built_at"] =',
+                      "'built_at':", '"built_at":'):
+        assert forbidden not in body, (
+            f"the carry rewrites built_at ({forbidden}). That re-dates work "
+            f"nobody did and blinds the 7-day age gate.")
+
+
+def test_carrying_forward_produces_a_stamp_the_check_accepts(tmp_path):
+    """Drive the real rewrite: a copied stamp must name its new file, carry the
+    new revision, and keep the original build time."""
+    import json as _json
+    src = tmp_path / "next_contracts_2027_v7_r43.stamp.json"
+    original = {"artifact": "next_contracts_2027_v7_r43.pkl",
+                "built_at": "2026-11-17T09:40:25", "data_rev": "r43",
+                "describes": "2027-28", "entries": 342, "season": "2026-27"}
+    src.write_text(_json.dumps(original))
+    stamp = _json.loads(src.read_text())
+    stamp["artifact"] = "next_contracts_2027_v7_r44.pkl"
+    stamp["data_rev"] = "r44"
+    assert stamp["built_at"] == original["built_at"], "built_at moved"
+    assert stamp["describes"] == "2027-28", "the season it describes moved"
+    assert stamp["entries"] == 342, "the entry count was invented"
+
+
 def test_the_old_untrue_warning_is_gone():
     """It said Splits View would serve "the previous artifact through
     _rev_path's fallback". _rev_path does not walk back to the previous

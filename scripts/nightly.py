@@ -380,15 +380,60 @@ def main() -> int:
                 utils.CACHE_DIR / f"next_contracts_{nc_year}_v7_{nc_rev}.stamp.json",
                 utils.CACHE_DIR / f"next_contracts_{nc_year}_v7.pkl"]
     try:
-        if not sh(["scripts/build_next_contracts.py", "--write"],
-                  "next contracts", check=False):
-            print("  WARNING: next contracts did not rebuild. Next $ keeps the "
-                  "committed artifact; check_next_contracts fails once it is a "
-                  "week old, and this step runs again before that check.")
-        print(f"  (expecting {nc_paths[0].name})")
+        nc_built = sh(["scripts/build_next_contracts.py", "--write"],
+                      "next contracts", check=False)
     except Exception as e:
-        print(f"  WARNING: build_next_contracts raised {type(e).__name__}: {e}; "
-              f"continuing on the existing artifact")
+        print(f"  WARNING: build_next_contracts raised {type(e).__name__}: {e}")
+        nc_built = False
+    if not nc_built and not nc_paths[0].exists():
+        # check_next_contracts says, in its own words, that its 7-day threshold
+        # is "deliberately loose" so "one night of Spotrac being down ages the
+        # stamp without stopping anything". That intent was defeated by the
+        # revisioned filename: when the scrape fails there is no stamp under
+        # the NEW revision, and the check fails on ABSENCE on night one, long
+        # before the age gate it was supposed to reach. On 2026-11-18 Spotrac
+        # answered 403 on all 30 team pages and the whole refresh rolled back
+        # over a column that was one day behind.
+        #
+        # The artifact already degrades, through _rev_path's un-revisioned
+        # floor. The stamp had no floor. So carry BOTH forward, which keeps the
+        # pair together: a stamp that ships without the artifact it names
+        # asserts a freshness that is not on disk, and that is its own FAIL.
+        #
+        # built_at is COPIED UNCHANGED. It records when the builder RAN, and
+        # re-dating it here would hand the age gate a fresh number for work
+        # nobody did, turning the one check that measures staleness into a
+        # check that manufactures the appearance of freshness. Only `artifact`
+        # and `data_rev`, which name the file, are rewritten.
+        # nc_prev, not prev: `prev` is the PREVIOUS BOARD SUMMARY, bound at the
+        # top of main() and read by step 5 VERIFY to find dropped players.
+        # Shadowing it here made that step raise TypeError on a tuple, after
+        # the build had already written its artifacts and past the point
+        # rollback() could undo them.
+        nc_stem = f"next_contracts_{nc_year}_v7"
+        nc_prev = newest_revision(utils.CACHE_DIR, nc_stem, exclude=nc_paths[0])
+        nc_prev_stamp = (utils.CACHE_DIR / f"{nc_stem}_r{nc_prev[0]}.stamp.json"
+                         if nc_prev else None)
+        if nc_prev and nc_prev_stamp.exists():
+            rev, src = nc_prev
+            try:
+                stamp = json.loads(nc_prev_stamp.read_text())
+                stamp["artifact"] = nc_paths[0].name
+                stamp["data_rev"] = nc_rev
+                shutil.copyfile(src, nc_paths[0])
+                nc_paths[1].write_text(json.dumps(stamp, indent=1, sort_keys=True))
+                print(f"  next contracts did not rebuild; carried r{rev} forward "
+                      f"to {nc_paths[0].name} (built_at {stamp.get('built_at')} "
+                      f"kept, so the 7-day gate still measures the real build)")
+            except Exception as e:
+                print(f"  WARNING: could not carry r{nc_prev[0]} forward "
+                      f"({type(e).__name__}: {e}); check_next_contracts will "
+                      f"refuse the commit")
+        else:
+            print(f"  WARNING: next contracts did not rebuild and there is no "
+                  f"previous revision with a stamp to carry forward. "
+                  f"check_next_contracts will refuse the commit.")
+    print(f"  (expecting {nc_paths[0].name})")
 
     # ---- 4 BUILD -------------------------------------------------------
     try:
