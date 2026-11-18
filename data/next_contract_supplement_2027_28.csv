@@ -1,6 +1,25 @@
-# Next-season (2027-28) money for players Spotrac's per-team /yearly/ pages omit.
+# Next-season (2027-28) money for players the active source cannot price.
 # scripts/build_next_contracts.py reads this AFTER the scrape and fills only
 # players it could not resolve, so an entry here never overrides a live figure.
+#
+# TWO REASONS A PLAYER LANDS HERE.
+#   1. The source omits him outright (Spotrac's PHI page and LeBron, below).
+#   2. He appears on MORE THAN ONE team page, which Basketball Reference's
+#      league-wide /contracts/players.html answers with a LEAGUE-WIDE AGGREGATE
+#      -- the sum of every team still paying him. bref_league() refuses to
+#      quote that, because team_payroll charges this artifact to the team that
+#      ROSTERS the player, so the aggregate would bill one team's dead money to
+#      another and double-count money data/dead_money_2026_27.csv already
+#      carries. The per-team /contracts/<TEAM>.html pages hold the real figure.
+#
+# REBUILD THE CATEGORY-2 ROWS WHENEVER THE BUILD NAMES A PLAYER IT DROPPED.
+# The set moves with every waiver and buyout; it was six on 2026-11-18, of whom
+# three are owed nothing next season by the team that rosters them and are
+# correctly absent (Olivier-Maxence Prosper -- MEM rosters him and owes him
+# nothing in 2027-28, the $1,002,360 is DAL's dead-money team option;
+# Kentavious Caldwell-Pope and Jonathan Isaac -- neither page carries a 2027-28
+# cell). The Spotrac-built artifact of 2026-11-17 also has those three absent,
+# so this reproduces it rather than changing it.
 #
 # Every row needs a source. These are not guesses: a wrong number here is
 # indistinguishable from a scraped one once it reaches the column.
@@ -8,3 +27,6 @@
 # type: guaranteed | team_option | player_option | rfa
 player,salary,type,source
 LeBron James,4070000,player_option,"data/master_roster.csv: signed vet-min 1+1 on 2026-07-26, 2027-28 player option $4.07M (Spotrac's PHI /yearly/ page omits him entirely, 16 rows, verified 2026-10-27)"
+Damian Lillard,14104000,player_option,"basketball-reference.com/contracts/POR.html 2026-11-18: 2027-28 $14,104,000 salary-pl, guaranteed $13,398,800. The league page /contracts/players.html shows $36,620,603, which is this plus MIL's $22,516,603 stretched annuity (/contracts/MIL.html; data/dead_money_2026_27.csv row MIL Damian Lillard 22.516). Matches the Spotrac-built r44 artifact exactly, type included."
+Bradley Beal,6746040,player_option,"basketball-reference.com/contracts/LAC.html 2026-11-18: 2027-28 $6,746,040 salary-pl, guaranteed $6,424,800. The league page shows $26,129,050, which is this plus PHX's $19,383,010 stretched annuity (data/dead_money_2026_27.csv row PHX Bradley Beal 19.383). Salary matches the r44 artifact exactly; r44 says guaranteed only because Beal is absent from all 492 rows of contract_years_2026_27.csv and a missing marker fell to the guaranteed default."
+Klay Thompson,5880000,player_option,"basketball-reference.com/contracts/MIA.html 2026-11-18: 2027-28 $5,880,000 salary-pl, guaranteed $5,600,000. His DAL row carries 2026-27 only ($7,660,317, a buyout with no stretch reported), so no DAL money reaches 2027-28 and the league-page figure happens to equal MIA's alone. Salary matches the r44 artifact exactly; r44 says guaranteed only because the CSV records him as DAL ending 2026-27 with no 2027 mark."

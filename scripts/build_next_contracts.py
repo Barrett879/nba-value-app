@@ -34,6 +34,8 @@ logging.disable(logging.WARNING)
 import pandas as pd, requests
 import utils
 from utils import normalize, _html_text
+sys.path.insert(0, str(Path(__file__).resolve().parent))   # sibling scripts/
+import bref_next_money
 logging.disable(logging.NOTSET)
 
 # Every season literal is DERIVED, not typed. Hardcoded, they survive a
@@ -54,6 +56,17 @@ SUP = ROOT / "data" / f"next_contract_supplement_{NEXT_LABEL.replace('-', '_')}.
 # extensions, so a week is generous and still well inside the window where a
 # traded player's figure would be wrong.
 MAX_AGE_DAYS = 7
+
+# Under the 2026-27 league minimum (a bit over $1.2M). Always REPORTED, never
+# by itself a refusal: a stretched waiver or a partial guarantee lands here
+# legitimately. The refusing floor is per-source -- see SOURCES.
+NOTABLY_SMALL = 500_000
+
+# How many players may appear on more than one Basketball Reference team
+# page before the league page is treated as having changed meaning rather
+# than as describing a few stretched waivers. Six on 2026-11-18. The count
+# moves with every waiver and buyout, so this is slack, not a measurement.
+MAX_SPLIT_ROWS = 12
 
 HDRS = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
                       "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
@@ -117,6 +130,86 @@ def artifact_paths(espn_year: int):
     return (utils._rev_path(base),
             utils.CACHE_DIR / base,
             utils.CACHE_DIR / f"next_contracts_{espn_year}_v7_{utils.DATA_REV}.stamp.json")
+
+
+def newest_board():
+    """The newest board parquet on disk, or None.
+
+    THE ALIAS PASS WAS DEAD IN EVERY COMMITTED BUILD, and this is why. The
+    nightly runs this builder at step 3c, which is BEFORE step 4 writes
+    raw_<season>_v7_<DATA_REV>.parquet for the revision being built. So
+    utils._rev_path resolved to a board that did not exist yet, the pass
+    printed "no board at ..., skipping" and moved on, and every stamp from r40
+    to r44 recorded aliases=0 with keys == entries. Measured cost under
+    Basketball Reference: SEVEN board players and $67,674,436 of visible money
+    rendering the gray sentinel the legend defines as UFA -- AJ Green, Bobby
+    Portis Jr., Christian Anderson, DaRon Holmes II, Robert Williams III,
+    Ronald Holland II, Terrence Shannon Jr.
+
+    Falling back to the previous revision is safe here in a way it would NOT
+    be for most artifacts: this pass reads ONE column, Player, and uses it
+    only to learn how the board SPELLS a name. Spellings do not change between
+    revisions; rosters and minutes do, and neither is read here. A board one
+    night old answers the only question being asked exactly as well as
+    tonight's. Ordered by the revision NUMBER, never mtime, for the reason
+    spelled out in _previous_rfa.
+
+    The other possible fix, moving step 3c after the board build, is closed
+    off: check_next_contracts' age gate runs at step 4, so a builder placed
+    after it could never clear a stale stamp and the nightly would roll back
+    before reaching the one step that heals it. See the 3c comment in
+    scripts/nightly.py.
+    """
+    stem = f"raw_{CUR_SEASON.replace('-', '_')}_{utils.FORMULA_VERSION}"
+    exact = utils.CACHE_DIR / f"{stem}_{utils.DATA_REV}.parquet"
+    if exact.exists():
+        return exact
+    found = []
+    for f in utils.CACHE_DIR.glob(f"{stem}_r*.parquet"):
+        m = re.fullmatch(rf"{re.escape(stem)}_r(\d+)\.parquet", f.name)
+        if m:
+            found.append((int(m.group(1)), f))
+    if found:
+        rev, f = max(found)
+        print(f"  note: no board for {utils.DATA_REV} yet (step 3c runs before "
+              f"the board is built), aliasing off r{rev} instead -- spellings "
+              f"do not move between revisions")
+        return f
+    floor = utils.CACHE_DIR / f"{stem}.parquet"
+    return floor if floor.exists() else None
+
+
+def _previous_rfa(espn_year: int) -> dict:
+    """{key: record} for the `rfa` holds in the newest EARLIER artifact.
+
+    Ordered by the NUMBER in the filename, never by mtime: a carry-forward or
+    an iCloud re-materialisation rewrites mtimes, so r9 can easily be newer on
+    disk than r40 while being nine revisions behind. The same ordering bug is
+    called out in scripts/nightly.py's newest_revision.
+
+    The revision this build is about to write is excluded -- reading it would
+    make the carry-forward a no-op that silently reproduced whatever is already
+    there -- and the un-revisioned floor is the last resort.
+    """
+    stem = f"next_contracts_{espn_year}_v7"
+    mine = f"{stem}_{utils.DATA_REV}.pkl"
+    found = []
+    for f in utils.CACHE_DIR.glob(f"{stem}_r*.pkl"):
+        if f.name == mine:
+            continue
+        m = re.fullmatch(rf"{re.escape(stem)}_r(\d+)\.pkl", f.name)
+        if m:
+            found.append((int(m.group(1)), f))
+    floor = utils.CACHE_DIR / f"{stem}.pkl"
+    for _, f in sorted(found, reverse=True) + ([(-1, floor)] if floor.exists() else []):
+        try:
+            d = utils._pkl_load(f)
+        except Exception:
+            continue
+        if isinstance(d, dict) and d:
+            return {k: v for k, v in d.items()
+                    if isinstance(v, dict) and v.get("type") == "rfa"}
+    return {}
 
 
 def stamp_path_for(espn_year: int) -> Path:
@@ -210,22 +303,18 @@ def team_money(abbr: str) -> dict:
     return out
 
 
-def main(write: bool) -> int:
-    # A missing CSV must stop the run, not fall back to another season's. The
-    # option TYPE comes from here; without it every team option and player
-    # option silently renders as plain guaranteed money, which is a different
-    # contract than the one the player actually has.
-    if not CSV.exists():
-        print(f"REFUSING: {CSV.relative_to(ROOT)} does not exist.")
-        print(f"The season rolled to {CUR_SEASON} and this file has to be compiled "
-              f"for it before Next $ can name option types. See docs/season_rollover.md.")
-        return 1
-    books = pd.read_csv(CSV, comment="#")
-    print(f"season {CUR_SEASON}, describing {NEXT_LABEL} money (CSV mark {MARK!r})")
-    print(f"{len(books)} players on the {CUR_SEASON} books, {books.team.nunique()} teams")
-    print(f"money from Spotrac /yearly/, option type from {CSV.name}\n")
+def spotrac_league():
+    """(league, {}) from Spotrac's thirty /yearly/ pages, or None if blocked.
 
+    Returns None rather than raising so scrape_league can fall through to the
+    next source. The league map is {key: (kind, team, display, salary, flag)}.
+
+    Thirty requests at 0.4s apart. The empty second element is the option-type
+    map: Spotrac's yearly cell does not carry one, which is the whole reason
+    data/contract_years_2026_27.csv exists.
+    """
     scraped: dict = {}
+    blocked = None
     for i, abbr in enumerate(sorted(SLUG), 1):
         try:
             scraped[abbr] = team_money(abbr)
@@ -233,13 +322,36 @@ def main(write: bool) -> int:
         except Exception as e:
             print(f"  [{i:2d}/30] {abbr}  FAILED {type(e).__name__}: {str(e)[:60]}")
             scraped[abbr] = {}
+            # STOP on a client block instead of asking 29 more times. A 401,
+            # 403 or 429 is a statement about this CLIENT, not about one team
+            # page, so the other 29 will say the same thing -- which is
+            # exactly what happened on 2026-11-18, thirty 403s in a row. Worth
+            # short-circuiting for two reasons: it turns a 12-second detour
+            # into one request on every nightly for as long as the block
+            # lasts, and hammering a site that is already refusing us 30 times
+            # a night is how a block gets widened.
+            #
+            # The FIRST request still goes out every run, so the chain still
+            # self-heals the day the block lifts. That is the property worth
+            # keeping; the remaining 29 are not.
+            status = getattr(getattr(e, "response", None), "status_code", None)
+            if status in (401, 403, 429):
+                blocked = status
+                print(f"  HTTP {status} is a block on this client, not on {abbr}. "
+                      f"Not asking the other {30 - i} pages.")
+                break
         time.sleep(0.4)
 
-    failed = [a for a, v in scraped.items() if not v]
+    failed = [a for a in SLUG if not scraped.get(a)]
     if failed:
-        print(f"\nREFUSING: {len(failed)} team page(s) gave nothing: {failed}")
-        print("A partial scrape would silently turn those rosters into free agents.")
-        return 1
+        if blocked:
+            print(f"  Spotrac answered HTTP {blocked}. Treating the source as "
+                  f"unavailable rather than partial.")
+        else:
+            print(f"  {len(failed)} team page(s) gave nothing: "
+                  f"{failed[:8]}{' ...' if len(failed) > 8 else ''}")
+        print("  A partial scrape would silently turn those rosters into free agents.")
+        return None
 
     # ONE league-wide map, not thirty team-scoped ones. The CSV records the
     # team a player was on when it was compiled, and players move: the first
@@ -253,12 +365,198 @@ def main(write: bool) -> int:
             if key in league and league[key][0] == "active" and rec[0] != "active":
                 continue
             league[key] = rec
+    return league, {}
+
+
+def bref_league():
+    """(league, {key: option type}) from Basketball Reference, or None.
+
+    The SECOND source, added 2026-11-18 when Spotrac began answering 403 to
+    this machine on every path including robots.txt. scripts/bref_next_money.py
+    documents why this site and not one of the other three candidates, and what
+    the two sources disagree about. The short version of the difference:
+
+      * it carries its own OPTION TYPE, in a cell class, so the returned type
+        map is non-empty and overrides the CSV snapshot below. Verified current
+        rather than assumed: Nikola Topic, whose rookie option was declined on
+        2026-10-31, shows no 2027-28 money here, which is the post-decline
+        state. The CSV's own header claims this site "still show[s]
+        pre-2026-offseason deals" -- that was true when the CSV was compiled
+        and is not true now, which is why it is tested on every build instead
+        of believed.
+      * it has NO cap-hold rows, because it lists contracts. So it cannot
+        produce the `rfa` records Spotrac's "RFA / $X" cells produce, and the
+        caller fills those from the previous artifact rather than letting 21
+        players silently fall from the RFA chip to the UFA sentinel.
+      * it prices max contracts off its own salary-cap forecast, $179,280,000
+        against Spotrac's $178,157,880, so cap-percentage deals differ by
+        0.63%. Both are projections. Not corrected, documented.
+    """
+    try:
+        rows_by_name = bref_next_money.league_money(NEXT_LABEL)
+    except bref_next_money.SourceRefused as e:
+        print(f"  Basketball Reference refused: {e}")
+        return None
+    except Exception as e:
+        print(f"  Basketball Reference FAILED {type(e).__name__}: {str(e)[:70]}")
+        return None
+
+    league, types, split = {}, {}, []
+    for key, rows in rows_by_name.items():
+        # ONE PLAYER, SEVERAL TEAMS -- AND THE FIGURE IS A LEAGUE-WIDE TOTAL.
+        #
+        # This page lists a player once per team that still carries part of his
+        # money, and the year columns are IDENTICAL on every one of those rows
+        # because they are the SUM of what every team owes him that season.
+        # remain_gtd is the only team-specific cell, which is exactly why it is
+        # the only one that differs.
+        #
+        # Proved on the team pages rather than inferred. /contracts/POR.html
+        # has Damian Lillard at $14,104,000 for 2027-28 (salary-pl, guaranteed
+        # $13,398,800) and /contracts/MIL.html has him at a flat $22,516,603
+        # for four years (guaranteed $90,066,412, his stretched waiver). The
+        # league page's $36,620,603 is those two added together, to the dollar,
+        # and POR's figure matches the Spotrac artifact EXACTLY.
+        #
+        # So the aggregate must never be written. team_suitors.team_payroll
+        # sums next_contracts[player]["salary"] into the team that ROSTERS the
+        # player and compute_cap_space turns that into cap room and an apron
+        # tier -- so quoting $36,620,603 charges Milwaukee's dead money to
+        # Portland, and double-counts it, because that money is already
+        # carried in data/dead_money_2026_27.csv.
+        #
+        # DROPPED, not decomposed. The subtraction works on today's two cases
+        # and is an inference about a shape seen twice: it breaks on two
+        # overlapping stretches, a non-constant annuity, a new deal running
+        # past the dead money, or a trade mid-stretch. Dropping costs these
+        # players the gray sentinel, which is a wrong DISPLAY for one player;
+        # quoting the aggregate is a wrong NUMBER inside the cap engine. The
+        # supplement below is the documented way back, it reads after the
+        # scrape, it cannot override a live figure, and it demands a cited
+        # source -- and the per-team pages above are that citation.
+        if len(rows) > 1:
+            split.append((rows[0]["display"], [r["team"] for r in rows],
+                          rows[0]["salary"]))
+            continue
+        r = rows[0]
+        # BBRef spells three teams differently from this repo (BRK/CHO/PHO for
+        # BKN/CHA/PHX). Left raw, the `moved` report below would announce that
+        # every Net, Hornet and Sun had changed teams.
+        team = utils.resolve_team_code(r["team"], SLUG)
+        # Every row on this page is a real contractual obligation, so every
+        # row is "active". There is no dead-money or cap-hold table here to
+        # distinguish, which is also why there are no rfa records.
+        league[key] = ("active", team, r["display"], r["salary"], r["flag"])
+        if r["salary"] is not None:
+            types[key] = r["type"]
+
+    # A count far above today's six would mean this page's meaning changed, and
+    # the whole dropped set would silently become free agents. Refuse instead.
+    if len(split) > MAX_SPLIT_ROWS:
+        print(f"  {len(split)} players appear on more than one team page, over "
+              f"the {MAX_SPLIT_ROWS} ceiling. Either many players were waived "
+              f"and stretched at once, or this page no longer means what it "
+              f"did. Refusing rather than dropping that many.")
+        return None
+    if split:
+        # Two outcomes, and the operator needs to be told WHICH, because the
+        # action differs. A dropped row that carried an aggregate needs a
+        # supplement entry or the player renders as a UFA; a dropped row with
+        # no money on any team page is CORRECTLY absent, and adding a
+        # supplement row for it would invent money nobody owes. Saying "add to
+        # the supplement" for all of them, as the first version of this message
+        # did, sends the reader to invent three figures.
+        priced = [s for s in split if s[2] is not None]
+        unpriced = [s for s in split if s[2] is None]
+        print(f"  DROPPED, the league page quotes a LEAGUE-WIDE TOTAL for these "
+              f"({len(split)}): it sums every team still paying them, so quoting "
+              f"it would charge one team's dead money to another's cap.")
+        if priced:
+            # "CHECK", not "add a row". The aggregate says somebody is owed
+            # money, not that the team ROSTERING him is: Olivier-Maxence
+            # Prosper's whole $1,002,360 is DAL's dead-money team option while
+            # MEM, who rosters him, owes nothing in 2027-28, so the right
+            # answer for him is no supplement row at all -- and the
+            # Spotrac-built artifact has him absent too. Only the per-team
+            # pages can tell those two cases apart.
+            print(f"    CHECK /contracts/<TEAM>.html for each and add a "
+                  f"supplement row ONLY where the ROSTERING team owes the money "
+                  f"({len(priced)}; rows already in the supplement are filled "
+                  f"further down):")
+            for disp, teams, sal in priced:
+                print(f"       {disp}  {'/'.join(teams)}  aggregate ${sal:,.0f}")
+        if unpriced:
+            print(f"    no 2027-28 money on any of their rows, so correctly "
+                  f"absent and NOT supplement candidates ({len(unpriced)}):")
+            for disp, teams, _ in unpriced:
+                print(f"       {disp}  {'/'.join(teams)}")
+    return league, types
+
+
+# Order matters and is not arbitrary. Spotrac stays first because
+# data/contract_years_2026_27.csv was compiled from it and is keyed to its
+# spellings, so when Spotrac answers, the build is the one every committed
+# artifact so far was produced by. Basketball Reference is the fallback, and
+# the chain self-heals the day Spotrac stops blocking us without anyone
+# editing this file.
+# The third element is the floor under which a salary from THAT source is a
+# parse failure rather than a cheap contract. It differs because the two
+# parsers fail differently; the long version is at the tiny-salary check in
+# main(). Spotrac can silently truncate a figure, so its floor sits above the
+# truncations it produces. Basketball Reference cannot, so its floor is only a
+# backstop against a shape nobody anticipated.
+SOURCES = (("Spotrac /yearly/", spotrac_league, 500_000),
+           ("Basketball Reference /contracts/players.html", bref_league,
+            bref_next_money.MIN_PLAUSIBLE))
+
+
+def scrape_league():
+    """(league, option types, label, salary floor) from the first source that
+    answers.
+
+    (None, {}, None, default floor) when every source fails. A caller must not read an empty
+    league as "no player has money next season": that is what renders as a
+    league of free agents, which is the failure this whole file exists for.
+    """
+    for label, fn, floor in SOURCES:
+        print(f"source: {label}")
+        got = fn()
+        if got:
+            league, types = got
+            print(f"  OK, {len(league)} names from {label}")
+            return league, types, label, floor
+        print(f"  falling through to the next source\n")
+    return None, {}, None, NOTABLY_SMALL
+
+
+def main(write: bool) -> int:
+    # A missing CSV must stop the run, not fall back to another season's. The
+    # option TYPE comes from here; without it every team option and player
+    # option silently renders as plain guaranteed money, which is a different
+    # contract than the one the player actually has.
+    if not CSV.exists():
+        print(f"REFUSING: {CSV.relative_to(ROOT)} does not exist.")
+        print(f"The season rolled to {CUR_SEASON} and this file has to be compiled "
+              f"for it before Next $ can name option types. See docs/season_rollover.md.")
+        return 1
+    books = pd.read_csv(CSV, comment="#")
+    print(f"season {CUR_SEASON}, describing {NEXT_LABEL} money (CSV mark {MARK!r})")
+    print(f"{len(books)} players on the {CUR_SEASON} books, {books.team.nunique()} teams")
+    print(f"option type from the source where it carries one, else {CSV.name}\n")
+
+    league, src_types, source, min_plausible = scrape_league()
+    if league is None:
+        print("\nREFUSING: every source failed. The committed artifact stays as it "
+              "is, which is stale-but-present rather than a column of dashes.")
+        return 1
     ni = utils.NameIndex({k: k for k in league})
-    print(f"\n{len(league)} distinct names across all 30 pages "
-          f"({sum(1 for v in league.values() if v[0] == 'active')} on active rosters)")
+    print(f"\n{len(league)} distinct names from {source} "
+          f"({sum(1 for v in league.values() if v[0] == 'active')} on active rosters)"
+          + (f", {len(src_types)} carrying their own option type" if src_types else ""))
 
     contracts: dict = {}
     no_money, unmatched, disagree, skipped, moved, csv_missing = [], [], [], [], [], []
+    type_conflict: list = []        # the source and the CSV name different option types
 
     # Which players have 2027-28 money is decided by SPOTRAC, not by the CSV.
     # The CSV is a snapshot and it goes stale: it records Stephen Curry's deal
@@ -312,7 +610,23 @@ def main(write: bool) -> int:
             csv_missing.append((found_on, disp, salary))
         elif csv_team and csv_team != found_on:
             moved.append((csv_player, f"{csv_team} -> {found_on}", kind))
-        t = TYPE_OF.get(mark, "guaranteed")
+        # A SOURCE that carries the option type outranks the CSV, which is a
+        # SNAPSHOT. The CSV cannot see an option exercised or declined after it
+        # was compiled, and the 2026-10-31 rookie-option deadline is exactly
+        # the event it cannot see -- five declines, one of which had Nikola
+        # Topic advertised as owed $7.48M next season for a week.
+        #
+        # The CSV still earns its place twice over: it is the only source of a
+        # type when the source has none (every Spotrac build), and when both
+        # speak it is a CROSS-CHECK. Disagreements are REPORTED, never quietly
+        # resolved, because two readings of one contract is exactly the shape
+        # of a fact one of the two has wrong.
+        csv_t = TYPE_OF.get(mark, "guaranteed") if mark is not None else None
+        src_t = src_types.get(key)
+        if src_t and csv_t and src_t != csv_t:
+            type_conflict.append((csv_team or found_on, csv_player or disp,
+                                  f"csv {csv_t}", f"source {src_t}"))
+        t = src_t or csv_t or "guaranteed"
         contracts[normalize(csv_player or disp)] = {"salary": float(salary), "type": t}
 
     # Players the CSV has but no Spotrac page mentions at all. `unmatched` was
@@ -351,6 +665,53 @@ def main(write: bool) -> int:
             supplemented.append((str(srow["player"]), float(srow["salary"]),
                                  str(srow["type"]).strip()))
 
+    # ---- carry the RFA cap holds when the source cannot express them --------
+    # An `rfa` record carries NO money. It exists purely so the board shows the
+    # RFA chip instead of the gray sentinel, and the legend defines that
+    # sentinel as UFA -- so losing one does not corrupt a figure, it tells a
+    # visitor that a restricted free agent is unrestricted.
+    #
+    # Spotrac produces them from its "RFA / $15.1M" cap-hold cells. Basketball
+    # Reference lists CONTRACTS and has no cap-hold rows at all, so a build
+    # from that source produces none, and 21 of the 23 players who had the chip
+    # on 2026-11-17 would quietly lose it.
+    #
+    # So they are carried from the newest previous artifact -- but ONLY onto
+    # players the new source showed with NO money, and only where this build
+    # found nothing. A carried hold can therefore never contradict a live
+    # figure: if the source says a player is owed money, that wins, which is
+    # also how a hold correctly DISAPPEARS once the player signs. The two
+    # 2026-11-18 cases where the source disagreed with a standing hold (Daron
+    # Holmes II $5,547,138 and Tidjane Salaun $10,445,633, both read as team
+    # options) resolve to the live figure and are reported below.
+    #
+    # This is stale-beats-empty, the same rule every fetcher in this repo
+    # follows, and it is REPORTED rather than silent because a hold that
+    # outlives its signing is exactly the kind of wrong-but-plausible record
+    # this file refuses elsewhere.
+    carried_rfa = []
+    if not any(v["type"] == "rfa" for v in contracts.values()):
+        prev_rfa = _previous_rfa(utils.season_to_espn_year(CUR_SEASON))
+        for key, rec in sorted(prev_rfa.items()):
+            if key in contracts:
+                continue                     # this build has a real figure
+            hit = league.get(key)
+            if hit is None or hit[3] is not None:
+                # Not on the new source at all, or on it WITH money. Either
+                # way the hold is not something this build can vouch for.
+                continue
+            contracts[key] = dict(rec)
+            carried_rfa.append(key)
+        if carried_rfa:
+            print(f"\n  RFA cap holds carried forward ({len(carried_rfa)}): "
+                  f"{source} lists contracts, not cap holds, so these would "
+                  f"have fallen from the RFA chip to the UFA sentinel")
+            print("    " + ", ".join(carried_rfa[:10])
+                  + (" ..." if len(carried_rfa) > 10 else ""))
+        elif prev_rfa:
+            print(f"\n  note: {len(prev_rfa)} RFA holds in the previous artifact, "
+                  f"none carried (all now have a figure or left the league)")
+
     # ---- key the artifact by the spellings the READER will use -------------
     # utils.fmt_next_contract looks this dict up with a bare
     # normalize(board_name). The artifact is keyed by Spotrac's and the CSV's
@@ -372,9 +733,8 @@ def main(write: bool) -> int:
     # spellings.
     aliased = []
     try:
-        bpath = utils._rev_path(
-            f"raw_{CUR_SEASON.replace('-', '_')}_{utils.FORMULA_VERSION}.parquet")
-        if bpath.exists():
+        bpath = newest_board()
+        if bpath is not None and bpath.exists():
             idx = utils.NameIndex({k: k for k in contracts})
             for bn in pd.read_parquet(bpath, columns=["Player"])["Player"].astype(str):
                 k = normalize(bn)
@@ -386,7 +746,9 @@ def main(write: bool) -> int:
                     aliased.append((bn, hit, contracts[hit]["salary"],
                                     contracts[hit]["type"]))
         else:
-            print(f"  note: no board at {bpath.name}, skipping the alias pass")
+            print("  WARNING: no board parquet on disk at all, so the alias "
+                  "pass is skipped and every player whose board spelling "
+                  "differs from the source's renders as the UFA sentinel")
     except Exception as e:
         print(f"  note: alias pass skipped ({type(e).__name__}: {e})")
 
@@ -413,28 +775,57 @@ def main(write: bool) -> int:
     print(f"  genuine UFAs (no {MARK} season, render as the gray sentinel): "
           f"{sum(1 for _, r in books.iterrows() if MARK not in str(r.get('seasons') or ''))}")
     for label, rows in (("on a different team than the CSV records", moved),
-                        (f"Spotrac has money, the CSV has no {MARK} season", csv_missing),
+                        (f"the source has money, the CSV has no {MARK} season", csv_missing),
                         ("two-way, no salary to quote", skipped),
                         ("on the books but not found on the team page", unmatched),
                         ("found but no parsable money", no_money),
-                        ("THE TWO SOURCES DISAGREE", disagree)):
+                        ("THE TWO SOURCES DISAGREE", disagree),
+                        ("OPTION TYPE: the source overrode the CSV snapshot",
+                         type_conflict)):
         if rows:
             print(f"\n  {label}: {len(rows)}")
             for r in rows[:12]:
                 print("    ", "  ".join(str(x) for x in r))
 
     # A mis-parse does not look like an error, it looks like a cheap contract.
-    # The 2026-27 minimum is a bit over $1.2M and two-ways are excluded above,
-    # so anything under $500k here is a parsing failure wearing a salary.
-    tiny = sorted(((k, v["salary"]) for k, v in contracts.items()
-                   if v["type"] != "rfa" and v["salary"] < 500_000),
-                  key=lambda x: x[1])
+    # A mis-parse does not look like an error, it looks like a cheap contract,
+    # so a floor has to refuse rather than warn. But the RIGHT floor is a
+    # property of the PARSER, not of the money.
+    #
+    # Spotrac welds the cap percentage onto the figure ("$28,006,89815.9%"), so
+    # a pattern that stops early returns a FRACTION of the real salary: $28,006
+    # out of $28M, Jokic at $0.1M. Those are plausible-looking numbers well
+    # above any "impossible" threshold, which is why that path needs a floor as
+    # high as $500,000 -- above the truncations, below the league minimum.
+    #
+    # Basketball Reference writes plain money and bref_next_money._MONEY is
+    # ANCHORED to the whole cell, so there is no truncation path: a cell it
+    # does not fully understand yields None and a named flag, never a small
+    # number. Applying Spotrac's floor there refused the entire source on the
+    # first real page over Didi Louzada's $268,032 -- a STRETCHED WAIVER, real
+    # money, under the minimum because it is a fraction of a bought-out deal
+    # spread across three seasons.
+    #
+    # Before lowering a limit, what else was it bounding? Only the truncation
+    # class above, which the anchor already makes unreachable, and "a wrong
+    # figure the source itself published", which no floor can detect. So the
+    # floor moves with the source and everything under the league minimum is
+    # REPORTED either way, so a genuinely new shape is never silent.
+    small = sorted(((k, v["salary"]) for k, v in contracts.items()
+                    if v["type"] != "rfa" and v["salary"] < NOTABLY_SMALL),
+                   key=lambda x: x[1])
+    if small:
+        print(f"\n  under the league minimum ({len(small)}), reported so a new "
+              f"shape is never silent:")
+        for k, v in small[:12]:
+            print(f"     {k}  ${v:,.0f}"
+                  + ("   <- UNDER THIS SOURCE'S FLOOR" if v < min_plausible else ""))
+    tiny = [(k, v) for k, v in small if v < min_plausible]
     if tiny:
-        print(f"\n  IMPLAUSIBLY SMALL ({len(tiny)}), almost certainly mis-parsed:")
-        for k, v in tiny[:12]:
-            print(f"     {k}  ${v:,.0f}")
-        print("\nREFUSING: a mis-parsed salary is indistinguishable from a real "
-              "cheap contract once it reaches the column.")
+        print(f"\nREFUSING: {len(tiny)} salary(ies) under this source's "
+              f"${min_plausible:,} floor. A mis-parsed salary is "
+              f"indistinguishable from a real cheap contract once it reaches "
+              f"the column.")
         return 1
     paid = [v["salary"] for v in contracts.values() if v["type"] != "rfa"]
     lo, hi = min(paid), max(paid)
@@ -502,6 +893,13 @@ def main(write: bool) -> int:
                              if k not in _alias_keys)),
             "data_rev": utils.DATA_REV,
             "artifact": path.name,          # which file this stamp vouches for
+            # WHICH SOURCE produced it. There are two now, they price
+            # cap-percentage contracts off different cap forecasts, and the
+            # option type comes from a different place in each. Without this,
+            # a figure that moved between two nightly builds is indisting-
+            # uishable from a contract that actually changed.
+            "source": source,
+            "rfa_carried": len(carried_rfa),
         }
         stamp_path.write_text(json.dumps(stamp, indent=1, sort_keys=True) + "\n",
                               encoding="utf-8")
