@@ -3650,6 +3650,43 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
 UNAVAILABLE_PATH = Path(__file__).resolve().parent / "data" / "unavailable_players.csv"
 UNAVAILABLE_REASONS = ("retired", "g_league", "overseas", "nba_contract")
 
+# "UNAVAILABLE" ANSWERS "COULD A TEAM SIGN HIM TODAY". THAT IS NOT THE SAME
+# QUESTION AS "IS HE IN THE LEAGUE", and conflating the two gets a surface
+# wrong in one direction or the other.
+#
+# `nba_contract` is the odd reason out: a player on an NBA deal cannot be
+# signed, so a FREE AGENT board must exclude him, but he is very much in the
+# league and belongs anywhere the question is who could be drafted or rostered.
+# Every other reason means he is not in the NBA at all.
+#
+# scripts/build_redraft_pool.py had NO filter, so the Redraft board offered 38
+# men who are not in the league -- Russell Westbrook, Chris Paul, Kyle Lowry
+# and Garrett Temple all retired and all draftable at about $3.9M, plus 20
+# overseas and 14 in the G League. Copying build_fa_board's filter would have
+# fixed those and wrongly dropped the two who ARE on NBA contracts.
+IN_LEAGUE_UNAVAILABLE_REASONS = ("nba_contract",)
+# Derived, not retyped, so a NEW reason added to UNAVAILABLE_REASONS counts as
+# out-of-league until somebody classifies it. That is the safe default here:
+# wrongly omitting one fringe player costs a row, wrongly offering a retired
+# player as draftable is the bug this exists to prevent.
+OUT_OF_LEAGUE_REASONS = tuple(r for r in UNAVAILABLE_REASONS
+                              if r not in IN_LEAGUE_UNAVAILABLE_REASONS)
+
+
+def out_of_league_players(path: "Path | None" = None) -> dict:
+    """unavailable_players() restricted to men who are NOT IN THE NBA.
+
+    For the "who could be drafted or rostered" question. Use
+    unavailable_players() itself for "could a team sign him today", which is a
+    strictly larger set because it also excludes players under NBA contract.
+
+    Returns spellings, not normalized keys, for the same reason
+    unavailable_players does: every caller must join through NameIndex, because
+    an exact-key miss here fails OPEN and publishes a man who left the league.
+    """
+    return {n: v for n, v in unavailable_players(path).items()
+            if (v.get("reason") or "") in OUT_OF_LEAGUE_REASONS}
+
 
 def unavailable_players(path: "Path | None" = None) -> dict:
     """{spelling: {"reason", "since", "source", "note"}} for players who are not

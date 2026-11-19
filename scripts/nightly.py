@@ -27,6 +27,7 @@ shipping. The steps, in the order they depend on each other:
   5d SHARE META  rebuild the per-player SEO/share metadata every /?player=
                  landing page is titled and described from
   5e SPLITS      rebuild the per-stint artifact Splits View reads (non-fatal)
+  5f REDRAFT     rebuild the Redraft board's player pool (non-fatal)
 
   6 SHIP         stage exactly what changed, commit, push
 
@@ -613,6 +614,34 @@ def main() -> int:
                      if floor.exists() else ", WHICH DOES NOT EXIST")
                   + ". check_cache_seeding will refuse the commit.")
 
+    # ---- 5f REDRAFT POOL ------------------------------------------------
+    # cache/redraft_pool_v1.json is the whole-league pool the Redraft board
+    # drafts from. pages/Redraft.py reads it straight out of the repo, not
+    # through _dc_path, so what is committed is what production serves.
+    #
+    # IT WAS NOT IN THIS SCRIPT, the same gap as team_pages and the player hub
+    # before it. Found on 2026-11-19 last rebuilt 2026-10-20, a month old: it
+    # had none of that month's signings and still offered Russell Westbrook,
+    # Chris Paul, Kyle Lowry and Garrett Temple, all retired, as draftable at
+    # about $3.9M each. The missing out-of-league filter was one defect and is
+    # fixed in the builder; having no scheduled builder at all was the other,
+    # and a filter with nothing to run it just rots differently.
+    #
+    # Here rather than with team_pages because it is cheap and reads the
+    # PREVIOUS season's board (VALUE_SEASON), which tonight's refresh does not
+    # touch; it needs the current master_roster, which step 3 does not change.
+    #
+    # Non-fatal, like splits: it feeds one page, the committed pool stays
+    # valid if the build fails, and losing the whole refresh over one board
+    # would be worse. A failure is loud in the log and the artifact simply
+    # does not move.
+    try:
+        if not sh(["scripts/build_redraft_pool.py"], "redraft pool", check=False):
+            print("  WARNING: build_redraft_pool failed; the committed pool "
+                  "stays as it is and the Redraft board runs a night behind")
+    except Exception as e:
+        print(f"  WARNING: build_redraft_pool raised {type(e).__name__}: {e}")
+
     # ---- 6 SHIP --------------------------------------------------------
     paths = [str(f.relative_to(ROOT)) for f in new_files]
     # DERIVED from VERSIONED, not typed out again. This was a second hand-kept
@@ -625,7 +654,8 @@ def main() -> int:
     # A file this script edits is a file this script ships.
     paths += sorted({site for sites in VERSIONED.values() for site, _rx in sites})
     paths += ["data/provisional_box_scores.csv", "cache/team_pages.json",
-              "cache/player_hub_pcv_v2.json", "cache/share_meta.json"]
+              "cache/player_hub_pcv_v2.json", "cache/share_meta.json",
+              "cache/redraft_pool_v1.json"]
     # Only if it exists: step 5e is non-fatal, so a night the stats API was
     # down has no new splits file and `git add` on a missing path fails the
     # whole commit. The un-revisioned floor file is staged too, for the one
