@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-18",
+"built_at": "2026-11-19",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3779,6 +3779,14 @@
 "high_M": 10.1,
 "is_max": false,
 "max_pct": 0.25
+},
+"caris levert": {
+"player": "Caris LeVert",
+"pcv_M": 5.7,
+"low_M": 1.0,
+"high_M": 10.5,
+"is_max": false,
+"max_pct": 0.35
 }
 },
 "contract_end": {
