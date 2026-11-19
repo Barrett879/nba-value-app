@@ -20,6 +20,7 @@ from utils import (
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
     theme_fig, html_table, render_rail,
     render_barrett_score_explainer, _bootstrap_warm,
+    verified_as_of as _utils_verified_as_of
 )
 
 logger = logging.getLogger(__name__)
@@ -154,46 +155,17 @@ except Exception:
 
 
 def _offseason_as_of() -> str:
-    """Freshness stamp for the hand-maintained OFFSEASON records: the newest
-    "# Verified <date>" leading comment, falling back to file mtime. Same idea
-    as team_suitors._read_as_of, and the same whole-block scan as app.py's
-    copy, because a file's per-round "Re-verified" lines are not in date order
-    and stopping at the first match would publish the oldest round.
+    """When the OFFSEASON records were last verified, via utils.verified_as_of.
 
-    master_roster was dropped from this list on 2026-11-19. This caption claims
-    "signings and option decisions", which are pre-opener facts and final once
-    the season starts; the roster keeps moving all season, so letting it drive
-    this date asserted a re-check of signings and options that nobody did. The
-    roster's own freshness is published separately on the home page, so it
-    still cannot go stale unnoticed. See app.py's _verified_as_of."""
-    best = None
-    for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv"):
-        _p = _Path(__file__).parent.parent / "data" / _fn
-        d = None
-        try:
-            with open(_p) as _vfh:
-                for _line in _vfh:
-                    if not _line.lstrip().startswith("#"):
-                        break
-                    if "verified" in _line.lower():
-                        _m = re.search(r"(\d{4}-\d{2}-\d{2})", _line)
-                        if _m:
-                            try:
-                                _d1 = datetime.date.fromisoformat(_m.group(1))
-                            except ValueError:
-                                continue
-                            if d is None or _d1 > d:
-                                d = _d1
-        except OSError:
-            continue
-        if d is None:
-            try:
-                d = datetime.date.fromtimestamp(_p.stat().st_mtime)
-            except OSError:
-                continue
-        if best is None or d > best:
-            best = d
-    return f"{best.strftime('%B')} {best.day}, {best.year}" if best else ""
+    This caption claims "signings and option decisions", which are pre-opener
+    facts and final once the season starts. master_roster was dropped from the
+    group on 2026-11-19 because it keeps moving all season, so letting it drive
+    this date asserted a re-check of signings and options that nobody did; the
+    roster's own freshness is published on the home page, so it still cannot go
+    stale unnoticed. The scan itself used to be a third copy of app.py's.
+    """
+    return _utils_verified_as_of("offseason")
+
 
 def _signing_status(name: str) -> str:
     """FA status to show for a tracked 2026 signing the salary feed would otherwise drop."""

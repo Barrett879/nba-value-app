@@ -1,4 +1,10 @@
 # HoopsValue -- 2026-27 dead money, verified team by team.
+# Verified 2026-10-19 (the newest per-row asof below; this file records its
+# dates per ROW, so utils.verified_as_of could not date it from a comment
+# and would have fallen back to the file mtime -- which on this machine
+# iCloud re-materialisation can make look fresh, OVERSTATING how current
+# the Trade Machine's cap data is. Keep this line in step with the newest
+# asof whenever a row is added.
 #
 # Salary a team still owes players who are not on its roster: buyouts, waivers,
 # stretched contracts, and partial guarantees left behind in trades. It counts

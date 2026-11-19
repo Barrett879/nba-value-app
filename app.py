@@ -36,6 +36,7 @@ from utils import (
     render_theme_toggle,
     COMMON_CSS, render_nav, TEAM_HEX, HV_KIT_CSS,
     render_barrett_score_explainer,
+    verified_as_of
 )
 
 logger = logging.getLogger(__name__)
@@ -775,81 +776,22 @@ def _hub_salary_supplement() -> dict:
 
 
 # The offseason RECORDS and the league-wide ROSTER are verified on different
-# clocks, and conflating them is how the caption came to overclaim.
-#
-# The offseason files describe things that happened before the opener: who
-# signed, which options were exercised, what the supplemented salaries were.
-# Those facts are FINAL once the season starts, so 2026-10-19 is not a stale
-# date for them, it is the correct and permanent one.
-#
-# master_roster keeps moving all season: trades, waivers, 10-days and two-way
-# slots that turn over every few days. On 2026-11-19 a sweep of all 30
-# Basketball Reference team pages found seven rows with a stale TEAM, six of
-# them labelled free_agent while the player was under contract and playing.
-#
-# They had ONE shared stamp, so a roster round moved a caption that claims
-# "offseason signings, options and salaries verified as of <date>" -- asserting
-# a re-check of 131 signings and 45 option decisions that nobody performed.
-# Two stamps, two claims, each true.
-_OFFSEASON_FILES = ("real_signings_2026.csv", "option_decisions_2026.csv",
-                    "salary_supplement_2026_27.csv")
-_ROSTER_FILES = ("master_roster.csv",)
-
-
-def _verified_as_of(_files) -> str:
-    """Newest "# Verified <date>" leading comment across `_files`, falling back
-    to file mtime. Same approach as Free_Agent_Class's _offseason_as_of /
-    team_suitors._read_as_of.
-
-    EVERY dated line in the leading block is read, not only the first, because
-    master_roster gains one "Re-verified" line per round and they are not in
-    date order: stopping at the first match would publish the OLDEST round.
-
-    master_roster used to be folded in here so that "a round that updates it
-    cannot leave the public stamp behind, which is how this went two rounds
-    stale." That hazard is real and is still covered -- it now has its own
-    visible stamp via _roster_as_of, so a roster round still cannot go stale
-    unnoticed. Do not quietly fold it back into the offseason list: that would
-    restore the overclaim without fixing anything."""
-    best = None
-    for _fn in _files:
-        _p = Path(__file__).parent / "data" / _fn
-        d = None
-        try:
-            with open(_p) as _vfh:
-                for _line in _vfh:
-                    if not _line.lstrip().startswith("#"):
-                        break
-                    if "verified" in _line.lower():
-                        _m = re.search(r"(\d{4}-\d{2}-\d{2})", _line)
-                        if _m:
-                            try:
-                                _d1 = datetime.date.fromisoformat(_m.group(1))
-                            except ValueError:
-                                continue
-                            if d is None or _d1 > d:
-                                d = _d1
-        except OSError:
-            continue
-        if d is None:
-            try:
-                d = datetime.date.fromtimestamp(_p.stat().st_mtime)
-            except OSError:
-                continue
-        if best is None or d > best:
-            best = d
-    return f"{best.strftime('%B')} {best.day}, {best.year}" if best else ""
-
-
+# clocks, and conflating them is how this caption came to overclaim: one shared
+# stamp meant a roster round moved a line asserting that 131 signings and 45
+# option decisions had been re-checked. The grouping, the two-level
+# newest-within-a-file / oldest-across-the-group rule and the reason there is
+# no mtime fallback all live in utils.verified_as_of now, so the Trade Machine
+# and Rosters can make the same kind of claim about the CAP files without a
+# fourth copy of this scan. There were three.
 def _offseason_as_of() -> str:
     """When the pre-opener records were last verified. Final once the season
     starts, so this date is not expected to move again."""
-    return _verified_as_of(_OFFSEASON_FILES)
+    return verified_as_of("offseason")
 
 
 def _roster_as_of() -> str:
     """When the league-wide roster was last swept. Moves all season."""
-    return _verified_as_of(_ROSTER_FILES)
+    return verified_as_of("roster")
 
 
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",

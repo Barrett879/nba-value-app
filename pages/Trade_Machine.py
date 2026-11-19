@@ -21,6 +21,7 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 
+from utils import verified_as_of as _verified_as_of
 from utils import (NameIndex, SEASONS, TEAM_CONFERENCE, TEAM_HEX, TEAM_HEX_2,
                    _headshot_id_map, fetch_dlebron, normalize, render_nav,
                    render_page_chrome, script_json, _bootstrap_warm)
@@ -351,3 +352,19 @@ st.caption(
     + (f" Scores and values rebuilt {_meta['built_at']}."
        if _meta.get("built_at") else "")
 )
+
+# Freshness stamp for the hand-maintained CAP files this page runs on, as
+# distinct from the roster. They move on different clocks and the cap group is
+# the stalest data on the site: utils.verified_as_of("cap") reports the OLDEST
+# of hard_caps, trade_exceptions, dead_money and the pick ledger, because a cap
+# tool is only as fresh as its weakest input. On 2026-11-19 that was four
+# months old and no surface said so.
+_cap_of = _verified_as_of("cap")
+_ros_of = _verified_as_of("roster")
+_fresh = []
+if _cap_of:
+    _fresh.append(f"Cap sheet, exceptions, dead money and picks verified as of {_cap_of}.")
+if _ros_of:
+    _fresh.append(f"Rosters re-verified {_ros_of}.")
+if _fresh:
+    st.caption(" ".join(_fresh))

@@ -24,6 +24,7 @@ import re
 import streamlit as st
 import streamlit.components.v1 as components
 
+from utils import verified_as_of as _verified_as_of
 from utils import (BLEND_MIN_MINUTES, NameIndex, NBA_DIVISIONS, SEASONS, TEAM_CONFERENCE,
                    TEAM_HEX, TEAM_HEX_2,
                    _headshot_id_map, fetch_dlebron, fetch_injuries, injury_is_out,
@@ -687,5 +688,20 @@ st.markdown(
     "</style>"
     f'<div class="rw-grid">{_cards}</div>',
     unsafe_allow_html=True)
+
+render_footer()
+# Freshness stamp. This page's spine IS data/master_roster.csv, so the roster
+# date is the one that matters most here; the cap figures it also shows (dead
+# money, hard caps, exceptions, picks) are verified on a separate and older
+# clock, so they get their own clause rather than borrowing the roster's.
+_ros_of = _verified_as_of("roster")
+_cap_of = _verified_as_of("cap")
+_fresh = []
+if _ros_of:
+    _fresh.append(f"Rosters re-verified {_ros_of}.")
+if _cap_of:
+    _fresh.append(f"Cap sheet, exceptions, dead money and picks verified as of {_cap_of}.")
+if _fresh:
+    st.caption(" ".join(_fresh))
 
 render_footer()

@@ -307,4 +307,11 @@ if drill_team:
 
 
 from utils import render_footer
+from utils import verified_as_of as _verified_as_of
+# Freshness stamp for the roster this page reads. It does not claim anything
+# about the board's own numbers, which the nightly refresh rebuilds.
+_ros_of = _verified_as_of("roster")
+if _ros_of:
+    st.caption(f"Rosters re-verified {_ros_of}.")
+
 render_footer()

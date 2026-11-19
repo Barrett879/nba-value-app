@@ -613,6 +613,92 @@ def two_way_players() -> tuple:
     return tuple(out)
 
 
+# ── Freshness stamps for the hand-maintained data files ──────────────────
+# THREE GROUPS, BECAUSE THEY ARE VERIFIED ON THREE DIFFERENT CLOCKS. One date
+# for all of them is how the home-page caption came to claim a re-check of 131
+# signings and 45 option decisions that nobody performed; see app.py's
+# _verified_as_of for that story.
+#
+#   offseason  pre-opener facts: who signed, which options were exercised,
+#              which salaries were supplemented. FINAL once the season starts,
+#              so 2026-10-19 is not a stale date for these, it is permanent.
+#   roster     who is on which team and on what kind of contract. Moves all
+#              season: trades, waivers, 10-days, two-way slots that turn over
+#              every few days.
+#   cap        the scaffolding the Trade Machine runs on. On 2026-11-19 its
+#              OLDEST input was four months old (hard caps and the pick ledger,
+#              2026-07-27) and no surface said so.
+VERIFIED_GROUPS: dict[str, tuple] = {
+    "offseason": ("real_signings_2026.csv", "option_decisions_2026.csv",
+                  "salary_supplement_2026_27.csv"),
+    "roster": ("master_roster.csv",),
+    "cap": ("hard_caps_2026_27.csv", "trade_exceptions_2026_27.csv",
+            "dead_money_2026_27.csv", "pick_ledger.csv"),
+}
+
+
+@lru_cache(maxsize=None)
+def verified_as_of(group: str, pick: str = "oldest") -> str:
+    """"<Month> <D>, <YYYY>" for a VERIFIED_GROUPS key, or "" if undatable.
+
+    TWO LEVELS, and they go opposite ways on purpose:
+
+      WITHIN a file, the NEWEST dated comment wins. master_roster gains one
+      "Re-verified" line per round and they are NOT in date order, so stopping
+      at the first match would publish the oldest round.
+      ACROSS the files of a group, the OLDEST wins by default, because a tool
+      is only as fresh as its stalest input. Taking the newest would let
+      dead_money's 2026-10-19 speak for hard caps last checked on 2026-07-27,
+      which is the same overclaim one level up.
+
+    ONLY COMMENT LINES ARE READ, and only those naming "verified" or "as_of".
+    Scanning the whole file picks up DATA: trade_exceptions_2026_27.csv carries
+    expiry dates, one of them in 2027, so a naive scan dated that file to the
+    future.
+
+    THERE IS NO MTIME FALLBACK. An undated file contributes nothing and is
+    logged. mtime looks authoritative and is not: iCloud re-materialisation
+    rewrites it on this machine, so a file nobody has checked since July can
+    report today. No date is better than a wrong one that reads fresher.
+    """
+    import re as _re
+    files = VERIFIED_GROUPS.get(group)
+    if not files:
+        logger.warning("verified_as_of: unknown group %r", group)
+        return ""
+    dates, undated = [], []
+    for fn in files:
+        newest = None
+        try:
+            with open(Path(__file__).resolve().parent / "data" / fn,
+                      encoding="utf-8") as fh:
+                for line in fh:
+                    if not line.lstrip().startswith("#"):
+                        break                     # the comment block is over
+                    if "verified" not in line.lower() and "as_of" not in line.lower():
+                        continue
+                    m = _re.search(r"(\d{4}-\d{2}-\d{2})", line)
+                    if not m:
+                        continue
+                    try:
+                        d = _dt.date.fromisoformat(m.group(1))
+                    except ValueError:
+                        continue
+                    if newest is None or d > newest:
+                        newest = d
+        except OSError:
+            undated.append(fn)
+            continue
+        (dates.append(newest) if newest else undated.append(fn))
+    if undated:
+        logger.warning("verified_as_of(%r): no dated comment in %s, so they are "
+                       "excluded from the stamp", group, ", ".join(undated))
+    if not dates:
+        return ""
+    d = min(dates) if pick == "oldest" else max(dates)
+    return f"{d.strftime('%B')} {d.day}, {d.year}"
+
+
 SALARY_SUPPLEMENT: dict[str, dict[str, float]] = {
     # ── Current-season fill-ins ────────────────────────────────────────────
     # Players who played real minutes but are absent from the ESPN salary feed
