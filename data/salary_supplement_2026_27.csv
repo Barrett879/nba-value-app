@@ -1,9 +1,15 @@
 # Verified 2026-27 salaries for players the scraped next-year feed omits.
+# Verified 2026-11-19. All 4 rows re-checked against the 30 saved Basketball
+# Reference team pages at cell level AND a live second source; all 4 stand
+# UNCHANGED: Donte DiVincenzo $12,535,000, Ryan Nembhard $2,150,917, Jamal Cain
+# $2,584,539, Amari Williams $678,882. The header claim that E.J. Liddell has no
+# 2026-27 standard contract also still holds: he appears on exactly one of the 30
+# pages and that row is class="partial_table", BBRef's dead-money marker.
+# An orphaned sentence fragment was removed from this header in the same round.
 # Verified 2026-10-19 via adversarial web-search rounds (Spotrac / HoopsRumors /
 # RealGM / NBA transaction log). Every row re-checked against master_roster on
 # 2026-10-07; that check corrected the stale Nembhard note below. Re-checked 2026-10-19
 # against the final-cut wave: all four rows still stand, none of these players moved.
-# RealGM / NBA transaction log); update or remove rows if deals change.
 # Verified to have NO 2026-27 NBA standard contract (the board's dash is
 # correct, do not add rows): E.J. Liddell (QO declined, signed 2yr with Aris
 # B.C. Greece). Formerly listed here but since signed: Jett Howard (DAL two-way

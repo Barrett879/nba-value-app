@@ -1,3 +1,20 @@
+# Verified 2026-11-19. All 43 rows re-checked against the per-player payroll notes
+# on the 30 saved Basketball Reference team pages. 0 rows contradicted on
+# direction. 22 rows (all 14 to_in and all 8 po_in) carry a dated explicit option
+# event. Two DUPLICATE rows removed, 45 -> 43: Trendon Watford appeared twice
+# identically, and Jalen Pickett twice with DIFFERENT figures ($2.4M and $2.41M);
+# utils.NameIndex keeps the FIRST value while app.py's plain dict keeps the LAST,
+# so a duplicate here can make two surfaces disagree. figure_M corrected against
+# each row's own note for Dominick Barlow (3.42), Neemias Queta (2.67) and Jordan
+# Walsh (2.41); nine stale notes rewritten.
+#
+# WHAT THIS DATE DOES NOT CLAIM: 18 of the opt-out rows remain DERIVED rather
+# than independently sourced, exactly as the note below describes, because BBRef
+# states an EXERCISED option explicitly (114 such notes) but a DECLINED one only
+# once in 566 notes (OKC, Nikola Topic). An opt-out is still inferred from the
+# player having signed elsewhere. Also: no 2026-27 option resolution has happened
+# since 2026-10-19 (they all resolved in June 2026), so this date means
+# RE-CHECKED, not newly resolved.
 # Verified 2026-10-19 (option outcomes re-checked each verification round).
 # 10/19: Kevin Porter Jr., who opted IN, was waived at the roster deadline. A waiver does
 # not undo the decision and MIL still pays it, but it does put him back on the market.
@@ -34,14 +51,14 @@ Mouhamed Gueye,to_in,2.41,Atlanta exercised his $2.41M team option for 2026-27
 Karlo Matkovic,to_in,2.3,New Orleans exercised his $2.3M team option for 2026-27
 Craig Porter Jr.,to_in,2.41,Cleveland exercised his $2.41M team option for 2026-27
 Trayce Jackson-Davis,to_in,2.41,Toronto exercised his $2.41M team option for 2026-27
-D'Angelo Russell,po_in,6.0,exercised his ~$6.0M player option to stay in Washington
+D'Angelo Russell,po_in,5.97,"exercised his $5,969,250 player option to stay in Washington; reported variously as $5.96M/$5.97M and it is NOT a round $6.0M. Traded to MEM 7/8/26 and waived 9/25/26: the waiver does not undo the exercise and MEM still pays it. Signed with the Shanghai Sharks (CBA) 10/17/26, so unavailable_players.csv governs his availability. re-verified 2026-11-19"
 Kentavious Caldwell-Pope,po_in,21.6,exercised his $21.6M player option to stay with Memphis
 Taurean Prince,po_in,3.82,exercised his $3.82M player option to stay with Milwaukee
 Jericho Sims,po_in,2.8,exercised his $2.8M player option to stay with Milwaukee
 Brook Lopez,to_in,9.19,LA Clippers exercised his $9.19M team option for 2026-27
-Dominick Barlow,to_in,3.4,Philadelphia exercised his $3.42M team option for 2026-27
-Neemias Queta,to_in,2.7,Boston exercised his $2.67M team option for 2026-27
-Jordan Walsh,to_in,2.4,Boston exercised his $2.41M team option for 2026-27
+Dominick Barlow,to_in,3.42,Philadelphia exercised his $3.42M team option for 2026-27
+Neemias Queta,to_in,2.67,Boston exercised his $2.67M team option for 2026-27
+Jordan Walsh,to_in,2.41,Boston exercised his $2.41M team option for 2026-27
 Micah Potter,to_in,2.8,Indiana exercised his $2.8M team option for 2026-27
 Leonard Miller,to_in,2.4,Chicago exercised his $2.4M team option for 2026-27
 Daniss Jenkins,to_in,4.0,Detroit exercised his $4M team option for 2026-27
@@ -50,19 +67,17 @@ Andrew Wiggins,po_in,30.2,opted into his $30.2M player option then added a 2yr e
 Zach LaVine,po_in,49.0,exercised his $49M player option to stay with Sacramento
 Draymond Green,po_out,27.7,declined his $27.7M player option (Golden State) to enter free agency
 Gary Trent Jr.,po_out,3.9,declined his $3.9M player option (Milwaukee) to enter free agency
-James Harden,po_out,42.3,declined his $42.3M player option (Cleveland) to negotiate a new deal; re-signed CLE 8/20/26 (3yr $97M)
-Kevon Looney,to_out,8.0,New Orleans declined his $8M team option -> unrestricted free agent
-Nicolas Batum,to_out,5.9,LA Clippers declined his $5.88M team option -> unrestricted free agent
-Kenrich Williams,to_out,7.2,Oklahoma City declined his $7.16M team option -> unrestricted free agent
-Trendon Watford,to_out,2.8,Philadelphia declined his $2.8M team option -> unrestricted free agent
-Jalen Pickett,to_out,2.4,Denver declined his $2.41M team option -> unrestricted free agent
-Julian Phillips,to_out,2.4,Minnesota declined his $2.41M team option -> unrestricted free agent
+James Harden,po_out,42.3,"declined his $42.3M player option (Cleveland) to negotiate a new deal; agreed 8/20/26 and OFFICIALLY signed 9/8/26 (3yr/$96.54M, 2028-29 player option). re-verified 2026-11-19"
+Kevon Looney,to_out,8.0,New Orleans declined his $8M team option; signed LAL 7/12/26 on a 1yr vet min. re-verified 2026-11-19 (the old '-> unrestricted free agent' tail was stale)
+Nicolas Batum,to_out,5.9,"LA Clippers declined his $5,881,680 team option 6/29/26 (BBRef still shows the year as an unexercised team option with $0 remaining guaranteed). He never signed again: RETIRED 2026-09-21 after 18 seasons, so unavailable_players.csv governs his availability, not this file. re-verified 2026-11-19"
+Kenrich Williams,to_out,7.2,Oklahoma City declined his $7.16M team option 6/29/26; re-signed OKC 7/6/26 (1yr/$5M). re-verified 2026-11-19
+Julian Phillips,to_out,2.41,Minnesota declined his $2.41M team option; signed a HOU two-way 10/19/26. re-verified 2026-11-19
 Andre Jackson Jr.,to_out,2.4,Milwaukee declined his $2.41M team option -> unrestricted free agent
-Jonathan Mogbo,to_out,2.3,Toronto declined his $2.3M team option -> unrestricted free agent (verified; prior note wrongly said Sacramento)
-Ziaire Williams,to_out,6.25,Brooklyn declined his $6.25M team option -> unrestricted free agent
+Jonathan Mogbo,to_out,2.3,"TORONTO declined his $2.3M team option; an earlier note wrongly said Sacramento declined it. He then signed a 2yr SAC two-way 7/2/26, so SAC is his team but not the team that held the option. re-verified 2026-11-19"
+Ziaire Williams,to_out,6.25,Brooklyn declined his $6.25M team option; signed LAL 7/19/26 on a 1yr vet min. re-verified 2026-11-19
 Kobe Sanders,to_out,2.2,LA Clippers declined his $2.2M team option then re-signed him 4yr/$11.2M
 Bogdan Bogdanović,to_out,16.0,LA Clippers declined his $16M team option; signed 1yr vet-min with Houston
-Jonathan Kuminga,to_out,24.3,Atlanta declined his $24.3M team option after the February trade from Golden State (with Hield for Porzingis); UNRESTRICTED FA (not RFA - ATL keeps Bird rights for a possible S&T); still unsigned 8/23
+Jonathan Kuminga,to_out,24.3,"Atlanta declined his $24.3M team option after the February trade from Golden State (with Hield for Porzingis). UNRESTRICTED free agent, not RFA; ATL kept Bird rights for a possible sign-and-trade. Signed MIN 8/26/26, 2yr/$12.4M with a 2027-28 player option. re-verified 2026-11-19"
 Bradley Beal,po_out,5.62,declined his $5.62M player option with the Clippers 6/29; re-signed LAC 8/13 (2yr $13.2M via Non-Bird)
 Trendon Watford,to_out,2.8,Philadelphia declined his $2.8M team option; signed NOP 8/17 (1yr vet min)
 Jalen Pickett,to_out,2.41,Denver declined his $2.41M team option 6/29; no qualifying offer; signed LAC two-way 8/12

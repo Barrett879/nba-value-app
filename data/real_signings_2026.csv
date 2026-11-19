@@ -16,6 +16,29 @@
 #   note        = free text
 #
 # Add a row each time a real signing is reported. Lines starting with # are ignored.
+# Verified 2026-11-19. Re-verification round: all 131 rows re-checked against the
+# 30 Basketball Reference /contracts/<TEAM>.html pages (per-player payroll notes,
+# not a flattened blob) plus live sources. 94 corroborated, 8 rows CORRECTED:
+#   DeAndre Jordan  1yr/$3.88M -> 2yr/$7.95M (master_roster already said 2yr)
+#   Khalifa Diop    total_M was carrying the FIRST-YEAR salary, 1.358 -> 9.26
+#   Mohamed Diawara 4yr/$11.28M yr1 2.6 were KOBE SANDERS' contract -> 10.0 / 2.23
+#   Kennard, Smart  yr1_M 'est' 6.3 -> the actual $6,064,000 taxpayer MLE
+#   Jose Alvarado   yr1_M 4.3 -> 4.5
+#   Isaac, Crawford notes only, to stop a future round 'fixing' correct rows
+#
+# WHAT THIS DATE DOES NOT CLAIM, stated because the home page publishes it:
+#  * Jose Alvarado's total_M stays 14.0 and is UNRESOLVED: reporting splits
+#    between 'more than $14M' (ESPN) and 'close to $15M' (Haynes/Popper).
+#  * Isaiah Crawford's row DELIBERATELY disagrees with BBRef's filed 2yr/$5.11M.
+#    This file records the deal AS REPORTED, because the model is scored on a
+#    prediction made before the signing. Do not 'correct' it.
+#  * Scope is still OFFSEASON. Deals signed after the 2026-10-20 opener (Plumlee
+#    SAC 11-11, Orlando Robinson CHI 11-13) are IN-SEASON and deliberately absent;
+#    a post-opener signing is not an offseason signing.
+#  * 23 rows are TWO-WAY deals. 10 reach scripts/compare_signings.py, where a
+#    $678,882 league-scale figure passes both accuracy tests automatically and
+#    lifts the within-$4M rate by ~2.2pp. That is an accuracy-REPORTING issue,
+#    not a verification gap, and it contradicts the 2026-10-19 note below.
 # Verified 2026-10-19 (deals through October 19, 2026; adversarial web-search rounds:
 # every row below confirmed by 2+ independent sources - HoopsRumors/ESPN/RealGM/
 # Spotrac/NBA.com transaction log/team releases).
@@ -28,8 +51,8 @@ Austin Reaves,LAL,4,180,41.24,resign,2026-07,SalarySwish ($41;240;250) / ESPN / 
 Coby White,CHA,3,74,26.81,resign,2026-07,SalarySwish + Spotrac (2026-27 base $26;811;593; 3yr/$74M fu,corrected via Spotrac verify: Deal is FRONT-LOADED (descending ~8%/yr); not ascending. The $23.5M recorded ass
 Mark Williams,PHX,3,38,12.1,rfa,2026-06,ESPN,3yr/$38M RFA re-sign with Phoenix (fully guaranteed)
 Al Horford,GSW,2,14,6.8,resign,2026-06,ESPN,2yr/$14M re-sign with Golden State (yr2 structure disputed: option vs guaranteed)
-Mohamed Diawara,NYK,4,11.28,2.6,resign,2026-07,Spotrac (id 99263); Hoops Rumors 'Knicks; Mohamed Diawara Fi,corrected via Spotrac verify: Recorded as 2yr/$3.6M with yr1 $1.8M; but Diawara signed a 4-year; $11;278;738 s
-Jose Alvarado,NYK,3,14,4.3,resign,2026-06,ESPN,3yr/$14M re-sign (declined $4.5M option); yr1 ~$4.293M per report
+Mohamed Diawara,NYK,4,10.0,2.23,resign,2026-07,Spotrac (id 99263); Hoops Rumors 'Knicks; Mohamed Diawara Fi,"4yr/$10,000,000, 2026-27 base $2,232,143. re-verified 2026-11-19: BBRef /contracts/NYK.html note 'Signed 4-yr/$10M contract July 6, 2026'. The old 11.28/2.6 were KOBE SANDERS' Clippers contract (4yr/$11M, $2,622,139), duplicated onto this row by the cited aggregator; master_roster carried the same wrong 2.62 and is corrected too."
+Jose Alvarado,NYK,3,14,4.5,resign,2026-06,ESPN,"3yr re-sign, 2026-27 base $4,500,000. yr1_M corrected 4.3 -> 4.5. total_M LEFT at 14.0: reporting split between 'more than $14M' (ESPN/Shams 2026-06-26) and 'close to $15M' (Haynes, Popper), so the total is genuinely unresolved and is NOT being moved to BBRef's $15M. re-verified 2026-11-19"
 Day'Ron Sharpe,BKN,2,20,9.8,resign,2026-06,ESPN,2yr/$20M re-sign (declined $6.25M option; yr2 team option); yr1 est
 Josh Minott,BKN,2,9,4.4,resign,2026-06,ESPN,2yr/$9M re-sign (yr2 team option); yr1 est
 Ron Harper Jr.,BOS,4,13.7,3.15,resign,2026-07,SalarySwish (4yr/$13;704;229; 2026-27 base $3;150;752); Hoop,corrected via Spotrac verify: Record reflects the SUPERSEDED initial report (3yr/$9M). Boston declined his $2.
@@ -46,7 +69,7 @@ Simone Fontecchio,MIA,1,2.63,2.63,resign,2026-07,Sportando / Yahoo / Hoops Rumor
 Keon Ellis,BKN,2,18,8.8,ufa,2026-06,ESPN,2yr/$18M with Brooklyn (mutual option fully guarantees); yr1 est
 Ousmane Dieng,MIL,3,17.5,5.6,resign,2026-06,ESPN,3yr/$17.5M re-sign with Milwaukee (yr3 team option; declined QO); yr1 est
 Zach Collins,CHI,2,17,8.3,resign,2026-06,ESPN,2yr/$17M to stay in Chicago; yr1 est
-Luke Kennard,PHX,2,13,6.3,ufa,2026-06,ESPN,2yr/$13M with Phoenix (yr2 player option); yr1 est
+Luke Kennard,PHX,2,13,6.06,ufa,2026-06,ESPN,"2yr/$13M with a 2027-28 player option (ESPN/Shams 2026-06-30, AP). total_M STANDS at the reported 13.0 and must not be moved to BBRef's $12M. yr1_M corrected from an 'est' 6.3 to the actual $6,064,000, the full taxpayer MLE. re-verified 2026-11-19"
 Precious Achiuwa,SAC,2,11.23,5.48,resign,2026-07,SalarySwish ($5;477;000 for 2026-27) / NBA.com (2yr deal),corrected via Spotrac verify: Marginal overage: actual 2026-27 first-year salary is $5;477;000 ($5.48M) on a 2
 Tim Hardaway Jr.,MIA,1,6.5,6.5,ufa,2026-06,ESPN,1yr/$6.5M with Miami (from Denver)
 Bones Hyland,MIN,1,2.7,2.7,ufa,2026-07,Hoops Rumors / Star Tribune / Canis Hoopus: one-year veteran,corrected via Spotrac verify: Years and total are wrong: recorded as 2yr/$5M; but the actual deal is a ONE-yea
@@ -58,7 +81,7 @@ Quentin Grimes,LAL,4,60,14.0,ufa,2026-07,ESPN,4yr/$60M with the Lakers (yr4 play
 Dean Wade,PHI,4,39,9.1,ufa,2026-06,ESPN,4yr/$39M with Philadelphia (yr4 partial guarantee); yr1 est
 Collin Sexton,LAL,2,19,9.3,ufa,2026-07,ESPN,2yr/$19M with the Lakers (yr2 player option); yr1 est
 Sandro Mamukelashvili,LAL,4,52,13,ufa,2026-07,NBA.com / Silver Screen and Roll / Spotrac: 4yr/$52M; avg $1,corrected via Spotrac verify: Total and yr1 are badly wrong. Actual deal is 4yr/$52M (not $22M) with a 2029-30
-Marcus Smart,HOU,2,13,6.3,ufa,2026-07,ESPN,2yr/$13M with Houston (declined $5.4M option; yr2 player option); yr1 est
+Marcus Smart,HOU,2,13,6.06,ufa,2026-07,ESPN,"2yr/$13M with a 2027-28 player option (ESPN/Shams, July 2026). total_M STANDS at the reported 13.0, not BBRef's $12M. yr1_M corrected from an 'est' 6.3 to the actual $6,064,000, the full taxpayer MLE. re-verified 2026-11-19"
 Moritz Wagner,BKN,2,19,9.3,ufa,2026-07,ESPN,2yr/$19M with Brooklyn (mutual option); yr1 est
 Jevon Carter,ORL,1,3.51,3.51,ufa,2026-07,Spotrac (id 26998); HoopsHype 'Jevon Carter to return to Mag,corrected via Spotrac verify: Wrong team. Chicago WAIVED Carter in Feb 2026 (he had opted into his $6.8M Bulls
 Nikola Vučević,ORL,1,3.9,3.9,ufa,2026-07,ESPN,1yr/$3.9M with Orlando; yr1 est
@@ -74,7 +97,7 @@ Bogdan Bogdanović,HOU,1,3.6,3.6,ufa,2026-07,ESPN,1yr vet-minimum with Houston (
 Khris Middleton,WAS,3,17.6,5.59,ufa,2026-07,ESPN,"3yr/$17.6M S&T from Dallas; yr1 $5.59M fully gtd (yr2 partial, yr3 non-gtd)"
 Quinten Post,MEM,3,30,9,rfa,2026-07,SalarySwish (2026-27 base $9;000;000; 3yr/$30.015M; $9M gtd),corrected via Spotrac verify: Team/total/type all correct; but yr1 is overstated. He signed a 3yr/$30.015M off
 Kevon Looney,LAL,1,3.88,3.88,ufa,2026-07,Spotrac,1yr vet-minimum with the Lakers ($3876529)
-DeAndre Jordan,NOP,1,3.88,3.88,ufa,2026-07,Spotrac,1yr vet-minimum with New Orleans
+DeAndre Jordan,NOP,2,7.95,3.88,ufa,2026-07,Spotrac,"2yr vet-minimum re-sign, BOTH years fully guaranteed ($3,876,529 + $4,070,355 = $7,946,884); re-verified 2026-11-19 from BBRef /contracts/NOP.html (table carries two years, remain_gtd $7,946,884) plus Fischer/Stein reporting and our own master_roster, which already said 2yr. yr1_M unchanged: $3,876,529 is exactly the 10+-year minimum."
 Larry Nance Jr.,IND,1,4,4,ufa,2026-07,ESPN,1yr/$4M with Indiana
 Trey Lyles,MIN,1,3.88,3.88,ufa,2026-07,ESPN,1yr/$3.88M with Minnesota
 Josh Okogie,UTA,2,12,5.9,ufa,2026-07,ESPN,2yr/$12M with Utah; yr1 est
@@ -91,7 +114,7 @@ Kyle Anderson,TOR,1,3.9,3.9,ufa,2026-07,multi,1-yr $3.9M (NBA.com roundup card)
 Jordan Clarkson,NYK,1,3.9,3.9,resign,2026-07,multi,1-yr $3.9M re-sign
 Andre Drummond,NYK,1,3.9,3.9,ufa,2026-07,multi,1-yr signing; amount not on NBA.com; est vet minimum ~$3.9M
 Tyus Jones,DEN,1,3.6,3.6,resign,2026-07,multi,1-yr re-sign; Spotrac shows reduced figure; est vet minimum ~$3.6M
-Jonathan Isaac,ORL,1,3.52,3.52,resign,2026-07,multi,1-yr $3;524;115 re-sign
+Jonathan Isaac,ORL,1,3.52,3.52,resign,2026-07,multi,"1yr vet min ($3,524,115 actual / $2,449,421 cap hit) re-sign after ORL waived him 6/27/26. re-verified 2026-11-19: ORL's notes table lists him TWICE and the live row reads 'Signed 1-yr minimum contract July 1, 2026'; the 4yr/$59M is a PRIOR 2024 extension that the waiver ended, and BBRef's $10,449,421 is $8,000,000 dead money + the $2,449,421 cap hit. Do NOT 'fix' yr1_M down to 2.45 against master_roster: this file wants the actual, as Jae'Sean Tate's row also records."
 Jordan McLaughlin,SAS,1,3.3,3.3,resign,2026-07,multi,1-yr re-sign; amount not on NBA.com; est minimum
 Kenrich Williams,OKC,1,5.5,5,resign,2026-07,SalarySwish (1yr/$5;500;000; 2026-27 salary $5;000;000; sign,corrected via Spotrac verify: yr1 is badly understated. OKC declined his ~$7.2M team option; then re-signed hi
 Thomas Bryant,CLE,1,3.52,3.52,resign,2026-07,SalarySwish (base $3;524;115; cap hit $2;449;421; Minimum Sa,corrected via Spotrac verify: yr1 understated. He re-signed with Cleveland on a 1-year veteran-minimum deal: a
@@ -111,7 +134,7 @@ Jalen Slawson,IND,1,0.68,0.68,two-way,2026-07-22,Pacers release + HoopsRumors,RF
 Jalen Wilson,ATL,1,0.68,0.68,two-way,2026-07-22,Hawks release + HoopsRumors,one-year two-way (3 years of service caps two-way length at one season)
 David Jones-Garcia,SAS,1,0.68,0.68,two-way,2026-07-22,NBA transaction feed + Spurs release,two-way RFA signed his qualifying offer ($91K partial guarantee)
 Moussa Cisse,DAL,2,4.76,2.185,resign,2026-07-19,ESPN + HoopsRumors,DAL matched NYK 2yr minimum offer sheet ($2185116 / $2571895); yr1 50% gtd rising Oct 1; yr2 non-gtd
-Isaiah Crawford,HOU,4,11.27,2.45,resign,2026-07-23,HoopsRumors + Rockets release,converted two-way to 4yr vet-min via Non-Bird; all non-guaranteed at signing ($1.15M partial); final year team option
+Isaiah Crawford,HOU,4,11.27,2.45,resign,2026-07-23,HoopsRumors + Rockets release,"converted two-way to 4yr vet-min via Non-Bird; all non-guaranteed at signing; final year team option. AS REPORTED 2026-07-23 (Weiner/Shankar via HoopsRumors: 'four-year total of about $11.27MM... starting salary of $2.45MM'). re-verified 2026-11-19: BBRef now lists the FILED deal as 2yr/$5,113,822, both years guaranteed. Kept as reported, because this file scores a prediction made BEFORE the signing. yr1_M is $2,449,421 on either record."
 Jae'Sean Tate,HOU,1,3.07,3.07,resign,2026-07-23,HoopsRumors + Spotrac,1yr vet min ($3066143 actual / $2449421 cap hit); $1.04M partial guarantee; waived trade veto
 Jaron Pierre Jr.,NOP,1,0.679,0.679,two-way,2026-07-24,Pelicans release + Marc Stein,No.58 pick in the 2026 draft signs his two-way ($678882)
 John Tonje,POR,2,1.36,0.679,two-way,2026-07-25,Blazers release + HoopsHype,two-YEAR two-way ($678882 in 26-27)
@@ -283,7 +306,7 @@ Rafael Castro,HOU,1,0.68,0.68,two-way,2026-08-26,Rockets release + HoopsRumors,"
 Bryce Hopkins,DEN,1,0.68,0.68,two-way,2026-08-26,HoopsRumors + Spotrac,"No.49 pick 2026 (St. John's); joins KJ Simpson on the DEN two-ways"
 Nick Richards,MIA,1,3.1,3.1,new,2026-08-27,ESPN transactions + SI Heat,"1yr vet min for frontcourt depth; non-guaranteed until the regular season starts"
 Keshad Johnson,MIA,1,0.679,0.679,two-way,2026-08-27,HoopsRumors + Heat roster,"two-way, re-signed with Miami after 48 games there last season"
-Khalifa Diop,CLE,4,1.358,1.358,new,2026-09-02,HoopsRumors + CLE reporting,"deliberately small deal that helped Cleveland fit under its first-apron hard cap for the pending Harden signing"
+Khalifa Diop,CLE,4,9.26,1.358,new,2026-09-02,HoopsRumors + CLE reporting,"4yr minimum-scale deal, $9,264,648 total; total_M was carrying the FIRST-YEAR salary. ONLY 2026-27 guaranteed ($1,357,763); 2027-28 and 2028-29 non-guaranteed (BBRef italicises them); 2029-30 a team option. yr1_M unchanged at the 0-yr-service minimum, NOT total/years. re-verified 2026-11-19"
 Ben Simmons,SAC,1,3.52,2.45,new,2026-09-07,Spotrac + HoopsRumors + HoopsHype,"1yr $3,524,115 cash against a $2,449,421 cap hit (minimum-salary reimbursement); FULLY non-guaranteed, roughly $1M of it earned only if he is on the roster, so re-check before opening night"
 Lonnie Walker IV,DEN,1,3.29,2.45,new,2026-09-10,Spotrac (Keith Smith) + Basketball-Reference + HoopsRumors,"Exhibit 10: $3,286,399 cash against a $2,449,421 cap hit. PROVISIONAL - an Exhibit 10 is very likely waived before opening night. Agreed 8/5, processed 9/10"
 Anthony Gill,WAS,1,3.07,2.45,resign,2026-09-15,Spotrac + HoopsRumors,"1yr vet min re-sign; $3,066,143 cash against a $2,449,421 cap hit (minimum-salary reimbursement, 6 years of service)"

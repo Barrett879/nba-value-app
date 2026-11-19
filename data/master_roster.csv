@@ -400,7 +400,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NYK,Jose Alvarado,4.44,standard,PG/SG,Signed multi-year FA 7/6/2026 (from NOP)
 ,NYK,Miles McBride,3.96,standard,SG/PG,
 ,NYK,Pacome Dadiet,2.98,standard,SF/PF,2027-28 club option decision due 10/31/2026
-,NYK,Mohamed Diawara,2.62,standard,PF/SF,Re-signed multi-year 7/6/2026; partial guarantees
+,NYK,Mohamed Diawara,2.232,standard,PF/SF,"2026-27 base $2,232,143 (4yr/$10M signed 7/6/26). Corrected 2026-11-19 from 2.62, which was KOBE SANDERS' $2,622,139 duplicated onto this row by the aggregator real_signings cited; Sanders' own 2.62 is correct."
 ,NYK,Jordan Clarkson,2.45,standard,SG/PG,Re-signed vet-min 7/10/2026; discounted cap hit
 ,NYK,Andre Drummond,2.45,standard,C,Signed vet-min FA 7/6/2026; discounted cap hit
 ,NYK,Tyler Kolek,2.3,standard,PG/SG,2027-28 team option

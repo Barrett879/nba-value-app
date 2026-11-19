@@ -2222,6 +2222,14 @@ if _as_of or _roster_of:
     # Two sentences, not one joined clause: joining with ". " left the caption
     # reading "...October 19, 2026. rosters re-verified..." with a lowercase
     # word after a full stop.
+    #
+    # The first sentence is Barrett's wording, kept verbatim, so it stays
+    # "Offseason signings, options and salaries verified as of <date>" even on a
+    # day when the roster was swept in the same round and both dates match. A
+    # tidier merged sentence ("...options, salaries and rosters verified as
+    # of...") was tried and reverted: it reworded the clause he asked for, and
+    # the two claims cover different files that will diverge again the moment
+    # one is swept without the other.
     _bits = []
     if _as_of:
         _bits.append(f"Offseason signings, options and salaries verified as of {_as_of}.")
