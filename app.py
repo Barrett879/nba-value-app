@@ -774,21 +774,45 @@ def _hub_salary_supplement() -> dict:
     return out
 
 
-def _offseason_as_of() -> str:
-    """Freshness stamp for the hand-maintained offseason files (real signings +
-    option decisions + salary supplement + the league-wide roster): the newest
-    "# Verified <date>" leading comment, falling back to file mtime. Same
-    approach as Free_Agent_Class's _offseason_as_of / team_suitors._read_as_of.
+# The offseason RECORDS and the league-wide ROSTER are verified on different
+# clocks, and conflating them is how the caption came to overclaim.
+#
+# The offseason files describe things that happened before the opener: who
+# signed, which options were exercised, what the supplemented salaries were.
+# Those facts are FINAL once the season starts, so 2026-10-19 is not a stale
+# date for them, it is the correct and permanent one.
+#
+# master_roster keeps moving all season: trades, waivers, 10-days and two-way
+# slots that turn over every few days. On 2026-11-19 a sweep of all 30
+# Basketball Reference team pages found seven rows with a stale TEAM, six of
+# them labelled free_agent while the player was under contract and playing.
+#
+# They had ONE shared stamp, so a roster round moved a caption that claims
+# "offseason signings, options and salaries verified as of <date>" -- asserting
+# a re-check of 131 signings and 45 option decisions that nobody performed.
+# Two stamps, two claims, each true.
+_OFFSEASON_FILES = ("real_signings_2026.csv", "option_decisions_2026.csv",
+                    "salary_supplement_2026_27.csv")
+_ROSTER_FILES = ("master_roster.csv",)
 
-    Every dated line in the block is read rather than only the first, and
-    master_roster is included: it gains one "Re-verified" line per round and
-    they are not in date order, so stopping at the first match would publish
-    the OLDEST round as the stamp. Reading the roster too means a round that
-    updates it cannot leave the public stamp behind, which is how this went
-    two rounds stale."""
+
+def _verified_as_of(_files) -> str:
+    """Newest "# Verified <date>" leading comment across `_files`, falling back
+    to file mtime. Same approach as Free_Agent_Class's _offseason_as_of /
+    team_suitors._read_as_of.
+
+    EVERY dated line in the leading block is read, not only the first, because
+    master_roster gains one "Re-verified" line per round and they are not in
+    date order: stopping at the first match would publish the OLDEST round.
+
+    master_roster used to be folded in here so that "a round that updates it
+    cannot leave the public stamp behind, which is how this went two rounds
+    stale." That hazard is real and is still covered -- it now has its own
+    visible stamp via _roster_as_of, so a roster round still cannot go stale
+    unnoticed. Do not quietly fold it back into the offseason list: that would
+    restore the overclaim without fixing anything."""
     best = None
-    for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv",
-                "salary_supplement_2026_27.csv", "master_roster.csv"):
+    for _fn in _files:
         _p = Path(__file__).parent / "data" / _fn
         d = None
         try:
@@ -815,6 +839,17 @@ def _offseason_as_of() -> str:
         if best is None or d > best:
             best = d
     return f"{best.strftime('%B')} {best.day}, {best.year}" if best else ""
+
+
+def _offseason_as_of() -> str:
+    """When the pre-opener records were last verified. Final once the season
+    starts, so this date is not expected to move again."""
+    return _verified_as_of(_OFFSEASON_FILES)
+
+
+def _roster_as_of() -> str:
+    """When the league-wide roster was last swept. Moves all season."""
+    return _verified_as_of(_ROSTER_FILES)
 
 
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
@@ -2240,8 +2275,17 @@ if _sel:
 # Freshness stamp for the hand-verified offseason columns on the board (signings,
 # option decisions, supplemented salaries).
 _as_of = _offseason_as_of()
-if _as_of:
-    st.caption(f"Offseason signings, options and salaries verified as of {_as_of}.")
+_roster_of = _roster_as_of()
+if _as_of or _roster_of:
+    # Two sentences, not one joined clause: joining with ". " left the caption
+    # reading "...October 19, 2026. rosters re-verified..." with a lowercase
+    # word after a full stop.
+    _bits = []
+    if _as_of:
+        _bits.append(f"Offseason signings, options and salaries verified as of {_as_of}.")
+    if _roster_of:
+        _bits.append(f"Rosters re-verified {_roster_of}.")
+    st.caption(" ".join(_bits))
 
 # Hover tooltips for the filter pills (native title=). Runs from a components
 # iframe; MutationObserver re-stamps after fragment re-renders.

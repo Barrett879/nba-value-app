@@ -6,6 +6,22 @@
 # Re-verified 2026-09-04: MIN/UTA trade, three waive-and-stretches before the
 # 8/29 deadline (Whitmore, Konchar, Valanciunas), Miami adds Richards and
 # Johnson.
+# Re-verified 2026-11-19: FIRST IN-SEASON SWEEP. All 30 Basketball Reference
+# /contracts/<TEAM>.html pages fetched and compared against this file, plus
+# every one of the 471 live-board players checked against its team. Twelve
+# rows corrected: 7 had a stale TEAM (6 of them labelled free_agent while the
+# player was under contract AND PLAYING), 2 two-way deals had ENDED, and 2
+# players were missing entirely (Kobe Bufkin, Orlando Robinson). Five rows
+# were removed from unavailable_players.csv as superseded by a current NBA
+# contract; see that file's own note. WHAT THIS LINE DOES NOT CLAIM: the
+# offseason records (real_signings_2026, option_decisions_2026,
+# salary_supplement_2026_27) were NOT re-checked and remain verified as of
+# 2026-10-19, which is correct and final for pre-opener facts. app.py now
+# publishes the two dates separately for exactly that reason.
+# STILL OPEN after this sweep: UTA's live third two-way is Jonas Aidoo, who
+# appears on NONE of the 30 saved pages (Trey Alexander's deal ended
+# 2026-11-16); and TOR's Jaden Bradley / Malachi Smith rows look TYPE-SWAPPED
+# against BBRef. Neither is applied here.
 # Re-verified 2026-10-19: FINAL CUTS, the eve of the opener. Five standard contracts
 # waived (Kevin Porter Jr. MIL, Knecht LAL, Clayton Jr. and Peavy MEM, Highsmith PHX),
 # four roster spots resolved (Wiseman to NYK's 14th spot, Tony Bradley claimed by UTA,
@@ -222,7 +238,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,HOU,Bogdan Bogdanovic,2.45,standard,SF/SG,"Vet-minimum FA signing, July 2026"
 ,HOU,Jae'Sean Tate,2.45,standard,SF/PF,Re-signed minimum; guarantee date 1/10/27
 ,HOU,Isaiah Crawford,2.45,standard,SF,Multi-year minimum; partial guarantee at opening night
-,HOU,Sean Pedulla,0,free_agent,,WAIVED by HOU 10/19/26 [on waivers until 2026-10-21]
+,SAC,Sean Pedulla,0.0,two_way,,"SAC TWO-WAY, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes; appears on exactly one of the 30 pages. Was HOU/free_agent. Slot came from Adam Flagler's 10/19 waiver, already a free_agent row here."
 ,HOU,Bruce Thornton,1.36,standard,PG,2026 No. 31 pick (HOU traded 39+53+2029 2nd to NYK to move up); signed 4yr/$9.3M July 7; Spotrac cap table still lags this signing
 ,HOU,Quadir Copeland,0.68,two_way,SG,Two-way contract
 ,IND,Tyrese Haliburton,48.92,standard,PG,Designated rookie max; returning from torn Achilles
@@ -270,7 +286,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,LAL,Collin Sexton,9.37,standard,PG/SG,signed 2yr/$19.2M July 2026 via room exception
 ,LAL,Jaden Hardy,6,standard,PG/SG,3yr/$18M extension (2025)
 ,LAL,Jake LaRavia,6,standard,SF/PF,year 2 of 2yr/$12M
-,LAL,Dalton Knecht,0,free_agent,SG/SF,"WAIVED by LAL 10/19/26 to reach 15 after trade talks failed; $4,201,080 is dead money and the waiver VOIDS his $6.45M 2027-28 team option; est value $4.4M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase) [on waivers until 2026-10-21]"
+,NYK,Dalton Knecht,0.0,two_way,SG/SF,"NYK TWO-WAY signed 2026-10-23, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes; LAL's $4,201,080 is dead money already in dead_money_2026_27.csv. Was LAL/free_agent. 3 GP, 9.8 MPG."
 ,LAL,Cameron Carr,3.32,standard,SG,2026 draft pick No. 25 (Baylor); rookie scale 4yr/$16.82M
 ,LAL,Kevon Looney,2.45,standard,C,signed 1yr/$3.88M vet-min July 2026; min cap hit
 ,LAL,Ziaire Williams,2.45,standard,PF/SF,"signed 1yr/$2.85M Jul 19, 2026; min cap hit"
@@ -290,7 +306,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MEM,Cedric Coward,6,standard,SG/SF,"2025 first-rounder, yr 2; 2027-28 club option due 10/31/26"
 ,MEM,D'Angelo Russell,0,free_agent,PG/SG,"WAIVED by MEM 9/25/26. $5,969,250 dead, the player-option year he exercised with WAS in June"
 ,MEM,Kris Murray,5.32,standard,SF/PF,"Acquired from POR June 30, 2026 in Ja Morant trade"
-,MEM,Walter Clayton Jr.,0,free_agent,PG/SG,"WAIVED by MEM 10/19/26 to finalize the roster; acquired from UTA Feb 2026 in the JJJ trade. $4,190,520 dead on MEM and his 2027-28 club option, due 10/31/26, is moot; est value $4.2M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase) [on waivers until 2026-10-21]"
+,DAL,Walter Clayton Jr.,0.0,two_way,PG/SG,"DAL TWO-WAY signed 2026-10-21, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes; MEM's $4,190,520 is dead money already in dead_money_2026_27.csv. Was MEM/free_agent. 14 GP, 17.8 MPG, the biggest board row in this sweep."
 ,NOP,Taj Gibson,0,free_agent,C/PF,"traded MEM to NOP 9/8/26 and WAIVED 9/9; of his $3,815,861 only $148,828 was guaranteed, so NOP carries $148,828 of dead money and the other $3.67M is charged to nobody"
 ,NOP,AJ Johnson,3.24,standard,SG/SF,"traded MEM to NOP 9/8/26; WAS to DAL (Feb, AD deal) to MEM (July 8 six-teamer) to NOP; 2027-28 club option due 10/31/26"
 ,MEM,Olivier-Maxence Prosper,2.5,standard,PF/C,Signed after DAL waived him (DAL carries stretched dead money)
@@ -371,7 +387,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NOP,Yves Missi,3.51,standard,C,Rookie scale yr 3; 2027-28 club option due 10/31/26
 ,NOP,Bryce McGowens,2.58,standard,SG/SF,Converted from two-way to standard March 2026; 2027-28 club option
 ,NOP,Karlo Matkovic,2.3,standard,PF/C,2027 RFA
-,MEM,Micah Peavy,0,free_agent,SF/SG,"WAIVED by MEM 10/19/26; traded NOP to MEM 9/8/26 and an ankle injury kept him out of the entire preseason. $2,150,917 dead on MEM; est value $3.0M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase) [on waivers until 2026-10-21]"
+,OKC,Micah Peavy,0.0,two_way,SF/SG,"OKC TWO-WAY signed 2026-10-24, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes; MEM's row is dead money already in dead_money_2026_27.csv. Was MEM/free_agent. 9 GP, 16.4 MPG."
 ,NOP,Malik Dia,0.68,two_way,PF,"two-way signed 8/18/26 (Hunter Dickinson waived from his two-way the same day)"
 ,NOP,Jaron Pierre Jr.,0.68,two_way,SG,2026 No. 58 pick; two-way official 7/24/26
 ,NOP,Trendon Watford,2.45,standard,PF/SF,"signed 8/17/26: 1yr vet min ($2.85M actual, $2.45M cap hit); PHI had declined his $2.8M team option in June"
@@ -402,7 +418,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,OKC,Bennett Stirtz,4.72,standard,PG,"2026 1st-rounder, No. 16 (Iowa)"
 ,OKC,Jared McCain,4.42,standard,SG/PG,"Acquired from PHI Feb 4, 2026 (HOU 2026 1st + 3 seconds); rookie-scale year 3"
 ,OKC,Ajay Mitchell,2.85,standard,PG/SG,3-yr deal signed 2025; TO decision 2027
-,OKC,Otega Oweh,0,two_way,SG,2026 No. 41 pick (Kentucky); signed two-way July 2026
+,OKC,Otega Oweh,0.0,free_agent,SG,"TWO-WAY ENDED 2026-10-24, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes ('Otega Oweh Ended October 24, 2026'), the slot Peavy took. Kept as free_agent with team=OKC so the 30-team invariant still sees him. Out for 2026-27 with a ruptured right Achilles, which is not one of unavailable_players' reasons."
 ,OKC,Brooks Barnhizer,0,two_way,SF,2025 No. 44 pick; re-signed two-way 2026
 ,OKC,Josh Dix,0,two_way,SG,2026 undrafted (Creighton); signed two-way July 2026
 ,ORL,Franz Wagner,41.75,standard,SF/PF,max rookie ext through 2029-30
@@ -436,7 +452,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,PHI,Jabari Walker,2.58,standard,PF/SF,Signed 2/19/2026; non-guaranteed until 1/10/2027
 ,PHI,Justin Edwards,2.41,standard,SF/PF,2027-28 club option
 ,PHI,Adem Bona,2.3,standard,C,2027-28 club option
-,MIL,Johni Broome,0,free_agent,C,"WAIVED by LAC 9/24/26, leaving $2,150,917 dead there; signed a non-guaranteed MIL camp deal 10/6 which is a $0 cap hit until he makes the roster"
+,MIN,Johni Broome,0.0,two_way,C,"MIN TWO-WAY signed 2026-11-12, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes ('Signed two-way contract November 12, 2026'); MIL has no mention of him and LAC's $2,150,917 is a waived row below BBRef's separator. Was MIL/free_agent. His unavailable_players g_league row (Wisconsin Herd, 2026-10-24) PREDATES this signing and is removed."
 ,PHI,Duke Miles,0,free_agent,PG,"WAIVED by PHI in the camp-cut wave; absent from the ESPN roster, and removing him makes PHI 14 standard, matching Hoops Rumors"
 ,PHI,Caleb Love,0,two_way,PG/SG,Two-way; undrafted 2025
 ,PHI,Rayan Rupert,0,two_way,SG,Two-way; 2023 2nd-round pick No.43
@@ -484,7 +500,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,SAC,Malik Monk,20.19,standard,PG/SG,Spotrac $20.19M vs ESPN $21.19M; Spotrac (canonical) used
 ,SAC,Darius Acuff Jr.,8.02,standard,PG,2026 draft pick No. 8 (Arkansas); rookie scale 4yr/$36.47M
 ,SAC,Precious Achiuwa,5.48,standard,PF/C,"signed 2yr/$11.23M Jul 7, 2026 via bi-annual exception"
-,SAC,Nique Clifford,3.26,standard,SG/SF,"2025 first-round pick, year 2 rookie scale"
+,OKC,Nique Clifford,3.2634,standard,SG/SF,"TRADED SAC -> OKC 2026-11-08 for two second-rounders; verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes ('Traded from SAC to OKC November 8, 2026'), ESPN and Hoops Rumors. OKC waived Dalen Terry to open the 15th standard spot. Row was stale on TEAM only."
 ,SAC,Alex Karaban,2.95,standard,PF,2026 draft pick No. 30 (UConn); rookie scale
 ,SAC,Daeqwon Plowden,2.45,standard,SF/SG,"signed 2yr/$5.11M Jul 2, 2026"
 ,SAC,Maxime Raynaud,2.15,standard,C,2nd year of 2025 second-round deal
@@ -541,7 +557,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,UTA,Kyle Filipowski,3,standard,PF/C,Year 3 of 4-yr second-round deal (2024 No. 32); TO decision 2027
 ,UTA,Isaiah Collier,2.76,standard,PG/SG,Year 3 rookie scale (2024 No. 29); TO decision 2027
 ,UTA,Trey Alexander,0,two_way,PG/SG,Signed two-way July 2026
-,UTA,Blake Hinson,0,two_way,PF/C,"2-yr two-way signed 2025, covers 2026-27"
+,UTA,Blake Hinson,0.0,free_agent,PF/C,TWO-WAY ENDED: waived by UTA 2026-10-21 and absent from all 30 saved pages (checked with a positive control). Kept team=UTA so the 30-team invariant still sees him. Bufkin took the slot.
 ,UTA,Tamar Bates,0,free_agent,,"WAIVED by UTA 10/17/26"
 ,WAS,Anthony Davis,58.46,standard,PF/C,traded to WAS 2/5/26 (deadline); 2027-28 player option $62.8M
 ,WAS,Trae Young,49.49,standard,PG,signed 4yr/$212.8M as FA 7/6/26 (left ATL); 2029-30 PO
@@ -639,7 +655,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,SAC,Doug McDermott,0,free_agent,SF/PF,unsigned free agent; est value $3.9M
 ,NYK,Drew Eubanks,0,free_agent,C,"signed an NYK Exhibit 9 camp deal 9/16/26 worth $3,506,659 if he sticks; Spotrac books the 2026-27 cap hit at $0 until he makes the opening-night roster, so he carries nothing here. est value $3.1M"
 ,SAC,Patrick Baldwin Jr.,0,free_agent,SF/PF,unsigned free agent
-,SAS,Mason Plumlee,0,free_agent,C,unsigned free agent; est value $3.9M
+,SAC,Mason Plumlee,2.139724,standard,C,"SIGNED SAC 1-yr minimum 2026-11-11, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes ('Signed 1-yr minimum contract November 11, 2026'), Kings release + ESPN. $2,139,724 is the PRO-RATED cap charge from Nov 11 (a full-season vet min is $2,449,421). Was SAS/free_agent, so the board dropped him."
 ,SAS,Kelly Olynyk,0,free_agent,PF/C,unsigned free agent; est value $3.9M
 ,SAS,Bismack Biyombo,0,free_agent,C,unsigned free agent; est value $3.9M
 ,SAS,Lindy Waters III,0,free_agent,SG/SF,unsigned free agent; est value $2.6M
@@ -670,8 +686,10 @@ asof,team,player,salary_M,kind,pos,notes
 ,PHI,Tacko Fall,0,two_way,C,"on the PHI roster per ESPN but MISSING from this file; as the third two-way alongside Caleb Love and Rayan Rupert he makes PHI 14 + 3, matching Hoops Rumors"
 ,NYK,Jaden Akins,0,two_way,SG,"NYK TWO-WAY, on the ESPN opening-night roster; MISSING from this file entirely, which is why NYK read 0 two-ways"
 ,NYK,Tyler Nickel,0,two_way,SF,"NYK TWO-WAY, on the ESPN opening-night roster; MISSING from this file entirely, which is why NYK read 0 two-ways"
-,NYK,Kevin McCullar Jr.,0,two_way,SG/SF,"NYK TWO-WAY, on the ESPN opening-night roster; MISSING from this file entirely. He was therefore absent from the roster index, and because absence means SHOW he was appearing on the board as an available free agent while under contract. Same defect class as the option-exercise cases, reached by a different route"
+,TOR,Kevin McCullar Jr.,0.0,two_way,SG/SF,"MOVED NYK -> TOR; verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes: NYK reads 'Ended October 23, 2026' with no table row, TOR carries his two-way. Filled TOR's empty third slot."
 ,GSW,Graham Ike,0,two_way,C,"GSW TWO-WAY, on the ESPN roster; MISSING from this file entirely"
 ,SAC,Leaky Black,0,two_way,SF/SG,"SAC TWO-WAY, on the ESPN roster; MISSING from this file entirely, and he was appearing on the free-agent board"
 ,WAS,Reece Beekman,0,two_way,PG,"WAS TWO-WAY, on the ESPN roster; MISSING from this file entirely"
 ,LAL,Carson Cooper,0,two_way,C,"LAL TWO-WAY signed 2026-11-10, verified 2026-11-18 from BBRef /contracts/LAL.html payroll notes (Lawson Lovering waived to open the spot). 6-11 center, undrafted out of Michigan State; his earlier MEM two-way of 2026-09-28 ended 2026-11-07 per /contracts/MEM.html, which is why he shows one MEM game and then LAL minutes. MISSING from this file entirely, so the board dropped him. $0 because two-ways sit outside the team cap."
+,UTA,Kobe Bufkin,0.0,two_way,SG,"UTA TWO-WAY signed 2026-10-23, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes; took the slot Hinson vacated. MISSING from this file entirely. His unavailable_players nba_contract row is removed in the same round, because a rostered player must not also be listed unavailable."
+,CHI,Orlando Robinson,2.125647,standard,C,"SIGNED CHI non-guaranteed 2026-11-13, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes ('Signed non-guaranteed contract November 13, 2026'; italicised cell = BBRef's non-guaranteed marker). MISSING from this file entirely. Legitimately absent at the 2026-10-19 round: Exhibit 10 on 09-25, waived 10-17, re-signed 11-13. $2,125,647 is the PRO-RATED cap charge from Nov 13."

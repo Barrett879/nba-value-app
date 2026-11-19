@@ -154,15 +154,20 @@ except Exception:
 
 
 def _offseason_as_of() -> str:
-    """Freshness stamp for the hand-maintained offseason files (real signings +
-    option decisions + the league-wide roster): the newest "# Verified <date>"
-    leading comment, falling back to file mtime. Same idea as
-    team_suitors._read_as_of, and the same whole-block scan as app.py's copy:
-    master_roster's per-round "Re-verified" lines are not in date order, so
-    stopping at the first match would publish the oldest round."""
+    """Freshness stamp for the hand-maintained OFFSEASON records: the newest
+    "# Verified <date>" leading comment, falling back to file mtime. Same idea
+    as team_suitors._read_as_of, and the same whole-block scan as app.py's
+    copy, because a file's per-round "Re-verified" lines are not in date order
+    and stopping at the first match would publish the oldest round.
+
+    master_roster was dropped from this list on 2026-11-19. This caption claims
+    "signings and option decisions", which are pre-opener facts and final once
+    the season starts; the roster keeps moving all season, so letting it drive
+    this date asserted a re-check of signings and options that nobody did. The
+    roster's own freshness is published separately on the home page, so it
+    still cannot go stale unnoticed. See app.py's _verified_as_of."""
     best = None
-    for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv",
-                "master_roster.csv"):
+    for _fn in ("real_signings_2026.csv", "option_decisions_2026.csv"):
         _p = _Path(__file__).parent.parent / "data" / _fn
         d = None
         try:
