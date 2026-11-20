@@ -91,6 +91,21 @@ def games(season):
     gs = sorted(json.loads(gf.read_text()),
                 key=lambda g: (str(g.get("Date")), str(g.get("GameId"))))
     gs = [g for g in gs if (PB / f"lineupopp_{g['GameId']}.json").exists()]
+    return _shadow_rebuilds(gs)
+
+
+def _shadow_rebuilds(gs):
+    """Drop every ESPN rebuild the NBA feed has since published for real.
+
+    Pure, and shared with the tests deliberately. The natural positive control
+    for this rule -- "a genuinely ESPN-only game still survives" -- is true
+    only while the feed is BEHIND. When pbpstats has caught up, every rebuild
+    is correctly shadowed and ZERO survive, which is the healthy steady state;
+    asserting that one survives against the live feed therefore fails on a
+    good day and stops the nightly. (It did, on 2026-11-20, once all 226 real
+    files landed.) Asking the question of constructed rows instead tests the
+    decision rather than the weather.
+    """
     real = {_game_key(g) for g in gs if not str(g.get("GameId")).startswith("E")}
     return [g for g in gs
             if not (str(g.get("GameId")).startswith("E") and _game_key(g) in real)]

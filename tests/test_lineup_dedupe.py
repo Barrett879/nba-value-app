@@ -98,14 +98,49 @@ def test_every_kept_game_is_distinct(kept):
     assert not dupes, f"the same game is kept twice: {dupes}"
 
 
-def test_the_dedupe_still_keeps_a_genuinely_espn_only_game(kept):
+def test_the_dedupe_still_keeps_a_genuinely_espn_only_game():
     """A positive control. Shadowing EVERY rebuild would pass all three tests
     above and silently drop games the NBA feed never published -- which is the
-    whole reason the backfill exists."""
-    espn_only = [g for g in kept if str(g.get("GameId", "")).startswith("E")]
-    assert espn_only, (
-        "no ESPN-rebuilt game survived the dedupe, so the backfill is doing "
-        "nothing and a genuinely missing game would vanish")
+    whole reason the backfill exists.
+
+    Asked of CONSTRUCTED rows, not of the live feed. This test first shipped
+    as `assert espn_only` against today's feed, and that is a TIME BOMB: a
+    rebuild survives only while pbpstats is behind, so the day the feed caught
+    up on all 226 games every rebuild was correctly shadowed, zero survived,
+    and the control failed on a perfectly healthy dedupe. Nothing would have
+    reported it either: HoopsValue has no CI and scripts/nightly.py does not
+    run pytest, so the suite is red only for whoever next runs it by hand.
+    Three rows answer the real question.
+    """
+    real = {"GameId": "0022600100", "Date": "2026-11-17",
+            "AwayTeamAbbreviation": "CHA", "HomeTeamAbbreviation": "LAL"}
+    shadowed = {"GameId": "E401909999", "Date": "2026-11-17",
+                "_matchup": "CHA@LAL"}          # same game, ESPN's copy
+    only = {"GameId": "E401909998", "Date": "2026-11-17",
+            "_matchup": "UTA@SAC"}              # the feed never published it
+
+    kept_ids = {str(g["GameId"]) for g in L._shadow_rebuilds([real, shadowed, only])}
+    assert "0022600100" in kept_ids, "the real pbpstats file must be kept"
+    assert "E401909999" not in kept_ids, (
+        "an ESPN rebuild of a game pbpstats has now processed must lose to "
+        "the real file, or the rebuild shadows better data forever")
+    assert "E401909998" in kept_ids, (
+        "a game only ESPN reports was dropped; shadowing every rebuild passes "
+        "the surplus, per-team and distinctness tests while silently losing "
+        "exactly the games the backfill exists to recover")
+
+
+def test_the_live_feed_shadows_rebuilds_without_losing_games(kept):
+    """The live-feed half, stated so it cannot time-bomb: whatever the feed's
+    state, the kept set must equal the real files plus only those rebuilds
+    with no real counterpart. On 2026-11-20 that is 226 real and 0 rebuilds;
+    in October it was 182 real and 16 rebuilds. Both are correct."""
+    real_keys = {L._game_key(g) for g in kept
+                 if not str(g.get("GameId", "")).startswith("E")}
+    leaked = [L._game_key(g) for g in kept
+              if str(g.get("GameId", "")).startswith("E")
+              and L._game_key(g) in real_keys]
+    assert not leaked, f"a rebuild survived alongside its real file: {leaked}"
 
 
 def test_consecutive_day_rematches_are_not_collapsed(kept):

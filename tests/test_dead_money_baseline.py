@@ -211,12 +211,15 @@ def test_no_team_is_published_over_a_hard_cap_it_is_actually_under(pages, cfg):
     figures say it is, our figures are wrong -- and the engine then refuses
     EVERY trade for that team, with a message blaming the user's trade.
 
-    Golden State is recorded above its first-apron hard cap today and is
-    EXCLUDED here as a known, pre-existing data problem (it carries no dead
-    money at all, so nothing about committed salary put it there). The
-    assertion is that adding dead money did not create a second one.
+    This test shipped with Golden State EXCLUDED, as a pre-existing data
+    problem it was not this change's job to fix: GSW was recorded $11.4M above
+    a first-apron hard cap while carrying no dead money at all. On 2026-11-20
+    that row was corrected -- the Melton signing used the TAXPAYER midlevel,
+    which caps at the SECOND apron, and GSW clears that by $1.2M -- so the
+    exclusion is GONE and this now holds for all thirty teams with no
+    carve-out. Do not re-add one: a team over its own cap is a data bug, and
+    this assertion is the only thing that says so.
     """
-    known_bad = {"GSW"}
     lvl = {"apron1": float(cfg["apron1"]), "apron2": float(cfg["apron2"])}
     caps = {}
     for r in _rows(HARD_CAPS):
@@ -224,7 +227,7 @@ def test_no_team_is_published_over_a_hard_cap_it_is_actually_under(pages, cfg):
     over = []
     for a, cap in caps.items():
         t = pages["teams"].get(a)
-        if not t or cap is None or a in known_bad:
+        if not t or cap is None:
             continue
         committed = round(t["payroll"] + float(t.get("dead") or 0.0), 1)
         if committed > cap + 1e-9:
