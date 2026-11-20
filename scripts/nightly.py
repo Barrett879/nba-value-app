@@ -222,6 +222,25 @@ def main() -> int:
     else:
         print("  lineup feed is complete")
 
+    # The other direction, which nothing checked until 2026-11-20. `missing` is
+    # a ONE-WAY set difference, so a feed holding MORE than ESPN never tripped
+    # anything: eleven games sat in it twice for weeks while the line above
+    # printed the symptom every night ("ESPN has 226 completed games; the
+    # lineup feed has 233") and the blend logged "2-20 team games" for a league
+    # whose busiest team had played 16. Fifteen of thirty teams carried an
+    # inflated defensive sample, Houston's by 25%.
+    surplus = L.feed_surplus(season)
+    if surplus:
+        print(f"\nSTOPPING: the lineup feed holds {len(surplus)} game(s) ESPN "
+              f"does not report as completed: {surplus[:6]}")
+        print("  That is a game counted TWICE in the defensive blend, a "
+              "preseason or cancelled fixture, or a feed for the wrong season. "
+              "d_lebron is 0.818 of the blend and barrett_score is built on it, "
+              "so this is not cosmetic.")
+        return 1
+    print(f"  no surplus: every one of the {sum(espn.values()) // 2} feed games "
+          f"is a completed ESPN game")
+
     # ---- 2 PROVISIONAL -------------------------------------------------
     # Only the dates where the stat feed is actually behind. The merge is
     # self-superseding, so an extra date is harmless, but a missed one means a

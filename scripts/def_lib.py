@@ -38,6 +38,43 @@ OPP = ("OffPoss", "DefPoss", "Points", "AtRimFGA", "AtRimFGM",
 PPS = {"rim": 1.30, "smid": 0.80, "lmid": 0.82, "arc3": 1.06, "cor3": 1.17}
 
 
+def _game_key(g) -> tuple[str, str]:
+    """Identity of a GAME, taken from the FEED ENTRY, never from the lineup file.
+
+    ESPN dates a game by UTC and the NBA feed by local date, so a game tipping
+    after 8pm ET carries two different dates -- and this key used to be read
+    out of the lineup file, where those two dates disagree. Eleven games
+    therefore kept BOTH copies, and 15 of 30 teams were handed a defensive
+    sample larger than the number of games they had played (Houston 20 against
+    16, a 25% inflated sample). Nothing noticed, because the only count that
+    looked at it, feed_gap's `missing`, is a one-way difference that cannot
+    see a surplus.
+
+    The backfill already resolves this correctly: an ESPN row in
+    games_<season>.json carries the LOCAL `Date` and a `_matchup`, and those
+    agree with the NBA row for the same game even when the two lineup FILES
+    are a day apart. Using them shadows 193 of 198 rebuilds and leaves exactly
+    the 226 games ESPN reports completed.
+
+    Do NOT be tempted to widen this to a plus-or-minus one day window instead.
+    Teams play each other on consecutive days and this very season has two
+    such pairs (OKC@POR on 2026-11-10 AND 11-11; POR@MIN on 11-16 AND 11-17),
+    so a date window DELETES a real game.
+    """
+    gid = str(g.get("GameId"))
+    date = str(g.get("Date") or "")[:10].replace("-", "")
+    if gid.startswith("E"):
+        mu = str(g.get("_matchup") or "")
+    else:
+        mu = f"{g.get('AwayTeamAbbreviation')}@{g.get('HomeTeamAbbreviation')}"
+    if not date or not mu or "None" in mu:
+        # A row that cannot identify itself is kept rather than silently
+        # shadowed or silently duplicated; its own id stands in, so it can
+        # only ever match itself.
+        return ("?", gid)
+    return (date, mu)
+
+
 @lru_cache(maxsize=None)
 def games(season):
     """Games with a lineup file, oldest first, real sources preferred.
@@ -54,25 +91,9 @@ def games(season):
     gs = sorted(json.loads(gf.read_text()),
                 key=lambda g: (str(g.get("Date")), str(g.get("GameId"))))
     gs = [g for g in gs if (PB / f"lineupopp_{g['GameId']}.json").exists()]
-    real = set()
-    for g in gs:
-        gid = str(g.get("GameId"))
-        if gid.startswith("E"):
-            continue
-        d = json.loads((PB / f"lineupopp_{gid}.json").read_text())
-        real.add((str(d.get("date"))[:10].replace("-", ""),
-                  f"{d.get('away_team_abbreviation')}@{d.get('home_team_abbreviation')}"))
-    out = []
-    for g in gs:
-        gid = str(g.get("GameId"))
-        if gid.startswith("E"):
-            d = json.loads((PB / f"lineupopp_{gid}.json").read_text())
-            key = (str(d.get("date"))[:10].replace("-", ""),
-                   f"{d.get('away_team_abbreviation')}@{d.get('home_team_abbreviation')}")
-            if key in real:
-                continue
-        out.append(g)
-    return out
+    real = {_game_key(g) for g in gs if not str(g.get("GameId")).startswith("E")}
+    return [g for g in gs
+            if not (str(g.get("GameId")).startswith("E") and _game_key(g) in real)]
 
 
 @lru_cache(maxsize=None)
@@ -396,20 +417,38 @@ def feed_gap(season, today=None):
     for _gid, ab, _rows in lineup_rows(season):
         feed[ab] += 1
     for g in games(season):
-        d = json.loads((PB / f"lineupopp_{g['GameId']}.json").read_text())
         # The DATE is part of the identity here too: without it the second
         # meeting of a pair looks like one the feed already has, and a game
-        # that is genuinely missing is never rebuilt. The lineup files carry
-        # their own date; ESPN's keys are YYYYMMDD, so normalise.
-        have.add((d.get("away_team_abbreviation"), d.get("home_team_abbreviation"),
-                  str(d.get("date") or "").replace("-", "")))
+        # that is genuinely missing is never rebuilt. Taken from the FEED
+        # ENTRY, like the dedupe in games(), because the lineup FILE's date is
+        # ESPN's UTC one on a late game and disagrees with the NBA feed's.
+        have.add(_game_key(g))
     espn = Counter()
     for (a, h, _d) in played:
         espn[a] += 1
         espn[h] += 1
     missing = sorted((f"{a}@{h}", d) for (a, h, _k), d in played.items()
-                     if (a, h, d) not in have)
+                     if (d, f"{a}@{h}") not in have)
     return dict(espn), dict(feed), missing
+
+
+def feed_surplus(season, today=None):
+    """Games the lineup feed holds that ESPN does NOT report as completed.
+
+    feed_gap answers only the other direction, and a one-way difference cannot
+    see a surplus: eleven duplicated games sat in this feed for weeks while the
+    nightly PRINTED the symptom in its own headline ("ESPN has 226 completed
+    games; the lineup feed has 233") and gated on nothing. Every one of them was
+    counted twice in the defensive blend.
+
+    A surplus is never benign. It is a game counted twice, a preseason or
+    cancelled fixture that should not be in a regular-season sample, or a feed
+    for the wrong season.
+    """
+    played = espn_completed(season, today)
+    known = {(d, f"{a}@{h}") for (a, h, _k), d in played.items()}
+    return sorted(k for k in (_game_key(g) for g in games(season))
+                  if k not in known)
 
 
 @lru_cache(maxsize=None)
