@@ -1,0 +1,66 @@
+# 2026-27 APRON-BASIS team salary, as published, per team. REFERENCE DATA WITH
+# EXACTLY ONE READER: the Trade Machine's apron-2 NOTE TEXT. Nothing here feeds
+# a verdict, and nothing here is summed into `committed`.
+#
+# WHY IT EXISTS. HoopsValue publishes and enforces on TAX-BASIS team salary.
+# The CBA tests the aprons on APRON-BASIS team salary, which additionally
+# counts UNLIKELY incentives: a bonus a player did NOT achieve last season sits
+# outside his cap hit but inside his apron number. Sourced, verbatim, from the
+# hoopsrumors.com glossary: "a player's likely incentives are included in his
+# cap hit, but his unlikely incentives aren't" and "for the purposes of
+# determining a team's apron level, all those incentives are counted".
+#
+# The gap is TEAM-SPECIFIC, not a league-wide constant: EXACTLY ZERO for most
+# teams and up to $6.9M. Arithmetic proved it had to be before any page was
+# read -- a uniform $6.9M would have put five teams above hard caps that cannot
+# be exceeded.
+#
+# combined=1 means the page published ONE figure, "Team salary: $X (tax/apron)".
+# That is a POSITIVE statement that the gap is zero, not an absence of data, and
+# the distinction is the whole value of this file: it separates "no gap" from
+# "nobody looked". Where combined is empty the page printed two figures.
+#
+# DO NOT POINT check_hard_caps AT THIS FILE, and do not fold it into payroll,
+# dead, room or committed. Three reasons, all measured on 2026-11-20:
+#   1. Unlikely incentives are contract TERMS, so they move with the player.
+#      TradePlayer carries one `salary`, so a per-team constant is correct only
+#      for a no-op trade and wrong for the acquirer of any incentive carrier.
+#   2. These are August and September figures. The STATUS they imply is stable
+#      (the likely/unlikely split is fixed by last season's achievement) but the
+#      QUANTITY is not.
+#   3. Toronto lands inside its own error bar: $202.300M committed plus a $6.6M
+#      delta built from two $0.1M-rounded figures is $208.9M against a $209.015M
+#      cap. Guess high and trade_rules.py refuses EVERY Toronto trade, which is
+#      the Golden State outage of 2026-11-20 reproduced on a number we invented.
+# Spec section 9 item 9 ("include unlikely bonuses in apron salary for hard-cap
+# ceiling tests") is a standing invitation to do exactly this. Do not take it
+# without per-player incentive data, which the repo does not have: it holds two
+# unlikely-incentive figures across thirty teams (SAC Sabonis $2.6M, TOR RJ
+# Barrett $3.6M), both in free-text notes.
+#
+# All figures from hoopsrumors.com per-team "NBA 2026 Offseason Check-In" pages,
+# read from raw HTML. asof = the page's JSON-LD dateModified, not its byline,
+# because these pages are edited after publication.
+team,tax_M,apron_M,combined,asof,note
+ATL,196.3,197.7,,2026-09-09,
+BKN,160.0,160.0,1,2026-08-17,
+BOS,198.7,198.7,1,2026-08-20,
+CLE,209.0,209.0,1,2026-09-17,page also states below hard cap by $45K
+DEN,219.2,224.8,,2026-09-14,ABOVE THE SECOND APRON. Page states Operating over the second tax apron ($221.7MM) and above second apron by $3.2MM. A 2026-10-17 piece (never edited) calls Denver the only team operating over the second apron and describes the 14-standard roster we model.
+DET,154.3,154.3,1,2026-09-27,
+GSW,220.8,221.3,,2026-09-12,
+IND,206.3,206.8,,2026-08-13,
+LAL,200.9,200.9,1,2026-08-15,
+MIA,206.4,206.4,1,2026-09-11,
+MIN,215.4,217.2,,2026-09-18,
+NOP,196.4,203.3,,2026-09-24,largest gap in the sample
+NYK,218.4,218.4,1,2026-08-30,
+OKC,214.3,214.8,,2026-08-28,
+ORL,217.9,219.2,,2026-08-25,
+PHI,207.2,207.2,1,2026-08-29,
+PHX,216.2,216.2,1,2026-08-19,
+POR,192.1,192.1,1,2026-09-04,
+SAC,197.5,201.4,,2026-09-15,our master_roster records $2.6M of Sabonis unlikely incentives
+SAS,198.3,201.0,,2026-08-23,
+TOR,201.5,208.1,,2026-09-24,page states below hard cap by $964K against our published $6.7M of room; our master_roster records $3.6M of RJ Barrett unlikely incentives
+WAS,192.0,192.0,1,2026-08-24,
