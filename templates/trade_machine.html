@@ -335,6 +335,7 @@ body{background:transparent;color:var(--fg1);
 @media(max-width:760px){
   .tfilter,.fasal,.cashrow input,.sharerow input{font-size:16px}
 }
+    .bq{font-size:.62em;opacity:.5;margin-left:2px;cursor:help}
 </style>
 <script>
 const DATA = __DATA__;
@@ -773,7 +774,7 @@ function buildTrade(){
     // headroom that does not exist and put Phoenix two regimes too low.
     // Folded in HERE, at the app boundary, so the engine itself is untouched
     // and the Python/JS parity vectors still test the same functions.
-    tt[a]={abbr:a,payroll:DATA.teams[a].payroll+(DATA.teams[a].dead||0),roster_size:(DATA.teams[a].std_size==null?DATA.teams[a].size:DATA.teams[a].std_size),two_way_size:(DATA.teams[a].two_way_size||0),
+    tt[a]={abbr:a,payroll:committedOf(DATA.teams[a]),roster_size:(DATA.teams[a].std_size==null?DATA.teams[a].size:DATA.teams[a].std_size),two_way_size:(DATA.teams[a].two_way_size||0),
       out_players:[],in_players:[],out_picks:[],in_picks:[],
       cash_out:0,cash_in:0,cash_sent_ytd:0,
       owned_future_firsts:DATA.teams[a].covered.slice(),
@@ -820,6 +821,16 @@ function buildTrade(){
 
 // ── rendering ────────────────────────────────────────────────────────────────
 const root=document.getElementById("tm-root");
+// THE ONE BASELINE. `payroll` and `dead` are each rounded to $0.1M for the
+// card, and adding those two rounded numbers rounds a THIRD time on the one
+// figure every apron and hard-cap test reads. Cleveland published $208.900M
+// against an exact $208.992M, so the engine saw $0.115M of room where $0.023M
+// exists and returned legal=true on trades taking back +$0.03M, +$0.05M and
+// +$0.08M that break a hard cap its own message calls unexceedable.
+// `committed` is summed exact upstream in build_roster_spine. The engine and
+// the card header BOTH read this, so a future basis change cannot split them.
+function committedOf(T){return T.committed!=null?T.committed:T.payroll+(T.dead||0)}
+
 function esc(s){const d=document.createElement("div");d.textContent=s;return d.innerHTML}
 
 function capbar(T,after,active){
@@ -914,7 +925,7 @@ function render(){
     // `after` comes from the engine and is COMMITTED salary, so "was" has to
     // be committed too -- otherwise a card with nothing moved would read
     // "was $120.5M -> $161.1M" and look like the trade cost Memphis $40M.
-    const committed=T.payroll+(T.dead||0);
+    const committed=committedOf(T);
     const after=tt?payAfter(tt):committed;
     const incoming=Object.entries(state.moves).filter(([k,mv])=>mv.to===a);
     const hcChip=T.hard_cap!=null
@@ -1062,7 +1073,7 @@ function render(){
       html+=`<div class="icard"><div class="h">${esc(DATA.teams[tt.abbr].name)}</div>
         <div class="r"><span class="lab">Payroll</span><span>${fmtM(imp.before)} &rarr; ${fmtM(imp.after)}</span></div>
         <div class="r"><span class="lab">Salary delta</span><span>${ds>=0?"+":"-"}${fmtM(Math.abs(ds)).slice(1)}</span></div>
-        <div class="r"><span class="lab">Room to first apron</span><span>${CFG.apron1-imp.after<0?"-":""}${fmtM(Math.abs(CFG.apron1-imp.after)).slice(1)}</span></div>
+        <div class="r"><span class="lab" title="Measured against TAX-basis team salary. The CBA tests the aprons on APRON-basis team salary, which also counts UNLIKELY incentives, so a team carrying them has less room here than this row shows. The gap is zero for about half the league and ran to 6.9M on one team in September.">Room to first apron<sup class="bq">?</sup></span><span>${CFG.apron1-imp.after<0?"-":""}${fmtM(Math.abs(CFG.apron1-imp.after)).slice(1)}</span></div>
         <div class="r"><span class="lab">Roster</span><span>${imp.roster} players</span></div>
         <div class="r"><span class="lab">Market value delta</span><span class="${cls}">${dv>=0?"+":"-"}${fmtM(Math.abs(dv)).slice(1)}</span></div></div>`;
     }

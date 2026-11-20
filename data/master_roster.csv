@@ -219,7 +219,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,GSW,Al Horford,6.82,standard,C/PF,"re-signed 2yr/$13.99M Jul 6, 2026; 2027-28 player option"
 ,GSW,Yaxel Lendeborg,6.1,standard,SF/PF,2026 draft pick No. 11; rookie scale 4yr/$28.1M
 ,GSW,Brandin Podziemski,5.68,standard,SG/PG,4th year of rookie scale
-,GSW,De'Anthony Melton,5.48,standard,PG/SG,"re-signed 2yr/$11M (Y2 player option) ~Jul 1 at $5.477M; OFFICIAL (16 games played). Signed with the TAXPAYER midlevel, not the bi-annual: the 2026-27 BAE is also $5.477M and the two figures coincide, which mis-set the hard-cap row until 2026-11-20. Hard-caps GSW at the SECOND apron."
+,GSW,De'Anthony Melton,6.064,standard,PG/SG,"re-signed 2yr/$12,431,200 (Y2 $6,367,200 player option); OFFICIAL. Year one is the FULL taxpayer midlevel, $6,064,000, and the total is exactly 2.05x that, the largest taxpayer-MLE contract that exists. CORRECTED 2026-11-20 from $5.48M: that was a Spotrac PENDING-transactions listing from early July which never became the deal, and it happened to equal the 2026-27 bi-annual exception ($5,477,000) TO THE CENT, which is what mis-set the hard-cap row to apron1 for four months. Hard-caps GSW at the SECOND apron."
 ,GSW,Gui Santos,4.63,standard,PF/SF,3yr/$15M extension signed 2026
 ,GSW,Charles Bassey,2.45,standard,C,"signed 1yr/$2.85M Jul 9, 2026; $1.4M guaranteed; min cap hit"
 ,GSW,Will Richard,2.15,standard,SG/PG,2nd year of 2025 second-round deal
@@ -234,7 +234,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,HOU,Amen Thompson,12.26,standard,SF/PG,Final rookie-scale year; 2027 RFA (QO $17.4M)
 ,HOU,Reed Sheppard,11.11,standard,PG/SG,Rookie scale yr 3; 2027-28 club option due 10/31/26
 ,HOU,Clint Capela,7.04,standard,C,Yr 2 of 3yr deal (2025 sign-and-trade)
-,HOU,Marcus Smart,6.06,standard,SG/PG,Signed with part of NT-MLE; 2027-28 player option $6.4M
+,HOU,Marcus Smart,6.064,standard,SG/PG,"signed with the FULL TAXPAYER midlevel ($6,064,000), 2027-28 player option $6,367,200. CORRECTED 2026-11-20: this note said part of NT-MLE, which contradicted the hard-cap ledger and would have made HOU apron1 instead of apron2. The hard-cap tracker says Used the taxpayer mid-level exception to sign Marcus Smart and the MLE usage tracker says Used $6,064,000. Identical structure to Melton: $6,064,000 plus the 5% ceiling is $6,367,200, total $12,431,200, which is why the old 2yr/$13M figure was impossible."
 ,HOU,Bogdan Bogdanovic,2.45,standard,SF/SG,"Vet-minimum FA signing, July 2026"
 ,HOU,Jae'Sean Tate,2.45,standard,SF/PF,Re-signed minimum; guarantee date 1/10/27
 ,HOU,Isaiah Crawford,2.45,standard,SF,Multi-year minimum; partial guarantee at opening night
@@ -327,7 +327,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MIA,Nikola Jovic,16.2,standard,PF/C,rookie extension through 2029-30
 ,MIA,Bobby Portis,14.52,standard,C/PF,traded from MIL 7/6/26 (Giannis deal); 2027-28 PO
 ,MIA,Davion Mitchell,12.4,standard,PG/SG,expiring (2yr/$24M signed 7/7/25)
-,MIA,Tim Hardaway Jr.,6.07,standard,SG/SF,signed 1yr/$6.07M as FA 7/6/26
+,MIA,Tim Hardaway Jr.,6.065,standard,SG/SF,"signed 1yr/$6,065,000 as FA 7/6/26 out of the NON-taxpayer midlevel, which MIA split with Klay Thompson ($5.6M), $11,665,000 of $15,044,000. $6,065,000 is $1,000 ABOVE the $6,064,000 taxpayer portion, so it cannot be a taxpayer-MLE deal; the hard-cap row said taxpayer until 2026-11-20. contract_types_2012_2026.csv carried the exact figure as Official all along."
 ,MIA,Dru Smith,2.58,standard,PG/SG,2027-28 club option/partial gtd
 ,MIA,Myron Gardner,2.58,standard,SF/SG,non-guaranteed until 1/10/27
 ,MIA,Simone Fontecchio,2.45,standard,SF/PF,signed vet-min 1yr 7/2/26
@@ -374,7 +374,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MIN,Rocco Zikarsky,0,two_way,C,"2-yr two-way signed 2025, covers 2026-27"
 ,MIN,Trey Kaufman-Renn,0,free_agent,PF,"off the MIN two-way roster in the camp-cut wave; absent from the ESPN roster, and removing him makes MIN 2 two-ways, matching Hoops Rumors"
 ,NOP,Zion Williamson,42.17,standard,PF/SF,2027-28 $44.9M guarantees 7/15/27
-,NOP,Bennedict Mathurin,8,standard,SF/PF,"officially signed 9/10/26 (agreed 8/26): 2yr $16M flat, 2027-28 player option; LAC withdrew his $8.8M QO first, making him unrestricted"
+,NOP,Bennedict Mathurin,7.5,standard,SF/PF,"officially signed 9/10/26 (agreed 8/26): 2yr/$15,375,000 with a 2027-28 player option, signed with the NON-taxpayer midlevel, which hard-caps NOP at the first apron. CORRECTED 2026-11-20 from a flat $8M/$8M on a $16M total: the NOP offseason check-in 9/24/26 states Two years, $15,375,000 and the MLE usage tracker states Used $7,500,000, and $7,500,000 plus a 5% raise to $7,875,000 sums to it exactly. LAC withdrew his $8.8M QO first, making him unrestricted."
 ,NOP,Jordan Poole,34.04,standard,SG/PG,Expiring final year
 ,NOP,Dejounte Murray,32.79,standard,PG/SG,2027-28 player option $30.8M
 ,NOP,Trey Murphy III,27,standard,SF/SG,Rookie extension through 2029-30

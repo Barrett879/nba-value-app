@@ -165,6 +165,10 @@ def main() -> int:
             abbr_d, amt = (r.get("team") or "").strip(), _num(r.get("amount_M"))
             if abbr_d and amt is not None:
                 dead_raw[abbr_d] = dead_raw.get(abbr_d, 0.0) + amt
+    # Rounded for DISPLAY only. `committed` below sums `dead_raw`, because
+    # rounding dead money to $0.1M before adding it to salary is the same
+    # precision leak as summing rounded player rows: Cleveland's $2.2440M
+    # became $2.2000M, which is $0.044M on a team with $0.067M of room.
     dead_by_team = {k: round(v, 1) for k, v in dead_raw.items()}
     print(f"  dead money: ${sum(dead_by_team.values()):.1f}M across "
           f"{len(dead_by_team)} team(s)"
@@ -318,7 +322,8 @@ def main() -> int:
         # $60.6M, and quoted its payroll at $120.5M on a night /Rosters quoted
         # $161.1M for the same team. A number nobody is playing for is still a
         # number the cap charges you for.
-        std_total = round(sum(s for k, s in exact if k != "two_way"), 1)
+        std_exact = sum(s for k, s in exact if k != "two_way")
+        std_total = round(std_exact, 1)
         dead_m = dead_by_team.get(abbr, 0.0)
         teams[abbr] = {
             "abbr": abbr,
@@ -330,6 +335,20 @@ def main() -> int:
             # loses precision a second time, on the figure every apron and hard
             # cap is tested against.
             "std_total": std_total,
+            # THE FIGURE THE ENGINE SHOULD TEST, exact and summed ONCE.
+            # `std_total` and `dead` are each rounded to $0.1M for display,
+            # and the Trade Machine used to ADD THOSE TWO ROUNDED NUMBERS.
+            # That is a third rounding on the one quantity every apron and
+            # hard-cap test reads, and it is not academic: Cleveland published
+            # $208.900M against an exact $208.992M, so the engine saw $0.115M
+            # of room where $0.023M exists and returned legal=True on trades
+            # taking back +$0.03M, +$0.05M and +$0.08M that break a hard cap
+            # its own message calls one that cannot be exceeded.
+            # Published ADDITIVELY: `payroll`, `dead` and `room` keep their
+            # shape because four test modules and export_fa_spreadsheet read
+            # them, and the payroll/dead split is what keeps a team card's
+            # header addable from the player rows under it.
+            "committed": round(std_exact + dead_raw.get(abbr, 0.0), 6),
             "size": len(players),
             "dead": dead_m,
             "room": round(apron2_m - std_total - dead_m, 1),

@@ -258,6 +258,17 @@ def _payload() -> str:
                        # it to the baseline; the card shows it separately so
                        # the header still adds up from the players underneath.
                        "dead": round(float(t.get("dead") or 0.0), 1),
+                       # The baseline the ENGINE tests, exact and summed once
+                       # upstream. `payroll` and `dead` are each rounded to
+                       # $0.1M for the card, and adding those two rounded
+                       # numbers rounds a third time on the figure every apron
+                       # and hard-cap test reads: Cleveland showed $0.115M of
+                       # room against a real $0.023M, enough to return
+                       # legal=True on a trade that breaks its hard cap. The
+                       # card still renders payroll and dead separately so the
+                       # header adds up from the player rows beneath it.
+                       "committed": (round(float(t["committed"]), 6)
+                                     if t.get("committed") is not None else None),
                        # STANDARD contracts only -- what the 15-man limit
                        # counts. `size` includes two-ways, so feeding it to
                        # the engine said LAL had 16 standard contracts and

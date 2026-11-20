@@ -311,6 +311,9 @@ def main() -> None:
                            t["std_total"] if t.get("std_total") is not None
                            else t["total"] - _spine_tw_sal.get(abbr, 0.0)), 1),
                        "dead": round(float(t.get("dead") or 0.0), 1),
+                       # exact committed salary, summed once; see the spine
+                       "committed": (round(float(t["committed"]), 6)
+                                     if t.get("committed") is not None else None),
                        "room": t["room"], "players": players,
                        "unsigned": t.get("unsigned", [])}
 

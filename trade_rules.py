@@ -123,6 +123,28 @@ class TradeTeam:
     # the engine's teams. Feeding roster salary alone here understates every
     # apron, tax and hard-cap test; on 2026-11-20 that was 18 teams and up to
     # $40.6M (Memphis).
+    #
+    # WHICH BASIS, stated here because this is where it is READ and the spec
+    # said it only where it is specified (docs/plan_trade_machine.md 4c.3 and
+    # 9.9 both call for apron-basis salary, implemented nowhere):
+    # this is TAX-BASIS team salary. The CBA tests the aprons on APRON-basis
+    # team salary, which additionally counts UNLIKELY incentives -- bonuses a
+    # player did NOT achieve last season sit outside his cap hit but inside
+    # his apron number. Measured against a publisher's figures on 2026-11-20,
+    # the two bases are IDENTICAL for about half the league and differ by up
+    # to $6.9M (New Orleans) and $6.6M (Toronto) for the rest.
+    # The gap is therefore PERMISSIVE: where it exists, every check below
+    # reads a team as further from its apron than it is.
+    # NOT closed here, deliberately. Unlikely incentives are terms of a
+    # contract, so they MOVE WITH THE PLAYER, and TradePlayer carries a single
+    # `salary`; a per-team constant folded in at the app boundary -- the trick
+    # that made dead money cheap -- is correct only for a no-op trade and
+    # wrong for the acquirer of any incentive-carrying contract. The repo
+    # holds exactly two unlikely-incentive figures, both in free-text notes
+    # (SAC Sabonis $2.6M, TOR RJ Barrett $3.6M), and twelve teams have no
+    # sourced apron figure at all. A modelled field built from that would
+    # carry more authority than accuracy. The Trade Machine discloses the
+    # basis on its "Room to first apron" row instead.
     payroll: float
     roster_size: int                 # standard contracts before the trade
     two_way_size: int = 0            # two-way contracts before the trade

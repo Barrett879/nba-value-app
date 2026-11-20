@@ -30,6 +30,7 @@ said "confirmed by verifier".
 """
 from __future__ import annotations
 import csv
+import re
 import json
 import sys
 from pathlib import Path
@@ -350,13 +351,27 @@ def test_an_outside_signing_too_big_for_the_small_exceptions_implies_a_cap(cfg, 
         f"apron-triggering exception can pay, yet carry no hard cap: {bad}")
 
 
-def test_the_two_exception_figures_that_coincide_are_pinned(cfg):
-    """THE REASONING, not just the row. The whole error was that Melton's
-    salary equals the bi-annual exception to the cent, so the amount looked
-    like proof of the mechanism. If these two figures ever stop coinciding the
-    story in this file stops making sense and should be reread -- and while
-    they do coincide, nobody should "re-fix" the row by matching the number
-    again.
+def test_meltons_salary_is_the_taxpayer_midlevel_not_the_bi_annual(cfg):
+    """THE REASONING, not just the row -- and the reasoning itself was wrong
+    the first time, so this test is the corrected record.
+
+    The row originally said Golden State used the BI-ANNUAL exception on
+    De'Anthony Melton. It was written that way because our books carried him
+    at $5,477,000, which equals the 2026-27 bi-annual exception TO THE CENT,
+    and the mechanism was read off the amount.
+
+    But $5,477,000 was never his salary. It was a Spotrac PENDING-transactions
+    listing from early July that never became the deal. The Warriors offseason
+    check-in of 2026-09-12 states: "Two years, $12,431,200. Second-year player
+    option. Re-signed using taxpayer mid-level exception." $12,431,200 is
+    exactly 2.05 times $6,064,000, which is the arithmetic signature of the
+    LARGEST taxpayer-MLE contract that can exist: year one at the full
+    exception, year two at the 5% ceiling.
+
+    So the coincidence was real and did cause the bug, but it was a
+    coincidence with a STALE PENDING FIGURE rather than with his pay. This
+    pins the corrected figures and guards the obvious regression, which is
+    somebody seeing $5,477,000 in an old note and "restoring" it.
     """
     mel = [r for r in _rows(MASTER)
            if "Melton" in (r.get("player") or "")
@@ -365,10 +380,185 @@ def test_the_two_exception_figures_that_coincide_are_pinned(cfg):
     salary = float(mel[0]["salary_M"])
     bae, tmle = float(cfg["bae"]), float(cfg["tmle"])
 
-    assert abs(salary - round(bae, 2)) < 0.011, (
-        f"Melton ${salary}M no longer matches the bi-annual ${bae}M; the "
-        f"coincidence that caused this bug is gone, so reread the row")
-    assert salary <= tmle + 1e-9, (
-        f"${salary}M does not fit inside the taxpayer midlevel ${tmle}M, so "
-        f"the mechanism now on the row cannot pay it")
+    assert abs(salary - tmle) < 0.0011, (
+        f"Melton is carried at ${salary}M; the sourced figure is the FULL "
+        f"taxpayer midlevel ${tmle}M")
+    assert abs(salary - bae) > 0.1, (
+        f"Melton is back at the bi-annual figure ${bae}M. That number came "
+        f"from a superseded Spotrac pending listing and is what mis-set this "
+        f"row to apron1 for four months")
     assert bae != tmle, "the two exceptions are distinct figures"
+
+    # the arithmetic signature that identifies the mechanism without the label
+    assert abs(round(2.05 * tmle, 4) - 12.4312) < 0.0011, (
+        "2.05x the taxpayer midlevel no longer equals the $12,431,200 total "
+        "the check-in publishes, so reread the contract")
+
+
+def test_a_taxpayer_midlevel_row_names_nobody_too_expensive_for_it(ledger, cfg):
+    """Miami's row said the TAXPAYER midlevel on Tim Hardaway Jr., whose
+    official salary is $6,065,000 -- $1,000 above the $6,064,000 taxpayer
+    portion, and $11,665,000 once Klay Thompson is added. Miami's verdict
+    (apron1) was right the whole time, which is exactly why nothing caught it:
+    a WRONG MECHANISM under a RIGHT APRON is invisible to every other check
+    here. Only comparing the named exception against the named player's actual
+    pay finds it.
+
+    THE SHAPE MATTERS, and the first version of this test got it wrong. Reading
+    every dollar figure in a trigger as a salary is useless: triggers quote
+    TWO-YEAR TOTALS ("2yr/$13M"), they quote the exception's own size, and a
+    row naming two exceptions has no way to say which figure belongs to which.
+    That version produced five false positives on a clean ledger, which is a
+    test that gets weakened or deleted rather than believed.
+
+    So this is narrow on purpose. The taxpayer midlevel is the one exception
+    with a hard per-player ceiling low enough to discriminate, and it is the
+    one that decides apron2 versus apron1. For any row naming it, every player
+    that row names must be payable from it.
+    """
+    tmle = float(cfg["tmle"])
+    names = {}
+    for r in _rows(MASTER):
+        n, t = (r.get("player") or "").strip(), (r.get("team") or "").strip()
+        if n and (r.get("kind") or "").strip() == "standard":
+            try:
+                names.setdefault(t, {})[n] = float(r["salary_M"])
+            except (KeyError, TypeError, ValueError):
+                pass
+
+    checked, bad = 0, []
+    for r in ledger:
+        trig = r.get("trigger") or ""
+        low = trig.lower()
+        if "taxpayer midlevel" not in low.replace("non-taxpayer", "@@"):
+            continue
+        team = r["team"].strip()
+        for player, salary in names.get(team, {}).items():
+            if player not in trig:
+                continue
+            checked += 1
+            # $1K over is still over: that is precisely the Miami case.
+            if salary > tmle + 0.0011:
+                bad.append((team, player, salary, tmle))
+
+    assert checked >= 1, (
+        "no taxpayer-midlevel row names a player this test could price, so it "
+        "is asserting nothing")
+    assert not bad, (
+        f"a row credits the taxpayer midlevel (${tmle}M) for a player it "
+        f"cannot pay, so the mechanism is wrong even if the apron is not "
+        f"(team, player, salary, limit): {bad}")
+
+
+# ── the basis the engine enforces on ────────────────────────────────────────
+
+def test_no_capped_team_is_over_its_cap_on_the_EXACT_figure(ledger, cfg):
+    """INVARIANT 1, league-wide, which is what the CSV header has claimed all
+    along. Until now it was pinned for Golden State alone, so the file's own
+    documentation was false and the check that would have caught GSW in July
+    did not exist in this module.
+
+    Asserted on `committed`, the exact sum, not on payroll + dead. Those are
+    each rounded to $0.1M for the card, and adding two rounded numbers is a
+    third rounding on the one quantity every apron test reads.
+    """
+    pages = json.loads(PAGES.read_text(encoding="utf-8"))["teams"]
+    lvl = {"apron1": float(cfg["apron1"]), "apron2": float(cfg["apron2"])}
+    checked, over = 0, []
+    for r in ledger:
+        team, cap = r["team"].strip(), lvl.get((r.get("cap") or "").strip())
+        t = pages.get(team)
+        if cap is None or not t:
+            continue
+        committed = t.get("committed")
+        assert committed is not None, (
+            f"{team} publishes no exact committed figure, so this invariant "
+            f"would silently fall back to the rounded sum it exists to avoid")
+        checked += 1
+        if committed > cap + 1e-9:
+            over.append((team, round(committed, 4), cap))
+    assert checked >= 20, f"only {checked} capped teams were examined"
+    assert not over, (
+        f"a hard cap cannot be exceeded, so these are OUR figures being wrong, "
+        f"and the engine refuses every trade they appear in: {over}")
+
+
+def test_the_engine_is_handed_the_exact_figure_not_the_sum_of_two_rounded_ones():
+    """The defect this caught, and the shape of the fix.
+
+    `payroll` and `dead` are published rounded to $0.1M so a team card's header
+    still adds up from the player rows beneath it. The Trade Machine used to
+    ADD THOSE TWO, which rounds a third time on the figure every apron and
+    hard-cap test reads. It is not academic: Cleveland published $208.900M
+    against an exact $208.992M, so the engine saw $0.115M of room where
+    $0.023M exists -- and returned legal on trades taking back +$0.03M,
+    +$0.05M and +$0.08M which break a hard cap its own message calls one that
+    cannot be exceeded. Twenty-three of thirty teams drift.
+
+    Pinned three ways: the field exists, the drift is real (so the fix is not
+    a no-op), and BOTH template sites read the same helper -- the engine
+    boundary and the card header computed `committed` independently before, so
+    a future basis change could have split them silently.
+    """
+    pages = json.loads(PAGES.read_text(encoding="utf-8"))["teams"]
+    missing = [a for a, t in pages.items() if t.get("committed") is None]
+    assert not missing, f"teams with no exact committed figure: {missing}"
+
+    drift = [a for a, t in pages.items()
+             if abs(round(t["payroll"] + t["dead"], 6) - t["committed"]) > 0.01]
+    assert len(drift) >= 5, (
+        f"only {len(drift)} teams differ between the rounded sum and the exact "
+        f"figure, so either the rounding was fixed upstream or this test is "
+        f"no longer measuring anything")
+
+    tpl = (ROOT / "templates" / "trade_machine.html").read_text(encoding="utf-8")
+    assert tpl.count("function committedOf(") == 1, "the helper is gone or duplicated"
+    assert tpl.count("committedOf(") >= 3, (
+        "fewer than two call sites use the helper; the engine boundary and the "
+        "card header must read the same baseline")
+    assert "payroll:DATA.teams[a].payroll+(DATA.teams[a].dead" not in tpl, (
+        "the engine boundary is adding the two rounded numbers again")
+    assert "const committed=T.payroll+(T.dead" not in tpl, (
+        "the card header is adding the two rounded numbers again")
+
+
+def test_the_exact_figure_changes_a_real_verdict():
+    """A behavioural control through production code, because a precision fix
+    that changes no verdict is not worth a field. On the tightest capped team,
+    a trade that fits under the ROUNDED figure but not the exact one must now
+    be refused."""
+    import trade_rules as tr
+    C = tr.CBAConfig.load("2026-27")
+    pages = json.loads(PAGES.read_text(encoding="utf-8"))["teams"]
+    caps = {r["team"].strip(): r["cap"].strip()
+            for r in _rows(ROOT / "data" / "hard_caps_2026_27.csv")}
+    lvl = {"apron1": C.apron1, "apron2": C.apron2}
+
+    # The DANGEROUS direction is the rounded sum sitting BELOW the exact one:
+    # that is the engine seeing room a team does not have. The opposite sign
+    # is merely over-cautious. Cleveland is understated by $0.092M against
+    # $0.023M of real room, which is the whole reason this field exists.
+    best = None
+    for team, lab in caps.items():
+        cap, t = lvl.get(lab), pages.get(team)
+        if cap is None or not t or t.get("committed") is None:
+            continue
+        understated = t["committed"] - round(t["payroll"] + t["dead"], 6)
+        if understated > 0.005 and (best is None or cap - t["committed"] < best[1]):
+            best = (team, cap - t["committed"], t, cap)
+    if best is None:
+        pytest.skip("no capped team is currently understated by the rounding")
+    team, room, t, cap = best
+
+    def refused(payroll, net):
+        tt = tr.TradeTeam(abbr=team, payroll=payroll, roster_size=14, hard_cap=cap)
+        tt.in_players.append(tr.TradePlayer(name="x", salary=net))
+        v, _ = tr.check_hard_caps(tr.Trade(teams=[tt], trade_date="2026-11-20"), C)
+        return "HARD_CAP_EXCEEDED" in [x.code for x in v]
+
+    net = round(room + 0.005, 4)          # over the exact cap, under the rounded one
+    assert refused(t["committed"], net), (
+        f"{team} has ${room:.4f}M of room and a ${net}M take-back is not refused")
+    assert not refused(round(t["payroll"] + t["dead"], 6), net), (
+        f"the rounded sum already refuses this, so it proves nothing about "
+        f"the exact figure")

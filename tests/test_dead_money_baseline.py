@@ -156,8 +156,16 @@ def test_the_js_engine_baseline_adds_dead_money():
     granting Memphis $40.6M of headroom it does not have, and every verdict
     still renders as confidently as before."""
     js = TEMPLATE.read_text(encoding="utf-8")
-    assert "payroll:DATA.teams[a].payroll+(DATA.teams[a].dead||0)" in js, (
-        "the JS engine baseline is not payroll + dead")
+    # The inline sum moved behind committedOf() on 2026-11-20, because adding
+    # the two PUBLISHED (rounded) numbers rounded a third time: Cleveland
+    # showed $0.115M of room against $0.023M. The helper prefers the exact
+    # `committed` field and falls back to payroll + dead, so the dead term is
+    # still guaranteed -- which is what this test exists to protect.
+    assert "payroll:committedOf(DATA.teams[a])" in js, (
+        "the JS engine baseline no longer routes through committedOf()")
+    helper = js.split("function committedOf(", 1)[1].split("\n", 1)[0]
+    assert "T.dead" in helper and "T.committed" in helper, (
+        f"committedOf() has lost the dead-money term or the exact field: {helper}")
 
 
 def test_the_card_header_uses_the_same_basis_as_the_engine():
@@ -165,7 +173,11 @@ def test_the_card_header_uses_the_same_basis_as_the_engine():
     on roster money, a Memphis card with nothing moved would read
     "was $120.5M -> $161.1M" and look like the trade cost $40M."""
     js = TEMPLATE.read_text(encoding="utf-8")
-    assert "const committed=T.payroll+(T.dead||0);" in js, "no committed basis"
+    # Both sides now read ONE helper rather than each computing the sum, so a
+    # future basis change cannot move the engine without moving the header.
+    assert "const committed=committedOf(T);" in js, "no committed basis"
+    assert js.count("committedOf(") >= 3, (
+        "the engine boundary and the card header are not both on the helper")
     assert "const after=tt?payAfter(tt):committed;" in js, (
         "the header's resting figure is not the engine's basis")
     assert "was ${fmtM(committed)}" in js, "the 'was' figure is not committed"
