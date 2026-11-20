@@ -294,9 +294,23 @@ def main() -> None:
         # inside its total, which is enough to call a legal trade illegal.
         # The spine was also inconsistent team to team, carrying whichever
         # two-ways it happened to list (LAL 0.7, IND 2.0, BKN 0.0).
+        # `payroll` is ROSTER money: what the player cards below it add up to.
+        # `dead` is what the team owes players who are NOT on the roster and so
+        # appear in no card. COMMITTED salary -- the number the cap, the tax
+        # line and both aprons are measured against, and the only honest
+        # baseline for a trade -- is the two added. They are published apart so
+        # the card header stays addable from the cards; every cap comparison
+        # adds them, and `room` already has.
         teams[abbr] = {"abbr": abbr, "name": t["name"], "size": t["size"],
                        "std_size": len(players),
-                       "payroll": round(t["total"] - _spine_tw_sal.get(abbr, 0.0), 1),
+                       # The spine sums the exact contracts and rounds once;
+                       # prefer that over subtracting two-way money out of an
+                       # already-rounded `total`, which rounds twice on the
+                       # one figure every apron and hard-cap test reads.
+                       "payroll": round(float(
+                           t["std_total"] if t.get("std_total") is not None
+                           else t["total"] - _spine_tw_sal.get(abbr, 0.0)), 1),
+                       "dead": round(float(t.get("dead") or 0.0), 1),
                        "room": t["room"], "players": players,
                        "unsigned": t.get("unsigned", [])}
 

@@ -375,7 +375,17 @@ def test_payroll_excludes_two_way_money(teams):
             (p.get("salary") or 0) for p in sp["players"]
             if ni.get(p["n"]) is not None or _hard(p["n"]) in {
                 _hard(x) for x in two_way_players()})
-        assert abs(t["payroll"] - round(sp["total"] - tw_money, 1)) < 0.051, (
+        # payroll now comes from the spine's own `std_total`, which sums the
+        # exact contracts and rounds ONCE. Subtracting two-way money out of an
+        # already-rounded `total` rounds twice on the figure every apron and
+        # hard-cap test reads, which is how Cleveland came to publish $206.9M
+        # against a real $206.748M. Exact source first, then the behavioural
+        # claim with a tolerance that allows for the display rounding.
+        assert abs(t["payroll"] - sp["std_total"]) < 0.051, (
+            f"{abbr}: payroll {t['payroll']} should be the spine's exact "
+            f"standard-money total {sp['std_total']}")
+        slack = 0.05 * len(sp["players"]) + 0.051
+        assert abs(t["payroll"] - (sp["total"] - tw_money)) < slack, (
             f"{abbr}: payroll {t['payroll']} should be spine total "
             f"{sp['total']} minus {tw_money:.1f} of two-way money")
 

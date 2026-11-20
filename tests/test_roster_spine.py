@@ -275,12 +275,28 @@ def test_two_ways_carry_the_league_scale(spine, master):
 
 
 def test_total_and_size_are_computed_from_the_players(spine):
+    """`total` is the EXACT contract sum rounded ONCE, so it is not required to
+    equal the sum of the published rows: every row is rounded to $0.1M for
+    display, and fifteen of those drift up to $0.75M from the truth.
+
+    That gap is the whole point. Summing the rounded rows put Cleveland at
+    $206.9M against a real $206.748M, and the $0.15M of accumulated error is
+    larger than the $23K by which Cleveland clears its first-apron hard cap --
+    so once dead money went into the baseline, the rounded sum alone published
+    a Cleveland that could never trade. The tolerance here therefore scales
+    with the roster instead of pretending the two sums are one number, and the
+    EXACT figure is pinned against master_roster in
+    tests/test_dead_money_baseline.py.
+    """
     off = {}
     for a, t in spine["teams"].items():
-        want = round(sum(p["salary"] or 0 for p in t["players"]), 1)
-        if abs(t["total"] - want) > 0.051 or t["size"] != len(t["players"]):
-            off[a] = (t["total"], want, t["size"], len(t["players"]))
-    assert not off, f"(total, want, size, want): {off}"
+        rows = round(sum(p["salary"] or 0 for p in t["players"]), 1)
+        slack = 0.05 * len(t["players"]) + 0.051
+        if abs(t["total"] - rows) > slack or t["size"] != len(t["players"]):
+            off[a] = (t["total"], rows, t["size"], len(t["players"]))
+    assert not off, f"(total, sum of rows, size, want): {off}"
+    assert all(t["total"] >= t["std_total"] - 0.051
+               for t in spine["teams"].values()), "std_total exceeds total"
 
 
 def test_the_seasons_are_the_current_one(spine):
@@ -301,6 +317,11 @@ def test_room_is_second_apron_room_because_that_is_how_it_is_RENDERED(spine):
     wrong and 26 flipped sign, so Atlanta's crawlable page would have read
     "$30.6M over the second apron" while sitting $26M under it, contradicting
     the apron2_M in its own payload. Nothing tested this field.
+
+    AND ON COMMITTED MONEY: dead money charges against the apron in full while
+    appearing in no player row, so apron room that ignores it is too big. It
+    told the Trade Machine Memphis had $101.2M of apron room against a real
+    $60.6M.
     """
     cfg = json.loads((ROOT / "data" / "cba_config_2026_27.json")
                      .read_text(encoding="utf-8"))
@@ -311,11 +332,11 @@ def test_room_is_second_apron_room_because_that_is_how_it_is_RENDERED(spine):
     for a, t in spine["teams"].items():
         std = round(sum(p["salary"] or 0 for p in t["players"]
                         if (p["salary"] or 0) > 0.7), 1)
-        want = round(ap2 - std, 1)
+        want = round(ap2 - std - (t.get("dead") or 0.0), 1)
         if abs(t["room"] - want) > 1.0:
             off[a] = (t["room"], want)
     assert not off, (
-        f"room is not second-apron room on standard money (got, want): {off}")
+        f"room is not second-apron room on committed money (got, want): {off}")
 
 
 def test_room_agrees_with_the_sentence_the_team_page_builds(spine):
@@ -327,7 +348,7 @@ def test_room_agrees_with_the_sentence_the_team_page_builds(spine):
     lying = []
     for a, t in spine["teams"].items():
         std = sum(p["salary"] or 0 for p in t["players"] if (p["salary"] or 0) > 0.7)
-        really_over = std > ap2
+        really_over = std + (t.get("dead") or 0.0) > ap2
         says_over = t["room"] < 0
         if really_over != says_over:
             lying.append((a, round(std, 1), t["room"]))

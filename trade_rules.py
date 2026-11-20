@@ -113,7 +113,17 @@ class TradePick:
 @dataclass
 class TradeTeam:
     abbr: str
-    payroll: float                   # $M committed BEFORE the trade
+    # $M COMMITTED before the trade, which is roster salary PLUS DEAD MONEY --
+    # salary still owed to players who are no longer on the roster. Dead money
+    # counts against the cap, the tax line and both aprons in full and does not
+    # move in a trade, so it is a constant inside this baseline rather than a
+    # field of its own. The caller adds it: pages/Trade_Machine.py publishes
+    # `payroll` and `dead` separately (so a card header stays addable from the
+    # cards under it) and templates/trade_machine.html sums them when it builds
+    # the engine's teams. Feeding roster salary alone here understates every
+    # apron, tax and hard-cap test; on 2026-11-20 that was 18 teams and up to
+    # $40.6M (Memphis).
+    payroll: float
     roster_size: int                 # standard contracts before the trade
     two_way_size: int = 0            # two-way contracts before the trade
     out_players: list[TradePlayer] = field(default_factory=list)

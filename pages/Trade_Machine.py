@@ -248,6 +248,16 @@ def _payload() -> str:
             picks.append(entry)
         hc = hard_caps.get(abbr)
         teams[abbr] = {"name": t["name"], "payroll": t["payroll"], "size": t["size"],
+                       # Salary still owed to players who are NOT on the
+                       # roster, so it is in no card on this page and was in
+                       # no number on it either: $145.4M across 18 teams, and
+                       # it counts against the cap, the tax and both aprons in
+                       # full. Without it the engine handed Memphis $40.6M of
+                       # headroom that does not exist, and read Phoenix two
+                       # regimes below where it actually sits. The engine adds
+                       # it to the baseline; the card shows it separately so
+                       # the header still adds up from the players underneath.
+                       "dead": round(float(t.get("dead") or 0.0), 1),
                        # STANDARD contracts only -- what the 15-man limit
                        # counts. `size` includes two-ways, so feeding it to
                        # the engine said LAL had 16 standard contracts and

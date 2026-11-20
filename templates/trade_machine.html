@@ -250,6 +250,11 @@ body{background:transparent;color:var(--fg1);
 .hcap{display:inline-block;flex:0 0 auto;margin-left:.55rem;padding:.08rem .45rem;border:1px solid var(--amberc);
   color:var(--amberc);border-radius:99px;font-size:.66rem;font-weight:800;vertical-align:2px;
   letter-spacing:.02em;white-space:nowrap;cursor:help}
+/* Recessive on purpose: the dead-money note explains the header, it does not
+   compete with the hard-cap warning beside it. */
+.dead{display:inline-block;flex:0 0 auto;margin-left:.55rem;padding:.08rem .45rem;
+  border:1px solid var(--line);color:var(--fg4);border-radius:99px;font-size:.66rem;
+  font-weight:700;vertical-align:2px;letter-spacing:.02em;white-space:nowrap;cursor:help}
 .card .mv.sw{background:transparent;border:1px solid var(--line);color:var(--fg4)}
 .card .mv.sw:hover{border-color:var(--teal);color:var(--teal);background:transparent}
 .card .mv.tp{background:transparent;border:1px solid var(--line);color:var(--fg4)}
@@ -760,7 +765,15 @@ function pickKey(abbr,i){return "K|"+abbr+"|"+i}
 function buildTrade(){
   const tt={};
   for(const a of picked()){
-    tt[a]={abbr:a,payroll:DATA.teams[a].payroll,roster_size:(DATA.teams[a].std_size==null?DATA.teams[a].size:DATA.teams[a].std_size),two_way_size:(DATA.teams[a].two_way_size||0),
+    // COMMITTED salary, not roster salary: dead money (owed to players who are
+    // not on the roster) counts against the cap, the tax and both aprons in
+    // full, and it does not move in a trade, so it is a constant inside the
+    // baseline. TradeTeam.payroll has always been documented as "committed";
+    // it was simply being fed the wrong number, which handed Memphis $40.6M of
+    // headroom that does not exist and put Phoenix two regimes too low.
+    // Folded in HERE, at the app boundary, so the engine itself is untouched
+    // and the Python/JS parity vectors still test the same functions.
+    tt[a]={abbr:a,payroll:DATA.teams[a].payroll+(DATA.teams[a].dead||0),roster_size:(DATA.teams[a].std_size==null?DATA.teams[a].size:DATA.teams[a].std_size),two_way_size:(DATA.teams[a].two_way_size||0),
       out_players:[],in_players:[],out_picks:[],in_picks:[],
       cash_out:0,cash_in:0,cash_sent_ytd:0,
       owned_future_firsts:DATA.teams[a].covered.slice(),
@@ -897,7 +910,12 @@ function render(){
     }
     const T=DATA.teams[a];
     const tt=trade.teams.find(x=>x.abbr===a);
-    const after=tt?payAfter(tt):T.payroll;
+    // The header, the cap bar and the engine must all read the same basis.
+    // `after` comes from the engine and is COMMITTED salary, so "was" has to
+    // be committed too -- otherwise a card with nothing moved would read
+    // "was $120.5M -> $161.1M" and look like the trade cost Memphis $40M.
+    const committed=T.payroll+(T.dead||0);
+    const after=tt?payAfter(tt):committed;
     const incoming=Object.entries(state.moves).filter(([k,mv])=>mv.to===a);
     const hcChip=T.hard_cap!=null
       ?`<span class="hcap" title="Hard-capped at ${esc(T.hard_cap_label||"")} ${fmtM(T.hard_cap)}. ${esc(T.hard_cap_why||"")}">`
@@ -915,8 +933,16 @@ function render(){
     const scaleEnd=T.hard_cap!=null?T.hard_cap:CFG.apron2;
     const capLbl=T.hard_cap!=null?`cap ${fmtM(T.hard_cap)}`:`2nd apron ${fmtM(CFG.apron2)}`;
     const pay=active
-      ?`<span class="ppay"><span class="paywas">was ${fmtM(T.payroll)} &middot; ${capLbl}</span><b class="paynow live${after>scaleEnd+1e-9?" over":""}">${fmtM(after)}</b></span>`
-      :`<span class="ppay"><b class="paynow rest">${fmtM(T.payroll)}</b></span>`;
+      ?`<span class="ppay"><span class="paywas">was ${fmtM(committed)} &middot; ${capLbl}</span><b class="paynow live${after>scaleEnd+1e-9?" over":""}">${fmtM(after)}</b></span>`
+      :`<span class="ppay"><b class="paynow rest">${fmtM(committed)}</b></span>`;
+    // The header is committed salary, so on these 18 teams it is deliberately
+    // MORE than the player cards add up to. Say why, rather than leave a
+    // visitor to find a gap he cannot account for -- which is exactly the
+    // complaint the hidden draft picks produced.
+    const deadChip=(T.dead||0)>0.049
+      ?`<span class="dead" title="Dead money: ${fmtM(T.dead)} still owed to players who are no longer on the roster (buyouts, waivers, stretched contracts). It counts against the cap, the tax line and both aprons in full, so it is inside the payroll above, but it belongs to nobody in the list below.">includes ${fmtM(T.dead)} dead</span>`
+      :"";
+    const underBar=(hcInHead?"":hcChip)+deadChip;
     const logo=DATA.logos&&DATA.logos[a]
       ?`<img class="plogo" loading="lazy" src="${DATA.logos[a]}" alt="">`:"";
     const cb=capbar(T,after,active);
@@ -924,7 +950,7 @@ function render(){
       <div class="phead"><span class="pname">${slotTrigger(a,i,
         logo+`<span class="pnametxt">${esc(T.name)}</span>`)}${hcInHead?hcChip:""}</span>
       ${pay}${rmBtn(a,i)}${teamMenu(a,i)}</div>
-      <div class="capwrap">${cb.bar}${hcInHead?"":`<div class="hcline">${hcChip}</div>`}${cb.warn}</div>`;
+      <div class="capwrap">${cb.bar}${underBar?`<div class="hcline">${underBar}</div>`:""}${cb.warn}</div>`;
 
     // The band under the cap bar used to be a notes line that was empty on most
     // teams. It is now the panel's tab bar: the four things you can move or

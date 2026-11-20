@@ -64,6 +64,7 @@ ROS = ROOT / "cache" / "team_rosters_2627.json"
 MASTER = ROOT / "data" / "master_roster.csv"
 SIGNINGS = ROOT / "data" / "real_signings_2026.csv"
 CBA = ROOT / "data" / "cba_config_2026_27.json"
+DEAD = ROOT / "data" / "dead_money_2026_27.csv"
 
 ROSTERED = ("standard", "two_way")
 
@@ -141,6 +142,33 @@ def main() -> int:
     cfg = json.loads(CBA.read_text(encoding="utf-8")) if CBA.exists() else {}
     cap_m = round(float(cfg.get("cap") or old.get("cap_M") or 0), 1)
     apron2_m = round(float(cfg.get("apron2") or old.get("apron2_M") or 0), 1)
+
+    # ── Dead money ───────────────────────────────────────────────────────────
+    # Salary a team still owes players who are NOT on its roster: buyouts,
+    # waivers, stretches, partial guarantees left behind in a trade. It counts
+    # against the cap, the tax line and BOTH APRONS exactly like a player's
+    # salary, so it belongs in `room` and in the baseline the Trade Machine
+    # prices a trade against. $145.4M of it across 18 teams on 2026-11-20, and
+    # Memphis alone carries $40.6M -- a third of its real cap sheet.
+    #
+    # Published as its OWN field rather than folded into `total`, and that is
+    # deliberate: `total` is the sum of the player rows, and a header a visitor
+    # cannot add up from the cards below it is a header he will not trust.
+    # Readers that need COMMITTED salary add the two; `room` already has.
+    #
+    # Non-fatal if the file is missing. A spine with no dead money understates
+    # every apron figure, which is the status quo this fixes, but refusing to
+    # build the league's rosters over one cap input would be worse.
+    dead_raw: dict[str, float] = {}
+    if DEAD.exists():
+        for r in _rows(DEAD):
+            abbr_d, amt = (r.get("team") or "").strip(), _num(r.get("amount_M"))
+            if abbr_d and amt is not None:
+                dead_raw[abbr_d] = dead_raw.get(abbr_d, 0.0) + amt
+    dead_by_team = {k: round(v, 1) for k, v in dead_raw.items()}
+    print(f"  dead money: ${sum(dead_by_team.values()):.1f}M across "
+          f"{len(dead_by_team)} team(s)"
+          + ("" if DEAD.exists() else "  (NO FILE -- apron figures understated)"))
     tw_season = utils.SEASONS[0]
     if tw_season not in utils.TWO_WAY_SALARY:
         raise SystemExit(
@@ -217,6 +245,15 @@ def main() -> int:
     teams, carried, derived, moved = {}, 0, 0, []
     for abbr in sorted(by_team):
         players = []
+        # Salaries are published rounded to $0.1M, which is the only precision
+        # a card ever shows. SUMMING the rounded numbers is a different thing,
+        # and it is wrong: fourteen Cleveland contracts each moved up to $50K
+        # by rounding add up to $206.9M against a true $206.748M, and that
+        # $0.15M of accumulated error is larger than the $23K by which
+        # Cleveland sits UNDER its first-apron hard cap. Rounding the ROWS is
+        # display; rounding the TOTAL is arithmetic. Keep the exact figures for
+        # the totals and round once, at the end.
+        exact: list[tuple[str, float]] = []
         for name, kind, r in by_team[abbr]:
             key = _hard(name)
             was = prev_on_team.get((abbr, key))
@@ -259,8 +296,9 @@ def main() -> int:
                 # a thing that can no longer be in this file.
                 "real": True,
             })
+            exact.append((kind, float(sal) if sal is not None else 0.0))
         players.sort(key=lambda x: -(x["salary"] or 0))
-        total = round(sum(p["salary"] or 0 for p in players), 1)
+        total = round(sum(s for _k, s in exact), 1)
         # `room` is room under the SECOND APRON, not under the cap. The only
         # reader renders it as a sentence -- seo_selfheal: "$X under the second
         # apron" / "over the second apron" -- so the basis is not a free
@@ -273,15 +311,28 @@ def main() -> int:
         # the apron, and because build_team_pages already computes `payroll`
         # that way. Two fields on two bases is how a page comes to disagree
         # with itself.
-        std_total = round(
-            sum(p["salary"] or 0 for p in players
-                if kind_of.get(_hard(p["n"])) != "two_way"), 1)
+        #
+        # PLUS DEAD MONEY, which is not on any roster and so appears in no
+        # player row, but counts against the apron in full. Leaving it out let
+        # the Trade Machine show Memphis $101.2M of apron room when it has
+        # $60.6M, and quoted its payroll at $120.5M on a night /Rosters quoted
+        # $161.1M for the same team. A number nobody is playing for is still a
+        # number the cap charges you for.
+        std_total = round(sum(s for k, s in exact if k != "two_way"), 1)
+        dead_m = dead_by_team.get(abbr, 0.0)
         teams[abbr] = {
             "abbr": abbr,
             "name": old_teams[abbr]["name"],
             "total": total,
+            # Standard-contract money, summed exact and rounded once. Published
+            # so build_team_pages reads it instead of subtracting two-way money
+            # out of `total`: a subtraction between two already-rounded numbers
+            # loses precision a second time, on the figure every apron and hard
+            # cap is tested against.
+            "std_total": std_total,
             "size": len(players),
-            "room": round(apron2_m - std_total, 1),
+            "dead": dead_m,
+            "room": round(apron2_m - std_total - dead_m, 1),
             "players": players,
             # `unsigned` is carried forward but FILTERED, and the difference
             # from `role` is the whole point. A role is a PAST-TENSE fact --
