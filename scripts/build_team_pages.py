@@ -314,7 +314,10 @@ def main() -> None:
                        # exact committed salary, summed once; see the spine
                        "committed": (round(float(t["committed"]), 6)
                                      if t.get("committed") is not None else None),
-                       "room": t["room"], "players": players,
+                       "room": t["room"],
+                       # which ceiling `room` measures; see build_roster_spine
+                       "room_line": t.get("room_line") or "second apron",
+                       "players": players,
                        "unsigned": t.get("unsigned", [])}
 
     # ── Two-ways the roster JSON never heard of ──────────────────────────────

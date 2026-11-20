@@ -306,55 +306,109 @@ def test_the_seasons_are_the_current_one(spine):
     assert spine["value_season"] == SEASONS[0], spine["value_season"]
 
 
-def test_room_is_second_apron_room_because_that_is_how_it_is_RENDERED(spine):
-    """`room` is not a free choice of basis: seo_selfheal turns it into a
-    SENTENCE -- "$X under the second apron" / "over the second apron" -- so it
-    must be apron room, and on STANDARD money, because two-way salary does not
-    count toward the apron.
+def test_room_measures_the_ceiling_that_actually_BINDS_each_team(spine):
+    """`room` is the only figure on a public team page that tells a reader how
+    much a team can still spend, so it has to measure the line that stops it.
 
-    The first version of this builder wrote CAP room ($165.0M basis) where the
-    previous writer had written apron room ($221.7M). All 30 figures were
-    wrong and 26 flipped sign, so Atlanta's crawlable page would have read
-    "$30.6M over the second apron" while sitting $26M under it, contradicting
-    the apron2_M in its own payload. Nothing tested this field.
+    It used to be apron-2 room for EVERY team, whatever hard cap the team
+    carries. Twenty-one of the twenty-five capped teams are capped at the
+    FIRST apron, so for them the figure measured a ceiling they cannot reach:
+    Cleveland's page read "$12.8M under the second apron" on a night a hard cap
+    it may not exceed sat $0.02M away. The number was true and the label
+    matched it. The LINE was the wrong one to report, which is a harder defect
+    to see than a wrong number.
 
-    AND ON COMMITTED MONEY: dead money charges against the apron in full while
-    appearing in no player row, so apron room that ignores it is too big. It
-    told the Trade Machine Memphis had $101.2M of apron room against a real
-    $60.6M.
+    Now room is measured to the team's own binding ceiling and `room_line`
+    names it, so a figure and its label cannot drift apart again.
     """
+    import csv
     cfg = json.loads((ROOT / "data" / "cba_config_2026_27.json")
                      .read_text(encoding="utf-8"))
-    ap2 = float(cfg["apron2"])
-    cap = float(cfg["cap"])
-    assert abs(ap2 - cap) > 10, "cap and apron2 too close to tell the bases apart"
-    off = {}
+    lvl = {"apron1": float(cfg["apron1"]), "apron2": float(cfg["apron2"])}
+    caps = {}
+    hc = ROOT / "data" / "hard_caps_2026_27.csv"
+    if hc.exists():
+        for r in csv.DictReader(l for l in hc.read_text(encoding="utf-8").splitlines()
+                                if l.strip() and not l.lstrip().startswith("#")):
+            caps[(r.get("team") or "").strip()] = (r.get("cap") or "").strip()
+
+    # against `committed`, the EXACT sum, not the rounded player rows: the
+    # spine computes room from exact figures precisely so a team with $0.023M
+    # of margin is not published with $0.1M, and a test that reconstructs the
+    # payroll from display values measures a different quantity.
+    off, labels = {}, {}
     for a, t in spine["teams"].items():
-        std = round(sum(p["salary"] or 0 for p in t["players"]
-                        if (p["salary"] or 0) > 0.7), 1)
-        want = round(ap2 - std - (t.get("dead") or 0.0), 1)
-        if abs(t["room"] - want) > 1.0:
+        committed = t.get("committed")
+        assert committed is not None, f"{a} publishes no exact committed figure"
+        ceiling = lvl.get(caps.get(a, "none"), lvl["apron2"])
+        want = round(ceiling - committed, 1)
+        if abs(t["room"] - want) > 0.0501:
             off[a] = (t["room"], want)
+        labels[a] = t.get("room_line")
     assert not off, (
-        f"room is not second-apron room on committed money (got, want): {off}")
+        f"room does not measure each team's binding ceiling (got, want): {off}")
+
+    assert all(labels.values()), (
+        f"teams with no room_line, so the figure says nothing about which line "
+        f"it measures: {[a for a, v in labels.items() if not v]}")
+    assert len({v for v in labels.values()}) >= 2, (
+        f"every team carries the same room_line ({set(labels.values())}), so "
+        f"either the hard-cap ledger was not read or the label is a constant")
 
 
 def test_room_agrees_with_the_sentence_the_team_page_builds(spine):
-    """The rendered claim must be TRUE: a team under the apron must not read
-    'over'."""
+    """The rendered claim must be TRUE: a team under its ceiling must not read
+    'over'. seo_selfheal prints room with room_line, so this pins the sign
+    against the SAME ceiling the label names."""
+    import csv
     cfg = json.loads((ROOT / "data" / "cba_config_2026_27.json")
                      .read_text(encoding="utf-8"))
-    ap2 = float(cfg["apron2"])
+    lvl = {"apron1": float(cfg["apron1"]), "apron2": float(cfg["apron2"])}
+    caps = {}
+    hc = ROOT / "data" / "hard_caps_2026_27.csv"
+    if hc.exists():
+        for r in csv.DictReader(l for l in hc.read_text(encoding="utf-8").splitlines()
+                                if l.strip() and not l.lstrip().startswith("#")):
+            caps[(r.get("team") or "").strip()] = (r.get("cap") or "").strip()
+
     lying = []
     for a, t in spine["teams"].items():
-        std = sum(p["salary"] or 0 for p in t["players"] if (p["salary"] or 0) > 0.7)
-        really_over = std + (t.get("dead") or 0.0) > ap2
-        says_over = t["room"] < 0
-        if really_over != says_over:
-            lying.append((a, round(std, 1), t["room"]))
+        ceiling = lvl.get(caps.get(a, "none"), lvl["apron2"])
+        really_over = float(t["committed"]) > ceiling
+        # room rounds to $0.1M, so a team inside half a tick of its ceiling
+        # publishes 0.0 and reads neither over nor under. Only a figure that
+        # states the WRONG side is a lie.
+        says_over = t["room"] < -0.0501
+        says_under = t["room"] > 0.0501
+        if (really_over and says_under) or (not really_over and says_over):
+            lying.append((a, t["committed"], t["room"], t.get("room_line")))
     assert not lying, (
-        f"the team page would state the wrong side of the apron "
-        f"(team, standard payroll, room): {lying}")
+        f"the team page would state the wrong side of the line it names "
+        f"(team, standard payroll, room, line): {lying}")
+
+
+def test_the_renderer_names_the_line_rather_than_hardcoding_one():
+    """The defect was a hardcoded "the second apron" in the only place room is
+    ever shown to a reader. If that string comes back, the label and the figure
+    can disagree again without anything failing."""
+    import re
+    src = (ROOT / "seo_selfheal.py").read_text(encoding="utf-8")
+    blk = src.split('room = team.get("room")', 1)[1][:1200]
+    assert "room_line" in blk, (
+        "seo_selfheal does not read room_line, so it cannot name the ceiling "
+        "the figure measures")
+
+    # The first version of this test only banned the literal string "under the
+    # second apron", and mutation testing showed that is not enough: replacing
+    # the whole expression with where = "the second apron" leaves that literal
+    # absent and the sentence just as wrong. Ban an apron NAME on the
+    # right-hand side instead, whatever shape the hardcoding takes.
+    assigns = re.findall(r"where\s*=\s*(.+)", blk)
+    assert assigns, "the renderer no longer computes a name for the line"
+    hard = [a for a in assigns if "apron" in a.lower()]
+    assert not hard, (
+        f"the line name is hardcoded rather than taken from room_line, so the "
+        f"figure and its label can disagree again: {hard}")
 
 
 def test_the_roster_floor_matches_check_roster_invariants():

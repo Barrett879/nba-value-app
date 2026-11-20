@@ -123,16 +123,33 @@ def test_the_ledger_is_not_empty_so_these_tests_can_fail(ledger):
 # ── room is apron room on COMMITTED money ────────────────────────────────────
 
 def test_room_subtracts_dead_money(pages):
-    """`room` is rendered by seo_selfheal as "$X under/over the second apron".
-    Dead money charges against the apron, so apron room that ignores it
-    overstates what a team can actually do."""
-    a2 = float(pages["apron2_M"])
-    off = {}
+    """`room` is rendered by seo_selfheal as "$X under/over <the line it
+    names>". Dead money charges against every apron and every hard cap, so
+    room that ignores it overstates what a team can actually do.
+
+    Since 2026-11-20 the line is the team's OWN binding ceiling rather than
+    always the second apron, so this checks the dead-money term against
+    whichever ceiling the row carries, read back out of `room_line`.
+    """
+    cfg = json.loads(CBA.read_text(encoding="utf-8"))
+    ceil_for = {"first-apron hard cap": float(cfg["apron1"]),
+                "second-apron hard cap": float(cfg["apron2"]),
+                "second apron": float(cfg["apron2"])}
+    off, seen = {}, set()
     for a, t in pages["teams"].items():
-        want = round(a2 - t["payroll"] - float(t.get("dead") or 0.0), 1)
+        line = (t.get("room_line") or "second apron").strip()
+        seen.add(line)
+        ceiling = ceil_for.get(line)
+        assert ceiling is not None, f"{a} carries an unknown room_line {line!r}"
+        # from the exact committed figure, for the same reason the spine
+        # computes it that way: payroll and dead are each rounded for display.
+        want = round(ceiling - float(t["committed"]), 1)
         if abs(float(t["room"]) - want) > 0.0501:
-            off[a] = (t["room"], want)
-    assert not off, f"room is not apron room on committed salary: {off}"
+            off[a] = (t["room"], want, line)
+    assert not off, f"room is not ceiling room on committed salary: {off}"
+    assert len(seen) >= 2, (
+        f"every team reports the same ceiling ({seen}), so the hard-cap ledger "
+        f"is not reaching the spine")
 
 
 def test_dead_money_actually_moves_room_somewhere(pages):

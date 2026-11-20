@@ -835,10 +835,24 @@ def team_page_html(abbr: str):
             f'<a href="/team/{a}">{esc(t["abbr"])}</a>'
             for a, t in sorted(data.get("teams", {}).items()))
 
+        # Name the line the figure actually measures. Until 2026-11-20 this
+        # always said "the second apron", which is the binding ceiling for
+        # only five teams: the other twenty-five carry a hard cap, twenty-one
+        # of them at the FIRST apron. Cleveland's page read "$12.8M under the
+        # second apron" while a cap it cannot exceed sat $0.02M away. True,
+        # and the most misleading true sentence on the page.
         room = team.get("room")
+        line = (team.get("room_line") or "second apron").strip()
         if isinstance(room, (int, float)):
-            aproom = (f'{_money(room)} under the second apron' if room >= 0
-                      else f'{_money(-room)} over the second apron')
+            where = line if line.startswith("the ") else f"the {line}"
+            if abs(room) < 0.05:
+                # room is published to $0.1M, so a team this close rounds to
+                # 0.0 and "$0.0M under" reads like a broken number rather
+                # than the tightest margin in the league (Cleveland: $23K).
+                aproom = f"within $0.1M of {where}"
+            else:
+                aproom = (f'{_money(room)} under {where}' if room > 0
+                          else f'{_money(-room)} over {where}')
         else:
             aproom = ""
         title = f"{name} {cseason} Roster, Salaries & Value | HoopsValue"

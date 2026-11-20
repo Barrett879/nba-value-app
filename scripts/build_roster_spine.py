@@ -65,6 +65,7 @@ MASTER = ROOT / "data" / "master_roster.csv"
 SIGNINGS = ROOT / "data" / "real_signings_2026.csv"
 CBA = ROOT / "data" / "cba_config_2026_27.json"
 DEAD = ROOT / "data" / "dead_money_2026_27.csv"
+HARDCAPS = ROOT / "data" / "hard_caps_2026_27.csv"
 
 ROSTERED = ("standard", "two_way")
 
@@ -142,6 +143,36 @@ def main() -> int:
     cfg = json.loads(CBA.read_text(encoding="utf-8")) if CBA.exists() else {}
     cap_m = round(float(cfg.get("cap") or old.get("cap_M") or 0), 1)
     apron2_m = round(float(cfg.get("apron2") or old.get("apron2_M") or 0), 1)
+    # EXACT ceilings for the arithmetic. apron2_m is rounded to $0.1M because
+    # it is PUBLISHED as apron2_M and shown to readers, but rounding a ceiling
+    # before subtracting a payroll from it is the same precision leak as
+    # summing rounded rows: $209.015M became $209.0M, which moved Atlanta's
+    # published room by $0.06M and is the whole margin on a team like
+    # Cleveland.
+    apron1_x = float(cfg.get("apron1") or 0)
+    apron2_x = float(cfg.get("apron2") or old.get("apron2_M") or 0)
+
+    # ── Each team's BINDING ceiling ──────────────────────────────────────────
+    # `room` used to be apron-2 room for every team, whatever hard cap the team
+    # actually carries. Twenty-one of the twenty-five capped teams are capped
+    # at the FIRST apron, so the figure measured a line they cannot reach:
+    # Cleveland's public team page read "$12.8M under the second apron" on a
+    # night a hard cap it may not exceed sat $0.02M away. The number was true
+    # and the label matched it; the LINE was the wrong one to report.
+    # So publish room to the ceiling that actually binds, and publish the name
+    # of that ceiling beside it, so the figure and its label cannot drift
+    # apart the way they just did.
+    binding = {}
+    if HARDCAPS.exists() and apron1_x and apron2_x:
+        for r in _rows(HARDCAPS):
+            lvl = (r.get("cap") or "").strip()
+            abbr_h = (r.get("team") or "").strip()
+            if not abbr_h:
+                continue
+            if lvl == "apron1":
+                binding[abbr_h] = (apron1_x, "first-apron hard cap")
+            elif lvl == "apron2":
+                binding[abbr_h] = (apron2_x, "second-apron hard cap")
 
     # ── Dead money ───────────────────────────────────────────────────────────
     # Salary a team still owes players who are NOT on its roster: buyouts,
@@ -351,7 +382,16 @@ def main() -> int:
             "committed": round(std_exact + dead_raw.get(abbr, 0.0), 6),
             "size": len(players),
             "dead": dead_m,
-            "room": round(apron2_m - std_total - dead_m, 1),
+            # room to the ceiling that BINDS this team, named by room_line.
+            # An uncapped team is measured to the second apron, which it may
+            # legally exceed but not without the harshest restrictions.
+            # From the EXACT figures, rounded ONCE. Subtracting the two
+            # already-rounded display numbers rounds a third time on the one
+            # quantity this field exists to state: Cleveland published $0.1M
+            # of room against an exact $0.023M.
+            "room": round(binding.get(abbr, (apron2_x, ""))[0]
+                          - std_exact - dead_raw.get(abbr, 0.0), 1),
+            "room_line": binding.get(abbr, (apron2_x, "second apron"))[1],
             "players": players,
             # `unsigned` is carried forward but FILTERED, and the difference
             # from `role` is the whole point. A role is a PAST-TENSE fact --
