@@ -21,7 +21,20 @@
 # (TOR processed 2026-09-14; Melton has played 16 games), so neither is
 # provisional any more. CHI is listed by the Hoops Rumors tracker
 # via the prior-season TPE rule but disputed by Bleacher Report; kept capped
-# per the conservative doctrine.
+# per the conservative doctrine. NOP moved none -> apron1 on 2026-11-20: the
+# 7/27 sweep was RIGHT for its date and the row simply went stale when New
+# Orleans used the non-taxpayer midlevel on 9/10 and expanded matching on 9/8.
+#
+# A cap=none row is a CLAIM, not an absence, and it is the easiest row to let
+# rot: the apron-level and source checks below only look at capped rows. That
+# is how NOP sat at none for ten weeks while this file was edited twice.
+#
+# SCOPE NOTE on the trigger lists above: they are OURS, and the Hoops Rumors
+# tracker carries at least one second-apron trigger we do not model, for a
+# team that SENDS a player out via sign-and-trade and uses his outgoing salary
+# to take a contract back. Not verified against the CBA text here, and no row
+# currently turns on it, so the taxonomy is left alone rather than widened on
+# a single reading.
 #
 # TWO INVARIANTS, both enforced by tests/test_hard_caps_ledger.py:
 #   1. A hard cap CANNOT be exceeded, so no team's committed salary may sit
@@ -33,6 +46,14 @@
 #      apron1; taxpayer MLE, salary aggregation and sending cash cap at apron2.
 #      Naming a mechanism and then writing the other apron is a typo this file
 #      cannot absorb, because the number is what the engine enforces.
+#      Mind the two phrases that contain each other: non-taxpayer midlevel
+#      contains taxpayer midlevel, and EXPANDED traded player exception (which
+#      is expanded matching) contains traded player exception (which is
+#      prior-season TPE use). They are different mechanisms.
+#   3. A team already OVER THE CAP that signs an outside free agent for more
+#      than the taxpayer midlevel has no non-apron way to pay him, so it must
+#      be capped. That screen names NOP and nobody else, and it is what caught
+#      this row.
 asof,team,cap,trigger,source,notes
 2026-07-27,ATL,apron1,Used the prior-season Capela trade exception to absorb Devin Carter and signed Jock Landale with the non-taxpayer midlevel,hoopsrumors.com hard-cap tracker,confirmed by verifier
 2026-07-27,BKN,none,,,verified none
@@ -43,7 +64,7 @@ asof,team,cap,trigger,source,notes
 2026-07-27,DAL,apron1,Used the bi-annual on Marcus Sasser and took back more than 100% of outgoing salary acquiring Santi Aldama (six-team trade Jul 8),spotrac.com/nba/dallas-mavericks/cap,confirmed by verifier
 2026-07-27,DEN,none,,,verified none
 2026-07-27,DET,apron1,Acquired John Collins via sign-and-trade and absorbed Isaiah Joe into the non-taxpayer midlevel (six-team trade Jul 8),hoopsrumors.com six-team trade story,confirmed by verifier
-2026-11-20,GSW,apron2,Signed De'Anthony Melton with the taxpayer midlevel (2yr/$11M; $5.477M of the $6.064M taxpayer MLE in year one),hoopsrumors.com hard-cap tracker (second-apron group),"CORRECTED 2026-11-20, was apron1 on a bi-annual trigger. apron1 was IMPOSSIBLE: GSW committed salary is $220.4M, $11.4M ABOVE the first apron, and a hard cap cannot be exceeded for any reason -- the engine was refusing every Warriors trade and blaming the user. The 2026-27 bi-annual exception is $5.477M and Melton signed for $5.477M, so the old mechanism was inferred from a coincidence; the taxpayer MLE is $6.064M and covers the same figure. GSW clears apron2 by $1.2M. This was the ONLY capped row whose notes never said confirmed by verifier."
+2026-11-20,GSW,apron2,Signed De'Anthony Melton with the taxpayer midlevel (2yr/$11M),hoopsrumors.com hard-cap tracker (second-apron group),"CORRECTED 2026-11-20, was apron1 on a bi-annual trigger. apron1 was IMPOSSIBLE: GSW committed salary is $220.4M, $11.4M ABOVE the first apron, and a hard cap cannot be exceeded for any reason -- the engine was refusing every Warriors trade and blaming the user. The 2026-27 bi-annual exception is $5.477M and Melton signed for $5.477M, so the old mechanism was inferred from a coincidence; the taxpayer MLE is $6.064M and covers the same figure. GSW clears apron2 by $1.2M. This was the ONLY capped row whose notes never said confirmed by verifier. FIGURE REMOVED 2026-11-20: the tooltip used to break the year-one salary out as $5.477M of the $6.064M taxpayer MLE, but the hoopsrumors MLE usage tracker says GSW used the FULL $6,064,000 on Melton, which our master_roster figure of $5.48M contradicts. The mechanism and the apron are confirmed either way, so the unverified breakdown is gone rather than guessed; the Melton salary conflict is open and tracked separately."
 2026-07-27,HOU,apron2,Signed Marcus Smart with the taxpayer midlevel (2yr/$13M Jul 10),spotrac.com/nba/houston-rockets/cap,confirmed by verifier
 2026-07-27,IND,apron1,Signed Kelly Oubre Jr. with the non-taxpayer midlevel (2yr/$16.5M Jul 1),hoopsrumors.com hard-cap tracker,confirmed by verifier
 2026-07-27,LAC,apron1,Signed Rui Hachimura with the non-taxpayer midlevel (2yr/~$28M Jul 6),sportingtribune.com via Jake Fischer,confirmed by verifier
@@ -52,7 +73,7 @@ asof,team,cap,trigger,source,notes
 2026-07-27,MIA,apron1,Took back more than 100% of outgoing salary in the Giannis trade with expanded matching; also used a prior-year exception on Bobby Portis and the taxpayer midlevel on Tim Hardaway Jr.,hoopsrumors.com hard-cap tracker,confirmed by verifier; apron1 binds (lowest apron triggered)
 2026-07-27,MIL,apron1,Took back more than 100% of outgoing salary acquiring Caris LeVert for Prince and Harris (six-team trade),hoopsrumors.com six-team trade story,confirmed by verifier
 2026-07-27,MIN,apron2,Aggregated Julius Randle and Naz Reid salaries in the LaMelo Ball trade (Jul 10),hoopsrumors.com hard-cap tracker,confirmed by verifier
-2026-07-27,NOP,none,,,verified none
+2026-11-20,NOP,apron1,Signed Bennedict Mathurin with the non-taxpayer midlevel on 9/10/26 (above the $6.064M taxpayer portion at every reported salary) and took back more than 100% of outgoing salary acquiring AJ Johnson against Micah Peavy alone in the 9/8/26 Memphis trade,hoopsrumors.com hard-cap tracker (first-apron group; the NOP bullet's own affiliate link is stamped 9/8/26) + NOP offseason check-in 9/24/26 + MLE usage tracker 9/22/26,"STALE, NOT WRONG WHEN WRITTEN. Verified none on 7/27 and correct then; both triggers postdate it (9/8 trade, 9/10 signing) and nobody edited this file afterwards, even on 9/17 when trade_exceptions gained the Hawkins TPE created BY THAT VERY TRADE. TWO INDEPENDENT MECHANISMS, both apron1, so apron1 binds either way. (1) MATHURIN, the sturdier one, and reachable WITHOUT the label: NOP was about $23.9M over the $164.961M cap, so there was no cap room and no room exception; the taxpayer midlevel ($6.064M), the bi-annual ($5.477M) and every minimum are too small; a trade exception cannot sign a free agent; a sign-and-trade is impossible on a 2-year deal against snt_min_years_excl_options=3. The non-taxpayer midlevel is what is left. The 5% raise limit closes the escape: on a 2-year deal year one is at least total/2.05, so at EVERY reported total ($15.375M HR, $16M ours and BBRef) year one is at least $7.5M, $1.4M above the taxpayer portion. A salary error cannot change the mechanism. (2) THE 9/8 TRADE: AJ Johnson ($3,237,120) in against Micah Peavy ($2,150,917) alone, with Hawkins going out unmatched to create the full $7,021,895 TPE this repo already records and Gibson arriving on the minimum exception. NOT A TRIGGER, DO NOT CITE IT: the Feb 2026 Alvarado TPE never fired. The 9/24 check-in still lists two NOP exceptions available with the largest worth $7M, so prior-season TPE use did not happen. OUR INFERENCE, NAMED: the phrase more than 100% is ours, not a quote. The tracker says only expanded traded player exception. The 150.5% is computed from the sources' own figures; on a WHOLE-TRADE basis NOP took back just 36.9%, which is why the tooltip names the Johnson-against-Peavy pairing and not the trade totals. SOURCING LIMIT, stated because it is the real weakness: every outlet asserting this cap is Hoops Rumors. Spotrac 403s this machine and HoopsHype and RealGM disallow us by name, so there was no independent second publisher to break the tie. The elimination argument in (1) is what carries this row, not the citation. REVERSE ONLY IF a publication reports NOP did not use the midlevel on Mathurin. A hard cap cannot be lifted once triggered, so later news can only add capped teams."
 2026-07-27,NYK,none,,,verified none
 2026-07-27,OKC,none,,,verified none
 2026-07-27,ORL,none,,,verified none

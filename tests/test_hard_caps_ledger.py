@@ -59,13 +59,31 @@ def _rows(path: Path):
 def _mechanisms(trigger: str) -> set[str]:
     """Which CBA mechanisms a trigger sentence names.
 
-    THE TRAP: "non-taxpayer midlevel" CONTAINS "taxpayer midlevel". Searched
-    naively, all eleven non-taxpayer-MLE rows read as taxpayer-MLE rows, every
-    one of them flips from apron1 to apron2, and the test inverts into
-    asserting the bug. The non-taxpayer phrase is masked out first.
+    TWO SUBSTRING TRAPS, both of which actually bit.
+
+    1. "non-taxpayer midlevel" CONTAINS "taxpayer midlevel". Searched naively,
+       all eleven non-taxpayer-MLE rows read as taxpayer-MLE rows, every one
+       flips from apron1 to apron2, and the test inverts into asserting the
+       bug.
+
+    2. "expanded traded player exception" CONTAINS "traded player exception".
+       That is the phrase our own cited source, the Hoops Rumors tracker,
+       actually uses -- and it is EXPANDED MATCHING, not prior-season TPE use.
+       They are different mechanisms that happen to share an apron, so reading
+       one as the other records the wrong history even when the verdict lands
+       right. For New Orleans the distinction is live: the expanded-matching
+       trigger fired and the prior-season Alvarado TPE affirmatively did NOT.
+
+    Both phrases are masked before the shorter one is searched for. This
+    function first shipped missing BOTH halves of trap 2 -- it looked for the
+    literal "trade exception" (which "traded player exception" does not
+    contain) and for "more than 100%" but never "expanded" -- so the tracker's
+    own wording classified as the EMPTY SET.
     """
     t = trigger.lower()
     masked = t.replace("non-taxpayer", "@@")
+    for phrase in ("expanded traded player exception", "expanded trade exception"):
+        masked = masked.replace(phrase, "@@")
     found = set()
     if "non-taxpayer" in t:
         found.add("ntmle")
@@ -75,9 +93,10 @@ def _mechanisms(trigger: str) -> set[str]:
         found.add("snt")
     if "bi-annual" in t:
         found.add("bae")
-    if "more than 100%" in t:
+    if "more than 100%" in t or "expanded" in t:
         found.add("expanded")
-    if "trade exception" in t or "prior-year exception" in t:
+    if ("trade exception" in masked or "traded player exception" in masked
+            or "prior-year exception" in masked):
         found.add("tpe")
     if "aggregat" in t:
         found.add("agg")
@@ -139,6 +158,30 @@ def test_non_taxpayer_midlevel_does_not_read_as_taxpayer_midlevel():
     assert "tmle" not in nt, (
         "non-taxpayer midlevel classified as the TAXPAYER midlevel, which "
         "would flip eleven apron1 rows to apron2")
+
+
+def test_expanded_matching_does_not_read_as_prior_season_tpe_use():
+    """The second substring trap, and the one that actually shipped broken.
+
+    "expanded traded player exception" is the Hoops Rumors tracker's own
+    wording for EXPANDED MATCHING, and it contains "traded player exception".
+    The first version of this classifier found neither half -- it searched for
+    the literal "trade exception" and for "more than 100%" -- so the live
+    phrasing of our own cited source returned the EMPTY SET and would have
+    failed the consistency test the moment anyone quoted the tracker.
+    """
+    tracker = _mechanisms("Used the expanded traded player exception to acquire AJ Johnson")
+    assert tracker, (
+        "the tracker's own wording classifies as nothing at all, so any row "
+        "quoting our cited source fails the consistency test")
+    assert tracker == {"expanded"}, tracker
+    assert "tpe" not in tracker, (
+        "expanded matching read as PRIOR-SEASON TPE use; they share an apron "
+        "but not a mechanism, and for New Orleans the prior-season TPE "
+        "affirmatively did not fire")
+
+    real_tpe = _mechanisms("Used the prior-season Capela trade exception to absorb Devin Carter")
+    assert real_tpe == {"tpe"}, real_tpe
 
 
 # ── the structural invariant ────────────────────────────────────────────────
@@ -249,6 +292,62 @@ def test_golden_state_is_capped_at_the_second_apron_not_the_first(ledger):
         f"with its published payroll")
     assert "taxpayer midlevel" in g[0]["trigger"].lower()
     assert "bi-annual" not in g[0]["trigger"].lower()
+
+
+def test_an_outside_signing_too_big_for_the_small_exceptions_implies_a_cap(cfg, ledger):
+    """THE ONE THAT WOULD HAVE CAUGHT NEW ORLEANS, on 2026-09-10.
+
+    A `cap=none` row is a claim, and until now nothing policed it: every other
+    test in this file filters to apron1/apron2 rows, so a team could go capped
+    in September and sit at "none" forever with an empty trigger and an empty
+    source. New Orleans did exactly that for ten weeks.
+
+    The screen: a team ALREADY OVER THE SALARY CAP that signs an OUTSIDE free
+    agent (type "new", so no Bird rights) for more than the taxpayer midlevel
+    has only apron-triggering ways to pay him. Cap room is gone by assumption,
+    the room exception belongs to under-cap teams, the bi-annual and every
+    minimum are smaller, and a trade exception cannot sign a free agent at
+    all -- it absorbs incoming salary in a TRADE. What is left is the
+    non-taxpayer midlevel or a sign-and-trade, and both hard-cap at the first
+    apron. (Just above the taxpayer figure the taxpayer midlevel is still in
+    range, which caps at the second, so this asserts only that SOME cap
+    exists, not which.)
+
+    League-wide this fires on three signings and names exactly one team, so it
+    is a screen rather than noise. Bennedict Mathurin at $8.0M on a New
+    Orleans book of $188.8M against a $164.961M cap is the one it catches.
+    """
+    caps = {(r.get("team") or "").strip(): (r.get("cap") or "").strip()
+            for r in ledger}
+    tmle, cap_line = float(cfg["tmle"]), float(cfg["cap"])
+    pages = json.loads(PAGES.read_text(encoding="utf-8"))["teams"]
+
+    screened, bad = 0, []
+    for r in _rows(ROOT / "data" / "real_signings_2026.csv"):
+        if (r.get("type") or "").strip() != "new":
+            continue
+        try:
+            yr1 = float(r["yr1_M"])
+        except (KeyError, TypeError, ValueError):
+            continue
+        team = (r.get("team") or "").strip()
+        t = pages.get(team)
+        if not t or yr1 <= tmle:
+            continue
+        before = t["payroll"] + float(t.get("dead") or 0.0) - yr1
+        if before <= cap_line:
+            continue
+        screened += 1
+        if caps.get(team) not in ("apron1", "apron2"):
+            bad.append((team, r.get("player"), yr1, round(before, 1)))
+
+    assert screened >= 2, (
+        f"only {screened} signings met the screen, so it is not actually "
+        f"looking at anything and would pass whatever the ledger said")
+    assert not bad, (
+        f"these teams were over the cap and signed an outside free agent for "
+        f"more than the ${tmle}M taxpayer midlevel, which only an "
+        f"apron-triggering exception can pay, yet carry no hard cap: {bad}")
 
 
 def test_the_two_exception_figures_that_coincide_are_pinned(cfg):
