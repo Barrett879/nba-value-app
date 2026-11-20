@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-19",
+"built_at": "2026-11-20",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3787,6 +3787,14 @@
 "high_M": 10.5,
 "is_max": false,
 "max_pct": 0.35
+},
+"yanic konan niederhauser": {
+"player": "Yanic Konan Niederh\u00e4user",
+"pcv_M": 6.6,
+"low_M": 1.4,
+"high_M": 11.9,
+"is_max": false,
+"max_pct": 0.25
 }
 },
 "contract_end": {
@@ -4325,6 +4333,13 @@
 "leonard miller": {
 "end_season": "2026-27",
 "last_year_type": "team_option",
+"signing_season": "2027-28",
+"years_remaining": 1,
+"current_team": "CHI"
+},
+"orlando robinson": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
 "signing_season": "2027-28",
 "years_remaining": 1,
 "current_team": "CHI"
@@ -5260,6 +5275,13 @@
 "years_remaining": 4,
 "current_team": "LAL"
 },
+"kevon looney": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 1,
+"current_team": "LAL"
+},
 "ziaire williams": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
@@ -5268,13 +5290,6 @@
 "current_team": "LAL"
 },
 "matisse thybulle": {
-"end_season": "2026-27",
-"last_year_type": "guaranteed",
-"signing_season": "2027-28",
-"years_remaining": 1,
-"current_team": "LAL"
-},
-"kevon looney": {
 "end_season": "2026-27",
 "last_year_type": "guaranteed",
 "signing_season": "2027-28",
@@ -6045,10 +6060,10 @@
 "current_team": "OKC"
 },
 "nikola topic": {
-"end_season": "2027-28",
+"end_season": "2026-27",
 "last_year_type": "team_option",
-"signing_season": "2028-29",
-"years_remaining": 2,
+"signing_season": "2027-28",
+"years_remaining": 1,
 "current_team": "OKC"
 },
 "kenrich williams": {
@@ -6574,6 +6589,13 @@
 "last_year_type": "team_option",
 "signing_season": "2028-29",
 "years_remaining": 2,
+"current_team": "SAC"
+},
+"mason plumlee": {
+"end_season": "2026-27",
+"last_year_type": "guaranteed",
+"signing_season": "2027-28",
+"years_remaining": 1,
 "current_team": "SAC"
 },
 "emanuel sharp": {
