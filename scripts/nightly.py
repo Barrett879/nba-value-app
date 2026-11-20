@@ -499,6 +499,36 @@ def main() -> int:
             for n, a, b in sorted(moved, key=lambda x: -abs(x[1] - x[2]))[:5]:
                 print(f"            {n}: {a:,.0f} -> {b:,.0f}")
 
+    # ---- 5a ROSTER SPINE -----------------------------------------------
+    # cache/team_rosters_2627.json is the roster every team page and trade card
+    # is built from, and until 2026-11-19 NOTHING REBUILT IT. It had a writer,
+    # scripts/export_fa_spreadsheet.py, but that is an offseason tool that
+    # fills roster slots from the free-agency SIMULATION and writes a workbook
+    # to ~/Downloads, so it could never be the nightly's roster step. The
+    # comment below used to say this script "does not regenerate the ROSTER",
+    # which was true and was the defect.
+    #
+    # Found 2026-11-19 at twenty days old: TWENTY signed players invisible on
+    # the Trade Machine (every "Draft pick" row was a signed standard contract
+    # by then) while their money stayed inside the team's payroll, Mason
+    # Plumlee and Orlando Robinson on no card at all, and Nique Clifford still
+    # on Sacramento after a trade to Oklahoma City.
+    #
+    # It runs BEFORE 5b, which refuses to build on a spine older than 14 days.
+    # That ordering is the whole point: a fatal check whose only remedy lives
+    # DOWNSTREAM of it arms itself, rolling back every night forever once it
+    # first fires. See the 3c next_contracts note for the same lesson.
+    #
+    # Non-fatal, because it is a hand-edited file and the builder REFUSES
+    # rather than writing a bad roster. A single bad night leaves the previous
+    # spine in place and 5b's age gate is what stops that becoming permanent.
+    try:
+        if not sh(["scripts/build_roster_spine.py"], "roster spine", check=False):
+            print("  WARNING roster spine not rebuilt; 5b will use the "
+                  "previous one and refuse if it is over 14 days old")
+    except Exception as e:
+        print(f"  WARNING build_roster_spine raised {type(e).__name__}: {e}")
+
     # ---- 5b TEAM PAGES -------------------------------------------------
     # team_pages.json joins tonight's blended scores and market values onto the
     # verified roster, and Trade Machine, Rosters and Redraft all read it.
@@ -511,8 +541,9 @@ def main() -> int:
     #
     # It runs AFTER verify, not with the build: it is scored off the board, so
     # rebuilding it before a rollback would leave it keyed to artifacts this
-    # run then deletes. It does not regenerate the ROSTER -- that comes from
-    # cache/team_rosters_2627.json, which follows transactions, not nights.
+    # run then deletes. The ROSTER it joins onto comes from
+    # cache/team_rosters_2627.json, rebuilt by step 5a immediately above; this
+    # step REFUSES if that file is over 14 days old.
     try:
         if not sh(["scripts/build_team_pages.py"], "team pages", check=False):
             return rollback("build_team_pages failed")
@@ -654,6 +685,7 @@ def main() -> int:
     # A file this script edits is a file this script ships.
     paths += sorted({site for sites in VERSIONED.values() for site, _rx in sites})
     paths += ["data/provisional_box_scores.csv", "cache/team_pages.json",
+              "cache/team_rosters_2627.json",
               "cache/player_hub_pcv_v2.json", "cache/share_meta.json",
               "cache/redraft_pool_v1.json"]
     # Only if it exists: step 5e is non-fatal, so a night the stats API was

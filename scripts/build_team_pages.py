@@ -30,6 +30,40 @@ import utils  # noqa: E402
 ROS = ROOT / "cache" / "team_rosters_2627.json"
 
 
+SPINE_WARN_DAYS = 3
+SPINE_MAX_DAYS = 14
+
+
+def assert_spine_fresh(ros: dict, today=None) -> int:
+    """Raise unless the roster spine was rebuilt recently. Returns its age.
+
+    A module-level function, not three lines inside main(), so it can be
+    TESTED. The first version was inline and the only guard on it was a test
+    grepping the source for "built_at" and "REFUSING" -- which a mutation that
+    disabled the gate entirely survived, because both strings stayed put.
+    """
+    built = (ros.get("built_at") or "").strip()
+    if not built:
+        raise SystemExit(
+            "REFUSING: cache/team_rosters_2627.json carries no built_at, so "
+            "its age cannot be known. File mtime lies (git checkout, iCloud "
+            "re-materialisation, Render's disk seed), which is why the age "
+            "has to be one the builder wrote. Run "
+            "scripts/build_roster_spine.py. Nothing written.")
+    today = today or _dt.date.today()
+    age = (today - _dt.date.fromisoformat(built)).days
+    if age > SPINE_MAX_DAYS:
+        raise SystemExit(
+            f"REFUSING: the roster spine was last built {built} ({age} days "
+            f"ago), over the {SPINE_MAX_DAYS}-day limit. That is a roster "
+            f"nobody is maintaining, and every team page and trade card is "
+            f"built from it. Run scripts/build_roster_spine.py. "
+            f"Nothing written.")
+    if age > SPINE_WARN_DAYS:
+        print(f"  WARNING roster spine is {age} days old (built {built})")
+    return age
+
+
 def _hard(name: str) -> str:
     """A last-ditch identity key: letters and digits only, no spaces.
 
@@ -55,6 +89,17 @@ OUT = ROOT / "cache" / "team_pages.json"
 
 def main() -> None:
     ros = json.loads(ROS.read_text(encoding="utf-8"))
+    # THE SPINE MUST BE FRESH. It had no scheduled builder until 2026-11-19
+    # and sat at 2026-10-30 while the league moved: twenty signed players
+    # invisible on the Trade Machine, two on no card at all, and Nique
+    # Clifford on Sacramento after he was traded to Oklahoma City. Nothing
+    # failed and nothing warned, because a stale roster looks exactly like a
+    # quiet one.
+    #
+    # The remedy (scripts/build_roster_spine.py) runs BEFORE this check, as
+    # nightly step 5a, so this cannot become a gate that arms itself: a check
+    # whose only fix lives downstream of it rolls back forever once it fires.
+    assert_spine_fresh(ros)
     # Market value ($M) per player = the projected market salary from the
     # CURRENT season, on Barrett's instruction (2026-10-29: "set the hub to
     # current season, along with every other feature in the site").

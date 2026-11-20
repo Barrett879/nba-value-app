@@ -137,14 +137,26 @@ def test_std_size_counts_standard_contracts_only(teams):
     assert not wrong, f"std_size != non-two-way card count (got, want): {wrong}"
 
 
-def test_std_size_is_not_just_size_minus_two_ways(teams):
-    """`size` also counts players dropped as free agents. Subtracting only the
-    two-ways left LAC reading 16 standard contracts, because waived Jamarion
-    Sharp was still inside its 17. Counting is the fix; this pins it."""
-    assert any(t["std_size"] != t["size"] - sum(1 for p in t["players"] if p["two_way"])
-               for t in teams.values()), (
-        "std_size looks like a subtraction from `size` again; it must be a "
-        "direct count of the standard contracts actually emitted")
+def test_std_size_is_computed_as_a_count_not_a_subtraction():
+    """`size` counts whatever the spine listed, including players this builder
+    then drops as free agents. Deriving std_size as `size` minus two-ways left
+    LAC reading 16 standard contracts, because waived Jamarion Sharp was still
+    inside its 17.
+
+    This was a DATA test until 2026-11-19: it asserted that at least one team's
+    std_size differed from that subtraction. Rebuilding the spine from
+    master_roster removed every waived ghost, so the two now agree for all 30
+    teams and the data can no longer tell the two formulas apart. That is the
+    bug being gone, not the guard being satisfied -- so the guard moved to the
+    source, where it still distinguishes them. The behavioural half lives in
+    test_std_size_counts_standard_contracts_only and
+    test_std_size_never_exceeds_the_master_roster_standard_count.
+    """
+    src = (ROOT / "scripts" / "build_team_pages.py").read_text(encoding="utf-8")
+    assert '"std_size": len(players)' in src, (
+        "std_size is no longer a direct count of the standard contracts "
+        "emitted; a subtraction from `size` is wrong the moment this builder "
+        "drops anybody")
 
 
 def test_no_team_is_over_the_roster_limit_before_a_trade(teams):

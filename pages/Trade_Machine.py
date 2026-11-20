@@ -182,7 +182,16 @@ def _payload() -> str:
     for abbr, t in teams_raw.items():
         players = []
         for p in t["players"]:
-            if not p.get("real", True) or p["role"] == "Draft pick" or p.get("salary") is None:
+            # `role == "Draft pick"` used to mean "drafted, not signed yet",
+            # which in July was a fair proxy for "cannot be traded". It stopped
+            # being true the moment they signed, and because nothing rebuilt
+            # the roster spine the label never changed: on 2026-11-19 all
+            # TWENTY of those rows were signed standard contracts in
+            # master_roster, on the right team, at $1.4M to $8.8M -- hidden
+            # from every trade card while their money stayed inside the team's
+            # payroll. The spine now carries only signed contracts, so
+            # signedness is not a question this filter has to answer.
+            if not p.get("real", True) or p.get("salary") is None:
                 continue
             n = normalize(p["n"])
             sig = signings.get(n)

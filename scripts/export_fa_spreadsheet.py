@@ -668,10 +668,26 @@ for _tm in team_order:
             for r in _rows],
         "unsigned": sorted(_uns, key=lambda u: -(u["barrett"] or 0)),
     }
-_ros_path = Path(__file__).resolve().parent.parent / "cache" / "team_rosters_2627.json"
+# NOT team_rosters_2627.json any more. This script used to write the roster
+# SPINE as a side effect, which made it the de facto roster builder -- and it
+# is an OFFSEASON tool: these rosters are filled from the free-agency
+# SIMULATION (cache/fa_sim_v1.json), so running it in-season would re-project
+# free agents onto teams. Because nobody runs it nightly, the spine sat at
+# 2026-10-30 until 2026-11-19 while the league moved.
+#
+# The spine now has one writer, scripts/build_roster_spine.py, which rebuilds
+# it from data/master_roster.csv every night. Two writers with different
+# semantics on one file is how that file came to disagree with the roster, and
+# this one would also write no `built_at`, which build_team_pages now refuses.
+#
+# The projection is still written, under its own name, so this workbook's
+# inputs stay inspectable.
+_ros_path = Path(__file__).resolve().parent.parent / "cache" / "fa_projected_rosters.json"
 _ros_path.write_text(_json.dumps(_ros, separators=(",", ":")))
 print(f"wrote {_ros_path.name} ({len(team_order)} teams, {len(detail)} roster rows, "
       f"{sum(len(t['unsigned']) for t in _ros['teams'].values())} notable unsigned)")
+print("  NOTE: the roster spine (cache/team_rosters_2627.json) is NOT written "
+      "here any more; scripts/build_roster_spine.py owns it.")
 
 # ── styles ──────────────────────────────────────────────────────────────────────
 FONT = "Arial"
