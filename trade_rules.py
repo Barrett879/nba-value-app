@@ -115,6 +115,7 @@ class TradeTeam:
     abbr: str
     payroll: float                   # $M committed BEFORE the trade
     roster_size: int                 # standard contracts before the trade
+    two_way_size: int = 0            # two-way contracts before the trade
     out_players: list[TradePlayer] = field(default_factory=list)
     in_players: list[TradePlayer] = field(default_factory=list)
     out_picks: list[TradePick] = field(default_factory=list)
@@ -599,6 +600,24 @@ def check_cash_and_roster(trade: Trade, cfg: CBAConfig):
                 "ROSTER_MIN", t.abbr,
                 f"{t.abbr} drops to {roster_after} standard contracts; below "
                 f"{cfg.roster_min} is only allowed for two weeks at a time."))
+        # Two-way slots. Until 2026-11-19 nothing checked this, and nothing had
+        # to: the page hardcoded two_way=false, so an incoming two-way counted
+        # as a standard contract and ROSTER_MAX bounded it by accident. Making
+        # two-ways invisible to the 15-man count REMOVED that accidental bound,
+        # so a team could be told "TRADE WORKS" while ending up with four.
+        # 29 of 30 teams carry exactly three, so it was reachable almost
+        # anywhere. Taking a case out of one limit unbounds whatever else that
+        # limit was quietly holding.
+        tw_delta = (len([p for p in t.in_players if p.two_way])
+                    - len([p for p in t.out_players if p.two_way and not p.snt_out]))
+        tw_after = t.two_way_size + tw_delta
+        if tw_after > cfg.two_way_slots:
+            v.append(Violation(
+                "TWO_WAY_SLOTS", t.abbr,
+                f"{t.abbr} would hold {tw_after} two-way contracts; the limit "
+                f"is {cfg.two_way_slots}. The receiving team needs an open "
+                f"two-way slot, so send one back or convert one first.",
+                "CBA Art. II 11(b) (two-way roster limit)"))
     return v, n
 
 

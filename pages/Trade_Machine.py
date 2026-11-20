@@ -187,13 +187,33 @@ def _payload() -> str:
             n = normalize(p["n"])
             sig = signings.get(n)
             pid = heads.get(p["n"])
+            # master_roster decides whether a man is on a two-way, so the CHIP
+            # follows master_roster and not contract_years, which is scraped
+            # and goes stale. Testing only for a MISSING row was not enough:
+            # Cam Christie's stale LAC row is the $2.30M team-option deal his
+            # two-way replaced, so the join HIT and his card rendered "2NG",
+            # a standard multi-year contract, while the engine traded him as a
+            # two-way. The card and the verdict must not disagree.
+            if p.get("two_way"):
+                _yrs = {"n": 1, "g": 0, "kind": "two_way", "seasons": ""}
+            else:
+                _yrs = (years.get(abbr) or NameIndex()).get(p["n"])
             players.append({
                 "n": p["n"], "salary": float(p["salary"]),
                 "pos": (p.get("pos") or "").split("/")[0],
                 "value": p.get("value"), "barrett": p.get("barrett"),
                 "bs_yr": p.get("bs_yr"),
                 **_card_line(p["n"], p.get("bs_yr")),
-                "yrs": (years.get(abbr) or NameIndex()).get(p["n"]),
+                "yrs": _yrs,
+                # A two-way is invisible to salary matching (CBA 1.8) and to
+                # the 15-man limit, and trade_rules models all of it behind
+                # TradePlayer.two_way -- salary_out, matching_out, salary_in,
+                # matchable_in, counted_out and the roster delta all skip it,
+                # and check_player_eligibility exempts it from the Dec-15
+                # restriction. None of that had ever fired, because the JS
+                # port hardcoded two_way:false for every player. Kaluma's
+                # $0.7M was being matched like a standard contract.
+                "two_way": bool(p.get("two_way")),
                 "headshot": (f"https://cdn.nba.com/headshots/nba/latest/260x190/{pid}.png"
                              if pid else None),
                 "signed_date": (sig or {}).get("date"),
@@ -219,6 +239,16 @@ def _payload() -> str:
             picks.append(entry)
         hc = hard_caps.get(abbr)
         teams[abbr] = {"name": t["name"], "payroll": t["payroll"], "size": t["size"],
+                       # STANDARD contracts only -- what the 15-man limit
+                       # counts. `size` includes two-ways, so feeding it to
+                       # the engine said LAL had 16 standard contracts and
+                       # tripped a phantom ROSTER_MAX on any Lakers trade.
+                       # TWELVE teams were over the limit before any trade on
+                       # 2026-11-19; ten of them purely from this miscount.
+                       "std_size": t.get("std_size", t["size"]),
+                       # Nothing else bounds the two-way count once two-ways
+                       # are invisible to the 15-man limit.
+                       "two_way_size": t.get("two_way_size", 0),
                        "covered": ledger.get(abbr, {}).get("covered", []),
                        "players": players, "picks": picks,
                        "hard_cap": (cfg["apron1"] if hc["cap"] == "apron1"

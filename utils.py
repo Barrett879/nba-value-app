@@ -613,6 +613,48 @@ def two_way_players() -> tuple:
     return tuple(out)
 
 
+@lru_cache(maxsize=1)
+def tracked_players() -> tuple:
+    """Spellings the site still tracks: ANY data/master_roster.csv row, minus
+    anyone out of the league.
+
+    The gate on the Barrett-Score fallback's deeper seasons; see
+    build_ranked_blended for the measurement that chose it.
+
+    Deliberately WIDER than the roster. A master_roster free_agent row is
+    somebody the site still lists and prices, and the one-season-back step
+    already carries 75 of them, so excluding them here would make the deeper
+    seasons answer a different question than the shallow one.
+
+    It is a POSITIVE test -- "is this somebody we track" -- not an absence
+    test. Absence from a stats frame or a salary feed has repeatedly been
+    mistaken for a fact about a player on this site; see
+    out_of_league_players for the same lesson.
+
+    Returns a tuple so the lru_cache is safe; callers wrap it in a NameIndex,
+    because an exact-key miss would silently drop a player whose spelling
+    differs between master_roster and a historical stats frame ("Nicolas
+    Claxton" against "Nic Claxton" is exactly this file against that one).
+    """
+    try:
+        gone = NameIndex(out_of_league_players())
+    except Exception:                                   # never block the board
+        gone = NameIndex()
+    out = []
+    try:
+        fp = Path(__file__).resolve().parent / "data" / "master_roster.csv"
+        with open(fp, newline="", encoding="utf-8") as fh:
+            for r in csv.DictReader(l for l in fh if l.strip()
+                                    and not l.lstrip().startswith("#")):
+                n = (r.get("player") or "").strip()
+                if n and n != "player" and gone.get(n) is None:
+                    out.append(n)
+    except Exception:
+        logger.warning("master_roster.csv unreadable: the Barrett Score "
+                       "fallback will not walk past one season")
+    return tuple(out)
+
+
 # ── Freshness stamps for the hand-maintained data files ──────────────────
 # THREE GROUPS, BECAUSE THEY ARE VERIFIED ON THREE DIFFERENT CLOCKS. One date
 # for all of them is how the home-page caption came to claim a re-check of 131
@@ -8279,6 +8321,13 @@ def build_ranked_projected(season: str, playoffs: bool = False) -> pd.DataFrame:
 # across a dozen files, which is how this site has been bitten repeatedly.
 BLEND_MIN_MINUTES = 0
 
+# How many seasons the fallback above may walk back looking for one the player
+# actually played. Four covers a player who missed three consecutive seasons,
+# which is already past any real case, and bounds how many parquets a request
+# can open. The walk is bounded by tracked_players() rather than by this
+# number; see build_ranked_blended.
+BLEND_WALKBACK_SEASONS = 4
+
 
 def build_ranked_blended(season: str, min_minutes: int | None = None) -> pd.DataFrame:
     """The scored pool for a season too young to stand on its own.
@@ -8325,20 +8374,54 @@ def build_ranked_blended(season: str, min_minutes: int | None = None) -> pd.Data
         live["score_season"] = season
     frames = [live]
 
-    # ONE season back, not two. Walking back further padded the board with 64
-    # players whose last game was two years ago and who are mostly out of the
-    # league, taking it to 588 when the pool it replaces was 524. The board is
-    # meant to be the current roster, so a player with no usable prior season
-    # simply has no score yet, exactly as before the rollover.
+    # THE LAST SEASON HE ACTUALLY PLAYED, not "one season back".
+    #
+    # Barrett, 2026-11-19: "use current season data unless they literally
+    # haven't played a single minute. In that case, use the last season where
+    # they did play."
+    #
+    # This stopped at ONE season back, and the reason was sound as far as it
+    # went: an unbounded walk padded the board with men whose last game was
+    # years ago and who are mostly out of the league. Measured on 2026-11-19
+    # against the committed frames, walking four seasons back UNGATED adds 271
+    # rows (57 + 63 + 76 + 75) to a 471-row board, and 45 of the first 57 are
+    # players this site has no record of at all.
+    #
+    # So the walk is GATED, not shortened. Gated on tracked_players() the same
+    # walk adds ELEVEN rows and then terminates on its own: 2024-25 contributes
+    # 11 (Ben Simmons and Orlando Robinson, both on rosters today, plus nine
+    # free agents the site tracks) and 2023-24 and earlier contribute nothing.
+    # Ben Simmons is the case that matters -- a rostered player, 51 games and
+    # 22.0 MPG in 2024-25, who carried no score anywhere on the site.
+    #
+    # The FIRST season back is deliberately NOT gated. That is the shipped
+    # "last complete season" basis the whole site is built around, and the FA
+    # board needs those rows: 75 of the 128 it adds are free agents. Only the
+    # deeper seasons are new, and only they need bounding.
     taken = NameIndex({n: True for n in live["Player"]}) if len(live) else NameIndex()
-    for back in SEASONS[idx + 1:idx + 2] if idx >= 0 else []:
+    tracked = None
+    for depth, back in enumerate(
+            SEASONS[idx + 1:idx + 1 + BLEND_WALKBACK_SEASONS] if idx >= 0 else []):
+        # Never rebuild a fallback season on the request path. A historical
+        # parquet is immutable, so build_raw just reads it; a MISSING one falls
+        # through to a live network rebuild, and on Render /data need not hold
+        # all 54 of them. The first season back keeps its old unconditional
+        # call, so this change cannot alter what already ships.
+        if depth and not _raw_disk_exists(back):
+            continue
         try:
             old = build_raw(back)
         except Exception:                                    # never block
             continue
         if not len(old):
             continue
-        keep = old[[taken.get(n) is None for n in old["Player"]]].copy()
+        fresh = [taken.get(n) is None for n in old["Player"]]
+        if depth:
+            if tracked is None:
+                tracked = NameIndex({n: True for n in tracked_players()})
+            fresh = [f and tracked.get(n) is not None
+                     for f, n in zip(fresh, old["Player"])]
+        keep = old[fresh].copy()
         if not len(keep):
             continue
         keep["score_season"] = back

@@ -639,6 +639,14 @@ function validateTrade(trade){
       vio("ROSTER_MAX",t.abbr,`${t.abbr} would have ${rosterAfter} standard contracts; the limit is ${maxRoster} ${maxRoster===CFG.roster_max_offseason?"in the offseason":"during the season"}. Waive or include another player first.`,"roster limits (15+3 in season, 21 offseason)");
     if(rosterAfter<CFG.roster_min)
       note("ROSTER_MIN",t.abbr,`${t.abbr} drops to ${rosterAfter} standard contracts; below ${CFG.roster_min} is only allowed for two weeks at a time.`);
+    // Two-way slots. See trade_rules.check_cash_and_roster: the 15-man count
+    // used to bound this by accident, because two_way was hardcoded false
+    // here and an incoming two-way counted as a standard contract.
+    const twDelta=t.in_players.filter(p=>p.two_way).length
+      -t.out_players.filter(p=>p.two_way&&!p.snt_out).length;
+    const twAfter=(t.two_way_size||0)+twDelta;
+    if(twAfter>CFG.two_way_slots)
+      vio("TWO_WAY_SLOTS",t.abbr,`${t.abbr} would hold ${twAfter} two-way contracts; the limit is ${CFG.two_way_slots}. The receiving team needs an open two-way slot, so send one back or convert one first.`,"CBA Art. II 11(b) (two-way roster limit)");
   }
   const impact=teams.map(t=>({abbr:t.abbr,before:t.payroll,after:payAfter(t),
     roster:t.roster_size+t.in_players.filter(p=>!p.two_way).length
@@ -752,7 +760,7 @@ function pickKey(abbr,i){return "K|"+abbr+"|"+i}
 function buildTrade(){
   const tt={};
   for(const a of picked()){
-    tt[a]={abbr:a,payroll:DATA.teams[a].payroll,roster_size:DATA.teams[a].size,
+    tt[a]={abbr:a,payroll:DATA.teams[a].payroll,roster_size:(DATA.teams[a].std_size==null?DATA.teams[a].size:DATA.teams[a].std_size),two_way_size:(DATA.teams[a].two_way_size||0),
       out_players:[],in_players:[],out_picks:[],in_picks:[],
       cash_out:0,cash_in:0,cash_sent_ytd:0,
       owned_future_firsts:DATA.teams[a].covered.slice(),
@@ -768,12 +776,15 @@ function buildTrade(){
       const p=DATA.teams[abbr].players.find(x=>x.n===id); if(!p) continue;
       const tp={name:p.n,salary:p.salary,signed_date:p.signed_date||null,
         signed_via:p.signed_via||"standard",raise_pct:null,acquired_date:null,
-        consent_required:false,two_way:false,via_tpe:!!mv.tpe};
+        consent_required:false,two_way:!!p.two_way,via_tpe:!!mv.tpe};
       tt[abbr].out_players.push(tp); tt[dest].in_players.push(tp);
     }else if(kind==="F"){
       const fa=(DATA.fas&&DATA.fas[abbr]||[]).find(x=>x.n===id); if(!fa) continue;
       const tp={name:fa.n,salary:mv.salary,signed_date:DATA.today,
         signed_via:"sign_and_trade",raise_pct:null,acquired_date:null,
+        // A sign-and-trade is a standard contract by definition (CBA Art.
+        // VII 8(e)); there is no such thing as a two-way S&T, so this one
+        // stays false rather than reading a flag off a free-agent row.
         consent_required:false,two_way:false,via_tpe:!!mv.tpe,
         snt_out:true,prior_salary:null};
       tt[abbr].out_players.push(tp); tt[dest].in_players.push(tp);

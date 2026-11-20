@@ -28,6 +28,28 @@ sys.path.insert(0, str(ROOT))
 import utils  # noqa: E402
 
 ROS = ROOT / "cache" / "team_rosters_2627.json"
+
+
+def _hard(name: str) -> str:
+    """A last-ditch identity key: letters and digits only, no spaces.
+
+    utils.NameIndex is the right tool for name joins and is used first
+    everywhere below. It cannot bridge a HYPHEN against a SPACE, because its
+    key strips punctuation but keeps spaces: "David Jones-Garcia" and "David
+    Jones Garcia" share no key in either direction, and the surname fallback
+    compares "jonesgarcia" against "jones garcia".
+
+    That is exactly how the roster spine spells him against master_roster and
+    the live NBA feed, and on 2026-11-19 it put the same man on the Spurs card
+    TWICE -- once as a standard "Re-sign" with no score, once as a two-way --
+    which also inflated San Antonio's standard count by one.
+
+    This key is deliberately NOT used for display or for joining data; only to
+    answer "have I already emitted this person", where a false match costs one
+    skipped row and a false miss publishes a duplicate.
+    """
+    import re
+    return re.sub(r"[^a-z0-9]", "", str(name).lower())
 OUT = ROOT / "cache" / "team_pages.json"
 
 
@@ -95,6 +117,11 @@ def main() -> None:
     # removes anybody.
     import csv as _csv
     mr_kind, mr_pos = utils.NameIndex(), utils.NameIndex()
+    # (team, player) for every two-way deal. master_roster is the ONLY file
+    # that records them: the ESPN salary feed omits two-way contracts
+    # altogether, which is why the roster JSON carries whichever handful
+    # happened to be written into it as projected signings and no others.
+    mr_two_way: list = []
     mr_path = ROOT / "data" / "master_roster.csv"
     if mr_path.exists():
         for _r in _csv.reader(ln for ln in mr_path.read_text(encoding="utf-8").splitlines()
@@ -105,6 +132,8 @@ def main() -> None:
             mr_kind.add(_r[2].strip(), _r[4].strip())
             if _r[5].strip() and _r[5].strip().lower() != "nan":
                 mr_pos.add(_r[2].strip(), _r[5].strip())
+            if _r[4].strip() == "two_way":
+                mr_two_way.append((_r[1].strip(), _r[2].strip()))
 
     overrides = utils.NameIndex()
     ov_path = ROOT / "data" / "position_overrides.csv"
@@ -114,6 +143,11 @@ def main() -> None:
                 if not ln.lstrip().startswith("#")):
             if (_r.get("player") or "").strip() and (_r.get("pos") or "").strip():
                 overrides.add(_r["player"].strip(), _r["pos"].strip())
+    _twi = utils.NameIndex({_n: True for _n in utils.two_way_players()})
+    _tw_hard = {_hard(_n) for _n in utils.two_way_players()}
+    _spine_tw: dict = {}          # two-way rows the spine carried, per team
+    _spine_tw_sal: dict = {}      # and their money, which `total` includes
+    _spine_pos = utils.NameIndex()
     applied = filled = prior_rows = 0
     waived: list = []
     # NameIndex, not a plain dict: the roster feed writes "C.J. McCollum" and
@@ -131,6 +165,22 @@ def main() -> None:
             vd = round(sal - val, 1) if (val is not None and sal is not None) else None
             if mr_kind.get(p["n"]) == "free_agent":
                 waived.append((abbr, p["n"]))
+                continue
+            if _twi.get(p["n"]) is not None or _hard(p["n"]) in _tw_hard:
+                # Two-ways are emitted below, ALL of them, from master_roster.
+                # Keeping the spine's copy here and adding only the missing
+                # ones left the file with two authorities for the same fact
+                # and the team could disagree: the spine still had Sean
+                # Pedulla on Houston after master_roster moved him to
+                # Sacramento, which is a FOURTH Houston two-way. One source
+                # for the set and one for the team, or this recurs.
+                #
+                # His spine position is kept as a last fallback, since
+                # master_roster leaves `pos` blank for most two-ways.
+                _spine_tw[abbr] = _spine_tw.get(abbr, 0) + 1
+                _spine_tw_sal[abbr] = _spine_tw_sal.get(abbr, 0.0) + float(sal or 0)
+                if (p.get("pos") or "").strip() not in ("", "\u2014"):
+                    _spine_pos.add(p["n"], p["pos"])
                 continue
             _ov = overrides.get(p["n"])
             _pos = p.get("pos", "")
@@ -165,11 +215,142 @@ def main() -> None:
                 "value": round(val, 1) if val is not None else None,
                 "vd": vd,  # salary - market value; >0 overpay, <0 bargain
                 "real": p.get("real", True),  # False = projected move for an unsigned FA
+                # A two-way is NOT a standard contract: it is invisible to
+                # salary matching and to the 15-man limit, and the CBA engine
+                # already models all of that behind TradePlayer.two_way. It
+                # just had no way to know, because nothing on the wire said
+                # so. See pages/Trade_Machine.py.
+                "two_way": False,     # every two-way is emitted below
             })
         players.sort(key=lambda x: -(x["salary"] or 0))  # stars first
+        # `size` is the spine's own roster count. It is NOT the standard-
+        # contract count: it includes the two-ways skipped above AND the
+        # players dropped as free agents, so deriving std_size by subtracting
+        # two-ways left LAC reading 16 standard contracts (Jamarion Sharp,
+        # waived, was still in the 17).
+        #
+        # So COUNT, do not subtract. At this point `players` holds exactly the
+        # standard contracts -- free agents dropped, two-ways not yet appended
+        # -- which is the number the 15-man limit is about. Projected signings
+        # are counted, deliberately: `payroll` already carries their money, so
+        # excluding them from the roster would have the cap sheet and the
+        # roster count disagree about the same hypothetical player.
+        #
+        # Measured 2026-11-19: no team exceeds 15 under this definition. The
+        # old one had TWELVE teams over before any trade was proposed -- ten
+        # from counting two-ways as standard contracts, and HOU and LAC from
+        # counting players this builder had already dropped as free agents.
+        # Payroll is STANDARD-contract money. A two-way salary does not count
+        # against the cap, the apron or the tax, and the engine already
+        # excludes two-ways from salary_out/salary_in -- so leaving their money
+        # inside the baseline made the arithmetic inconsistent: sending a
+        # two-way out credited nothing while his salary stayed in `payroll`.
+        # Indiana sits $0.6M under a hard cap with $2.0M of two-way money
+        # inside its total, which is enough to call a legal trade illegal.
+        # The spine was also inconsistent team to team, carrying whichever
+        # two-ways it happened to list (LAL 0.7, IND 2.0, BKN 0.0).
         teams[abbr] = {"abbr": abbr, "name": t["name"], "size": t["size"],
-                       "payroll": t["total"], "room": t["room"], "players": players,
+                       "std_size": len(players),
+                       "payroll": round(t["total"] - _spine_tw_sal.get(abbr, 0.0), 1),
+                       "room": t["room"], "players": players,
                        "unsigned": t.get("unsigned", [])}
+
+    # ── Two-ways the roster JSON never heard of ──────────────────────────────
+    # The spine carried 19 of the league's 89 two-way players on 2026-11-19,
+    # and the 19 were arbitrary: whichever two-way deals happened to be
+    # written in as projected signings last time the file was touched, which
+    # was 2026-10-30. 29 of 30 teams were wrong. On the Trade Machine that
+    # read as Arthur Kaluma being the only two-way the Lakers could trade,
+    # with Chris Manon and Carson Cooper absent.
+    #
+    # master_roster is used here the same way it is used above: for the thing
+    # it alone knows. Above, which players are free agents; here, who is on a
+    # two-way. Adding rather than replacing, because the spine is still the
+    # source for standard contracts, projected signings and the `real` flag.
+    #
+    # The TEAM comes from the blend only for a CURRENT-SEASON row, and
+    # otherwise from master_roster.
+    #
+    # Both halves of that were learned the hard way. master_roster's team
+    # column lags -- it had Walter Clayton Jr. and Micah Peavy on MEM while
+    # both had already played for DAL and OKC -- so the live stat feed wins
+    # where it has a live opinion. But a FALLBACK row's Team is last season's
+    # team, and taking it put Drew Timme on the Lakers (where he played in
+    # 2025-26, not where he is) and Kobe Bufkin there too, giving LAL five
+    # two-ways. The three-slot guard below is what caught it.
+    # NO SILENT ZERO. `.get(season, 0)` would price all 89 two-ways at $0.0M
+    # the first season nobody adds a key, and the guard that exists for this
+    # table (check_season_surfaces) checks SEASONS[0] while this reads the
+    # SPINE's contract_season -- two keys that drift apart every July.
+    _tw_season = ros["contract_season"]
+    if _tw_season not in utils.TWO_WAY_SALARY:
+        raise SystemExit(
+            f"REFUSING: utils.TWO_WAY_SALARY has no entry for {_tw_season}, so "
+            f"every two-way would be priced at $0.0M. Add the season's two-way "
+            f"scale. Nothing written.")
+    _tw_sal = round(utils.TWO_WAY_SALARY[_tw_season] / 1e6, 1)
+    _mteam = utils.NameIndex({
+        str(r["Player"]): str(r["Team"]) for _, r in df.iterrows()
+        if str(r.get("Team") or "").strip()
+        and str(r.get("score_season") or value_season) == value_season})
+    _known = list(teams.keys())
+    _have = utils.NameIndex({p["n"]: True for t in teams.values() for p in t["players"]})
+    _have_hard = {_hard(p["n"]) for t in teams.values() for p in t["players"]}
+    added: list = []
+    for _mr_team, _name in mr_two_way:
+        if _have.get(_name) is not None or _hard(_name) in _have_hard:
+            # A duplicate master_roster row, or a name that collides with a
+            # standard contract. Either is a data error; say so and skip,
+            # rather than putting one man on two cards.
+            print(f"  WARNING two-way {_name}: already on a roster card; skipped")
+            continue
+        _cand = _mteam.get(_name) or _mr_team
+        _abbr = utils.resolve_team_code(_cand, _known)
+        if _abbr not in teams:
+            print(f"  WARNING two-way {_name}: no team ({_cand!r}); skipped")
+            continue
+        _bs2 = _score_by.get(_name)
+        _byr2 = _season_by.get(_name) or value_season
+        _val2 = mval.get(_name)
+        teams[_abbr]["players"].append({
+            "n": _name,
+            "role": "Two-way",
+            "pos": (overrides.get(_name) or mr_pos.get(_name)
+                    or _spine_pos.get(_name) or ""),
+            "barrett": round(_bs2, 1) if _bs2 is not None else None,
+            "bs_yr": (_byr2 if _byr2 != value_season else None) if _bs2 is not None else None,
+            "salary": _tw_sal,
+            "value": round(_val2, 1) if _val2 is not None else None,
+            "vd": round(_tw_sal - _val2, 1) if _val2 is not None else None,
+            "real": True,
+            "two_way": True,
+        })
+        _have.add(_name, True)
+        _have_hard.add(_hard(_name))
+        added.append((_abbr, _name))
+    for _t in teams.values():
+        _t["players"].sort(key=lambda x: -(x["salary"] or 0))
+        # The engine needs this: a two-way is invisible to the 15-man count, so
+        # nothing else bounds how many a team may hold. See
+        # trade_rules.check_cash_and_roster.
+        _t["two_way_size"] = sum(1 for _p in _t["players"] if _p["two_way"])
+
+    # Three two-way slots per team (data/cba_config_2026_27.json two_way_slots).
+    # A team over that is a master_roster error, not a roster: refuse rather
+    # than publish an illegal roster to the Trade Machine, which is the one
+    # surface that reasons about roster legality.
+    try:
+        _slots = int(json.loads(
+            (ROOT / "data" / "cba_config_2026_27.json").read_text())["two_way_slots"])
+    except Exception:
+        _slots = 3
+    _over = {a: n for a, n in
+             ((a, sum(1 for p in t["players"] if p["two_way"])) for a, t in teams.items())
+             if n > _slots}
+    if _over:
+        raise SystemExit(
+            f"REFUSING: {_over} would carry more than {_slots} two-way contracts. "
+            f"Fix data/master_roster.csv. Nothing written.")
 
     # A hand-edited file that goes wrong should cost a few rows, never a roster.
     # Anything past this is a corrupted or wildly stale master_roster, not a
@@ -202,6 +383,9 @@ def main() -> None:
     print(f"  position overrides applied: {applied}")
     print(f"  positions filled from master_roster: {filled}")
     print(f"  players still on their {utils.SEASONS[1]} line (tagged bs_yr): {prior_rows}")
+    _n_tw = sum(1 for t in teams.values() for p in t["players"] if p["two_way"])
+    print(f"  two-way contracts: {_n_tw} from master_roster "
+          f"({sum(_spine_tw.values())} of them were also in the roster JSON)")
     print(f"  dropped as free agents per master_roster: {len(waived)}")
     for _ab, _n in waived:
         print(f"     {_ab}  {_n}")
