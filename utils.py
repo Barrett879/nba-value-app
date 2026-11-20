@@ -3544,6 +3544,60 @@ def _next_year_feed(cur_season: str) -> dict | None:
     return feed
 
 
+_CONTRACT_YEAR_FLAGS: dict | None = None
+
+
+def _contract_year_flags() -> dict:
+    """{normalized name: {season_year_str: flag}} from
+    data/contract_years_2026_27.csv. Flags: G guaranteed, N non-guaranteed,
+    T team option, P player option, M mutual option, W two-way."""
+    global _CONTRACT_YEAR_FLAGS
+    if _CONTRACT_YEAR_FLAGS is None:
+        out = {}
+        try:
+            path = Path(__file__).parent / "data" / "contract_years_2026_27.csv"
+            with path.open() as fh:
+                import csv as _c
+                for r in _c.DictReader(l for l in fh
+                                       if l.strip() and not l.lstrip().startswith("#")):
+                    if r.get("player"):
+                        out[normalize(r["player"])] = dict(
+                            x.split(":", 1) for x in (r.get("seasons") or "").split("|")
+                            if ":" in x)
+        except Exception:
+            out = {}
+        _CONTRACT_YEAR_FLAGS = out
+    return _CONTRACT_YEAR_FLAGS
+
+
+def signed_through_season(name: str, year: int,
+                          fallback_years: int | None = None) -> bool:
+    """Is this player under contract FOR `year`'s season, and therefore not a
+    free agent in that offseason?
+
+    An OPTION year (team, player or mutual) counts as NOT under contract: the
+    player can reach the market, which is the whole reason a free-agent board
+    carries him. Only G (guaranteed) and N (non-guaranteed, still owed) hold.
+
+    `fallback_years` is the length of a signing we know about, used when the
+    contract file has no row: a multi-year deal covers `year` unless an option
+    says otherwise, and with no row there is no option to read. That is why
+    data/contract_years_2026_27.csv asks for a missing option structure to be
+    TRANSCRIBED from a source we hold rather than guessed.
+
+    Lives here rather than in the page because the Free Agent Class board and
+    anything else deciding board membership must give the same answer, and
+    because a test that reimplements this tests its own copy.
+    """
+    flags = _contract_year_flags().get(normalize(name))
+    if flags is not None:
+        return flags.get(str(year)) in ("G", "N")
+    try:
+        return int(fallback_years or 0) > 1
+    except (TypeError, ValueError):
+        return False
+
+
 def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
                        cur_season: str, cross_check: bool = True,
                        include_rookie_options: bool = False,

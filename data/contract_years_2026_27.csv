@@ -7,6 +7,15 @@
 #   year followed by a team option.
 # seasons: per-year detail -- G guaranteed, T team option, P player option,
 #   M mutual option, W two-way.
+# A player missing from the Spotrac pull may be transcribed here from a
+# source we DO hold, and marked. 2026-11-20: Moritz Wagner, whose option
+# year matters because the Free Agent Class board decides who is a free
+# agent next offseason from this file -- both data/real_signings_2026.csv
+# and data/master_roster.csv record his deal as 2yr/$19M with a SECOND-YEAR
+# MUTUAL OPTION, so 2027 is M, not G. Transcription only, no inference:
+# players whose option structure we cannot source are left out, and the
+# board's fallback treats a multi-year signing as running through the
+# board year. Jalen Duren (5yr) and Peyton Watson (4yr) are two such gaps.
 team,player,years_left,guaranteed_years,last_year_type,end_season,seasons,spotrac_player
 ATL,Dyson Daniels,4,4,guaranteed,2029-30,2026:G|2027:G|2028:G|2029:G,Dyson Daniels
 ATL,Jalen Johnson,4,4,guaranteed,2029-30,2026:G|2027:G|2028:G|2029:G,Jalen Johnson
@@ -38,6 +47,7 @@ BKN,Day'Ron Sharpe,2,1,team_option,2027-28,2026:G|2027:T,Day'Ron Sharpe
 BKN,Josh Minott,2,1,team_option,2027-28,2026:G|2027:T,Josh Minott
 BKN,Julius Randle,2,1,player_option,2027-28,2026:G|2027:P,Julius Randle
 BKN,Keon Ellis,2,1,mutual_option,2027-28,2026:G|2027:M,Keon Ellis
+BKN,Moritz Wagner,2,1,mutual_option,2027-28,2026:G|2027:M,Moritz Wagner
 BKN,Terance Mann,2,2,guaranteed,2027-28,2026:G|2027:G,Terance Mann
 BKN,Chaney Johnson,1,0,two_way,2026-27,2026:W,Chaney Johnson
 BKN,Michael Porter Jr.,1,1,guaranteed,2026-27,2026:G,Michael Porter Jr.

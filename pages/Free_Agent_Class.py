@@ -16,6 +16,7 @@ from utils import (
     build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract, classify_fa_status, unavailable_players, NameIndex,
+    signed_through_season,
     position_layers,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
     theme_fig, html_table, render_rail,
@@ -184,11 +185,41 @@ def _fa_status(row) -> str | None:
                               season, cross_check=(season == SEASONS[0]),
                               include_rookie_options=include_rookie_opts)
 
+# ── Is a tracked signing STILL under contract in the board year? ─────────────
+# The rescue below exists for a real case: the salary feed sometimes reports an
+# option year as a plain guaranteed salary, the classifier then returns None,
+# and a player who genuinely reaches the market would vanish off the board.
+#
+# But it was written when the board year and the tracked signings were the same
+# offseason. A season later they are not, and it re-added EVERY tracked signing
+# the classifier had correctly excluded -- 35 of 111 on 2026-11-20 -- labelling
+# them UFA because that is _signing_status's default. Quentin Grimes signed
+# 4yr/$60M with the Lakers in July 2026 and was listed as a UFA on the 2027
+# board, from PHI, four months into a contract that runs to 2029-30.
+#
+# So ask the question the rescue was always assuming: is this player signed
+# THROUGH the board year? data/contract_years_2026_27.csv answers it per season
+# (G guaranteed, N non-guaranteed, T/P/M option, absent = contract ended), and
+# an option year is NOT under contract for this purpose, which is precisely the
+# case the rescue protects.
+def _signed_through_board_year(name: str) -> bool:
+    """Thin wrapper over utils.signed_through_season so the board and its tests
+    share one implementation. The fallback term is the tracked signing's own
+    length, which is all we know when the contract file has no row for him."""
+    try:
+        yrs = (_signed.get(normalize(name)) or {}).get("years")
+    except Exception:
+        yrs = None
+    return signed_through_season(name, _FA_YEAR, yrs)
+
+
 fa_df = df.copy()
 fa_df["Status"] = fa_df.apply(_fa_status, axis=1)
-# A tracked 2026 signing is a free agent who came off the board — keep them in the list
-# even when the feed misreads their option figure as a plain salary and would drop them.
-_miss = fa_df["Status"].isna() & fa_df["Player"].map(lambda p: normalize(p) in _signed)
+# A tracked signing who genuinely reaches the market in the board year is kept
+# even when the feed misreads his option figure as a plain salary.
+_miss = (fa_df["Status"].isna()
+         & fa_df["Player"].map(lambda p: normalize(p) in _signed)
+         & ~fa_df["Player"].map(_signed_through_board_year))
 if _miss.any():
     fa_df.loc[_miss, "Status"] = fa_df.loc[_miss, "Player"].map(_signing_status)
 fa_df = fa_df[fa_df["Status"].notna()].copy()
