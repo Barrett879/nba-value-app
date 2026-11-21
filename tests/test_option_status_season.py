@@ -382,3 +382,57 @@ def test_the_rookie_gate_is_applied_after_the_sources_not_inside_one():
     wrapper = src.split("def classify_fa_status", 1)[1].split("\ndef ", 1)[0]
     assert "include_rookie_options" in wrapper and "rookie_set" in wrapper, (
         "classify_fa_status no longer applies the rookie-scale gate")
+
+
+# ──────────── the rookie set has to EXIST where the page runs ────────────────
+def test_the_live_rookie_scale_cache_is_committed_and_not_empty():
+    """The gate above is inert in production unless this file is in the repo.
+
+    Pushed 2026-11-20 as 511ebbc and verified on hoopsvalue.com: the board
+    showed all 57 rookie option years with the checkbox UNTICKED, because
+    cache/rookie_scale_2026_27_v3.pkl had never been committed. Render cannot
+    rebuild it -- _derive_rookie_scale_players needs a live PlayerIndex call --
+    and its failure path returns an EMPTY SET **without saving**, so there was
+    nothing on /data either and every page load re-tried and re-failed.
+
+    An empty rookie set is wrong twice and silent both times:
+      * classify_fa_status' gate cannot suppress a rookie option year, so the
+        checkbox does nothing; and
+      * _fa_status_from_sources' _missing() branch reads RFA off this set, so
+        Olivier-Maxence Prosper, Kobe Brown, Jett Howard and Jordan Hawkins
+        were published as UNRESTRICTED free agents when they are restricted.
+
+    This reads the TRACKED BLOB, not the working-tree file. The working copy is
+    exactly where the file does exist -- whoever noticed the gap just built it
+    -- so a check against disk cannot see this. Same reason
+    scripts/check_cache_seeding.py reads `git ls-files`, and the same mistake
+    as comparing cache/next_contracts_2027_v7.pkl when production resolves
+    through _rev_path: test the artifact production is served.
+    """
+    import inspect, subprocess
+    cache_v = (inspect.signature(utils.fetch_rookie_scale_players)
+               .parameters["cache_v"].default)
+    name = f"cache/rookie_scale_{CUR.replace('-', '_')}_v{cache_v}.pkl"
+
+    tracked = subprocess.run(["git", "ls-files", "--", name], cwd=ROOT,
+                             capture_output=True, text=True).stdout.strip()
+    assert tracked == name, (
+        f"{name} is not tracked in git, so Render has nothing to seed from and "
+        f"fetch_rookie_scale_players returns an empty set there. The rookie "
+        f"option gate and every RFA label that comes off this set go silent. "
+        f"Build it locally and commit it.")
+
+    blob = subprocess.run(["git", "show", f"HEAD:{name}"], cwd=ROOT,
+                          capture_output=True).stdout
+    if not blob:                      # staged but not yet in HEAD
+        blob = subprocess.run(["git", "show", f":{name}"], cwd=ROOT,
+                              capture_output=True).stdout
+    served = pickle.loads(blob)
+    assert isinstance(served, set), f"{name} holds {type(served).__name__}, not a set"
+    # The same floor _derive_rookie_scale_players refuses to save below:
+    # 4 draft classes x 30 first-rounders.
+    assert len(served) >= 50, (
+        f"the committed {name} holds only {len(served)} players. A set this "
+        f"small cannot cover four draft classes, and the derive itself raises "
+        f"rather than save one, so a file this size reached the repo some "
+        f"other way.")

@@ -83,6 +83,28 @@ def main():
             # is a reader it cannot vouch for.
             f"cache/splits_{LIVE.replace('-', '_')}_{FV}_{REV}.pkl"]
 
+    # The rookie-scale set, added 2026-11-20 after the live board proved it was
+    # missing. Not revisioned by DATA_REV -- its name carries the season and the
+    # reader's own cache_v -- so it was outside the list above and nothing
+    # vouched for it. cache/rookie_scale_2026_27_v3.pkl had NEVER been
+    # committed, and on Render the derive cannot run: it needs a live
+    # PlayerIndex call. The failure path returns an EMPTY SET without saving,
+    # so there was nothing on /data either and every page load re-tried and
+    # re-failed. An empty rookie set is silent and wrong twice over: the Free
+    # Agent Class page's "Include rookie-scale options" checkbox suppresses
+    # nothing (57 rookie option years showed with the box unticked), and
+    # _fa_status_from_sources' _missing() branch reads RFA off this set, so
+    # four players (Olivier-Maxence Prosper, Kobe Brown, Jett Howard, Jordan
+    # Hawkins) were published as UNRESTRICTED when they are restricted.
+    #
+    # cache_v comes from the reader's own signature, not a literal here: the
+    # name production asks for lives in the reader, and a literal in this file
+    # is one more thing that can drift out of step with it.
+    import inspect
+    _rs_v = (inspect.signature(utils.fetch_rookie_scale_players)
+             .parameters["cache_v"].default)
+    want += [f"cache/rookie_scale_{LIVE.replace('-', '_')}_v{_rs_v}.pkl"]
+
     # BOARD_REV copies of FINISHED seasons' boards. These exist because /data
     # seeds a filename once: production served a 2025-26 board of 347 players
     # that Render built itself, against the repo's 379, and no re-commit under
