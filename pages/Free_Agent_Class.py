@@ -115,7 +115,8 @@ def _style_rookie_salary(row):
 # ── Real 2026 signings + option decisions, loaded UP-FRONT so the FA list can keep
 # tracked signings visible (the salary feed sometimes reports a player's option figure
 # as a plain salary, which would otherwise classify them as "under contract" and drop
-# them). The same data also powers the Signed / vs Model / Outcome columns below.
+# them). The same data also powers the Outcome column and the Show filter below.
+# It no longer powers a Signed or vs Model column: both went on 2026-11-20.
 import json as _json
 import csv as _csv
 from pathlib import Path as _Path
@@ -289,8 +290,15 @@ def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
 
 
 # Contract Predictor projection (model pcv) per FA, from the precomputed board cache
-# (build_fa_board.py writes value_M = projected_contract_value). Signed players use the
-# fresher model_M from the accuracy cache so Predicted − Signed == the vs-Model miss.
+# (build_fa_board.py writes value_M = projected_contract_value).
+#
+# ONE figure on every row. Until 2026-11-20 a player in the accuracy tracker got
+# his model_M instead, the projection made at the time of his 2026 signing, so
+# that Predicted minus Signed equalled the vs-Model miss. That served the
+# vs-Model column, which is gone, and it meant a board headed "2027 Free Agent
+# Board" published a 2026-era projection on 61 of its 286 rows and today's on
+# the other 225, with nothing marking which was which. They disagreed by up to
+# $6.2M: Moritz Wagner read $3.8M where today's model says $10.0M.
 def _load_pcv(rel: str) -> dict:
     out = {}
     try:
@@ -319,10 +327,7 @@ for _n, _v in _load_pcv("cache/fa_extra_v1.json").items():
     _pcv_by.setdefault(_n, _v)
 
 def _predicted_M(name: str):
-    n = normalize(name)
-    if n in _signed:
-        return _signed[n].get("model_M")
-    return _pcv_by.get(n)
+    return _pcv_by.get(normalize(name))
 
 # Summary stat cards — colour-coded to the table's status language (UFA slate ·
 # RFA green · PO blue · TO orange · Total teal) so the page has a visual anchor
@@ -356,10 +361,17 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+# How many of the tracked signings are ON this board, not how many the tracker
+# holds. Those differ now: the 2026 class was scored on the 2026 board, where
+# every signing was a row, and on the 2027 board only the ones whose deal still
+# leaves them available are. On 2026-11-20 the rail said "111 signings tracked"
+# beside "286 free agents" when 61 of the 111 were on it.
+_n_tracked = int(fa_df["Player"].map(lambda p: normalize(p) in _signed).sum())
+
 render_rail(
     "The board", f"{_FA_YEAR} Free Agent Board",
     count=f"{len(fa_df)} free agents",
-    meta=f"{_scorecard['n']} signings tracked" if _scorecard else None,
+    meta=f"{_n_tracked} signings tracked" if _n_tracked else None,
 )
 
 fa_col_a, fa_col_show, fa_col_b, fa_col_c, fa_col_d = st.columns([2, 1, 1, 1, 1])
@@ -433,14 +445,16 @@ fa_fmt.columns = [
 ]
 fa_fmt.insert(0, "#", range(1, len(fa_fmt) + 1))
 
-# Predicted = the Contract Predictor's model projection (pcv) for every FA, then the
-# real-signing columns: actual first-year salary + how the projection did, inline once signed.
+# Predicted = the Contract Predictor's model projection (pcv) for every FA.
 # Raw numeric here; the gold MAX chip + $ formatting happen in the table formatter so
 # click-to-sort stays on the model figure.
+#
+# The Signed and vs Model columns were removed on 2026-11-20 at Barrett's request.
+# They are a 2026 retrospective and this board is the 2027 class: they carried a
+# figure on 61 of 286 rows and a dash on the rest. Who already has a deal is still
+# on the page, in the Outcome column and the Show filter. Bring them back when 2027
+# deals start landing, against 2027 projections.
 fa_fmt["Predicted"] = fa_fmt["Player"].map(_predicted_M)
-_np_norm = fa_fmt["Player"].map(normalize)
-fa_fmt["Signed"]   = _np_norm.map(lambda p: f"${_signed[p]['actual_M']:.1f}M" if p in _signed else "—")
-fa_fmt["vs Model"] = _np_norm.map(lambda p: f"{_signed[p]['delta_M']:+.1f}M" if p in _signed else "—")
 
 
 # Token-based cell styles for the themed HTML table (follows light/dark; the
@@ -489,22 +503,6 @@ def _fmt_salary_rs(v, row):
                     'margin-left:1px" title="Rookie scale contract">RS</sup>')
     return s
 
-def _sty_signed(v, _row):
-    # Actual signed deal: highlight teal when present, mute the "still on the board" dash.
-    return "color:var(--fg-6)" if str(v) == "—" else "color:var(--accent-teal);font-weight:700"
-
-def _sty_vs_model(v, _row):
-    # Model projection minus actual: green within $4M (a hit), red beyond it.
-    s = str(v)
-    if s == "—":
-        return "color:var(--fg-6)"
-    try:
-        n = float(s.replace("M", "").replace("+", ""))
-    except ValueError:
-        return ""
-    return ("color:var(--value-good);font-weight:700" if abs(n) <= 4
-            else "color:var(--value-bad);font-weight:700")
-
 def _fmt_predicted(v, row):
     # Model figure with the gold MAX chip prefix; the column stays numeric so
     # click-to-sort uses the raw dollar value.
@@ -536,11 +534,14 @@ def _sty_score(v, _row):
     return f"background:linear-gradient(90deg,var(--bar-tint) {pct:.0f}%,transparent 0)"
 
 if _scorecard:
+    # Scored over every signing in the tracker, which is NOT the same set as the
+    # rows below: say so rather than claiming the percentage describes this list.
     st.caption(
-        f"Tracking **{_scorecard['n']}** real 2026 signings in this list. The model's projection "
-        f"landed within \\$4M on **{_scorecard['within_4M']}%** of them "
-        f"(median miss \\${_scorecard['median_err_M']}M). Set **Show** to **Signed** to see just those "
-        "(or **Available** for who's still on the market); the **Signed** and **vs Model** columns fill in as deals land."
+        f"The model's 2026 projections landed within \\$4M on "
+        f"**{_scorecard['within_4M']}%** of **{_scorecard['n']}** real signings "
+        f"(median miss \\${_scorecard['median_err_M']}M). **{_n_tracked}** of those "
+        "players are still on this board; set **Show** to **Signed** to see them, "
+        "or **Available** for who's still on the market."
     )
 
 _as_of = _offseason_as_of()
@@ -566,13 +567,11 @@ html_table(
         "Salary":        _sty_salary,
         "Barrett Score": _sty_score,
         "Predicted":     _sty_predicted,
-        "Signed":        _sty_signed,
-        "vs Model":      _sty_vs_model,
     },
     aligns={
         "#": "right", "Barrett Score": "right", "Salary": "right",
         "Proj. Value": "right", "Δ Market": "right",
-        "Predicted": "right", "Signed": "right", "vs Model": "right",
+        "Predicted": "right",
     },
     numeric={"#", "Barrett Score", "Salary", "Proj. Value", "Δ Market", "Predicted"},
     helps={
@@ -582,9 +581,7 @@ html_table(
         "Δ Market": "Actual − Projected. Negative (green) = underpaid; positive (red) = overpaid.",
         "Outcome": "What happened to this free agent: PO Opt In / Opt Out (player option), TO Picked Up / Declined (team option), and/or Signed. Falls back to the pending option figure if undecided.",
         "Status": "UFA = unrestricted · RFA = restricted (right of first refusal) · PO/TO = player/team option.",
-        "Predicted": "The Contract Predictor's model projection — what the model thinks this player signs for today (the same figure the vs Model miss uses). “—” = not precomputed for this player.",
-        "Signed": "Actual first-year salary of the deal this player signed (real reported 2026 signings). “—” = still on the board.",
-        "vs Model": "Our Contract Predictor projection minus the actual first-year salary. Positive = we projected high. Green = within $4M of the real deal.",
+        "Predicted": "The Contract Predictor's model projection: what the model thinks this player signs for today. “—” = not precomputed for this player.",
     },
     height=min(820, max(220, len(fa_fmt) * 38 + 46)),
 )
