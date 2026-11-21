@@ -337,3 +337,130 @@ def test_the_board_does_not_rebuild_the_signings_dict():
         f"the board reads model_M in code again, and that is the accuracy "
         f"tracker's membership test, not a test of whether he signed: "
         f"{_code_hits(src)}")
+
+
+# --- the loader's failure modes, all three found by review of 900f93c ---------
+#
+# 900f93c consolidated this dict into utils and, in doing so, changed how the
+# page behaves when the tracker cannot be read. The VALUE was unchanged -- {},
+# which reads as "nobody signed" -- but the LIFETIME was not: the page used to
+# rebuild the dict at module scope on every Streamlit rerun, so a bad read cost
+# one render. Cached in a module global, it cost every render until redeploy.
+#
+# What that looks like is not an error, it is a confident wrong answer: every
+# Outcome cell loses "Signed", Show -> Signed comes back empty, Show ->
+# Available returns all 230 rows, and the rail line disappears entirely rather
+# than reading zero, because it is written `if _n_tracked else None`.
+
+def _reload_tracker():
+    """Clear the process cache the way a fresh Streamlit process would."""
+    utils._ACCURACY_TRACKER = None
+
+
+def test_a_failed_read_is_not_cached():
+    """One unreadable read must not make the board say "nobody signed" forever.
+
+    The trigger is local and real: scripts/build_accuracy_tracker.py writes this
+    file with a plain write_text (truncate, then write), the season-rollover
+    preflight tells you to rebuild it, and an iCloud-dataless file on this
+    machine raises OSError errno 11 on open.
+    """
+    _reload_tracker()
+    assert utils.tracked_signings(), "baseline read is empty; this proves nothing"
+
+    real = Path.read_text
+
+    def boom(self, *a, **k):
+        if self.name == ACC.name:
+            raise OSError(11, "Resource deadlock avoided")
+        return real(self, *a, **k)
+
+    _reload_tracker()
+    Path.read_text = boom
+    try:
+        logging.disable(logging.CRITICAL)
+        during = utils.tracked_signings()
+    finally:
+        Path.read_text = real
+        logging.disable(logging.NOTSET)
+    assert during == {}, "a failed read should read as no tracked signings"
+
+    after = utils.tracked_signings()
+    assert after, (
+        "the tracker is readable again and the loader still returns nothing, so "
+        "one transient failure has made the board claim nobody signed for the "
+        "life of the process")
+    assert len(after) == len(utils.tracked_signings(refresh=True)), (
+        "the recovered read disagrees with an explicit refresh")
+
+
+def test_tracker_shape_drift_raises_instead_of_reading_as_nobody_signed():
+    """A rebuilt tracker whose keys moved must be loud.
+
+    This is the failure a season-rollover rebuild causes, and every other
+    symptom of it is silent: the board would simply show all 230 players as
+    still on the market.
+    """
+    _reload_tracker()
+    good = json.loads(ACC.read_text(encoding="utf-8"))
+    real = Path.read_text
+
+    def serve(payload):
+        def _r(self, *a, **k):
+            if self.name == ACC.name:
+                return json.dumps(payload)
+            return real(self, *a, **k)
+        return _r
+
+    for label, payload in (
+            ("a signings row with no 'player'",
+             {**good, "signings": [{"team": "UTA"}] + good["signings"][1:]}),
+            ("a top-level list", [1, 2, 3]),
+            ("signings as a dict", {**good, "signings": {"a": 1}}),
+    ):
+        _reload_tracker()
+        Path.read_text = serve(payload)
+        try:
+            with pytest.raises(Exception) as got:
+                utils.tracked_signings()
+        finally:
+            Path.read_text = real
+        assert not isinstance(got.value, AssertionError), label
+        # and it must not have poisoned the cache on the way out
+        _reload_tracker()
+        assert utils.tracked_signings(), f"{label}: left the loader broken"
+
+    # POSITIVE CONTROL: the real payload must NOT raise, or the three above
+    # prove only that everything raises.
+    _reload_tracker()
+    Path.read_text = serve(good)
+    try:
+        assert len(utils.tracked_signings()) == len(good["signings"])
+    finally:
+        Path.read_text = real
+    _reload_tracker()
+
+
+def test_the_scorecard_and_the_signings_come_from_one_read():
+    """The caption prints a number from each; they cannot be different vintages.
+
+    Between 900f93c and this fix the page read the file itself for the scorecard
+    and took the signings from utils' process-lifetime cache, so replacing the
+    tracker while the app was up made one sentence describe the new file and the
+    next sentence the old one.
+    """
+    src = PAGE.read_text(encoding="utf-8")
+    assert "_acc = accuracy_tracker()" in src, (
+        "the page reads the accuracy tracker itself again instead of taking it "
+        "from the shared loader, so its scorecard and its signings can disagree")
+    pat = r"_json\.loads\([^\n]*accuracy_tracker_v1\.json"
+    control = '_acc = _json.loads((_Path(__file__) / "cache" / "accuracy_tracker_v1.json").read_text())'
+    assert re.search(pat, control), "the scan is broken; it matches nothing"
+    assert not re.search(pat, src), (
+        "pages/Free_Agent_Class.py parses accuracy_tracker_v1.json directly again")
+
+    # and the two accessors must agree within one process
+    _reload_tracker()
+    payload = utils.accuracy_tracker()
+    assert len(utils.tracked_signings()) == len(payload["signings"])
+    assert utils.accuracy_tracker() is payload, "the payload is re-read per call"

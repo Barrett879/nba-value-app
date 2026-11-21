@@ -3623,7 +3623,7 @@ def _contract_year_flags() -> dict:
     return _CONTRACT_YEAR_FLAGS
 
 
-_TRACKED_SIGNINGS = None
+_ACCURACY_TRACKER = None
 
 
 def tracked_signings(refresh: bool = False) -> dict:
@@ -3643,21 +3643,52 @@ def tracked_signings(refresh: bool = False) -> dict:
     the tracker's `scorecard`.
 
     Returns {} when the cache is missing or unreadable, which reads as "no
-    signings are tracked" and is the same thing every caller did before.
+    signings are tracked". That is the same VALUE every caller produced before
+    this was consolidated, and on 2026-11-21 it was briefly not the same
+    LIFETIME: the empty dict was cached, so one unreadable read made the board
+    say "nobody signed" until the process restarted. A failure is no longer
+    cached -- see accuracy_tracker.
     """
-    global _TRACKED_SIGNINGS
-    if _TRACKED_SIGNINGS is None or refresh:
-        # Built OUTSIDE the try: a typo in this expression must raise, not be
-        # swallowed into an empty dict that reads as "nobody signed".
-        src = Path(__file__).parent / "cache" / "accuracy_tracker_v1.json"
-        try:
-            import json as _j
-            d = _j.loads(src.read_text(encoding="utf-8"))
-            _TRACKED_SIGNINGS = {normalize(s["player"]): s
-                                 for s in (d or {}).get("signings", [])}
-        except Exception:
-            _TRACKED_SIGNINGS = {}
-    return _TRACKED_SIGNINGS
+    return {normalize(s["player"]): s
+            for s in (accuracy_tracker(refresh) or {}).get("signings", [])}
+
+
+def accuracy_tracker(refresh: bool = False) -> dict:
+    """The accuracy tracker payload: {"season", "scorecard", "signings"}.
+
+    ONE read of the file per process, so a caller showing the scorecard and a
+    caller showing the signings cannot describe two different versions of it.
+    The page did exactly that between 2026-11-21 03:09 and this fix: it read
+    the file itself for the scorecard and took the signings from here, and the
+    caption printed one number from each.
+
+    A FAILED READ IS NOT CACHED. The global stays None so the next rerun tries
+    again, because the alternative is a board that claims nobody signed for the
+    life of the process with nothing in the log. `scripts/build_accuracy_tracker.py`
+    writes this file with a non-atomic `write_text`, and the season-rollover
+    preflight tells you to rebuild it, so a torn read is a thing that happens.
+    """
+    global _ACCURACY_TRACKER
+    if _ACCURACY_TRACKER is not None and not refresh:
+        return _ACCURACY_TRACKER
+    import json as _j
+    src = Path(__file__).parent / "cache" / "accuracy_tracker_v1.json"
+    try:
+        raw = src.read_text(encoding="utf-8")
+    except Exception:
+        logger.warning("accuracy_tracker: cannot read %s, not caching the failure",
+                       src.name, exc_info=True)
+        return {}
+    # PARSED AND SHAPE-CHECKED OUTSIDE THE try. A tracker whose keys moved must
+    # raise here, not be swallowed into "nobody signed": that is the shape drift
+    # a season-rollover rebuild causes, and it is silent in every other direction.
+    d = _j.loads(raw)
+    if not isinstance(d, dict):
+        raise TypeError(f"{src.name}: expected an object, got {type(d).__name__}")
+    for s in d.get("signings", []):
+        s["player"]                      # KeyError here beats a silent empty board
+    _ACCURACY_TRACKER = d
+    return _ACCURACY_TRACKER
 
 
 def signed_through_season(name: str, year: int,

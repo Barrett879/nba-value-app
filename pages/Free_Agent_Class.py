@@ -16,7 +16,7 @@ from utils import (
     build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract, classify_fa_status, unavailable_players, NameIndex,
-    signed_through_season, tracked_signings,
+    accuracy_tracker, signed_through_season, tracked_signings,
     position_layers,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
     theme_fig, html_table, render_rail,
@@ -127,21 +127,28 @@ def _style_rookie_salary(row):
 # every one of them on a 2026-27 roster, and the page listed them as still on the
 # market. The filter existed only to keep a None out of the Signed and vs Model
 # columns' arithmetic; those columns went on 2026-11-20 and took its reason with
-# them. The unscored rows still carry "type" and "years", which is all
-# _signing_status and _signed_through_board_year read. The accuracy sentence near
-# the table uses _scorecard, which carries its own denominator, so nothing on this
-# page needs the scored subset. DO NOT re-add the filter.
+# them. The accuracy sentence near the table uses _scorecard, which carries its
+# own denominator, so nothing on this page needs the scored subset. DO NOT
+# re-add the filter.
+#
+# THIS DICT HAS THREE CONSUMERS, AND ONE OF THEM READS MEMBERSHIP, NOT A FIELD.
+# _signing_status and _signed_through_board_year read "type" and "years", which
+# every unscored row carries. _fa_outcome reads `n in _signed` and infers an
+# option decision from it, so widening the dict widened that inference too --
+# which is how Mo Bamba came to be published as having had a team option
+# declined that nobody has decided. Gated at _fa_outcome; see the comment there.
+# A fourth consumer that reads membership needs the same question asked again.
 #
 # It lives in utils.tracked_signings because it had been built THREE times:
 # here, in tests/test_fa_board_membership.py and in app.py, and the first two
 # filtered while app.py did not. A test that rebuilds it tests its own copy.
-import json as _json
+import json as _json          # still used by _load_pcv and the player hub below
 import csv as _csv
 from pathlib import Path as _Path
-try:
-    _acc = _json.loads((_Path(__file__).parent.parent / "cache" / "accuracy_tracker_v1.json").read_text())
-except Exception:
-    _acc = None
+# ONE read of the tracker for both halves. Until 2026-11-21 the scorecard came
+# from a fresh read here and the signings from utils' process-lifetime cache, so
+# the caption could print two numbers from two versions of one file.
+_acc = accuracy_tracker()
 _signed = tracked_signings()
 _scorecard = (_acc or {}).get("scorecard") or {}
 
@@ -258,6 +265,32 @@ n_to  = (fa_df["Status"] == "Team Option").sum()
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
                   "to_in": "TO Picked Up", "to_out": "TO Declined"}
 
+# "A signed player reveals his option call" is only true on a board showing the
+# SAME class the signings belong to. On the 2026 board it held: a player with a
+# 2026-27 option who signed a new 2026 deal must have opted out to get there.
+#
+# On a 2027 board it is backwards. The 2026 signing IS the contract that CONTAINS
+# the 2027-28 option, so it says nothing about a decision nobody has made yet --
+# and data/option_decisions_2027.csv says so in its own header. Ungated, this
+# published "PO Opt Out" or "TO Declined" on 21 live rows, 17 of which
+# data/contract_years_2026_27.csv shows holding a live 2027-28 option; every one
+# of the 17 is a two-year 2026 deal whose SECOND YEAR IS THAT OPTION. The row
+# then contradicts itself: Status "Player Option" beside Outcome "PO Opt Out".
+#
+# Third instance of one bug class in this file, all found within 36 hours: the
+# _miss rescue re-added 2026 signings as 2027 UFAs, the model_M filter read "the
+# model could score him" as "he signed", and this read "he signed in 2026" as
+# "he declined his 2027 option". Each was correct when the board year and the
+# tracked signings were the same offseason.
+#
+# Fail SAFE: no season in the tracker, or one that does not parse, means no
+# inference. A recorded decision in option_decisions_{_FA_YEAR}.csv is unaffected
+# -- that is sourced data, and it is what should light this column up in 2027.
+try:
+    _INFER_OPTION_CALL = int((_acc or {}).get("season")) == _FA_YEAR
+except (TypeError, ValueError):
+    _INFER_OPTION_CALL = False
+
 # Retirement, joined through NameIndex because these are master_roster spellings
 # ("C.J. McCollum") against the board's ("CJ McCollum"). This page is a record of
 # the 2026 CLASS, so a retired player KEEPS his row -- he really did become a
@@ -285,7 +318,7 @@ def _fa_outcome(name: str, status: str, next_contract_str: str) -> str:
     n = normalize(name)
     signed = n in _signed
     dec, fig = _decisions.get(n, (None, None))
-    if not dec and signed:                       # signed players reveal their option call
+    if not dec and signed and _INFER_OPTION_CALL:   # only on the signings' own board
         if status == "Player Option": dec = "po_out"
         elif status == "Team Option": dec = "to_out"
     parts = []
