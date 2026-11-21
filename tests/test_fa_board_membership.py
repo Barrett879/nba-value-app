@@ -161,21 +161,40 @@ def test_the_gate_agrees_with_the_roster(flags, tracked, feed):
         f"the gate lets them back onto it: {unexplained}")
 
 
-def test_the_rescue_still_keeps_a_genuine_option_year(flags, tracked, feed):
-    """POSITIVE CONTROL. Deleting the rescue outright would pass the test above
-    and silently drop the players it exists for: someone whose option year the
-    salary feed reported as a plain guaranteed salary."""
-    kept = [tracked[n]["player"] for n, s in tracked.items()
-            if _board_status(s["player"], feed) is None
-            and not _signed_through(n, flags, tracked)]
-    assert kept, (
-        "no tracked signing survives the gate, so the rescue is doing nothing "
-        "and a player whose option the feed misread would vanish off the board")
-    opts = [p for p in kept
-            if flags.get(normalize(p), {}).get(str(BOARD_YEAR)) in ("P", "T", "M")]
-    assert opts, (
-        f"the survivors carry no option year at all, so the gate is keeping "
-        f"them for some other reason: {kept}")
+def test_a_tracked_signing_with_a_real_option_year_is_labelled_as_one(flags, tracked, feed):
+    """POSITIVE CONTROL. REWRITTEN 2026-11-20, when its MECHANISM changed.
+
+    It used to assert that at least one tracked signing SURVIVES the rescue below,
+    which held only because the salary feed read some option years as plain
+    guaranteed salaries and classify_fa_status returned None for them.
+    classify_fa_status now reads the per-season contract flags itself, so those
+    players are labelled directly and never reach the rescue at all -- which made
+    the old assertion empirically false the moment the upstream defect was fixed.
+
+    The thing worth protecting was never the route, it is the OUTCOME: a tracked
+    signing who can genuinely reach the market in the board year must appear, and
+    appear as an OPTION rather than as a UFA on no evidence. Asserting the label
+    keeps this falsifiable; asserting "he is on the board" would not, because an
+    option holder is kept either by the classifier or by the rescue and the test
+    could never fail.
+
+    The rescue is not dead. It still covers a tracked signing with NO
+    contract_years row whose option the feed misreads. It just has nothing to do
+    today.
+    """
+    holders = [(n, s["player"]) for n, s in tracked.items()
+               if flags.get(n, {}).get(str(BOARD_YEAR)) in ("P", "T", "M")]
+    assert len(holders) >= 5, (
+        f"only {len(holders)} tracked signings hold a real {BOARD_YEAR}-"
+        f"{str(BOARD_YEAR + 1)[2:]} option, so this control is not exercising "
+        f"anything")
+
+    wrong = [(p, _board_status(p, feed)) for _n, p in holders
+             if _board_status(p, feed) not in ("Player Option", "Team Option")]
+    assert not wrong, (
+        f"these tracked signings hold a real option in the board year and the "
+        f"classifier does not say so, so each is either off the board or on it as "
+        f"a UFA by default: {wrong[:20]}")
 
 
 def test_quentin_grimes_is_not_a_free_agent(flags, tracked, feed):

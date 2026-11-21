@@ -3490,23 +3490,76 @@ def color_next_contract(val):
     return ""
 
 
-_OPTION_STATUS_CACHE = None
+_OPTION_STATUS_CACHE: dict = {}          # cur_season -> options dict
 
 
-def _load_option_status() -> dict:
-    """Precomputed {normalized_name: {'type': player_option|team_option}} for the upcoming
-    season, built offline from the reliable contract scraper (scripts/build_option_status.py).
-    Authoritative because the live next-year-salary feed mislabels options as 'guaranteed'
-    and is non-deterministic. Loaded once; empty dict if the cache is absent."""
-    global _OPTION_STATUS_CACHE
-    if _OPTION_STATUS_CACHE is None:
-        import json
-        try:
-            d = json.loads((Path(__file__).parent / "cache" / "option_status_2026.json").read_text())
-            _OPTION_STATUS_CACHE = d.get("options", {})
-        except Exception:
-            _OPTION_STATUS_CACHE = {}
-    return _OPTION_STATUS_CACHE
+def _load_option_status(cur_season: str) -> dict:
+    """Precomputed {normalized_name: {'type': player_option|team_option}} for the
+    offseason that FOLLOWS `cur_season`, built offline from the contract scraper
+    (scripts/build_option_status.py).
+
+    SEASON-SCOPED BY FILENAME AND BY ITS OWN METADATA, and both are checked,
+    because an option is a fact about ONE season and this artifact silently
+    outlived its own. Until 2026-11-20 this loader read
+    cache/option_status_2026.json no matter which season was asked for. That file
+    says {"season": "2025-26", "upcoming": "2026-27"} and every one of its 72
+    entries carries end_season 2026-27: all of those option decisions had already
+    been made. It published 12 players on the 2027 Free Agent Board as option
+    holders, Victor Wembanyama at number one, four months into a deal that runs to
+    2031-32. classify_fa_status consults this FIRST and returns on a hit, so the
+    correct data behind it never got a say.
+
+    The page's sibling artifact was fixed this way on 2026-10-22
+    (option_decisions_{_FA_YEAR}.csv in pages/Free_Agent_Class.py). This was the
+    same mistake in the classifier and it was missed; keep the two in step.
+
+    An empty dict is SAFE here, not merely tolerated, which is why a stale file is
+    ignored rather than used: as of 2026-11-20 the next-year salary feed labels
+    2027-28 options correctly (90 of 90 team options and 33 of 33 player options
+    agree with data/contract_years_2026_27.csv, and NO option reads as
+    'guaranteed'), and a player the feed omits falls through to the _missing()
+    cross-check. That was NOT true when this cache was added, which is the whole
+    reason it exists -- so re-check it before deleting the mechanism.
+    """
+    try:
+        board_year = int(str(cur_season)[:4]) + 1
+    except (TypeError, ValueError):
+        return {}
+    hit = _OPTION_STATUS_CACHE.get(cur_season)
+    if hit is not None:
+        return hit
+
+    import json
+    upcoming = f"{board_year}-{(board_year + 1) % 100:02d}"
+    cache_dir = Path(__file__).parent / "cache"
+    path = cache_dir / f"option_status_{board_year}.json"
+    out: dict = {}
+    try:
+        d = json.loads(path.read_text())
+    except Exception:
+        d = None
+    if d is None:
+        # Name the stale siblings: this is the signal that the artifact needs a
+        # rebuild at a season flip, and nothing in the nightly rebuilds it.
+        others = sorted(q.name for q in cache_dir.glob("option_status_*.json"))
+        logger.warning(
+            "no cache/option_status_%s.json for the %s offseason%s. Option status "
+            "falls to the salary feed and the contract-end cross-check; rebuild "
+            "with scripts/build_option_status.py.",
+            board_year, upcoming,
+            f" (found {', '.join(others)})" if others else "")
+    else:
+        said = (d.get("upcoming") or "").strip()
+        if said and said != upcoming:
+            logger.warning(
+                "%s describes the %s offseason, not %s -- IGNORING it. Those "
+                "option decisions are already closed, and reusing them publishes "
+                "players who are under contract as free agents.",
+                path.name, said, upcoming)
+        else:
+            out = d.get("options", {}) or {}
+    _OPTION_STATUS_CACHE[cur_season] = out
+    return out
 
 
 # classify_fa_status resolves status PRIMARILY from this memoized structured
@@ -3598,11 +3651,14 @@ def signed_through_season(name: str, year: int,
         return False
 
 
-def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
-                       cur_season: str, cross_check: bool = True,
-                       include_rookie_options: bool = False,
-                       contract_end_map: dict | None = None) -> str | None:
-    """A player's free-agency status THIS offseason: 'UFA' / 'RFA' /
+def _fa_status_from_sources(name: str, next_contract_str: str, rookie_set: set,
+                            cur_season: str, cross_check: bool = True,
+                            contract_end_map: dict | None = None) -> str | None:
+    """Resolve status from the sources, in precedence order. The rookie-scale
+    option gate lives in classify_fa_status, which wraps this, so that it applies
+    to EVERY source rather than to whichever one happened to answer.
+
+    A player's free-agency status THIS offseason: 'UFA' / 'RFA' /
     'Player Option' / 'Team Option', or None when he is NOT a free agent
     (still under contract). THE single source of truth — used by the Free Agent
     Class page, the home-page FA summary, the Contract Predictor FA toggle, and
@@ -3638,23 +3694,53 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
     contract_end key). When given, the cross-check reads it INSTEAD of
     get_player_contract_info, so request-path callers can never fall through
     to the live ~30-page BBRef scrape on a lapsed pkl TTL."""
-    # Authoritative option source first: a stable precomputed cache from the contract
-    # scraper, because the live salary feed mislabels options as 'guaranteed' (so option
-    # holders like Brook Lopez / Kuminga / Dort would otherwise read as "under contract"
-    # and be dropped). Current season only (where today's contract data applies).
+    # Option sources before the salary feed, because the feed still reads some
+    # options as 'guaranteed' and a player read as guaranteed is dropped as
+    # "under contract". On 2026-11-20, measured against the feed actually served
+    # (_rev_path picks the DATA_REV copy, r49): SIX options read as guaranteed --
+    # Al Horford and Collin Sexton's player options, Zach Collins, Jay Huff,
+    # Scotty Pippen Jr. and Mo Bamba's team options. That is the whole reason an
+    # option source sits in front of the feed, and it is still earning its keep.
+    #
+    # Both sources below are keyed to the season being decided, which is the bug
+    # that put Wembanyama on the 2027 board: see _load_option_status.
     if cross_check:
-        _opt = _load_option_status().get(normalize(name))
+        _board_year = int(str(cur_season)[:4]) + 1
+        _opt = _load_option_status(cur_season).get(normalize(name))
         if _opt:
-            # Rookie-scale option years (e.g. Wembanyama / Amen Thompson / Keyonte George's
-            # year-4 team option) are auto-exercised formalities, NOT free agency — the player
-            # is still on his rookie deal and isn't available, so drop him from the list
-            # (unless the caller opts to include them for fun).
-            if normalize(name) in rookie_set and not include_rookie_options:
-                return None
             if _opt.get("type") == "player_option":
                 return "Player Option"
             if _opt.get("type") == "team_option":
                 return "Team Option"
+        # data/contract_years_2026_27.csv carries a flag PER SEASON, so it answers
+        # about the season being decided and cannot inherit a closed offseason the
+        # way a single-offseason snapshot can. It is also the source that survives
+        # a season flip without a rebuild, which the option-status cache did not.
+        # A MUTUAL option (M) reads as a player option: the distinction is that the
+        # team must agree too, but what matters to a free-agent board is that the
+        # player can decline and reach the market, and the board has no third
+        # bucket. Two players on 2026-11-20 (Keon Ellis, Moritz Wagner), both of
+        # whom the feed reads as guaranteed.
+        _flag = _contract_year_flags().get(normalize(name), {}).get(str(_board_year))
+        if _flag in ("P", "M"):
+            return "Player Option"
+        if _flag == "T":
+            return "Team Option"
+        if _flag in ("G", "N"):
+            # On the books for that season, so not a free agent by expiry. N is
+            # non-guaranteed money that is still owed unless he is waived, and
+            # utils.signed_through_season already treats G and N alike for the
+            # board's rescue gate -- this is the same rule, not a new one.
+            #
+            # It matters only where the contract-end scraper disagrees about the
+            # TERM: on 2026-11-20 four players (Quenton Jackson, Dylan Cardwell,
+            # Johni Broome, Micah Peavy) carry 2026:G|2027:N here while that
+            # scraper says the deal ends 2026-27, and the feed omits all four, so
+            # they were reaching the board as UFAs. All four are 2025 second-round
+            # picks, which classify_fa_status already documents as the class the
+            # feed omits. A G flag changes nothing on its own: those players
+            # already resolve to None through the feed.
+            return None
 
     def _missing() -> str | None:
         # No feed entry for the player: rookie-scale -> RFA; otherwise cross-check
@@ -3709,6 +3795,46 @@ def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
         logger.warning("classify_fa_status: unrecognized next-contract string %r "
                        "for %s — treating as under contract", s, name)
     return None
+
+
+def classify_fa_status(name: str, next_contract_str: str, rookie_set: set,
+                       cur_season: str, cross_check: bool = True,
+                       include_rookie_options: bool = False,
+                       contract_end_map: dict | None = None) -> str | None:
+    """A player's free-agency status THIS offseason: 'UFA' / 'RFA' / 'Player
+    Option' / 'Team Option', or None when he is NOT a free agent. THE single
+    source of truth -- the Free Agent Class page, the home-page FA summary, the
+    Contract Predictor FA toggle, scripts/build_fa_board.py,
+    build_ensemble_pool.py and build_missing_fas.py all come through here, so a
+    player's status can never disagree across them.
+
+    _fa_status_from_sources does the resolving. This adds the one rule that has
+    to outrank every source:
+
+    ROOKIE-SCALE OPTION YEARS ARE NOT FREE AGENCY. A rookie deal's year-3/4 team
+    option is an auto-exercised formality (Cooper Flagg, Dylan Harper, Stephon
+    Castle), so the player is not available and is dropped unless the caller asks
+    for them -- the board's "Include rookie-scale options" checkbox.
+
+    THIS GATE USED TO LIVE INSIDE THE OPTION-CACHE BRANCH, which made it fire
+    only for players who happened to be in that cache. On 2026-11-20 that meant
+    it suppressed 17 players it should not have -- 2023 first-rounders whose
+    rookie deal ENDS this season, so for the 2027 board they are genuine RFAs
+    (Anthony Black, Scoot Henderson, Gradey Dick) -- while never reaching the
+    2027-28 rookie options it exists to hide, which are not in a 2026 snapshot.
+    It is applied to the resolved status here so the source cannot change the
+    answer.
+
+    RFA IS DELIBERATELY NOT SUPPRESSED. A rookie contract expiring is genuine
+    restricted free agency; only an OPTION year is the formality.
+    """
+    status = _fa_status_from_sources(name, next_contract_str, rookie_set,
+                                     cur_season, cross_check, contract_end_map)
+    if (status in ("Player Option", "Team Option")
+            and not include_rookie_options
+            and normalize(name) in rookie_set):
+        return None
+    return status
 
 
 # ── Not an NBA free agent ─────────────────────────────────────────────────────
