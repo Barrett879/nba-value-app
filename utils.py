@@ -3623,6 +3623,43 @@ def _contract_year_flags() -> dict:
     return _CONTRACT_YEAR_FLAGS
 
 
+_TRACKED_SIGNINGS = None
+
+
+def tracked_signings(refresh: bool = False) -> dict:
+    """Every real signing the accuracy tracker holds, keyed by normalized name.
+
+    EVERY signing, not just the ones the model could score. This exists as ONE
+    implementation because it had been three: the Free Agent Class page, the
+    board-membership test and app.py each built this dict themselves, and the
+    first two filtered it to `model_M is not None`.
+
+    That filter is the ACCURACY TRACKER's membership test, not a test of
+    whether the man signed. 20 of the 131 signings carry no projection, and on
+    2026-11-21 ten of them were rows on the free-agent board, every one on a
+    2026-27 roster, reported by the Outcome column and the Show filter as still
+    on the market. A caller that genuinely wants the scored subset should say
+    so at its own call site; the accuracy percentage has its own denominator in
+    the tracker's `scorecard`.
+
+    Returns {} when the cache is missing or unreadable, which reads as "no
+    signings are tracked" and is the same thing every caller did before.
+    """
+    global _TRACKED_SIGNINGS
+    if _TRACKED_SIGNINGS is None or refresh:
+        # Built OUTSIDE the try: a typo in this expression must raise, not be
+        # swallowed into an empty dict that reads as "nobody signed".
+        src = Path(__file__).parent / "cache" / "accuracy_tracker_v1.json"
+        try:
+            import json as _j
+            d = _j.loads(src.read_text(encoding="utf-8"))
+            _TRACKED_SIGNINGS = {normalize(s["player"]): s
+                                 for s in (d or {}).get("signings", [])}
+        except Exception:
+            _TRACKED_SIGNINGS = {}
+    return _TRACKED_SIGNINGS
+
+
 def signed_through_season(name: str, year: int,
                           fallback_years: int | None = None) -> bool:
     """Is this player under contract FOR `year`'s season, and therefore not a

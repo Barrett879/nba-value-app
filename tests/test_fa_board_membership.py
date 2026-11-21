@@ -27,6 +27,7 @@ M, T), which is the whole point of the rescue surviving.
 from __future__ import annotations
 import csv
 import json
+import re
 import logging
 import sys
 from pathlib import Path
@@ -68,11 +69,22 @@ def flags():
 
 @pytest.fixture(scope="module")
 def tracked():
+    """PRODUCTION CODE, not a copy.
+
+    This fixture used to rebuild the dict here, filtered to `model_M is not
+    None`. That made it a second copy of a filter the board carried, so when
+    the board dropped the filter on 2026-11-21 the fixture went on testing
+    the old behaviour and no test could have noticed. utils.tracked_signings
+    is what the board calls.
+    """
     if not ACC.exists():
         pytest.skip("accuracy tracker absent")
-    d = json.loads(ACC.read_text(encoding="utf-8"))
-    return {normalize(s["player"]): s for s in d.get("signings", [])
-            if s.get("model_M") is not None}
+    t = utils.tracked_signings(refresh=True)
+    # NOT a skip. The file is on disk; an empty dict here is a broken loader
+    # claiming nobody signed, and a skip would make that look like success.
+    assert t, ("the accuracy tracker is on disk and utils.tracked_signings "
+               "returned nothing, which the board reads as 'nobody signed'")
+    return t
 
 
 def _board_status(name, feed):
@@ -240,3 +252,88 @@ def test_the_transcribed_option_row_is_present(flags):
     assert f.get(str(BOARD_YEAR)) == "M", (
         f"Wagner's {BOARD_YEAR} flag is {f.get(str(BOARD_YEAR))!r}, not the "
         f"mutual option both roster files record")
+
+
+# -----------------------------------------------------------------------------
+# "Did he sign" is not "could the model score him"            (added 2026-11-21)
+#
+# pages/Free_Agent_Class.py built its signings dict filtered to
+# `model_M is not None`, which is the ACCURACY TRACKER's membership test. 20 of
+# the 131 signings carry no projection, and ten of those were rows on the board
+# (Georges Niang, Mario Hezonja, Trey Lyles, Mo Bamba and six two-ways), every
+# one on a 2026-27 roster, reported by the Outcome column and by
+# Show -> Available as still on the market.
+# -----------------------------------------------------------------------------
+
+def test_tracked_signings_holds_every_signing_not_the_scored_subset(tracked):
+    """The dict that answers "did he sign" must not be the scored subset."""
+    raw = json.loads(ACC.read_text(encoding="utf-8"))
+    everyone = raw.get("signings", [])
+    assert len(tracked) == len(everyone), (
+        f"utils.tracked_signings holds {len(tracked)} of the tracker's "
+        f"{len(everyone)} signings, so something is filtering it again")
+
+    unscored = [s for s in everyone if s.get("model_M") is None]
+    assert unscored, (
+        "every signing in the tracker carries a projection today, so this test "
+        "cannot tell a filtered dict from an unfiltered one; it is vacuous and "
+        "must be re-pointed at whatever distinguishes them")
+
+    missing = [s["player"] for s in unscored if normalize(s["player"]) not in tracked]
+    assert not missing, (
+        f"these signed a real deal and the model simply could not project them, "
+        f"yet they are absent from the signings dict, so the board will call "
+        f"them still on the market: {missing[:20]}")
+
+    scored = [s for s in everyone if s.get("model_M") is not None]
+    assert len(scored) == (raw.get("scorecard") or {}).get("n"), (
+        "the scorecard's n is no longer the count of scored signings, so the "
+        "accuracy caption's denominator and the board's count have drifted")
+
+
+def test_signings_the_model_could_not_score_are_corroborated_as_real(tracked):
+    """A SOURCE THE TRACKER DOES NOT READ. master_roster is built from different
+    files; if these really signed, somebody is carrying them now."""
+    raw = json.loads(ACC.read_text(encoding="utf-8"))
+    unscored = [s for s in raw.get("signings", []) if s.get("model_M") is None]
+    roster = {normalize(r["player"]) for r in _rows(MASTER)
+              if (r.get("kind") or "").strip() in ("standard", "two_way")}
+    assert normalize("Quentin Grimes") in roster, "roster read is broken"
+
+    on_roster = [s["player"] for s in unscored if normalize(s["player"]) in roster]
+    assert len(on_roster) >= 5, (
+        f"only {len(on_roster)} of the {len(unscored)} unscored signings are on "
+        f"a roster, so treating them as signings is no longer corroborated")
+    for pl in on_roster:
+        assert normalize(pl) in tracked, (
+            f"{pl} is on an NBA roster and in the signings tracker, and the "
+            f"board would still report him as a free agent on the market")
+
+
+def test_the_board_does_not_rebuild_the_signings_dict():
+    """A dict rebuilt on the page is a second implementation, and a filter can
+    come back in it without a single test noticing."""
+    src = PAGE.read_text(encoding="utf-8")
+    assert "tracked_signings()" in src, (
+        "the board no longer calls utils.tracked_signings, so the one "
+        "implementation has forked again")
+
+    pat = r"_signed\s*=\s*\{"
+    control = '_signed = {normalize(s["player"]): s for s in whatever}'
+    assert re.search(pat, control), "the scan is broken; it matches nothing"
+    assert not re.search(pat, src), (
+        "pages/Free_Agent_Class.py builds its own _signed dict again instead of "
+        "calling utils.tracked_signings")
+
+    # Comments on this page discuss model_M at length and must keep doing so;
+    # what must not come back is a line of CODE that reads it.
+    def _code_hits(text):
+        return [l.strip() for l in text.splitlines()
+                if "model_M" in l and not l.lstrip().startswith("#")]
+
+    assert _code_hits('    if s.get("model_M") is not None:'), (
+        "the scan is broken; it does not even catch the filter it exists to ban")
+    assert not _code_hits(src), (
+        f"the board reads model_M in code again, and that is the accuracy "
+        f"tracker's membership test, not a test of whether he signed: "
+        f"{_code_hits(src)}")

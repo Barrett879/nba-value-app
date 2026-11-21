@@ -16,7 +16,7 @@ from utils import (
     build_ranked_projected,
     fetch_bref_positions, fetch_next_year_contracts, fetch_rookie_scale_players,
     _fmt_salary, fmt_next_contract, classify_fa_status, unavailable_players, NameIndex,
-    signed_through_season,
+    signed_through_season, tracked_signings,
     position_layers,
     color_next_contract, style_rookie_salary, color_value_diff, render_nav, render_page_chrome,
     theme_fig, html_table, render_rail,
@@ -117,6 +117,24 @@ def _style_rookie_salary(row):
 # as a plain salary, which would otherwise classify them as "under contract" and drop
 # them). The same data also powers the Outcome column and the Show filter below.
 # It no longer powers a Signed or vs Model column: both went on 2026-11-20.
+#
+# EVERY tracked signing, not just the ones the model could score. Until 2026-11-21
+# this dict was filtered to "model_M is not None", which is the ACCURACY TRACKER's
+# membership test and not a test of whether the man signed. 20 of the 131 signings
+# carry no projection -- 11 two-ways and 9 others the pool never covered -- and the
+# filter made all 20 invisible to the three things that ask "did he sign": the
+# Outcome column, Show -> Signed, and Show -> Available. Ten were rows on the board,
+# every one of them on a 2026-27 roster, and the page listed them as still on the
+# market. The filter existed only to keep a None out of the Signed and vs Model
+# columns' arithmetic; those columns went on 2026-11-20 and took its reason with
+# them. The unscored rows still carry "type" and "years", which is all
+# _signing_status and _signed_through_board_year read. The accuracy sentence near
+# the table uses _scorecard, which carries its own denominator, so nothing on this
+# page needs the scored subset. DO NOT re-add the filter.
+#
+# It lives in utils.tracked_signings because it had been built THREE times:
+# here, in tests/test_fa_board_membership.py and in app.py, and the first two
+# filtered while app.py did not. A test that rebuilds it tests its own copy.
 import json as _json
 import csv as _csv
 from pathlib import Path as _Path
@@ -124,8 +142,7 @@ try:
     _acc = _json.loads((_Path(__file__).parent.parent / "cache" / "accuracy_tracker_v1.json").read_text())
 except Exception:
     _acc = None
-_signed = {normalize(s["player"]): s
-           for s in (_acc or {}).get("signings", []) if s.get("model_M") is not None}
+_signed = tracked_signings()
 _scorecard = (_acc or {}).get("scorecard") or {}
 
 # Annotations belong to the class the BOARD is showing, not to whichever class
@@ -366,6 +383,10 @@ st.markdown(
 # every signing was a row, and on the 2027 board only the ones whose deal still
 # leaves them available are. On 2026-11-20 the rail said "111 signings tracked"
 # beside "286 free agents" when 61 of the 111 were on it.
+#
+# This counts SIGNINGS, so it rose on 2026-11-21 when _signed stopped being
+# filtered to the scored subset. It is the same predicate as Show -> Signed, and
+# the two must stay equal: the rail is checkable against the filter in one click.
 _n_tracked = int(fa_df["Player"].map(lambda p: normalize(p) in _signed).sum())
 
 render_rail(
@@ -534,14 +555,17 @@ def _sty_score(v, _row):
     return f"background:linear-gradient(90deg,var(--bar-tint) {pct:.0f}%,transparent 0)"
 
 if _scorecard:
-    # Scored over every signing in the tracker, which is NOT the same set as the
-    # rows below: say so rather than claiming the percentage describes this list.
+    # TWO DIFFERENT SETS, so two separate sentences. The percentage is scored over
+    # the signings the model PROJECTED and _scorecard carries that denominator;
+    # _n_tracked counts the signings on this board, scored or not. Joining them
+    # with "N of those players" was true only while _signed was the scored subset,
+    # and stopped being true on 2026-11-21.
     st.caption(
         f"The model's 2026 projections landed within \\$4M on "
-        f"**{_scorecard['within_4M']}%** of **{_scorecard['n']}** real signings "
-        f"(median miss \\${_scorecard['median_err_M']}M). **{_n_tracked}** of those "
-        "players are still on this board; set **Show** to **Signed** to see them, "
-        "or **Available** for who's still on the market."
+        f"**{_scorecard['within_4M']}%** of the **{_scorecard['n']}** signings it "
+        f"projected (median miss \\${_scorecard['median_err_M']}M). "
+        f"**{_n_tracked}** players on this board signed a 2026 deal; set **Show** "
+        "to **Signed** to see them, or **Available** for who's still on the market."
     )
 
 _as_of = _offseason_as_of()
