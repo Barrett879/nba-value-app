@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-21",
+"built_at": "2026-11-22",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3793,6 +3793,14 @@
 "pcv_M": 6.6,
 "low_M": 1.4,
 "high_M": 11.9,
+"is_max": false,
+"max_pct": 0.25
+},
+"dominick barlow": {
+"player": "Dominick Barlow",
+"pcv_M": 13.1,
+"low_M": 5.1,
+"high_M": 21.2,
 "is_max": false,
 "max_pct": 0.25
 }
