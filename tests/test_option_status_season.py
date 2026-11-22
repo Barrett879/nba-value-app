@@ -21,6 +21,7 @@ function is the thing under test.
 from __future__ import annotations
 import csv
 import json
+import re
 import logging
 import pickle
 import sys
@@ -126,11 +127,35 @@ def test_the_loader_refuses_a_cache_built_for_another_season():
         "this test, its premise has changed")
 
     got = utils._load_option_status(CUR)
-    assert got == {}, (
-        f"the loader handed back {len(got)} option entries for {UPCOMING} out of a "
-        f"file that says it describes {meta.get('upcoming')}. Those decisions are "
-        f"closed, and reusing them publishes players who are under contract as "
-        f"free agents")
+    current = CACHE / f"option_status_{BOARD_YEAR}.json"
+
+    # THE INVARIANT IS NOT "the loader returns nothing". That was only equivalent
+    # to this test's real subject while no cache existed for the current board
+    # year, and on 2026-11-22 one was built. An assertion that quietly folds in
+    # the absence of a file is the same shape as the bug this file guards: a
+    # fact about one moment surviving into a season where it is no longer true.
+    # What must hold in both worlds is that the CLOSED 2026 decisions never reach
+    # this season's board.
+    if not current.exists():
+        assert got == {}, (
+            f"no {current.name} exists, so the loader must hand back nothing for "
+            f"{UPCOMING}; it handed back {len(got)} entries, which can only have "
+            f"come from a file describing another season")
+        return
+
+    for n, v in got.items():
+        assert v.get("end_season") == UPCOMING, (
+            f"{n} came back for the {UPCOMING} offseason carrying end_season "
+            f"{v.get('end_season')!r}. Those decisions are closed, and reusing "
+            f"them publishes players who are under contract as free agents")
+
+    stale_opts = json.loads(stale.read_text()).get("options") or {}
+    assert stale_opts, "the 2026 cache is empty, so the leak check proves nothing"
+    leaked = [n for n, v in stale_opts.items()
+              if got.get(n, {}).get("end_season") == v.get("end_season")]
+    assert not leaked, (
+        f"{len(leaked)} entry/entries reached the {UPCOMING} board still carrying "
+        f"the 2026-27 end_season they have in {stale.name}: {sorted(leaked)[:5]}")
 
 
 def test_the_loader_still_serves_the_season_it_was_built_for():
@@ -436,3 +461,85 @@ def test_the_live_rookie_scale_cache_is_committed_and_not_empty():
         f"small cannot cover four draft classes, and the derive itself raises "
         f"rather than save one, so a file this size reached the repo some "
         f"other way.")
+
+
+# --- the builder, added 2026-11-22 when cache/option_status_2027.json was built --
+
+BUILDER = ROOT / "scripts" / "build_option_status.py"
+
+
+def test_the_builder_derives_its_filename_instead_of_typing_one():
+    """THE BUG THIS FILE EXISTS FOR, one layer up.
+
+    Until 2026-11-22 the builder's CONTENT rolled over with SEASONS[0] while its
+    output path was the literal "option_status_2026.json". Run a season later it
+    would have overwritten the closed 2026 record with 2027-28 data and still
+    left the loader looking for a file nobody wrote. The loader derives its
+    filename; so must the builder, or the two drift apart exactly once a year.
+    """
+    src = BUILDER.read_text(encoding="utf-8")
+    code = [l for l in src.splitlines() if not l.lstrip().startswith("#")]
+    body = "\n".join(code)
+    # the string that must NOT be constructible as an output path
+    bad = re.findall(r'["\']option_status_\d{4}\.json["\']', body)
+    assert not bad, (
+        f"{BUILDER.name} names an option-status file by a hardcoded year {bad}. "
+        "Derive it from SEASONS[0] the way utils._load_option_status does.")
+    assert re.search(r'option_status_\{[A-Za-z_]+\}\.json', body), (
+        f"{BUILDER.name} no longer builds its output name from a variable; "
+        "check it still tracks the board year")
+    # POSITIVE CONTROL: the scan must be able to see such a literal.
+    assert re.findall(r'["\']option_status_\d{4}\.json["\']',
+                      'x = "option_status_2026.json"'), "the scan matches nothing"
+
+
+def test_the_builder_does_not_rebuild_committed_caches():
+    """It runs in a bare process, where these rebuild and overwrite artifacts
+    that production reads. The committed player-hub map carries the same
+    contract-end data, and classify_fa_status already names it as the
+    precomputed stand-in for the live scrape."""
+    src = BUILDER.read_text(encoding="utf-8")
+    code = "\n".join(l for l in src.splitlines() if not l.lstrip().startswith("#"))
+    for fn in ("build_raw", "build_ranked_blended", "build_ranked_projected", "build_fa_board"):
+        assert f"{fn}(" not in code, (
+            f"{BUILDER.name} calls {fn}() in code; in a bare process that rebuilds "
+            "and overwrites committed cache artifacts")
+    assert "build_ranked_projected(" in "x = build_ranked_projected(SEASON)", "scan broken"
+
+
+def test_no_option_entry_contradicts_a_player_being_under_contract():
+    """THE WEMBANYAMA DIRECTION, at the data layer.
+
+    This cache is consulted BEFORE data/contract_years_2026_27.csv, so an entry
+    here outranks a curated per-season flag. An entry for a player that file
+    says is guaranteed or non-guaranteed for the board year would put a man under
+    contract onto the free-agent board, which is the exact failure the loader's
+    season gate was added for. Measured at 0 when the cache was built.
+    """
+    path = CACHE / f"option_status_{BOARD_YEAR}.json"
+    if not path.exists():
+        pytest.skip(f"no {path.name} to check")
+    opts = json.loads(path.read_text()).get("options") or {}
+    assert opts, f"{path.name} has no entries, so this proves nothing"
+
+    cy = ROOT / "data" / "contract_years_2026_27.csv"
+    flags = {}
+    for r in csv.DictReader(
+            l for l in cy.read_bytes().decode("utf-8").splitlines()
+            if l.strip() and not l.lstrip().startswith("#")):
+        if r.get("player"):
+            flags[utils.normalize(r["player"])] = next(
+                (x.split(":")[1] for x in (r.get("seasons") or "").split("|")
+                 if x.startswith(str(BOARD_YEAR))), None)
+    assert flags, f"{cy.name} parsed to nothing"
+
+    bad = [(n, flags[n]) for n in opts if flags.get(n) in ("G", "N")]
+    assert not bad, (
+        f"{len(bad)} player(s) are listed as {BOARD_YEAR}-28 option holders while "
+        f"{cy.name} says they are on the books that season, and this cache is read "
+        f"first: {bad[:5]}")
+
+    # POSITIVE CONTROL: a player the CSV marks G must be visible to this check.
+    ctl = next((n for n, f in flags.items() if f == "G"), None)
+    assert ctl, "no guaranteed player in the CSV, so the control proves nothing"
+    assert [(ctl, "G")] == [(n, f) for n, f in [(ctl, flags[ctl])] if f in ("G", "N")]

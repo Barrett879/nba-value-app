@@ -1,0 +1,421 @@
+{
+ "upcoming": "2027-28",
+ "season": "2026-27",
+ "options": {
+  "aj johnson": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "adem bona": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "ajay mitchell": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "alex sarr": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "alijah martin": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "anfernee simons": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "anthony davis": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "baylor scheierman": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "bennedict mathurin": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "bronny james": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "bryce mcgowens": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "bub carrington": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "buddy hield": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "caleb martin": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "cody williams": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "damian lillard": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "day'ron sharpe": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "de'anthony melton": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "dejounte murray": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "donovan clingan": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "dru smith": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "giannis antetokounmpo": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "grayson allen": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "isaiah collier": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "isaiah joe": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "isaiah stewart": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "ja'kobe walter": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jaden hardy": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jalen green": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jared mccain": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jarred vanderbilt": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jaxson hayes": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jaylen wells": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jaylin williams": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jaylon tyson": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jerami grant": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jonathan kuminga": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "josh hart": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "josh minott": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "josh okogie": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "jrue holiday": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "julius randle": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "justin champagnie": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "justin edwards": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "karl-anthony towns": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "kel'el ware": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "kevin durant": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "klay thompson": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "kyle filipowski": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "kyrie irving": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "kyshawn george": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "lebron james": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "luke kennard": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "malik monk": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "marcus smart": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "matas buzelis": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "max christie": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "nikola jokic": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "norman powell": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "pacome dadiet": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "paul george": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "reed sheppard": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "rudy gobert": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "rui hachimura": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "ryan dunn": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "ryan rollins": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "stephon castle": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "svi mykhailiuk": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "tidjane salaun": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "tre jones": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "tre mann": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "tristan da silva": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "ty jerome": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "tyler kolek": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "vit krejci": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "yves missi": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "zaccharie risacher": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "zach edey": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "zeke nnaji": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "santi aldama": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "adou thiero": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "bobby portis": {
+   "type": "player_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  },
+  "terrence shannon jr.": {
+   "type": "team_option",
+   "end_season": "2027-28",
+   "source": "contract_end"
+  }
+ }
+}
