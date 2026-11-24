@@ -42,6 +42,13 @@
 # Draymond Green's Porzingis conditional is dropped. Porzingis announced on
 # 11/6 that he is stepping away from basketball, so a swap keyed to a temporary
 # absence no longer describes anything temporary, and Barrett asked for PF/C.
+# 2026-11-23, third batch at Barrett's direction: 2 new rows.
+# Ace Bailey SF -> PF and Klay Thompson SG -> SF. Both men carry a DEPTH PIN
+# that is keyed by team and name rather than by column, so each rank follows
+# its player into the new column: Klay's "force start at SG, 2026-10-24" now
+# reads MIA SF1. Barrett did not ask for that pin to move or go, and MIA was
+# not one of the columns he asked to resort, so it is left exactly as it was
+# and the consequence is recorded here and in depth_order.csv.
 player,pos,alt_pos,alt_when_out,note
 Collin Murray-Boyles,C/PF,,,moves from the PF column to C
 Corey Kispert,SG/SF,,,was SF/SG
@@ -122,3 +129,5 @@ Ja'Kobi Gillespie,SG/PG,,,moves from the PG column to SG; was a bare PG
 Carter Bryant,PF/SF,SG/SF,Dylan Harper,"shooting guard only while Dylan Harper is out; reverts to PF/SF on his return. Harper is out to about Dec 13, so this is active now"
 Aaron Gordon,PF/SF,,,stays in the PF column; SF replaces C as the second position
 Julius Randle,PF/SF,,,stays in the PF column; SF replaces C as the second position
+Ace Bailey,PF/SF,,,moves from the SF column to PF; UTA PF is resorted by Barrett Score in the same round
+Klay Thompson,SF/SG,,,"moves from the SG column to SF. His MIA pin is keyed by team and name, so it follows him and now means SF1, not SG1"

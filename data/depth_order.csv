@@ -56,6 +56,35 @@
 # is ignored and the gap closes while he is sidelined. OKC SG therefore reads
 # McCain, Clifford, Dix today and asserts the full score order on his return,
 # rather than falling back to `ord` then.
+# 2026-11-23, fourth batch at Barrett's direction: 55 new pins, 6 replaced.
+# Columns snapshotted in descending PRINTED Barrett Score: TOR SF, UTA PF,
+# MIN PF, the WHOLE DAL team (PG/SG/SF/PF/C), HOU C, NOP PF, MIL SG, MIL PF,
+# DET SG, CHI SF, CHI C. Ace Bailey moved SF -> PF and Klay Thompson SG -> SF
+# in position_overrides the same round.
+#
+# SIX FORCE ORDERS SET ON 10/20 AND 10/24 ARE OVERWRITTEN by score order,
+# because a resort is an instruction about the whole column: Okoro CHI SF2->SF1,
+# Swain CHI SF3->SF3, Matkovic NOP PF3->PF3, Morez Johnson Jr. DAL C2->C3, and
+# the two that move a long way -- Gary Trent Jr. MIL SG3 -> SG4 (last) and
+# Ousmane Dieng MIL PF2 -> PF4 (last). Dieng at -0.4 and Markovic at -0.3 are
+# separated by 0.1, so that last pair is decided by a hair.
+#
+# THREE SLOTS REST ON A PRIOR-SEASON SCORE, which the card marks with a tag and
+# which this ordering therefore compares against current-season numbers:
+# Dereck Lively II 4.9 (25-26) at DAL C2, Cormac Ryan 10.4 (25-26) at MIL SG3,
+# and Orlando Robinson 5.2 (24-25) at CHI C3, two seasons old. Ryan's is the
+# load-bearing one: 10.4 against Jakucionis at 10.8 decides SG2 against SG3.
+#
+# A player with NO printed score stays unpinned, as before: Tarik Biberovic,
+# DAL SF. OUT players ARE pinned on their score so the order asserts itself on
+# their return instead of falling back to `ord`; orderD places pins only among
+# the available, so the gaps close meanwhile. That is why TOR SF reads Battle
+# then Anderson today with Kawhi pinned first, and DET SG reads Javonte Green
+# first with Duncan Robinson pinned first.
+#
+# UTA SF IS DELIBERATELY NOT RESORTED. Josh Green was force-started there hours
+# earlier at Barrett's request and he prints 3.8 against Svi Mykhailiuk's 5.4,
+# so a score resort would silently revoke that force start. Left as it is.
 team,player,rank,note
 MEM,Cameron Boozer,1,2026 lottery pick; no NBA score yet so the automatic rule buries him
 MEM,Scotty Pippen Jr.,2,"second point guard behind Ty Jerome, who is force-started at 1 as of 2026-10-20; this row read 'starting point guard' before that"
@@ -73,12 +102,9 @@ WAS,Alex Sarr,1,force start 2026-10-20
 LAC,Keaton Wagler,2,"second PG as of 2026-10-24, revised from the 10/20 force start; position_overrides moves him SG -> PG in the same round and the pin follows"
 MEM,Ty Jerome,1,"force start 2026-10-20, ahead of Pippen who moves to 2"
 MEM,Jaylen Wells,1,"force start 2026-10-20, ahead of Jerami Grant, who has no pin and so falls to 2 on score"
-NOP,Karlo Matkovic,3,force third PF 2026-10-20
 SAS,Devin Vassell,1,"force start 2026-10-20, in the PF column per position_overrides"
 DEN,Tyus Jones,2,force second PG 2026-10-20
 MIL,Brayden Burries,2,second PG as of 2026-11-23: position_overrides moves him SG -> PG and the pin follows. Read 'force second SG 2026-10-20' before that
-MIL,Gary Trent Jr.,3,force third SG 2026-10-20
-CHI,Dailyn Swain,3,"third SF as of 2026-10-24, shifted down one when Isaac Okoro took SF2. Force-set at SF2 on 10/20"
 PHI,Labaron Philon Jr.,3,force third PG 2026-10-20
 BKN,Ben Saraf,3,force third SG 2026-10-20
 LAL,Ziaire Williams,1,"force start 2026-10-20, in the PF column; first LAL pin, so Mamukelashvili falls to 2 on score"
@@ -96,12 +122,9 @@ LAC,Kris Dunn,1,"force start at SG, 2026-10-24; moved PG -> SG in the same round
 LAL,Matisse Thybulle,1,"force start at SF, 2026-10-24; moved SG -> SF in the same round"
 PHX,Khaman Maluach,1,"force start at C, 2026-10-24"
 PHX,Drew Timme,99,"force LAST at PF, 2026-10-24. There is no explicit last-place flag: orderD fills every unpinned slot before placing a pin, so a rank past the end of the column drains the rest first and leaves him at the bottom. 99 is the convention"
-DAL,Morez Johnson Jr.,2,"second C, 2026-10-24"
 MEM,G.G. Jackson,2,"second PF, 2026-10-24; Barrett wrote GG Jackson, the roster spells it G.G."
 NOP,Yves Missi,1,"force start at C, 2026-10-24"
 SAS,Dylan Harper,1,"force start at SF, 2026-10-24; moved SG -> SF in the same round"
-MIL,Ousmane Dieng,2,"second PF, 2026-10-24; Ament shifts to PF3"
-CHI,Isaac Okoro,2,"second SF, 2026-10-24; position_overrides moves him SG -> SF in the same round. Swain shifts to SF3 under the rule Barrett set that night: the newer pin wins and the older drops a rank rather than being dropped"
 UTA,Josh Green,1,"force start at SF, 2026-11-23"
 POR,Sidy Cissoko,1,"force start at SG, 2026-11-23; position_overrides moves him SF -> SG in the same round and the pin follows"
 ORL,Wendell Carter Jr.,1,"C1 as of 2026-11-23, set by printed Barrett Score (23.7); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
@@ -115,3 +138,58 @@ OKC,Josh Dix,4,"SG4 as of 2026-11-23, set by printed Barrett Score (-3.0); the c
 CLE,James Harden,1,"PG1 as of 2026-11-23, set by printed Barrett Score (29.6); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
 CLE,Tyrese Proctor,2,"PG2 as of 2026-11-23, set by printed Barrett Score (11.0); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
 CLE,Craig Porter Jr.,3,"PG3 as of 2026-11-23, set by printed Barrett Score (3.6); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+TOR,Kawhi Leonard,1,"SF1 as of 2026-11-23, set by printed Barrett Score (12.8); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+TOR,Jamison Battle,2,"SF2 as of 2026-11-23, set by printed Barrett Score (8.3); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+TOR,Kyle Anderson,3,"SF3 as of 2026-11-23, set by printed Barrett Score (1.7); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+UTA,Ace Bailey,1,"PF1 as of 2026-11-23, set by printed Barrett Score (17.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+UTA,Jaren Jackson Jr.,2,"PF2 as of 2026-11-23, set by printed Barrett Score (12.1); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+UTA,Brice Sensabaugh,3,"PF3 as of 2026-11-23, set by printed Barrett Score (10.9); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+UTA,Kyle Filipowski,4,"PF4 as of 2026-11-23, set by printed Barrett Score (-2.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIN,Jonathan Kuminga,1,"PF1 as of 2026-11-23, set by printed Barrett Score (22.1); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIN,Trey Lyles,2,"PF2 as of 2026-11-23, set by printed Barrett Score (7.0); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIN,Cody Williams,3,"PF3 as of 2026-11-23, set by printed Barrett Score (-1.9); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Kyrie Irving,1,"PG1 as of 2026-11-23, set by printed Barrett Score (27.9); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Walter Clayton Jr.,2,"PG2 as of 2026-11-23, set by printed Barrett Score (8.4); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Marcus Sasser,3,"PG3 as of 2026-11-23, set by printed Barrett Score (2.5); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Sergio de Larrea,4,"PG4 as of 2026-11-23, set by printed Barrett Score (1.8); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Caleb Martin,1,"SG1 as of 2026-11-23, set by printed Barrett Score (9.0); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Max Christie,2,"SG2 as of 2026-11-23, set by printed Barrett Score (2.4); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Cooper Flagg,1,"SF1 as of 2026-11-23, set by printed Barrett Score (41.8); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Zaccharie Risacher,2,"SF2 as of 2026-11-23, set by printed Barrett Score (13.4); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,P.J. Washington,1,"PF1 as of 2026-11-23, set by printed Barrett Score (17.9); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Naji Marshall,2,"PF2 as of 2026-11-23, set by printed Barrett Score (14.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Santi Aldama,3,"PF3 as of 2026-11-23, set by printed Barrett Score (2.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Tobi Lawal,4,"PF4 as of 2026-11-23, set by printed Barrett Score (0.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Jett Howard,5,"PF5 as of 2026-11-23, set by printed Barrett Score (-0.1); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Daniel Gafford,1,"C1 as of 2026-11-23, set by printed Barrett Score (19.7); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Dereck Lively II,2,"C2 as of 2026-11-23, set by printed Barrett Score (4.9 (25-26)); the column is frozen in score order because cmpD sorts on ord, not the printed score. NOTE: 4.9 is a 25-26 score, so this slot compares a prior season against current ones"
+DAL,Morez Johnson Jr.,3,"C3 as of 2026-11-23, set by printed Barrett Score (3.2); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DAL,Moussa Cisse,4,"C4 as of 2026-11-23, set by printed Barrett Score (-0.5); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+HOU,Alperen Sengun,1,"C1 as of 2026-11-23, set by printed Barrett Score (38.7); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+HOU,Clint Capela,2,"C2 as of 2026-11-23, set by printed Barrett Score (6.2); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+HOU,Steven Adams,3,"C3 as of 2026-11-23, set by printed Barrett Score (4.1); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+HOU,Oscar Tshiebwe,4,"C4 as of 2026-11-23, set by printed Barrett Score (1.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+NOP,Zion Williamson,1,"PF1 as of 2026-11-23, set by printed Barrett Score (33.4); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+NOP,Trendon Watford,2,"PF2 as of 2026-11-23, set by printed Barrett Score (8.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+NOP,Karlo Matkovic,3,"PF3 as of 2026-11-23, set by printed Barrett Score (6.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+NOP,Julian Reese,4,"PF4 as of 2026-11-23, set by printed Barrett Score (0.0); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+NOP,Malik Dia,5,"PF5 as of 2026-11-23, set by printed Barrett Score (-2.1); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIL,Tyler Herro,1,"SG1 as of 2026-11-23, set by printed Barrett Score (28.0); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIL,Kasparas Jakucionis,2,"SG2 as of 2026-11-23, set by printed Barrett Score (10.8); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIL,Cormac Ryan,3,"SG3 as of 2026-11-23, set by printed Barrett Score (10.4 (25-26)); the column is frozen in score order because cmpD sorts on ord, not the printed score. NOTE: 10.4 is a 25-26 score, so this slot compares a prior season against current ones"
+MIL,Gary Trent Jr.,4,"SG4 as of 2026-11-23, set by printed Barrett Score (-1.7); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIL,Kyle Kuzma,1,"PF1 as of 2026-11-23, set by printed Barrett Score (13.6); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIL,Nate Ament,2,"PF2 as of 2026-11-23, set by printed Barrett Score (4.3); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIL,Bogoljub Markovic,3,"PF3 as of 2026-11-23, set by printed Barrett Score (-0.3); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+MIL,Ousmane Dieng,4,"PF4 as of 2026-11-23, set by printed Barrett Score (-0.4); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DET,Duncan Robinson,1,"SG1 as of 2026-11-23, set by printed Barrett Score (21.3); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DET,Javonte Green,2,"SG2 as of 2026-11-23, set by printed Barrett Score (10.3); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DET,Isaiah Joe,3,"SG3 as of 2026-11-23, set by printed Barrett Score (7.1); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+DET,Chaz Lanier,4,"SG4 as of 2026-11-23, set by printed Barrett Score (1.8); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+CHI,Isaac Okoro,1,"SF1 as of 2026-11-23, set by printed Barrett Score (4.8); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+CHI,Leonard Miller,2,"SF2 as of 2026-11-23, set by printed Barrett Score (3.8); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+CHI,Dailyn Swain,3,"SF3 as of 2026-11-23, set by printed Barrett Score (-2.7); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+CHI,Jalen Smith,1,"C1 as of 2026-11-23, set by printed Barrett Score (21.2); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+CHI,Nicolas Claxton,2,"C2 as of 2026-11-23, set by printed Barrett Score (11.7); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+CHI,Orlando Robinson,3,"C3 as of 2026-11-23, set by printed Barrett Score (5.2 (24-25)); the column is frozen in score order because cmpD sorts on ord, not the printed score. NOTE: 5.2 is a 24-25 score, so this slot compares a prior season against current ones"
+CHI,Zach Collins,4,"C4 as of 2026-11-23, set by printed Barrett Score (0.2); the column is frozen in score order because cmpD sorts on ord, not the printed score"
