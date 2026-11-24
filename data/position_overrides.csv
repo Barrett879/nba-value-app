@@ -27,41 +27,55 @@
 # The five revisions reverse or re-aim rows set on 10/20 and are marked as
 # such in their notes, so a row that looks contradictory against the earlier
 # round reads as a decision rather than a mistake.
+# 2026-11-23 batch at Barrett's direction: 35 new rows, 10 revisions, 1 removal.
+# Eight rows set a SINGLE position ("PG only"), which restricts a player to one
+# depth column. Two are new conditionals keyed to Dylan Harper's absence and one
+# to Caleb Wilson's; all three triggers are active today, so they take effect
+# now and revert by themselves.
+#
+# Pelle Larsson's row is DELETED rather than kept, because Barrett asked for the
+# restriction to be REMOVED, not changed. That differs from the kept rows below
+# whose position happens to equal the scraped one: those record a position he
+# asked for, and a kept row also holds it against a re-scrape, which is the
+# opposite of removing a restriction.
+#
+# Draymond Green's Porzingis conditional is dropped. Porzingis announced on
+# 11/6 that he is stepping away from basketball, so a swap keyed to a temporary
+# absence no longer describes anything temporary, and Barrett asked for PF/C.
 player,pos,alt_pos,alt_when_out,note
 Collin Murray-Boyles,C/PF,,,moves from the PF column to C
 Corey Kispert,SG/SF,,,was SF/SG
 Joan Beringer,C/PF,,,moves from the PF column to C
-Damian Lillard,SG/PG,,,was a bare PG
+Damian Lillard,PG/SG,,,"revised 2026-11-23 to the PG column; was SG/PG on 10/20, and a bare PG before that"
 Jaren Jackson Jr.,PF/C,,,moves from the C column to PF
 Lauri Markkanen,SF/PF,,,moves from the PF column to SF
-Draymond Green,PF/C,C/PF,Kristaps Porzingis,centre only while Porzingis is out; reverts to PF/C on his return
+Draymond Green,PF/C,,,"revised 2026-11-23: the Porzingis conditional is DROPPED at Barrett's direction, so he reads PF/C whatever the injury feed says. Porzingis announced on 11/6 that he is stepping away from basketball, so an alt keyed to a temporary absence no longer describes anything temporary"
 Derrick Jones Jr.,PF/SF,SF/PF,Brandon Ingram,small forward only while Ingram is out; reverts to PF/SF on his return
 Keaton Wagler,PG/SG,,,revised 2026-10-24 back to the PG column; the 10/20 row had moved him to SG
 Sandro Mamukelashvili,PF/C,,,moves from the C column to PF
 Devin Booker,PG/SG,,,moves from the SG column to PG
 Jordan Goodwin,SG/SF,,,"revised 2026-10-24 from SF/SG, so he moves SF -> SG"
 Ryan Dunn,SF/PF,,,"revised 2026-10-24 back to the SF column, reversing the 10/20 move to PF. His depth pin is keyed by team and name, so it follows him and now means SF2"
-Zaccharie Risacher,SG/SF,,,moves from the SF column to SG
-Marcus Smart,PG/SG,,,moves from the SG column to PG
-Reed Sheppard,SG/PG,,,moves from the PG column to SG
+Zaccharie Risacher,SF/SG,,,revised 2026-11-23 to the SF column; was SG/SF on 10/24. His two DAL SG pins were removed in the same round
+Marcus Smart,SG/PG,,,"revised 2026-11-23 back to the SG column, restoring his scraped SG/PG; the 10/20 row had moved him to PG"
+Reed Sheppard,PG/SG,,,"revised 2026-11-23 back to the PG column, restoring his scraped PG/SG; the 10/20 row had moved him to SG"
 Ty Jerome,PG/SG,,,moves from the SG column to PG
 Jerami Grant,SF/PF,,,moves from the PF column to SF
 Julian Champagnie,SF/PF,,,"stays in the SF column. Was set PF/SF on 2026-10-20 and revised back the same day, which restores his scraped position; the row is kept so the intent is explicit rather than looking like the override was dropped"
 Devin Vassell,PF/SF,,,"moves from the SG column to PF. Was set SF/SG on 2026-10-20 and revised the same day; he and Champagnie effectively swap, Vassell to PF and Champagnie back to SF"
 Dylan Harper,SF/SG,,,"revised 2026-10-24 from SG/PG, so he moves SG -> SF"
-Saddiq Bey,PF/SF,,,moves from the SF column to PF
+Saddiq Bey,SF/PF,,,"revised 2026-11-23 back to the SF column, restoring his scraped SF/PF; the 10/20 row had moved him to PF"
 Stephon Castle,SG/PG,,,"revised 2026-10-24 from SF/SG, so he moves SF -> SG. He and Harper swap columns again, the mirror of the 10/20 pair"
-Keldon Johnson,SG/SF,,,moves from the SF column to SG
+Keldon Johnson,SG/SF,SF/PF,Dylan Harper,"small forward only while Dylan Harper is out (2026-11-23, Barrett's direction); reverts to SG/SF on his return. Harper is out to about Dec 13"
 Derrick White,PG/SG,,,moves from the SG column to PG
 Jordan Walsh,SG/SF,,,moves from the PF column to SG
 Egor Demin,PG/SG,,,moves from the SG column to PG
 Mikel Brown Jr.,SG/PG,,,was a bare PG
-Leonard Miller,PF/SF,,,moves from the SF column to PF
-Noa Essengue,C/PF,,,moves from the PF column to C
+Leonard Miller,SF/PF,,,"revised 2026-11-23 back to the SF column, restoring his scraped SF/PF; the 10/24 row had moved him to PF. Barrett also asked that he carry NO depth pin so a role switch is never fought by one, and he has none"
+Noa Essengue,PF/C,,,"revised 2026-11-23 back to the PF column, restoring his scraped PF/C; the 10/24 row had moved him to C. His CHI pin is keyed by team and name, so it follows him and now means PF2"
 Isaac Okoro,SF/SG,,,moves from the SG column to SF
-Pelle Larsson,SF/SG,,,moves from the SG column to SF
 Simone Fontecchio,PF/SF,,,moves from the SF column to PF
-De'Anthony Melton,SG/PG,,,moves from the PG column to SG
+De'Anthony Melton,PG/SG,,,"revised 2026-11-23 back to the PG column, restoring his scraped PG/SG; the 10/20 row had moved him to SG. His GSW pin was removed in the same round"
 Gary Payton II,SF/SG,,,moves from the SG column to SF
 Kris Dunn,SG/PG,,,moves from the PG column to SG. The OTHER Dunn: Ryan Dunn is PHX
 Matisse Thybulle,SF/SG,,,moves from the SG column to SF
@@ -73,3 +87,38 @@ Jabari Smith Jr.,SF/PF,,,moves from the PF column to SF
 Cam Spencer,SG/PG,,,moves from the PG column to SG
 Dejounte Murray,SG/PG,,,moves from the PG column to SG
 Jordan Poole,PG/SG,,,moves from the SG column to PG
+Luka Doncic,PG,,,PG only; was PG/SG
+Tyrese Haliburton,PG,,,"PG only; already his scraped position, and the row makes it survive a re-scrape"
+Davion Mitchell,PG,,,PG only; was PG/SG
+Keyonte George,PG,,,PG only; was PG/SG
+LaMelo Ball,PG,,,PG only; was PG/SG
+Jamal Shead,PG,,,PG only; was PG/SG
+Brandon Williams,PG,,,PG only; was PG/SG. The GSW Brandon Williams
+Javon Small,PG,,,"PG only; already his scraped position, and the row makes it survive a re-scrape"
+Brice Sensabaugh,PF/SF,,,moves from the SG column to PF
+Paul George,PF/SF,,,moves from the SF column to PF
+Jayson Tatum,SF/PF,,,moves from the PF column to SF
+Matas Buzelis,SF/PF,PF/SF,Caleb Wilson,"power forward only while Caleb Wilson is out; reverts to SF/PF on his return. Wilson is out to about Dec 13, so this is active now"
+Sam Merrill,SF/SG,,,moves from the SG column to SF
+Javonte Green,SG/SF,,,moves from the SF column to SG
+Brayden Burries,PG/SG,,,moves from the SG column to PG; was a bare SG. His MIL pin follows him and now means PG2
+Kasparas Jakucionis,SG/PG,,,moves from the PG column to SG
+Myles Turner,C/PF,,,was a bare C; stays in the C column and gains PF as the second position
+Bobby Portis,PF/C,,,moves from the C column to PF
+Ryan Conwell,PG/SG,,,moves from the SG column to PG; was a bare SG
+Kyshawn George,SG/SF,,,moves from the SF column to SG
+Bilal Coulibaly,SF/SG,,,moves from the SG column to SF
+Spencer Jones,SF/PF,,,moves from the PF column to SF
+Cody Williams,PF/SF,,,moves from the SF column to PF
+Sidy Cissoko,SG/SF,,,"moves from the SF column to SG, and he is force-started there in the same round"
+Jarred Vanderbilt,C/PF,,,moves from the PF column to C
+Adou Thiero,PF/SF,,,moves from the SF column to PF
+Daeqwon Plowden,SG/SF,,,moves from the SF column to SG. Barrett wrote Daequon; the roster spells it Daeqwon
+Naji Marshall,PF/SF,,,moves from the SF column to PF
+Karim Lopez,SG/SF,,,moves from the PF column to SG; was a bare PF. The OTHER Lopez: Brook Lopez is LAC
+Taylor Hendricks,PF/C,,,moves from the C column to PF
+David Jones Garcia,SG/SF,,,moves from the SF column to SG; was a bare SF
+Ja'Kobi Gillespie,SG/PG,,,moves from the PG column to SG; was a bare PG
+Carter Bryant,PF/SF,SG/SF,Dylan Harper,"shooting guard only while Dylan Harper is out; reverts to PF/SF on his return. Harper is out to about Dec 13, so this is active now"
+Aaron Gordon,PF/SF,,,stays in the PF column; SF replaces C as the second position
+Julius Randle,PF/SF,,,stays in the PF column; SF replaces C as the second position

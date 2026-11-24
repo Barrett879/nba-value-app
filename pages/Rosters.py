@@ -99,11 +99,22 @@ _DIVS = NBA_DIVISIONS
 
 
 def _read_csv(path: Path) -> list:
-    """CSV rows with the leading # provenance comments stripped."""
+    """CSV rows with the leading # provenance comments stripped.
+
+    BLANK lines go too, and that is load-bearing rather than tidiness. The
+    first surviving line is the HEADER, so one blank line left between the
+    comment block and the header makes DictReader read the blank AS the
+    header: every field name comes back empty and every value is unreachable.
+    On 2026-11-23 that turned 48 depth pins into none, and nothing caught it
+    -- the file looked right, check_roster_invariants reads it with its own
+    blank-tolerant reader and passed, and this page has no error state for
+    "no pins", it just falls back to score order. utils.position_overrides()
+    has always filtered blanks; this reader of the same convention did not.
+    """
     if not path.exists():
         return []
     lines = [ln for ln in path.read_text(encoding="utf-8").splitlines()
-             if not ln.lstrip().startswith("#")]
+             if ln.strip() and not ln.lstrip().startswith("#")]
     return list(csv.DictReader(lines))
 
 

@@ -528,3 +528,96 @@ def test_the_exemption_still_describes_something_real():
         assert all(c["roster"] is None for c in matched), (
             f"{rel}: the {token}() calls now pass the roster layer, so the "
             f"_EXEMPT entry is dead. Remove it.")
+
+
+# ─────────────── the reader under the hand-set files (2026-11-23) ────────────
+# A blank line left between the comment block and the header silently emptied
+# every depth pin: pages/Rosters.py:_read_csv stripped "#" lines but not blank
+# ones, so csv.DictReader took the BLANK as the header, every field name came
+# back empty, and the page rendered 48 pins as none. Nothing caught it --
+# check_roster_invariants read the file with its own blank-tolerant reader and
+# passed, and the page has no error state for "no pins", it just shows score
+# order. These tests hold the two properties that failure needed.
+
+_ROSTERS = ROOT / "pages" / "Rosters.py"
+
+
+def _lift_rosters_read_csv():
+    """The REAL _read_csv out of pages/Rosters.py, not a copy of it.
+
+    A Streamlit page cannot be imported, so the function is lifted from the
+    page's own source. Testing a reimplementation here would test the copy,
+    and the copy is exactly what was already correct.
+    """
+    tree = ast.parse(_ROSTERS.read_text(encoding="utf-8"))
+    fn = next((n for n in tree.body
+               if isinstance(n, ast.FunctionDef) and n.name == "_read_csv"), None)
+    assert fn is not None, "pages/Rosters.py no longer defines _read_csv"
+    ns: dict = {"csv": csv, "Path": Path}
+    exec(compile(ast.Module([fn], []), "<rosters>", "exec"), ns)
+    return ns["_read_csv"]
+
+
+@pytest.mark.parametrize("rel, fields", [
+    ("data/depth_order.csv", ("team", "player", "rank")),
+    ("data/position_overrides.csv", ("player", "pos")),
+])
+def test_the_hand_set_files_are_usable_through_the_page_reader(rel, fields):
+    """Every row the page reads carries real field names and real values.
+
+    The count is checked against the file's own data lines, because the
+    failure mode is not an exception: it is the right NUMBER of rows with
+    every value under an empty key.
+    """
+    read = _lift_rosters_read_csv()
+    rows = read(ROOT / rel)
+    raw = [ln for ln in (ROOT / rel).read_text(encoding="utf-8").splitlines()
+           if ln.strip() and not ln.lstrip().startswith("#")]
+    assert len(rows) == len(raw) - 1, (
+        f"{rel}: page reader returned {len(rows)} rows for {len(raw) - 1} data "
+        f"lines; a blank line above the header makes DictReader read the blank "
+        f"as the header")
+    assert rows, f"{rel}: no rows at all"
+    for f in fields:
+        missing = [r for r in rows if not (r.get(f) or "").strip()]
+        assert not missing, (
+            f"{rel}: {len(missing)} row(s) have no {f!r}. If every row is "
+            f"missing it, the header line itself was not read as the header.")
+    if "rank" in fields:
+        assert all((r.get("rank") or "").strip().isdigit() for r in rows), (
+            f"{rel}: a rank is not an integer, so the pin is dropped silently")
+
+
+def test_a_blank_line_above_the_header_does_not_empty_the_file(tmp_path):
+    """The exact 2026-11-23 shape: comment block, blank line, header, rows."""
+    read = _lift_rosters_read_csv()
+    good = tmp_path / "good.csv"
+    good.write_text("# note\n# note\nteam,player,rank\nMEM,A B,1\n", encoding="utf-8")
+    blank = tmp_path / "blank.csv"
+    blank.write_text("# note\n# note\n\nteam,player,rank\nMEM,A B,1\n", encoding="utf-8")
+    inner = tmp_path / "inner.csv"
+    inner.write_text("# note\nteam,player,rank\nMEM,A B,1\n\nMEM,C D,2\n", encoding="utf-8")
+    assert read(good) == [{"team": "MEM", "player": "A B", "rank": "1"}]
+    assert read(blank) == read(good), (
+        "a blank line between the comments and the header still changes what "
+        "the page reads")
+    assert read(inner) == [{"team": "MEM", "player": "A B", "rank": "1"},
+                           {"team": "MEM", "player": "C D", "rank": "2"}], (
+        "a blank line among the DATA rows still yields a phantom row")
+
+
+def test_both_readers_of_the_comment_convention_agree(tmp_path):
+    """The page reader and utils' override loader must read one file alike.
+
+    They disagreed: utils.position_overrides() filtered blank lines from the
+    start and the page's reader did not. Compared through PRODUCTION code on
+    both sides, on the real file, so neither side is a copy.
+    """
+    import utils
+    read = _lift_rosters_read_csv()
+    rows = [r for r in read(ROOT / "data" / "position_overrides.csv")
+            if (r.get("player") or "").strip() and (r.get("pos") or "").strip()]
+    loaded = utils.position_overrides.__wrapped__()
+    assert len(rows) == len(loaded), (
+        f"page reader sees {len(rows)} override rows, utils sees {len(loaded)}")
+    assert {r["player"] for r in rows} == set(loaded)
