@@ -32,6 +32,30 @@
 # The two renotes are pins whose COLUMN moved under this round's position
 # changes; a pin is keyed by team and name, never by column, so the rank follows
 # the player and the old note would have named the wrong column.
+# 2026-11-23, second batch at Barrett's direction: 11 new pins, 1 removal.
+# Removed the Noa Essengue CHI pin, so CHI PF returns to automatic order.
+# ORL C, OKC SG and CLE PG are now pinned in full, in descending PRINTED
+# Barrett Score as read off the render on 2026-11-23. Those three columns had NO pins
+# and were already automatic; the reorder was wanted because the automatic rule
+# sorts on `ord`, the most recent season clearing ORDER_MIN_MINUTES = 500, and
+# not on the score the card prints. That is why Bitadze sat third at 7.0 behind
+# Vucevic at 0.8, McCain second at 12.4 behind Clifford at -2.2, and Proctor
+# third at 11.0 behind Porter Jr. at 3.6. Every card in these three columns
+# prints a CURRENT-season score, with no "(YY-YY)" tag, so no cross-season
+# comparison is hidden in the ordering.
+#
+# These pins FREEZE one day's scores; they do not track the score. As the
+# season moves the column stays in 2026-11-23 order until someone revisits it.
+# Barrett asked to set it "for now", so that is the intent, not a side effect.
+#
+# A player with NO printed score is deliberately left unpinned: Izaiyah Nelson,
+# ORL C, two-way. He cannot be ordered by a score he does not have, and the
+# automatic rule already sends a no-score player to the end, so a pin would add
+# a claim without changing the result. Cason Wallace IS pinned at SG2 although
+# he is out to about Mar 2: orderD places pins only among the AVAILABLE, so his
+# is ignored and the gap closes while he is sidelined. OKC SG therefore reads
+# McCain, Clifford, Dix today and asserts the full score order on his return,
+# rather than falling back to `ord` then.
 team,player,rank,note
 MEM,Cameron Boozer,1,2026 lottery pick; no NBA score yet so the automatic rule buries him
 MEM,Scotty Pippen Jr.,2,"second point guard behind Ty Jerome, who is force-started at 1 as of 2026-10-20; this row read 'starting point guard' before that"
@@ -62,7 +86,6 @@ BOS,Jordan Walsh,1,"force start at SG, 2026-10-24"
 BOS,Mitchell Robinson,1,"force start at C, 2026-10-24"
 BKN,Egor Demin,1,"force start at PG, 2026-10-24"
 BKN,Nolan Traore,2,"second PG, 2026-10-24"
-CHI,Noa Essengue,2,"second PF as of 2026-11-23: position_overrides moves him back C -> PF and the pin follows, so this now means PF2. Read 'second C, 2026-10-24' before that"
 ATL,Dorian Finney-Smith,3,"third SF, 2026-10-24"
 CHA,Sion James,1,"force start at SG, 2026-10-24"
 MIA,Klay Thompson,1,"force start at SG, 2026-10-24"
@@ -81,3 +104,14 @@ MIL,Ousmane Dieng,2,"second PF, 2026-10-24; Ament shifts to PF3"
 CHI,Isaac Okoro,2,"second SF, 2026-10-24; position_overrides moves him SG -> SF in the same round. Swain shifts to SF3 under the rule Barrett set that night: the newer pin wins and the older drops a rank rather than being dropped"
 UTA,Josh Green,1,"force start at SF, 2026-11-23"
 POR,Sidy Cissoko,1,"force start at SG, 2026-11-23; position_overrides moves him SF -> SG in the same round and the pin follows"
+ORL,Wendell Carter Jr.,1,"C1 as of 2026-11-23, set by printed Barrett Score (23.7); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+ORL,Goga Bitadze,2,"C2 as of 2026-11-23, set by printed Barrett Score (7.0); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+ORL,Nikola Vucevic,3,"C3 as of 2026-11-23, set by printed Barrett Score (0.8); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+ORL,Colin Castleton,4,"C4 as of 2026-11-23, set by printed Barrett Score (0.7); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+OKC,Jared McCain,1,"SG1 as of 2026-11-23, set by printed Barrett Score (12.4); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+OKC,Cason Wallace,2,"SG2 as of 2026-11-23, set by printed Barrett Score (3.1); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+OKC,Nique Clifford,3,"SG3 as of 2026-11-23, set by printed Barrett Score (-2.2); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+OKC,Josh Dix,4,"SG4 as of 2026-11-23, set by printed Barrett Score (-3.0); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+CLE,James Harden,1,"PG1 as of 2026-11-23, set by printed Barrett Score (29.6); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+CLE,Tyrese Proctor,2,"PG2 as of 2026-11-23, set by printed Barrett Score (11.0); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
+CLE,Craig Porter Jr.,3,"PG3 as of 2026-11-23, set by printed Barrett Score (3.6); the column is frozen in score order because cmpD sorts on ord, not on the printed score"
