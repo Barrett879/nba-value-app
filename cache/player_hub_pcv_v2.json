@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-23",
+"built_at": "2026-11-24",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3801,6 +3801,46 @@
 "pcv_M": 13.1,
 "low_M": 5.1,
 "high_M": 21.2,
+"is_max": false,
+"max_pct": 0.25
+},
+"brandon ingram": {
+"player": "Brandon Ingram",
+"pcv_M": 15.9,
+"low_M": 7.2,
+"high_M": 24.5,
+"is_max": false,
+"max_pct": 0.35
+},
+"grant nelson": {
+"player": "Grant Nelson",
+"pcv_M": 2.9,
+"low_M": 0.4,
+"high_M": 5.4,
+"is_max": false,
+"max_pct": 0.25
+},
+"harrison ingram": {
+"player": "Harrison Ingram",
+"pcv_M": 3.1,
+"low_M": 0.5,
+"high_M": 5.7,
+"is_max": false,
+"max_pct": 0.25
+},
+"johni broome": {
+"player": "Johni Broome",
+"pcv_M": 2.7,
+"low_M": 0.2,
+"high_M": 5.2,
+"is_max": false,
+"max_pct": 0.25
+},
+"kobe bufkin": {
+"player": "Kobe Bufkin",
+"pcv_M": 3.2,
+"low_M": 0.5,
+"high_M": 5.8,
 "is_max": false,
 "max_pct": 0.25
 }
