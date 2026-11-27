@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-25",
+"built_at": "2026-11-27",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3841,6 +3841,14 @@
 "pcv_M": 3.2,
 "low_M": 0.5,
 "high_M": 5.8,
+"is_max": false,
+"max_pct": 0.25
+},
+"tyler nickel": {
+"player": "Tyler Nickel",
+"pcv_M": 3.6,
+"low_M": 0.6,
+"high_M": 6.7,
 "is_max": false,
 "max_pct": 0.25
 }
