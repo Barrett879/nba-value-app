@@ -199,7 +199,11 @@ body{background:transparent;color:var(--fg1);
 
 /* ── body grid ──────────────────────────────────────────────────────────── */
 .cols{display:grid;grid-template-columns:minmax(0,2.15fr) minmax(0,1fr);gap:12px;align-items:start}
-@media(max-width:920px){.cols{grid-template-columns:1fr}}
+/* minmax(0,...) is load-bearing here. The two grid items are bare wrapper
+   divs with no min-width:0 of their own, so a plain 1fr floors each track
+   at the wrapper's min-content and the panel runs 16px past a 375px
+   viewport. Mirrors the desktop rule above; do not simplify back to 1fr. */
+@media(max-width:920px){.cols{grid-template-columns:minmax(0,1fr)}}
 .panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;
   padding:.75rem .8rem .85rem;min-width:0;
   box-shadow:0 1px 2px rgba(0,0,0,.04),0 6px 18px rgba(0,0,0,.05)}
