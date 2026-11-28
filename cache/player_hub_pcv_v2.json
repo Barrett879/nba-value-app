@@ -1,6 +1,6 @@
 {
 "season": "2026-27",
-"built_at": "2026-11-27",
+"built_at": "2026-11-28",
 "model_stamp": "ccf4646b7fa3",
 "source_stamp": "fa869062d198",
 "players": {
@@ -3851,6 +3851,22 @@
 "high_M": 6.7,
 "is_max": false,
 "max_pct": 0.25
+},
+"julian strawther": {
+"player": "Julian Strawther",
+"pcv_M": 6.0,
+"low_M": 1.1,
+"high_M": 10.9,
+"is_max": false,
+"max_pct": 0.25
+},
+"jusuf nurkic": {
+"player": "Jusuf Nurki\u0107",
+"pcv_M": 11.0,
+"low_M": 3.6,
+"high_M": 18.3,
+"is_max": false,
+"max_pct": 0.35
 }
 },
 "contract_end": {

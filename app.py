@@ -730,7 +730,7 @@ def _hub_counting(season: str | None = None) -> dict:
                     for _, r in _df.iterrows()}
         except Exception:
             return {}
-    art = CACHE_DIR / f"per_game_{_HUB_SEASON.replace('-', '_')}_v46.json"
+    art = CACHE_DIR / f"per_game_{_HUB_SEASON.replace('-', '_')}_v47.json"
     if art.exists():
         try:
             _vals = (_json.loads(art.read_text()).get("values") or {})
