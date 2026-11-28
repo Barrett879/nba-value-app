@@ -69,11 +69,17 @@
 # Ousmane Dieng MIL PF2 -> PF4 (last). Dieng at -0.4 and Markovic at -0.3 are
 # separated by 0.1, so that last pair is decided by a hair.
 #
-# THREE SLOTS REST ON A PRIOR-SEASON SCORE, which the card marks with a tag and
+# TWO SLOTS REST ON A PRIOR-SEASON SCORE, which the card marks with a tag and
 # which this ordering therefore compares against current-season numbers:
-# Dereck Lively II 4.9 (25-26) at DAL C2, Cormac Ryan 10.4 (25-26) at MIL SG3,
-# and Orlando Robinson 5.2 (24-25) at CHI C3, two seasons old. Ryan's is the
-# load-bearing one: 10.4 against Jakucionis at 10.8 decides SG2 against SG3.
+# Dereck Lively II 4.9 (25-26) at DAL C2 and Cormac Ryan 10.4 (25-26) at MIL
+# SG3. It was THREE until 2026-11-28: Orlando Robinson 5.2 (24-25) held CHI C3
+# until CHI waived him 2026-11-23, so his pin is gone and Zach Collins moves
+# C4 -> C3.
+# Ryan's is the load-bearing one, and it has since turned over: the pairing was
+# written as 10.4 against Jakucionis at 10.8, but Jakucionis is now 9.1 and OUT,
+# so Ryan leads on score while the pin still has Jakucionis at SG2 for his
+# return. Ryan's 10.4 is a prior season and CANNOT move, so this does not drift
+# back on its own.
 #
 # A player with NO printed score stays unpinned, as before: Tarik Biberovic,
 # DAL SF. OUT players ARE pinned on their score so the order asserts itself on
@@ -191,5 +197,4 @@ CHI,Leonard Miller,2,"SF2 as of 2026-11-23, set by printed Barrett Score (3.8); 
 CHI,Dailyn Swain,3,"SF3 as of 2026-11-23, set by printed Barrett Score (-2.7); the column is frozen in score order because cmpD sorts on ord, not the printed score"
 CHI,Jalen Smith,1,"C1 as of 2026-11-23, set by printed Barrett Score (21.2); the column is frozen in score order because cmpD sorts on ord, not the printed score"
 CHI,Nicolas Claxton,2,"C2 as of 2026-11-23, set by printed Barrett Score (11.7); the column is frozen in score order because cmpD sorts on ord, not the printed score"
-CHI,Orlando Robinson,3,"C3 as of 2026-11-23, set by printed Barrett Score (5.2 (24-25)); the column is frozen in score order because cmpD sorts on ord, not the printed score. NOTE: 5.2 is a 24-25 score, so this slot compares a prior season against current ones"
-CHI,Zach Collins,4,"C4 as of 2026-11-23, set by printed Barrett Score (0.2); the column is frozen in score order because cmpD sorts on ord, not the printed score"
+CHI,Zach Collins,3,"C3 as of 2026-11-23, set by printed Barrett Score (0.2); the column is frozen in score order because cmpD sorts on ord, not the printed score"

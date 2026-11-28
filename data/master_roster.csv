@@ -1,4 +1,12 @@
 # HoopsValue MASTER ROSTER - every player under contract 2026-27, all 30 teams.
+# Re-verified 2026-11-28: SECOND IN-SEASON ROUND. Six rows from the 11-19 sweep
+# corrected (Robinson, Minix, Austin, Vincent, Bradley/Smith, Alexander/Aidoo) and
+# a SEVENTH found only because Barrett asked: Kevin Porter Jr. signed with ORL on
+# 2026-11-25 and was still listed here as an unsigned MIL free agent priced at
+# $20.7M. The 11-19 sweep could not have caught that one (it postdates it), but the
+# row's own prose had read 'ON WAIVERS as of 10/19, clears about 10/21' in the
+# PRESENT TENSE for five weeks after it cleared, which is what made it invisible.
+# WHAT THIS LINE DOES NOT CLAIM: the other 29 teams were not re-swept today.
 # THE roster source of truth. Compiled by 6 division agents from Spotrac
 # (canonical) cross-checked vs ESPN + RealGM, reconciled 2026-07-27.
 # Re-verified 2026-08-18: August trades/signings/waives applied from the
@@ -153,7 +161,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,CLE,Tyrese Proctor,2.15,standard,PG/SG,"2025 2nd-rounder, yr 2"
 ,CLE,Meleek Thomas,1.36,standard,SG,2026 2nd-round pick; signed 4yr/$9.26M via 2nd-round exception 7/1/26; salary inferred (~rookie min) - Spotrac cap table shows $0/omits him (see caveats)
 ,CLE,Tristan Enaruna,0,free_agent,SF,"two-way ENDED 2026-11-07 per BBRef /contracts/CLE.html payroll notes (""Tristan Enaruna Ended November 7, 2026""), the move that opened the slot Riley Minix re-signed into. Kept as free_agent rather than deleted, matching Lawson Lovering, so his 3 played games keep their history while the board correctly stops pricing a contract that no longer exists. Corrected 2026-11-18: leaving him as two_way put CLE at FOUR two-ways, which check_roster_invariants refuses, and showed him on the board at the $678,882 scale as if still signed."
-,CLE,Riley Minix,0,two_way,SF,Two-way contract
+,CLE,Riley Minix,0,free_agent,SF,"TWO-WAY ENDED 2026-11-18, verified 2026-11-28 from BBRef /contracts/CLE.html payroll notes ('Ended November 18, 2026. Signed two-way contract November 7, 2026.') and his absence from /teams/CLE/2027.html. MISSED BY THE 2026-11-19 SWEEP, which ran the day after: this file's own Norchad Omier row already said Minix was waived while this row still said two_way. est value $2.7M, the model pcv from player_hub_pcv_v2.json, so build_redraft_pool keeps him; Orlando Robinson and Trey Alexander have no pcv and are left without the phrase on purpose."
 ,CLE,Ernest Udeh Jr.,0,two_way,C,Signed two-way 7/1/26
 ,DAL,Kyrie Irving,39.49,standard,PG/SG,Yr 2 of 3yr deal; 2027-28 player option $42.4M
 ,DAL,P.J. Washington,19.81,standard,PF/SF,Vet extension runs through 2029-30
@@ -345,7 +353,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,MIL,Jaime Jaquez Jr.,5.94,standard,SF/PF,Acquired 7/6/26 from MIA in Giannis trade; final rookie-scale year
 ,MIL,Ousmane Dieng,5.75,standard,PF/C,Signed 3yr/$17.5M on 7/9/26 (2028-29 team option)
 ,MIL,Nate Ament,5.5,standard,PF,No. 13 pick 2026 draft (Tennessee; pick acquired from MIA in Giannis trade); signed 4yr/$25.98M rookie scale 7/8/26
-,MIL,Kevin Porter Jr.,0,free_agent,PG/SG,"WAIVED by MIL 10/19/26 at the roster deadline, after exercising his $5,390,700 player option in June; MIL carries it as dead money. ON WAIVERS as of 10/19, clears about 10/21, and a claim would move the salary to the claiming team; est value $20.7M (the model's own projected contract value, which is how the other free-agent rows here are priced; build_redraft_pool DROPS a $0 player with no 'est value' phrase). Note the model is far above his $5.39M option, a known gap on injury-prone high-usage guards, not a data error [on waivers until 2026-10-21]"
+,ORL,Kevin Porter Jr.,2.431769,standard,PG/SG,"SIGNED ORL 2026-11-25, OFFICIAL (the Magic announced it in a press release): a two-year veteran-minimum deal with a TEAM OPTION on 2027-28, per Hoops Rumors citing Shams Charania and Jason Beede. He cleared MIL waivers about 10/21 with no claim, so MIL keeps the $5,390,700 as dead money. This row was carried as an UNSIGNED MIL free agent priced at est $20.7M for five weeks, so the FA board was offering a player under contract. BASIS CAVEAT: $2,431,769 is Hoops Rumors' PRORATED 2026-27 figure as of the signing date, while the rows around it carry BBRef FULL-SEASON contract figures; BBRef /contracts/ORL.html still did not list him on 2026-11-28 (parse positive-controlled on Banchero and Suggs), and Spotrac 403s this machine, so the figure is SINGLE-SOURCED. Re-read both next round. Because the deal runs two years the NBA reimburses no part of the minimum, so the full figure hits ORL's cap. ORL had an open 15th standard spot, so no corresponding move was needed; this takes our ORL standard count 14 -> 15."
 ,MIL,Kel'el Ware,4.65,standard,C/PF,Acquired 7/6/26 from MIA in Giannis trade; rookie scale yr 3
 ,MIL,Ryan Rollins,4,standard,PG/SG,Year 2 of deal re-signed with MIL in 2025
 ,MIL,Kasparas Jakucionis,3.84,standard,PG/SG,Acquired 7/6/26 from MIA in Giannis trade; rookie scale yr 2
@@ -540,7 +548,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,TOR,Jamison Battle,2.3,standard,SF/PF,Non-guaranteed; RFA 2027
 ,TOR,Alijah Martin,2.19,standard,SG,2025 2nd-round pick No.39; re-signed 7/3/2026; 2027-28 player option
 ,TOR,Nate Bittle,0,two_way,C,"CONVERTED to a TOR two-way 10/17/26 from the 7/10/26 Exhibit 10 camp deal (undrafted 2026, Oregon), so $0 against the team cap. TOR waived Burnett, Key, Celestine, Degenhart and Sharp in the same wave"
-,TOR,Jaden Bradley,0,two_way,SG,Two-way; 2026 2nd-round pick No.50
+,TOR,Jaden Bradley,1.357763,standard,SG,"STANDARD contract, not a two-way: verified 2026-11-28 from BBRef /contracts/TOR.html, which carries a salary row ($1,357,763 for 2026-27) and the note '2029-30 is a team option. 2027-28 and 2028-29 are not guaranteed. Signed 4-yr/$9M contract September 21, 2026.' The 2026-11-19 sweep FLAGGED this row as type-swapped with Malachi Smith and did not apply it."
 ,TOR,Chucky Hepburn,0,free_agent,PG,"off the TOR two-way roster in the 10/17/26 cut wave; absent from the ESPN roster, and removing him with Jemison makes TOR 2 two-ways, matching Hoops Rumors"
 ,UTA,Jaren Jackson Jr.,49,standard,C/PF,"Acquired from MEM Feb 6, 2026 (8-player deal: Kessler stayed; Hendricks, Anderson, Clayton, Niang + 3 firsts out); vet extension signed 2026, PO 2029-30"
 ,UTA,Lauri Markkanen,46.11,standard,PF/SF,"Vet extension, through 2028-29"
@@ -556,7 +564,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,UTA,Mo Bamba,3.51,standard,C,Signed 2yr July 2026 (2nd year TO)
 ,UTA,Kyle Filipowski,3,standard,PF/C,Year 3 of 4-yr second-round deal (2024 No. 32); TO decision 2027
 ,UTA,Isaiah Collier,2.76,standard,PG/SG,Year 3 rookie scale (2024 No. 29); TO decision 2027
-,UTA,Trey Alexander,0,two_way,PG/SG,Signed two-way July 2026
+,UTA,Trey Alexander,0,free_agent,PG/SG,"TWO-WAY ENDED 2026-11-16, verified 2026-11-28 from BBRef /contracts/UTA.html ('Ended November 16, 2026. Signed two-way contract July 7, 2026.') and his absence from /teams/UTA/2027.html. The 2026-11-19 sweep FLAGGED this as STILL OPEN and did not apply it."
 ,UTA,Blake Hinson,0.0,free_agent,PF/C,TWO-WAY ENDED: waived by UTA 2026-10-21 and absent from all 30 saved pages (checked with a positive control). Kept team=UTA so the 30-team invariant still sees him. Bufkin took the slot.
 ,UTA,Tamar Bates,0,free_agent,,"WAIVED by UTA 10/17/26"
 ,WAS,Anthony Davis,58.46,standard,PF/C,traded to WAS 2/5/26 (deadline); 2027-28 player option $62.8M
@@ -582,7 +590,7 @@ asof,team,player,salary_M,kind,pos,notes
 # projected contract value at the time of the 2026-07-28 sweep.
 ,ATL,Caleb Houstan,0,free_agent,SG/SF,unsigned free agent; est value $4.3M
 ,ATL,Christian Koloko,0,free_agent,C,unsigned free agent; est value $3.5M
-,ATL,Gabe Vincent,0,free_agent,PG/SG,unsigned free agent; est value $2.9M
+,SAC,Gabe Vincent,1.970799,standard,PG/SG,"SIGNED SAC non-guaranteed 2026-11-23, verified 2026-11-28 from BBRef /contracts/SAC.html payroll notes ('Signed non-guaranteed contract November 23, 2026.') and the league transaction log ('The Sacramento Kings signed Gabe Vincent.'). $1,970,799 is BBRef's 2026-27 figure. Was carried here as an UNSIGNED ATL free agent at an est $2.9M, so the FA board was offering a player who is under contract."
 ,ATL,N'Faly Dante,0,free_agent,C,unsigned free agent; est value $2.8M
 ,PHX,Duop Reath,0,two_way,C,"CONVERTED to a PHX two-way 10/19/26 from an Exhibit 10; our row had him as an ATL free agent, which was stale"
 ,ATL,Keaton Wallace,0,free_agent,PG,unsigned free agent; est value $2.2M
@@ -590,7 +598,7 @@ asof,team,player,salary_M,kind,pos,notes
 ,NYK,Ochai Agbaji,0,free_agent,SG/SF,"signed an NYK camp deal 9/16/26; Spotrac books the 2026-27 cap hit at $0 until he makes the opening-night roster. est value $5.0M"
 ,BKN,Hunter Tyson,0,free_agent,SF/PF,unsigned free agent; est value $3.7M
 ,BKN,Dariq Whitehead,0,free_agent,PF/SF,unsigned free agent; est value $3.4M
-,TOR,Malachi Smith,2.45,standard,PG/SG,"on the TOR opening-night roster per ESPN; this row had him as an unsigned BKN free agent, which is why TOR read 13 standard, below the 14 minimum. Salary UNVERIFIED: $2,449,421 is the standard minimum cap hit inferred from the deal type, not a figure found in reporting"
+,TOR,Malachi Smith,0,two_way,PG/SG,"TWO-WAY, not a standard deal: verified 2026-11-28 from BBRef /contracts/TOR.html, where he has NO salary row and the note reads 'Signed two-way contract September 21, 2026.' The $2,449,421 this row carried was explicitly self-described as inferred from the deal type rather than found in reporting, and the deal type was wrong. Swapped with Jaden Bradley; the 2026-11-19 sweep flagged the pair and did not apply it."
 ,BKN,Keon Johnson,0,free_agent,PG/SG,unsigned free agent
 ,BKN,Tre Scott,0,free_agent,SF/PF,unsigned free agent
 ,BKN,Grant Nelson,0,two_way,PF/C,"BKN TWO-WAY, on the ESPN roster; this row had him as a free agent, so he was being offered as signable while under contract"
@@ -692,4 +700,6 @@ asof,team,player,salary_M,kind,pos,notes
 ,WAS,Reece Beekman,0,two_way,PG,"WAS TWO-WAY, on the ESPN roster; MISSING from this file entirely"
 ,LAL,Carson Cooper,0,two_way,C,"LAL TWO-WAY signed 2026-11-10, verified 2026-11-18 from BBRef /contracts/LAL.html payroll notes (Lawson Lovering waived to open the spot). 6-11 center, undrafted out of Michigan State; his earlier MEM two-way of 2026-09-28 ended 2026-11-07 per /contracts/MEM.html, which is why he shows one MEM game and then LAL minutes. MISSING from this file entirely, so the board dropped him. $0 because two-ways sit outside the team cap."
 ,UTA,Kobe Bufkin,0.0,two_way,SG,"UTA TWO-WAY signed 2026-10-23, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes; took the slot Hinson vacated. MISSING from this file entirely. His unavailable_players nba_contract row is removed in the same round, because a rostered player must not also be listed unavailable."
-,CHI,Orlando Robinson,2.125647,standard,C,"SIGNED CHI non-guaranteed 2026-11-13, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes ('Signed non-guaranteed contract November 13, 2026'; italicised cell = BBRef's non-guaranteed marker). MISSING from this file entirely. Legitimately absent at the 2026-10-19 round: Exhibit 10 on 09-25, waived 10-17, re-signed 11-13. $2,125,647 is the PRO-RATED cap charge from Nov 13."
+,CHI,Orlando Robinson,0,free_agent,C,"WAIVED BY CHI 2026-11-23 (BBRef /leagues/NBA_2027_transactions.html, 'The Chicago Bulls waived Orlando Robinson.'), verified 2026-11-28 from BBRef. Kept as free_agent rather than deleted, matching Tristan Enaruna, so his played games keep their history while the board stops pricing a contract that no longer exists. Was standard $2,125,647 pro-rated from the 2026-11-13 non-guaranteed signing. ALSO UNPINNED from depth_order.csv, where he held CHI C3. PRIOR NOTE: SIGNED CHI non-guaranteed 2026-11-13, verified 2026-11-19 from BBRef /contracts/<TEAM>.html payroll notes ('Signed non-guaranteed contract November 13, 2026'; italicised cell = BBRef's non-guaranteed marker). MISSING from this file entirely. Legitimately absent at the 2026-10-19 round: Exhibit 10 on 09-25, waived 10-17, re-signed 11-13. $2,125,647 is the PRO-RATED cap charge from Nov 13."
+,CLE,Zack Austin,0,two_way,SG,"CLE TWO-WAY signed 2026-11-18, verified 2026-11-28 from BBRef /contracts/CLE.html ('Signed two-way contract November 18, 2026.') and /teams/CLE/2027.html, which lists him SG (TW). ABSENT FROM THIS FILE ENTIRELY until now; he and Riley Minix are the two halves of the same move and the 2026-11-19 sweep caught neither."
+,UTA,Jonas Aidoo,0,two_way,C,"UTA TWO-WAY signed 2026-11-17, verified 2026-11-28 from BBRef /contracts/UTA.html ('Signed two-way contract November 17, 2026.') and /teams/UTA/2027.html, which lists him C (TW). He replaces Trey Alexander, whose deal ended 2026-11-16. The 2026-11-19 sweep named him as STILL OPEN and did not apply it."

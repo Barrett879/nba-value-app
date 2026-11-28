@@ -35,8 +35,7 @@ from utils import (
     inject_theme,
     render_theme_toggle,
     COMMON_CSS, render_nav, TEAM_HEX, HV_KIT_CSS,
-    render_barrett_score_explainer,
-    verified_as_of
+    render_barrett_score_explainer
 )
 
 logger = logging.getLogger(__name__)
@@ -773,25 +772,6 @@ def _hub_salary_supplement() -> dict:
     except Exception:
         pass
     return out
-
-
-# The offseason RECORDS and the league-wide ROSTER are verified on different
-# clocks, and conflating them is how this caption came to overclaim: one shared
-# stamp meant a roster round moved a line asserting that 131 signings and 45
-# option decisions had been re-checked. The grouping, the two-level
-# newest-within-a-file / oldest-across-the-group rule and the reason there is
-# no mtime fallback all live in utils.verified_as_of now, so the Trade Machine
-# and Rosters can make the same kind of claim about the CAP files without a
-# fourth copy of this scan. There were three.
-def _offseason_as_of() -> str:
-    """When the pre-opener records were last verified. Final once the season
-    starts, so this date is not expected to move again."""
-    return verified_as_of("offseason")
-
-
-def _roster_as_of() -> str:
-    """When the league-wide roster was last swept. Moves all season."""
-    return verified_as_of("roster")
 
 
 _OUTCOME_LABEL = {"po_in": "PO Opt In", "po_out": "PO Opt Out",
@@ -2214,28 +2194,14 @@ if _sel:
                     st.markdown('<div class="hub-note">No career history on file yet.</div>',
                                 unsafe_allow_html=True)
 
-# Freshness stamp for the hand-verified offseason columns on the board (signings,
-# option decisions, supplemented salaries).
-_as_of = _offseason_as_of()
-_roster_of = _roster_as_of()
-if _as_of or _roster_of:
-    # Two sentences, not one joined clause: joining with ". " left the caption
-    # reading "...October 19, 2026. rosters re-verified..." with a lowercase
-    # word after a full stop.
-    #
-    # The first sentence is Barrett's wording, kept verbatim, so it stays
-    # "Offseason signings, options and salaries verified as of <date>" even on a
-    # day when the roster was swept in the same round and both dates match. A
-    # tidier merged sentence ("...options, salaries and rosters verified as
-    # of...") was tried and reverted: it reworded the clause he asked for, and
-    # the two claims cover different files that will diverge again the moment
-    # one is swept without the other.
-    _bits = []
-    if _as_of:
-        _bits.append(f"Offseason signings, options and salaries verified as of {_as_of}.")
-    if _roster_of:
-        _bits.append(f"Rosters re-verified {_roster_of}.")
-    st.caption(" ".join(_bits))
+# The board carried a freshness caption here ("Offseason signings, options and
+# salaries verified as of <date>. Rosters re-verified <date>.") until 2026-11-28,
+# when Barrett asked for it removed. Recorded so nobody restores it as a tidy-up:
+# re-verifying that day against BBRef found the ROSTER half wrong in six ways, two
+# of them dated BEFORE the date the caption published, so the stamp was asserting a
+# freshness it did not have. utils.verified_as_of is untouched and four other pages
+# still publish their own stamps: Rosters, Team Analysis, Trade Machine and
+# Free Agent Class.
 
 # Hover tooltips for the filter pills (native title=). Runs from a components
 # iframe; MutationObserver re-stamps after fragment re-renders.
